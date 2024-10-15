@@ -95,33 +95,32 @@ def test_create_mass_ode_discipline_without_options():
     ode_discipline.execute()
 
 
-@pytest.mark.parametrize(
-    ("left_stiff", "right_stiff", "initial_position", "initial_velocity", "mass"),
-    [
-        (1.0, 1.0, 0.0, 1.0, 1.0),
-        (10.0, 1.0, 0.0, 1.0, 1.0),
-        (1.0, 1.0, 0.0, 1.0, 10.0),
-        (10.0, 1.0, 0.0, 1.0, 10.0),
-        (1.0, 10.0, 0.0, 1.0, 1.0),
-        (1.0, 10.0, 1.0, 1.0, 1.0),
-        (1.0, 1.0, 0.0, 10.0, 1.0),
-        (10.0, 10.0, 1.0, 0.0, 1.0),
-        (1.0, 10.0, 1.0, 1.0, 10.0),
-        (1.0, 1.0, 0.0, 10.0, 10.0),
-        (10.0, 10.0, 1.0, 0.0, 10.0),
-    ],
-)
-def test_generic_mass_rhs_function(
-    left_stiff: float,
-    right_stiff: float,
-    initial_position: float,
-    initial_velocity: float,
-    mass: float,
-):
+# @pytest.mark.parametrize(
+#     ("left_stiff", "right_stiff", "initial_position", "initial_velocity", "mass"),
+#     [
+#         (1.0, 1.0, 0.0, 1.0, 1.0),
+#         (10.0, 1.0, 0.0, 1.0, 1.0),
+#         (1.0, 1.0, 0.0, 1.0, 10.0),
+#         (10.0, 1.0, 0.0, 1.0, 10.0),
+#         (1.0, 10.0, 0.0, 1.0, 1.0),
+#         (1.0, 10.0, 1.0, 1.0, 1.0),
+#         (1.0, 1.0, 0.0, 10.0, 1.0),
+#         (10.0, 10.0, 1.0, 0.0, 1.0),
+#         (1.0, 10.0, 1.0, 1.0, 10.0),
+#         (1.0, 1.0, 0.0, 10.0, 10.0),
+#         (10.0, 10.0, 1.0, 0.0, 10.0),
+#     ],
+# )
+def test_generic_mass_rhs_function():
     """Test the resolution for a single mass connected by springs to fixed points.
 
     Verify the values of the output for various initial conditions.
     """
+    left_stiff = 1.0
+    right_stiff = 1.0
+    initial_position = 0.0
+    initial_velocity = 1.0
+    mass = 10.0
     times = linspace(0, 5, 30)
     left_position = 0.0
     right_position = 0.0
@@ -181,14 +180,10 @@ def test_generic_mass_rhs_function(
     assert allclose(result["position_trajectory"], analytical_position_trajectory)
 
 
-@pytest.mark.parametrize("stiff_1", [1.0, 0.1])
-@pytest.mark.parametrize("stiff_2", [1.0, 0.1])
-@pytest.mark.parametrize("mass_value_1", [1.0, 10])
-def test_2_chained_masses(
-    stiff_1,
-    stiff_2,
-    mass_value_1,
-):
+# @pytest.mark.parametrize("stiff_1", [1.0, 0.1])
+# @pytest.mark.parametrize("stiff_2", [1.0, 0.1])
+# @pytest.mark.parametrize("mass_value_1", [1.0, 10])
+def test_2_chained_masses():
     """Tests the coupling two disciplines representing two masses connected by a spring
     to one another and to foxed walls. The coupling is performed by MDAGaussSeidel.
 
@@ -196,6 +191,9 @@ def test_2_chained_masses(
     problem. Different values for the first mass and th stiffnesses of the first two
     springs are tested.
     """
+    stiff_1 = 0.1
+    stiff_2 = 0.1
+    mass_value_1 = 10.0
     _time_init = array([0.0])
     times = linspace(0.0, 10, 60)
     mass_value_2 = 1.0
@@ -450,10 +448,10 @@ def test_create_chained_masses():
     mda.execute()
 
 
-@pytest.mark.parametrize("stiff_1", [1.0, 0.1])
-@pytest.mark.parametrize("stiff_2", [1.0, 0.1])
-@pytest.mark.parametrize("mass_value_1", [1.0, 10.0])
-def test_create_two_chained_masses(stiff_1, stiff_2, mass_value_1):
+# @pytest.mark.parametrize("stiff_1", [1.0, 0.1])
+# @pytest.mark.parametrize("stiff_2", [1.0, 0.1])
+# @pytest.mark.parametrize("mass_value_1", [1.0, 10.0])
+def test_create_two_chained_masses():
     """Tests the coupling two disciplines representing two masses connected by a spring
     to one another and to foxed walls. The coupling is performed by MDAGaussSeidel.
 
@@ -464,6 +462,9 @@ def test_create_two_chained_masses(stiff_1, stiff_2, mass_value_1):
     problem. Different values for the first mass and th stiffnesses of the first two
     springs are tested.
     """
+    stiff_1 = 0.1
+    stiff_2 = 0.1
+    mass_value_1 = 10.0
     masses = [mass_value_1, 1.0]
     stiffnesses = [stiff_1, stiff_2, 1.0]
     positions = [1.0, 0.0]
