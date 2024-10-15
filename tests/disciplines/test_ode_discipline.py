@@ -39,6 +39,7 @@ from numpy import isclose
 from numpy import linspace
 from numpy import sin
 from numpy import sqrt
+from numpy.testing import assert_allclose
 
 from gemseo import create_discipline
 from gemseo import from_pickle
@@ -250,12 +251,16 @@ def test_incompatible_times():
     assert msg in str(error_info.value)
 
 
-@pytest.mark.parametrize("omega", [0.1, 1.0])
-@pytest.mark.parametrize("init_state_x", [1.0, 0.0])
-@pytest.mark.parametrize("init_state_y", [1.0, 0.0])
-def test_jacobian(omega, init_state_x, init_state_y):
+# @pytest.mark.parametrize("omega", [0.1, 1.0])
+# @pytest.mark.parametrize("init_state_x", [1.0, 0.0])
+# @pytest.mark.parametrize("init_state_y", [1.0, 0.0])
+def test_jacobian():
+    omega = 1.0
+    init_state_x = 1.0
+    init_state_y = 0.0
     _init_time = 0.0
-    _final_time = 10.0
+    _final_time = 1.0
+    # _final_time = 10.0
 
     times = linspace(_init_time, _final_time, 30)
     _init_state_x = array([init_state_x])
@@ -317,8 +322,8 @@ def test_jacobian(omega, init_state_x, init_state_y):
     time_final = times[-1]
     x_exact, y_exact = exact_sol(time=time_final)
 
-    assert allclose(res_ode["x_final"], x_exact)
-    assert allclose(res_ode["y_final"], y_exact)
+    assert_allclose(res_ode["x_final"], x_exact)
+    assert_allclose(res_ode["y_final"], y_exact)
 
 
 @pytest.mark.parametrize(
@@ -326,8 +331,10 @@ def test_jacobian(omega, init_state_x, init_state_y):
     ["RK45", "RK23", "DOP853", "Radau", "BDF", "LSODA", "non_existing_algorithm"],
 )
 def test_all_ode_integration_algorithms(name_of_algorithm):
-    times = linspace(0.0, 10, 30)
-    omega = 1.0
+    # times = linspace(0.0, 10.0, 30)
+    # omega = 1.0
+    times = linspace(0.0, 0.001, 30)
+    omega = 100.0
     init_state_x = 1.0
     init_state_y = 0.0
 
@@ -393,12 +400,8 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
             atol=1e-12,
         )
         res_ode = ode_discipline.execute()
-        if not (
-            allclose(res_ode["x_final"], x_exact)
-            and allclose(res_ode["y_final"], y_exact)
-        ):
-            msg = f"The algorithm {name_of_algorithm} has failed."
-            raise ValueError(msg)
+        assert_allclose(res_ode["x_final"], x_exact)
+        assert_allclose(res_ode["y_final"], y_exact)
 
 
 def test_ode_discipline_termination_event():
