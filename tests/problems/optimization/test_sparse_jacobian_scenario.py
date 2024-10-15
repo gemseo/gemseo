@@ -92,6 +92,6 @@ def test_problem_is_linear(scenario) -> None:
 
 def test_execution(scenario) -> None:
     """Tests the execution of scenario with sparse Jacobians."""
-    scenario.execute(algo="LINEAR_INTERIOR_POINT", max_iter=1000)
+    scenario.execute(algo="INTERIOR_POINT", max_iter=1000)
     out = scenario.formulation.optimization_problem.solution
     assert pytest.approx(out.f_opt) == -8.0
