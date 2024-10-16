@@ -224,7 +224,8 @@ class MNBI(BaseOptimizationLibrary):
     database. In debug mode, the optima actually returned by mNBI are saved to an hdf5
     file, in order to verify that the algorithm has worked as intended.
     """
-    ___doe_algo_settings: Mapping[str, DriverLibrarySettingType]
+
+    __doe_algo_settings: Mapping[str, DriverLibrarySettingType]
     """The settings for the DOE algorithm."""
 
     __ineq_tolerance: float = 1e-4
@@ -825,7 +826,7 @@ class MNBI(BaseOptimizationLibrary):
         self.__debug_file_path = settings.pop("debug_file_path")
         self.__skip_betas = settings.pop("skip_betas")
         self.__sub_optim_max_iter = settings.pop("sub_optim_max_iter")
-        self._doe_algo_settings = settings.pop("doe_algo_settings")
+        self.__doe_algo_settings = settings.pop("doe_algo_settings")
         self.__n_obj = problem.objective.dim
         self.__ineq_tolerance = settings.get(
             self._INEQ_TOLERANCE, self._problem.tolerances.inequality
@@ -882,7 +883,7 @@ class MNBI(BaseOptimizationLibrary):
                     beta_design_space,
                     n_samples=n_samples,
                     unit_sampling=True,
-                    **self._doe_algo_settings,
+                    **self.__doe_algo_settings,
                 )
             for beta in betas:
                 beta = append(beta, 1 - beta.sum())
