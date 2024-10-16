@@ -8,7 +8,7 @@ cached-property==1.5.2
     # via h5py
 covdefaults==0.1.0
     # via gemseo (pyproject.toml)
-coverage==7.6.2
+coverage==7.6.3
     # via
     #   covdefaults
     #   pytest-cov
@@ -100,7 +100,7 @@ pydantic-core==2.4.0
     # via pydantic
 pydoe3==1.0.1
     # via gemseo (pyproject.toml)
-pyparsing==3.1.4
+pyparsing==3.2.0
     # via matplotlib
 pytest==7.0.0
     # via
