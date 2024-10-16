@@ -230,7 +230,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
             evaluate_objective=True,
         )
         self._function_outputs, _ = self._problem.evaluate_functions(
-            output_functions=output_functions, jacobian_functions=jacobian_functions
+            output_functions=output_functions or None,
+            jacobian_functions=jacobian_functions or None,
         )
         f_opt = self._function_outputs[self._problem.objective.name]
         gv = [

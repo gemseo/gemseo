@@ -145,8 +145,22 @@ def test_record(execution_statistics: ExecutionStatistics):
     assert execution_statistics.duration == reference_duration
 
 
-def test_time_stamps(execution_statistics: ExecutionStatistics):
+from gemseo.utils import timer  # noqa: E402
+
+
+def test_time_stamps(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify the time stamps."""
+
+    class PerfCounter:
+        def __init__(self):
+            self.__total = 0
+
+        def __call__(self):
+            self.__total += SLEEP_TIME
+            return self.__total
+
+    monkeypatch.setattr(timer, "perf_counter", PerfCounter())
+
     assert ExecutionStatistics.time_stamps is None
 
     ExecutionStatistics.is_time_stamps_enabled = True
@@ -155,6 +169,7 @@ def test_time_stamps(execution_statistics: ExecutionStatistics):
 
     with execution_statistics.record():
         sleep(SLEEP_TIME)
+
     with execution_statistics.record(linearize=True):
         sleep(SLEEP_TIME)
 
@@ -162,7 +177,7 @@ def test_time_stamps(execution_statistics: ExecutionStatistics):
     all_values = tuple(next(iter(ExecutionStatistics.time_stamps.values())))
 
     for values in all_values:
-        assert values[1] - values[0] == pytest.approx(SLEEP_TIME, rel=0.12)
+        assert values[1] - values[0] == pytest.approx(SLEEP_TIME)
 
     # Check the linearization flag.
     assert not all_values[0][2]

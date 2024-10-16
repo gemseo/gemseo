@@ -203,8 +203,8 @@ class LagrangeMultipliers:
         values, _ = self.optimization_problem.evaluate_functions(
             design_vector=x_vect,
             design_vector_is_normalized=False,
-            output_functions=output_functions,
-            jacobian_functions=jacobian_functions,
+            output_functions=output_functions or None,
+            jacobian_functions=jacobian_functions or None,
         )
         if not self.optimization_problem.constraints.is_point_feasible(values):
             LOGGER.warning("Infeasible point, Lagrange multipliers may not exist.")

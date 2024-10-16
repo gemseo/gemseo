@@ -647,8 +647,8 @@ def test_evaluate_functions_no_gradient() -> None:
     )
     func, grad = problem.evaluate_functions(
         design_vector_is_normalized=False,
-        jacobian_functions=jacobian_functions,
-        output_functions=output_functions,
+        jacobian_functions=jacobian_functions or None,
+        output_functions=output_functions or None,
     )
     assert "pow2" not in func
     assert "pow2" not in grad
@@ -668,8 +668,8 @@ def test_evaluate_functions_only_gradients() -> None:
     )
     func, grad = problem.evaluate_functions(
         design_vector_is_normalized=False,
-        output_functions=output_functions,
-        jacobian_functions=jacobian_functions,
+        output_functions=output_functions or None,
+        jacobian_functions=jacobian_functions or None,
     )
     assert not func
     assert grad.keys() == {"ineq1", "ineq2", "eq"}
@@ -692,8 +692,8 @@ def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm) -> None:
     out = problem.evaluate_functions(
         design_vector=array([1.0, 1.0, 1.0]),
         design_vector_is_normalized=False,
-        output_functions=output_functions,
-        jacobian_functions=jacobian_functions,
+        output_functions=output_functions or None,
+        jacobian_functions=jacobian_functions or None,
     )
     assert out[0]["pow2"] == pytest.approx(3.0)
     assert out[0]["design norm"] == pytest.approx(sqrt(3.0))
@@ -706,8 +706,8 @@ def test_evaluate_functions_non_preprocessed(constrained_problem) -> None:
     )
     values, jacobians = constrained_problem.evaluate_functions(
         design_vector_is_normalized=False,
-        output_functions=output_functions,
-        jacobian_functions=jacobian_functions,
+        output_functions=output_functions or None,
+        jacobian_functions=jacobian_functions or None,
     )
     assert set(values.keys()) == {"f", "g", "h"}
     assert values["f"] == pytest.approx(2.0)
@@ -759,8 +759,8 @@ def test_evaluate_constraints_subset(
     )
     values, _ = constrained_problem.evaluate_functions(
         array([0, 0]),
-        output_functions=output_functions,
-        jacobian_functions=jacobian_functions,
+        output_functions=output_functions or None,
+        jacobian_functions=jacobian_functions or None,
     )
     assert tuple(values.keys()) == keys
 
@@ -804,8 +804,8 @@ def test_evaluate_jacobians_subset(constrained_problem, jacobian_names, keys) ->
     )
     _, jacobians = constrained_problem.evaluate_functions(
         design_vector=array([0, 0]),
-        output_functions=output_functions,
-        jacobian_functions=jacobian_functions,
+        output_functions=output_functions or None,
+        jacobian_functions=jacobian_functions or None,
     )
     assert jacobians.keys() == keys
 
@@ -839,8 +839,8 @@ def test_evaluate_jacobians_alone(constrained_problem, jacobian_names, keys) -> 
     )
     values, jacobians = constrained_problem.evaluate_functions(
         design_vector=array([0, 0]),
-        output_functions=output_functions,
-        jacobian_functions=jacobian_functions,
+        output_functions=output_functions or None,
+        jacobian_functions=jacobian_functions or None,
     )
     assert not values
     assert jacobians.keys() == keys
@@ -2168,12 +2168,16 @@ def test_evaluation_problem_to_dataset():
     problem = EvaluationProblem(design_space)
     problem.add_observable(MDOFunction(lambda x: 2 * x, "f"))
     problem.preprocess_functions()
-    functions = problem.get_functions(observable_names=())
+    output_functions = problem.get_functions(observable_names=())[0]
     problem.evaluate_functions(
-        array([1.0]), design_vector_is_normalized=False, output_functions=functions[0]
+        array([1.0]),
+        design_vector_is_normalized=False,
+        output_functions=output_functions or None,
     )
     problem.evaluate_functions(
-        array([2.0]), design_vector_is_normalized=False, output_functions=functions[0]
+        array([2.0]),
+        design_vector_is_normalized=False,
+        output_functions=output_functions or None,
     )
 
     dataset = IODataset()
@@ -2251,3 +2255,17 @@ def test_jacobian_is_none_and_maxiter_is_reached(
     evaluation_problem.evaluation_counter.maximum = 1
     with pytest.raises(MaxIterReachedException):
         evaluation_problem.observables[0].jac(array([0.0]))
+
+
+@pytest.mark.parametrize(
+    ("jacobian_functions", "expected"),
+    [
+        ((Rosenbrock().objective,), {"rosen": array([-2.0, 0.0])}),
+        ((), {"rosen": array([-2.0, 0.0])}),
+        (None, {}),
+    ],
+)
+def test_evaluate_jacobian_functions(jacobian_functions, expected):
+    """Check the jacobian_functions argument of evaluate_functions."""
+    data = Rosenbrock().evaluate_functions(jacobian_functions=jacobian_functions)[1]
+    assert_equal(data, expected)

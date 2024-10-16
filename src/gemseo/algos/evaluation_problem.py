@@ -395,7 +395,7 @@ class EvaluationProblem(BaseProblem):
         design_vector: RealArray | None = None,
         design_vector_is_normalized: bool = True,
         preprocess_design_vector: bool = True,
-        output_functions: Iterable[MDOFunction] | None = None,
+        output_functions: Iterable[MDOFunction] | None = (),
         jacobian_functions: Iterable[MDOFunction] | None = None,
     ) -> EvaluationType:
         """Evaluate the functions, and possibly their derivatives.
@@ -406,21 +406,37 @@ class EvaluationProblem(BaseProblem):
             design_vector_is_normalized: Whether ``design_vector`` is normalized.
             preprocess_design_vector: Whether to preprocess the design vector.
             output_functions: The functions computing the outputs.
-                If ``None``, evaluate all the functions computing outputs.
-                If empty, do not evaluate functions computing outputs.
+                If empty, evaluate all the functions computing outputs.
+                If ``None``, do not evaluate functions computing outputs.
             jacobian_functions: The functions computing the Jacobians.
-                If ``None``, evaluate all the functions computing Jacobians.
-                If empty, do not evaluate functions computing Jacobians.
+                If empty, evaluate all the functions computing Jacobians.
+                If ``None``, do not evaluate functions computing Jacobians.
 
         Returns:
             The output values of the functions,
             as well as their Jacobian matrices if ``jacobian_functions`` is empty.
         """
         if output_functions is None and jacobian_functions is None:
-            output_functions, jacobian_functions = self.get_functions()
-        elif output_functions is None:
+            return {}, {}
+
+        use_all_output_functions = not output_functions and output_functions is not None
+        use_all_jacobian_functions = (
+            not jacobian_functions and jacobian_functions is not None
+        )
+        if use_all_output_functions or use_all_jacobian_functions:
+            all_output_functions, all_jacobian_functions = self.get_functions(
+                jacobian_names=()
+            )
+            if use_all_output_functions:
+                output_functions = all_output_functions
+
+            if use_all_jacobian_functions:
+                jacobian_functions = all_jacobian_functions
+
+        if output_functions is None:
             output_functions = ()
-        elif jacobian_functions is None:
+
+        if jacobian_functions is None:
             jacobian_functions = ()
 
         if preprocess_design_vector:

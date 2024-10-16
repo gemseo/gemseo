@@ -177,8 +177,8 @@ class ScipyMILP(BaseOptimizationLibrary):
         output_opt, jac_opt = problem.evaluate_functions(
             design_vector=x_opt,
             design_vector_is_normalized=False,
-            output_functions=output_functions,
-            jacobian_functions=jacobian_functions,
+            output_functions=output_functions or None,
+            jacobian_functions=jacobian_functions or None,
         )
         return None, None, output_opt, jac_opt, x_0, x_opt, milp_result
 
