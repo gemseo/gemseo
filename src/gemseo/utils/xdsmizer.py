@@ -368,7 +368,7 @@ class XDSMizer:
         self.to_id[self.root_atom] = OPT_ID
         opt_node = {"id": OPT_ID, "name": algoname, "type": "optimization"}
         if statuses[self.root_atom.uuid]:
-            opt_node["status"] = statuses[self.root_atom.uuid]
+            opt_node["status"] = str(statuses[self.root_atom.uuid])
 
         nodes.append(opt_node)
 
@@ -396,7 +396,7 @@ class XDSMizer:
                                 "Node " + self.to_id[atom] + " not found in " + nodes
                             )  # pragma: no cover
 
-                        node["status"] = atom.status
+                        node["status"] = str(atom.status)
 
                     break
 
@@ -417,7 +417,7 @@ class XDSMizer:
                 node["type"] = "analysis"
 
             if statuses[atom.uuid]:
-                node["status"] = statuses[atom.uuid]
+                node["status"] = str(statuses[atom.uuid])
 
             nodes.append(node)
 
