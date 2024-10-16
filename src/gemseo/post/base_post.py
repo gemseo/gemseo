@@ -32,11 +32,11 @@ from typing import Union
 
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.utils.constants import SETTINGS
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -146,15 +146,16 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         self.__figures[file_name] = figure
 
-    def execute(self, **settings: Any) -> dict[str, Figure | DatasetPlot]:
+    def execute(
+        self, settings_model: BasePostSettings | None = None, **settings: Any
+    ) -> dict[str, Figure | DatasetPlot]:
         """Post-process the optimization problem.
 
         Args:
-            **settings: The settings of the post-processor,
-                either as ``name_1: value_1, name_2: value_2, ...``
-                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
-                where ``Settings`` is a Pydantic model
-                and ``"settings"`` is a special argument name.
+            settings_model: The post-processor settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The post-processor settings.
+                This argument is ignored when ``settings_model`` is not ``None``.
 
         Returns:
             The figures, to be customized;
@@ -170,10 +171,9 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        _settings = settings.get(SETTINGS)
-        if _settings is None:
-            _settings = self.Settings(**settings)
-
+        _settings = create_model(
+            self.Settings, settings_model=settings_model, **settings
+        )
         self._plot(_settings)
         self.__render(_settings)
         return self.__figures

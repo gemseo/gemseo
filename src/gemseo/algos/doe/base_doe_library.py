@@ -413,7 +413,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
         # Validate and filter the settings
         settings = self._filter_settings(
-            settings=self._validate_settings(settings),
+            settings=self._validate_settings(**settings),
             model_to_exclude=BaseDOELibrarySettings,
         )
 

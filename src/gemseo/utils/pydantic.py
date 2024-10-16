@@ -56,3 +56,36 @@ def update_field(
         model.model_fields[field_name], **kwargs
     )
     model.model_rebuild(force=True)
+
+
+def create_model(
+    Model: type[BaseModel],  # noqa: N803
+    settings_model: BaseModel | None = None,
+    **settings: Any,
+) -> BaseModel:
+    """Create a Pydantic model.
+
+    Args:
+        Model: The class of the Pydantic model.
+        settings_model: The settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        **settings: The settings.
+            These arguments are ignored when ``settings_model`` is not ``None``.
+
+    Returns:
+        A Pydantic model
+
+    Raises:
+        ValueError: When the class of the ``"settings"`` argument is not ``Model``.
+    """
+    if settings_model is None:
+        return Model(**settings)
+
+    if isinstance(settings_model, Model):
+        return settings_model
+
+    msg = (
+        f"The Pydantic model must be a {Model.__name__}; "
+        f"got {settings_model.__class__.__name__}."
+    )
+    raise ValueError(msg)

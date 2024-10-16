@@ -20,18 +20,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Any
-
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
 )
-
-if TYPE_CHECKING:
-    from numpy import ndarray
-
-    from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 
 
 class LinearSolverLibraryFactory(BaseAlgoFactory):
@@ -44,11 +36,3 @@ class LinearSolverLibraryFactory(BaseAlgoFactory):
     def linear_solvers(self) -> list[str]:
         """The names of the available classes."""
         return self._factory.class_names
-
-    def execute(  # noqa:D102
-        self,
-        problem: LinearProblem,
-        algo_name: str,
-        **settings: Any,
-    ) -> ndarray:
-        return super().execute(problem, algo_name, **settings)

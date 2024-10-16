@@ -32,6 +32,9 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from gemseo.algos._base_algorithm_library_settings import (
+        BaseAlgorithmLibrarySettings,
+    )
     from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
     from gemseo.algos.base_problem import BaseProblem
     from gemseo.algos.ode.ode_result import ODEResult
@@ -188,6 +191,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         self,
         problem: BaseProblem,
         algo_name: str,
+        settings_model: BaseAlgorithmLibrarySettings | None = None,
         **settings: Any,
     ) -> OptimizationResult | ODEResult:
         """Execute a problem with an algorithm.
@@ -195,16 +199,17 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Args:
             problem: The problem to execute.
             algo_name: The name of the algorithm.
-            **settings: The algorithm settings,
-                either as ``name_1: value_1, name_2: value_2, ...``
-                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
-                where ``Settings`` is a Pydantic model
-                and ``"settings"`` is a special argument name.
+            settings_model: The algorithm settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The algorithm settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
 
         Returns:
             The result.
         """
-        return self.create(algo_name).execute(problem, **settings)
+        return self.create(algo_name).execute(
+            problem, settings_model=settings_model, **settings
+        )
 
     def clear_lib_cache(self) -> None:
         """Clear the library cache."""
