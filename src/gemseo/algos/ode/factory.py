@@ -21,15 +21,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Any
-
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
-
-if TYPE_CHECKING:
-    from gemseo.algos.ode.ode_problem import ODEProblem
-    from gemseo.algos.ode.ode_problem import ODEResult
 
 
 class ODESolverLibraryFactory(BaseAlgoFactory):
@@ -37,16 +30,3 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
 
     _CLASS = BaseODESolverLibrary
     _MODULE_NAMES = ("gemseo.algos.ode",)
-
-    def execute(
-        self,
-        problem: ODEProblem,
-        algo_name: str = "RK45",
-        **settings: Any,
-    ) -> ODEResult:
-        """Execute the solver.
-
-        Find the appropriate library and execute the solver on the problem to
-        solve the ordinary differential equation ``s(t)' = f(t, s(t))``
-        """
-        return super().execute(problem, algo_name, **settings)

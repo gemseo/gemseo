@@ -74,7 +74,7 @@ def test_generate_samples(algo_name, version, seed, caplog, monkeypatch) -> None
     dimension = 2
     n_samples = 3
     library = SciPyDOE(algo_name)
-    options = library._validate_settings({"n_samples": n_samples})
+    options = library._validate_settings(n_samples=n_samples)
     options["seed"] = seed
 
     scipy_version = scipy_doe.SCIPY_VERSION

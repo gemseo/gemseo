@@ -322,6 +322,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
         store_jacobian: bool = True,
+        settings_model: BaseDriverLibrarySettings | None = None,
         **settings: Any,
     ) -> OptimizationResult:
         """
@@ -342,7 +343,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         self._check_integer_handling(problem.design_space, skip_int_check)
 
         # Validation of the settings
-        settings = self._validate_settings(settings)
+        settings = self._validate_settings(settings_model=settings_model, **settings)
 
         if is_optimization_problem:
             problem: OptimizationProblem

@@ -3,7 +3,7 @@ versions of GEMSEO) using a Pydantic model. The Pydantic models replace the ``JS
 versions of GEMSEO. The aforementioned models have a hierarchical structure, for instance, the
 ``BaseDriverLibrarySettings`` shall inherit from ``BaseAlgorithmLibrary`` in the same way as ``BaseDriverLibrary``
 inherits from ``BaseAlgorithmLibrary``. Instead of passing the settings one by one,
-a Pydantic model can be passed using the special argument ``"settings"``.
+a Pydantic model can be passed using the special argument ``"settings_model"``.
 The ``CustomDOE`` module has been renamed from ``lib_custom_doe.py`` to ``custom_doe.py``.
 The ``OpenTURNS`` module has been renamed from ``lib_openturns.py`` to ``openturns.py``.
 The ``PyDOE`` module has been renamed from ``lib_pydoe.py`` to ``pydoe.py``.

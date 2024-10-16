@@ -64,6 +64,6 @@ def test_settings_as_pydantic_model(problem):
     """Check that settings can be passed as a Pydantic model."""
     post = NewBasePost(problem)
     settings = BasePostSettings(save=False, fig_size=(10, 20))
-    figure = post.execute(settings=settings)["my_figure"]
+    figure = post.execute(settings_model=settings)["my_figure"]
     assert figure.get_figwidth() == 10.0
     assert figure.get_figheight() == 20.0

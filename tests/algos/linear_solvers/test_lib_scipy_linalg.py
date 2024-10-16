@@ -37,7 +37,6 @@ from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.scipy_linalg._settings.lgmres import LGMRESSettings
 from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
-from gemseo.utils.constants import SETTINGS
 from gemseo.utils.seeder import SEED
 
 RESIDUALS_TOL = 1e-12
@@ -55,7 +54,7 @@ def test_algo_list() -> None:
     "kwargs",
     [
         {"max_iter": 1000},
-        {SETTINGS: LGMRESSettings(max_iter=1000)},
+        {"settings_model": LGMRESSettings(max_iter=1000)},
     ],
 )
 def test_default(kwargs) -> None:

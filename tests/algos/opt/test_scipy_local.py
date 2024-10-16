@@ -308,7 +308,7 @@ def test_stop_crit_n_x(algorithm_name) -> None:
     """Check that option stop_crit_n_x is supported."""
     library = ScipyOpt(algorithm_name)
     library._problem = Rosenbrock()
-    assert library._validate_settings({"stop_crit_n_x": 5})["stop_crit_n_x"] == 5
+    assert library._validate_settings(stop_crit_n_x=5)["stop_crit_n_x"] == 5
 
 
 @pytest.mark.skipif(
@@ -332,9 +332,7 @@ def test_initial_tr_radius_cobyqa() -> None:
     """Check that option initial_tr_radius is supported."""
     library = ScipyOpt("COBYQA")
     library._problem = Rosenbrock()
-    assert (
-        library._validate_settings({"initial_tr_radius": 1})["initial_tr_radius"] == 1
-    )
+    assert library._validate_settings(initial_tr_radius=1)["initial_tr_radius"] == 1
 
 
 def test_cannot_handle_inequality_constraints():

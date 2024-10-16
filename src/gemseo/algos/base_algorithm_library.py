@@ -35,8 +35,8 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.opt._gradient_based_algorithm_settings import (
     GradientBasedAlgorithmSettings,
 )
-from gemseo.utils.constants import SETTINGS
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -119,21 +119,27 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The name of the algorithm."""
         return self._algo_name
 
-    def _validate_settings(self, settings: StrKeyMapping) -> dict[str, Any]:
+    def _validate_settings(
+        self,
+        settings_model: BaseAlgorithmLibrarySettings | None = None,
+        **settings: Any,
+    ) -> dict[str, Any]:
         """Validate the settings with the appropriate Pydantic model.
 
         Args:
-            settings: The algorithm settings to validate.
+            settings_model: The algorithm settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The algorithm settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
 
         Returns:
             The validated settings.
         """
-        _settings = settings.get(SETTINGS)
-        if _settings is None:
-            _settings = self.ALGORITHM_INFOS[self.algo_name].Settings(**settings)
-
-        settings: BaseAlgorithmLibrarySettings
-        return _settings.model_dump()
+        return create_model(
+            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            settings_model=settings_model,
+            **settings,
+        ).model_dump()
 
     @staticmethod
     def _filter_settings(
@@ -188,27 +194,24 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     def execute(
         self,
         problem: BaseProblem,
+        settings_model: BaseAlgorithmLibrarySettings | None = None,
         **settings: Any,
     ) -> Any:
         """Solve a problem with an algorithm from this library.
 
         Args:
             problem: The problem to be solved.
-            **settings: The algorithm settings,
-                either as ``name_1: value_1, name_2: value_2, ...``
-                or as ``settings: Settings(name_1=value_1, name_2=value_2, ...)``
-                where ``Settings`` is a Pydantic model
-                and ``"settings"`` is a special argument name.
+            settings_model: The algorithm settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The algorithm settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
 
         Returns:
             The solution found by the algorithm.
         """
         self._problem = problem
         problem.check()
-
-        # Validate the settings.
-        settings = self._validate_settings(settings)
-
+        settings = self._validate_settings(settings_model=settings_model, **settings)
         self._pre_run(problem, **settings)
         self._run(problem, **settings)
         result = self._get_result(problem)
