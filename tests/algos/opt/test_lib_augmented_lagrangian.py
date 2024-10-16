@@ -34,7 +34,7 @@ def test_kkt_norm_correctly_stored(problem) -> None:
         "kkt_tol_abs": 1e-5,
         "kkt_tol_rel": 1e-5,
         "max_iter": 100,
-        "sub_solver_algorithm": "L-BFGS-B",
+        "sub_algorithm_name": "L-BFGS-B",
     }
     problem.reset()
     OptimizationLibraryFactory().execute(
@@ -56,16 +56,16 @@ parametrized_options = pytest.mark.parametrize(
             "max_iter": 50,
             "algo_options": {
                 "kkt_tol_abs": 1e-4,
-                "sub_solver_algorithm": "SLSQP",
-                "sub_problem_options": {"max_iter": 50},
+                "sub_algorithm_name": "SLSQP",
+                "sub_algorithm_settings": {"max_iter": 50},
             },
         },
         {
             "max_iter": 50,
             "algo_options": {
-                "sub_solver_algorithm": "SLSQP",
+                "sub_algorithm_name": "SLSQP",
                 "max_iter": 50,
-                "sub_problem_options": {"max_iter": 50},
+                "sub_algorithm_settings": {"max_iter": 50},
             },
         },
     ],

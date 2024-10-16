@@ -301,7 +301,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
+        algo_settings: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
         backup_settings: BackupSettings | None = None,
         formulation: str = "MDF",
         compute_second_order: bool = True,
@@ -327,15 +327,15 @@ class SobolAnalysis(BaseSensitivityAnalysis):
              the user can choose to set ``compute_second_order`` to ``False``
              to ensure a better estimation of the first- and second-order indices.
         """  # noqa: D205, D212, D415
-        algo_options = algo_options or {}
-        algo_options["eval_second_order"] = compute_second_order
+        algo_settings = algo_settings or {}
+        algo_settings["eval_second_order"] = compute_second_order
         super().compute_samples(
             disciplines,
             parameter_space,
             n_samples=n_samples,
             output_names=output_names,
             algo=algo,
-            algo_options=algo_options,
+            algo_settings=algo_settings,
             backup_settings=backup_settings,
             formulation=formulation,
             **formulation_options,

@@ -89,7 +89,7 @@ def test_database(n_processes):
         max_iter=10,
         n_start=2,
         doe_algo_name="CustomDOE",
-        doe_algo_options={"samples": array([[0.2, 0.5, 0.4], [0.3, 0.8, 0.2]])},
+        doe_algo_settings={"samples": array([[0.2, 0.5, 0.4], [0.3, 0.8, 0.2]])},
         n_processes=n_processes,
     )
     x_history = vstack(problem.database.get_x_vect_history())
@@ -138,11 +138,11 @@ def x_history_cobyla() -> RealArray:
 @pytest.mark.parametrize(
     "options",
     [
-        {"opt_algo_options": {"init_step": 0.5}},
-        {"doe_algo_options": {"scramble": False}},
+        {"opt_algo_settings": {"init_step": 0.5}},
+        {"doe_algo_settings": {"scramble": False}},
     ],
 )
-def test_algo_options(x_history_cobyla, options):
+def test_algo_settings(x_history_cobyla, options):
     """Check that the algorithm options can be changed."""
     problem = Power2()
     algo = MultiStart()

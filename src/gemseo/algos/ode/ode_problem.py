@@ -231,7 +231,7 @@ class ODEProblem(BaseProblem):
             algorithm_termination_message="",
             algorithm_has_converged=False,
             algorithm_name="",
-            algorithms_options={},
+            algorithm_settings={},
         )
 
         self.__time_check = self.time_interval[0]

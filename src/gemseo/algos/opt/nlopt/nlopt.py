@@ -277,16 +277,12 @@ class Nlopt(BaseOptimizationLibrary):
 
         return cstr_fun_grad
 
-    def __add_constraints(
-        self,
-        nlopt_problem: opt,
-        nlopt_options: Any,
-    ) -> None:
+    def __add_constraints(self, nlopt_problem: opt, **settings: Any) -> None:
         """Add all the constraints to the optimization problem.
 
         Args:
             nlopt_problem: The optimization problem.
-            nlopt_options: The NLopt optimization options.
+            **settings: The NLopt optimizer settings.
         """
         for constraint in self._problem.constraints:
             f_type = constraint.f_type
@@ -297,39 +293,33 @@ class Nlopt(BaseOptimizationLibrary):
                 nl_fun = self.__make_constraint(func, jac, idim)
                 if f_type == MDOFunction.ConstraintType.INEQ:
                     nlopt_problem.add_inequality_constraint(
-                        nl_fun, nlopt_options[self._INEQ_TOLERANCE]
+                        nl_fun, settings[self._INEQ_TOLERANCE]
                     )
                 elif f_type == MDOFunction.ConstraintType.EQ:
                     nlopt_problem.add_equality_constraint(
-                        nl_fun, nlopt_options[self._EQ_TOLERANCE]
+                        nl_fun, settings[self._EQ_TOLERANCE]
                     )
 
-    def __set_prob_options(
-        self,
-        nlopt_problem: opt,
-        nlopt_options: Any,
-    ) -> None:
+    def __set_prob_options(self, nlopt_problem: opt, **settings: Any) -> None:
         """Set the options for the NLopt algorithm.
 
         Args:
             nlopt_problem: The optimization problem from NLopt.
-            nlopt_options: The NLopt optimization options.
+            **settings: The NLopt optimizer settings.
         """
-        nlopt_problem.set_maxtime(nlopt_options[self._MAX_TIME])
+        nlopt_problem.set_maxtime(settings[self._MAX_TIME])
 
         # Only set an initial step size for derivative-free optimization algorithms.
         if not self.ALGORITHM_INFOS[self.algo_name].require_gradient:
-            nlopt_problem.set_initial_step(nlopt_options[self._INIT_STEP])
+            nlopt_problem.set_initial_step(settings[self._INIT_STEP])
 
-        max_eval = int(1.5 * nlopt_options[self._MAX_ITER])  # anti-cycling
+        max_eval = int(1.5 * settings[self._MAX_ITER])  # anti-cycling
         nlopt_problem.set_maxeval(max_eval)
 
-        nlopt_problem.set_stopval(nlopt_options[self._STOPVAL])
+        nlopt_problem.set_stopval(settings[self._STOPVAL])
 
         if self.algo_name == "NLOPT_MMA":
-            nlopt_problem.set_param(
-                self._INNER_MAXEVAL, nlopt_options[self._INNER_MAXEVAL]
-            )
+            nlopt_problem.set_param(self._INNER_MAXEVAL, settings[self._INNER_MAXEVAL])
 
     def _pre_run(
         self,
@@ -360,7 +350,7 @@ class Nlopt(BaseOptimizationLibrary):
         super()._pre_run(problem, **settings)
 
     def _run(
-        self, problem: OptimizationProblem, **options: NLoptOptionsType
+        self, problem: OptimizationProblem, **settings: NLoptOptionsType
     ) -> tuple[str, Any]:
         """
         Raises:
@@ -379,8 +369,8 @@ class Nlopt(BaseOptimizationLibrary):
 
         nlopt_problem.set_min_objective(self.__opt_objective_grad_nlopt)
 
-        self.__set_prob_options(nlopt_problem, options)
-        self.__add_constraints(nlopt_problem, options)
+        self.__set_prob_options(nlopt_problem, **settings)
+        self.__add_constraints(nlopt_problem, **settings)
         try:
             nlopt_problem.optimize(x_0.real)
         except (RoundoffLimited, RuntimeError) as err:

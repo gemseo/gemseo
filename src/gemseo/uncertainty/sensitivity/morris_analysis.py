@@ -184,7 +184,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         n_samples: int | None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
+        algo_settings: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
         backup_settings: BackupSettings | None = None,
         n_replicates: int = 5,
         step: float = 0.05,
@@ -204,16 +204,17 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             ValueError: If at least one input dimension is not equal to 1.
         """  # noqa: D205, D212, D415
         algo = algo or self.DEFAULT_DRIVER
+        algo_settings = dict(algo_settings)
+        algo_settings["n_samples"] = n_replicates
         super().compute_samples(
             disciplines,
             parameter_space,
             n_samples=n_samples,
             output_names=output_names,
             algo="MorrisDOE",
-            algo_options={
+            algo_settings={
                 "doe_algo_name": algo,
-                "doe_algo_options": algo_options,
-                "n_replicates": n_replicates,
+                "doe_algo_settings": algo_settings,
                 "step": step,
             },
             backup_settings=backup_settings,

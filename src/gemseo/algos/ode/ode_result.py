@@ -62,8 +62,8 @@ class ODEResult:
     algorithm_name: str
     """The name of the ODE solver."""
 
-    algorithms_options: dict[str, Any]
-    """The options of the ODE solver."""
+    algorithm_settings: dict[str, Any]
+    """The settings of the ODE solver."""
 
     algorithm_termination_message: str
     """The termination message of the ODE solver."""

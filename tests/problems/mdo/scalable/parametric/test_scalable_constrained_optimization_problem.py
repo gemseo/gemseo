@@ -115,8 +115,8 @@ def test_resolution(
         "algo_options": {"stop_crit_n_x": 2, "ftol_rel": 1e-6},
     }
     if "Augmented_Lagrangian" in algo:
-        options["algo_options"]["sub_solver_algorithm"] = "L-BFGS-B"
-        options["algo_options"]["sub_problem_options"] = {"max_iter": 300}
+        options["algo_options"]["sub_algorithm_name"] = "L-BFGS-B"
+        options["algo_options"]["sub_algorithm_settings"] = {"max_iter": 300}
     scalable_optimization_problem_scenario.execute(**options)
     assert pytest.approx(
         scalable_optimization_problem_scenario.formulation.optimization_problem.solution.x_opt,

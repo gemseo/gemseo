@@ -58,14 +58,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
     __INITIAL_RHO: Final[str] = "initial_rho"
     """The name of the option for `initial_rho` parameter."""
 
-    __SUB_SOLVER_ALGORITHM: Final[str] = "sub_solver_algorithm"
-    """The name of the option for the sub solver algorithm."""
-
     __SUB_PROBLEM_CONSTRAINTS: Final[str] = "sub_problem_constraints"
     """The name of the option that corresponds to sub problem constraints."""
-
-    __SUB_PROBLEM_OPTIONS: Final[str] = "sub_problem_options"
-    """The name of the option for the sub problem options."""
 
     _rho: float
     """The penalty value."""
@@ -124,8 +118,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
                 ineq_multipliers,
                 self._normalize_ds,
                 settings[self.__SUB_PROBLEM_CONSTRAINTS],
-                settings[self.__SUB_SOLVER_ALGORITHM],
-                settings[self.__SUB_PROBLEM_OPTIONS],
+                settings["sub_algorithm_name"],
+                settings["sub_algorithm_settings"],
                 x,
             )
 
@@ -259,8 +253,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         mu0: dict[str, NumberArray],
         normalize: bool,
         sub_problem_constraints: Iterable[str],
-        sub_solver_algorithm: str,
-        sub_problem_options: StrKeyMapping,
+        sub_algorithm_name: str,
+        sub_algorithm_settings: StrKeyMapping,
         x_init: NumberArray,
     ) -> tuple[int, NumberArray]:
         """Solve the sub-problem.
@@ -272,10 +266,9 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
             sub_problem_constraints: The constraints to keep in the sub-problem.
                 If ``empty`` all constraints are dealt by the Augmented Lagrange,
                 which means that the sub-problem is unconstrained.
-            sub_solver_algorithm: The name of the optimization algorithm used to solve
+            sub_algorithm_name: The name of the optimization algorithm used to solve
                 each sub-poblem.
-            sub_problem_options: The options passed to the sub-problem optimization
-                solver.
+            sub_algorithm_settings: The settings of the sub-problem optimization solver.
             x_init: The design variable vector at the current iteration.
 
         Returns:
@@ -295,8 +288,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         # Solve the sub-problem.
         opt = OptimizationLibraryFactory().execute(
             sub_problem,
-            sub_solver_algorithm,
-            **sub_problem_options,
+            sub_algorithm_name,
+            **sub_algorithm_settings,
         )
         return sub_problem.objective.n_calls, opt.x_opt
 

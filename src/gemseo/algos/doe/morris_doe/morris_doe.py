@@ -64,17 +64,16 @@ class MorrisDOE(BaseDOELibrary):
         design_space: DesignSpace,
         n_samples: int,
         doe_algo_name: str,
-        doe_algo_options: MutableStrKeyMapping,
-        n_replicates: int,
+        doe_algo_settings: MutableStrKeyMapping,
         step: float,
     ) -> RealArray:
         """
         Args:
             n_samples: The maximum number of samples required by the user.
-                If 0, deduce it from the design space dimension and ``n_replicates``.
+                If 0,
+                deduce it from the design space dimension and ``doe_algo_settings``.
             doe_algo_name: The name of the DOE algorithm to repeat the OAT DOE.
-            doe_algo_options: The options of the DOE algorithm.
-            n_replicates: The number of OAT repetitions.
+            doe_algo_settings: The settings of the DOE algorithm to repeat the OAT DOE.
             step: The relative step of the OAT DOE.
 
         Raises:
@@ -85,6 +84,7 @@ class MorrisDOE(BaseDOELibrary):
         doe_algo = factory.create(doe_algo_name)
         oat_algo = factory.create("OATDOE")
         dimension = design_space.dimension
+        n_replicates = doe_algo_settings.get("n_samples", 5)
         if n_samples > 0:
             n_replicates = n_samples // (dimension + 1)
             if n_replicates == 0:
@@ -100,10 +100,10 @@ class MorrisDOE(BaseDOELibrary):
             doe_algo.ALGORITHM_INFOS[doe_algo_name].Settings.model_fields
         ).intersection(["n_samples", "samples"])
         if n_samples_available and doe_algo_name != "CustomDOE":
-            doe_algo_options[n_samples_available.pop()] = n_replicates
+            doe_algo_settings[n_samples_available.pop()] = n_replicates
 
         base_options = {"variables_space": dimension, "unit_sampling": True}
-        initial_points = doe_algo.compute_doe(**base_options, **doe_algo_options)
+        initial_points = doe_algo.compute_doe(**base_options, **doe_algo_settings)
         return vstack([
             oat_algo.compute_doe(**base_options, step=step, initial_point=initial_point)
             for initial_point in initial_points
