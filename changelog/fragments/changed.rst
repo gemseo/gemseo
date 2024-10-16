@@ -43,3 +43,8 @@ API changes removed:
 
         - The option ``tol`` has been renamed to ``rtol``.
         - The default value of the option ``atol`` is ``1e-12`` instead of ``None``.
+
+Different import paths due to minor packaging adjustments (old to new):
+  - ``from gemseo.core.chain import MDOChain`` to ``from gemseo.core.chains.chain import MDOChain``
+
+The class ``MDODiscipline`` is renamed ``Discipline``.
