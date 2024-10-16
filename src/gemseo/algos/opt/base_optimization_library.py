@@ -206,8 +206,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
 
         function_values, _ = problem.evaluate_functions(
             design_vector_is_normalized=self._normalize_ds,
-            output_functions=output_functions,
-            jacobian_functions=jacobian_functions,
+            output_functions=output_functions or None,
+            jacobian_functions=jacobian_functions or None,
         )
 
         scaling_threshold = settings[self._SCALING_THRESHOLD]

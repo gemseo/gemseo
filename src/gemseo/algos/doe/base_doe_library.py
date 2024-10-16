@@ -119,11 +119,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     __compute_jacobians: bool
     """Whether to compute the Jacobians."""
 
-    __output_functions: list[MDOFunction]
-    """The functions to compute the outputs."""
+    __output_functions: list[MDOFunction] | None
+    """The functions to compute the outputs, if any."""
 
-    __jacobian_functions: list[MDOFunction]
-    """The functions to compute the Jacobians."""
+    __jacobian_functions: list[MDOFunction] | None
+    """The functions to compute the Jacobians, if any."""
 
     # TODO: use DesignSpace enum once there are hashable.
     __DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE: Final[dict[str, type]] = {
@@ -255,12 +255,12 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             ``if __name__ == '__main__':`` statement when working on Windows.
         """  # noqa: D205, D212
         self.__compute_jacobians = eval_jac
-        self.__output_functions, self.__jacobian_functions = (
-            self._problem.get_functions(
-                jacobian_names=() if self.__compute_jacobians else None,
-                observable_names=(),
-            )
+        output_functions, jacobian_functions = self._problem.get_functions(
+            jacobian_names=() if self.__compute_jacobians else None,
+            observable_names=(),
         )
+        self.__output_functions = output_functions or None
+        self.__jacobian_functions = jacobian_functions or None
         callbacks = list(callbacks)
         if n_processes > 1:
             LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
