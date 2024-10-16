@@ -182,7 +182,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         n_samples: int | None,
         output_names: Iterable[str] = (),
         algo: str = "",
-        algo_options: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
+        algo_settings: Mapping[str, DriverLibrarySettingType] = READ_ONLY_EMPTY_DICT,
         backup_settings: BackupSettings | None = None,
         formulation: str = "MDF",
         **formulation_options: Any,
@@ -198,7 +198,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If empty, use all the outputs.
             algo: The name of the DOE algorithm.
                 If empty, use the :attr:`.BaseSensitivityAnalysis.DEFAULT_DRIVER`.
-            algo_options: The options of the DOE algorithm.
+            algo_settings: The settings of the DOE algorithm.
             backup_settings: The settings of the backup file to store the evaluations
                 if any.
             formulation: The name of the :class:`.BaseMDOFormulation`
@@ -212,8 +212,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._algo_name = algo or self.DEFAULT_DRIVER
         self._output_names = list(output_names or get_all_outputs(disciplines))
         self._input_names = parameter_space.variable_names
-        algo_options = dict(algo_options)
-        algo_options["use_one_line_progress_bar"] = True
+        algo_settings = dict(algo_settings)
+        algo_settings["use_one_line_progress_bar"] = True
         self.dataset = sample_disciplines(
             disciplines,
             parameter_space,
@@ -224,7 +224,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             formulation_options=formulation_options or {},
             name=f"{self.__class__.__name__}SamplingPhase",
             backup_settings=backup_settings,
-            **algo_options,
+            **algo_settings,
         )
         return self.dataset
 

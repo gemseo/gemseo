@@ -19,7 +19,6 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
-from pydantic import PositiveInt
 
 from gemseo.algos.doe._base_doe_library_settings import BaseDOELibrarySettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
@@ -43,14 +42,9 @@ class MorrisDOESettings(BaseDOELibrarySettings):
         description="""The name of the DOE algorithm to repeat the OAT DOE.""",
     )
 
-    doe_algo_options: StrKeyMapping = Field(
+    doe_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
         description="""The options of the DOE algorithm.""",
-    )
-
-    n_replicates: PositiveInt = Field(
-        default=5,
-        description="""The number of OAT repetitions.""",
     )
 
     step: PositiveFloat = Field(

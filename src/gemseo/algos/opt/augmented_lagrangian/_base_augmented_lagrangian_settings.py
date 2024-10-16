@@ -39,15 +39,13 @@ class BaseAugmentedLagragianSettings(BaseOptimizationLibrarySettings):
         description="""The initial penalty value.""",
     )
 
-    sub_solver_algorithm: str = Field(
-        description=(
-            """The optimization algorithm name used to solve each sub-problem."""
-        )
+    sub_algorithm_name: str = Field(
+        description="""The name of the optimizer used to solve each sub-problem."""
     )
 
-    sub_problem_options: StrKeyMapping = Field(
+    sub_algorithm_settings: StrKeyMapping = Field(
         default_factory=dict,
-        description="""The options passed to the sub-problem optimization solver.""",
+        description="""The settings of the optimizer used to solve each sub-problem.""",
     )
 
     sub_problem_constraints: Iterable[str] = Field(

@@ -133,7 +133,7 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         )
 
         problem.result.algorithm_name = self._algo_name
-        problem.result.algorithms_options = settings_
+        problem.result.algorithm_settings = settings_
         problem.result.algorithm_has_converged = solution.status >= 0
         problem.result.algorithm_termination_message = solution.message
         problem.result.state_trajectories = solution.y

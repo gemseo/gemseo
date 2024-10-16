@@ -2013,11 +2013,11 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     assert_equal(imp_prob.design_space.variable_names, desvar_names)
 
     # Test saving options in nested dict form
-    algo_opts = {"sub_problem_options": {"eq_tolerance": 1e-1}}
+    algo_opts = {"sub_algorithm_settings": {"eq_tolerance": 1e-1}}
     execute_algo(
         problem,
         "Augmented_Lagrangian_order_0",
-        sub_solver_algorithm="SLSQP",
+        sub_algorithm_name="SLSQP",
         **algo_opts,
     )
     problem.to_hdf(file_name, hdf_node_path=node)

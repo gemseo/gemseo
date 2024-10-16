@@ -79,7 +79,7 @@ class MultiStart(BaseOptimizationLibrary):
         n_processes = settings["n_processes"]
         n_start = settings["n_start"]
         opt_algo_max_iter = settings["opt_algo_max_iter"]
-        opt_algo_options = settings["opt_algo_options"]
+        opt_algo_settings = settings["opt_algo_settings"]
 
         if opt_algo_max_iter == 0:
             if max_iter < n_start:
@@ -109,23 +109,23 @@ class MultiStart(BaseOptimizationLibrary):
             raise ValueError(msg)
 
         self.__opt_algo_settings = settings
-        opt_algo_options[self._EQ_TOLERANCE] = self._problem.tolerances.equality
-        opt_algo_options[self._INEQ_TOLERANCE] = self._problem.tolerances.inequality
-        opt_algo_options[self._STOP_CRIT_NX] = self._f_tol_tester.n_last_iterations
-        opt_algo_options[self._F_TOL_ABS] = self._f_tol_tester.absolute
-        opt_algo_options[self._F_TOL_REL] = self._f_tol_tester.relative
-        opt_algo_options[self._X_TOL_ABS] = self._x_tol_tester.absolute
-        opt_algo_options[self._X_TOL_REL] = self._x_tol_tester.relative
-        opt_algo_options["log_problem"] = False
-        opt_algo_options[self._ACTIVATE_PROGRESS_BAR] = False
+        opt_algo_settings[self._EQ_TOLERANCE] = self._problem.tolerances.equality
+        opt_algo_settings[self._INEQ_TOLERANCE] = self._problem.tolerances.inequality
+        opt_algo_settings[self._STOP_CRIT_NX] = self._f_tol_tester.n_last_iterations
+        opt_algo_settings[self._F_TOL_ABS] = self._f_tol_tester.absolute
+        opt_algo_settings[self._F_TOL_REL] = self._f_tol_tester.relative
+        opt_algo_settings[self._X_TOL_ABS] = self._x_tol_tester.absolute
+        opt_algo_settings[self._X_TOL_REL] = self._x_tol_tester.relative
+        opt_algo_settings["log_problem"] = False
+        opt_algo_settings[self._ACTIVATE_PROGRESS_BAR] = False
 
         doe_algo = DOELibraryFactory().create(settings["doe_algo_name"])
         if (
             "n_samples"
             in doe_algo.ALGORITHM_INFOS[settings["doe_algo_name"]].Settings.model_fields
         ):
-            settings["doe_algo_options"]["n_samples"] = n_start
-        samples = doe_algo.compute_doe(design_space, **settings["doe_algo_options"])
+            settings["doe_algo_settings"]["n_samples"] = n_start
+        samples = doe_algo.compute_doe(design_space, **settings["doe_algo_settings"])
 
         problems = execute(
             self._optimize, (), n_processes, list(zip(samples, opt_algo_max_iter))
@@ -189,6 +189,6 @@ class MultiStart(BaseOptimizationLibrary):
         opt_algo.execute(
             problem,
             max_iter=max_iter,
-            **self.__opt_algo_settings["opt_algo_options"],
+            **self.__opt_algo_settings["opt_algo_settings"],
         )
         return problem

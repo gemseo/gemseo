@@ -58,9 +58,9 @@ class MultiStartSettings(BaseOptimizationLibrarySettings):
         description="""The name of the sub-optimization algorithm.""",
     )
 
-    opt_algo_options: StrKeyMapping = Field(
+    opt_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
-        description="""The options of the sub-optimization algorithm.""",
+        description="""The settings of the sub-optimization algorithm.""",
     )
 
     doe_algo_name: str = Field(
@@ -73,9 +73,9 @@ class MultiStartSettings(BaseOptimizationLibrarySettings):
         ),
     )
 
-    doe_algo_options: StrKeyMapping = Field(
+    doe_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
-        description="""The options of the DOE algorithm.""",
+        description="""The settings of the DOE algorithm.""",
     )
 
     multistart_file_path: str | Path = Field(

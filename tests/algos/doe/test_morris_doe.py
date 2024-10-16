@@ -34,7 +34,7 @@ def test_morris_doe_algo():
         3,
         unit_sampling=True,
         doe_algo_name="CustomDOE",
-        doe_algo_options={"samples": array([[0.1, 0.5, 0.9], [0.9, 0.5, 0.1]])},
+        doe_algo_settings={"samples": array([[0.1, 0.5, 0.9], [0.9, 0.5, 0.1]])},
     )
     assert_almost_equal(
         a,
@@ -58,7 +58,7 @@ def test_morris_doe_step():
         3,
         unit_sampling=True,
         doe_algo_name="CustomDOE",
-        doe_algo_options={"samples": array([[0.1, 0.5, 0.9], [0.9, 0.5, 0.1]])},
+        doe_algo_settings={"samples": array([[0.1, 0.5, 0.9], [0.9, 0.5, 0.1]])},
         step=0.1,
     )
     assert_almost_equal(
