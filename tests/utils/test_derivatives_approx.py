@@ -139,6 +139,17 @@ def test_abs_der() -> None:
     assert not apprx.check_jacobian(["z"], ["x"])
 
 
+def test_cache_is_none() -> None:
+    """Check that compute_approx_jac works when cache is None"""
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
+    discipline.set_cache(discipline.CacheType.NONE)
+    discipline.execute()
+    apprx = DisciplineJacApprox(discipline)
+    apprx.compute_approx_jac(["z"], ["x"])
+
+    discipline.linearize()
+
+
 def test_complex_fail() -> None:
     discipline = SobieskiMission("complex128")
     assert discipline.check_jacobian(
