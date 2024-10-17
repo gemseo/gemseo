@@ -345,7 +345,7 @@ class MNBI(BaseOptimizationLibrary):
             opt_problem,
             self.__sub_optim_algo,
             max_iter=self.__sub_optim_max_iter,
-            activate_progress_bar=False,
+            enable_progress_bar=False,
             **self.__sub_optim_algo_settings,
         )
         if not opt_result.is_feasible:
@@ -516,7 +516,7 @@ class MNBI(BaseOptimizationLibrary):
             self.__beta_sub_optim,
             self.__sub_optim_algo,
             max_iter=self.__sub_optim_max_iter,
-            activate_progress_bar=False,
+            enable_progress_bar=False,
             **self.__sub_optim_algo_settings,
         )
         if not opt_res.is_feasible:

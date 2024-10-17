@@ -394,6 +394,11 @@ class DisciplineJacApprox:
                 ),
             )
 
+        # TODO: fix or make it work without side effects.
+        # This statement must be done before calling compute_approx_jac because
+        # it will overwrite the discipline jac.
+        analytic_jacobian = analytic_jacobian or self.discipline.jac
+
         if not reference_jacobian_path or save_reference_jacobian:
             approximated_jacobian = self.compute_approx_jac(
                 output_names, input_names, input_indices
@@ -424,8 +429,6 @@ class DisciplineJacApprox:
             output_names_to_indices = Ellipsis
 
         succeed = True
-
-        analytic_jacobian = analytic_jacobian or self.discipline.jac
 
         for output_name, output_jacobian in approximated_jacobian.items():
             for input_name, approx_jac in output_jacobian.items():

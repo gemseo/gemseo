@@ -39,7 +39,7 @@ DATA = Path(__file__).parent / "data/factory"
 
 class MultitonFactory(metaclass=BaseABCMultiton):
     _CLASS = int
-    _MODULE_NAMES = ()
+    _PACKAGE_NAMES = ()
 
 
 def test_multiton() -> None:
@@ -47,7 +47,7 @@ def test_multiton() -> None:
 
     class MultitonFactory2(metaclass=BaseABCMultiton):
         _CLASS = str
-        _MODULE_NAMES = ()
+        _PACKAGE_NAMES = ()
 
     a = MultitonFactory()
     assert a is MultitonFactory()

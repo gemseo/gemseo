@@ -24,4 +24,4 @@ class MatplotlibPlotFactory(PlotFactory):
     """A factory of plots based on matplotlib."""
 
     _CLASS = MatplotlibPlot
-    _MODULE_NAMES = ("gemseo.post.dataset.plots._matplotlib",)
+    _PACKAGE_NAMES = ("gemseo.post.dataset.plots._matplotlib",)

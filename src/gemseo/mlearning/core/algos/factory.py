@@ -32,7 +32,7 @@ class MLAlgoFactory(BaseFactory):
     """A factory of machine learning algorithms."""
 
     _CLASS = BaseMLAlgo
-    _MODULE_NAMES = ("gemseo.mlearning",)
+    _PACKAGE_NAMES = ("gemseo.mlearning",)
 
     def load(
         self,

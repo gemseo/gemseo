@@ -229,7 +229,6 @@ def test_array_couplings(mda_class, grammar_type) -> None:
     a_disc = disciplines[0]
     del a_disc.input_grammar["y1"]
     a_disc.input_grammar.update_from_data({"y1": 2.0})
-    assert not a_disc.input_grammar.is_array("y1")
 
     with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})

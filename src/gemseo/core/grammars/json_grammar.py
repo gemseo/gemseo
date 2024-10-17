@@ -288,16 +288,6 @@ class JSONGrammar(BaseGrammar):
 
         return True
 
-    def is_array(  # noqa: D102
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        self._check_name(name)
-        if numeric_only:
-            return self.data_converter.is_numeric(name)
-        return self.schema["properties"][name]["type"] == "array"
-
     def _restrict_to(  # noqa: D102
         self,
         names: Iterable[str],

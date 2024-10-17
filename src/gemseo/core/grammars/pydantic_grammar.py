@@ -17,10 +17,6 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Collection
-from collections.abc import Iterable
-from collections.abc import Iterator
-from collections.abc import Mapping
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
@@ -41,6 +37,10 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Schema
     from gemseo.typing import StrKeyMapping
@@ -211,22 +211,6 @@ class PydanticGrammar(BaseGrammar):
                 error_message.add(line)
             return False
         return True
-
-    def is_array(  # noqa:D102
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        self._check_name(name)
-        if numeric_only:
-            return self.data_converter.is_numeric(name)
-        annotation = self.__model.model_fields[name].annotation
-        type_origin = get_origin(annotation)
-        if type_origin is None:
-            # This is a container with no information on the type of its contents.
-            # This is the case of a type just declared as ndarray for instance.
-            return False
-        return issubclass(type_origin, Collection)
 
     def _restrict_to(  # noqa:D102
         self,

@@ -42,6 +42,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.mdo.sobieski.process.mdo_chain import SobieskiChain
+from gemseo.utils.discipline import DummyDiscipline
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -218,14 +219,14 @@ def two_virtual_disciplines() -> list[Discipline]:
     Returns:
         The two disciplines.
     """
-    disc_1 = Discipline("d1")
+    disc_1 = DummyDiscipline("d1")
     disc_1.input_grammar.update_from_names(["x"])
     disc_1.output_grammar.update_from_names(["y"])
     disc_1.default_input_data = {"x": array([1.0])}
     disc_1.default_output_data = {"y": array([2.0])}
     disc_1.virtual_execution = True
 
-    disc_2 = Discipline("d2")
+    disc_2 = DummyDiscipline("d2")
     disc_2.input_grammar.update_from_names(["y"])
     disc_2.output_grammar.update_from_names(["z"])
     disc_2.default_input_data = {"y": array([3.0])}

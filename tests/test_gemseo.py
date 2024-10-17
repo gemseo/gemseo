@@ -695,14 +695,14 @@ def test_print_configuration(capfd) -> None:
 
     expected = """Settings
    Discipline
-      The caches are activated.
-      The counters are activated.
+      The caches are enabled.
+      The counters are enabled.
       The input data are checked before running the discipline.
       The output data are checked after running the discipline.
    ProblemFunction
-      The counters are activated.
+      The counters are enabled.
    BaseDriverLibrary
-      The progress bar is activated."""
+      The progress bar is enabled."""
 
     assert expected in out
 
@@ -782,38 +782,38 @@ def test_import_discipline(tmp_wd) -> None:
 
 
 @pytest.mark.parametrize("enable_discipline_statistics", [False, True])
-@pytest.mark.parametrize("activate_function_counters", [False, True])
-@pytest.mark.parametrize("activate_progress_bar", [False, True])
-@pytest.mark.parametrize("activate_discipline_cache", [False, True])
+@pytest.mark.parametrize("enable_function_statistics", [False, True])
+@pytest.mark.parametrize("enable_progress_bar", [False, True])
+@pytest.mark.parametrize("enable_discipline_cache", [False, True])
 @pytest.mark.parametrize("validate_input_data", [False, True])
 @pytest.mark.parametrize("validate_output_data", [False, True])
 def test_configure(
     enable_discipline_statistics,
-    activate_function_counters,
-    activate_progress_bar,
-    activate_discipline_cache,
+    enable_function_statistics,
+    enable_progress_bar,
+    enable_discipline_cache,
     validate_input_data,
     validate_output_data,
 ) -> None:
     """Check that the configuration of GEMSEO works correctly."""
     configure(
         enable_discipline_statistics=enable_discipline_statistics,
-        activate_function_counters=activate_function_counters,
-        activate_progress_bar=activate_progress_bar,
-        activate_discipline_cache=activate_discipline_cache,
+        enable_function_statistics=enable_function_statistics,
+        enable_progress_bar=enable_progress_bar,
+        enable_discipline_cache=enable_discipline_cache,
         validate_input_data=validate_input_data,
         validate_output_data=validate_output_data,
     )
-    assert ProblemFunction.enable_statistics == activate_function_counters
+    assert ProblemFunction.enable_statistics == enable_function_statistics
     assert ExecutionStatistics.is_enabled == enable_discipline_statistics
     assert Discipline.validate_input_data == validate_input_data
     assert Discipline.validate_output_data == validate_output_data
     assert Discipline.default_cache_type == (
         Discipline.CacheType.SIMPLE
-        if activate_discipline_cache
+        if enable_discipline_cache
         else Discipline.CacheType.NONE
     )
-    assert BaseDriverLibrary.activate_progress_bar == activate_progress_bar
+    assert BaseDriverLibrary.enable_progress_bar == enable_progress_bar
     assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
     configure()
 
@@ -826,7 +826,7 @@ def test_configure_default() -> None:
     assert Discipline.validate_input_data is True
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
-    assert BaseDriverLibrary.activate_progress_bar is True
+    assert BaseDriverLibrary.enable_progress_bar is True
 
 
 def test_algo_features() -> None:

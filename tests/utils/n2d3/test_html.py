@@ -23,7 +23,7 @@ import pytest
 from numpy import ones
 
 from gemseo.core.coupling_structure import DependencyGraph
-from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.n2d3.n2_html import N2HTML
 
 
@@ -41,7 +41,7 @@ def graph() -> DependencyGraph:
         name = desc[0]
         input_d = dict.fromkeys(desc[1], data)
         output_d = dict.fromkeys(desc[2], data)
-        disc = Discipline(name)
+        disc = DummyDiscipline(name)
         disc.input_grammar.update_from_data(input_d)
         disc.output_grammar.update_from_data(output_d)
         disciplines.append(disc)

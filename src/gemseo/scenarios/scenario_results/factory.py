@@ -24,4 +24,4 @@ class ScenarioResultFactory(BaseFactory):
     """A factory of scenario results."""
 
     _CLASS = ScenarioResult
-    _MODULE_NAMES = ("gemseo.scenarios.scenario_results",)
+    _PACKAGE_NAMES = ("gemseo.scenarios.scenario_results",)

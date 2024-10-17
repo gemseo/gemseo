@@ -288,8 +288,8 @@ def generate_coupling_graph(
 
     coupling_structure = CouplingStructure(disciplines)
     if full:
-        return coupling_structure.graph.export_initial_graph(file_path)
-    return coupling_structure.graph.export_reduced_graph(file_path)
+        return coupling_structure.graph.write_full_graph(file_path)
+    return coupling_structure.graph.write_condensed_graph(file_path)
 
 
 def get_available_formulations() -> list[str]:
@@ -1926,7 +1926,6 @@ def _log_settings() -> str:
     from gemseo.core.discipline import Discipline
     from gemseo.utils.string_tools import MultiLineString
 
-    add_de_prefix = lambda x: "" if x else "de"  # noqa: E731
     add_not_prefix = lambda x: "" if x else " not"  # noqa: E731
     text = MultiLineString()
     text.add("Settings")
@@ -1934,12 +1933,12 @@ def _log_settings() -> str:
     text.add("Discipline")
     text.indent()
     text.add(
-        "The caches are {}activated.",
-        add_de_prefix(Discipline.default_cache_type is not Discipline.CacheType.NONE),
+        "The caches are {}enabled.",
+        add_not_prefix(Discipline.default_cache_type is not Discipline.CacheType.NONE),
     )
     text.add(
-        "The counters are {}activated.",
-        add_de_prefix(_ExecutionStatistics.is_enabled),
+        "The counters are {}enabled.",
+        add_not_prefix(_ExecutionStatistics.is_enabled),
     )
     text.add(
         "The input data are{} checked before running the discipline.",
@@ -1953,15 +1952,15 @@ def _log_settings() -> str:
     text.add("ProblemFunction")
     text.indent()
     text.add(
-        "The counters are {}activated.",
-        add_de_prefix(ProblemFunction.enable_statistics),
+        "The counters are {}enabled.",
+        add_not_prefix(ProblemFunction.enable_statistics),
     )
     text.dedent()
     text.add("BaseDriverLibrary")
     text.indent()
     text.add(
-        "The progress bar is {}activated.",
-        add_de_prefix(BaseDriverLibrary.activate_progress_bar),
+        "The progress bar is {}enabled.",
+        add_not_prefix(BaseDriverLibrary.enable_progress_bar),
     )
     return str(text)
 
@@ -2016,12 +2015,11 @@ def get_algorithm_features(
     )
 
 
-# TODO: API: better name the arguments.
 def configure(
     enable_discipline_statistics: bool = True,
-    activate_function_counters: bool = True,
-    activate_progress_bar: bool = True,
-    activate_discipline_cache: bool = True,
+    enable_function_statistics: bool = True,
+    enable_progress_bar: bool = True,
+    enable_discipline_cache: bool = True,
     validate_input_data: bool = True,
     validate_output_data: bool = True,
     check_desvars_bounds: bool = True,
@@ -2038,14 +2036,14 @@ def configure(
         enable_discipline_statistics: Whether to record execution statistics of the
             disciplines such as the execution time,
             the number of executions and the number of linearizations.
-        activate_function_counters: Whether to activate the counters
+        enable_function_statistics: Whether to record the statistics
             attached to the functions,
             in charge of counting their number of evaluations.
-        activate_progress_bar: Whether to activate the progress bar
+        enable_progress_bar: Whether to enable the progress bar
             attached to the drivers,
             in charge to log the execution of the process:
             iteration, execution time and objective value.
-        activate_discipline_cache: Whether to activate the discipline cache.
+        enable_discipline_cache: Whether to enable the discipline cache.
         validate_input_data: Whether to validate the input data of a discipline
             before execution.
         validate_output_data: Whether to validate the output data of a discipline
@@ -2059,13 +2057,13 @@ def configure(
     from gemseo.core.discipline import Discipline
 
     _ExecutionStatistics.is_enabled = enable_discipline_statistics
-    ProblemFunction.enable_statistics = activate_function_counters
-    BaseDriverLibrary.activate_progress_bar = activate_progress_bar
+    ProblemFunction.enable_statistics = enable_function_statistics
+    BaseDriverLibrary.enable_progress_bar = enable_progress_bar
     Discipline.validate_input_data = validate_input_data
     Discipline.validate_output_data = validate_output_data
     Discipline.default_cache_type = (
         Discipline.CacheType.SIMPLE
-        if activate_discipline_cache
+        if enable_discipline_cache
         else Discipline.CacheType.NONE
     )
     OptimizationProblem.check_bounds = check_desvars_bounds

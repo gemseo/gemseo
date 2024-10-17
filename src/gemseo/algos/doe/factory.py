@@ -29,4 +29,4 @@ class DOELibraryFactory(BaseAlgoFactory):
     """A factory of DOE libraries."""
 
     _CLASS = BaseDOELibrary
-    _MODULE_NAMES = ("gemseo.algos.doe",)
+    _PACKAGE_NAMES = ("gemseo.algos.doe",)

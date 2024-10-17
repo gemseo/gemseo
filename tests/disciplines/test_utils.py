@@ -20,15 +20,15 @@ import re
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.discipline import DummyDiscipline
 
 
-class Discipline(Discipline):
+class MyDiscipline(DummyDiscipline):
     def __init__(self, input_name: str, output_name: str, discipline_name: str) -> None:
         super().__init__(discipline_name)
         self.input_grammar.update_from_names([input_name])
@@ -36,19 +36,19 @@ class Discipline(Discipline):
 
 
 @pytest.fixture(scope="module")
-def consistent_disciplines() -> tuple[Discipline, Discipline]:
+def consistent_disciplines() -> tuple[MyDiscipline, MyDiscipline]:
     """Two consistent disciplines."""
-    return Discipline("a", "y", "Foo"), Discipline("b", "z", "Bar")
+    return MyDiscipline("a", "y", "Foo"), MyDiscipline("b", "z", "Bar")
 
 
 @pytest.fixture(scope="module")
-def inconsistent_disciplines() -> tuple[Discipline, Discipline]:
+def inconsistent_disciplines() -> tuple[MyDiscipline, MyDiscipline]:
     """Two inconsistent disciplines."""
-    return Discipline("a", "y", "Foo"), Discipline("b", "y", "Bar")
+    return MyDiscipline("a", "y", "Foo"), MyDiscipline("b", "y", "Bar")
 
 
 @pytest.fixture(scope="module")
-def disciplines_and_scenario() -> list[Discipline]:
+def disciplines_and_scenario() -> list[MyDiscipline]:
     """Disciplines with a scenario."""
     disciplines = [
         AnalyticDiscipline({"y1": "x1"}, name="f1"),

@@ -26,4 +26,4 @@ class ClustererQualityFactory(MLAlgoQualityFactory):
     """A factory of objects to assess the quality of clusterers."""
 
     _CLASS = BaseClustererQuality
-    _MODULE_NAMES = ("gemseo.mlearning.clustering.quality",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.clustering.quality",)

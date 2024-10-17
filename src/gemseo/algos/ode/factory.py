@@ -29,4 +29,4 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
     """A factory of ODE solver libraries."""
 
     _CLASS = BaseODESolverLibrary
-    _MODULE_NAMES = ("gemseo.algos.ode",)
+    _PACKAGE_NAMES = ("gemseo.algos.ode",)

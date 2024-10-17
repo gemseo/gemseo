@@ -47,7 +47,7 @@ class _AlgoFactoryMeta(ABCMeta):
     _CLASS: ClassVar[type]
     """The base class that the factory can build."""
 
-    _MODULE_NAMES: ClassVar[list[str]]
+    _PACKAGE_NAMES: ClassVar[list[str]]
     """The fully qualified names of the modules to search."""
 
     _Factory: type[BaseFactory[BaseAlgorithmLibrary]]
@@ -65,7 +65,7 @@ class _AlgoFactoryMeta(ABCMeta):
             cls._Factory = type(
                 "_Factory",
                 (BaseFactory,),
-                {"_CLASS": cls._CLASS, "_MODULE_NAMES": cls._MODULE_NAMES},
+                {"_CLASS": cls._CLASS, "_PACKAGE_NAMES": cls._PACKAGE_NAMES},
             )
             # Set the correct fully qualified name for pickling.
             cls._Factory.__module__ = cls.__module__
@@ -85,7 +85,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
 
     class AFactory(BaseAlgoFactory):
         _CLASS = ABaseClass
-        _MODULE_NAMES = ("first.module.fully.qualified.name",
+        _PACKAGE_NAMES = ("first.module.fully.qualified.name",
                          "second.module.fully.qualified.name")
 
     A factory instance can use a cache for the objects it creates, this cache is only
@@ -123,7 +123,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
 
     @property
     @abstractmethod
-    def _MODULE_NAMES(self) -> list[str]:  # noqa:N802
+    def _PACKAGE_NAMES(self) -> list[str]:  # noqa:N802
         """The fully qualified names of the modules to search."""
 
     def is_available(self, name: str) -> bool:

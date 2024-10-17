@@ -35,7 +35,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
-from gemseo.core.namespaces import remove_prefix_from_names
+from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import update_namespaces
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -211,7 +211,7 @@ class BaseGrammar(
     @property
     def names_without_namespace(self) -> Iterator[str]:
         """The names of the elements without namespace prefixes."""
-        return remove_prefix_from_names(self.keys())
+        return remove_prefix(self.keys())
 
     def has_names(self, names: Iterable[str]) -> bool:
         """Return whether names are all element names.
@@ -445,26 +445,6 @@ class BaseGrammar(
     def data_converter(self) -> BaseDataConverter[BaseGrammar]:
         """The converter of data values to NumPy arrays and vice versa."""
         return self._data_converter
-
-    # TODO: API: remove in favor of is_numeric?
-    @abstractmethod
-    def is_array(
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        """Check if an element is an array.
-
-        Args:
-            name: The name of the element.
-            numeric_only: Whether to check if the array elements are numbers.
-
-        Returns:
-            Whether the element is an array.
-
-        Raises:
-            KeyError: If the element is not in the grammar.
-        """
 
     def to_simple_grammar(self) -> SimpleGrammar:
         """Convert the grammar to a :class:`.SimpleGrammar`.

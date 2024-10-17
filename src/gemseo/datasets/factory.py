@@ -24,4 +24,4 @@ class DatasetFactory(BaseFactory):
     """A factory of datasets."""
 
     _CLASS = Dataset
-    _MODULE_NAMES = ("gemseo.datasets",)
+    _PACKAGE_NAMES = ("gemseo.datasets",)

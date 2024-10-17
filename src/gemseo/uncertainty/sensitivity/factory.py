@@ -31,4 +31,4 @@ class SensitivityAnalysisFactory(BaseFactory):
     """A factory of sensitivity analyses."""
 
     _CLASS = BaseSensitivityAnalysis
-    _MODULE_NAMES = ("gemseo.uncertainty.sensitivity",)
+    _PACKAGE_NAMES = ("gemseo.uncertainty.sensitivity",)

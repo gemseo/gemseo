@@ -241,4 +241,4 @@ class TransformerFactory(BaseFactory):
     """A factory of transformers."""
 
     _CLASS = BaseTransformer
-    _MODULE_NAMES = ("gemseo.mlearning.transformers",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.transformers",)

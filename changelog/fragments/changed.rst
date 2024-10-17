@@ -18,7 +18,13 @@ API changes from old to new:
   - ``ExtendableExecSequence``: ``BaseExtendableExecSequence``
   - ``SerialExecSequence``: ``SequentialExecSequence``
   - ``initialize_grammars``: ``_initialize_grammars``
+  - ``activate_progress_bar``: ``enable_progress_bar``
+  - ``exec_time``: ``get_execution_duration``
+
 API changes removed:
+  - ``BaseGrammar.is_array``: use ``BaseGrammar.data_converter.is_numeric`` instead.
+  - ``DependencyGraph.export_initial_graph``: use ``DependencyGraph.write_full_graph`` instead.
+  - ``DependencyGraph.export_reduced_graph``: use ``DependencyGraph.write_condensed_graph`` instead.
   - The ``VIRTUAL`` execution status.
   - The ``RE_EXEC_POLICY`` for rexecuting disciplines.
   - ``create_scenario_result``: use ``Scenario.get_results`` instead.
@@ -48,3 +54,11 @@ Different import paths due to minor packaging adjustments (old to new):
   - ``from gemseo.core.chain import MDOChain`` to ``from gemseo.core.chains.chain import MDOChain``
 
 The class ``MDODiscipline`` is renamed ``Discipline``.
+
+The arguments of the function ``gemseo.configure`` have changed:
+  - ``activate_discipline_counters``: ``enable_discipline_statistics``
+  - ``activate_function_counters``: ``enable_function_statistics``
+  - ``activate_progress_bar``: ``enable_progress_bar``
+  - ``activate_discipline_cache``: ``enable_discipline_cache``
+  - ``check_input_data``: ``validate_input_data``
+  - ``check_output_data``: ``validate_output_data``

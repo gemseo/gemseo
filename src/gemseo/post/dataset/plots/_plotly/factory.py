@@ -24,4 +24,4 @@ class PlotlyPlotFactory(PlotFactory):
     """A factory of plots based on plotly."""
 
     _CLASS = PlotlyPlot
-    _MODULE_NAMES = ("gemseo.post.dataset.plots._plotly",)
+    _PACKAGE_NAMES = ("gemseo.post.dataset.plots._plotly",)

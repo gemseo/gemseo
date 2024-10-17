@@ -41,8 +41,7 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
-from gemseo.core.namespaces import remove_prefix_from_name
-from gemseo.core.namespaces import remove_prefix_from_names
+from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -74,11 +73,8 @@ def dfunc_3(y=2.0):
 
 def test_remove_ns_prefix() -> None:
     """Test the remove_ns_prefix method."""
-    assert remove_prefix_from_name("ab:c") == "c"
-    assert remove_prefix_from_name("ac") == "ac"
-
     data_dict = {"ac": 1, "a:b": 2}
-    assert list(remove_prefix_from_names(data_dict.keys())) == ["ac", "b"]
+    assert list(remove_prefix(data_dict.keys())) == ["ac", "b"]
 
 
 def test_split_namespace() -> None:
@@ -128,7 +124,7 @@ def test_chain_disc_ns(grammar_type) -> None:
     chain = MDOChain([disc_1, disc_2])
 
     assert sorted(chain.io.input_grammar.names) == ["a", "ns_in:x", "u"]
-    assert sorted(remove_prefix_from_names(chain.io.input_grammar.names)) == [
+    assert sorted(remove_prefix(chain.io.input_grammar.names)) == [
         "a",
         "u",
         "x",
@@ -180,7 +176,7 @@ def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
     assert out["ns1:y"] == array([14.0])
     assert out["ns2:y"] == array([10.0])
 
-    in_out_data = remove_prefix_from_names(
+    in_out_data = remove_prefix(
         chain.io.output_grammar.keys() | chain.io.input_grammar.keys()
     )
     assert sorted(in_out_data) == [

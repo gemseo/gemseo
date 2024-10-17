@@ -25,9 +25,9 @@ from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core._process_flow.execution_sequences.sequential import (
     SequentialExecSequence,
 )
-from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
+from gemseo.utils.discipline import DummyDiscipline
 
 
 class ProcessWorkflow(BaseProcessFlow):
@@ -48,7 +48,7 @@ class FakeScenario:
 
 class TestMonitoring(unittest.TestCase):
     def setUp(self) -> None:
-        self.sc = FakeScenario(Discipline(), Discipline())
+        self.sc = FakeScenario(DummyDiscipline(), DummyDiscipline())
         self.monitor = Monitoring(self.sc)
         self.monitor.add_observer(self)
         self._statuses = self.monitor.get_statuses()

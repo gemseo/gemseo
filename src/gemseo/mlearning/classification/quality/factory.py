@@ -26,4 +26,4 @@ class ClassifierQualityFactory(MLAlgoQualityFactory):
     """A factory of objects to assess the quality of classifiers."""
 
     _CLASS = BaseClassifierQuality
-    _MODULE_NAMES = ("gemseo.mlearning.classification.quality",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.classification.quality",)

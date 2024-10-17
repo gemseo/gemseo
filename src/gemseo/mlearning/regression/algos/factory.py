@@ -29,4 +29,4 @@ class RegressorFactory(MLAlgoFactory):
     """A factory of regressors."""
 
     _CLASS = BaseRegressor
-    _MODULE_NAMES = ("gemseo.mlearning.regression.algos",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.regression.algos",)

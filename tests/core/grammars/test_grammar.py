@@ -182,13 +182,6 @@ def test_clear(grammar, names_to_types) -> None:
     assert not grammar.defaults
 
 
-def test_is_array_error(grammar) -> None:
-    """Verify that is_array error."""
-    msg = "The name foo is not in the grammar."
-    with pytest.raises(KeyError, match=msg):
-        grammar.is_array("foo")
-
-
 NAMES = [
     set(),
     {"name1"},

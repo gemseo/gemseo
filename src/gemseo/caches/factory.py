@@ -29,4 +29,4 @@ class CacheFactory(BaseFactory[BaseCache]):
     """A factory of caches."""
 
     _CLASS = BaseCache
-    _MODULE_NAMES = ("gemseo.caches",)
+    _PACKAGE_NAMES = ("gemseo.caches",)

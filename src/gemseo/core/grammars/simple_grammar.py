@@ -17,9 +17,6 @@
 from __future__ import annotations
 
 import collections
-from collections.abc import Collection
-from collections.abc import Iterable
-from collections.abc import Iterator
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -29,6 +26,9 @@ from numpy import ndarray
 from gemseo.core.grammars.base_grammar import BaseGrammar
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+
     from typing_extensions import Self
 
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
@@ -204,19 +204,6 @@ class SimpleGrammar(BaseGrammar):
                 )
                 data_is_valid = False
         return data_is_valid
-
-    def is_array(  # noqa: D102
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        self._check_name(name)
-        if numeric_only:
-            return self.data_converter.is_numeric(name)
-        element_type = self.__names_to_types[name]
-        if element_type is None:
-            return False
-        return issubclass(element_type, Collection)
 
     def _restrict_to(  # noqa: D102
         self,

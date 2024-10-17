@@ -24,4 +24,4 @@ class ScenarioAdapterFactory(BaseFactory):
     """A factory of scenario adapters."""
 
     _CLASS = MDOScenarioAdapter
-    _MODULE_NAMES = ("gemseo.disciplines.scenario_adapters",)
+    _PACKAGE_NAMES = ("gemseo.disciplines.scenario_adapters",)

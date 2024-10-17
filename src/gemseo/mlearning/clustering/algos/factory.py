@@ -29,4 +29,4 @@ class ClustererFactory(MLAlgoFactory):
     """A factory of clustering algorithms."""
 
     _CLASS = BaseClusterer
-    _MODULE_NAMES = ("gemseo.mlearning.clustering.algos",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.clustering.algos",)

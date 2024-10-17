@@ -38,6 +38,7 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import image_comparison
 
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
@@ -116,15 +117,15 @@ def test_sobieski(tmp_wd) -> None:
 
 def test_expected_workflow() -> None:
     """Test MDA GaussSeidel process_flow should be disciplines sequence."""
-    disc1 = Discipline()
-    disc2 = Discipline()
-    disc3 = Discipline()
+    disc1 = DummyDiscipline()
+    disc2 = DummyDiscipline()
+    disc3 = DummyDiscipline()
     disciplines = [disc1, disc2, disc3]
 
     mda = MDAGaussSeidel(disciplines)
     expected = (
-        "{MDAGaussSeidel(PENDING), [Discipline(PENDING), "
-        "Discipline(PENDING), Discipline(PENDING)]}"
+        "{MDAGaussSeidel(PENDING), [DummyDiscipline(PENDING), "
+        "DummyDiscipline(PENDING), DummyDiscipline(PENDING)]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 

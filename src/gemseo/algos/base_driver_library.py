@@ -110,7 +110,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     """Whether the library support sparse Jacobians."""
 
     # Settings names.
-    _ACTIVATE_PROGRESS_BAR: Final[str] = "activate_progress_bar"
+    _ENABLE_PROGRESS_BAR: Final[str] = "enable_progress_bar"
     _EQ_TOLERANCE: Final[str] = "eq_tolerance"
     _INEQ_TOLERANCE: Final[str] = "ineq_tolerance"
     _MAX_TIME: Final[str] = "max_time"
@@ -121,8 +121,8 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     __USE_DATABASE: Final[str] = "use_database"
     __USE_ONLINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
 
-    activate_progress_bar: bool = True
-    """Whether to activate the progress bar in the evaluation log."""
+    enable_progress_bar: bool = True
+    """Whether to enable the progress bar in the evaluation log."""
 
     _problem: EvaluationProblem | None
     """The optimization problem the driver library is bonded to."""
@@ -153,7 +153,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
-        self._deactivate_progress_bar()
+        self._disable_progress_bar()
         self.__start_time = 0.0
         self.__max_time = 0.0
         self.__reset_iteration_counters = True
@@ -171,8 +171,8 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
         return _UnsuitabilityReason.EMPTY_DESIGN_SPACE
 
-    def _deactivate_progress_bar(self) -> None:
-        """Deactivate the progress bar."""
+    def _disable_progress_bar(self) -> None:
+        """Disable the progress bar."""
         self.__progress_bar = DummyProgressBar()
 
     def _init_iter_observer(
@@ -193,7 +193,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         problem.evaluation_counter.current = (
             0 if self.__reset_iteration_counters else problem.evaluation_counter.current
         )
-        if self.activate_progress_bar:
+        if self.enable_progress_bar:
             cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
             self.__progress_bar = cls(
                 max_iter,
@@ -201,7 +201,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 message,
             )
         else:
-            self._deactivate_progress_bar()
+            self._disable_progress_bar()
 
         self.__start_time = time()
 
@@ -350,9 +350,9 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             problem.tolerances.equality = settings[self._EQ_TOLERANCE]
             problem.tolerances.inequality = settings[self._INEQ_TOLERANCE]
 
-        activate_progress_bar = settings[self._ACTIVATE_PROGRESS_BAR]
-        if activate_progress_bar is not None:
-            self.activate_progress_bar = activate_progress_bar
+        enable_progress_bar = settings[self._ENABLE_PROGRESS_BAR]
+        if enable_progress_bar is not None:
+            self.enable_progress_bar = enable_progress_bar
         self.__max_time = settings[self._MAX_TIME]
         self._normalize_ds = settings[self._NORMALIZE_DESIGN_SPACE]
         self.__log_problem = settings[self.__LOG_PROBLEM]
@@ -400,7 +400,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         else:
             progress_bar_title = "Running the algorithm %s:"
 
-        if self.activate_progress_bar:
+        if self.enable_progress_bar:
             LOGGER.info(progress_bar_title, self._algo_name)
 
         result = None

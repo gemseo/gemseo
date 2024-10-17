@@ -37,6 +37,9 @@ class _MyDisciplineA(Discipline):
         self.input_grammar.update_from_names(["A"])
         self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
+    def _run(self):
+        pass
+
 
 class _MyDisciplineB(Discipline):
     """A test class."""
@@ -45,6 +48,9 @@ class _MyDisciplineB(Discipline):
         super().__init__()
         self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
         self.output_grammar.update_from_names(["B"])
+
+    def _run(self):
+        pass
 
 
 def test_bug142() -> None:

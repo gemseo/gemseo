@@ -40,7 +40,6 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 )
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
-from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -60,6 +59,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.xdsm_to_pdf import XDSM
 from gemseo.utils.xdsmizer import EdgeType
@@ -72,6 +72,7 @@ from ..mda.test_mda import analytic_disciplines_from_desc
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
 
@@ -136,9 +137,9 @@ def elementary_discipline(input_name, output_name):
 
 def test_expand(tmp_path) -> None:
     """Test the process_flow expand."""
-    mda = ExecutionSequence(Discipline("mda"))
-    d1 = ExecutionSequence(Discipline("d1"))
-    d2 = ExecutionSequence(Discipline("d2"))
+    mda = ExecutionSequence(DummyDiscipline("mda"))
+    d1 = ExecutionSequence(DummyDiscipline("d1"))
+    d2 = ExecutionSequence(DummyDiscipline("d2"))
     to_id = {mda: "mda", d1: "d1", d2: "d2"}
 
     serial_seq = SequentialExecSequence([])

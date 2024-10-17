@@ -77,7 +77,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         class AFactory(BaseFactory):
             _CLASS = ABaseClass
-            _MODULE_NAMES = (
+            _PACKAGE_NAMES = (
                 "first.module.fully.qualified.name",
                 "second.module.fully.qualified.name",
             )
@@ -137,11 +137,10 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     def _CLASS(self) -> type[T]:  # noqa: N802
         """The base class that the factory can build."""
 
-    # TODO: API: rename to _PACKAGE_NAMES.
     @property
     @abstractmethod
-    def _MODULE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
-        """The fully qualified names of the modules to search."""
+    def _PACKAGE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
+        """The fully qualified names of the packages to search."""
 
     def update(self) -> None:
         """Search for the classes that can be instantiated.
@@ -151,7 +150,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             2. The plugin packages
             3. The packages from the environment variables
         """
-        module_names = list(self._MODULE_NAMES)
+        module_names = list(self._PACKAGE_NAMES)
 
         # Import the fully qualified modules names.
         for module_name in module_names:

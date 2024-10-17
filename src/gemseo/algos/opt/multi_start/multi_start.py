@@ -117,7 +117,7 @@ class MultiStart(BaseOptimizationLibrary):
         opt_algo_settings[self._X_TOL_ABS] = self._x_tol_tester.absolute
         opt_algo_settings[self._X_TOL_REL] = self._x_tol_tester.relative
         opt_algo_settings["log_problem"] = False
-        opt_algo_settings[self._ACTIVATE_PROGRESS_BAR] = False
+        opt_algo_settings[self._ENABLE_PROGRESS_BAR] = False
 
         doe_algo = DOELibraryFactory().create(settings["doe_algo_name"])
         if (

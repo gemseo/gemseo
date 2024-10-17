@@ -716,7 +716,7 @@ class ScalabilityStudy:
         tmp = problem.n_calls_linearize_top_level
         n_calls_linearize_tl = {disc: ncltl * ratio for disc, ncltl in tmp.items()}
         statistics["n_calls_linearize_top_level"] = n_calls_linearize_tl
-        statistics["exec_time"] = problem.exec_time() * ratio
+        statistics["exec_time"] = problem.get_execution_duration() * ratio
         statistics["status"] = problem.status
         statistics["is_feasible"] = problem.is_feasible
 

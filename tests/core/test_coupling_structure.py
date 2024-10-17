@@ -43,6 +43,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
@@ -112,8 +113,8 @@ class TestCouplingStructure(unittest.TestCase):
             coupling_structure.plot_n2_chart("n2_3.png", False)
 
     def test_n2_many_io(self) -> None:
-        a = Discipline("a")
-        b = Discipline("b")
+        a = DummyDiscipline("a")
+        b = DummyDiscipline("b")
         a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
         a.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
         b.output_grammar.update_from_names(["i" + str(i) for i in range(30)])

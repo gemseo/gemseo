@@ -30,7 +30,7 @@ class GradientApproximatorFactory(BaseFactory):
     """A factory of gradient approximators."""
 
     _CLASS = BaseGradientApproximator
-    _MODULE_NAMES = ("gemseo.utils.derivatives",)
+    _PACKAGE_NAMES = ("gemseo.utils.derivatives",)
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()

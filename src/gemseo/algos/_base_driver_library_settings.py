@@ -25,12 +25,12 @@ from gemseo.algos._base_algorithm_library_settings import BaseAlgorithmLibrarySe
 class BaseDriverLibrarySettings(BaseAlgorithmLibrarySettings):
     """The common parameters for all driver libraries."""
 
-    activate_progress_bar: bool | None = Field(
+    enable_progress_bar: bool | None = Field(
         default=None,
         description=(
-            """Whether to activate the progress bar in the optimization log.
+            """Whether to enable the progress bar in the optimization log.
 
-            If ``None``, use the global value of ``activate_progress_bar`` (see the
+            If ``None``, use the global value of ``enable_progress_bar`` (see the
              ``configure`` function to change it globally).
             """
         ),

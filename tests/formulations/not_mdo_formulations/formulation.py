@@ -25,4 +25,4 @@ class NotMDOFormulation(BaseFormulation):
 
 class NotMDOFormulationFactory(BaseFactory):
     _CLASS = NotMDOFormulation
-    _MODULE_NAMES = ("tests.formulations.not_mdo_formulations",)
+    _PACKAGE_NAMES = ("tests.formulations.not_mdo_formulations",)
