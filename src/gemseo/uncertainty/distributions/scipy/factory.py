@@ -24,4 +24,4 @@ class SPDistributionFactory(DistributionFactory):
     """A factory of probability distributions based on SciPy."""
 
     _CLASS = SPDistribution
-    _MODULE_NAMES = ("gemseo.uncertainty.distributions.scipy",)
+    _PACKAGE_NAMES = ("gemseo.uncertainty.distributions.scipy",)

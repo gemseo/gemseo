@@ -31,4 +31,4 @@ class BaseClassifierQuality(BaseRegressorQuality):
     """The base class to assess the quality of a classifier."""
 
     _CLASS = BaseClassifier
-    _MODULE_NAMES = ("gemseo.mlearning.classification.quality",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.classification.quality",)

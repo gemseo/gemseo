@@ -38,6 +38,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.discipline import DummyDiscipline
 
 DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
@@ -106,7 +107,7 @@ def create_disciplines_from_desc(disc_desc):
     disc_desc_items = disc_desc.items()
 
     for name, io_names in disc_desc_items:
-        disc = Discipline(name)
+        disc = DummyDiscipline(name)
         input_d = dict.fromkeys(io_names[0], data)
         disc.input_grammar.update_from_data(input_d)
         output_d = dict.fromkeys(io_names[1], data)

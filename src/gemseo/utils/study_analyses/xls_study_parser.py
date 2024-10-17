@@ -29,12 +29,14 @@ from pandas import DataFrame
 from pandas import read_excel
 
 from gemseo import get_available_formulations
-from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from gemseo.core.discipline import Discipline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -220,7 +222,7 @@ class XLSStudyParser:
                     missing_column_msg.format(sheet_name, self.__OUTPUTS)
                 ) from None
 
-            discipline = Discipline(sheet_name)
+            discipline = DummyDiscipline(sheet_name)
             discipline.input_grammar.update_from_names(input_names)
             discipline.output_grammar.update_from_names(output_names)
             string.indent()

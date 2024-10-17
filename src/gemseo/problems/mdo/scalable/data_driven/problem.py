@@ -458,8 +458,7 @@ class ScalableProblem:
                 constraint, value=equilibrium.get(constraint, array([0.0]))[0]
             )
 
-    # TODO: API: use ExecutionStatistics attribute.
-    def exec_time(self, do_sum: bool = True) -> float | list[float]:
+    def get_execution_duration(self, do_sum: bool = True) -> float | list[float]:
         """Get the total execution time.
 
         Args:

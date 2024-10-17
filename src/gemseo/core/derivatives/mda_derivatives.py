@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
-from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DummyDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 def _replace_strongly_coupled(
     coupling_structure: CouplingStructure,
-) -> tuple[list[Discipline], list[Discipline]]:
+) -> tuple[list[DummyDiscipline], list[DummyDiscipline]]:
     """Replace the strongly coupled disciplines by a single one.
 
     The replacing discipline has for inputs the merged inputs of all coupled
@@ -61,7 +61,7 @@ def _replace_strongly_coupled(
             if len(group) > 1 or (
                 len(group) == 1 and coupling_structure.is_self_coupled(group[0])
             ):
-                disc_merged = Discipline(str(uuid.uuid4()))
+                disc_merged = DummyDiscipline(str(uuid.uuid4()))
                 for disc in group:
                     disciplines_with_group.remove(disc)
                     # The strong couplings are not real dependencies of the MDA for

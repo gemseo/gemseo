@@ -365,9 +365,6 @@ class DependencyGraph:
         """
         return self.__write_graph(self.__graph, file_path, True)
 
-    # TODO: API: remove.
-    export_initial_graph = write_full_graph
-
     def write_condensed_graph(self, file_path: str | Path) -> GraphView | None:
         """Write a representation of the condensed graph.
 
@@ -378,9 +375,6 @@ class DependencyGraph:
             The condensed graph or ``None`` otherwise.
         """
         return self.__write_graph(self.__create_condensed_graph(), file_path, False)
-
-    # TODO: API: remove.
-    export_reduced_graph = write_condensed_graph
 
     @staticmethod
     def __get_leaves(graph: DiGraph) -> list[Discipline] | list[int]:

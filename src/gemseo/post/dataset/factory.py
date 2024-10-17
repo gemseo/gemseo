@@ -29,4 +29,4 @@ class DatasetPlotFactory(BaseFactory[DatasetPlot]):
     """A factory of dataset plot."""
 
     _CLASS = DatasetPlot
-    _MODULE_NAMES = ("gemseo.post.dataset",)
+    _PACKAGE_NAMES = ("gemseo.post.dataset",)

@@ -24,4 +24,4 @@ class OTDistributionFactory(DistributionFactory):
     """A factory of probability distributions based on OpenTURNS."""
 
     _CLASS = OTDistribution
-    _MODULE_NAMES = ("gemseo.uncertainty.distributions.openturns",)
+    _PACKAGE_NAMES = ("gemseo.uncertainty.distributions.openturns",)

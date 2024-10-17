@@ -26,4 +26,4 @@ class RegressorQualityFactory(MLAlgoQualityFactory):
     """A factory of objects to assess the quality of regressors."""
 
     _CLASS = BaseRegressorQuality
-    _MODULE_NAMES = ("gemseo.mlearning.regression.quality",)
+    _PACKAGE_NAMES = ("gemseo.mlearning.regression.quality",)

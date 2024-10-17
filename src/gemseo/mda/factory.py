@@ -39,4 +39,4 @@ class MDAFactory(BaseFactory):
     """A factory of MDAs."""
 
     _CLASS = BaseMDA
-    _MODULE_NAMES = ("gemseo.mda",)
+    _PACKAGE_NAMES = ("gemseo.mda",)

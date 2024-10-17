@@ -26,7 +26,7 @@ class ToleranceIntervalFactory(BaseFactory):
     """A factory of tolerance intervals."""
 
     _CLASS = BaseToleranceInterval
-    _MODULE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)
+    _PACKAGE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)
 
     def __init__(self) -> None:  # noqa:D107
         super().__init__()

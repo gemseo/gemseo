@@ -35,7 +35,7 @@ class PostFactory(BaseFactory[BasePost[Any]]):
     """A factory of post-processors."""
 
     _CLASS = BasePost
-    _MODULE_NAMES = ("gemseo.post",)
+    _PACKAGE_NAMES = ("gemseo.post",)
 
     def execute(
         self,

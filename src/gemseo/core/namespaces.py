@@ -58,20 +58,7 @@ def split_namespace(name: str) -> list[str]:
     return name.rsplit(namespaces_separator, -1)
 
 
-def remove_prefix_from_name(name: str) -> str:
-    """Remove namespace prefix from the name.
-
-    Args:
-        name: The container of data names, or a single data name.
-
-    Returns:
-        The data names without prefixes.
-    """
-    return name.rsplit(namespaces_separator, 1)[-1]
-
-
-# TODO: API: rename to simply remove_prefixes, same above?
-def remove_prefix_from_names(names: Iterable[str]) -> Iterator[str]:
+def remove_prefix(names: Iterable[str]) -> Iterator[str]:
     """Remove namespaces prefixes from names, if any.
 
     Args:

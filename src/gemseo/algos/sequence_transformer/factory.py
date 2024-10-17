@@ -28,4 +28,4 @@ class SequenceTransformerFactory(BaseFactory):
     """A factory of sequence transformers."""
 
     _CLASS = SequenceTransformer
-    _MODULE_NAMES = ("gemseo.algos.sequence_transformer",)
+    _PACKAGE_NAMES = ("gemseo.algos.sequence_transformer",)

@@ -39,7 +39,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
     """A factory of job scheduler interfaces."""
 
     _CLASS = JobSchedulerDisciplineWrapper
-    _MODULE_NAMES = ("gemseo.disciplines.wrappers.job_schedulers",)
+    _PACKAGE_NAMES = ("gemseo.disciplines.wrappers.job_schedulers",)
 
     def wrap_discipline(
         self,

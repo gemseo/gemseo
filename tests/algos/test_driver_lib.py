@@ -100,19 +100,19 @@ def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None
     assert expected in caplog.text
 
 
-@pytest.mark.parametrize("activate_progress_bar", [False, True])
-def test_progress_bar(activate_progress_bar, caplog) -> None:
+@pytest.mark.parametrize("enable_progress_bar", [False, True])
+def test_progress_bar(enable_progress_bar, caplog) -> None:
     """Check the activation of the progress bar from the options of a
     BaseDriverLibrary."""
     driver = OptimizationLibraryFactory().create("SLSQP")
-    driver.execute(Power2(), activate_progress_bar=activate_progress_bar)
+    driver.execute(Power2(), enable_progress_bar=enable_progress_bar)
     assert (
         isinstance(driver._BaseDriverLibrary__progress_bar, ProgressBar)
-        is activate_progress_bar
+        is enable_progress_bar
     )
     assert (
         "Solving optimization problem with algorithm SLSQP" in caplog.text
-    ) is activate_progress_bar
+    ) is enable_progress_bar
 
 
 @pytest.fixture

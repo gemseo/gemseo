@@ -47,6 +47,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.discipline import DummyDiscipline
 
 if TYPE_CHECKING:
     from gemseo.scenarios.doe_scenario import DOEScenario
@@ -300,7 +301,7 @@ def test_variable_types(var_type1, var_type2) -> None:
     """Verify that input data provided to a discipline match the design space types."""
     design_variable_type_to_python_type = DesignSpace.VARIABLE_TYPES_TO_DTYPES
 
-    class Disc(Discipline):
+    class Disc(DummyDiscipline):
         def __init__(self) -> None:
             super().__init__("foo")
             self.input_grammar.update_from_names(("x", "y"))

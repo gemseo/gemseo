@@ -26,6 +26,7 @@ from numpy.testing import assert_equal
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.disciplines.remapping import RemappingDiscipline
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 
@@ -113,7 +114,7 @@ def test_with_discipline_wo_default_values() -> None:
     with pytest.raises(
         ValueError, match="The original discipline has no default input values."
     ):
-        RemappingDiscipline(Discipline(), {}, {})
+        RemappingDiscipline(DummyDiscipline(), {}, {})
 
 
 def test_discipline_name(discipline) -> None:

@@ -57,6 +57,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -331,7 +332,7 @@ def test_data_processor() -> None:
 
 def test_diff_inputs_outputs() -> None:
     """Test the differentiation w.r.t inputs and outputs."""
-    d = Discipline()
+    d = DummyDiscipline()
     with pytest.raises(
         ValueError,
         match=f"Cannot differentiate the discipline {d.name} w.r.t. the inputs "
@@ -347,21 +348,9 @@ def test_diff_inputs_outputs() -> None:
     d.add_differentiated_inputs()
 
 
-def test_run() -> None:
-    """Test the execution of a abstract Discipline."""
-    d = Discipline()
-    with pytest.raises(NotImplementedError):
-        d._run()
-
-
 def test_linearize_errors() -> None:
     """Test the exceptions and errors during discipline linearization."""
-
-    class LinDisc0(Discipline):
-        def __init__(self) -> None:
-            super().__init__()
-
-    LinDisc0()._compute_jacobian()
+    DummyDiscipline()._compute_jacobian()
 
     class LinDisc(Discipline):
         def __init__(self) -> None:
@@ -797,15 +786,10 @@ def test_repr_str() -> None:
     assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"
 
 
-class DummyDisc(Discipline):
-    def _run(self):
-        pass
-
-
 def test_activate_counters() -> None:
     """Check that the discipline counters are active by default."""
 
-    discipline = DummyDisc()
+    discipline = DummyDiscipline()
     assert discipline.execution_statistics.n_calls == 0
     assert discipline.execution_statistics.n_calls_linearize == 0
     assert discipline.execution_statistics.duration == 0
@@ -822,7 +806,7 @@ def test_deactivate_counters() -> None:
 
     ExecutionStatistics.is_enabled = False
 
-    discipline = DummyDisc()
+    discipline = DummyDiscipline()
     assert discipline.execution_statistics.n_calls is None
     assert discipline.execution_statistics.n_calls_linearize is None
     assert discipline.execution_statistics.duration is None
@@ -832,7 +816,7 @@ def test_deactivate_counters() -> None:
     assert discipline.execution_statistics.n_calls_linearize is None
     assert discipline.execution_statistics.duration is None
 
-    match = "The execution statistics of the object named DummyDisc are disabled."
+    match = "The execution statistics of the object named DummyDiscipline are disabled."
     with pytest.raises(RuntimeError, match=match):
         discipline.execution_statistics.n_calls = 1
 
@@ -849,7 +833,7 @@ def test_cache_none() -> None:
     """Check that the discipline cache can be deactivated."""
     cache_type_before = Discipline.default_cache_type
     Discipline.default_cache_type = Discipline.CacheType.NONE
-    discipline = DummyDisc()
+    discipline = DummyDiscipline()
     assert discipline.cache is None
     discipline.execute()
     assert BaseMDA.default_cache_type is BaseMDA.CacheType.SIMPLE
@@ -922,7 +906,7 @@ def test_no_cache() -> None:
     disc.execute()
     assert disc.execution_statistics.n_calls == 1
 
-    disc = DummyDisc()
+    disc = DummyDiscipline()
     disc.cache = None
     disc.execute()
     disc.execute()
@@ -973,7 +957,7 @@ def test_add_differentiated_io_non_numeric(
         expected_diff_inputs: The expected differentiated inputs.
         expected_diff_outputs: The expected differentiated outputs.
     """
-    discipline = Discipline()
+    discipline = DummyDiscipline()
     discipline.input_grammar.update_from_data(inputs)
     discipline.output_grammar.update_from_data(outputs)
     discipline.add_differentiated_inputs()
@@ -984,7 +968,7 @@ def test_add_differentiated_io_non_numeric(
 
 def test_hdf5cache_twice(tmp_wd, caplog) -> None:
     """Check what happens when the cache policy is set twice at HDF5Cache."""
-    discipline = Discipline()
+    discipline = DummyDiscipline()
     discipline.set_cache("HDF5Cache", hdf_file_path="cache.hdf", hdf_node_path="foo")
     cache_id = id(discipline.cache)
 
@@ -1113,14 +1097,11 @@ def test_self_coupled(self_coupled_disc, name, group, value) -> None:
 
 def test_virtual_exe() -> None:
     """Tests the discipline virtual execution."""
-    disc_1 = Discipline("d1")
+    disc_1 = DummyDiscipline("d1")
     disc_1.input_grammar.update_from_names(["x"])
     disc_1.default_input_data = {"x": ones([1])}
     disc_1.output_grammar.update_from_names(["y"])
     disc_1.output_grammar.defaults = {"y": ones([1])}
-
-    with pytest.raises(NotImplementedError):
-        disc_1.execute()
 
     disc_1.status = Status.PENDING
     disc_1.virtual_execution = True
@@ -1207,7 +1188,7 @@ def test_repr_html() -> None:
 
 def test_create_cache_policy_to_none() -> None:
     """Check that set_cache can use CacheType.NONE as cache_type value."""
-    discipline = Discipline()
+    discipline = DummyDiscipline()
     assert isinstance(discipline.cache, SimpleCache)
     discipline.set_cache(discipline.CacheType.NONE)
     assert discipline.cache is None

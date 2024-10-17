@@ -23,7 +23,7 @@ from numpy import array
 from numpy import ones
 
 from gemseo.core.coupling_structure import DependencyGraph
-from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.n2d3.n2_json import N2JSON
 
 
@@ -46,7 +46,7 @@ def n2_json() -> N2JSON:
         name = desc[0]
         input_d = dict.fromkeys(desc[1], data)
         output_d = dict.fromkeys(desc[2], data)
-        disc = Discipline(name)
+        disc = DummyDiscipline(name)
         disc.input_grammar.update_from_data(input_d)
         disc.output_grammar.update_from_data(output_d)
         disc.default_input_data.update(desc[3])

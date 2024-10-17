@@ -39,7 +39,7 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
     """A factory of :class:`.BaseGrammar`."""
 
     _CLASS = BaseGrammar
-    _MODULE_NAMES = ("gemseo.core.grammars",)
+    _PACKAGE_NAMES = ("gemseo.core.grammars",)
 
     def create(
         self,

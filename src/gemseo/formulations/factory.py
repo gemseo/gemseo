@@ -29,4 +29,4 @@ class MDOFormulationFactory(BaseFormulationFactory):
     """A factory of MDO formulations."""
 
     _CLASS = BaseMDOFormulation
-    _MODULE_NAMES = ("gemseo.formulations",)
+    _PACKAGE_NAMES = ("gemseo.formulations",)

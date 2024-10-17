@@ -321,7 +321,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             The output value and the Jacobian value.
         """
         if current_process().name == SUBPROCESS_NAME:
-            self._deactivate_progress_bar()
+            self._disable_progress_bar()
             self._problem.database.clear_listeners()
 
         return self._evaluate_functions(input_value)

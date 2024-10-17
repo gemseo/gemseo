@@ -375,9 +375,6 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         return self.io.data
 
-    def _run(self) -> None:
-        raise NotImplementedError
-
     # The following methods provide easier access to attributes of sub-objects.
 
     @property

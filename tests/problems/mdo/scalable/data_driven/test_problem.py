@@ -96,7 +96,7 @@ def test_create_scenario(scalable_problem) -> None:
 def test_statistics(scalable_problem) -> None:
     """"""
     scalable_problem.create_scenario()
-    scalable_problem.exec_time()
+    scalable_problem.get_execution_duration()
     scalable_problem.n_calls  # noqa: B018
     scalable_problem.n_calls_linearize  # noqa: B018
     scalable_problem.scenario.execute(algo="SLSQP", max_iter=100)

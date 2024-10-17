@@ -30,4 +30,4 @@ class MetricFactory(BaseFactory[BaseMetric[Any, Any]]):
         _CLASS = BaseMetric[Any, Any]
     else:
         _CLASS = BaseMetric
-    _MODULE_NAMES = ("gemseo.utils.metrics",)
+    _PACKAGE_NAMES = ("gemseo.utils.metrics",)

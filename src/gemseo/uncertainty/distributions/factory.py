@@ -38,7 +38,7 @@ class DistributionFactory(BaseFactory):
     """A factory of probability distributions."""
 
     _CLASS = BaseDistribution
-    _MODULE_NAMES = ("gemseo.uncertainty.distributions",)
+    _PACKAGE_NAMES = ("gemseo.uncertainty.distributions",)
 
     def create_marginal_distribution(
         self,

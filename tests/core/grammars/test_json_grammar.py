@@ -183,38 +183,6 @@ def test_validate_error(raise_exception, data, error_msg, caplog) -> None:
     assert caplog.text.strip().endswith(error_msg)
 
 
-def test_is_array() -> None:
-    """Verify is_array."""
-    grammar = new_grammar(DATA_PATH / "grammar_4.json")
-
-    for name in ("a_number", "an_int", "a_bool", "a_string"):
-        assert not grammar.is_array(name)
-
-    for name in (
-        "a_number_array",
-        "an_int_array",
-        "a_bool_array",
-        "a_number_nested_array",
-        "an_int_nested_array",
-        "a_bool_nested_array",
-    ):
-        assert grammar.is_array(name)
-
-    for name in (
-        "a_number_array",
-        "an_int_array",
-        "a_number_nested_array",
-        "an_int_nested_array",
-    ):
-        assert grammar.is_array(name, numeric_only=True)
-
-    for name in (
-        "a_bool_array",
-        "a_bool_nested_array",
-    ):
-        assert not grammar.is_array(name, numeric_only=True)
-
-
 def test_convert_to_simple_grammar_not_convertible_type() -> None:
     """Verify grammar conversion with non-convertible type."""
     g1 = new_grammar(DATA_PATH / "grammar_1.json")

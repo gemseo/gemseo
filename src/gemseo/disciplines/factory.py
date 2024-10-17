@@ -39,7 +39,7 @@ class DisciplineFactory(BaseFactory):
     """A factory of disciplines."""
 
     _CLASS = Discipline
-    _MODULE_NAMES = (
+    _PACKAGE_NAMES = (
         "gemseo.problems",
         "gemseo.core",
         "gemseo.disciplines",

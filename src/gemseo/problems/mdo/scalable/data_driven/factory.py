@@ -29,4 +29,4 @@ class ScalableModelFactory(BaseFactory):
     """A factory of scalable models."""
 
     _CLASS = ScalableModel
-    _MODULE_NAMES = ("gemseo.problems.mdo.scalable",)
+    _PACKAGE_NAMES = ("gemseo.problems.mdo.scalable",)

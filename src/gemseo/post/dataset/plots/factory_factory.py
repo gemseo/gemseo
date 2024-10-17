@@ -35,4 +35,4 @@ class PlotFactoryFactory(BaseFactory[PlotFactory[T]]):
     """
 
     _CLASS = PlotFactory
-    _MODULE_NAMES = ("gemseo.post.dataset.plots",)
+    _PACKAGE_NAMES = ("gemseo.post.dataset.plots",)

@@ -232,8 +232,7 @@ def _merge_diff_io_special(
             diff_ios_merged[disc_source] = (diff_inputs_of_disc, diff_outputs_of_disc)
 
 
-# TODO: API: make protected.
-def apply_diff_ios(diff_ios: DisciplineIOMapping) -> None:
+def _apply_diff_ios(diff_ios: DisciplineIOMapping) -> None:
     """Apply the differentiated inputs and outputs.
 
     From the diff_ios specification, add the differentiated inputs and outputs to the
@@ -300,6 +299,6 @@ def traverse_add_diff_io(
     )
 
     if add_differentiated_ios:
-        apply_diff_ios(diff_ios_merged)
+        _apply_diff_ios(diff_ios_merged)
 
     return diff_ios_merged

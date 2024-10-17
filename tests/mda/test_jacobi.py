@@ -31,12 +31,12 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.utils.discipline import DummyDiscipline
 
 from .test_gauss_seidel import SelfCoupledDisc
 from .utils import generate_parallel_doe
@@ -144,22 +144,22 @@ def test_jacobi_sellar(sellar_disciplines) -> None:
 def test_expected_workflow() -> None:
     """Test MDAJacobi process_flow should be list of one tuple of disciplines (meaning
     parallel execution)"""
-    disc1 = Discipline()
-    disc2 = Discipline()
-    disc3 = Discipline()
+    disc1 = DummyDiscipline()
+    disc2 = DummyDiscipline()
+    disc3 = DummyDiscipline()
     disciplines = [disc1, disc2, disc3]
 
     mda = MDAJacobi(disciplines, n_processes=1)
     expected = (
-        "{MDAJacobi(PENDING), [Discipline(PENDING), Discipline(PENDING), "
-        "Discipline(PENDING)]}"
+        "{MDAJacobi(PENDING), [DummyDiscipline(PENDING), DummyDiscipline(PENDING), "
+        "DummyDiscipline(PENDING)]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
     mda = MDAJacobi(disciplines, n_processes=2)
     expected = (
-        "{MDAJacobi(PENDING), (Discipline(PENDING), Discipline(PENDING), "
-        "Discipline(PENDING))}"
+        "{MDAJacobi(PENDING), (DummyDiscipline(PENDING), DummyDiscipline(PENDING), "
+        "DummyDiscipline(PENDING))}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 

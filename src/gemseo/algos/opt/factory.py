@@ -30,4 +30,4 @@ class OptimizationLibraryFactory(BaseAlgoFactory):
     """A factory of optimization libraries."""
 
     _CLASS = BaseOptimizationLibrary
-    _MODULE_NAMES = ("gemseo.algos.opt",)
+    _PACKAGE_NAMES = ("gemseo.algos.opt",)
