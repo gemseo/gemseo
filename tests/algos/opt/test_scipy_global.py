@@ -24,6 +24,9 @@ from unittest.case import TestCase
 import pytest
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.scipy_global._settings.differential_evolution import (
+    DifferentialEvolutionSettings,
+)
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
@@ -82,3 +85,18 @@ def get_settings(algo_name):
 suite_tests = OptLibraryTestBase()
 for test_method in suite_tests.generate_test("ScipyGlobalOpt", get_settings):
     setattr(TestScipyGlobalOpt, test_method.__name__, test_method)
+
+
+def test_differential_evolution_parallel():
+    """Test that the Differential Evolution algorithm works in parallel."""
+    problem = Rosenbrock()
+    result = OptimizationLibraryFactory().execute(
+        problem,
+        "DIFFERENTIAL_EVOLUTION",
+        settings_model=DifferentialEvolutionSettings(
+            max_iter=5,
+            workers=2,
+            popsize=2,
+        ),
+    )
+    assert result.f_opt
