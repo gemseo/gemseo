@@ -228,7 +228,7 @@ class DisciplineJacApprox:
             yield
             self.discipline.cache.tolerance = old_cache_tol
         else:
-            return
+            yield
 
     def _prepare_xvect(
         self,
