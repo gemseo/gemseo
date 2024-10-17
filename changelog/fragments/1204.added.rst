@@ -1,2 +1,2 @@
 - ``BaseSensitivityAnalysis`` and its subclasses (``MorrisAnalysis``, ``SobolAnalysis``, ``CorrelationAnalysis`` and ``HSICAnalysis``) handles backup and crash management with the ``backup_settings`` argument of the ``compute_samples`` method.
-- ``BackupSettings`` is a dataclass to pass the backup settings to functions relying on ``Scenario.set_optimization_history_backup``, e.g. ``sample_disciplines`` and ``BaseSensitivityAnalysis.compute_samples``.
+- ``BackupSettings`` is a dataclass to pass the backup settings to functions relying on ``BaseScenario.set_optimization_history_backup``, e.g. ``sample_disciplines`` and ``BaseSensitivityAnalysis.compute_samples``.

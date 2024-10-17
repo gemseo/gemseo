@@ -103,8 +103,8 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
+from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
@@ -132,7 +132,7 @@ def scenario() -> MDOScenario:
         "y_4",
         SobieskiDesignSpace(),
     )
-    scenario.execute(algo="SLSQP", max_iter=10)
+    scenario.execute(algo_name="SLSQP", max_iter=10)
     return scenario
 
 
@@ -226,14 +226,14 @@ def test_monitor_scenario() -> None:
     observer = Observer()
     monitor_scenario(scenario, observer)
 
-    scenario.execute(algo="SLSQP", max_iter=10)
+    scenario.execute(algo_name="SLSQP", max_iter=10)
     assert (
         observer.status_changes
         >= 2 * scenario.formulation.optimization_problem.objective.n_calls
     )
 
 
-@pytest.mark.parametrize("obj_type", [Scenario, str, Path])
+@pytest.mark.parametrize("obj_type", [BaseScenario, str, Path])
 def test_execute_post(scenario, obj_type, tmp_wd) -> None:
     """Test the API method to call the post-processing factory.
 
@@ -242,7 +242,7 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
         obj_type: The type of the object to post-process.
         tmp_wd: Fixture to move into a temporary directory.
     """
-    if obj_type is Scenario:
+    if obj_type is BaseScenario:
         obj = scenario
     else:
         file_name = "results.hdf5"
@@ -353,8 +353,8 @@ def test_get_scenario_inputs_schema() -> None:
     )
 
     schema = get_scenario_inputs_schema(sc_aero)
-    assert "algo_options" in schema["properties"]
-    assert "algo" in schema["properties"]
+    assert "algo_name" in schema["properties"]
+    assert "algo_settings" in schema["properties"]
 
     get_scenario_inputs_schema(sc_aero, pretty_print=True)
 
@@ -475,7 +475,7 @@ def test_create_surrogate() -> None:
     design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
     doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
-    doe.execute(algo="fullfact", n_samples=10)
+    doe.execute(algo_name="fullfact", n_samples=10)
     surr = create_surrogate(
         "RBFRegressor",
         disc.cache.to_dataset(),

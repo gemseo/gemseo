@@ -271,7 +271,7 @@ the jacobian matrix must be defined as :attr:`!MDODiscipline.jac`.
                                                                  y_34)
 
 
-The differentiation method is set by the method :meth:`~gemseo.scenarios.scenario.Scenario.set_differentiation_method` of :class:`~gemseo.scenarios.scenario.Scenario`:
+The differentiation method is set by the method :meth:`~gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method` of :class:`~gemseo.scenarios.base_scenario.BaseScenario`:
 
 - for :code:`"finite_differences"` (default value):
 

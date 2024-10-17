@@ -116,27 +116,11 @@ def test_parallel_doe_hdf_cache(caplog) -> None:
     )
 
     n_samples = 10
-    input_data = {
-        "n_samples": n_samples,
-        "algo": "lhs",
-        "algo_options": {"n_processes": 2},
-    }
-    scenario.execute(**input_data)
+    scenario.execute(algo_name="lhs", n_samples=n_samples, n_processes=2)
     scenario.print_execution_metrics()
     assert len(scenario.formulation.optimization_problem.database) == n_samples
     for disc in disciplines:
         assert len(disc.cache) == n_samples
-
-    input_data = {
-        "n_samples": n_samples,
-        "algo": "lhs",
-        "algo_options": {"n_processes": 2, "n_samples": n_samples},
-    }
-    scenario.execute(**input_data)
-    expected_log = (
-        "Double definition of the algorithm setting n_samples, keeping value: {}."
-    )
-    assert expected_log.format(n_samples) in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -151,12 +135,9 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
         mdf_variable_grammar_doe_scenario: The DOEScenario.
     """
     n_samples = 10
-    input_data = {
-        "n_samples": n_samples,
-        "algo": "lhs",
-        "algo_options": {"n_processes": 1},
-    }
-    mdf_variable_grammar_doe_scenario.execute(**input_data)
+    mdf_variable_grammar_doe_scenario.execute(
+        algo_name="lhs", n_samples=n_samples, n_processes=1
+    )
     mdf_variable_grammar_doe_scenario.print_execution_metrics()
     assert (
         len(mdf_variable_grammar_doe_scenario.formulation.optimization_problem.database)
@@ -204,8 +185,7 @@ def test_validation_exception(doe_scenario) -> None:
     """
     with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
         doe_scenario.execute(
-            algo="CustomDOE",
-            algo_options={"samples": array([[1.0]]), "unknown_setting": 1},
+            algo_name="CustomDOE", samples=array([[1.0]]), unknown_setting=1
         )
 
 
@@ -240,9 +220,7 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
         use_threading=use_threading,
         n_processes=2,
     )
-    scenario.execute(
-        algo="CustomDOE", algo_options={"samples": array([[0.0, 0.0, -10.0, 0.0]])}
-    )
+    scenario.execute(algo_name="CustomDOE", samples=array([[0.0, 0.0, -10.0, 0.0]]))
 
     assert sellar_disciplines[2].execution_statistics.n_calls == 0
     assert "Undefined" in caplog.text
@@ -261,12 +239,7 @@ def test_other_exceptions_caught(caplog) -> None:
         [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
     )
     with pytest.raises(InvalidDataError):
-        scenario.execute(
-            algo="CustomDOE",
-            algo_options={
-                "samples": array([[0.0]]),
-            },
-        )
+        scenario.execute(algo_name="CustomDOE", samples=array([[0.0]]))
     assert "0.0 cannot be raised to a negative power" in caplog.text
 
 
@@ -277,7 +250,7 @@ def test_export_to_dataset_with_repeated_inputs() -> None:
     design_space.add_variable("dv")
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1.0], [2.0], [1.0]])
-    scenario.execute(algo="CustomDOE", algo_options={"samples": samples})
+    scenario.execute(algo_name="CustomDOE", samples=samples)
     dataset = scenario.to_dataset()
     assert (dataset.get_view(variable_names="dv").to_numpy() == samples).all()
     assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
@@ -290,7 +263,7 @@ def test_export_to_dataset_normalized_integers() -> None:
     design_space.add_variable("dv", type_="integer", lower_bound=1, upper_bound=10)
     scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
     samples = array([[1], [2], [10]])
-    scenario.execute(algo="CustomDOE", algo_options={"samples": samples})
+    scenario.execute(algo_name="CustomDOE", samples=samples)
     dataset = scenario.to_dataset()
     assert (dataset.get_view(variable_names="dv").to_numpy() == samples).all()
     assert (dataset.get_view(variable_names="obj").to_numpy() == samples * 2).all()
@@ -303,7 +276,7 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
         tmp_wd: Fixture to move into a temporary work directory.
         doe_scenario: A simple DOE scenario.
     """
-    doe_scenario.execute(algo="CustomDOE", algo_options={"samples": array([[1.0]])})
+    doe_scenario.execute(algo_name="CustomDOE", samples=array([[1.0]]))
 
     doe_scenario.formulation.optimization_problem.reset(
         database=False, design_space=False
@@ -317,7 +290,7 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
 
     assert pickled_scenario._settings == doe_scenario._settings
 
-    pickled_scenario.execute(algo="CustomDOE", algo_options={"samples": array([[0.5]])})
+    pickled_scenario.execute(algo_name="CustomDOE", samples=array([[0.5]]))
 
     assert (
         pickled_scenario.formulation.optimization_problem.database.get_function_value(
@@ -368,14 +341,12 @@ def test_partial_execution_from_backup(
         expected: The expected database length.
     """
     doe_scenario.set_optimization_history_backup("backup.h5")
-    doe_scenario.execute(algo="CustomDOE", algo_options={"samples": samples_1})
+    doe_scenario.execute(algo_name="CustomDOE", samples=samples_1)
     other_doe_scenario.set_optimization_history_backup("backup.h5", load=True)
     other_doe_scenario.execute(
-        algo="CustomDOE",
-        algo_options={
-            "samples": samples_2,
-            "reset_iteration_counters": reset_iteration_counters,
-        },
+        algo_name="CustomDOE",
+        samples=samples_2,
+        reset_iteration_counters=reset_iteration_counters,
     )
     assert len(other_doe_scenario.formulation.optimization_problem.database) == expected
 
@@ -387,5 +358,5 @@ def test_scenario_without_initial_design_value() -> None:
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.default_input_data = {}
     scenario = DOEScenario([discipline], "MDF", "y", design_space)
-    scenario.execute(algo="lhs", n_samples=3)
+    scenario.execute(algo_name="lhs", n_samples=3)
     assert len(scenario.formulation.optimization_problem.database) == 3

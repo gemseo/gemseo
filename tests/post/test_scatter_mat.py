@@ -164,7 +164,7 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.set_differentiation_method("finite_differences")
-    scenario.default_input_data = {"max_iter": 10, "algo": "SLSQP"}
+    scenario.set_algorithm("SLSQP", max_iter=10)
     scenario.execute()
     post = scenario.post_process(
         "ScatterPlotMatrix",

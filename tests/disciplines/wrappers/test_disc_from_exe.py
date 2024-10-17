@@ -285,7 +285,7 @@ def test_parallel_execution(tmp_wd) -> None:
         disc, "DisciplinaryOpt", "out", design_space, scenario_type="DOE"
     )
 
-    scenario.execute(algo="OT_LHS", n_samples=2, n_processes=nb_process)
+    scenario.execute(algo_name="OT_LHS", n_samples=2, n_processes=nb_process)
 
     for i in range(nb_process):
         assert Path(f"{i + 1}").is_dir()

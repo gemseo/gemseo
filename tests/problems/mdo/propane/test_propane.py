@@ -97,9 +97,8 @@ class TestPropaneScenario(unittest.TestCase):
         scenario.add_constraint(["f_2", "f_6"], constraint_type="ineq")
         scenario.add_constraint(["f_7", "f_9"], constraint_type="ineq")
 
-        run_inputs = {"max_iter": 50, "algo": algo}
         # run the optimizer
-        scenario.execute(**run_inputs)
+        scenario.execute(algo_name=algo, max_iter=50)
         obj_opt = scenario.optimization_result.f_opt
 
         x_opt = scenario.design_space.get_current_value()

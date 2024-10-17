@@ -1,1 +1,1 @@
-``KMeans`` derived from ``OptPostProcessor``; use ``KMeans`` derived from ``BaseMLAlgo`` instead, based on a ``Dataset`` generated from an ``OptimizationProblem`` or a ``Scenario``.
+``KMeans`` derived from ``OptPostProcessor``; use ``KMeans`` derived from ``BaseMLAlgo`` instead, based on a ``Dataset`` generated from an ``OptimizationProblem`` or a ``BaseScenario``.

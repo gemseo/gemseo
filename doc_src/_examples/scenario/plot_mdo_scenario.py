@@ -115,7 +115,7 @@ scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 # <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the
 # function ``scipy.optimize.fmin_l_bfgs_b``.
 
-scenario.execute(algo="L-BFGS-B", max_iter=100)
+scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to

@@ -95,7 +95,7 @@ scenario.xdsmize()
 
 # %%
 # Execute the scenario:
-scenario.execute({"max_iter": 200, "algo": "NLOPT_MMA"})
+scenario.execute(algo_name="NLOPT_MMA", max_iter=200)
 
 # %%
 # Results

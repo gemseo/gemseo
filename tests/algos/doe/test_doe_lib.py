@@ -144,9 +144,7 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
 
     samples = array([[float(i)] for i in range(4)])
     scenario.add_observable("obs")
-    scenario.execute(
-        algo="CustomDOE", algo_options={"n_processes": 2, "samples": samples}
-    )
+    scenario.execute(algo_name="CustomDOE", n_processes=2, samples=samples)
 
     database = scenario.formulation.optimization_problem.database
     for i, (x, data) in enumerate(database.items()):
@@ -332,7 +330,7 @@ def test_variable_types(var_type1, var_type2) -> None:
         scenario_type="DOE",
     )
 
-    scenario.execute(algo="lhs", n_samples=1)
+    scenario.execute(algo_name="lhs", n_samples=1)
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
@@ -481,17 +479,14 @@ def test_parallel_doe_db(tmp_wd):
     scenario_ser.set_optimization_history_backup(
         bk_file_ser, at_each_function_call=True, at_each_iteration=True
     )
-    algo_options = {"n_processes": 1}
-    opts = {"algo": "fullfact", "n_samples": 4, "algo_options": algo_options}
-    scenario_ser.execute(**opts)
+    scenario_ser.execute(algo_name="fullfact", n_samples=4, n_processes=1)
 
     scenario_par = _create_scn()
     bk_file_par = Path("par_out.h5")
     scenario_par.set_optimization_history_backup(
         bk_file_par, at_each_function_call=True, at_each_iteration=True
     )
-    algo_options["n_processes"] = 2
-    scenario_par.execute(**opts)
+    scenario_par.execute(algo_name="fullfact", n_samples=4, n_processes=2)
 
     db_ser = Database.from_hdf(bk_file_ser)
     db_par = Database.from_hdf(bk_file_par)

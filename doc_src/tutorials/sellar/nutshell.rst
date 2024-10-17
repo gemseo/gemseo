@@ -493,7 +493,7 @@ as input data in a Python dictionary.
 Here the :term:`SLSQP` algorithm is a :term:`gradient-based optimization` algorithm.
 The disciplines that we integrated provide no analytical derivatives,
 so we need first to tell the scenario to use finite differences
-to compute the derivatives using :meth:`.Scenario.set_differentiation_method`.
+to compute the derivatives using :meth:`.BaseScenario.set_differentiation_method`.
 
 .. code::
 
@@ -508,7 +508,7 @@ Then, we can run the scenario by calling the :meth:`.Discipline.execute` method 
 
 .. code::
 
-    scenario.execute(input_data={'max_iter': 10, 'algo': 'SLSQP'})
+    scenario.execute(algo_name=SLSQP, max_iter=10)
 
 
 The logging message provides substantial information about the process setup, execution and results.
@@ -614,7 +614,7 @@ Synthetic Python code
    # Step 3: create and solve the MDO scenario
    scenario = create_scenario(disciplines, 'MDF', objective_name='obj', design_space=design_space)
    scenario.set_differentiation_method('finite_differences', 1e-6)
-   scenario.default_input_data = {'max_iter': 15, 'algo': 'SLSQP'})
+   scenario.set_algorithm('SLSQP', max_iter=15)
    scenario.execute()
    # Step 4: analyze the results
    scenario.post_process("OptHistoryView", save=True)

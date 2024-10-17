@@ -45,11 +45,7 @@ def scenario() -> DOEScenario:
         design_space.filter(["y"], copy=True),
         name="FooScenario",
     )
-    input_data = {
-        "algo": "CustomDOE",
-        "algo_options": {"samples": array([[0.0], [1.0]])},
-    }
-    sub_scenario.default_input_data = input_data
+    sub_scenario.set_algorithm("CustomDOE", samples=array([[0.0], [1.0]]))
     scenario = DOEScenario([sub_scenario], "BiLevel", "z", design_space.filter(["x"]))
-    scenario.default_input_data = input_data
+    scenario.set_algorithm("CustomDOE", samples=array([[0.0], [1.0]]))
     return scenario

@@ -50,7 +50,7 @@ def create_sobieski_bilevel_scenario(
         """
         sub_scenarios = create_sobieski_sub_scenarios()
         for scenario in sub_scenarios:
-            scenario.default_input_data = {"max_iter": 5, "algo": "SLSQP"}
+            scenario.set_algorithm("SLSQP", max_iter=5)
 
         system = MDOScenario(
             [*sub_scenarios, SobieskiMission()],

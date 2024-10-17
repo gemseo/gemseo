@@ -49,9 +49,8 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -481,15 +480,15 @@ class BaseFormulation(metaclass=ABCGoogleDocstringInheritanceMeta):
         input_names = discipline.io.input_grammar.names
         return [name for name in optim_variable_names if name in input_names]
 
-    def get_sub_scenarios(self) -> list[Scenario]:
+    def get_sub_scenarios(self) -> list[BaseScenario]:
         """List the disciplines that are actually scenarios.
 
         Returns:
             The scenarios.
         """
-        from gemseo.scenarios.scenario import Scenario
+        from gemseo.scenarios.base_scenario import BaseScenario
 
-        return [disc for disc in self.disciplines if isinstance(disc, Scenario)]
+        return [disc for disc in self.disciplines if isinstance(disc, BaseScenario)]
 
     def _set_default_input_values_from_design_space(self) -> None:
         """Initialize the top level disciplines from the design space."""

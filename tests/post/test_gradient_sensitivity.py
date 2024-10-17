@@ -95,9 +95,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario.execute(
-        algo="DiagonalDOE", n_samples=10, algo_options={"eval_jac": True}
-    )
+    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=True)
     doe_scenario.post_process(
         "GradientSensitivity",
         scale_gradients=scale_gradients,
@@ -105,9 +103,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
         save=True,
     )
     doe_scenario2 = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario2.execute(
-        algo="DiagonalDOE", n_samples=10, algo_options={"eval_jac": False}
-    )
+    doe_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
 
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario2.post_process(
@@ -148,7 +144,7 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
 
     scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
-    scenario.execute(max_iter=10, algo="L-BFGS-B")
+    scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 
     post = scenario.post_process(
         "GradientSensitivity",
@@ -188,7 +184,7 @@ def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
 
     scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
 
-    scenario.execute(max_iter=10, algo="L-BFGS-B")
+    scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 
     scenario.post_process(
         "GradientSensitivity",

@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-    from gemseo.scenarios.scenario import ScenarioInputDataType
+    from gemseo.scenarios.base_scenario import ScenarioInputDataType
 
 
 class MLAlgoSelection:
@@ -150,7 +150,7 @@ class MLAlgoSelection:
                 If ``None``, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
-                e.g. {"algo": "fullfact", "n_samples": 10}.
+                e.g. {"algo_name": "fullfact", "n_samples": 10}.
                 If empty, do not perform calibration.
             **option_lists: The parameters
                 for the machine learning algorithm candidate.
@@ -185,7 +185,7 @@ class MLAlgoSelection:
                     measure_options=self.measure_options,
                     **params,
                 )
-                ml_algo_calibration.execute(calib_algo)
+                ml_algo_calibration.execute(**calib_algo)
                 algo_new = ml_algo_calibration.optimal_algorithm
                 quality_new = ml_algo_calibration.optimal_criterion
             else:

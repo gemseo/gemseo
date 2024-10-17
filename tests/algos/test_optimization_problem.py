@@ -922,7 +922,7 @@ def test_2d_objective() -> None:
     inputs = disc.io.input_grammar.names
     design_space.filter([name for name in inputs if not name.startswith("c_")])
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario.execute(algo="DiagonalDOE", n_samples=10)
+    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10)
 
 
 def test_observable(pow2_problem) -> None:
@@ -1815,7 +1815,7 @@ def test_observables_normalization(sellar_disciplines) -> None:
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.add_observable("y_1")
-    scenario.execute(max_iter=3, algo="SLSQP")
+    scenario.execute(algo_name="SLSQP", max_iter=3)
     total_iter = len(scenario.formulation.optimization_problem.database)
     n_obj_eval = (
         scenario.formulation.optimization_problem.database.get_function_history(

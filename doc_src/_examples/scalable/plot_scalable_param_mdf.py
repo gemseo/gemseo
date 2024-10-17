@@ -62,7 +62,7 @@ generate_n2_plot(problem.disciplines, save=False, show=True)
 # Solve the MDO using an MDF formulation
 # --------------------------------------
 scenario = problem.create_scenario()
-scenario.execute(algo="NLOPT_SLSQP", max_iter=100)
+scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
 
 # %%
 # Post-process the results

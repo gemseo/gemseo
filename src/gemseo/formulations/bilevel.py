@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.mda.base_mda import BaseMDA
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -205,7 +205,7 @@ class BiLevel(BaseMDOFormulation):
 
     def _compute_adapter_outputs(
         self,
-        scenario: Scenario,
+        scenario: BaseScenario,
         output_functions: bool,
     ) -> list[str]:
         """Compute the scenario adapter outputs.
@@ -239,7 +239,7 @@ class BiLevel(BaseMDOFormulation):
 
     def _compute_adapter_inputs(
         self,
-        scenario: Scenario,
+        scenario: BaseScenario,
         use_non_shared_vars: bool,
     ) -> list[str]:
         """Compute the scenario adapter inputs.
@@ -593,7 +593,7 @@ class BiLevel(BaseMDOFormulation):
 
     @staticmethod
     def _scenario_computes_outputs(
-        scenario: Scenario,
+        scenario: BaseScenario,
         output_names: Iterable[str],
     ) -> bool:
         """Check if the top level disciplines compute the given outputs.

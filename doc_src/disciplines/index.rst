@@ -101,13 +101,13 @@ which results in:
 
 .. code::
 
-   ['RosenMF', 'SobieskiAerodynamics', 'DOEScenario', 'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1', 'Sellar2', 'MDOChain', 'SobieskiStructure', 'Structure', 'SobieskiPropulsion', 'Scenario', 'AnalyticDiscipline', 'MDOScenarioAdapter', 'SellarSystem', 'ScalableFittedDiscipline', 'Aerodynamics', 'Mission', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'PropaneReaction', 'MDOParallelChain']
+   ['RosenMF', 'SobieskiAerodynamics', 'DOEScenario', 'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1', 'Sellar2', 'MDOChain', 'SobieskiStructure', 'Structure', 'SobieskiPropulsion', 'BaseScenario', 'AnalyticDiscipline', 'MDOScenarioAdapter', 'SellarSystem', 'ScalableFittedDiscipline', 'Aerodynamics', 'Mission', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'PropaneReaction', 'MDOParallelChain']
 
 .. note::
 
    These available :class:`.Discipline` can be classified into different categories:
 
-   - classes implementing scenario, a key concept in |g|: :class:`.Scenario` and :class:`.DOEScenario`, :class:`.MDOScenario`,
+   - classes implementing scenario, a key concept in |g|: :class:`.BaseScenario` and :class:`.DOEScenario`, :class:`.MDOScenario`,
    - classes implementing MDO problem disciplines:
 
        - Sobieski's SSBJ problem: :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics`, :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission`, :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiBaseWrapper`, :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure` and :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion`,

@@ -87,7 +87,7 @@ scenario = create_scenario(
 scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo="OT_MONTE_CARLO", n_samples=30)
+scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=30)
 
 # %%
 # Post-process scenario

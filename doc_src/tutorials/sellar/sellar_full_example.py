@@ -133,7 +133,7 @@ def run_process() -> None:
     scenario.set_differentiation_method("finite_differences")
 
     # Execute scenario with the inputs of the MDO scenario as a dict
-    scenario.execute(input_data={"max_iter": 15, "algo": "SLSQP"})
+    scenario.execute(algo_name="SLSQP", max_iter=15)
 
     # Generate a plot of the history in a file
     scenario.post_process("OptHistoryView", save=True, show=True)

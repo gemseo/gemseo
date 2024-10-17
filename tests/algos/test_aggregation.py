@@ -118,9 +118,8 @@ def test_ks_constraint_aggregation_consistency(x):
 )
 def test_ks_aggreg(method) -> None:
     """Tests KS and IKS aggregation methods compared to no aggregation."""
-    algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
-    execute_algo(problem_ref, algo_name="SLSQP", **algo_options)
+    execute_algo(problem_ref, algo_name="SLSQP", ineq_tolerance=1e-2, eq_tolerance=1e-2)
     ref_sol = problem_ref.solution
 
     problem = create_problem()
@@ -128,11 +127,7 @@ def test_ks_aggreg(method) -> None:
         problem.constraints.aggregate(0, method=method, rho=300.0, scale=1.0)
     else:
         problem.constraints.aggregate(0, method=method, scale=1.0)
-    execute_algo(
-        problem,
-        algo_name="SLSQP",
-        **algo_options,
-    )
+    execute_algo(problem, algo_name="SLSQP", ineq_tolerance=1e-2, eq_tolerance=1e-2)
     sol2 = problem.solution
 
     assert allclose(ref_sol.x_opt, sol2.x_opt, rtol=1e-2)

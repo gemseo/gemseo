@@ -111,12 +111,11 @@ algo_options = {
     "eq_tolerance": 1e-3,
     "normalize_design_space": True,
 }
-scn_inputs = {"max_iter": 20, "algo": "SLSQP", "algo_options": algo_options}
 
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(scn_inputs)
+scenario.execute(algo_name="SLSQP", max_iter=20, **algo_options)
 
 # %%
 # Save the optimization history

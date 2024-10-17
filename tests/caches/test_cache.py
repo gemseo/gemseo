@@ -416,7 +416,7 @@ def test_multithreading(memory_cache, sellar_disciplines) -> None:
     ds = SellarDesignSpace("float64")
     scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
 
-    options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
+    options = {"algo_name": "fullfact", "n_samples": 10, "n_processes": 4}
     scen.execute(**options)
 
     nexec_1 = s_1.execution_statistics.n_calls

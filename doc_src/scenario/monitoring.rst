@@ -50,7 +50,7 @@ Basic monitoring using logs
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using |g|'s logger.
 Use :func:`.configure_logger` to configure the logger to log in a file.
 
-The method :meth:`~.Scenario.xdsmize` of the :class:`.Scenario`
+The method :meth:`~.BaseScenario.xdsmize` of the :class:`.BaseScenario`
 can be used to this aim (``monitor=True``).
 If the option ``save_html`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``show_html=True``.
 If ``save_pdf`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
@@ -82,7 +82,7 @@ Graphical monitoring using `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
 
 An :ref:`xdsm` diagram with the status of the :class:`.MDODiscipline` can be generated at each status change
 of the :class:`.MDODiscipline`. See :ref:`xdsm` for setting up the :ref:`XDSM <xdsm>` generation in a web browser.
-To trigger this mode in a scenario, use :meth:`~.Scenario.xdsmize`, with the ``monitor`` argument set to ``True``.
+To trigger this mode in a scenario, use :meth:`~.BaseScenario.xdsmize`, with the ``monitor`` argument set to ``True``.
 The path to the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ library must be set to the folder containing the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ :term:`HTML` files.
 
 

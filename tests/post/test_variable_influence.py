@@ -73,9 +73,7 @@ def test_variable_influence_doe(tmp_wd) -> None:
     inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario.execute(
-        algo="DiagonalDOE", n_samples=10, algo_options={"eval_jac": False}
-    )
+    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario.post_process(
             "VariableInfluence",

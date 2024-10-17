@@ -85,7 +85,7 @@ def optimization_result() -> OptimizationResult:
         "ineq_p_2", constraint_type="ineq", positive=True, value=0.25
     )
     scenario.add_constraint("ineq_n_2", constraint_type="ineq")
-    scenario.execute(algo="fullfact", n_samples=1)
+    scenario.execute(algo_name="fullfact", n_samples=1)
     return scenario.optimization_result
 
 

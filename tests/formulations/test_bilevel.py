@@ -168,11 +168,6 @@ def test_bilevel_aerostructure() -> None:
     mission = create_discipline(
         "AnalyticDiscipline", name="Mission", expressions=mission_formulas
     )
-    sub_scenario_options = {
-        "max_iter": 2,
-        "algo": "NLOPT_SLSQP",
-        "algo_options": algo_options,
-    }
     design_space_ref = AerostructureDesignSpace()
 
     design_space_aero = design_space_ref.filter(["thick_airfoils"], copy=True)
@@ -183,7 +178,7 @@ def test_bilevel_aerostructure() -> None:
         design_space_aero,
         maximize_objective=True,
     )
-    aero_scenario.default_input_data = sub_scenario_options
+    aero_scenario.set_algorithm("NLOPT_SLSQP", max_iter=2, **algo_options)
 
     design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
     struct_scenario = create_scenario(
@@ -193,7 +188,7 @@ def test_bilevel_aerostructure() -> None:
         design_space_struct,
         maximize_objective=True,
     )
-    struct_scenario.default_input_data = sub_scenario_options
+    struct_scenario.set_algorithm("NLOPT_SLSQP", max_iter=2, **algo_options)
 
     design_space_system = design_space_ref.filter(["sweep"], copy=True)
     system_scenario = create_scenario(
@@ -207,7 +202,7 @@ def test_bilevel_aerostructure() -> None:
     )
     system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
     system_scenario.add_constraint("lift", value=0.5)
-    system_scenario.execute(algo="NLOPT_COBYLA", max_iter=5, algo_options=algo_options)
+    system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=5, **algo_options)
 
 
 def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
@@ -282,7 +277,7 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
         Discipline.CacheType.MEMORY_FULL
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
-    scenario.execute(algo="NLOPT_COBYLA", max_iter=3)
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=3)
     mda1_inputs = [entry.inputs for entry in mda1_cache.get_all_entries()]
     chain_outputs = [entry.outputs for entry in bilevel_chain_cache.get_all_entries()]
 
@@ -355,11 +350,11 @@ def test_scenario_log_level(caplog, options) -> None:
         design_space.filter(["y"], copy=True),
         name="FooScenario",
     )
-    sub_scenario.default_input_data = {"algo": "NLOPT_COBYLA", "max_iter": 2}
+    sub_scenario.set_algorithm("NLOPT_COBYLA", max_iter=2)
     scenario = MDOScenario(
         [sub_scenario], "BiLevel", "z", design_space.filter(["x"]), **options
     )
-    scenario.execute(algo="NLOPT_COBYLA", max_iter=2)
+    scenario.execute("NLOPT_COBYLA", max_iter=2)
     sub_scenarios_log_level = options.get("sub_scenarios_log_level")
     if sub_scenarios_log_level == logging.WARNING:
         assert "Start FooScenario execution" not in caplog.text

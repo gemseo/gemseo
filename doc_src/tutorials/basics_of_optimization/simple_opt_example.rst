@@ -94,10 +94,10 @@ Precisely, we choose a `full factorial design <https://en.wikipedia.org/wiki/Fac
 
 .. code::
 
-   scenario.execute({"algo": "fullfact", "n_samples": 11**2})
+   scenario.execute(algo_name="fullfact", "n_samples": 11**2)
 
 The optimum results can be found in the execution log. It is also possible to
-extract them by invoking the :meth:`~.Scenario.get_optimum` method. It
+extract them by invoking the :meth:`~.BaseScenario.get_optimum` method. It
 returns a dictionary containing the optimum results for the
 scenario under consideration:
 
@@ -266,7 +266,7 @@ indirectly called by means of the class :class:`.OptimizationLibraryFactory` and
 
 .. code-block:: python
 
-   scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
+   scenario.execute(algo_name="L-BFGS-B", "max_iter": 100)
 
 The optimization results are displayed in the log file. They can also be
 obtained using the following code:

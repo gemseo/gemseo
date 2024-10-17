@@ -122,7 +122,7 @@ scenario.add_observable("y_2", observable_name="y2")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute({"max_iter": 10, "algo": "SLSQP"})
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # Access the observable variables

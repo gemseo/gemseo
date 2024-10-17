@@ -61,7 +61,7 @@ scenario = create_scenario(
 # Execute the scenario
 # -----------------------
 # Here we use a latin hypercube sampling algorithm with 30 samples.
-scenario.execute({"n_samples": 30, "algo": "lhs"})
+scenario.execute(algo_name="lhs", n_samples=30)
 
 # %%
 # Plot optimization history view

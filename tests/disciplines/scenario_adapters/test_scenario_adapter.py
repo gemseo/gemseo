@@ -82,7 +82,7 @@ def scenario():
         maximize_objective=True,
         name="MyScenario",
     )
-    mdo_scenario.default_input_data = {"max_iter": 35, "algo": "L-BFGS-B"}
+    mdo_scenario.set_algorithm("L-BFGS-B", max_iter=35)
     return mdo_scenario
 
 
@@ -293,8 +293,7 @@ def build_struct_scenario():
         maximize_objective=True,
     )
     sc_str.add_constraint("g_1", constraint_type="ineq")
-    sc_str.default_input_data = {"max_iter": 20, "algo": "NLOPT_SLSQP"}
-
+    sc_str.set_algorithm("NLOPT_SLSQP", max_iter=20)
     return sc_str
 
 
@@ -308,8 +307,7 @@ def build_prop_scenario():
         name="PropulsionScenario",
     )
     sc_prop.add_constraint("g_3", constraint_type="ineq")
-    sc_prop.default_input_data = {"max_iter": 20, "algo": "NLOPT_SLSQP"}
-
+    sc_prop.set_algorithm("NLOPT_SLSQP", max_iter=20)
     return sc_prop
 
 
@@ -620,9 +618,8 @@ def scenario_fixture(disciplines_fixture):
         design_space=design_space,
     )
     scenario.add_constraint("g", MDOFunction.ConstraintType.INEQ, value=5)
-    scenario.default_input_data = {"algo": "SLSQP", "max_iter": 10}
-    dv_names = ["alpha"]
-    return MDOScenarioAdapter(scenario, dv_names, ["f"], set_x0_before_opt=True)
+    scenario.set_algorithm("SLSQP", max_iter=10)
+    return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_opt=True)
 
 
 def test_scenario_adapter(scenario_fixture) -> None:
@@ -637,7 +634,7 @@ def test_scenario_adapter(scenario_fixture) -> None:
         objective_name="f",
         design_space=design_space,
     )
-    scenario.default_input_data = {"algo": "SLSQP", "max_iter": 10}
+    scenario.set_algorithm("SLSQP", max_iter=10)
     scenario.execute()
     assert scenario.formulation.optimization_problem.solution is not None
 

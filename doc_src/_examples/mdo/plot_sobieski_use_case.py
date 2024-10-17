@@ -215,8 +215,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 #
 # The algorithm arguments are provided as a dictionary to the execution
 # method of the scenario:
-algo_args = {"max_iter": 10, "algo": "SLSQP"}
-# %%
+#
 # .. warning::
 #
 #    The mandatory arguments are the maximum number of iterations and the algorithm name.
@@ -227,7 +226,7 @@ algo_args = {"max_iter": 10, "algo": "SLSQP"}
 #    This list of available algorithm options are detailed here: :ref:`gen_opt_algos`.
 #
 # The scenario is executed by means of the line:
-scenario.execute(algo_args)
+scenario.execute(algo_name="SLSQP", max_iter=10)
 # %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~

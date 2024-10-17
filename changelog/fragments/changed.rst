@@ -8,7 +8,7 @@ API changes:
 API changes from old to new:
   - set_cache_policy: set_cache with arguments passed to CacheFactory.create
   - ``set_linear_relationships`` now takes ``input_names`` first before ``output_names``.
-  - ``Scenario._run_algorithm``: ``Scenario._execute``
+  - ``BaseScenario._run_algorithm``: ``BaseScenario._execute``
   - The classes in the module ``execution_sequences`` has been split into modules.
   - ``ExecSequence``: ``BaseExecSequence``
   - ``ExecSequence.START_STR``: ``BaseExecSequence._PREFIX``
@@ -27,7 +27,7 @@ API changes removed:
   - ``DependencyGraph.export_reduced_graph``: use ``DependencyGraph.write_condensed_graph`` instead.
   - The ``VIRTUAL`` execution status.
   - The ``RE_EXEC_POLICY`` for rexecuting disciplines.
-  - ``create_scenario_result``: use ``Scenario.get_results`` instead.
+  - ``create_scenario_result``: use ``BaseScenario.get_results`` instead.
   - ``ExecSequenceFactory``: import and instantiate directly instead.
     - ``Defaults`` removed the method ``rename``
     - ``DisciplineData`` and ``Defaults``:

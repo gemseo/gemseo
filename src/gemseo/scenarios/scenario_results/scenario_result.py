@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
     from gemseo import BasePost
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 class ScenarioResult:
@@ -45,13 +45,13 @@ class ScenarioResult:
     design_variable_names_to_values: dict[str, ndarray]
     """The design variable names bound to the optimal values."""
 
-    __obj_to_be_post_processed: Scenario | OptimizationProblem
+    __obj_to_be_post_processed: BaseScenario | OptimizationProblem
     """The object to be post-processed."""
 
     _POST_FACTORY: ClassVar[PostFactory | None] = None
     """The factory of :class:`.BasePost`, if created."""
 
-    def __init__(self, scenario: Scenario | str | Path) -> None:
+    def __init__(self, scenario: BaseScenario | str | Path) -> None:
         """
         Args:
             scenario: The scenario to post-process or the path to its HDF5 file.

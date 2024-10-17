@@ -132,14 +132,7 @@ Optimization options
 The DOE algorithm options are passed as inputs of the :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 The number of samples is specified, as well as the "criterion" option which is the center option of pyDOE centering the points within the sampling intervals.
 The sensitivity of the outputs with respect to the design variables may be computed,
-thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' option is set to True.
-
-.. code::
-
-    doe_options = {'n_samples': 30,
-                   'algo': 'lhs',
-                   'eval_jac': True,
-                   'algo_options': {"criterion": "center"}}
+thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' setting parameter is set to True.
 
 .. seealso::
 
@@ -172,7 +165,7 @@ The scenario outputs is executed:
 
 .. code::
 
-    scenario.execute(doe_options)
+    scenario.execute(algo_name='lhs', n_samples=30, eval_jac=True, criterion='center')
 
 5. Visualize the results
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,7 +309,7 @@ The range computation is added as a fourth discipline of the system scenario, wh
     sub_disciplines.append(mission)
 
     for sub_sc in sub_disciplines[0:3]:
-       sub_sc.default_input_data = {"max_iter": 20, "algo": "L-BFGS-B"}
+       sub_sc.set_algorithm("LL-BFGS-B", max_iter=20)
 
 Please also note that it is compulsory to set the default inputs of the first three disciplines, which are MDO scenarios. Thus, we have to set the optimization algorithm and the maximum number of iterations for each of them.
 
@@ -358,8 +351,7 @@ dictionary of options (including all :term:`DOE` settings) for the main scenario
 
 .. code::
 
-    doe_options = {'n_samples': 30, 'algo': "lhs"}
-    system_scenario.execute(doe_options)
+    system_scenario.execute(algo_name="lhs", n_samples=30)
 
 
 Comparison of trade-off results: :ref:`bi-level <bilevel_formulation>` versus :ref:`MDF <mdf_formulation>` formulations

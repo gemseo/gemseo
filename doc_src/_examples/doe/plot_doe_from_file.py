@@ -59,7 +59,7 @@ print(Path("doe.txt").read_text())
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
-scenario.execute(algo="CustomDOE", algo_options={"doe_file": "doe.txt"})
+scenario.execute(algo_name="CustomDOE", doe_file="doe.txt")
 
 # %%
 # We can display the content of the database as a :class:`.Dataset`

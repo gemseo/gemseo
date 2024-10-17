@@ -45,10 +45,10 @@ def __get_all_disciplines(
         The non-scenario disciplines
         or also the disciplines of the scenario ones if any and ``skip_scenario=False``.
     """
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
-    non_scenarios = [disc for disc in disciplines if not isinstance(disc, Scenario)]
-    scenarios = [disc for disc in disciplines if isinstance(disc, Scenario)]
+    non_scenarios = [disc for disc in disciplines if not isinstance(disc, BaseScenario)]
+    scenarios = [disc for disc in disciplines if isinstance(disc, BaseScenario)]
 
     if skip_scenarios:
         return non_scenarios
@@ -134,13 +134,15 @@ def get_sub_disciplines(
         The sub-disciplines.
     """
     from gemseo.formulations.base_formulation import BaseFormulation
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
     sub_disciplines = []
 
     for discipline in disciplines:
         if (
-            not isinstance(discipline, (Scenario, BaseFormulation, ProcessDiscipline))
+            not isinstance(
+                discipline, (BaseScenario, BaseFormulation, ProcessDiscipline)
+            )
             or not discipline.disciplines
         ):
             _add_to_sub([discipline], sub_disciplines)

@@ -41,7 +41,7 @@ design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
-scenario.execute(algo="fullfact", n_samples=11**2)
+scenario.execute(algo_name="fullfact", n_samples=11**2)
 
 opt_results = scenario.optimization_result
 print(f"The solution of P is (x*, f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
@@ -76,7 +76,7 @@ design_space.add_variable(
 )
 
 scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
-scenario.execute(algo="L-BFGS-B", max_iter=100)
+scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 opt_results = scenario.optimization_result
 print(f"The solution of P is (x*,f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")

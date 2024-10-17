@@ -57,9 +57,9 @@ from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
-from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.locks import synchronized
 from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm import XDSM
@@ -69,7 +69,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.core._process_flow.execution_sequences import BaseCompositeExecSequence
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -108,7 +107,7 @@ class XDSMizer:
                 describing the sequence of execution of the different disciplines
                 (:class:`.Discipline`, :class:`.Scenario`, :class:`.BaseMDA`, etc.)
         """  # noqa:D205 D212 D415
-        if isinstance(discipline, Scenario):
+        if isinstance(discipline, BaseScenario):
             self._is_scenario = True
             if isinstance(discipline, MDOScenario):
                 self._scenario_node_title = "Optimizer"
@@ -170,7 +169,7 @@ class XDSMizer:
         level = self.level + 1
         num = 1
         for atom in self.atoms:
-            if isinstance(atom.process, Scenario):
+            if isinstance(atom.process, BaseScenario):
                 if atom.process == self.scenario:
                     self.to_hashref[atom] = "root"
                     self.root_atom = atom
@@ -409,7 +408,7 @@ class XDSMizer:
             # node type
             if isinstance(atom.process, BaseMDA):
                 node["type"] = "mda"
-            elif isinstance(atom.process, Scenario):
+            elif isinstance(atom.process, BaseScenario):
                 node["type"] = "mdo"
                 node["subxdsm"] = self.to_hashref[atom]
                 node["name"] = self.to_hashref[atom]
@@ -426,6 +425,7 @@ class XDSMizer:
     def _create_edges(self) -> list[EdgeType]:
         """Create the edges of the XDSM from the dataflow of the scenario."""
         edges = []
+
         # convenient method to factorize code for creating and appending edges
 
         def add_edge(
@@ -468,7 +468,7 @@ class XDSMizer:
         # Disciplines to/from optimization
         for atom in self.atoms:
             if atom is not self.root_atom:
-                if isinstance(atom.process, Scenario):
+                if isinstance(atom.process, BaseScenario):
                     continue
                 varnames = sorted(
                     set(atom.process.io.input_grammar.names)
@@ -490,7 +490,7 @@ class XDSMizer:
         for atom in self.atoms:
             if atom is not self.root_atom:
                 # special case MDA : skipped
-                if isinstance(atom.process, (BaseMDA, Scenario)):
+                if isinstance(atom.process, (BaseMDA, BaseScenario)):
                     continue
                 out_to_user = [
                     o
@@ -537,7 +537,7 @@ class XDSMizer:
         for sequence in workflow.sequences:
             if isinstance(sequence, LoopExecSequence):
                 atoms.append(sequence.atom_controller)
-                if not isinstance(sequence.atom_controller.process, Scenario):
+                if not isinstance(sequence.atom_controller.process, BaseScenario):
                     atoms += cls._get_single_level_atoms(sequence.iteration_sequence)
             elif isinstance(sequence, ExecutionSequence):
                 atoms.append(sequence)
@@ -635,7 +635,7 @@ def expand(
         ids = [{"parallel": res}]
     elif isinstance(wks, LoopExecSequence):
         if (
-            isinstance(wks.atom_controller.process, Scenario)
+            isinstance(wks.atom_controller.process, BaseScenario)
             and to_id[wks.atom_controller] != OPT_ID
         ):
             # sub-scnario consider only the controller

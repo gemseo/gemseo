@@ -72,7 +72,6 @@ algo_options = {
     "ftol_abs": 1e-7,
     "ineq_tolerance": 1e-4,
 }
-sub_sc_opts = {"max_iter": 30, "algo": "SLSQP", "algo_options": algo_options}
 # %%
 # Build a sub-scenario for Propulsion
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -84,7 +83,7 @@ sc_prop = create_scenario(
     design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
 )
-sc_prop.default_input_data = sub_sc_opts
+sc_prop.set_algorithm("SLSQP", max_iter=30, **algo_options)
 sc_prop.add_constraint("g_3", constraint_type="ineq")
 
 # %%
@@ -99,7 +98,7 @@ sc_aero = create_scenario(
     name="AerodynamicsScenario",
     maximize_objective=True,
 )
-sc_aero.default_input_data = sub_sc_opts
+sc_aero.set_algorithm("SLSQP", max_iter=30, **algo_options)
 sc_aero.add_constraint("g_2", constraint_type="ineq")
 
 # %%
@@ -116,7 +115,7 @@ sc_str = create_scenario(
     maximize_objective=True,
 )
 sc_str.add_constraint("g_1", constraint_type="ineq")
-sc_str.default_input_data = sub_sc_opts
+sc_str.set_algorithm("SLSQP", max_iter=30, **algo_options)
 
 # %%
 # Build a scenario for Mission
@@ -151,11 +150,7 @@ system_scenario.xdsmize(save_html=False)
 # %%
 # Execute the main scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.execute({
-    "max_iter": 50,
-    "algo": "NLOPT_COBYLA",
-    "algo_options": algo_options,
-})
+system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=50, **algo_options)
 
 # %%
 # Plot the history of the MDA residuals

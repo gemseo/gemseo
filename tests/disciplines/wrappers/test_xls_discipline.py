@@ -197,12 +197,7 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
     )
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
-    doe_input = {
-        "algo": "DiagonalDOE",
-        "n_samples": 2,
-        "algo_options": {"n_processes": 2},
-    }
-    scenario.execute(doe_input)
+    scenario.execute(algo_name="DiagonalDOE", n_samples=2, n_processes=2)
     assert isclose(scenario.optimization_result.f_opt, 101.0, 1e-8, 1e-8)
 
 

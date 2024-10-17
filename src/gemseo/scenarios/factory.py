@@ -17,11 +17,11 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.scenarios.scenario import Scenario
+from gemseo.scenarios.base_scenario import BaseScenario
 
 
-class ScenarioFactory(BaseFactory[Scenario]):
+class ScenarioFactory(BaseFactory[BaseScenario]):
     """A factory of scenario."""
 
-    _CLASS = Scenario
+    _CLASS = BaseScenario
     _PACKAGE_NAMES = ("gemseo.scenarios",)

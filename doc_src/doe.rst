@@ -56,7 +56,7 @@ and pass the DOE algorithm to :meth:`.DOEScenario.execute`:
 
 .. code::
 
-    >>> doe_scenario.execute({"algo": "lhs", "n_samples": 100})
+    >>> doe_scenario.execute(algo_name="lhs", n_samples=100)
 
 Algorithms
 ----------

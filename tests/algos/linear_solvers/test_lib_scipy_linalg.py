@@ -69,11 +69,11 @@ def test_default(kwargs) -> None:
 
 
 @pytest.mark.parametrize("n", [1, 4, 20])
-@pytest.mark.parametrize("algo", ["DEFAULT", "LGMRES", "BICGSTAB"])
+@pytest.mark.parametrize("algo_name", ["DEFAULT", "LGMRES", "BICGSTAB"])
 @pytest.mark.parametrize("use_preconditioner", [True, False])
 @pytest.mark.parametrize("use_ilu_precond", [True, False])
 @pytest.mark.parametrize("use_x0", [True, False])
-def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
+def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
     """Tests the solvers options."""
     factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
@@ -89,7 +89,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
         options["preconditioner"] = LinearOperator(
             problem.lhs.shape, spilu(problem.lhs).solve
         )
-    if algo == "lgmres":
+    if algo_name == "lgmres":
         v = rng.random(n)
         options.update({
             "inner_m": 10,
@@ -98,7 +98,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
             "store_outer_av": True,
             "prepend_outer_v": True,
         })
-    factory.execute(problem, algo, **options)
+    factory.execute(problem, algo_name, **options)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 

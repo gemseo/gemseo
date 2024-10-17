@@ -109,7 +109,7 @@ sub_scenario = create_scenario(
     design_space,
 )
 
-sub_scenario.default_input_data = {"algo": "NLOPT_SLSQP", "max_iter": 100}
+sub_scenario.set_algorithm("NLOPT_SLSQP", max_iter=100)
 
 # %%
 # We add the Binh and Korn problem constraints.
@@ -164,8 +164,7 @@ system_scenario.xdsmize()
 # Run the scenario
 # ----------------
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
-run_inputs = {"n_samples": 50, "algo": "fullfact"}
-system_scenario.execute(run_inputs)
+system_scenario.execute(algo_name="fullfact", n_samples=50)
 system_scenario.post_process(
     "ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )

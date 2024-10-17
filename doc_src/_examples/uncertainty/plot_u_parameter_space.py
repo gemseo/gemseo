@@ -144,7 +144,7 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
 )
-scenario.execute(algo="lhs", n_samples=100)
+scenario.execute(algo_name="lhs", n_samples=100)
 
 # %%
 # We can export the optimization problem to a :class:`.Dataset`:
@@ -172,7 +172,7 @@ uncertain_space = parameter_space.extract_uncertain_space()
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "z", uncertain_space, scenario_type="DOE"
 )
-scenario.execute(algo="lhs", n_samples=100)
+scenario.execute(algo_name="lhs", n_samples=100)
 
 # %%
 # Finally,

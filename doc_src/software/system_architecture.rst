@@ -207,7 +207,7 @@ The high level classes that are key in the architecture are:
    the algorithm . As the :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`, the
    :class:`~gemseo.scenarios.doe_scenario.DOEScenario` makes the link between all the following classes. It
    is mainly handled by the :term:`MDO integrator`. Both :class:`~gemseo.scenarios.mdo_scenario.MDOScenario` and :class:`~gemseo.scenarios.doe_scenario.DOEScenario`
-   inherit from the :class:`~gemseo.scenarios.scenario.Scenario` class that defines common features
+   inherit from the :class:`~gemseo.scenarios.base_scenario.BaseScenario` class that defines common features
    (bounds, constraints, …).
 
 -  :class:`~gemseo.core.discipline.MDODiscipline` represents a wrapped :term:`simulation software` program or a chain of wrapped
@@ -216,9 +216,9 @@ The high level classes that are key in the architecture are:
    represented in a **Grammar** (see :class:`~gemseo.core.grammars.simple_grammar.SimpleGrammar` or :class:`~gemseo.core.grammars.json_grammar.JSONGrammar`).
 
 -  :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation` describes the :term:`MDO formulation` (*e.g.* :term:`MDF` and :term:`IDF`)
-   used by the  :class:`~gemseo.scenarios.scenario.Scenario` to generate the  :class:`~gemseo.algos.optimization_problem.OptimizationProblem`.
+   used by the  :class:`~gemseo.scenarios.base_scenario.BaseScenario` to generate the  :class:`~gemseo.algos.optimization_problem.OptimizationProblem`.
    The :term:`MDO user` or the :term:`MDO integrator` may either provide the name of the
-   formulation, or a class, or an instance, to the :class:`~gemseo.scenarios.scenario.Scenario`
+   formulation, or a class, or an instance, to the :class:`~gemseo.scenarios.base_scenario.BaseScenario`
    (:class:`~gemseo.scenarios.mdo_scenario.MDOScenario` or\ :class:`~gemseo.scenarios.doe_scenario.DOEScenario`) . The :term:`MDO formulations designer` may create, implement,
    test or maintain :term:`MDO formulations <MDO formulation>` with this class.
 
@@ -253,7 +253,7 @@ contains the full classes description in the different sections as well as the f
 .. uml::
 
    @startuml
-   class Scenario {
+   class BaseScenario {
    }
    class MDODiscipline {
    }
@@ -270,13 +270,13 @@ contains the full classes description in the different sections as well as the f
    class BaseDriverLibrary {
    }
 
-   MDODiscipline <|- Scenario
-   Scenario "1" *-> "n" MDODiscipline
-   Scenario "1" *-> "1" BaseMDOFormulation
+   MDODiscipline <|- BaseScenario
+   BaseScenario "1" *-> "n" MDODiscipline
+   BaseScenario "1" *-> "1" BaseMDOFormulation
    BaseMDOFormulation "1" --> "n" OptimizationProblem
    DisciplineAdapterGenerator "1" --> "n" MDOFunction
    DisciplineAdapterGenerator "1" *-> "1" MDODiscipline
-   Scenario "1" *-> "1" BaseDriverLibrary
+   BaseScenario "1" *-> "1" BaseDriverLibrary
    OptimizationProblem "1" *-> "1" DesignSpace
    OptimizationProblem "1" *-> "n" MDOFunction
    BaseMDOFormulation "1" *-> "n" DisciplineAdapterGenerator
@@ -315,7 +315,7 @@ contains the full classes description in the different sections as well as the f
 .. uml::
 
    @startuml
-   class Scenario {
+   class BaseScenario {
    }
    class BaseDriverLibrary {
    }
@@ -330,11 +330,11 @@ contains the full classes description in the different sections as well as the f
 
    BaseDOELibrary -up|> BaseDriverLibrary
    BaseOptimizationLibrary -up|> BaseDriverLibrary
-   Scenario "1" *-up> "1" BaseDriverLibrary
+   BaseScenario "1" *-up> "1" BaseDriverLibrary
    DOEScenario "1" *-> "1" BaseDOELibrary
    MDOScenario "1" *-> "1" BaseOptimizationLibrary
-   MDOScenario -up|> Scenario
-   DOEScenario -up|> Scenario
+   MDOScenario -up|> BaseScenario
+   DOEScenario -up|> BaseScenario
    @end uml
 
 

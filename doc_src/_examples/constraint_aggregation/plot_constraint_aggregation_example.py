@@ -71,18 +71,16 @@ ineq_tol = 1e-5
 convergence_tol = 1e-8
 normalize = True
 algo_options = {
-    "algo": "NLOPT_MMA",
+    "algo_name": "NLOPT_MMA",
     "max_iter": max_iter,
-    "algo_options": {
-        "ineq_tolerance": ineq_tol,
-        "eq_tolerance": ineq_tol,
-        "xtol_rel": convergence_tol,
-        "xtol_abs": convergence_tol,
-        "ftol_rel": convergence_tol,
-        "ftol_abs": convergence_tol,
-        "ctol_abs": convergence_tol,
-        "normalize_design_space": normalize,
-    },
+    "ineq_tolerance": ineq_tol,
+    "eq_tolerance": ineq_tol,
+    "xtol_rel": convergence_tol,
+    "xtol_abs": convergence_tol,
+    "ftol_rel": convergence_tol,
+    "ftol_abs": convergence_tol,
+    "ctol_abs": convergence_tol,
+    "normalize_design_space": normalize,
 }
 
 # %%
@@ -96,7 +94,7 @@ original_scenario = create_scenario(
 )
 original_scenario.add_constraint("g", constraint_type="ineq")
 
-original_scenario.execute(algo_options)
+original_scenario.execute(**algo_options)
 # Without constraint aggregation MMA iterations become more expensive, when a
 # large number of constraints are activated.
 

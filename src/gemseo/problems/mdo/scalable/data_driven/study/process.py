@@ -833,9 +833,7 @@ class ScalabilityStudy:
         algo_options = deepcopy(self.algorithms_options[opt_index])
         max_iter = algo_options["max_iter"]
         del algo_options["max_iter"]
-        problem.scenario.execute(
-            algo=algo, max_iter=max_iter, algo_options=algo_options
-        )
+        problem.scenario.execute(algo_name=algo, max_iter=max_iter, **algo_options)
         return algo_options
 
     def __get_stop_index(self, problem: ScalableProblem) -> tuple[int, int]:

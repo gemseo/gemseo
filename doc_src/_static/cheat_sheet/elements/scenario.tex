@@ -31,9 +31,8 @@ scenario.xdsmize() # Build the XDSM graph to check it.
 \end{python}
 Execute the scenario:
 \begin{python}
-scenario.execute({'algo': 'SLSQP', 'max_iter': 50,
-                  algo_options={'xtol_rel':1e-3}}) # if MDO
-scenario.execute({'algo': 'LHS', 'n_samples': 30}) # if DOE
+scenario.execute(algo_name="SLSQP", max_iter=50, xtol_rel=1e-3) # if MDO
+scenario.execute(algo_name="LHS", n_samples=30) # if DOE
 optimum = scenario.get_optimum()
 \end{python}
 

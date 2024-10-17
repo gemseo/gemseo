@@ -69,7 +69,7 @@ parameter_space.filter(discipline.io.input_grammar.names)
 scenario = create_scenario(
     [discipline], "DisciplinaryOpt", "y_4", parameter_space, scenario_type="DOE"
 )
-scenario.execute(algo="OT_MONTE_CARLO", n_samples=100)
+scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)
 
 # %%
 # Create an :class:`.EmpiricalStatistics` object for all variables

@@ -211,13 +211,12 @@ class TestAerostructureScenarios(unittest.TestCase):
         disciplines = TestAerostructureScenarios.create_functional_disciplines()
         scenario = TestAerostructureScenarios.build_scenario(disciplines, formulation)
         scenario.set_differentiation_method(lin_method)
-        run_inputs = {"max_iter": 10, "algo": algo}
 
         # add constraints
         scenario.add_constraint("c_lift")
         scenario.add_constraint("c_rf", constraint_type="ineq")
         # run the optimizer
-        scenario.execute(**run_inputs)
+        scenario.execute(algo_name=algo, max_iter=10)
         obj_opt = scenario.optimization_result.f_opt
         xopt = scenario.design_space.get_current_value(as_dict=True)
         sweep = xopt["sweep"]
