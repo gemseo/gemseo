@@ -74,7 +74,7 @@ scenario = create_scenario(
 
 # %%
 # and solve it:
-scenario.execute(algo="OT_OPT_LHS", n_samples=2)
+scenario.execute(algo_name="OT_OPT_LHS", n_samples=2)
 scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 
 # %%
@@ -86,7 +86,7 @@ scenario._lib.seed
 # a new call to :meth:`.DOEScenario.execute` increments the :attr:`.BaseDOELibrary.seed`.
 # Then,
 # solving again this problem with the same configuration leads to a new result:
-scenario.execute(algo="OT_OPT_LHS", n_samples=2)
+scenario.execute(algo_name="OT_OPT_LHS", n_samples=2)
 scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 
 # %%
@@ -97,7 +97,7 @@ scenario._lib.seed
 # You can also pass a custom ``"seed"`` to the DOE algorithm
 # with the key ``"algo_options"`` of the ``input_data``
 # passed to :meth:`.DOEScenario.execute`:
-scenario.execute(algo="OT_OPT_LHS", n_samples=2, algo_options={"seed": 123})
+scenario.execute(algo_name="OT_OPT_LHS", n_samples=2, seed=123)
 scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 
 # %%

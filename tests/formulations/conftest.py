@@ -98,16 +98,12 @@ def build_and_run_idf_scenario_with_constraints(
     for c_name in ["g_1", "g_2", "g_3"]:
         scenario.add_constraint(c_name, constraint_type="ineq")
 
-    run_inputs = {
-        "max_iter": max_iter,
-        "algo": algo,
-        "algo_options": {
-            "eq_tolerance": eq_tolerance,
-            "ineq_tolerance": ineq_tolerance,
-        },
-    }
-
-    scenario.execute(**run_inputs)
+    scenario.execute(
+        algo_name=algo,
+        max_iter=max_iter,
+        eq_tolerance=eq_tolerance,
+        ineq_tolerance=ineq_tolerance,
+    )
 
     obj_opt = scenario.optimization_result.f_opt
     is_feasible = scenario.optimization_result.is_feasible

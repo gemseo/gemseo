@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core._process_flow.execution_sequences import LoopExecSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 class _ProcessFlow(BaseProcessFlow):
@@ -86,7 +86,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
 
-    scenario: Scenario
+    scenario: BaseScenario
     """The scenario to be adapted."""
 
     post_optimal_analysis: PostOptimalAnalysis
@@ -110,7 +110,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def __init__(
         self,
-        scenario: Scenario,
+        scenario: BaseScenario,
         input_names: Sequence[str],
         output_names: Sequence[str],
         reset_x0_before_opt: bool = False,

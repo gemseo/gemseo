@@ -117,7 +117,7 @@ def test_calibration(dataset, calibration_space, algo) -> None:
 
     assert calibration.get_history("learning") is None
 
-    calibration.execute({"algo": algo[0], algo[1]: n_samples})
+    calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
     x_opt = calibration.optimal_parameters
     f_opt = calibration.optimal_criterion
     algo_opt = calibration.optimal_algorithm
@@ -129,5 +129,5 @@ def test_calibration(dataset, calibration_space, algo) -> None:
     assert len(calibration.algos) == n_samples
 
     calibration.maximize_objective = True
-    calibration.execute({"algo": algo[0], algo[1]: n_samples})
+    calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
     assert -calibration.optimal_criterion > f_opt

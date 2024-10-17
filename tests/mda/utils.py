@@ -56,8 +56,8 @@ def generate_parallel_doe(
         inner_mda_name=inner_mda_name,
     )
     scenario.execute(
-        algo="DiagonalDOE",
+        algo_name="DiagonalDOE",
         n_samples=n_samples,
-        algo_options={"n_processes": 2},
+        n_processes=2,
     )
     return scenario.optimization_result.f_opt

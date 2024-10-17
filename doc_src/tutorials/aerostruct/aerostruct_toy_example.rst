@@ -218,7 +218,7 @@ where:
             disc_design_space.filter(discipline.get_input_data_names())
             scenario = create_scenario([discipline], 'DisciplinaryOpt', output,
                                            disc_design_space, scenario_type='DOE')
-            scenario.execute({'algo': 'DiagonalDOE', 'n_samples': n_samples})
+            scenario.execute(algo_name='DiagonalDOE', n_samples=n_samples)
             discipline_scal = create_discipline(
                 'ScalableDiagonalModel', discipline.cache, sizes, fill_factor=fill_factor
             )

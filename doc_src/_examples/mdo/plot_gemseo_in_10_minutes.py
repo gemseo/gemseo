@@ -232,7 +232,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # the maximum number of iterations to perform.
 # The execution of the scenario reads:
 
-scenario.execute({"max_iter": 10, "algo": "SLSQP"})
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # The scenario converged after 7 iterations.

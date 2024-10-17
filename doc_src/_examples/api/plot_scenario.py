@@ -96,7 +96,7 @@ design_space.add_variable("x2", 1, "float", 0.0, 1.0)
 scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
-scenario.execute(algo="fullfact", n_samples=25)
+scenario.execute(algo_name="fullfact", n_samples=25)
 scenario.post_process(
     "ScatterPlotMatrix",
     variable_names=["x1", "x2", "y"],
@@ -146,4 +146,4 @@ scenario = create_scenario(
     discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
 )
 monitor_scenario(scenario, Observer())
-scenario.execute(algo="fullfact", n_samples=25)
+scenario.execute(algo_name="fullfact", n_samples=25)

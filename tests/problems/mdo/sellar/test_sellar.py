@@ -175,7 +175,7 @@ def test_exec(formulation, algo, differentiation_method, disciplines, x_opt, n) 
     scenario.set_differentiation_method(differentiation_method)
     scenario.add_constraint(C_1, constraint_type=MDOFunction.ConstraintType.INEQ)
     scenario.add_constraint(C_2, constraint_type=MDOFunction.ConstraintType.INEQ)
-    scenario.execute(max_iter=20, algo=algo)
+    scenario.execute(algo_name=algo, max_iter=20)
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)
     x_opt = concatenate((x_opt[X_1], x_opt[X_SHARED]))

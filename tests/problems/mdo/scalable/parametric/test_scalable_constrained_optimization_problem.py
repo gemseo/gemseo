@@ -110,13 +110,14 @@ def test_resolution(
         pytest.skip("SLSQP is not well suited for non-linear equality constraints. ")
     options = {
         "max_iter": 1000,
-        "algo": algo,
+        "algo_name": algo,
         "normalize_design_space": True,
-        "algo_options": {"stop_crit_n_x": 2, "ftol_rel": 1e-6},
+        "stop_crit_n_x": 2,
+        "ftol_rel": 1e-6,
     }
     if "Augmented_Lagrangian" in algo:
-        options["algo_options"]["sub_algorithm_name"] = "L-BFGS-B"
-        options["algo_options"]["sub_algorithm_settings"] = {"max_iter": 300}
+        options["sub_algorithm_name"] = "L-BFGS-B"
+        options["sub_algorithm_settings"] = {"max_iter": 300}
     scalable_optimization_problem_scenario.execute(**options)
     assert pytest.approx(
         scalable_optimization_problem_scenario.formulation.optimization_problem.solution.x_opt,

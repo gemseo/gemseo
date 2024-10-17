@@ -79,7 +79,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 LOGGER = logging.getLogger(__name__)
 
@@ -259,7 +259,7 @@ class ScalableProblem:
         active_probability: float = 0.1,
         feasibility_level: float = 0.5,
         **options,
-    ) -> Scenario:
+    ) -> BaseScenario:
         """Create a :class:`.Scenario` from the scalable disciplines.
 
         Args:
@@ -300,7 +300,7 @@ class ScalableProblem:
 
     def _create_bilevel_scenario(
         self, disciplines: Iterable[Discipline], **sub_scenario_options
-    ) -> Scenario:
+    ) -> BaseScenario:
         """Create a bi-level scenario from disciplines.
 
         Args:

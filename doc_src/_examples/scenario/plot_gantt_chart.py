@@ -88,7 +88,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # before the execution of the scenarios
 ExecutionStatistics.is_time_stamps_enabled = True
 
-scenario.execute(algo="SLSQP", max_iter=10)
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # Post-process scenario

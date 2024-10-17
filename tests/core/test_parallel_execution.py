@@ -141,9 +141,10 @@ def test_disc_parallel_doe_scenario() -> None:
     )
     n_samples = 20
     scenario.execute(
-        algo="lhs",
+        algo_name="lhs",
         n_samples=n_samples,
-        algo_options={"eval_jac": True, "n_processes": 2},
+        eval_jac=True,
+        n_processes=2,
     )
     assert (
         len(

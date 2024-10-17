@@ -43,6 +43,7 @@ parameters of the machine learning algorithm while the output is the quality cri
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import argmin
 from numpy import array
@@ -65,8 +66,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
-    from gemseo.scenarios.scenario import Scenario
-    from gemseo.scenarios.scenario import ScenarioInputDataType
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 class MLAlgoAssessor(Discipline):
@@ -213,7 +213,7 @@ class MLAlgoCalibration:
     optimal_algorithm: BaseMLAlgo | None
     """The optimal machine learning algorithm after execution."""
 
-    scenario: Scenario | None
+    scenario: BaseScenario | None
     """The scenario used to calibrate the machine learning algorithm after execution."""
 
     def __init__(
@@ -224,7 +224,8 @@ class MLAlgoCalibration:
         calibration_space: DesignSpace,
         measure: type[BaseMLAlgoQuality],
         measure_evaluation_method_name: str
-        | BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
+        | BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,
+        # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
         transformer: TransformerType = BaseMLAlgo.IDENTITY,
         **algo_options: MLAlgoParameterType,
@@ -276,16 +277,18 @@ class MLAlgoCalibration:
 
     def execute(
         self,
-        input_data: ScenarioInputDataType,
+        algo_name: str,
+        **algo_settings: Any,
     ) -> None:
         """Calibrate the machine learning algorithm from a driver.
 
         The driver can be either a DOE or an optimizer.
 
         Args:
-            input_data: The driver properties.
+            algo_name: The name of the algorithm.
+            **algo_settings: The settings of the algorithm.
         """
-        if DOELibraryFactory().is_available(input_data["algo"]):
+        if DOELibraryFactory().is_available(algo_name):
             cls = DOEScenario
         else:
             cls = MDOScenario
@@ -298,7 +301,7 @@ class MLAlgoCalibration:
             maximize_objective=self.maximize_objective,
         )
         self.scenario.add_observable(self.algo_assessor.LEARNING)
-        self.scenario.execute(**input_data)
+        self.scenario.execute(algo_name=algo_name, **algo_settings)
         self.dataset = self.scenario.to_dataset(opt_naming=False)
         self.optimal_parameters = self.scenario.optimization_result.x_opt_as_dict
         self.optimal_criterion = self.scenario.optimization_result.f_opt

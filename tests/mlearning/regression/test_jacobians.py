@@ -73,7 +73,7 @@ def create_dataset(
     scenario = DOEScenario(
         [discipline], "DisciplinaryOpt", objective_name, design_space
     )
-    scenario.execute(algo="lhs", n_samples=LEARNING_SIZE)
+    scenario.execute(algo_name="lhs", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset(dataset_name)
 
 

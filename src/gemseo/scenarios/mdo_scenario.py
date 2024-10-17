@@ -19,55 +19,19 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
-"""A scenario whose driver is an optimization algorithm."""
+"""A multidisciplinary scenario to be executed by an optimizer."""
 
 from __future__ import annotations
 
-import logging
-from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from pydantic import Field
-from pydantic import model_validator
-
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.scenarios.scenario import Scenario
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-
-LOGGER = logging.getLogger(__name__)
+from gemseo.scenarios.base_scenario import BaseScenario
 
 
-class MDOScenario(Scenario):
-    """A multidisciplinary scenario to be executed by an optimizer.
-
-    an :class:`.MDOScenario` is a particular :class:`.Scenario` whose driver is an
-    optimization algorithm. This algorithm must be implemented in an
-    :class:`.BaseOptimizationLibrary`.
-    """
+class MDOScenario(BaseScenario):
+    """A multidisciplinary scenario to be executed by an optimizer."""
 
     _ALGO_FACTORY_CLASS: ClassVar[type[OptimizationLibraryFactory]] = (
         OptimizationLibraryFactory
     )
-
-    class _BaseSettings(Scenario._BaseSettings):
-        max_iter: int = Field(..., gt=0, description="The maximum number of iterations")
-
-        @model_validator(mode="after")
-        def check_max_iter(self) -> Self:
-            if "max_iter" in self.algo_options:
-                LOGGER.warning(
-                    "Double definition of algorithm option max_iter, keeping value: %s",
-                    self.max_iter,
-                )
-                self.algo_options.pop("max_iter")
-            return self
-
-    def _run(self) -> None:
-        algo = self._algo_factory.create(self._settings.algo)
-        self.optimization_result = algo.execute(
-            self.formulation.optimization_problem,
-            max_iter=self._settings.max_iter,
-            **self._settings.algo_options,
-        )

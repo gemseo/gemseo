@@ -68,7 +68,7 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
         scenario = DOEScenario(
             [discipline], "DisciplinaryOpt", objective_name, design_space
         )
-        scenario.execute(algo="DiagonalDOE", n_samples=n_samples)
+        scenario.execute(algo_name="DiagonalDOE", n_samples=n_samples)
     design_variables = [X_SHARED, X_1]
     objective_name = OBJ
     os.mkdir("study_1")

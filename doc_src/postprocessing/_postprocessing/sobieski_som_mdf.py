@@ -35,12 +35,10 @@ scenario = create_scenario(
 
 scenario.set_differentiation_method()
 
-algo_options = {"max_iter": 1000, "algo": "SLSQP"}
-
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
-scenario.execute(algo_options)
+scenario.execute(algo_name="SLSQP", max_iter=1000)
 
 scenario.post_process(
     "SOM", n_x=4, n_y=4, save=True, show=False, file_path="mdf", extension="png"

@@ -54,19 +54,14 @@ parametrized_options = pytest.mark.parametrize(
     [
         {
             "max_iter": 50,
-            "algo_options": {
-                "kkt_tol_abs": 1e-4,
-                "sub_algorithm_name": "SLSQP",
-                "sub_algorithm_settings": {"max_iter": 50},
-            },
+            "kkt_tol_abs": 1e-4,
+            "sub_algorithm_name": "SLSQP",
+            "sub_algorithm_settings": {"max_iter": 50},
         },
         {
             "max_iter": 50,
-            "algo_options": {
-                "sub_algorithm_name": "SLSQP",
-                "max_iter": 50,
-                "sub_algorithm_settings": {"max_iter": 50},
-            },
+            "sub_algorithm_name": "SLSQP",
+            "sub_algorithm_settings": {"max_iter": 50},
         },
     ],
 )
@@ -89,16 +84,13 @@ def test_2d_ineq(
     analytical_test_2d_ineq, options, algo, reformulate_constraints_with_slack_var
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    if (
-        algo == "Augmented_Lagrangian_order_0"
-        and "kkt_tol_abs" in options["algo_options"]
-    ):
-        options["algo_options"].pop("kkt_tol_abs")
-    opt = options.copy()
+    if algo == "Augmented_Lagrangian_order_0" and "kkt_tol_abs" in options:
+        options.pop("kkt_tol_abs")
+
     problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo, "opt", **opt["algo_options"])
+    execute_algo(problem, algo, "opt", **options.copy())
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:
@@ -122,9 +114,7 @@ def test_2d_ineq(
 @parametrized_algo
 def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    opt = options.copy()
-    opt["algo"] = algo
-    analytical_test_2d_eq.execute(**opt)
+    analytical_test_2d_eq.execute(algo, **options.copy())
     problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -139,9 +129,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
 @parametrized_algo
 def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    opt = options.copy()
-    opt["algo"] = algo
-    analytical_test_2d__multiple_eq.execute(**opt)
+    analytical_test_2d__multiple_eq.execute(algo, **options.copy())
     problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -173,13 +161,12 @@ def test_2d_mixed(
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    opt["algo"] = algo
-    opt["algo_options"]["sub_problem_constraints"] = subsolver_constraints
-    opt["algo_options"]["ftol_rel"] = 1e-3
+    opt["sub_problem_constraints"] = subsolver_constraints
+    opt["ftol_rel"] = 1e-3
     problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo, "opt", **opt["algo_options"])
+    execute_algo(problem, algo, "opt", **opt)
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:

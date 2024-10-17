@@ -67,7 +67,7 @@ The :func:`.get_available_disciplines` function can list the available disciplin
 .. code::
 
    >>> get_available_disciplines()
-   ['RosenMF', 'Struct', 'SobieskiAerodynamics', 'DOEScenario', 'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1', 'Sellar2', 'Aero', 'MDOChain', 'SobieskiStructure', 'Aerostruct', 'SobieskiPropulsion', 'Scenario', 'AnalyticDiscipline', 'MDOScenarioAdapter', 'SellarSystem', 'ScalableFittedDiscipline', 'PropaneReaction', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'MDOParallelChain']
+   ['RosenMF', 'Struct', 'SobieskiAerodynamics', 'DOEScenario', 'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1', 'Sellar2', 'Aero', 'MDOChain', 'SobieskiStructure', 'Aerostruct', 'SobieskiPropulsion', 'BaseScenario', 'AnalyticDiscipline', 'MDOScenarioAdapter', 'SellarSystem', 'ScalableFittedDiscipline', 'PropaneReaction', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'MDOParallelChain']
 
 
 Create a discipline

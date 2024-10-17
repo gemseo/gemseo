@@ -29,7 +29,7 @@ from gemseo.utils.singleton import SingleInstancePerAttributeId
 if TYPE_CHECKING:
     from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
     from gemseo.core.execution_status import ExecutionStatus
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
     class Observer(Protocol):
         """API of an observer."""
@@ -59,7 +59,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
     # TODO: API: pass the workflow instead of the scenario since this is only what
     # matters.
     # TODO: API: make attr private.
-    def __init__(self, scenario: Scenario) -> None:
+    def __init__(self, scenario: BaseScenario) -> None:
         """
         Args:
             scenario: The scenario to be monitored.

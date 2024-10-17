@@ -99,5 +99,5 @@ def test_statistics(scalable_problem) -> None:
     scalable_problem.get_execution_duration()
     scalable_problem.n_calls  # noqa: B018
     scalable_problem.n_calls_linearize  # noqa: B018
-    scalable_problem.scenario.execute(algo="SLSQP", max_iter=100)
+    scalable_problem.scenario.execute(algo_name="SLSQP", max_iter=100)
     scalable_problem.status  # noqa: B018

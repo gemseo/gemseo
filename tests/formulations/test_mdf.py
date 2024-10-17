@@ -36,7 +36,12 @@ class TestMDFFormulation(FormulationsBaseTest):
 
     # Complex step mdf already tested on propane, lighter
     def build_and_run_mdf_scenario_with_constraints(
-        self, formulation, algo="SLSQP", linearize=False, dtype="complex128", **options
+        self,
+        formulation,
+        algo="SLSQP",
+        linearize=False,
+        dtype="complex128",
+        **options,
     ):
         """
 
@@ -58,9 +63,10 @@ class TestMDFFormulation(FormulationsBaseTest):
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
         scenario.execute(
+            algo_name=algo,
             max_iter=100,
-            algo=algo,
-            algo_options={"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
+            ftol_rel=1e-10,
+            ineq_tolerance=1e-3,
         )
         scenario.print_execution_metrics()
         return scenario.optimization_result.f_opt
@@ -104,11 +110,11 @@ def test_reset():
     initial_current_value = design_space.get_current_value()
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
-    scenario.execute(algo="SLSQP", max_iter=5)
+    scenario.execute(algo_name="SLSQP", max_iter=5)
     final_current_value = design_space.get_current_value()
 
     scenario.formulation.optimization_problem.reset(design_space=True)
     assert_allclose(design_space.get_current_value(), initial_current_value)
 
-    scenario.execute(algo="SLSQP", max_iter=5)
+    scenario.execute(algo_name="SLSQP", max_iter=5)
     assert_allclose(design_space.get_current_value(), final_current_value)

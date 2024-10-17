@@ -137,7 +137,7 @@ scenario = create_scenario(
 
 # %%
 # Lastly, we execute the process with the :term:`LHS` algorithm and 30 samples.
-scenario.execute({"n_samples": 30, "algo": "lhs"})
+scenario.execute(algo_name="lhs", n_samples=30)
 mission_dataset = scenario.to_dataset(opt_naming=False)
 
 # %%
@@ -215,7 +215,7 @@ scenario = create_scenario(
     design_space,
     maximize_objective=True,
 )
-scenario.execute({"max_iter": 30, "algo": "L-BFGS-B"})
+scenario.execute(algo_name="L-BFGS-B", max_iter=30)
 
 # %%
 # Available surrogate models

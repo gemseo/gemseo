@@ -153,7 +153,7 @@ def test_add_user_defined_constraint_error(mdf_scenario) -> None:
 @pytest.mark.parametrize("file_format", OptimizationProblem.HistoryFileFormat)
 def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd) -> None:
     file_path = Path("file_name")
-    mdf_scenario.execute(algo="SLSQP", max_iter=2)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=2)
     mdf_scenario.save_optimization_history(str(file_path), file_format=file_format)
     assert file_path.exists()
 
@@ -258,7 +258,7 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
     """
     file_path = Path("opt_history.h5")
     mdf_scenario.set_optimization_history_backup(file_path, plot=plot)
-    mdf_scenario.execute(algo="SLSQP", max_iter=4)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=4)
     for suffix in [
         "ineq_constraints",
         "objective",
@@ -281,7 +281,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     """
     filename = "opt_history.h5"
     mdf_variable_grammar_scenario.set_optimization_history_backup(filename, load=True)
-    mdf_variable_grammar_scenario.execute(algo="SLSQP", max_iter=2)
+    mdf_variable_grammar_scenario.execute(algo_name="SLSQP", max_iter=2)
     opt_read = OptimizationProblem.from_hdf(filename)
 
     assert len(opt_read.database) == len(
@@ -349,11 +349,7 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     # Monitor in the console
     idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
 
-    idf_scenario.default_input_data = {
-        "max_iter": 1,
-        "algo": "SLSQP",
-        "algo_options": {"max_iter": 1},
-    }
+    idf_scenario.set_algorithm("SLSQP", max_iter=1)
 
     inputs = ["x_shared"]
     outputs = ["y_4"]
@@ -448,7 +444,7 @@ def test_run_log(mdf_scenario, caplog) -> None:
     """Check the log message of Scenario._run."""
     mdf_scenario._execute = lambda: None
     mdf_scenario.name = "ABC Scenario"
-    mdf_scenario.execute(max_iter=1, algo="SLSQP")
+    mdf_scenario.execute(max_iter=1, algo_name="SLSQP")
     strings = [
         "*** Start ABC Scenario execution ***",
         "*** End ABC Scenario execution (time: 0:00:00) ***",
@@ -459,18 +455,18 @@ def test_run_log(mdf_scenario, caplog) -> None:
 
 def test_clear_history_before_run(mdf_scenario) -> None:
     """Check that clear_history_before_execute is correctly used in Scenario._run."""
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
     def run_algorithm_mock() -> None:
         pass
 
     mdf_scenario._run = run_algorithm_mock
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
     mdf_scenario.clear_history_before_execute = True
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 0
 
 
@@ -485,7 +481,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
     """Check the print of the execution metrics w.r.t."""
     activate_counters = ExecutionStatistics.is_enabled
     ExecutionStatistics.is_enabled = activate
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     mdf_scenario.print_execution_metrics()
     assert text in caplog.text
     ExecutionStatistics.is_enabled = activate_counters
@@ -493,7 +489,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
 
 def test_get_execution_metrics(mdf_scenario) -> None:
     """Check the string returned byecution_metrics."""
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     expected = re.compile(
         "Scenario Execution Statistics\n"
         "   Discipline: SobieskiPropulsion\n"
@@ -516,7 +512,7 @@ def test_get_execution_metrics(mdf_scenario) -> None:
         "   Total number of linearizations: 4"
     )
 
-    assert expected.match(str(mdf_scenario._Scenario__get_execution_metrics()))
+    assert expected.match(str(mdf_scenario._BaseScenario__get_execution_metrics()))
 
 
 def mocked_export_to_dataset(
@@ -538,7 +534,7 @@ def mocked_export_to_dataset(
 
 def test_export_to_dataset(mdf_scenario) -> None:
     """Check that to_dataset calls OptimizationProblem.to_dataset."""
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     mdf_scenario.to_dataset = mocked_export_to_dataset
     dataset = mdf_scenario.to_dataset(
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
@@ -572,9 +568,7 @@ def complex_step_scenario() -> MDOScenario:
 def test_complex_step(complex_step_scenario, normalize_design_space) -> None:
     """Check that complex step approximation works correctly."""
     complex_step_scenario.execute(
-        algo="SLSQP",
-        max_iter=10,
-        algo_options={"normalize_design_space": normalize_design_space},
+        algo_name="SLSQP", max_iter=10, normalize_design_space=normalize_design_space
     )
 
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
@@ -613,7 +607,7 @@ def test_use_standardized_objective(
     assert scenario.use_standardized_objective
     scenario.use_standardized_objective = standardize
     assert scenario.use_standardized_objective is standardize
-    scenario.execute(algo="SLSQP", max_iter=10)
+    scenario.execute(algo_name="SLSQP", max_iter=10)
     assert expr in caplog.text
     assert f"Objective: {val}" in caplog.text
     assert f"obj={int(val)}" in caplog.text
@@ -868,7 +862,7 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     Args:
         mdf_scenario: A fixture for the MDOScenario.
     """
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     mdf_scenario.formulation.optimization_problem.reset(
         database=False, design_space=False
     )
@@ -879,14 +873,14 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     with open("scenario.pkl", "rb") as file:
         pickled_scenario = pickle.load(file)
 
-    pickled_scenario.execute(algo="SLSQP", max_iter=1)
+    pickled_scenario.execute(algo_name="SLSQP", max_iter=1)
 
 
 def test_get_result(mdf_scenario) -> None:
     """Check get_result."""
     assert mdf_scenario.get_result() is None
 
-    mdf_scenario.execute(algo="SLSQP", max_iter=1)
+    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     assert mdf_scenario.get_result().design_variable_names_to_values
 
     with pytest.raises(
@@ -962,8 +956,7 @@ def test_scenario_to_dataset(tmp_wd):
     scenario.add_observable("name")
 
     scenario.execute(
-        algo="CustomDOE",
-        algo_options={"samples": array([[0.0, 0.0, 1], [3.0, 3.0, 5]])},
+        algo_name="CustomDOE", samples=array([[0.0, 0.0, 1], [3.0, 3.0, 5]])
     )
     dataset = scenario.to_dataset(name="foo", opt_naming=False)
 

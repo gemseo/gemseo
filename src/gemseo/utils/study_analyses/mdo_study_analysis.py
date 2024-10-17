@@ -31,7 +31,7 @@ from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
-from gemseo.scenarios.scenario import Scenario
+from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
@@ -104,11 +104,14 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
     .. table:: Scenario1
 
         +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
-        | Design variables | Objective function | Constraints | Disciplines | Formulation |    Options    | Options values |
+        | Design variables | Objective function | Constraints | Disciplines |
+        Formulation |    Options    | Options values |
         +==================+====================+=============+=============+=============+===============+================+
-        |       in1        |       out1         |    out2     |    Disc1    |    MDF      |   tolerance   |       0.1      |
+        |       in1        |       out1         |    out2     |    Disc1    |    MDF
+            |   tolerance   |       0.1      |
         +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
-        |                  |                    |             |    Disc2    |             | main_mda_name |   MDAJacobi    |
+        |                  |                    |             |    Disc2    |
+            | main_mda_name |   MDAJacobi    |
         +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
 
     These columns must satisfy some constraints:
@@ -234,7 +237,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
                 disciplines = self._get_disciplines_instances(scenario_description)
                 if disciplines:  # All dependencies resolved
                     for discipline in disciplines:
-                        if not isinstance(discipline, Scenario):
+                        if not isinstance(discipline, BaseScenario):
                             non_scenario_disciplines[discipline.name] = discipline
 
                     scenario = self._create_scenario(disciplines, scenario_description)

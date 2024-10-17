@@ -212,8 +212,7 @@ scenario.formulation.optimization_problem.apply_exterior_penalty(
 # %%
 # In this way the L-BFGS-B algorithm can be used to solve the optimization problem.
 # Note that this algorithm is not suited for constrained optimization problems.
-algo_args = {"max_iter": 10, "algo": "L-BFGS-B"}
-scenario.execute(algo_args)
+scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 # %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~

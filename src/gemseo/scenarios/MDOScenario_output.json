@@ -1,8 +1,0 @@
-{
-  "name": "MDOScenario_output",
-  "required": [],
-  "properties": {},
-  "$schema": "http://json-schema.org/draft-04/schema",
-  "type": "object",
-  "id": "#MDOScenario_output"
-}

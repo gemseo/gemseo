@@ -49,7 +49,7 @@ by defining both deterministic and uncertain variables.
 It can already be used in a :class:`.DOEScenario` to sample a multidisciplinary system.
 Moreover,
 the |g| community is currently working on extending its use to
-any kind of :class:`.Scenario` for robust MDO purposes (see :ref:`roadmap`)
+any kind of :class:`.BaseScenario` for robust MDO purposes (see :ref:`roadmap`)
 by means of dedicated MDO formulations.
 
 The package *uncertainty*

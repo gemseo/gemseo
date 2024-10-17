@@ -168,7 +168,7 @@ def test_jac_pb(design_space) -> None:
         "r",
         design_space,
     )
-    scn.execute(algo=algo, max_iter=max_iter)
+    scn.execute(algo_name=algo, max_iter=max_iter)
 
     assert fopt_ref == scn.optimization_result.f_opt
 

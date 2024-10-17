@@ -152,8 +152,8 @@ from strenum import StrEnum
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets.factory import DatasetFactory as __DatasetFactory
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
-from gemseo.scenarios.scenario import Scenario
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
@@ -830,7 +830,7 @@ def get_scenario_options_schema(
 
 
 def get_scenario_inputs_schema(
-    scenario: Scenario,
+    scenario: BaseScenario,
     output_json: bool = False,
     pretty_print: bool = False,
 ) -> str | dict[str, Any]:
@@ -1054,7 +1054,7 @@ def create_scenario(
     scenario_type: str = "MDO",
     maximize_objective: bool = False,
     **formulation_options: Any,
-) -> Scenario:
+) -> BaseScenario:
     """Initialize a scenario.
 
     Args:
@@ -1377,7 +1377,7 @@ def create_mda(
 
 
 def execute_post(
-    to_post_proc: Scenario | OptimizationProblem | str | Path,
+    to_post_proc: BaseScenario | OptimizationProblem | str | Path,
     post_name: str,
     **options: Any,
 ) -> BasePost:
@@ -1404,7 +1404,7 @@ def execute_post(
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
         'SellarMDFScenario')
-        >>> scenario.execute(**{"algo": "NLOPT_SLSQP", "max_iter": 100})
+        >>> scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
         >>> execute_post(scenario, "OptHistoryView", show=False, save=True)
 
     See Also:
@@ -1414,7 +1414,7 @@ def execute_post(
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.post.factory import PostFactory
 
-    if isinstance(to_post_proc, Scenario):
+    if isinstance(to_post_proc, BaseScenario):
         opt_problem = to_post_proc.formulation.optimization_problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
@@ -1475,7 +1475,7 @@ def execute_algo(
 
 
 def monitor_scenario(
-    scenario: Scenario,
+    scenario: BaseScenario,
     observer,
 ) -> None:
     """Add an observer to a scenario.
@@ -2164,7 +2164,7 @@ def wrap_discipline_in_job_scheduler(
 
 
 def create_scenario_result(
-    scenario: Scenario | str | Path,
+    scenario: BaseScenario | str | Path,
     name: str = "",
     **options: Any,
 ) -> ScenarioResult | None:
@@ -2256,7 +2256,7 @@ def sample_disciplines(
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
-    scenario.execute(algo=algo_name, n_samples=n_samples, algo_options=algo_options)
+    scenario.execute(algo_name=algo_name, n_samples=n_samples, **algo_options)
     return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )

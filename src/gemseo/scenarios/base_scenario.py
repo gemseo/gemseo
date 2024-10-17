@@ -27,7 +27,6 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from datetime import timedelta
 from pathlib import Path
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -60,6 +59,7 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
@@ -71,7 +71,6 @@ if TYPE_CHECKING:
     from gemseo.post.base_post import BasePostOptionType
     from gemseo.post.factory import PostFactory
     from gemseo.utils.xdsm import XDSM
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -107,7 +106,7 @@ class _ScenarioProcessFlow(BaseProcessFlow):
         return [self._node]
 
 
-class Scenario(BaseMonitoredProcess):
+class BaseScenario(BaseMonitoredProcess):
     """Base class for the scenarios.
 
     The instantiation of a :class:`.Scenario` creates an :class:`.OptimizationProblem`,
@@ -136,10 +135,10 @@ class Scenario(BaseMonitoredProcess):
         The final class is assigned to :attr:`.Settings`.
         """
 
-        algo: str = Field(..., description="The name of the algorithm.")
+        algo_name: str = Field(..., description="The name of the algorithm.")
 
-        algo_options: dict[str, Any] = Field(
-            default_factory=dict, description="The options for the algorithm."
+        algo_settings: dict[str, Any] = Field(
+            default_factory=dict, description="The settings for the algorithm."
         )
 
     _algo_enum: ClassVar[type[StrEnum]]
@@ -152,11 +151,8 @@ class Scenario(BaseMonitoredProcess):
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of :meth:`.execute`."""
 
-    _settings: Settings
-    """The execution settings."""
-
-    # TODO: API: rename, and deal within the pydantic model?
-    default_input_data = MappingProxyType({})
+    _settings: Settings | None
+    """The algorithm name and settings (``None`` before execution)."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ScenarioProcessFlow
 
@@ -234,6 +230,27 @@ class Scenario(BaseMonitoredProcess):
         self.formulation.optimization_problem.database.name = self.name
         self.clear_history_before_run = False
         self.__history_backup_is_set = False
+        self._settings = None
+
+    def set_algorithm(
+        self,
+        name: str,
+        settings_model: BaseDriverLibrarySettings | None = None,
+        **settings: Any,
+    ) -> None:
+        """Define the algorithm to execute the scenario.
+
+        Args:
+            name: The name of the algorithm.
+            settings_model: The algorithm settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The algorithm settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
+        """
+        if settings_model is not None:
+            settings = {"settings_model": settings_model}
+
+        self._settings = self.Settings(algo_name=name, algo_settings=settings)
 
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
@@ -258,7 +275,9 @@ class Scenario(BaseMonitoredProcess):
         )
 
         class Settings(cls._BaseSettings):
-            algo: cls._algo_enum = Field(..., description="The name of the algorithm.")
+            algo_name: cls._algo_enum = Field(
+                ..., description="The name of the algorithm."
+            )
 
         Settings.__module__ = cls.__module__
         Settings.__qualname__ = cls.__qualname__ + ".Settings"
@@ -437,6 +456,7 @@ class Scenario(BaseMonitoredProcess):
         self,
         file_path: str | Path,
         file_format: OptimizationProblem.HistoryFileFormat = OptimizationProblem.HistoryFileFormat.HDF5,  # noqa: E501
+        # noqa: E501
         append: bool = False,
     ) -> None:
         """Save the optimization history of the scenario to a file.
@@ -561,15 +581,29 @@ class Scenario(BaseMonitoredProcess):
             self.formulation.optimization_problem, post_name, **options
         )
 
-    def execute(self, **settings: Any) -> None:
+    def execute(
+        self,
+        algo_name: str = "",
+        algo_settings_model: BaseDriverLibrarySettings | None = None,
+        **algo_settings: Any,
+    ) -> None:
         """Execute a scenario.
 
         Args:
-            **settings: The settings of the scenario.
+            algo_name: The name of the algorithm.
+                If empty,
+                the method will use the settings defined by :meth:`.set_algorithm`
+                and ignore ``algo_settings_model`` and ``algo_settings``.
+            algo_settings_model: The algorithm settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **algo_settings: The algorithm settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
         """
-        options = self.default_input_data.copy()
-        options.update(settings)
-        self._settings = self.Settings(**options)
+        if algo_name:
+            self.set_algorithm(
+                algo_name, settings_model=algo_settings_model, **algo_settings
+            )
+
         t_0 = timeit.default_timer()
         LOGGER.info(" ")
         LOGGER.info("*** Start %s execution ***", self.name)
@@ -595,6 +629,13 @@ class Scenario(BaseMonitoredProcess):
             if 0 < n_x < n_x_a:
                 x_vect = database.get_x_vect(n_x_a)
                 self._execute_backup_callback(x_vect)
+
+    def _run(self) -> None:
+        self.optimization_result = self._algo_factory.execute(
+            self.formulation.optimization_problem,
+            self._settings.algo_name,
+            **self._settings.algo_settings,
+        )
 
     def _get_string_representation(self) -> str:
         msg = MultiLineString()

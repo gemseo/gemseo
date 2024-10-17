@@ -223,7 +223,7 @@ scenario.set_differentiation_method("finite_differences")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute({"max_iter": 10, "algo": "SLSQP"})
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # Post-process the scenario

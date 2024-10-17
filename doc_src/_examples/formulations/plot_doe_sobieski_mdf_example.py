@@ -138,7 +138,7 @@ algo_options = {
     "n_processes": 1 if os_name == "nt" else 4,
 }
 
-scenario.execute({"n_samples": 30, "algo": "lhs", "algo_options": algo_options})
+scenario.execute(algo_name="lhs", n_samples=30, **algo_options)
 
 # %%
 # .. warning::

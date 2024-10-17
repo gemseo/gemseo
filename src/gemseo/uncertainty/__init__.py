@@ -206,7 +206,7 @@ def create_statistics(
         ...     parameter_space,
         ...     scenario_type="DOE",
         ... )
-        >>> scenario.execute(**{"algo": "OT_MONTE_CARLO", "n_samples": 100})
+        >>> scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)
         >>>
         >>> dataset = scenario.to_dataset(opt_naming=False)
         >>>

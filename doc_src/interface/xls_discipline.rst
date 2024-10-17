@@ -112,7 +112,7 @@ provide two samples to be evaluated:
    sample_1 = [1, 2]  # a=1, b=2
    sample_2 = [2, 3]  # a=2, b=3
    samples = array([sample_1, sample_2])
-   scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
+   scenario.execute(algo_name="CustomDOE", samples=samples)
    print(scenario.to_dataset().export_to_dataframe())
 
 Which prints the results of the computation as follows:
@@ -164,18 +164,13 @@ If we wanted to run the previously defined scenario in parallel, then the discip
 
    xls_discipline = XLSDiscipline('my_book.xlsx', copy_xls_at_setstate=True)
 
-The algo options would change as well to request the number of processes to run:
-
-.. code-block:: python
-
-   input_data = {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
-
-And the execution call shall be protected:
+The algo settings would change as well to request the number of processes to run:
+and the execution call shall be protected:
 
 .. code-block:: python
 
    if __name__ == '__main__':
-       scenario.execute(input_data)
+       scenario.execute(algo_name="CustomDOE", samples=samples, n_processes=2)
 
 
 Multithreading
@@ -213,8 +208,7 @@ The scenario execution remains the same:
 
 .. code-block:: python
 
-   input_data = {"algo": "CustomDOE", "algo_options": {"samples": samples}}
-   scenario.execute(input_data)
+   scenario.execute(algo_name="CustomDOE", samples=samples)
 
 Multiprocessing & Multithreading
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -245,17 +239,12 @@ The scenario would be created as follows:
    )
 
 The algo options would change as well to request the number of processes to run:
-
-.. code-block:: python
-
-   input_data = {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
-
-And the execution call shall be protected:
+and the execution call shall be protected:
 
 .. code-block:: python
 
    if __name__ == '__main__':
-       scenario.execute(input_data)
+       scenario.execute(algo_name="CustomDOE", samples=samples, n_processes=2)
 
 
 What about macros?

@@ -97,7 +97,7 @@ scenario = create_scenario(
 # Precisely, we choose a `full factorial design
 # <https://en.wikipedia.org/wiki/Factorial_experiment>`_ of size :math:`11^2`:
 
-scenario.execute(algo="fullfact", n_samples=11**2)
+scenario.execute(algo_name="fullfact", n_samples=11**2)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to

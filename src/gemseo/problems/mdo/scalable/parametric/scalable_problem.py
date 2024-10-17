@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from gemseo.scenarios.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 class ScalableProblem(_ScalableProblem):
@@ -77,7 +77,7 @@ class ScalableProblem(_ScalableProblem):
         use_optimizer: bool = True,
         formulation_name: str = "MDF",
         **formulation_options: Any,
-    ) -> Scenario:
+    ) -> BaseScenario:
         """Create the DOE or MDO scenario associated with this scalable problem.
 
         Args:

@@ -99,7 +99,7 @@ The DOE algorithm is ``'DiagonalDOE'`` and use a sampling of size ``n_samples=30
    output = sellar.get_output_data_names()[0]
    scenario = create_scenario([sellar], 'DisciplinaryOpt', output,
                               design_space, scenario_type='DOE')
-   scenario.execute({'algo': 'DiagonalDOE', 'n_samples': 30})
+   scenario.execute(algo_name='DiagonalDOE', n_samples=30)
 
 A :class:`.DiagonalDOE` consists of equispaced points located on the diagonal of the design space.
 

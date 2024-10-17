@@ -30,6 +30,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.scipy_local._settings.slsqp import SLSQPSettings
 from gemseo.core._process_flow.execution_sequences.execution_sequence import (
     ExecutionSequence,
 )
@@ -198,15 +199,15 @@ def test_xdsmize_bilevel(options) -> None:
     structure = SobieskiStructure()
     mission = SobieskiMission()
 
-    algo_options = {
-        "xtol_rel": 1e-7,
-        "xtol_abs": 1e-7,
-        "ftol_rel": 1e-7,
-        "ftol_abs": 1e-7,
-        "ineq_tolerance": 1e-4,
-        "eq_tolerance": 1e-2,
-    }
-    sub_sc_opts = {"max_iter": 100, "algo": "SLSQP", "algo_options": algo_options}
+    settings_model = SLSQPSettings(
+        max_iter=100,
+        xtol_rel=1e-7,
+        xtol_abs=1e-7,
+        ftol_rel=1e-7,
+        ftol_abs=1e-7,
+        ineq_tolerance=1e-4,
+        eq_tolerance=1e-2,
+    )
     sc_prop = MDOScenario(
         disciplines=[propulsion],
         formulation="DisciplinaryOpt",
@@ -214,7 +215,7 @@ def test_xdsmize_bilevel(options) -> None:
         design_space=deepcopy(design_space).filter("x_3"),
         name="PropulsionScenario",
     )
-    sc_prop.default_input_data = sub_sc_opts
+    sc_prop.set_algorithm("SLSQP", settings_model=settings_model)
     sc_prop.add_constraint("g_3", constraint_type="ineq")
 
     sc_aero = MDOScenario(
@@ -225,7 +226,7 @@ def test_xdsmize_bilevel(options) -> None:
         name="AerodynamicsScenario",
         maximize_objective=True,
     )
-    sc_aero.default_input_data = sub_sc_opts
+    sc_prop.set_algorithm("SLSQP", settings_model=settings_model)
     sc_aero.add_constraint("g_2", constraint_type="ineq")
 
     sc_str = MDOScenario(
@@ -237,7 +238,7 @@ def test_xdsmize_bilevel(options) -> None:
         maximize_objective=True,
     )
     sc_str.add_constraint("g_1", constraint_type="ineq")
-    sc_str.default_input_data = sub_sc_opts
+    sc_prop.set_algorithm("SLSQP", settings_model=settings_model)
 
     sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 
