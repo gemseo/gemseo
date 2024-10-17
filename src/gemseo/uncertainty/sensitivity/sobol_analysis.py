@@ -362,7 +362,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             .to_numpy()[: 2 * sample_size]
             .var(0),
             dataset.variable_names_to_n_components,
-            self._output_names,
+            dataset.output_names,
         )
         self.dataset.misc["output_variances"] = output_variances
         self.dataset.misc["output_standard_deviations"] = {
