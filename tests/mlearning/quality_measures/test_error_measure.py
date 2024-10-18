@@ -82,8 +82,8 @@ def test_dataset() -> IODataset:
     return dataset
 
 
-@pytest.mark.parametrize("input_names", [None, ["x1"]])
-@pytest.mark.parametrize("output_names", [None, ["y2"]])
+@pytest.mark.parametrize("input_names", [(), ("x1",)])
+@pytest.mark.parametrize("output_names", [(), ("y2",)])
 @pytest.mark.parametrize(
     "method",
     [
@@ -125,7 +125,7 @@ def test_subset_of_inputs_and_outputs(
             tolerance=1e-3,
         )
         result = evaluate(multioutput=False, as_dict=True, **kwargs)
-        if output_names is not None:
+        if output_names:
             assert compare_dict_of_arrays(
                 result,
                 {output_names[0]: array([expected])},

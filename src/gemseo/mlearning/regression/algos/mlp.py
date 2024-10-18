@@ -22,19 +22,15 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 import sklearn.neural_network
 from numpy import newaxis
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.mlp_settings import MLPRegressorSettings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import NumberArray
 
 
@@ -44,29 +40,14 @@ class MLPRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_ALGO_NAME: ClassVar[str] = "MLP"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        hidden_layer_sizes: tuple[int] = (100,),
-        **parameters: Any,
-    ) -> None:
-        """
-        Args:
-            hidden_layer_sizes: The number of neurons per hidden layer.
-        """  # noqa: D205 D212 D415
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            hidden_layer_sizes=hidden_layer_sizes,
-            **parameters,
-        )
+    Settings: ClassVar[type[MLPRegressorSettings]] = MLPRegressorSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.algo = sklearn.neural_network.MLPRegressor(
-            hidden_layer_sizes=hidden_layer_sizes, **parameters
+            hidden_layer_sizes=self._settings.hidden_layer_sizes,
+            random_state=self._settings.random_state,
+            **self._settings.parameters,
         )
 
     def _fit(

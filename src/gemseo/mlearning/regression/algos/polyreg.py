@@ -77,8 +77,6 @@ linear_model.html>`_.
 
 from __future__ import annotations
 
-import pickle
-from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -88,14 +86,13 @@ from numpy import zeros
 from sklearn.preprocessing import PolynomialFeatures
 
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.polyreg_settings import (
+    PolynomialRegressorSettings,
+)
 from gemseo.utils.compatibility.sklearn import get_n_input_features_
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -104,49 +101,17 @@ class PolynomialRegressor(LinearRegressor):
 
     SHORT_ALGO_NAME: ClassVar[str] = "PolyReg"
 
-    def __init__(
-        self,
-        data: IODataset,
-        degree: int,
-        transformer: TransformerType = LinearRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        fit_intercept: bool = True,
-        penalty_level: float = 0.0,
-        l2_penalty_ratio: float = 1.0,
-        **parameters: float | str | bool | None,
-    ) -> None:
-        """
-        Args:
-            degree: The polynomial degree.
-            fit_intercept: Whether to fit the intercept.
-            penalty_level: The penalty level greater or equal to 0.
-                If 0, there is no penalty.
-            l2_penalty_ratio: The penalty ratio
-                related to the l2 regularization.
-                If 1, the penalty is the Ridge penalty.
-                If 0, this is the Lasso penalty.
-                Between 0 and 1, the penalty is the ElasticNet penalty.
+    Settings: ClassVar[type[PolynomialRegressorSettings]] = PolynomialRegressorSettings
 
+    def _post_init(self):
+        """
         Raises:
             ValueError: If the degree is lower than one.
         """  # noqa: D205 D212
-        if degree < 1:
-            msg = "Degree must be >= 1."
-            raise ValueError(msg)
-        super().__init__(
-            data,
-            degree=degree,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            fit_intercept=fit_intercept,
-            penalty_level=penalty_level,
-            l2_penalty_ratio=l2_penalty_ratio,
-            **parameters,
+        super()._post_init()
+        self._poly = PolynomialFeatures(
+            degree=self._settings.degree, include_bias=False
         )
-        self._poly = PolynomialFeatures(degree=degree, include_bias=False)
-        self.parameters["degree"] = degree
 
     def _fit(
         self,
@@ -246,21 +211,3 @@ class PolynomialRegressor(LinearRegressor):
             )
             raise NotImplementedError(msg)
         return self.coefficients
-
-    def _save_algo(
-        self,
-        directory: Path,
-    ) -> None:
-        super()._save_algo(directory)
-        with (directory / "poly.pkl").open("wb") as handle:
-            pickle.dump(self._poly, handle)
-
-    def load_algo(  # noqa: D102
-        self,
-        directory: str | Path,
-    ) -> None:
-        directory = Path(directory)
-        super().load_algo(directory)
-        with (directory / "poly.pkl").open("rb") as handle:
-            poly = pickle.load(handle)
-        self._poly = poly

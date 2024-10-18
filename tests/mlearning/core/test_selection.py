@@ -95,8 +95,8 @@ def test_add_candidate(dataset) -> None:
     cand = selector.candidates[-1]
     assert isinstance(cand[0], PolynomialRegressor)
     assert isinstance(cand[1], float)
-    assert cand[0].parameters["degree"] in degrees
-    assert cand[0].parameters["fit_intercept"] == fit_int
+    assert cand[0]._settings.degree in degrees
+    assert cand[0]._settings.fit_intercept == fit_int
 
     # Add RBF candidate
     space = DesignSpace()
@@ -106,9 +106,9 @@ def test_add_candidate(dataset) -> None:
     cand = selector.candidates[-1]
     assert isinstance(cand[0], RBFRegressor)
     assert isinstance(cand[1], float)
-    assert isinstance(cand[0].parameters["smooth"], float)
-    assert cand[0].parameters["smooth"] >= 0
-    assert cand[0].parameters["smooth"] <= 10
+    assert isinstance(cand[0]._settings.smooth, float)
+    assert cand[0]._settings.smooth >= 0
+    assert cand[0]._settings.smooth <= 10
 
 
 @pytest.mark.parametrize("measure_evaluation_method_name", ["KFOLDS", "LEARN"])

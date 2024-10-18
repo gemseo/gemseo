@@ -100,12 +100,9 @@ from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
 from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
+from gemseo.mlearning.classification.algos.knn_settings import KNNClassifierSettings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -115,28 +112,13 @@ class KNNClassifier(BaseClassifier):
     SHORT_ALGO_NAME: ClassVar[str] = "KNN"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseClassifier.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        n_neighbors: int = 5,
-        **parameters: int | str,
-    ) -> None:
-        """
-        Args:
-            n_neighbors: The number of neighbors.
-        """  # noqa: D205 D212
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            n_neighbors=n_neighbors,
-            **parameters,
+    Settings: ClassVar[type[KNNClassifierSettings]] = KNNClassifierSettings
+
+    def _post_init(self):
+        super()._post_init()
+        self.algo = KNeighborsClassifier(
+            self._settings.n_neighbors, **self._settings.parameters
         )
-        self.algo = KNeighborsClassifier(n_neighbors, **parameters)
 
     def _fit(
         self,

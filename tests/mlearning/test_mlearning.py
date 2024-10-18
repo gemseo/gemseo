@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import pickle
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -48,12 +46,6 @@ from gemseo.mlearning import get_mlearning_models
 from gemseo.mlearning import get_mlearning_options
 from gemseo.mlearning import get_regression_models
 from gemseo.mlearning import get_regression_options
-from gemseo.mlearning import import_classification_model
-from gemseo.mlearning import import_clustering_model
-from gemseo.mlearning import import_mlearning_model
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 
@@ -222,96 +214,6 @@ def test_create_clustering_model(cluster_data) -> None:
     assert model.algo is not None
 
 
-def test_import_mlearning_model(
-    dataset, classification_data, cluster_data, tmp_wd
-) -> None:
-    """Test import of model."""
-    model = create_mlearning_model("LinearRegressor", dataset)
-    model.learn()
-    dirname = model.to_pickle()
-    loaded_model = import_mlearning_model(dirname)
-    assert hasattr(loaded_model, "parameters")
-    data, variables = cluster_data
-    dataset = create_dataset("dataset_name", data, variables)
-    model = create_mlearning_model("KMeans", dataset)
-    model.learn()
-    dirname = model.to_pickle()
-    loaded_model = import_mlearning_model(dirname)
-    assert hasattr(loaded_model, "parameters")
-    data, variables, groups = classification_data
-    dataset = create_dataset(
-        "dataset_name",
-        data,
-        variables,
-        variable_names_to_group_names=groups,
-        class_name="IODataset",
-    )
-    model = create_mlearning_model("RandomForestClassifier", dataset)
-    model.learn()
-    dirname = model.to_pickle()
-    loaded_model = import_mlearning_model(dirname)
-    assert hasattr(loaded_model, "parameters")
-
-
-def test_import_regression_model(dataset, tmp_wd) -> None:
-    """Test import of regression model."""
-    model = create_regression_model("LinearRegressor", dataset)
-    model.learn()
-    dirname = model.to_pickle()
-    loaded_model = import_regression_model(dirname)
-    assert hasattr(loaded_model, "parameters")
-
-
-@pytest.mark.skip(
-    reason="Pickle objects were created by GEMSEO<5.0.0, using old Dataset classes. "
-    "A compatibility issue has been created: "
-    "https://gitlab.com/gemseo/dev/gemseo/-/issues/768",
-)
-def test_import_regression_model_with_old_class_name() -> None:
-    """Test import of a regression model with an old class name.
-
-    An instance of LinearRegression has been saved with GEMSEO 3.2.2; GEMSEO 3.0 renamed
-    LinearRegression to LinearRegressor.
-
-    This test checks the use of the mapping MLFactory.__OLD_TO_NEW_NAMES.
-    """
-    directory = Path(__file__).parent / "old_algo"
-    loaded_model = import_regression_model(directory)
-    assert isinstance(loaded_model, LinearRegressor)
-    with (directory / BaseMLAlgo.FILENAME).open("rb") as f:
-        objects = pickle.load(f)
-
-    assert objects.pop("algo_name") == "LinearRegression"
-
-
-def test_import_classification_model(classification_data, tmp_wd) -> None:
-    """Test import of classification model."""
-    data, variables, groups = classification_data
-    dataset = create_dataset(
-        "dataset_name",
-        data,
-        variables,
-        variable_names_to_group_names=groups,
-        class_name="IODataset",
-    )
-    model = create_classification_model("KNNClassifier", dataset)
-    model.learn()
-    dirname = model.to_pickle()
-    loaded_model = import_classification_model(dirname)
-    assert hasattr(loaded_model, "parameters")
-
-
-def test_import_clustering_model(cluster_data, tmp_wd) -> None:
-    """Test import of clustering model."""
-    data, variables = cluster_data
-    dataset = create_dataset("dataset_name", data, variables)
-    model = create_clustering_model("KMeans", dataset, n_clusters=data.shape[0])
-    model.learn()
-    dirname = model.to_pickle()
-    loaded_model = import_clustering_model(dirname)
-    assert hasattr(loaded_model, "parameters")
-
-
 def test_get_mlearning_options() -> None:
     """Test correct retrieval of model options."""
     properties = get_mlearning_options("LinearRegressor")["properties"]
@@ -344,3 +246,19 @@ def test_get_clustering_model_options() -> None:
     properties = get_clustering_options("KMeans")["properties"]
     assert "n_clusters" in properties
     assert "Dummy" not in properties
+
+
+@pytest.mark.parametrize(
+    ("get_options", "class_name"),
+    [
+        (get_clustering_options, "KMeans"),
+        (get_classification_options, "KNNClassifier"),
+        (get_regression_options, "LinearRegressor"),
+        (get_mlearning_options, "LinearRegressor"),
+    ],
+)
+def test_get_options_output_json(get_options, class_name) -> None:
+    """Check output_json argument of get_xxxx_options."""
+    options = get_options(class_name, pretty_print=False, output_json=True)
+    assert isinstance(options, str)
+    assert class_name in options

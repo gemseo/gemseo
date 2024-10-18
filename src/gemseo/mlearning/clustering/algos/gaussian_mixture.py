@@ -78,15 +78,13 @@ from sklearn.mixture import GaussianMixture as SKLGaussianMixture
 from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
-from gemseo.utils.seeder import SEED
+from gemseo.mlearning.clustering.algos.gaussian_mixture_settings import (
+    GaussianMixtureSettings,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from numpy import ndarray
 
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -96,25 +94,14 @@ class GaussianMixture(BasePredictiveClusterer):
     SHORT_ALGO_NAME: ClassVar[str] = "GMM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    def __init__(  # noqa: D107
-        self,
-        data: Dataset,
-        transformer: TransformerType = BasePredictiveClusterer.IDENTITY,
-        var_names: Iterable[str] = (),
-        n_clusters: int = 5,
-        random_state: int | None = SEED,
-        **parameters: float | str | bool | None,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            var_names=var_names,
-            n_clusters=n_clusters,
-            random_state=random_state,
-            **parameters,
-        )
+    Settings: ClassVar[type[GaussianMixtureSettings]] = GaussianMixtureSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.algo = SKLGaussianMixture(
-            n_components=n_clusters, random_state=random_state, **parameters
+            n_components=self._settings.n_clusters,
+            random_state=self._settings.random_state,
+            **self._settings.parameters,
         )
 
     def _fit(

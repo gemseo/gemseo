@@ -39,7 +39,6 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.algos.pce import CleaningOptions
 from gemseo.mlearning.regression.algos.pce import PCERegressor
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
@@ -102,7 +101,7 @@ def ishigami_dataset(ishigami_discipline, ishigami_probability_space) -> IODatas
 @pytest.fixture(scope="module")
 def pce(dataset, probability_space) -> PCERegressor:
     """A PCERegressor trained from the dataset associated with the linear discipline."""
-    model = PCERegressor(dataset, probability_space)
+    model = PCERegressor(dataset, probability_space=probability_space)
     model.learn()
     return model
 
@@ -111,7 +110,10 @@ def pce(dataset, probability_space) -> PCERegressor:
 def quadrature_points(discipline, probability_space) -> IODataset:
     """The quadrature points computed by a PCERegressor with degree equal to 1."""
     model = PCERegressor(
-        None, probability_space, use_quadrature=True, discipline=discipline
+        None,
+        probability_space=probability_space,
+        use_quadrature=True,
+        discipline=discipline,
     )
     return model.learning_set
 
@@ -119,7 +121,7 @@ def quadrature_points(discipline, probability_space) -> IODataset:
 @pytest.fixture(scope="module")
 def untrained_pce(dataset, probability_space) -> PCERegressor:
     """An untrained PCERegressor for the linear discipline."""
-    return PCERegressor(dataset, probability_space)
+    return PCERegressor(dataset, probability_space=probability_space)
 
 
 def test_discipline_and_data_with_quadrature(
@@ -133,7 +135,10 @@ def test_discipline_and_data_with_quadrature(
         ),
     ):
         PCERegressor(
-            dataset, probability_space, discipline=discipline, use_quadrature=True
+            dataset,
+            probability_space=probability_space,
+            discipline=discipline,
+            use_quadrature=True,
         )
 
 
@@ -143,7 +148,12 @@ def test_no_discipline_and_no_data_with_quadrature(probability_space) -> None:
         ValueError,
         match=re.escape("The quadrature rule requires either data or discipline."),
     ):
-        PCERegressor(None, probability_space, discipline=None, use_quadrature=True)
+        PCERegressor(
+            None,
+            probability_space=probability_space,
+            discipline=None,
+            use_quadrature=True,
+        )
 
 
 def test_lars_with_quadrature(discipline, probability_space) -> None:
@@ -154,7 +164,7 @@ def test_lars_with_quadrature(discipline, probability_space) -> None:
     ):
         PCERegressor(
             None,
-            probability_space,
+            probability_space=probability_space,
             discipline=discipline,
             use_quadrature=True,
             use_lars=True,
@@ -167,7 +177,7 @@ def test_no_dataset_with_least_square(probability_space, discipline) -> None:
         ValueError,
         match=re.escape("The least-squares regression requires data."),
     ):
-        PCERegressor(None, probability_space)
+        PCERegressor(None, probability_space=probability_space)
 
 
 def test_discipline_with_least_square(probability_space, dataset, discipline) -> None:
@@ -176,18 +186,26 @@ def test_discipline_with_least_square(probability_space, dataset, discipline) ->
         ValueError,
         match=re.escape("The least-squares regression does not require a discipline."),
     ):
-        PCERegressor(dataset, probability_space, discipline=discipline)
+        PCERegressor(
+            dataset, probability_space=probability_space, discipline=discipline
+        )
 
 
 def test_input_names_with_least_square(dataset, probability_space) -> None:
     """Check the input names with least square."""
-    assert PCERegressor(dataset, probability_space).input_names == ["x1", "x2"]
+    assert PCERegressor(dataset, probability_space=probability_space).input_names == [
+        "x1",
+        "x2",
+    ]
 
 
 def test_input_names_with_quadrature(discipline, probability_space) -> None:
     """Check the input names with quadrature."""
     pce = PCERegressor(
-        None, probability_space, discipline=discipline, use_quadrature=True
+        None,
+        probability_space=probability_space,
+        discipline=discipline,
+        use_quadrature=True,
     )
     assert pce.input_names == ["x1", "x2"]
 
@@ -203,7 +221,7 @@ def test_missing_random_variables(dataset) -> None:
             "of the random input variables: x2."
         ),
     ):
-        PCERegressor(dataset, probability_space)
+        PCERegressor(dataset, probability_space=probability_space)
 
 
 @pytest.mark.parametrize("key", ["inputs", "x1", "x2"])
@@ -212,7 +230,11 @@ def test_transformer(dataset, probability_space, key) -> None:
     with pytest.raises(
         ValueError, match="PCERegressor does not support input transformers."
     ):
-        PCERegressor(dataset, probability_space, transformer={key: "MinMaxScaler"})
+        PCERegressor(
+            dataset,
+            probability_space=probability_space,
+            transformer={key: "MinMaxScaler"},
+        )
 
 
 def test_ot_distribution(dataset) -> None:
@@ -227,12 +249,12 @@ def test_ot_distribution(dataset) -> None:
             "are not instances of OTJointDistribution."
         ),
     ):
-        PCERegressor(dataset, probability_space)
+        PCERegressor(dataset, probability_space=probability_space)
 
 
 def test_initialized_attributes(dataset, probability_space) -> None:
     """Check the value of some attributes after instantiation."""
-    pce = PCERegressor(dataset, probability_space)
+    pce = PCERegressor(dataset, probability_space=probability_space)
     assert pce._PCERegressor__input_dimension == 2
     assert pce._PCERegressor__cleaning == CleaningOptions()
 
@@ -242,7 +264,9 @@ def test_set_cleaning_options(dataset, probability_space) -> None:
     cleaning_options = CleaningOptions(
         max_considered_terms=128, most_significant=24, significance_factor=1e-3
     )
-    pce = PCERegressor(dataset, probability_space, cleaning_options=cleaning_options)
+    pce = PCERegressor(
+        dataset, probability_space=probability_space, cleaning_options=cleaning_options
+    )
     assert pce._PCERegressor__cleaning == cleaning_options
 
 
@@ -263,7 +287,7 @@ def test_learn_linear_model_with_least_square(
     """
     pce = PCERegressor(
         dataset,
-        probability_space,
+        probability_space=probability_space,
         degree=1,
         use_lars=use_lars,
         use_cleaning=use_cleaning,
@@ -292,7 +316,7 @@ def test_learn_linear_model_with_quadrature_and_discipline(
     """
     pce = PCERegressor(
         None if dataset_is_none else IODataset(),
-        probability_space,
+        probability_space=probability_space,
         discipline=discipline,
         degree=1,
         use_quadrature=True,
@@ -316,7 +340,7 @@ def test_learn_linear_model_with_quadrature_and_quadrature_points(
     """
     pce = PCERegressor(
         quadrature_points,
-        probability_space,
+        probability_space=probability_space,
         use_quadrature=True,
         use_cleaning=use_cleaning,
         hyperbolic_parameter=hyperbolic_parameter,
@@ -334,7 +358,7 @@ def test_learning_hyperbolic_parameter(
     """Check that the larger the hyperbolic parameter, the fewer the coefficients."""
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=3,
         hyperbolic_parameter=hyperbolic_parameter,
     )
@@ -349,7 +373,7 @@ def test_learning_lars(
     """Check that the LARS algorithm removes terms to the PCE."""
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=3,
         use_lars=use_lars,
     )
@@ -364,7 +388,7 @@ def test_learning_cleaning(
     """Check that the cleaning algorithm removes terms to the PCE."""
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=3,
         use_cleaning=use_cleaning,
     )
@@ -396,7 +420,7 @@ def test_learning_cleaning_options_logging(
     caplog.set_level("WARNING")
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=3,
         use_cleaning=True,
         cleaning_options=CleaningOptions(
@@ -419,7 +443,7 @@ def test_learning_cleaning_max_considered_terms(
     """Check the effect of the cleaning option ``max_considered_terms``."""
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=3,
         use_cleaning=True,
         cleaning_options=CleaningOptions(
@@ -439,7 +463,7 @@ def test_learning_cleaning_most_significant(
     """Check the effect of the cleaning option ``most_significant``."""
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=5,
         use_cleaning=True,
         cleaning_options=CleaningOptions(
@@ -460,7 +484,7 @@ def test_learning_cleaning_significance_factor(
     """Check the effect of the cleaning option ``significance_factor``."""
     pce = PCERegressor(
         ishigami_dataset,
-        ishigami_probability_space,
+        probability_space=ishigami_probability_space,
         degree=5,
         use_cleaning=True,
         cleaning_options=CleaningOptions(
@@ -474,7 +498,7 @@ def test_learning_cleaning_significance_factor(
 @pytest.mark.parametrize("after", [False, True])
 def test_deepcopy(dataset, probability_space, after) -> None:
     """Check that a model can be deepcopied before or after learning."""
-    model = PCERegressor(dataset, probability_space)
+    model = PCERegressor(dataset, probability_space=probability_space)
     if after:
         model.learn()
     model_copy = deepcopy(model)
@@ -576,20 +600,6 @@ def test_save_load_with_pickle(pce, tmp_wd) -> None:
     assert model._total_order_sobol_indices
 
 
-def test_save_load(pce, tmp_wd) -> None:
-    """Check some attributes are correctly loaded."""
-    directory_path = pce.to_pickle("my_model")
-    model = import_regression_model(directory_path)
-    assert model._prediction_function
-    assert model._mean.size
-    assert model._covariance.size
-    assert model._variance.size
-    assert model._standard_deviation.size
-    assert model._first_order_sobol_indices
-    assert model._second_order_sobol_indices
-    assert model._total_order_sobol_indices
-
-
 def test_multidimensional_variables() -> None:
     """Check that a PCERegressor can be built from multidimensional variables."""
 
@@ -615,7 +625,7 @@ def test_multidimensional_variables() -> None:
     scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
     dataset = scenario.to_dataset(opt_naming=False)
 
-    pce = PCERegressor(dataset, parameter_space)
+    pce = PCERegressor(dataset, probability_space=parameter_space)
     pce.learn()
     r2 = R2Measure(pce)
     reference_r2 = r2.compute_learning_measure()
@@ -643,7 +653,7 @@ def test_multidimensional_variables() -> None:
     scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
     dataset = scenario.to_dataset(opt_naming=False)
 
-    pce = PCERegressor(dataset, parameter_space)
+    pce = PCERegressor(dataset, probability_space=parameter_space)
     pce.learn()
     r2 = R2Measure(pce)
     assert r2.compute_learning_measure() == reference_r2

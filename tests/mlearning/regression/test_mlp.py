@@ -42,7 +42,7 @@ def test_init_hidden_layer_sizes(dataset):
 
 def test_init_parameter(dataset):
     """Check that a sklearn parameter can be changed."""
-    algo = MLPRegressor(dataset, activation="identity").algo
+    algo = MLPRegressor(dataset, parameters={"activation": "identity"}).algo
     assert algo.activation == "identity"
 
 

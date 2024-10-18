@@ -57,7 +57,6 @@ that :math:`x` belongs to cluster :math:`k` and
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -79,19 +78,17 @@ from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.core.algos.ml_algo import DataType
 from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.algos.ml_algo import TransformerType
 from gemseo.mlearning.core.algos.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.regression.algos.moe_settings import MOESettings
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
     from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
@@ -114,7 +111,7 @@ MLAlgoType = dict[
 
 
 class MOERegressor(BaseRegressor):
-    """Mixture of experts regression."""
+    """Mixture of experts for regression."""
 
     hard: bool
     """Whether clustering/classification should be hard or soft."""
@@ -173,26 +170,11 @@ class MOERegressor(BaseRegressor):
 
     DataFormatters = MOEDataFormatters
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        hard: bool = True,
-    ) -> None:
-        """
-        Args:
-            hard: Whether clustering/classification should be hard or soft.
-        """  # noqa: D205 D212
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            hard=hard,
-        )
-        self.hard = hard
+    Settings: ClassVar[type[MOESettings]] = MOESettings
+
+    def _post_init(self):
+        super()._post_init()
+        self.hard = self._settings.hard
         self.cluster_algo = "KMeans"
         self.classif_algo = "KNNClassifier"
         self.regress_algo = "LinearRegressor"
@@ -653,31 +635,6 @@ class MOERegressor(BaseRegressor):
         """
         raise NotImplementedError
 
-    def _save_algo(
-        self,
-        directory: Path,
-    ) -> None:
-        self.clusterer.to_pickle(directory / "clusterer")
-        self.classifier.to_pickle(directory / "classifier")
-        for i, local_model in enumerate(self.regress_models):
-            local_model.to_pickle(directory / f"local_model_{i}")
-
-    def load_algo(  # noqa: D102
-        self,
-        directory: str | Path,
-    ) -> None:
-        directory = Path(directory)
-        cluster_factory = ClustererFactory()
-        classif_factory = ClassifierFactory()
-        regress_factory = RegressorFactory()
-        self.clusterer = cluster_factory.load(directory / "clusterer")
-        self.classifier = classif_factory.load(directory / "classifier")
-        self.regress_models = []
-        for i in range(self.n_clusters):
-            self.regress_models.append(
-                regress_factory.load(directory / f"local_model_{i}")
-            )
-
     @property
     def __string_representation(self) -> MultiLineString:
         mls = super()._get_string_representation()
@@ -703,16 +660,6 @@ class MOERegressor(BaseRegressor):
 
     def _repr_html_(self) -> str:
         return self.__string_representation._repr_html_()
-
-    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
-        objects = super()._get_objects_to_save()
-        objects["cluster_algo"] = self.cluster_algo
-        objects["classif_algo"] = self.classif_algo
-        objects["regress_algo"] = self.regress_algo
-        objects["cluster_params"] = self.cluster_params
-        objects["classif_params"] = self.classif_params
-        objects["regress_params"] = self.regress_params
-        return objects
 
     @property
     def labels(self) -> list[int]:

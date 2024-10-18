@@ -25,8 +25,10 @@ from time import sleep
 import pytest
 
 from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.utils import timer  # noqa: E402
+from gemseo.utils.testing.mocks import SleepingCounter
 
-from .test_base_monitored_process import SLEEP_TIME
+SLEEP_TIME = 0.1
 
 
 @pytest.fixture
@@ -108,15 +110,17 @@ def test_duration(execution_statistics: ExecutionStatistics):
     assert execution_statistics.duration == 1.0
 
 
-def test_record(execution_statistics: ExecutionStatistics):
+def test_record(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify record."""
+    monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
     # Without linearization.
+
     with execution_statistics.record():
         sleep(SLEEP_TIME)
 
     assert execution_statistics.n_calls == 1
     assert execution_statistics.n_calls_linearize == 0
-    assert 0.1 < execution_statistics.duration < 0.2
+    assert execution_statistics.duration == pytest.approx(0.1)
 
     # With linearization.
     with execution_statistics.record(linearize=True):
@@ -124,7 +128,7 @@ def test_record(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.n_calls == 1
     assert execution_statistics.n_calls_linearize == 1
-    assert 0.2 < execution_statistics.duration < 0.3
+    assert execution_statistics.duration == pytest.approx(0.2)
 
     reference_duration = execution_statistics.duration
 
@@ -145,21 +149,9 @@ def test_record(execution_statistics: ExecutionStatistics):
     assert execution_statistics.duration == reference_duration
 
 
-from gemseo.utils import timer  # noqa: E402
-
-
 def test_time_stamps(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify the time stamps."""
-
-    class PerfCounter:
-        def __init__(self):
-            self.__total = 0
-
-        def __call__(self):
-            self.__total += SLEEP_TIME
-            return self.__total
-
-    monkeypatch.setattr(timer, "perf_counter", PerfCounter())
+    monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
 
     assert ExecutionStatistics.time_stamps is None
 

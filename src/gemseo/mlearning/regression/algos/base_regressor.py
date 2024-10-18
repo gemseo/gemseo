@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import NoReturn
 
 from gemseo.datasets.io_dataset import IODataset
@@ -31,15 +32,14 @@ from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.data_formatters.regression_data_formatters import (
     RegressionDataFormatters,
 )
+from gemseo.mlearning.regression.algos.base_regressor_settings import (
+    BaseRegressorSettings,
+)
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.mlearning.core.algos.ml_algo import DefaultTransformerType
-    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -53,21 +53,7 @@ class BaseRegressor(BaseMLSupervisedAlgo):
 
     DataFormatters = RegressionDataFormatters
 
-    def __init__(  # noqa: D107
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        **parameters: MLAlgoParameterType,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            **parameters,
-        )
+    Settings: ClassVar[type[BaseRegressorSettings]] = BaseRegressorSettings
 
     def predict_raw(
         self,

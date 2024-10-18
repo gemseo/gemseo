@@ -35,7 +35,6 @@ from scipy.special import comb
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
@@ -200,13 +199,3 @@ def test_jacobian_constant(dataset) -> None:
     model_.learn()
     model_.predict_jacobian(INPUT_VALUE)
     model_.predict_jacobian(ANOTHER_INPUT_VALUE)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)

@@ -26,6 +26,7 @@ from numpy import arange
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 
 LEARNING_SIZE = 9
 
@@ -61,17 +62,7 @@ def test_constructor() -> None:
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = MLAlgoFactory()
-    ml_algo = factory.create("LinearRegressor", data=dataset)
-    assert hasattr(ml_algo, "parameters")
-
-
-def test_load(dataset, tmp_wd) -> None:
-    """Test the loading of a model from data."""
-    factory = MLAlgoFactory()
-    ml_algo = factory.create("RandomForestClassifier", data=dataset)
-    dirname = ml_algo.to_pickle()
-    loaded_ml_algo = factory.load(dirname)
-    assert hasattr(loaded_ml_algo, "parameters")
+    assert isinstance(factory.create("LinearRegressor", data=dataset), LinearRegressor)
 
 
 def test_available_models() -> None:

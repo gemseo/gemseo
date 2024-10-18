@@ -85,9 +85,8 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.algos.ml_algo import DataType
 from gemseo.mlearning.core.algos.ml_algo import DefaultTransformerType
-from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
 from gemseo.mlearning.core.algos.ml_algo import SavedObjectType as MLAlgoSaveObjectType
-from gemseo.mlearning.core.algos.ml_algo import TransformerType
+from gemseo.mlearning.core.algos.supervised_settings import BaseMLSupervisedAlgoSettings
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
     SupervisedDataFormatters,
 )
@@ -163,24 +162,19 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
 
     DataFormatters = SupervisedDataFormatters
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseMLAlgo.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        **parameters: MLAlgoParameterType,
-    ) -> None:
-        """
-        Args:
-            input_names: The names of the input variables.
-                If empty, consider all the input variables of the learning dataset.
-            output_names: The names of the output variables.
-                If empty, consider all the output variables of the learning dataset.
-        """  # noqa: D205 D212
-        super().__init__(data, transformer=transformer, **parameters)
-        self.input_names = input_names or data.get_variable_names(data.INPUT_GROUP)
-        self.output_names = output_names or data.get_variable_names(data.OUTPUT_GROUP)
+    Settings: ClassVar[type[BaseMLSupervisedAlgoSettings]] = (
+        BaseMLSupervisedAlgoSettings
+    )
+
+    def _post_init(self):
+        super()._post_init()
+        data = self.learning_set
+        self.input_names = list(self._settings.input_names) or data.get_variable_names(
+            data.INPUT_GROUP
+        )
+        self.output_names = list(
+            self._settings.output_names
+        ) or data.get_variable_names(data.OUTPUT_GROUP)
         self.__groups_to_names = {
             data.INPUT_GROUP: self.input_names,
             data.OUTPUT_GROUP: self.output_names,
@@ -609,16 +603,3 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
             variable_names=self.output_names,
             indices=self._learning_samples_indices,
         ).to_numpy()
-
-    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
-        objects = super()._get_objects_to_save()
-        objects["input_names"] = self.input_names
-        objects["output_names"] = self.output_names
-        objects["input_space_center"] = self.input_space_center
-        objects["_transformed_input_sizes"] = self._transformed_input_sizes
-        objects["_transformed_output_sizes"] = self._transformed_output_sizes
-        objects["_transform_input_group"] = self._transform_input_group
-        objects["_transform_output_group"] = self._transform_output_group
-        objects["_input_variables_to_transform"] = self._input_variables_to_transform
-        objects["_output_variables_to_transform"] = self._output_variables_to_transform
-        return objects

@@ -26,9 +26,18 @@ import re
 
 import pytest
 from numpy import arange
+from numpy import array
+from numpy.testing import assert_allclose
 
+from gemseo import from_pickle
+from gemseo import to_pickle
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
+from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+from gemseo.problems.dataset.iris import create_iris_dataset
+
+FACTORY = ClustererFactory()
+INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
 
 class NewAlgo(BaseClusterer):
@@ -49,3 +58,37 @@ def test_labels() -> None:
         match=re.escape("NewAlgo._fit() did not set the labels attribute."),
     ):
         algo.learn()
+
+
+@pytest.fixture(scope="module")
+def dataset() -> Dataset:
+    """The Iris dataset."""
+    return create_iris_dataset()
+
+
+@pytest.mark.parametrize("class_name", FACTORY.class_names)
+@pytest.mark.parametrize("before_training", [False, True])
+def test_pickle(class_name, dataset, before_training, tmp_wd):
+    """Check that clustering models are picklable."""
+    reference_model = FACTORY.create(
+        class_name,
+        dataset,
+        var_names=("sepal_length", "sepal_width", "petal_length", "petal_width"),
+    )
+
+    if before_training:
+        to_pickle(reference_model, "model.pkl")
+        reference_model.learn()
+    else:
+        reference_model.learn()
+        to_pickle(reference_model, "model.pkl")
+
+    reference_prediction = reference_model.predict(INPUT_VALUE)
+
+    model = from_pickle("model.pkl")
+    if before_training:
+        model.learn()
+
+    output_value = model.predict(INPUT_VALUE)
+
+    assert_allclose(output_value, reference_prediction)

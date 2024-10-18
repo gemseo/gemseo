@@ -53,16 +53,12 @@ from numpy import newaxis
 from numpy import sqrt
 from numpy.linalg import norm
 from scipy.interpolate import Rbf
-from strenum import StrEnum
 
 from gemseo.mlearning.core.algos.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressorSettings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 SavedObjectType = Union[_SavedObjectType, float, Callable]
@@ -85,85 +81,12 @@ class RBFRegressor(BaseRegressor):
 
     EUCLIDEAN: Final[str] = "euclidean"
 
-    class Function(StrEnum):
-        """The radial basis functions."""
+    Settings: ClassVar[type[RBFRegressorSettings]] = RBFRegressorSettings
 
-        MULTIQUADRIC = "multiquadric"
-        INVERSE_MULTIQUADRIC = "inverse_multiquadric"
-        GAUSSIAN = "gaussian"
-        LINEAR = "linear"
-        CUBIC = "cubic"
-        QUINTIC = "quintic"
-        THIN_PLATE = "thin_plate"
-
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        function: Function | Callable[[float, float], float] = Function.MULTIQUADRIC,
-        der_function: Callable[[RealArray], RealArray] | None = None,
-        epsilon: float | None = None,
-        smooth: float = 0.0,
-        norm: str | Callable[[RealArray, RealArray], float] = "euclidean",
-    ) -> None:
-        r"""
-        Args:
-            function: The radial basis function taking a radius :math:`r` as input,
-                representing a distance between two points.
-                If it is a string,
-                then it must be one of the following:
-
-                - ``"multiquadric"`` for :math:`\sqrt{(r/\epsilon)^2 + 1}`,
-                - ``"inverse"`` for :math:`1/\sqrt{(r/\epsilon)^2 + 1}`,
-                - ``"gaussian"`` for :math:`\exp(-(r/\epsilon)^2)`,
-                - ``"linear"`` for :math:`r`,
-                - ``"cubic"`` for :math:`r^3`,
-                - ``"quintic"`` for :math:`r^5`,
-                - ``"thin_plate"`` for :math:`r^2\log(r)`.
-
-                If it is a callable,
-                then it must take the two arguments ``self`` and ``r`` as inputs,
-                e.g. ``lambda self, r: sqrt((r/self.epsilon)**2 + 1)``
-                for the multiquadric function.
-                The epsilon parameter will be available as ``self.epsilon``.
-                Other keyword arguments passed in will be available as well.
-            der_function: The derivative of the radial basis function,
-                only to be provided if ``function`` is a callable
-                and if the use of the model with its derivative is required.
-                If ``None`` and if ``function`` is a callable,
-                an error will be raised.
-                If ``None`` and if ``function`` is a string,
-                the class will look for its internal implementation
-                and will raise an error if it is missing.
-                The ``der_function`` shall take three arguments
-                (``input_data``, ``norm_input_data``, ``eps``).
-                For an RBF of the form function(:math:`r`),
-                der_function(:math:`x`, :math:`|x|`, :math:`\epsilon`) shall
-                return :math:`\epsilon^{-1} x/|x| f'(|x|/\epsilon)`.
-            epsilon: An adjustable constant for Gaussian or multiquadric functions.
-                If ``None``, use the average distance between input data.
-            smooth: The degree of smoothness,
-                ``0`` involving an interpolation of the learning points.
-            norm: The distance metric to be used,
-                either a distance function name `known by SciPy
-                <https://docs.scipy.org/doc/scipy/reference/generated/
-                scipy.spatial.distance.cdist.html>`_
-                or a function that computes the distance between two points.
-        """  # noqa: D205 D212 D415
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            function=function,
-            epsilon=epsilon,
-            smooth=smooth,
-            norm=norm,
-        )
+    def _post_init(self):
+        super()._post_init()
         self.y_average = 0.0
-        self.der_function = der_function
+        self.der_function = self._settings.der_function
 
     class RBFDerivatives:
         r"""Derivatives of functions used in :class:`.RBFRegressor`.
@@ -326,21 +249,17 @@ class RBFRegressor(BaseRegressor):
                 * (1 + 2 * log(norm_input_data / eps + cls.TOL))
             )
 
-    def _fit(
-        self,
-        input_data: RealArray,
-        output_data: RealArray,
-    ) -> None:
+    def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
         self.y_average = average(output_data, axis=0)
         output_data -= self.y_average
         args = [*list(input_data.T), output_data]
         self.algo = Rbf(
             *args,
             mode="N-D",
-            function=self.parameters["function"],
-            epsilon=self.parameters["epsilon"],
-            smooth=self.parameters["smooth"],
-            norm=self.parameters["norm"],
+            function=self._settings.function,
+            epsilon=self._settings.epsilon,
+            smooth=self._settings.smooth,
+            norm=self._settings.norm,
         )
 
     def _predict(
@@ -387,12 +306,6 @@ class RBFRegressor(BaseRegressor):
                 "Add der_function in RBFRegressor constructor."
             )
             raise NotImplementedError(msg)
-
-    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
-        objects = super()._get_objects_to_save()
-        objects["y_average"] = self.y_average
-        objects["der_function"] = self.der_function
-        return objects
 
     @property
     def function(self) -> str:

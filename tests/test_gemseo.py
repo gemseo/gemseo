@@ -189,8 +189,8 @@ def test_get_algorithm_options_schema() -> None:
 
 def test_get_surrogate_options_schema() -> None:
     """Test that the surrogate options schema is printed."""
-    get_surrogate_options_schema("RBFRegressor")
-    get_surrogate_options_schema("RBFRegressor", pretty_print=True)
+    get_surrogate_options_schema("LinearRegressor")
+    get_surrogate_options_schema("LinearRegressor", pretty_print=True)
 
 
 def test_create_scenario_and_monitor() -> None:

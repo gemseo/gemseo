@@ -97,31 +97,29 @@ to be carefully tuned in order to maximize the generalization power of the model
 from __future__ import annotations
 
 import inspect
-import pickle
 from abc import abstractmethod
 from collections.abc import Mapping
-from collections.abc import MutableMapping
 from collections.abc import Sequence
 from copy import deepcopy
-from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Final
 from typing import Optional
 from typing import Union
 
 from numpy import ndarray
 
 from gemseo.datasets.dataset import Dataset
+from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
+from gemseo.mlearning.core.algos.ml_algo_settings import SubTransformerType
+from gemseo.mlearning.core.algos.ml_algo_settings import TransformerType
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.mlearning.transformers.base_transformer import TransformerFactory
 from gemseo.typing import IntegerArray
 from gemseo.typing import RealArray
-from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -134,22 +132,11 @@ SavedObjectType = Union[
 ]
 DataType = Union[RealArray, Mapping[str, ndarray]]
 MLAlgoParameterType = Optional[Any]
-SubTransformerType = Union[str, tuple[str, StrKeyMapping], BaseTransformer]
-TransformerType = MutableMapping[str, SubTransformerType]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
 
 class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
-    """An abstract machine learning algorithm.
-
-    Such a model is built from a training dataset,
-    data transformation options and parameters. This abstract class defines the
-    :meth:`.BaseMLAlgo.learn`, :meth:`.BaseMLAlgo.save` methods and the boolean
-    property, :attr:`!BaseMLAlgo.is_trained`. It also offers a string
-    representation for end users.
-    Derived classes shall overload the :meth:`.BaseMLAlgo.learn`,
-    :meth:`!BaseMLAlgo._save_algo` and :meth:`!BaseMLAlgo._load_algo` methods.
-    """
+    """An abstract machine learning algorithm."""
 
     resampling_results: dict[
         str, tuple[BaseResampler, list[BaseMLAlgo], list[ndarray] | ndarray]
@@ -168,9 +155,6 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     learning_set: Dataset
     """The learning dataset."""
-
-    parameters: dict[str, MLAlgoParameterType]
-    """The parameters of the machine learning algorithm."""
 
     transformer: dict[str, BaseTransformer]
     """The strategies to transform the variables, if any.
@@ -196,46 +180,44 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     LIBRARY: ClassVar[str] = ""
     """The name of the library of the wrapped machine learning algorithm."""
 
-    FILENAME: ClassVar[str] = "ml_algo.pkl"
-
-    IDENTITY: Final[DefaultTransformerType] = READ_ONLY_EMPTY_DICT
-    """A transformer leaving the input and output variables as they are."""
-
-    DEFAULT_TRANSFORMER: DefaultTransformerType = IDENTITY
+    DEFAULT_TRANSFORMER: DefaultTransformerType = READ_ONLY_EMPTY_DICT
     """The default transformer for the input and output data, if any."""
 
     DataFormatters: ClassVar[type[BaseDataFormatters]]
     """The data formatters for the learning and prediction methods."""
 
+    Settings: ClassVar[type[BaseMLAlgoSettings]] = BaseMLAlgoSettings
+    """The Pydantic model class for the settings of the machine learning algorithm."""
+
+    _settings: BaseMLAlgoSettings
+    """The settings of the machine learning algorithm."""
+
     def __init__(
         self,
         data: Dataset,
-        transformer: TransformerType = IDENTITY,
-        **parameters: MLAlgoParameterType,
+        settings_model: BaseMLAlgoSettings | None = None,
+        **settings: Any,
     ) -> None:
         """
         Args:
             data: The learning dataset.
-            transformer: The strategies to transform the variables.
-                The values are instances of :class:`.BaseTransformer`
-                while the keys are the names of
-                either the variables
-                or the groups of variables,
-                e.g. ``"inputs"`` or ``"outputs"``
-                in the case of the regression algorithms.
-                If a group is specified,
-                the :class:`.BaseTransformer` will be applied
-                to all the variables of this group.
-                If :attr:`.IDENTITY`, do not transform the variables.
-            **parameters: The parameters of the machine learning algorithm.
+            settings_model: The  machine learning algorithm settings
+                as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The machine learning algorithm settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
 
         Raises:
             ValueError: When both the variable and the group it belongs to
                 have a transformer.
         """  # noqa: D205 D212
+        self._settings = create_model(
+            self.Settings, settings_model=settings_model, **settings
+        )
+        settings = self._settings.model_dump()
+        transformer = settings.pop("transformer")
         self.resampling_results = {}
         self.learning_set = data
-        self.parameters = parameters
         self.transformer = {}
         if transformer:
             self.transformer = {
@@ -257,6 +239,11 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
                     "for one variable of this group."
                 )
                 raise ValueError(msg)
+
+        self._post_init()
+
+    def _post_init(self) -> None:
+        """Do something at the end of __init__."""
 
     @staticmethod
     def __create_transformer(transformer: SubTransformerType) -> BaseTransformer:
@@ -327,7 +314,9 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _get_string_representation(self) -> MultiLineString:
         """The string representation of the algorithm."""
         mls = MultiLineString()
-        mls.add("{}({})", self.__class__.__name__, pretty_str(self.parameters))
+        mls.add(
+            "{}({})", self.__class__.__name__, pretty_str(self._settings.model_dump())
+        )
         mls.indent()
         if self.LIBRARY:
             mls.add("based on the {} library", self.LIBRARY)
@@ -342,80 +331,6 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _repr_html_(self) -> str:
         return self._get_string_representation()._repr_html_()
-
-    def to_pickle(
-        self,
-        directory: str = "",
-        path: str | Path = ".",
-        save_learning_set: bool = False,
-    ) -> str:
-        """Save the machine learning algorithm.
-
-        Args:
-            directory: The name of the directory to save the algorithm.
-            path: The path to parent directory where to create the directory.
-            save_learning_set: Whether to save the learning set
-                or get rid of it to lighten the saved files.
-
-        Returns:
-            The path to the directory where the algorithm is saved.
-        """
-        if not save_learning_set:
-            self.learning_set.data = {}
-            self.learning_set.length = 0
-
-        prefix = FilePathManager.to_snake_case(self.__class__.__name__)
-        default_directory_name = f"{prefix}_{self.learning_set.name}"
-        directory = Path(path) / (directory or default_directory_name)
-        directory.mkdir(exist_ok=True)
-
-        with (directory / self.FILENAME).open("wb") as handle:
-            pickle.dump(self._get_objects_to_save(), handle)
-
-        self._save_algo(directory)
-
-        return str(directory)
-
-    def _save_algo(
-        self,
-        directory: Path,
-    ) -> None:
-        """Save the interfaced machine learning algorithm.
-
-        Args:
-            directory: The path to the directory
-                where to save the interfaced machine learning algorithm.
-        """
-        with (directory / "algo.pkl").open("wb") as handle:
-            pickle.dump(self.algo, handle)
-
-    def load_algo(
-        self,
-        directory: str | Path,
-    ) -> None:
-        """Load a machine learning algorithm from a directory.
-
-        Args:
-            directory: The path to the directory
-                where the machine learning algorithm is saved.
-        """
-        with (Path(directory) / "algo.pkl").open("rb") as handle:
-            self.algo = pickle.load(handle)
-
-    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
-        """Return the objects to save.
-
-        Returns:
-            The objects to save.
-        """
-        return {
-            "data": self.learning_set,
-            "transformer": self.transformer,
-            "parameters": self.parameters,
-            "_algo_name": self.__class__.__name__,
-            "sizes": self.sizes,
-            "_trained": self._trained,
-        }
 
     def _check_is_trained(self) -> None:
         """Check if the algorithm is trained.

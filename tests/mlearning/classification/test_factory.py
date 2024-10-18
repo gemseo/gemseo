@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+from gemseo.mlearning.classification.algos.knn import KNNClassifier
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
@@ -51,18 +52,7 @@ def test_constructor() -> None:
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = ClassifierFactory()
-    knn = factory.create("KNNClassifier", data=dataset)
-    assert hasattr(knn, "parameters")
-
-
-def test_load(dataset, tmp_wd) -> None:
-    """Test the loading of a model from data."""
-    factory = ClassifierFactory()
-    knn = factory.create("KNNClassifier", data=dataset)
-    knn.learn()
-    dirname = knn.to_pickle()
-    loaded_knn = factory.load(dirname)
-    assert hasattr(loaded_knn, "parameters")
+    assert isinstance(factory.create("KNNClassifier", data=dataset), KNNClassifier)
 
 
 def test_is_available() -> None:

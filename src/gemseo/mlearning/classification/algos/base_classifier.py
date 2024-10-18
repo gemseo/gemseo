@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
@@ -30,6 +29,9 @@ from typing import Union
 from numpy import unique
 from numpy import zeros
 
+from gemseo.mlearning.classification.algos.base_classifier_settings import (
+    BaseClassifierSettings,
+)
 from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.core.algos.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
@@ -38,10 +40,7 @@ from gemseo.typing import NumberArray
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
 
 SavedObjectType = Union[
     MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, NumberArray], int
@@ -54,21 +53,10 @@ class BaseClassifier(BaseMLSupervisedAlgo):
     n_classes: int
     """The number of classes computed when calling :meth:`.learn`."""
 
-    def __init__(  # noqa: D107
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        **parameters: MLAlgoParameterType,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            **parameters,
-        )
+    Settings = BaseClassifierSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.n_classes = 0
 
     def _learn(
@@ -169,8 +157,3 @@ class BaseClassifier(BaseMLSupervisedAlgo):
             The probability of belonging to each class
                 with shape (n_samples, n_classes).
         """
-
-    def _get_objects_to_save(self) -> SavedObjectType:
-        objects = super()._get_objects_to_save()
-        objects["n_classes"] = self.n_classes
-        return objects

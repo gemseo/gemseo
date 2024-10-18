@@ -122,7 +122,7 @@ def test_calibration(dataset, calibration_space, algo) -> None:
     f_opt = calibration.optimal_criterion
     algo_opt = calibration.optimal_algorithm
 
-    assert algo_opt.parameters["penalty_level"] == x_opt["penalty_level"]
+    assert algo_opt._settings.penalty_level == x_opt["penalty_level"]
     assert calibration.get_history("penalty_level").shape == (n_samples, 1)
     assert calibration.get_history("criterion").shape == (n_samples, 1)
     assert calibration.get_history("learning").shape == (n_samples, 1)

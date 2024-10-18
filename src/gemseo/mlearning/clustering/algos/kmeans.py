@@ -83,13 +83,9 @@ from sklearn.cluster import KMeans as SKLKmeans
 from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
-from gemseo.utils.seeder import SEED
+from gemseo.mlearning.clustering.algos.kmeans_settings import KMeansSettings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -101,28 +97,15 @@ class KMeans(BasePredictiveClusterer):
 
     EPS = finfo(float).eps
 
-    def __init__(  # noqa: D107
-        self,
-        data: Dataset,
-        transformer: TransformerType = BasePredictiveClusterer.IDENTITY,
-        var_names: Iterable[str] = (),
-        n_clusters: int = 5,
-        random_state: int | None = SEED,
-        **parameters: float | bool | str | None,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            var_names=var_names,
-            n_clusters=n_clusters,
-            random_state=random_state,
-            **parameters,
-        )
+    Settings: ClassVar[type[KMeansSettings]] = KMeansSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.algo = SKLKmeans(
-            n_clusters,
-            random_state=random_state,
-            n_init=parameters.pop("n_init", "auto"),
-            **parameters,
+            self._settings.n_clusters,
+            random_state=self._settings.random_state,
+            n_init=self._settings.parameters.pop("n_init", "auto"),
+            **self._settings.parameters,
         )
 
     def _fit(

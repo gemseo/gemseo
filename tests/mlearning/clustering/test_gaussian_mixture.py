@@ -31,7 +31,6 @@ from numpy.linalg import eigvals
 from numpy.random import default_rng
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning import import_clustering_model
 from gemseo.mlearning.clustering.algos.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
@@ -185,12 +184,3 @@ def test_predict_proba(model) -> None:
         assert not allclose(probas[0], probas[1])
         assert not allclose(probas[0], probas[2])
         assert not allclose(probas[1], probas[2])
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_clustering_model(dirname)
-    out1 = model.predict(VALUE)
-    out2 = imported_model.predict(VALUE)
-    assert out1 == out2

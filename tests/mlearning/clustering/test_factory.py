@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+from gemseo.mlearning.clustering.algos.kmeans import KMeans
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
@@ -55,18 +56,9 @@ def test_constructor() -> None:
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = ClustererFactory()
-    kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
-    assert hasattr(kmeans, "parameters")
-
-
-def test_load(dataset, tmp_wd) -> None:
-    """Test the loading of a model from data."""
-    factory = ClustererFactory()
-    kmeans = factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS)
-    kmeans.learn()
-    dirname = kmeans.to_pickle()
-    loaded_kmeans = factory.load(dirname)
-    assert hasattr(loaded_kmeans, "parameters")
+    assert isinstance(
+        factory.create("KMeans", data=dataset, n_clusters=N_CLUSTERS), KMeans
+    )
 
 
 def test_is_available() -> None:

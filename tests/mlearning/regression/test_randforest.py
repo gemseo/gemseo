@@ -29,7 +29,6 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.algos.random_forest import RandomForestRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
@@ -116,13 +115,3 @@ def test_model_1d_output(model_1d_output) -> None:
     assert "y_2" not in predictions
     assert prediction["y_1"].shape == (1,)
     assert predictions["y_1"].shape == (3, 1)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)

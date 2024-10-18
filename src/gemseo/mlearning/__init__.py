@@ -20,21 +20,21 @@ models.
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
+    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
 
 LOGGER = logging.getLogger(__name__)
@@ -47,10 +47,8 @@ def get_mlearning_models() -> list[str]:
         The available machine learning algorithms.
 
     See Also:
-        import_mlearning_model
         create_mlearning_model
         get_mlearning_options
-        import_mlearning_model
     """
     from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 
@@ -66,7 +64,6 @@ def get_regression_models() -> list[str]:
     See Also:
         create_regression_model
         get_regression_options
-        import_regression_model
     """
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
 
@@ -82,7 +79,6 @@ def get_classification_models() -> list[str]:
     See Also:
         create_classification_model
         get_classification_options
-        import_classification_model
     """
     from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 
@@ -98,7 +94,6 @@ def get_clustering_models() -> list[str]:
     See Also:
         create_clustering_model
         get_clustering_options
-        import_clustering_model
     """
     from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 
@@ -108,7 +103,7 @@ def get_clustering_models() -> list[str]:
 def create_mlearning_model(
     name: str,
     data: Dataset,
-    transformer: TransformerType = BaseMLAlgo.IDENTITY,
+    transformer: TransformerType = READ_ONLY_EMPTY_DICT,
     **parameters,
 ) -> BaseMLAlgo:
     """Create a machine learning algorithm from a learning dataset.
@@ -128,7 +123,6 @@ def create_mlearning_model(
     See Also:
         get_mlearning_models
         get_mlearning_options
-        import_mlearning_model
     """
     from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 
@@ -162,7 +156,6 @@ def create_regression_model(
     See Also:
         get_regression_models
         get_regression_options
-        import_regression_model
     """
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
 
@@ -203,7 +196,6 @@ def create_classification_model(
     See Also:
         get_classification_models
         get_classification_options
-        import_classification_model
     """
     from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 
@@ -235,89 +227,12 @@ def create_clustering_model(
     See Also:
         get_clustering_models
         get_clustering_options
-        import_clustering_model
     """
     from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 
     return ClustererFactory().create(
         name, data=data, transformer=transformer, **parameters
     )
-
-
-def import_mlearning_model(directory: str | Path) -> BaseMLAlgo:
-    """Import a machine learning algorithm from a directory.
-
-    Args:
-        directory: The path to the directory.
-
-    Returns:
-        A machine learning model.
-
-    See Also:
-        create_mlearning_model
-        get_mlearning_models
-        get_mlearning_options
-    """
-    from gemseo.mlearning.core.algos.factory import MLAlgoFactory
-
-    return MLAlgoFactory().load(directory)
-
-
-def import_regression_model(directory: str | Path) -> BaseRegressor:
-    """Import a regression model from a directory.
-
-    Args:
-        directory: The path of the directory.
-
-    Returns:
-        A regression model.
-
-    See Also:
-        create_regression_model
-        get_regression_models
-        get_regression_options
-    """
-    from gemseo.mlearning.regression.algos.factory import RegressorFactory
-
-    return RegressorFactory().load(directory)
-
-
-def import_classification_model(directory: str | Path) -> BaseClassifier:
-    """Import a classification model from a directory.
-
-    Args:
-        directory: The path to the directory.
-
-    Returns:
-        A classification model.
-
-    See Also:
-        create_classification_model
-        get_classification_models
-        get_classification_options
-    """
-    from gemseo.mlearning.classification.algos.factory import ClassifierFactory
-
-    return ClassifierFactory().load(directory)
-
-
-def import_clustering_model(directory: str | Path) -> BaseClusterer:
-    """Import a clustering model from a directory.
-
-    Args:
-        directory: The path to the directory.
-
-    Returns:
-        A clustering model.
-
-    See Also:
-        create_clustering_model
-        get_clustering_models
-        get_clustering_options
-    """
-    from gemseo.mlearning.clustering.algos.factory import ClustererFactory
-
-    return ClustererFactory().load(directory)
 
 
 def get_mlearning_options(
@@ -336,16 +251,10 @@ def get_mlearning_options(
     See Also:
         create_mlearning_model
         get_mlearning_models
-        import_mlearning_model
     """
-    from gemseo import _get_schema
     from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 
-    return _get_schema(
-        MLAlgoFactory().get_options_grammar(model_name),
-        output_json,
-        pretty_print,
-    )
+    return _get_options(MLAlgoFactory(), model_name, output_json, pretty_print)
 
 
 def get_regression_options(
@@ -364,16 +273,10 @@ def get_regression_options(
     See Also:
         create_regression_model
         get_regression_models
-        import_regression_model
     """
-    from gemseo import _get_schema
     from gemseo.mlearning.regression.algos.factory import RegressorFactory
 
-    return _get_schema(
-        RegressorFactory().get_options_grammar(model_name),
-        output_json,
-        pretty_print,
-    )
+    return _get_options(RegressorFactory(), model_name, output_json, pretty_print)
 
 
 def get_classification_options(
@@ -392,22 +295,16 @@ def get_classification_options(
     See Also:
         create_classification_model
         get_classification_models
-        import_classification_model
     """
-    from gemseo import _get_schema
     from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 
-    return _get_schema(
-        ClassifierFactory().get_options_grammar(model_name),
-        output_json,
-        pretty_print,
-    )
+    return _get_options(ClassifierFactory(), model_name, output_json, pretty_print)
 
 
 def get_clustering_options(
     model_name: str, output_json: bool = False, pretty_print: bool = True
 ) -> dict[str, str] | str:
-    """Find the available options for clustering model.
+    """Find the available options for a clustering model.
 
     Args:
         model_name: The name of the clustering model.
@@ -420,13 +317,31 @@ def get_clustering_options(
     See Also:
         create_clustering_model
         get_clustering_models
-        import_clustering_model
     """
-    from gemseo import _get_schema
     from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 
-    return _get_schema(
-        ClustererFactory().get_options_grammar(model_name),
-        output_json,
-        pretty_print,
-    )
+    return _get_options(ClustererFactory(), model_name, output_json, pretty_print)
+
+
+def _get_options(
+    factory, model_name, output_json, pretty_print
+) -> dict[str, str] | str:
+    """Find the available options for a model.
+
+    Args:
+        factory: The factory of model.
+        model_name: The name of the model.
+        output_json: Whether to apply JSON format for the schema.
+        pretty_print: Print the schema in a pretty table.
+
+    Returns:
+        The options schema of the model.
+    """
+    from gemseo import _pretty_print_schema
+
+    schema = factory.get_class(model_name).Settings.model_json_schema()
+    if pretty_print:
+        _pretty_print_schema(schema)
+    if output_json:
+        return json.dumps(schema)
+    return schema

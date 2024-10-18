@@ -33,7 +33,6 @@ from sklearn.linear_model import Ridge
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
@@ -288,14 +287,3 @@ def test_jacobian_transform(model_with_transform) -> None:
     assert allclose(jac["y_1"]["x_2"], array([[3.0]]))
     assert allclose(jac["y_2"]["x_1"], array([[-2.0]]))
     assert allclose(jac["y_2"]["x_2"], array([[-3.0]]))
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    out1 = model.predict(input_value)
-    out2 = imported_model.predict(input_value)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)

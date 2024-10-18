@@ -43,6 +43,8 @@ from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.ot_gpr import OTGaussianProcessRegressor
+from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModel
+from gemseo.mlearning.regression.algos.ot_gpr_settings import Trend
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 OTGaussianProcessRegressor.HMATRIX_ASSEMBLY_EPSILON = 1e-10
@@ -50,6 +52,8 @@ OTGaussianProcessRegressor.HMATRIX_RECOMPRESSION_EPSILON = 1e-10
 # The EPSILONs are reduced to make the HMAT-based Kriging interpolating.
 
 OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK = 9
+
+
 # The maximum learning sample size to use LAPACK is reduced to accelerate the tests.
 
 
@@ -159,7 +163,7 @@ def test_kriging_predict_on_learning_set(dataset):
 @pytest.mark.parametrize("x2", [-1, 1])
 def test_kriging_predict(dataset, x1, x2):
     """Check that the Kriging is not yet good enough to extrapolate."""
-    kriging = OTGaussianProcessRegressor(dataset, multi_start_n_samples=0)
+    kriging = OTGaussianProcessRegressor(dataset, multi_start_n_samples=1)
     kriging.learn()
     x = array([x1, x2])
     prediction = kriging.predict({"x": x})
@@ -167,7 +171,7 @@ def test_kriging_predict(dataset, x1, x2):
     assert prediction["rosen"] != pytest.approx(rosen(x))
 
 
-@pytest.mark.parametrize("transformer", [None, {"inputs": "MinMaxScaler"}])
+@pytest.mark.parametrize("transformer", [{}, {"inputs": "MinMaxScaler"}])
 def test_kriging_predict_std_on_learning_set(transformer, dataset):
     """Check that the standard deviation is correctly predicted for a learning point.
 
@@ -183,7 +187,7 @@ def test_kriging_predict_std_on_learning_set(transformer, dataset):
 
 @pytest.mark.parametrize("x1", [-1, 1])
 @pytest.mark.parametrize("x2", [-1, 1])
-@pytest.mark.parametrize("transformer", [None, {"inputs": "MinMaxScaler"}])
+@pytest.mark.parametrize("transformer", [{}, {"inputs": "MinMaxScaler"}])
 def test_kriging_predict_std(transformer, dataset, x1, x2):
     """Check that the standard deviation is correctly predicted for a validation point.
 
@@ -235,9 +239,9 @@ def test_kriging_std_output_dimension(dataset_2, output_name, input_data):
 @pytest.mark.parametrize(
     ("trend", "shape"),
     [
-        (OTGaussianProcessRegressor.Trend.CONSTANT, (2, 1)),
-        (OTGaussianProcessRegressor.Trend.LINEAR, (2, 3)),
-        (OTGaussianProcessRegressor.Trend.QUADRATIC, (2, 6)),
+        (Trend.CONSTANT, (2, 1)),
+        (Trend.LINEAR, (2, 3)),
+        (Trend.QUADRATIC, (2, 6)),
     ],
 )
 def test_trend_type(dataset, trend, shape):
@@ -252,7 +256,7 @@ def test_trend_type(dataset, trend, shape):
 
 def test_default_optimizer(dataset):
     """Check that the default optimizer is TNC."""
-    model = OTGaussianProcessRegressor(dataset, multi_start_n_samples=0)
+    model = OTGaussianProcessRegressor(dataset, multi_start_n_samples=1)
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
         model.learn()
 
@@ -365,10 +369,10 @@ def test_default_covariance_model(dataset):
         ([MaternModel(2), GeneralizedExponential], 1.5),
         ([MaternModel, GeneralizedExponential(2)], 1.5),
         ([MaternModel(2), GeneralizedExponential(2)], 1.5),
-        (OTGaussianProcessRegressor.CovarianceModel.MATERN12, 0.5),
+        (CovarianceModel.MATERN12, 0.5),
         (
             [
-                OTGaussianProcessRegressor.CovarianceModel.MATERN12,
+                CovarianceModel.MATERN12,
                 GeneralizedExponential(2),
             ],
             0.5,
@@ -387,7 +391,7 @@ def test_custom_covariance_model(dataset, covariance_model, nu):
         assert "GeneralizedExponential" in covariance_model_str
 
 
-@pytest.mark.parametrize("kernel_type", OTGaussianProcessRegressor.CovarianceModel)
+@pytest.mark.parametrize("kernel_type", CovarianceModel)
 def test_covariance_kernel_type(dataset, kernel_type):
     """Check the attribute CovarianceModel."""
     model = OTGaussianProcessRegressor(dataset, covariance_model=kernel_type)

@@ -24,13 +24,11 @@ from __future__ import annotations
 import pytest
 from numpy import allclose
 from numpy import array
-from numpy import array_equal
 from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_classification_model
 from gemseo.mlearning.classification.algos.svm import SVMClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
@@ -168,12 +166,3 @@ def test_not_predict_proba(dataset) -> None:
         svm.predict_proba(INPUT_VALUE, False)
     with pytest.raises(NotImplementedError):
         svm.predict_proba(INPUT_VALUES, False)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_classification_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    assert array_equal(out1["y_1"], out2["y_1"])
