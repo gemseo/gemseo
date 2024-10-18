@@ -62,13 +62,13 @@ from numpy import ndarray
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.nlopt._base_nlopt_settings import BaseNLoptSettings
-from gemseo.algos.opt.nlopt._settings.bfgs_settings import BFGSSettings
-from gemseo.algos.opt.nlopt._settings.bobyqa_settings import BOBYQASettings
-from gemseo.algos.opt.nlopt._settings.cobyla_settings import COBYLASettings
-from gemseo.algos.opt.nlopt._settings.mma_settings import MMASettings
-from gemseo.algos.opt.nlopt._settings.newuoa_settings import NEWUOASettings
-from gemseo.algos.opt.nlopt._settings.slsqp_settings import SLSQPSettings
+from gemseo.algos.opt.nlopt.settings.base_nlopt_settings import BaseNLoptSettings
+from gemseo.algos.opt.nlopt.settings.nlopt_bfgs_settings import NLOPTBFGSSettings
+from gemseo.algos.opt.nlopt.settings.nlopt_bobyqa_settings import NLOPTBOBYQASettings
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPTCOBYLASettings
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPTMMASettings
+from gemseo.algos.opt.nlopt.settings.nlopt_newuoa_settings import NLOPTNEWUOASettings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPTSLSQPSettings
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -153,7 +153,7 @@ class Nlopt(BaseOptimizationLibrary):
             internal_algorithm_name=LD_MMA,
             require_gradient=True,
             website=f"{__NLOPT_DOC}#mma-method-of-moving-asymptotes-and-ccsa",
-            Settings=MMASettings,
+            Settings=NLOPTMMASettings,
         ),
         "NLOPT_COBYLA": NLoptAlgorithmDescription(
             algorithm_name="COBYLA",
@@ -169,7 +169,7 @@ class Nlopt(BaseOptimizationLibrary):
                 f"{__NLOPT_DOC}#cobyla-constrained-optimization-by-linear-"
                 "approximations"
             ),
-            Settings=COBYLASettings,
+            Settings=NLOPTCOBYLASettings,
         ),
         "NLOPT_SLSQP": NLoptAlgorithmDescription(
             algorithm_name="SLSQP",
@@ -183,7 +183,7 @@ class Nlopt(BaseOptimizationLibrary):
             internal_algorithm_name=LD_SLSQP,
             require_gradient=True,
             website=f"{__NLOPT_DOC}#slsqp",
-            Settings=SLSQPSettings,
+            Settings=NLOPTSLSQPSettings,
         ),
         "NLOPT_BOBYQA": NLoptAlgorithmDescription(
             algorithm_name="BOBYQA",
@@ -194,7 +194,7 @@ class Nlopt(BaseOptimizationLibrary):
             ),
             internal_algorithm_name=LN_BOBYQA,
             website=f"{__NLOPT_DOC}#bobyqa",
-            Settings=BOBYQASettings,
+            Settings=NLOPTBOBYQASettings,
         ),
         "NLOPT_BFGS": NLoptAlgorithmDescription(
             algorithm_name="BFGS",
@@ -205,14 +205,14 @@ class Nlopt(BaseOptimizationLibrary):
             internal_algorithm_name=LD_LBFGS,
             require_gradient=True,
             website=f"{__NLOPT_DOC}#low-storage-bfgs",
-            Settings=BFGSSettings,
+            Settings=NLOPTBFGSSettings,
         ),
         "NLOPT_NEWUOA": NLoptAlgorithmDescription(
             algorithm_name="NEWUOA",
             description=("NEWUOA + bound constraints implemented in the NLOPT library"),
             internal_algorithm_name=LN_NEWUOA_BOUND,
             website=f"{__NLOPT_DOC}#newuoa-bound-constraints",
-            Settings=NEWUOASettings,
+            Settings=NLOPTNEWUOASettings,
         ),
     }
 

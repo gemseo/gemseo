@@ -30,7 +30,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.scipy_local._settings.slsqp import SLSQPSettings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
 from gemseo.core._process_flow.execution_sequences.execution_sequence import (
     ExecutionSequence,
 )

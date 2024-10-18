@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.scalable.scalable import DiagonalDOE
+from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock

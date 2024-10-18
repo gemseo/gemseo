@@ -30,10 +30,10 @@ from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.algos._base_algorithm_library_settings import BaseAlgorithmLibrarySettings
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.opt._gradient_based_algorithm_settings import (
-    GradientBasedAlgorithmSettings,
+from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
+from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
+    BaseGradientBasedAlgorithmSettings,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
@@ -158,7 +158,7 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         fields_to_exclude = model_to_exclude.model_fields
 
         # Remove GEMSEO settings lying in dedicated Pydantic models
-        fields_to_exclude |= GradientBasedAlgorithmSettings.model_fields
+        fields_to_exclude |= BaseGradientBasedAlgorithmSettings.model_fields
 
         return {key: settings[key] for key in settings if key not in fields_to_exclude}
 

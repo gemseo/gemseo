@@ -24,7 +24,7 @@ from unittest.case import TestCase
 import pytest
 
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.scipy_global._settings.differential_evolution import (
+from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
     DifferentialEvolutionSettings,
 )
 from gemseo.problems.optimization.power_2 import Power2

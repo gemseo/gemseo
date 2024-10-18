@@ -35,8 +35,8 @@ from scipy.sparse.linalg import spilu
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.scipy_linalg._settings.lgmres import LGMRESSettings
 from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRESSettings
 from gemseo.utils.seeder import SEED
 
 RESIDUALS_TOL = 1e-12

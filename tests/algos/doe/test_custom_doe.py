@@ -30,8 +30,8 @@ from pandas.errors import ParserError
 from pydantic import ValidationError
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.custom_doe._custom_doe_settings import CustomDOESettings
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOESettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 
 from .utils import execute_problem

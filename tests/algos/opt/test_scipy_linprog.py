@@ -27,10 +27,10 @@ from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.scipy_linprog._settings.highs_dual_simplex import (
+from gemseo.algos.opt.scipy_linprog.scipy_linprog import ScipyLinprog
+from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
     HiGHSDualSimplexSettings,
 )
-from gemseo.algos.opt.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction

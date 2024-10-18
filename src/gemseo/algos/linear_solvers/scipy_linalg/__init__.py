@@ -17,3 +17,30 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Wrappers for SciPy's linear solvers."""
+
+from __future__ import annotations
+
+from gemseo.algos.linear_solvers.scipy_linalg.settings.bicg import (
+    BICGSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab import (
+    BICGStabSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import (
+    CGSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import (
+    CGSSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import (
+    GCROTSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import (
+    GMRESSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import (
+    LGMRESSettings,  # noqa: F401
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.tfqmr import (
+    TFQMRSettings,  # noqa: F401
+)
