@@ -41,25 +41,26 @@ from scipy.sparse.linalg import lgmres
 from scipy.sparse.linalg import splu
 from scipy.sparse.linalg import tfqmr
 
-from gemseo.algos.linear_solvers._base_linear_solver_settings import (
-    LinearSolverLibrarySettings,
-)
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
 )
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     LinearSolverDescription,
 )
-from gemseo.algos.linear_solvers.scipy_linalg._base_scipy_linalg_settings import (
-    BaseSciPyLinalgSettings,
+from gemseo.algos.linear_solvers.base_linear_solver_settings import (
+    BaseLinearSolverLibrarySettings,
 )
-from gemseo.algos.linear_solvers.scipy_linalg._settings.bicg import BICGSettings
-from gemseo.algos.linear_solvers.scipy_linalg._settings.bicgstab import BICGStabSettings
-from gemseo.algos.linear_solvers.scipy_linalg._settings.cg import CGSettings
-from gemseo.algos.linear_solvers.scipy_linalg._settings.cgs import CGSSettings
-from gemseo.algos.linear_solvers.scipy_linalg._settings.gcrot import GCROTSettings
-from gemseo.algos.linear_solvers.scipy_linalg._settings.gmres import GMRESSettings
-from gemseo.algos.linear_solvers.scipy_linalg._settings.lgmres import LGMRESSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_settings import (  # noqa: E501
+    BaseSciPyLinalgSettingsBase,
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.bicg import BICGSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab import BICGStabSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import CGSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import CGSSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import GCROTSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import GMRESSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import DEFAULTSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRESSettings
 from gemseo.utils.compatibility.scipy import TOL_OPTION
 from gemseo.utils.compatibility.scipy import array_classes
 
@@ -79,7 +80,7 @@ class ScipyLinAlgAlgorithmDescription(LinearSolverDescription):
     library_name: str = "SciPy Linear Algebra"
     """The library name."""
 
-    Settings: type[BaseSciPyLinalgSettings] = BaseSciPyLinalgSettings
+    Settings: type[BaseSciPyLinalgSettingsBase] = BaseSciPyLinalgSettingsBase
     """The option validation model for SciPy linear algebra library."""
 
 
@@ -166,14 +167,14 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             description="Transpose-Free Quasi-Minimal Residual",
             internal_algorithm_name="tfqmr",
             website=f"{__DOC}generated/scipy.sparse.linalg.tfqmr.html",
-            Settings=BaseSciPyLinalgSettings,
+            Settings=BaseSciPyLinalgSettingsBase,
         ),
         "DEFAULT": LinearSolverDescription(
             algorithm_name="DEFAULT",
             description="Default solver (LGMRES)",
             internal_algorithm_name="lgmres",
             website=f"{__DOC}generated/scipy.sparse.linalg.lgmres.html",
-            Settings=LGMRESSettings,
+            Settings=DEFAULTSettings,
         ),
     }
 
@@ -207,7 +208,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             settings["callback"] = self.__store_residuals
 
         settings_ = self._filter_settings(
-            settings, model_to_exclude=LinearSolverLibrarySettings
+            settings, model_to_exclude=BaseLinearSolverLibrarySettings
         )
 
         linear_solver = self.__NAMES_TO_FUNCTIONS[self._algo_name]

@@ -27,7 +27,7 @@ from numpy import array
 
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.oat_doe._oat_doe_settings import OATDOESettings
+from gemseo.algos.doe.oat_doe.settings.oat_doe_settings import OATDOESettings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:

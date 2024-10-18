@@ -17,5 +17,3 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The linear solvers."""
-
-from __future__ import annotations

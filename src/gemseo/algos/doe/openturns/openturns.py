@@ -52,30 +52,23 @@ from gemseo.algos.doe.openturns._algos.ot_reverse_halton_sequence import (
 from gemseo.algos.doe.openturns._algos.ot_sobol_doe import OTSobolDOE
 from gemseo.algos.doe.openturns._algos.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe.openturns._algos.ot_standard_lhs import OTStandardLHS
-from gemseo.algos.doe.openturns._settings.ot_axial_doe import OTAxialDOESettings
-from gemseo.algos.doe.openturns._settings.ot_centered_lhs import OTCenteredLHSSettings
-from gemseo.algos.doe.openturns._settings.ot_composite_doe import OTCompositeDOESettings
-from gemseo.algos.doe.openturns._settings.ot_factorial_doe import OTFactorialDOESettings
-from gemseo.algos.doe.openturns._settings.ot_faure import OTFaureSequenceSettings
-from gemseo.algos.doe.openturns._settings.ot_full_factorial_doe import (
-    OTFullFactorialDOESettings,
+from gemseo.algos.doe.openturns.settings.ot_axial import OTAxialSettings
+from gemseo.algos.doe.openturns.settings.ot_composite import OTCompositeSettings
+from gemseo.algos.doe.openturns.settings.ot_factorial import OTFactorialSettings
+from gemseo.algos.doe.openturns.settings.ot_faure import OTFaureSettings
+from gemseo.algos.doe.openturns.settings.ot_full_fact import OTFullFactSettings
+from gemseo.algos.doe.openturns.settings.ot_halton import OTHaltonSettings
+from gemseo.algos.doe.openturns.settings.ot_haselgrove import OTHaselgroveSettings
+from gemseo.algos.doe.openturns.settings.ot_lhs import OTLHSSettings
+from gemseo.algos.doe.openturns.settings.ot_lhsc import OTLHSCSettings
+from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OTMonteCarloSettings
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OTOptLHSSettings
+from gemseo.algos.doe.openturns.settings.ot_random import OTRandomSettings
+from gemseo.algos.doe.openturns.settings.ot_reverse_halton import (
+    OTReverseHaltonSettings,
 )
-from gemseo.algos.doe.openturns._settings.ot_halton_sequence import (
-    OTHaltonSequenceSettings,
-)
-from gemseo.algos.doe.openturns._settings.ot_haselgrove_sequence import (
-    OTHaselgroveSequenceSettings,
-)
-from gemseo.algos.doe.openturns._settings.ot_monte_carlo import OTMonteCarloSettings
-from gemseo.algos.doe.openturns._settings.ot_optimal_lhs import OTOptimalLHSSettings
-from gemseo.algos.doe.openturns._settings.ot_reverse_halton_sequence import (
-    OTReverseHaltonSequenceSettings,
-)
-from gemseo.algos.doe.openturns._settings.ot_sobol_doe import OTSobolDOESettings
-from gemseo.algos.doe.openturns._settings.ot_sobol_sequence import (
-    OTSobolSequenceSettings,
-)
-from gemseo.algos.doe.openturns._settings.ot_standard_lhs import OTStandardLHSSettings
+from gemseo.algos.doe.openturns.settings.ot_sobol import OTSobolSettings
+from gemseo.algos.doe.openturns.settings.ot_sobol_indices import OTSobolIndicesSettings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -141,42 +134,42 @@ class OpenTURNS(BaseDOELibrary):
             description="Sobol sequence",
             internal_algorithm_name=__SOBOL,
             website=f"{__DOC}_generated/openturns.SobolSequence.html",
-            Settings=OTSobolSequenceSettings,
+            Settings=OTSobolSettings,
         ),
         __RANDOM: OpenTURNSAlgorithmDescription(
             algorithm_name=__RANDOM,
             description="Random sampling",
             internal_algorithm_name=__RANDOM,
             website=f"{__DOC}_generated/openturns.Uniform.html",
-            Settings=OTMonteCarloSettings,
+            Settings=OTRandomSettings,
         ),
         __HASELGROVE: OpenTURNSAlgorithmDescription(
             algorithm_name=__HASELGROVE,
             description="Haselgrove sequence",
             internal_algorithm_name=__HASELGROVE,
             website=f"{__DOC}_generated/openturns.HaselgroveSequence.html",
-            Settings=OTHaselgroveSequenceSettings,
+            Settings=OTHaselgroveSettings,
         ),
         __REVERSE_HALTON: OpenTURNSAlgorithmDescription(
             algorithm_name=__REVERSE_HALTON,
             description="Reverse Halton",
             internal_algorithm_name=__REVERSE_HALTON,
             website=f"{__DOC}_generated/openturns.ReverseHaltonSequence.html",
-            Settings=OTReverseHaltonSequenceSettings,
+            Settings=OTReverseHaltonSettings,
         ),
         __HALTON: OpenTURNSAlgorithmDescription(
             algorithm_name=__HALTON,
             description="Halton sequence",
             internal_algorithm_name=__HALTON,
             website=f"{__DOC}_generated/openturns.HaltonSequence.html",
-            Settings=OTHaltonSequenceSettings,
+            Settings=OTHaltonSettings,
         ),
         __FAURE: OpenTURNSAlgorithmDescription(
             algorithm_name=__FAURE,
             description="Faure sequence",
             internal_algorithm_name=__FAURE,
             website=f"{__DOC}_generated/openturns.FaureSequence.html",
-            Settings=OTFaureSequenceSettings,
+            Settings=OTFaureSettings,
         ),
         __MONTE_CARLO: OpenTURNSAlgorithmDescription(
             algorithm_name=__MONTE_CARLO,
@@ -190,56 +183,56 @@ class OpenTURNS(BaseDOELibrary):
             description="Factorial design",
             internal_algorithm_name=__FACTORIAL,
             website=f"{__DOC}_generated/openturns.Factorial.html",
-            Settings=OTFactorialDOESettings,
+            Settings=OTFactorialSettings,
         ),
         __COMPOSITE: OpenTURNSAlgorithmDescription(
             algorithm_name=__COMPOSITE,
             description="Composite design",
             internal_algorithm_name=__COMPOSITE,
             website=f"{__DOC}_generated/openturns.Composite.html",
-            Settings=OTCompositeDOESettings,
+            Settings=OTCompositeSettings,
         ),
         __AXIAL: OpenTURNSAlgorithmDescription(
             algorithm_name=__AXIAL,
             description="Axial design",
             internal_algorithm_name=__AXIAL,
             website=f"{__DOC}_generated/openturns.Axial.html",
-            Settings=OTAxialDOESettings,
+            Settings=OTAxialSettings,
         ),
         __OPT_LHS: OpenTURNSAlgorithmDescription(
             algorithm_name=__OPT_LHS,
             description="Optimal Latin Hypercube Sampling",
             internal_algorithm_name=__OPT_LHS,
             website=f"{__DOC}_generated/openturns.SimulatedAnnealingLHS.html",
-            Settings=OTOptimalLHSSettings,
+            Settings=OTOptLHSSettings,
         ),
         __LHS: OpenTURNSAlgorithmDescription(
             algorithm_name=__LHS,
             description="Latin Hypercube Sampling",
             internal_algorithm_name=__LHS,
             website=f"{__DOC}_generated/openturns.LHS.html",
-            Settings=OTStandardLHSSettings,
+            Settings=OTLHSSettings,
         ),
         __LHSC: OpenTURNSAlgorithmDescription(
             algorithm_name=__LHSC,
             description="Centered Latin Hypercube Sampling",
             internal_algorithm_name=__LHSC,
             website=f"{__DOC}_generated/openturns.LHS.html",
-            Settings=OTCenteredLHSSettings,
+            Settings=OTLHSCSettings,
         ),
         __FULLFACT: OpenTURNSAlgorithmDescription(
             algorithm_name=__FULLFACT,
             description="Full factorial design",
             internal_algorithm_name=__FULLFACT,
             website=f"{__DOC}_generated/openturns.Box.html",
-            Settings=OTFullFactorialDOESettings,
+            Settings=OTFullFactSettings,
         ),
         __SOBOL_INDICES: OpenTURNSAlgorithmDescription(
             algorithm_name=__SOBOL_INDICES,
             description="DOE for Sobol indices",
             internal_algorithm_name=__SOBOL_INDICES,
             website=f"{__DOC}_generated/openturns.SobolIndicesAlgorithm.html",
-            Settings=OTSobolDOESettings,
+            Settings=OTSobolIndicesSettings,
         ),
     }
 

@@ -37,11 +37,11 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.scipy._settings.halton import HaltonSettings
-from gemseo.algos.doe.scipy._settings.lhs import LHSSettings
-from gemseo.algos.doe.scipy._settings.mc import MCSettings
-from gemseo.algos.doe.scipy._settings.poisson_disk import PoissonDiskSettings
-from gemseo.algos.doe.scipy._settings.sobol import SobolSettings
+from gemseo.algos.doe.scipy.settings.halton import HaltonSettings
+from gemseo.algos.doe.scipy.settings.lhs import LHSSettings
+from gemseo.algos.doe.scipy.settings.mc import MCSettings
+from gemseo.algos.doe.scipy.settings.poisson_disk import PoissonDiskSettings
+from gemseo.algos.doe.scipy.settings.sobol import SobolSettings
 from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import SCIPY_VERSION
 from gemseo.utils.seeder import SEED
@@ -54,7 +54,9 @@ if TYPE_CHECKING:
     from numpy.random import RandomState
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.doe.scipy._base_scipy_doe_settings import BaseSciPyDOESettings
+    from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import (
+        BaseSciPyDOESettings,
+    )
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
 

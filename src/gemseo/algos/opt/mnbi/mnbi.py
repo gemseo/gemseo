@@ -64,7 +64,6 @@ from gemseo.algos.multiobjective_optimization_result import (
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.mnbi._mnbi_settings import MNBISettings
 from gemseo.algos.opt.mnbi._utils.constraint_function_wrapper import (
     ConstraintFunctionWrapper,
 )
@@ -72,6 +71,7 @@ from gemseo.algos.opt.mnbi._utils.function_component_extractor import (
     FunctionComponentExtractor,
 )
 from gemseo.algos.opt.mnbi._utils.sub_optim_constraint import SubOptimConstraint
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBISettings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_function import NotImplementedCallable

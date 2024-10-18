@@ -28,7 +28,7 @@ from numpy import vstack
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.doe.morris_doe._morris_doe_settings import MorrisDOESettings
+from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import MorrisDOESettings
 from gemseo.typing import MutableStrKeyMapping
 from gemseo.typing import RealArray
 

@@ -31,19 +31,19 @@ from numpy import isfinite
 from scipy.optimize import linprog
 
 from gemseo.algos.design_space_utils import get_value_and_bounds
-from gemseo.algos.opt._base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimization_library_settings import (
+    BaseOptimizationLibrarySettings,
+)
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.opt.scipy_linprog._base_scipy_linprog_settings import (
+from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
     BaseSciPyLinProgSettings,
 )
-from gemseo.algos.opt.scipy_linprog._settings.highs_dual_simplex import (
+from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
     HiGHSDualSimplexSettings,
 )
-from gemseo.algos.opt.scipy_linprog._settings.highs_interior_point import (
+from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
     HiGHSInteriorPointSettings,
 )
 from gemseo.algos.optimization_result import OptimizationResult

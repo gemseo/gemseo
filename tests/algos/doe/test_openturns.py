@@ -83,7 +83,7 @@ def test_call() -> None:
 )
 def test_opt_lhs_wrong_properties(options, error) -> None:
     """Check that using an optimal LHS with wrong properties raises an error."""
-    match = re.escape(f"1 validation error for OTOptimalLHSSettings{error}")
+    match = re.escape(f"1 validation error for OTOptLHSSettings{error}")
     with pytest.raises(ValidationError, match=match):
         execute_problem(
             doe_algo_name="OT_OPT_LHS",

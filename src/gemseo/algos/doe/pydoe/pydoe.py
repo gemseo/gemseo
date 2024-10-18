@@ -39,13 +39,13 @@ from pyDOE3.doe_plackett_burman import pbdesign
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.pydoe._settings.bbdesign import BoxBehnkenDesignSettings
-from gemseo.algos.doe.pydoe._settings.ccdesign import CentralCompositeDesignSettings
-from gemseo.algos.doe.pydoe._settings.ff2n import TwoLevelFullFactorialSettings
-from gemseo.algos.doe.pydoe._settings.fullfact import FullFactorialSettings
-from gemseo.algos.doe.pydoe._settings.lhs import LHSSettings
-from gemseo.algos.doe.pydoe._settings.pbdesign import PlackettBurmanDesignSettings
 from gemseo.algos.doe.pydoe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
+from gemseo.algos.doe.pydoe.settings.bbdesign import BBDesignSettings
+from gemseo.algos.doe.pydoe.settings.ccdesign import CCDesignSettings
+from gemseo.algos.doe.pydoe.settings.ff2n import FF2NSettings
+from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings
+from gemseo.algos.doe.pydoe.settings.lhs import LHSSettings
+from gemseo.algos.doe.pydoe.settings.pbdesign import PBDesignSettings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -84,7 +84,7 @@ class PyDOELibrary(BaseDOELibrary):
             description="Box-Behnken design",
             internal_algorithm_name="bbdesign",
             website=f"{__DOC}rsm.html#box-behnken",
-            Settings=BoxBehnkenDesignSettings,
+            Settings=BBDesignSettings,
             minimum_dimension=3,
         ),
         "ccdesign": PyDOEAlgorithmDescription(
@@ -92,7 +92,7 @@ class PyDOELibrary(BaseDOELibrary):
             description="Central Composite",
             internal_algorithm_name="ccdesign",
             website=f"{__DOC}rsm.html#central-composite",
-            Settings=CentralCompositeDesignSettings,
+            Settings=CCDesignSettings,
             minimum_dimension=2,
         ),
         "ff2n": PyDOEAlgorithmDescription(
@@ -100,14 +100,14 @@ class PyDOELibrary(BaseDOELibrary):
             description="2-Level Full-Factorial",
             internal_algorithm_name="ff2n",
             website=f"{__DOC}factorial.html#level-full-factorial",
-            Settings=TwoLevelFullFactorialSettings,
+            Settings=FF2NSettings,
         ),
         "fullfact": PyDOEAlgorithmDescription(
             algorithm_name="fullfact",
             description="Full-Factorial",
             internal_algorithm_name="fullfact",
             website=f"{__DOC}factorial.html#general-full-factorial",
-            Settings=FullFactorialSettings,
+            Settings=FullFactSettings,
         ),
         "lhs": PyDOEAlgorithmDescription(
             algorithm_name="lhs",
@@ -121,7 +121,7 @@ class PyDOELibrary(BaseDOELibrary):
             description="Plackett-Burman design",
             internal_algorithm_name="pbdesign",
             website=f"{__DOC}factorial.html#plackett-burman",
-            Settings=PlackettBurmanDesignSettings,
+            Settings=PBDesignSettings,
         ),
     }
 
