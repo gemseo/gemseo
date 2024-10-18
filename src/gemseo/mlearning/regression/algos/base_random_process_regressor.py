@@ -22,17 +22,11 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from gemseo.mlearning import BaseMLSupervisedAlgo
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.utils.seeder import Seeder
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from gemseo.datasets.dataset import DataType
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -46,21 +40,8 @@ class BaseRandomProcessRegressor(BaseRegressor):
     _seeder: Seeder
     """A seed generator."""
 
-    def __init__(  # noqa: D107
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseMLSupervisedAlgo.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        **parameters: MLAlgoParameterType,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            **parameters,
-        )
+    def _post_init(self):
+        super()._post_init()
         self._seeder = Seeder()
 
     @abstractmethod

@@ -98,10 +98,8 @@ generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 
@@ -117,15 +115,13 @@ from gemseo.mlearning.data_formatters.regression_data_formatters import (
 from gemseo.mlearning.regression.algos.base_random_process_regressor import (
     BaseRandomProcessRegressor,
 )
+from gemseo.mlearning.regression.algos.gpr_settings import (
+    GaussianProcessRegressorSettings,
+)
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from sklearn.gaussian_process.kernels import Kernel
-
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 __Bounds = tuple[float, float]
@@ -138,58 +134,24 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRandomProcessRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        kernel: Kernel | None = None,
-        bounds: __Bounds | Mapping[str, __Bounds] = (),
-        alpha: float | RealArray = 1e-10,
-        optimizer: str | Callable = "fmin_l_bfgs_b",
-        n_restarts_optimizer: int = 10,
-        random_state: int | None = SEED,
-    ) -> None:
-        """
-        Args:
-            kernel: The kernel specifying the covariance model.
-                If ``None``, use a Matérn(2.5).
-            bounds: The lower and upper bounds of the parameter length scales
-                when ``kernel`` is ``None``.
-                Either a unique lower-upper pair common to all the inputs
-                or lower-upper pairs for some of them.
-                When ``bounds`` is empty or when an input has no pair,
-                the lower bound is 0.01 and the upper bound is 100.
-            alpha: The nugget effect to regularize the model.
-            optimizer: The optimization algorithm to find the parameter length scales.
-            n_restarts_optimizer: The number of restarts of the optimizer.
-            random_state: The random state passed to the random number generator.
-                Use an integer for reproducible results.
-        """  # noqa: D205 D212
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            kernel=kernel,
-            alpha=alpha,
-            optimizer=optimizer,
-            n_restarts_optimizer=n_restarts_optimizer,
-            random_state=random_state,
-        )
+    Settings: ClassVar[type[GaussianProcessRegressorSettings]] = (
+        GaussianProcessRegressorSettings
+    )
 
+    def _post_init(self):
+        super()._post_init()
+        kernel = self._settings.kernel
         if kernel is None:
             kernel = sklearn.gaussian_process.kernels.Matern(
                 (1.0,) * self._reduced_input_dimension,
-                self.__compute_parameter_length_scale_bounds(bounds),
+                self.__compute_parameter_length_scale_bounds(self._settings.bounds),
                 nu=2.5,
             )
 
         self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
-            alpha=alpha,
+            alpha=self._settings.alpha,
             kernel=kernel,
-            n_restarts_optimizer=n_restarts_optimizer,
+            n_restarts_optimizer=self._settings.n_restarts_optimizer,
             # When output_dimension > 1 and normalize_y is False,
             # the prediction uncertainty
             # (e.g. standard deviation, samples, ...)
@@ -197,10 +159,9 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
             # Set normalize_y to True fix this bug.
             # TODO: Remove this bugfix once the bug has been corrected in sklearn.
             normalize_y=True,
-            optimizer=optimizer,
-            random_state=random_state,
+            optimizer=self._settings.optimizer,
+            random_state=self._settings.random_state,
         )
-        self.parameters["kernel"] = kernel.__class__.__name__
 
     @property
     def kernel(self):  # (...) -> Kernel

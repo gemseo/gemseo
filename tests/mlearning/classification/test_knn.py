@@ -24,14 +24,12 @@ from __future__ import annotations
 import pytest
 from numpy import allclose
 from numpy import array
-from numpy import array_equal
 from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
 from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_classification_model
 from gemseo.mlearning.classification.algos.knn import KNNClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
@@ -237,13 +235,3 @@ def test_predict_proba_transform(model_with_transform) -> None:
         assert allclose(proba["y_2"].sum(0), 1)
         assert allclose(probas["y_1"].sum(axis=1), 1)
         assert allclose(probas["y_2"].sum(axis=1), 1)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_classification_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    assert array_equal(out1["y_1"], out2["y_1"])
-    assert array_equal(out1["y_2"], out2["y_2"])

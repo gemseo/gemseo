@@ -34,21 +34,16 @@ generated/sklearn.svm.SVC.html>`_.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 
 from sklearn.svm import SVC
 
 from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
-from gemseo.utils.seeder import SEED
+from gemseo.mlearning.classification.algos.svm_settings import SVMClassifierSettings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from numpy import ndarray
 
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -58,47 +53,16 @@ class SVMClassifier(BaseClassifier):
     SHORT_ALGO_NAME: ClassVar[str] = "SVM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseClassifier.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        C: float = 1.0,  # noqa: N803
-        kernel: str | Callable | None = "rbf",
-        probability: bool = False,
-        random_state: int | None = SEED,
-        **parameters: float | bool | str | None,
-    ) -> None:
-        """
-        Args:
-            C: The inverse L2 regularization parameter.
-                   Higher values give less regularization.
-            kernel: The name of the kernel or a callable for the SVM.
-                Examples: "linear", "poly", "rbf", "sigmoid", "precomputed"
-                or a callable.
-            probability: Whether to enable the probability estimates.
-                The algorithm is faster if set to False.
-            random_state: The random state passed to the random number generator.
-                Use an integer for reproducible results.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            C=C,
-            kernel=kernel,
-            probability=probability,
-            random_state=random_state,
-            **parameters,
-        )
+    Settings: ClassVar[type[SVMClassifierSettings]] = SVMClassifierSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.algo = SVC(
-            C=C,
-            kernel=kernel,
-            probability=probability,
-            random_state=random_state,
-            **parameters,
+            C=self._settings.C,
+            kernel=self._settings.kernel,
+            probability=self._settings.probability,
+            random_state=self._settings.random_state,
+            **self._settings.parameters,
         )
 
     def _fit(
@@ -118,7 +82,7 @@ class SVMClassifier(BaseClassifier):
         self,
         input_data: RealArray,
     ) -> RealArray:
-        if not self.parameters["probability"]:
+        if not self._settings.probability:
             msg = (
                 "SVMClassifier soft probability prediction is only available if the "
                 "parameter 'probability' is set to True."

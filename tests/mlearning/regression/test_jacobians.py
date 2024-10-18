@@ -40,7 +40,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.algos.rbf_settings import Function
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.scenarios.doe_scenario import DOEScenario
@@ -118,7 +118,6 @@ DATASETS_DESCRIPTIONS = (
     ),
 )
 
-
 TRANSFORMERS = (
     {},
     {IODataset.INPUT_GROUP: Scaler(offset=5, coefficient=3)},
@@ -194,7 +193,7 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", [*list(RBFRegressor.Function), _r3])
+@pytest.mark.parametrize("function", [*list(Function), _r3])
 def test_rbf(dataset, transformer, function) -> None:
     """Test polynomial regression Jacobians."""
     der_func = _der_r3 if function is _r3 else None
@@ -217,6 +216,6 @@ def test_pce(dataset) -> None:
         space.add_random_variable(input_name, "OTUniformDistribution")
 
     discipline = SurrogateDiscipline(
-        "PCERegressor", data=dataset, transformer=None, probability_space=space
+        "PCERegressor", data=dataset, transformer={}, probability_space=space
     )
     discipline.check_jacobian()

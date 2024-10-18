@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 import pytest
 from numpy import arange
@@ -30,7 +29,6 @@ from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.algos.kmeans import KMeans
-from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -93,7 +91,9 @@ def test_repr_str(dataset, samples, trained) -> None:
     ml_algo = NewMLAlgo(dataset)
     ml_algo._learning_samples_indices = samples
     ml_algo._trained = trained
-    expected = "NewMLAlgo()\n   based on the NewLibrary library"
+    expected = (
+        "NewMLAlgo(parameters={}, transformer={})\n   based on the NewLibrary library"
+    )
     if ml_algo.is_trained:
         expected += f"\n   built from {len(samples)} learning samples"
 
@@ -104,7 +104,8 @@ def test_repr_str(dataset, samples, trained) -> None:
 def test_repr_html(dataset) -> None:
     """Check the HTML representation of an ML algorithm."""
     assert NewMLAlgo(dataset)._repr_html_() == REPR_HTML_WRAPPER.format(
-        "NewMLAlgo()<br/><ul><li>based on the NewLibrary library</li></ul>"
+        "NewMLAlgo(parameters={}, transformer={})<br/>"
+        "<ul><li>based on the NewLibrary library</li></ul>"
     )
 
 
@@ -134,30 +135,6 @@ def test_transformer_wrong_type(dataset) -> None:
         concretize_classes(BaseMLAlgo),
     ):
         BaseMLAlgo(dataset, transformer={"parameters": 1})
-
-
-def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory) -> None:
-    """Test save and load."""
-    # Let the factory find NewMLAlgo
-    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "new_ml_algo")
-
-    model = NewMLAlgo(dataset)
-    model.learn()
-    factory = MLAlgoFactory()
-
-    directory_path = model.to_pickle(save_learning_set=True)
-    imported_model = factory.load(directory_path)
-    assert imported_model.learning_set.get_view(variable_names="x_1").equals(
-        model.learning_set.get_view(variable_names="x_1")
-    )
-    assert imported_model.is_trained
-
-    directory_path = model.to_pickle()
-    imported_model = factory.load(directory_path)
-    assert len(model.learning_set) == 10
-    assert len(imported_model.learning_set) == 10
-    assert imported_model.is_trained
-    assert imported_model.sizes == dataset.variable_names_to_n_components
 
 
 def test_transformers_error(dataset) -> None:

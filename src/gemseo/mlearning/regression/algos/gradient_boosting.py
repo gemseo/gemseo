@@ -22,19 +22,17 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from numpy import array
 from sklearn.ensemble import GradientBoostingRegressor as SKLGradientBoosting
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.gradient_boosting_settings import (
+    GradientBoostingRegressorSettings,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import NumberArray
 
 
@@ -44,28 +42,16 @@ class GradientBoostingRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_ALGO_NAME: ClassVar[str] = "GradientBoostingRegressor"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        n_estimators: int = 100,
-        **parameters: Any,
-    ) -> None:
-        """
-        Args:
-            n_estimators: The number of boosting stages to perform.
-        """  # noqa: D205 D212 D415
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            n_estimators=n_estimators,
-            **parameters,
-        )
-        self.__algo = {"n_estimators": n_estimators, "parameters": parameters}
+    Settings: ClassVar[type[GradientBoostingRegressorSettings]] = (
+        GradientBoostingRegressorSettings
+    )
+
+    def _post_init(self):
+        super()._post_init()
+        self.__algo = {
+            "n_estimators": self._settings.n_estimators,
+            "parameters": self._settings.parameters,
+        }
         self.algo = []
 
     def _fit(

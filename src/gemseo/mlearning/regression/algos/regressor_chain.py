@@ -36,13 +36,14 @@ from typing import NamedTuple
 
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.regressor_chain_settings import (
+    RegressorChainSettings,
+)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import NumberArray
 
@@ -58,21 +59,10 @@ class RegressorChain(BaseRegressor):
 
     SHORT_ALGO_NAME: ClassVar[str] = "RegressorChain"
 
-    def __init__(  # noqa: D107
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        **parameters: Any,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            **parameters,
-        )
+    Settings: ClassVar[type[RegressorChainSettings]] = RegressorChainSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.__algos = []
 
     def add_algo(
@@ -114,6 +104,13 @@ class RegressorChain(BaseRegressor):
         input_data: NumberArray,
         output_data: NumberArray,
     ) -> None:
+        if not self.__algos:
+            msg = (
+                "The regressor chain contains no regressor; "
+                "please add regressors using the add_algo method."
+            )
+            raise ValueError(msg)
+
         for index, algo in enumerate(self.__algos):
             algo._fit(input_data, output_data)
             output_data -= algo._predict(input_data)

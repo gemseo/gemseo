@@ -21,18 +21,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 
 from gemseo.mlearning.regression.algos.rbf import RBFRegressor
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
-    from gemseo.typing import NumberArray
+from gemseo.mlearning.regression.algos.thin_plate_spline_settings import (
+    TPSRegressorSettings,
+)
 
 
 class TPSRegressor(RBFRegressor):
@@ -40,22 +34,4 @@ class TPSRegressor(RBFRegressor):
 
     SHORT_ALGO_NAME: ClassVar[str] = "TPS"
 
-    def __init__(  # noqa: D107
-        self,
-        data: IODataset,
-        transformer: TransformerType = RBFRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        smooth: float = 0.0,
-        norm: str
-        | Callable[[NumberArray, NumberArray], float] = RBFRegressor.EUCLIDEAN,
-    ) -> None:
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            function=RBFRegressor.Function.THIN_PLATE,
-            smooth=smooth,
-            norm=norm,
-        )
+    Settings: ClassVar[type[TPSRegressorSettings]] = TPSRegressorSettings

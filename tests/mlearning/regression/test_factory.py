@@ -28,6 +28,7 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -65,18 +66,7 @@ def test_constructor() -> None:
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     factory = RegressorFactory()
-    linreg = factory.create("LinearRegressor", data=dataset)
-    assert hasattr(linreg, "parameters")
-
-
-def test_load(dataset, tmp_wd) -> None:
-    """Test the loading of a model from data."""
-    factory = RegressorFactory()
-    linreg = factory.create("LinearRegressor", data=dataset)
-    linreg.learn()
-    dirname = linreg.to_pickle()
-    loaded_linreg = factory.load(dirname)
-    assert hasattr(loaded_linreg, "parameters")
+    assert isinstance(factory.create("LinearRegressor", data=dataset), LinearRegressor)
 
 
 def test_is_available() -> None:

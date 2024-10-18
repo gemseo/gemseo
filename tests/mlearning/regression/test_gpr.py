@@ -35,7 +35,6 @@ from numpy.testing import assert_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -59,7 +58,7 @@ def dataset() -> Dataset:
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture(params=[None, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
+@pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
 def model(request, dataset) -> GaussianProcessRegressor:
     """A trained GaussianProcessRegressor."""
     gpr = GaussianProcessRegressor(dataset, transformer=request.param)
@@ -137,21 +136,10 @@ def test_predict_std_shape(model, x_1, x_2) -> None:
     assert prediction_std.shape[1] == 2
 
 
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    out1 = model.predict(input_value)
-    out2 = imported_model.predict(input_value)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)
-
-
 @pytest.mark.parametrize(
     ("bounds", "expected"),
     [
-        (None, [(0.01, 100.0), (0.01, 100.0)]),
+        ((), [(0.01, 100.0), (0.01, 100.0)]),
         ((0.1, 10), [(0.1, 10), (0.1, 10)]),
         ({"x_2": (0.1, 10)}, [(0.01, 100), (0.1, 10)]),
     ],

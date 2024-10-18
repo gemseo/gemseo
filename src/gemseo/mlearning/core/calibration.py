@@ -52,9 +52,6 @@ from numpy import ndarray
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import Discipline
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.algos.ml_algo import TransformerType
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
 from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureOptionsType
 from gemseo.scenarios.doe_scenario import DOEScenario
@@ -66,6 +63,9 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.scenarios.base_scenario import BaseScenario
 
 
@@ -110,7 +110,7 @@ class MLAlgoAssessor(Discipline):
         measure: type[BaseMLAlgoQuality],
         measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
-        transformer: TransformerType = BaseMLAlgo.IDENTITY,
+        transformer: TransformerType = READ_ONLY_EMPTY_DICT,
         **algo_options: MLAlgoParameterType,
     ) -> None:
         """
@@ -227,7 +227,7 @@ class MLAlgoCalibration:
         | BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,
         # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
-        transformer: TransformerType = BaseMLAlgo.IDENTITY,
+        transformer: TransformerType = READ_ONLY_EMPTY_DICT,
         **algo_options: MLAlgoParameterType,
     ) -> None:
         """

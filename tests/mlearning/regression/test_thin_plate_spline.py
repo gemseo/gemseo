@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.algos.rbf_settings import Function
 from gemseo.mlearning.regression.algos.thin_plate_spline import TPSRegressor
 
 
@@ -23,7 +24,7 @@ def test_init(dataset):
     algo = TPSRegressor(dataset)
     algo.learn()
     assert isinstance(algo, RBFRegressor)
-    assert algo.algo.function == algo.Function.THIN_PLATE
+    assert algo.algo.function == Function.THIN_PLATE
     assert algo.algo.smooth == 0.0
     assert algo.algo.norm == "euclidean"
 

@@ -21,9 +21,6 @@
 
 from __future__ import annotations
 
-import pickle
-from pathlib import Path
-
 from gemseo.core.base_factory import BaseFactory
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 
@@ -33,30 +30,3 @@ class MLAlgoFactory(BaseFactory):
 
     _CLASS = BaseMLAlgo
     _PACKAGE_NAMES = ("gemseo.mlearning",)
-
-    def load(
-        self,
-        directory: str | Path,
-    ) -> BaseMLAlgo:
-        """Load an instance of machine learning algorithm from the disk.
-
-        Args:
-            directory: The name of the directory
-                containing an instance of a machine learning algorithm.
-
-        Returns:
-            The instance of the machine learning algorithm.
-        """
-        directory = Path(directory)
-        with (directory / BaseMLAlgo.FILENAME).open("rb") as handle:
-            objects = pickle.load(handle)
-        algo_name = objects.pop("_algo_name")
-        model = super().create(
-            algo_name,
-            data=objects.pop("data"),
-            **objects.pop("parameters"),
-        )
-        for key, value in objects.items():
-            setattr(model, key, value)
-        model.load_algo(directory)
-        return model

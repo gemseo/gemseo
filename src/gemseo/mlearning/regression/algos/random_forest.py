@@ -36,13 +36,11 @@ from typing import ClassVar
 from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.utils.seeder import SEED
+from gemseo.mlearning.regression.algos.random_forest_settings import (
+    RandomForestRegressorSettings,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -52,33 +50,16 @@ class RandomForestRegressor(BaseRegressor):
     SHORT_ALGO_NAME: ClassVar[str] = "RF"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        n_estimators: int = 100,
-        random_state: int | None = SEED,
-        **parameters,
-    ) -> None:
-        """
-        Args:
-            n_estimators: The number of trees in the forest.
-            random_state: The random state passed to the random number generator.
-                Use an integer for reproducible results.
-        """  # noqa: D205 D212
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            n_estimators=n_estimators,
-            random_state=random_state,
-            **parameters,
-        )
+    Settings: ClassVar[type[RandomForestRegressorSettings]] = (
+        RandomForestRegressorSettings
+    )
+
+    def _post_init(self):
+        super()._post_init()
         self.algo = SKLRandForest(
-            n_estimators=n_estimators, random_state=random_state, **parameters
+            n_estimators=self._settings.n_estimators,
+            random_state=self._settings.random_state,
+            **self._settings.parameters,
         )
 
     def _fit(

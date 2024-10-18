@@ -65,16 +65,13 @@ from sklearn.linear_model import Ridge
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressorSettings
 from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
     BaseDimensionReduction,
 )
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import RealArray
 
 
@@ -84,72 +81,41 @@ class LinearRegressor(BaseRegressor):
     SHORT_ALGO_NAME: ClassVar[str] = "LinReg"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        fit_intercept: bool = True,
-        penalty_level: float = 0.0,
-        l2_penalty_ratio: float = 1.0,
-        random_state: int | None = SEED,
-        **parameters: float | str | bool | None,
-    ) -> None:
-        """
-        Args:
-            fit_intercept: Whether to fit the intercept.
-            penalty_level: The penalty level greater or equal to 0.
-                If 0, there is no penalty.
-            l2_penalty_ratio: The penalty ratio related to the l2 regularization.
-                If 1, use the Ridge penalty.
-                If 0, use the Lasso penalty.
-                Between 0 and 1, use the ElasticNet penalty.
-            random_state: The random state passed to the random number generator
-                when there is a penalty.
-                Use an integer for reproducible results.
-            **parameters: The parameters of the machine learning algorithm.
-        """  # noqa: D205 D212
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            fit_intercept=fit_intercept,
-            penalty_level=penalty_level,
-            l2_penalty_ratio=l2_penalty_ratio,
-            random_state=random_state,
-            **parameters,
-        )
-        if "degree" in parameters:
-            del parameters["degree"]
+    Settings: ClassVar[type[LinearRegressorSettings]] = LinearRegressorSettings
 
+    def _post_init(self):
+        super()._post_init()
+        penalty_level = self._settings.penalty_level
         if penalty_level == 0.0:
-            self.algo = LinReg(copy_X=False, fit_intercept=fit_intercept, **parameters)
-        elif l2_penalty_ratio == 1.0:
+            self.algo = LinReg(
+                copy_X=False,
+                fit_intercept=self._settings.fit_intercept,
+                **self._settings.parameters,
+            )
+        elif self._settings.l2_penalty_ratio == 1.0:
             self.algo = Ridge(
                 copy_X=False,
-                fit_intercept=fit_intercept,
+                fit_intercept=self._settings.fit_intercept,
                 alpha=penalty_level,
-                random_state=random_state,
-                **parameters,
+                random_state=self._settings.random_state,
+                **self._settings.parameters,
             )
-        elif l2_penalty_ratio == 0.0:
+        elif self._settings.l2_penalty_ratio == 0.0:
             self.algo = Lasso(
                 copy_X=False,
-                fit_intercept=fit_intercept,
+                fit_intercept=self._settings.fit_intercept,
                 alpha=penalty_level,
-                random_state=random_state,
-                **parameters,
+                random_state=self._settings.random_state,
+                **self._settings.parameters,
             )
         else:
             self.algo = ElasticNet(
                 copy_X=False,
-                fit_intercept=fit_intercept,
+                fit_intercept=self._settings.fit_intercept,
                 alpha=penalty_level,
-                l1_ratio=1 - l2_penalty_ratio,
-                random_state=random_state,
-                **parameters,
+                l1_ratio=1 - self._settings.l2_penalty_ratio,
+                random_state=self._settings.random_state,
+                **self._settings.parameters,
             )
 
     def _fit(
@@ -179,7 +145,7 @@ class LinearRegressor(BaseRegressor):
     @property
     def intercept(self) -> RealArray:
         """The regression intercepts of the linear model."""
-        if self.parameters["fit_intercept"]:
+        if self._settings.fit_intercept:
             return self.algo.intercept_
 
         return zeros(self.algo.coef_.shape[0])

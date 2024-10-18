@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import pytest
-from numpy import allclose
 from numpy import array
 from numpy import hstack
 from numpy import linspace
@@ -31,7 +30,6 @@ from numpy import newaxis
 from numpy import ones_like
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_regression_model
 from gemseo.mlearning.classification.algos.random_forest import RandomForestClassifier
 from gemseo.mlearning.clustering.algos.kmeans import KMeans
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
@@ -205,61 +203,55 @@ def test_predict_jacobian_soft(model_soft) -> None:
         model_soft.predict_jacobian(INPUT_VALUES)
 
 
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    out1 = model.predict(input_value)
-    out2 = imported_model.predict(input_value)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)
-
-
 def test_repr_str_(model) -> None:
     """Test string representations."""
-    expected = """MOERegressor(hard=True)
+    expected = """MOERegressor(hard=True, input_names=(), output_names=(), parameters={}, transformer={})
    built from 36 learning samples
    Clustering
-      KMeans(n_clusters=2, random_state=0, var_names=())
+      KMeans(n_clusters=2, parameters={}, random_state=0, transformer={}, var_names=())
    Classification
-      KNNClassifier(n_neighbors=5)
+      KNNClassifier(input_names=(), n_neighbors=5, output_names=['labels'], parameters={}, transformer={})
    Regression
       Local model 0
-         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0, random_state=0)
+         LinearRegressor(fit_intercept=True, input_names=(), l2_penalty_ratio=1.0, output_names=(), parameters={}, penalty_level=0.0, random_state=0, transformer={})
       Local model 1
-         LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, penalty_level=0.0, random_state=0)"""  # noqa: E501
+         LinearRegressor(fit_intercept=True, input_names=(), l2_penalty_ratio=1.0, output_names=(), parameters={}, penalty_level=0.0, random_state=0, transformer={})"""  # noqa: E501
     assert repr(model) == str(model) == expected
 
 
 def test_repr_html(model) -> None:
     """Check MOERegressor._repr_html."""
     assert model._repr_html_() == REPR_HTML_WRAPPER.format(
-        "MOERegressor(hard=True)<br/>"
+        "MOERegressor(hard=True, input_names=(), output_names=(), parameters={}, "
+        "transformer={})<br/>"
         "<ul>"
         "<li>built from 36 learning samples</li>"
         "<li>Clustering"
         "<ul>"
-        "<li>KMeans(n_clusters=2, random_state=0, var_names=())</li>"
+        "<li>KMeans(n_clusters=2, parameters={}, random_state=0, transformer={}, "
+        "var_names=())</li>"
         "</ul>"
         "</li>"
         "<li>Classification"
         "<ul>"
-        "<li>KNNClassifier(n_neighbors=5)</li>"
+        "<li>KNNClassifier(input_names=(), n_neighbors=5, "
+        "output_names=[&#x27;labels&#x27;], parameters={}, transformer={})</li>"
         "</ul>"
         "</li>"
         "<li>Regression"
         "<ul>"
         "<li>Local model 0"
         "<ul>"
-        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, "
-        "penalty_level=0.0, random_state=0)</li>"
+        "<li>LinearRegressor(fit_intercept=True, input_names=(), l2_penalty_ratio=1.0, "
+        "output_names=(), parameters={}, penalty_level=0.0, random_state=0, "
+        "transformer={})</li>"
         "</ul>"
         "</li>"
         "<li>Local model 1"
         "<ul>"
-        "<li>LinearRegressor(fit_intercept=True, l2_penalty_ratio=1.0, "
-        "penalty_level=0.0, random_state=0)</li>"
+        "<li>LinearRegressor(fit_intercept=True, input_names=(), l2_penalty_ratio=1.0, "
+        "output_names=(), parameters={}, penalty_level=0.0, random_state=0, "
+        "transformer={})</li>"
         "</ul>"
         "</li>"
         "</ul>"

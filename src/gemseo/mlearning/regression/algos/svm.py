@@ -22,19 +22,15 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from numpy import array
 from sklearn.svm import SVR
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.svm_settings import SVMRegressorSettings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import NumberArray
 
 
@@ -44,28 +40,14 @@ class SVMRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_ALGO_NAME: ClassVar[str] = "SVMRegression"
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        kernel: str = "rbf",
-        **parameters: Any,
-    ) -> None:
-        """
-        Args:
-            kernel: The kernel type to be used.
-        """  # noqa: D205 D212 D415
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            kernel=kernel,
-            **parameters,
-        )
-        self.__algo = {"kernel": kernel, "parameters": parameters}
+    Settings: ClassVar[type[SVMRegressorSettings]] = SVMRegressorSettings
+
+    def _post_init(self):
+        super()._post_init()
+        self.__algo = {
+            "kernel": self._settings.kernel,
+            "parameters": self._settings.parameters,
+        }
         self.algo = []
 
     def _fit(

@@ -1,0 +1,3 @@
+All functions and ``MLAlgo``'s attributes and methods to save and load instances of machine learning algorithms models
+(namely ``MLAlgo.FILENAME``, ``MLAlgo.to_pickle``, ``MLAlgo.load_algo``, ``import_mlearning_model``, ``import_regression_model``, ``import_classification_model`` and ``import_clustering_model``);
+use the functions ``to_pickle`` and ``from_pickle`` instead.

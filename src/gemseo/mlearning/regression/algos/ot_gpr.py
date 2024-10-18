@@ -21,12 +21,10 @@ from inspect import isclass
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import array
 from numpy import atleast_2d
 from numpy import diag
-from openturns import TNC
 from openturns import AbsoluteExponential
 from openturns import ConstantBasisFactory
 from openturns import CovarianceModelImplementation
@@ -48,7 +46,6 @@ from openturns import Sample
 from openturns import SquaredExponential
 from openturns import TensorizedCovarianceModel
 from openturns import UserDefinedCovarianceModel
-from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOELibraryFactory
@@ -58,23 +55,20 @@ from gemseo.mlearning.data_formatters.regression_data_formatters import (
 from gemseo.mlearning.regression.algos.base_random_process_regressor import (
     BaseRandomProcessRegressor,
 )
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModel
+from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModelType
+from gemseo.mlearning.regression.algos.ot_gpr_settings import DOEAlgorithmName
+from gemseo.mlearning.regression.algos.ot_gpr_settings import (
+    OTGaussianProcessRegressorSettings,
+)
+from gemseo.mlearning.regression.algos.ot_gpr_settings import Trend
 from gemseo.utils.compatibility.openturns import create_trend_basis
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
-
-
-DOEAlgorithmName = StrEnum("DOEAlgorithmName", DOELibraryFactory().algorithms)
-"""The name of a DOE algorithm."""
 
 
 class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
@@ -101,27 +95,6 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     Used when `use_hmat` is `True`.
     """
 
-    class CovarianceModel(StrEnum):
-        """The name of a covariance model."""
-
-        ABSOLUTE_EXPONENTIAL = "AbsoluteExponential"
-        """The absolute exponential kernel."""
-
-        EXPONENTIAL = "Exponential"
-        """The exponential kernel."""
-
-        MATERN12 = "Matern12"
-        """The Matérn 1/2 kernel."""
-
-        MATERN32 = "Matern32"
-        """The Matérn 3/2 kernel."""
-
-        MATERN52 = "Matern52"
-        """The Matérn 5/2 kernel."""
-
-        SQUARED_EXPONENTIAL = "SquaredExponential"
-        """The squared exponential kernel."""
-
     __COVARIANCE_MODELS_TO_CLASSES: Final[
         dict[CovarianceModel, tuple[CovarianceModelImplementation, dict[str, float]]]
     ] = {
@@ -132,19 +105,6 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         CovarianceModel.EXPONENTIAL: (ExponentialModel, {}),
         CovarianceModel.SQUARED_EXPONENTIAL: (SquaredExponential, {}),
     }
-
-    CovarianceModelType = Union[
-        CovarianceModelImplementation,
-        type[CovarianceModelImplementation],
-        CovarianceModel,
-    ]
-
-    class Trend(StrEnum):
-        """The name of a trend."""
-
-        CONSTANT = "constant"
-        LINEAR = "linear"
-        QUADRATIC = "quadratic"
 
     __TRENDS_TO_FACTORIES: Final[dict[Trend, type]] = {
         Trend.CONSTANT: ConstantBasisFactory,
@@ -176,66 +136,21 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     __use_hmat: bool
     """Whether to use HMAT or LAPACK for linear algebra."""
 
-    TNC: Final[TNC] = TNC()
-    """The TNC algorithm."""
+    Settings: ClassVar[type[OTGaussianProcessRegressorSettings]] = (
+        OTGaussianProcessRegressorSettings
+    )
 
-    def __init__(
-        self,
-        data: IODataset,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        use_hmat: bool | None = None,
-        trend: Trend = Trend.CONSTANT,
-        optimizer: OptimizationAlgorithmImplementation = TNC,
-        optimization_space: DesignSpace | None = None,
-        covariance_model: Iterable[CovarianceModelType]
-        | CovarianceModelType = CovarianceModel.MATERN52,
-        multi_start_n_samples: int = 10,
-        multi_start_algo_name: DOEAlgorithmName = DOEAlgorithmName.OT_OPT_LHS,
-        multi_start_algo_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-    ) -> None:
-        """
-        Args:
-            use_hmat: Whether to use the HMAT or LAPACK as linear algebra method.
-                If `None`,
-                use HMAT when the learning size is greater
-                than
-                [MAX_SIZE_FOR_LAPACK][gemseo_mlearning.regression.ot_gpr.OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK].
-            trend: The name of the trend.
-            optimizer: The solver used to optimize the covariance model parameters.
-            optimization_space: The covariance model parameter space;
-                the size of a variable must take
-                into account the size of the output space.
-            covariance_model: The covariance model of the Gaussian process.
-                Either an OpenTURNS covariance model class,
-                an OpenTURNS covariance model class instance,
-                a name of covariance model,
-                or a list of OpenTURNS covariance model classes,
-                OpenTURNS class instances and covariance model names,
-                whose size is equal to the output dimension.
-            multi_start_n_samples: The number of starting points
-                for multi-start optimization of the covariance model parameters;
-                if `0`, do not use multi-start optimization.
-            multi_start_algo_name: The name of the DOE algorithm
-                for multi-start optimization of the covariance model parameters.
-            multi_start_algo_options: The options of the DOE algorithm
-                for multi-start optimization of the covariance model parameters.
-        """  # noqa: D205 D212 D415
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            use_hmat=use_hmat,
-        )
+    def _post_init(self):
+        super()._post_init()
         lower_bounds = []
         upper_bounds = []
         template = "GeneralLinearModelAlgorithm-DefaultOptimization{}Bound"
         default_lower_bound = ResourceMap.GetAsScalar(template.format("Lower"))
         default_upper_bound = ResourceMap.GetAsScalar(template.format("Upper"))
-        if optimization_space is None:
+        if self._settings.optimization_space is None:
             optimization_space = DesignSpace()
+        else:
+            optimization_space = self._settings.optimization_space
 
         for input_name in self.input_names:
             if input_name in optimization_space:
@@ -252,21 +167,20 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             upper_bounds.extend(upper_bound)
 
         self.__optimization_space = Interval(lower_bounds, upper_bounds)
-        self.__optimizer = optimizer
-        self.__multi_start_n_samples = multi_start_n_samples
-        self.__multi_start_algo_name = multi_start_algo_name
-        self.__multi_start_algo_options = dict(multi_start_algo_options)
-        self.__trend = trend
-        if use_hmat is None:
-            self.use_hmat = len(data) > self.MAX_SIZE_FOR_LAPACK
+        self.__optimizer = self._settings.optimizer
+        self.__multi_start_n_samples = self._settings.multi_start_n_samples
+        self.__multi_start_algo_name = self._settings.multi_start_algo_name
+        self.__multi_start_algo_options = dict(self._settings.multi_start_algo_options)
+        self.__trend = self._settings.trend
+        if self._settings.use_hmat is None:
+            self.use_hmat = len(self.learning_set) > self.MAX_SIZE_FOR_LAPACK
         else:
-            self.use_hmat = use_hmat
+            self.use_hmat = self._settings.use_hmat
 
+        covariance_model = self._settings.covariance_model
         if isinstance(covariance_model, CovarianceModelImplementation):
             covariance_models = [covariance_model] * self.output_dimension
-        elif isclass(covariance_model) or isinstance(
-            covariance_model, self.CovarianceModel
-        ):
+        elif isclass(covariance_model) or isinstance(covariance_model, CovarianceModel):
             covariance_models = [
                 self.__get_covariance_model(covariance_model)
             ] * self.output_dimension
@@ -294,7 +208,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         if isclass(covariance_model):
             return covariance_model(self.input_dimension)
 
-        if isinstance(covariance_model, self.CovarianceModel):
+        if isinstance(covariance_model, CovarianceModel):
             cls, options = self.__COVARIANCE_MODELS_TO_CLASSES[covariance_model]
             covariance_model = cls(self.input_dimension)
             for k, v in options.items():
@@ -338,7 +252,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             ),
         )
         Log.Show(log_flags)
-        if self.__multi_start_n_samples:
+        if self.__multi_start_n_samples > 1:
             doe_algo = DOELibraryFactory().create(self.__multi_start_algo_name)
             design_space = DesignSpace()
             design_space.add_variable(

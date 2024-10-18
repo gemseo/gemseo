@@ -22,22 +22,22 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Union
 
 from numpy import array
 from numpy import ndarray
 from numpy import unique
 
+from gemseo.mlearning.clustering.algos.base_clusterer_settings import (
+    BaseClustererSettings,
+)
 from gemseo.mlearning.core.algos.ml_algo import SavedObjectType as MLAlgoSavedObjectType
-from gemseo.mlearning.core.algos.ml_algo import TransformerType
 from gemseo.mlearning.core.algos.unsupervised import BaseMLUnsupervisedAlgo
-from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.datasets.dataset import Dataset
 
 SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
 
@@ -57,30 +57,10 @@ class BaseClusterer(BaseMLUnsupervisedAlgo):
     This attribute is set when calling :meth:`.learn`.
     """
 
-    def __init__(  # noqa: D107
-        self,
-        data: Dataset,
-        transformer: TransformerType = BaseMLUnsupervisedAlgo.IDENTITY,
-        var_names: Iterable[str] = (),
-        n_clusters: int = 5,
-        random_state: int | None = SEED,
-        **parameters: float | bool | str | None,
-    ) -> None:
-        """
-        Args:
-            n_clusters: The number of clusters of the K-means algorithm.
-            random_state: The random state passed to the method
-                generating the initial centroids.
-                Use an integer for reproducible results.
-        """  # noqa: D205 D212
-        super().__init__(
-            data,
-            transformer=transformer,
-            var_names=var_names,
-            n_clusters=n_clusters,
-            random_state=random_state,
-            **parameters,
-        )
+    Settings: ClassVar[type[BaseClustererSettings]] = BaseClustererSettings
+
+    def _post_init(self):
+        super()._post_init()
         self.labels = array([])
         self.n_clusters = 0
 
@@ -94,9 +74,3 @@ class BaseClusterer(BaseMLUnsupervisedAlgo):
         if not self.n_clusters:
             msg = f"{self.__class__.__name__}._fit() did not set the labels attribute."
             raise NotImplementedError(msg)
-
-    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
-        objects = super()._get_objects_to_save()
-        objects["labels"] = self.labels
-        objects["n_clusters"] = self.n_clusters
-        return objects

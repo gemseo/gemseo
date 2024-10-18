@@ -19,11 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Polynomial chaos expansion model.
 
-.. _FunctionalChaosAlgorithm: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FunctionalChaosAlgorithm.html
-.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
-.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FixedStrategy.html
-.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
-.. _hyperbolic and anisotropic enumerate function: https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html
+.. _FunctionalChaosAlgorithm:
+https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated
+/openturns.FunctionalChaosAlgorithm.html
+.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual
+/response_surface/_generated/openturns.CleaningStrategy.html
+.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual
+/response_surface/_generated/openturns.FixedStrategy.html
+.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling
+/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
+.. _hyperbolic and anisotropic enumerate function:
+https://openturns.github.io/openturns/latest/user_manual/_generated/openturns
+.HyperbolicAnisotropicEnumerateFunction.html
 
 The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal
@@ -85,8 +92,8 @@ The PCE model relies on the OpenTURNS class ``FunctionalChaosAlgorithm``.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Final
 
@@ -115,35 +122,20 @@ from openturns import StandardDistributionPolynomialFactory
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.pce_settings import CleaningOptions
+from gemseo.mlearning.regression.algos.pce_settings import PCERegressorSettings
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
-    from gemseo.mlearning.core.algos.supervised import SavedObjectType
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class CleaningOptions:
-    """The options of the `CleaningStrategy`_."""
-
-    max_considered_terms: int = 100
-    """The maximum number of coefficients of the polynomial basis to be considered."""
-
-    most_significant: int = 20
-    """The maximum number of efficient coefficients of the polynomial basis to be
-    kept."""
-
-    significance_factor: float = 1e-4
-    """The threshold to select the efficient coefficients of the polynomial basis."""
 
 
 class PCERegressor(BaseRegressor):
@@ -156,55 +148,19 @@ class PCERegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "OpenTURNS"
     __WEIGHT: Final[str] = "weight"
 
+    Settings: ClassVar[type[PCERegressorSettings]] = PCERegressorSettings
+
     def __init__(
         self,
         data: IODataset | None,
-        probability_space: ParameterSpace,
-        transformer: TransformerType = BaseRegressor.IDENTITY,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        degree: int = 2,
-        discipline: Discipline | None = None,
-        use_quadrature: bool = False,
-        use_lars: bool = False,
-        use_cleaning: bool = False,
-        hyperbolic_parameter: float = 1.0,
-        n_quadrature_points: int = 0,
-        cleaning_options: CleaningOptions | None = None,
+        settings_model: PCERegressorSettings | None = None,
+        **settings: Any,
     ) -> None:
         """
         Args:
             data: The learning dataset required
                 in the case of the least-squares regression
                 or when ``discipline`` is ``None`` in the case of quadrature.
-            probability_space: The set of random input variables
-                defined by :class:`.OTDistribution` instances.
-            degree: The polynomial degree of the PCE.
-            discipline: The discipline to be sampled
-                if ``use_quadrature`` is ``True`` and ``data`` is ``None``.
-            use_quadrature: Whether to estimate the coefficients of the PCE
-                by a quadrature rule;
-                if so, use the quadrature points stored in ``data``
-                or sample ``discipline``.
-                otherwise, estimate the coefficients by least-squares regression.
-            use_cleaning: Whether
-                to use the `CleaningStrategy`_ algorithm.
-                Otherwise,
-                use a fixed truncation strategy (`FixedStrategy`_).
-            use_lars: Whether to use the `LARS`_ algorithm
-                in the case of the least-squares regression.
-            n_quadrature_points: The total number of quadrature points
-                used by the quadrature strategy
-                to compute the marginal number of points by input dimension
-                when ``discipline`` is not ``None``.
-                If ``0``, use :math:`(1+P)^d` points,
-                where :math:`d` is the dimension of the input space
-                and :math:`P` is the polynomial degree of the PCE.
-            hyperbolic_parameter: The :math:`q`-quasi norm parameter
-                of the `hyperbolic and anisotropic enumerate function`_,
-                defined over the interval :math:`]0,1]`.
-            cleaning_options: The options of the `CleaningStrategy`_.
-                If ``None``, use :attr:`.DEFAULT_CLEANING_OPTIONS`.
 
         Raises:
             ValueError: When both data and discipline are missing,
@@ -216,19 +172,23 @@ class PCERegressor(BaseRegressor):
                 when an input variable has a data transformer
                 or when a probability distribution is not an :class:`.OTDistribution`.
         """  # noqa: D205 D212
+        _settings = create_model(
+            self.Settings, settings_model=settings_model, **settings
+        )
+        cleaning_options = _settings.cleaning_options
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 
-        if use_quadrature:
-            if discipline is None and data is None:
+        if _settings.use_quadrature:
+            if _settings.discipline is None and data is None:
                 msg = "The quadrature rule requires either data or discipline."
                 raise ValueError(msg)
 
-            if discipline is not None and data is not None and len(data):
+            if _settings.discipline is not None and data is not None and len(data):
                 msg = "The quadrature rule requires data or discipline but not both."
                 raise ValueError(msg)
 
-            if use_lars:
+            if _settings.use_lars:
                 msg = "LARS is not applicable with the quadrature rule."
                 raise ValueError(msg)
 
@@ -240,29 +200,19 @@ class PCERegressor(BaseRegressor):
                 msg = "The least-squares regression requires data."
                 raise ValueError(msg)
 
-            if discipline is not None:
+            if _settings.discipline is not None:
                 msg = "The least-squares regression does not require a discipline."
                 raise ValueError(msg)
 
-        super().__init__(
-            data,
-            transformer=transformer,
-            input_names=input_names,
-            output_names=output_names,
-            probability_space=probability_space,
-            degree=degree,
-            n_quadrature_points=n_quadrature_points,
-            use_lars=use_lars,
-            use_cleaning=use_cleaning,
-            hyperbolic_parameter=hyperbolic_parameter,
-            cleaning_options=cleaning_options,
-        )
+        super().__init__(data, settings_model=_settings)
 
-        if use_quadrature and data.empty:
-            self.input_names = probability_space.variable_names
+        if self._settings.use_quadrature and data.empty:
+            self.input_names = self._settings.probability_space.variable_names
 
         if not data.empty:
-            missing = set(self.input_names) - set(probability_space.uncertain_variables)
+            missing = set(self.input_names) - set(
+                self._settings.probability_space.uncertain_variables
+            )
             if missing:
                 msg = (
                     "The probability space does not contain "
@@ -279,7 +229,7 @@ class PCERegressor(BaseRegressor):
             msg = "PCERegressor does not support input transformers."
             raise ValueError(msg)
 
-        distributions = probability_space.distributions
+        distributions = self._settings.probability_space.distributions
         wrongly_distributed_random_variable_names = [
             input_name
             for input_name in self.input_names
@@ -293,26 +243,26 @@ class PCERegressor(BaseRegressor):
             )
             raise ValueError(msg)
 
-        self.__variable_sizes = probability_space.variable_sizes
+        self.__variable_sizes = self._settings.probability_space.variable_sizes
         self.__input_dimension = sum(
             self.__variable_sizes[name] for name in self.input_names
         )
-        self.__use_quadrature = use_quadrature
-        self.__use_lars_algorithm = use_lars
-        self.__use_cleaning_truncation_algorithm = use_cleaning
+        self.__use_quadrature = self._settings.use_quadrature
+        self.__use_lars_algorithm = self._settings.use_lars
+        self.__use_cleaning_truncation_algorithm = self._settings.use_cleaning
         self.__cleaning = cleaning_options
-        self.__hyperbolic_parameter = hyperbolic_parameter
-        self.__degree = degree
+        self.__hyperbolic_parameter = self._settings.hyperbolic_parameter
+        self.__degree = self._settings.degree
         self.__composed_distribution = ComposedDistribution([
             marginal.distribution
             for input_name in self.input_names
             for marginal in distributions[input_name].marginals
         ])
 
-        if use_quadrature:
-            if discipline is not None:
+        if self._settings.use_quadrature:
+            if self._settings.discipline is not None:
                 self.__quadrature_points_with_weights = self._get_quadrature_points(
-                    n_quadrature_points, discipline
+                    self._settings.n_quadrature_points, self._settings.discipline
                 )
             else:
                 self.__quadrature_points_with_weights = (
@@ -723,15 +673,3 @@ class PCERegressor(BaseRegressor):
         """
         self._check_is_trained()
         return self._total_order_sobol_indices
-
-    def _get_objects_to_save(self) -> dict[str, SavedObjectType]:
-        objects = super()._get_objects_to_save()
-        objects["_prediction_function"] = self._prediction_function
-        objects["_mean"] = self._mean
-        objects["_covariance"] = self._covariance
-        objects["_variance"] = self._variance
-        objects["_standard_deviation"] = self._standard_deviation
-        objects["_first_order_sobol_indices"] = self._first_order_sobol_indices
-        objects["_second_order_sobol_indices"] = self._second_order_sobol_indices
-        objects["_total_order_sobol_indices"] = self._total_order_sobol_indices
-        return objects

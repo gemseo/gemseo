@@ -72,7 +72,6 @@ if TYPE_CHECKING:
     from pandas._typing import Axes
     from pandas._typing import Dtype
 
-
 StrColumnType = Union[str, Iterable[str]]
 IndexType = Union[str, int, Iterable[Union[str, int]]]
 DataType = Union[ndarray, Iterable[Any], Any]

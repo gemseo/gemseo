@@ -35,14 +35,13 @@ from typing import ClassVar
 from numpy import hstack
 
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
-from gemseo.mlearning.core.algos.ml_algo import TransformerType
+from gemseo.mlearning.core.algos.unsupervised_settings import (
+    BaseMLUnsupervisedAlgoSettings,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
 
 
@@ -57,22 +56,13 @@ class BaseMLUnsupervisedAlgo(BaseMLAlgo):
 
     SHORT_ALGO_NAME: ClassVar[str] = "BaseMLUnsupervisedAlgo"
 
-    def __init__(
-        self,
-        data: Dataset,
-        transformer: TransformerType = BaseMLAlgo.IDENTITY,
-        var_names: Iterable[str] = (),
-        **parameters: MLAlgoParameterType,
-    ) -> None:
-        """
-        Args:
-            var_names: The names of the variables.
-                If ``None``, consider all variables mentioned in the learning dataset.
-        """  # noqa: D205 D212
-        super().__init__(
-            data, transformer=transformer, var_names=var_names, **parameters
-        )
-        self.var_names = var_names or data.variable_names
+    Settings: ClassVar[type[BaseMLUnsupervisedAlgoSettings]] = (
+        BaseMLUnsupervisedAlgoSettings
+    )
+
+    def _post_init(self):
+        super()._post_init()
+        self.var_names = self._settings.var_names or self.learning_set.variable_names
 
     def _learn(
         self,

@@ -1,0 +1,7 @@
+The settings of any machine learning algorithm are validated using a Pydantic model, whose class is ``BaseMLAlgo.Settings`` and instance is ``BaseMLAlgo.settings``.
+
+API changes:
+
+- A ``BaseMLAlgo`` is instantiated from a ``Dataset`` and either a ``BaseMLAlgoSettings`` instance defining all settings or a few settings; the signature is ``self, data: Dataset, settings_model: BaseMLAlgoSettings, **settings: Any)``.
+- The dictionary ``BaseMLAlgo.parameters`` has been replaced by the read-only Pydantic model ``BaseMLAlgo.settings``.
+- ``BaseMLAlgo.IDENTITY`` has been removed; use ``gemseo.utils.constants.READ_ONLY_EMPTY_DICT`` instead.
