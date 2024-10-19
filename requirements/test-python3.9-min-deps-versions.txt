@@ -46,7 +46,7 @@ joblib==1.4.2
     # via scikit-learn
 kiwisolver==1.4.7
     # via matplotlib
-markupsafe==3.0.1
+markupsafe==3.0.2
     # via jinja2
 matplotlib==3.3.0
     # via gemseo (pyproject.toml)
