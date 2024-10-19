@@ -61,7 +61,7 @@ kiwisolver==1.4.7
     # via matplotlib
 latexcodec==3.0.0
     # via pybtex
-markupsafe==3.0.1
+markupsafe==3.0.2
     # via jinja2
 matplotlib==3.9.2
     # via gemseo (pyproject.toml)
