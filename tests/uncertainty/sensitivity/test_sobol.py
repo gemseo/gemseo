@@ -593,7 +593,7 @@ def test_total_intervals_cv(total_intervals_cv, name, bound, expected) -> None:
     )
 
 
-def test_from_samples(sobol, tmp_path):
+def test_from_samples(sobol, tmp_wd):
     """Check the instantiation from samples."""
     file_path = Path("samples.pkl")
     sobol.dataset.to_pickle(file_path)
@@ -602,7 +602,7 @@ def test_from_samples(sobol, tmp_path):
     assert new_sobol.indices.first["y"][0]["x1"] == sobol.indices.first["y"][0]["x1"]
 
 
-def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_path):
+def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_wd):
     """Check the instantiation from samples with control variates.."""
     file_path = Path("samples.pkl")
     sobol_cv.dataset.to_pickle(file_path)

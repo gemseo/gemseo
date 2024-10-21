@@ -236,7 +236,7 @@ def test_hsic_indices_values(hsic_analysis_2, openturns_hsic_indices) -> None:
     assert hsic_analysis_2.indices == openturns_hsic_indices
 
 
-def test_from_samples(hsic_analysis, tmp_path):
+def test_from_samples(hsic_analysis, tmp_wd):
     """Check the instantiation from samples."""
     file_path = Path("samples.pkl")
     hsic_analysis.compute_indices()
