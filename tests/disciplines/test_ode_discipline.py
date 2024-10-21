@@ -907,7 +907,7 @@ def test_ode_discipline_two_termination_events_6():
     assert isclose(res_ode["position_final"], 0.0, atol=1e-3)
 
 
-def test_serialization():
+def test_serialization(tmp_wd):
     omega = 2
     times = linspace(0.0, 10.0, 41)
     discipline_1 = OscillatorDiscipline(omega, times, return_trajectories=True)

@@ -138,7 +138,7 @@ def test_mock_ot_version(correlation) -> None:
         assert not correlation.indices.ssrc
 
 
-def test_from_samples(correlation, tmp_path):
+def test_from_samples(correlation, tmp_wd):
     """Check the instantiation from samples."""
     file_path = Path("samples.pkl")
     correlation.compute_indices()

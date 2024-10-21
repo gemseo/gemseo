@@ -345,7 +345,7 @@ def test_n_replicates_error():
         analysis.n_replicates
 
 
-def test_from_samples(morris, tmp_path):
+def test_from_samples(morris, tmp_wd):
     """Check the instantiation from samples."""
     file_path = Path("samples.pkl")
     morris.dataset.to_pickle(file_path)
