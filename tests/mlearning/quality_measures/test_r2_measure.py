@@ -24,7 +24,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -166,17 +165,14 @@ def test_compute_bootstrap_measure(dataset) -> None:
 
 @pytest.mark.parametrize("fit", [False, True])
 def test_fit_transformers(algo_for_transformer, fit) -> None:
-    """Check that the transformers are fitted with the sub-datasets.
+    """Check that the user can fit the transformers with the sub-datasets.
 
-    By default, the transformers are fitted with the sub-datasets. If False, use the
-    transformers of the assessed algorithm as they are.
+    Otherwise, use the transformers of the assessed algorithm as they are.
     """
-    m1 = R2Measure(algo_for_transformer)
-    m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
-    assert (
-        allclose(
-            m1.compute_cross_validation_measure(seed=0),
-            m2.compute_cross_validation_measure(seed=0),
-        )
-        is fit
-    )
+    r2 = R2Measure(algo_for_transformer)
+    r2.compute_cross_validation_measure(seed=0, store_resampling_result=True)
+    model = algo_for_transformer.resampling_results["CrossValidation"][1][0]
+    r2 = R2Measure(algo_for_transformer, fit_transformers=fit)
+    r2.compute_cross_validation_measure(seed=0, store_resampling_result=True)
+    new_model = algo_for_transformer.resampling_results["CrossValidation"][1][0]
+    assert (model.algo.y_train_.sum() == new_model.algo.y_train_.sum()) is not fit

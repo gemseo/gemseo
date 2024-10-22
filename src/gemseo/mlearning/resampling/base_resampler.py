@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -155,14 +154,14 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
                 return sub_models, predictions
 
         if not return_models:
-            sub_model = deepcopy(model)
+            sub_model = self.__create_new_model(model)
 
         predictions = []
         sub_models = []
         predict = input_data is not None
         for split in self._splits:
             if return_models:
-                sub_model = deepcopy(model)
+                sub_model = self.__create_new_model(model)
                 sub_models.append(sub_model)
 
             sub_model.learn(
@@ -178,6 +177,20 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
             model.resampling_results[self.name] = (self, sub_models, predictions)
 
         return sub_models, predictions
+
+    @staticmethod
+    def __create_new_model(model: BaseMLAlgo) -> BaseMLAlgo:
+        """Create a new machine learning model from an existing one.
+
+        Args:
+            model: The existing machine learning model.
+
+        Returns:
+            The new machine learning model.
+        """
+        sub_model = model.__class__(model.learning_set, settings_model=model._settings)
+        sub_model.transformer = model.transformer
+        return sub_model
 
     def _post_process_predictions(
         self, predictions: list[ndarray], stack_predictions: bool
