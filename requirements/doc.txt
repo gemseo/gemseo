@@ -4,7 +4,7 @@ alabaster==0.7.16
     # via sphinx
 annotated-types==0.7.0
     # via pydantic
-autodocsumm==0.2.13
+autodocsumm==0.2.14
     # via gemseo (pyproject.toml)
 babel==2.16.0
     # via sphinx
