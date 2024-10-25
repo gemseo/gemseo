@@ -383,22 +383,22 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def compute_doe(
         self,
         variables_space: DesignSpace | int,
-        n_samples: int = 0,
         unit_sampling: bool = False,
+        settings_model: BaseDOELibrarySettings | None = None,
         **settings: DriverLibrarySettingType,
     ) -> RealArray:
         """Compute a design of experiments (DOE) in a variables space.
 
         Args:
             variables_space: Either the variables space to be sampled or its dimension.
-            n_samples: The number of samples.
-                If 0,
-                it is deduced from the ``variables_spaces`` and the ``settings``.
             unit_sampling: Whether to sample in the unit hypercube.
                 If the value provided in ``variables_space`` is the dimension,
                 the samples will be generated in the unit hypercube
                 whatever the value of ``unit_sampling``.
-            **settings: The settings of the DOE algorithm.
+            settings_model: The DOE settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The DOE settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
 
         Returns:
             The design of experiments
@@ -408,12 +408,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         if not unit_sampling:
             self.__check_unnormalization_capability(design_space)
 
-        if n_samples > 0:
-            settings[self._N_SAMPLES] = n_samples
-
         # Validate and filter the settings
         settings = self._filter_settings(
-            settings=self._validate_settings(**settings),
+            settings=self._validate_settings(settings_model=settings_model, **settings),
             model_to_exclude=BaseDOELibrarySettings,
         )
 

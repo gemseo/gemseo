@@ -349,7 +349,7 @@ def test_multi_start_optimization(dataset):
         upper_bound=ot_interval.getUpperBound(),
     )
     doe_algo = DOELibraryFactory().create("LHS")
-    assert_equal(doe, doe_algo.compute_doe(design_space, 9, strength=2))
+    assert_equal(doe, doe_algo.compute_doe(design_space, n_samples=9, strength=2))
 
 
 def test_default_covariance_model(dataset):

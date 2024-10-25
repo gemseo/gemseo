@@ -265,7 +265,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
                 self.__optimizer,
                 doe_algo.compute_doe(
                     design_space,
-                    self.__multi_start_n_samples,
+                    n_samples=self.__multi_start_n_samples,
                     **self.__multi_start_algo_options,
                 ),
             )

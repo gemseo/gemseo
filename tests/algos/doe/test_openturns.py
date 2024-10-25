@@ -243,7 +243,7 @@ def variables_space():
 )
 def test_compute_doe(variables_space, name) -> None:
     """Check the computation of a DOE out of a design space."""
-    doe = DOELibraryFactory().create(name).compute_doe(variables_space, 4)
+    doe = DOELibraryFactory().create(name).compute_doe(variables_space, n_samples=4)
     assert doe.shape == (4, variables_space.dimension)
 
 
