@@ -2340,3 +2340,38 @@ class DesignSpace:
             upper_bound=variable.upper_bound,
             value=space._current_value.get(name),
         )
+
+    def to_scalar_variables(self) -> DesignSpace:
+        """Create a new design space with the variables splitted into scalar variables.
+
+        Returns:
+            The design space of scalar variables.
+        """
+        design_space = self.__class__()
+        for name in self:
+            size = self.get_size(name)
+            if size == 1:
+                index_name = [(0, name)]
+            else:
+                index_name = enumerate(self.get_indexed_var_name(name))
+
+            type_ = self.get_type(name)
+            lower_bounds = self.get_lower_bounds(name)
+            upper_bounds = self.get_upper_bounds(name)
+            try:
+                current_value = self.get_current_value([name])
+            except KeyError:
+                # The variable has no current value.
+                current_value = full(size, None)
+
+            for index, name in index_name:
+                design_space.add_variable(
+                    name,
+                    1,
+                    type_,
+                    lower_bounds[index],
+                    upper_bounds[index],
+                    current_value[index],
+                )
+
+        return design_space

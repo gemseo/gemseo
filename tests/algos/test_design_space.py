@@ -1760,3 +1760,24 @@ def test_add_variable_from():
     assert_equal(ds.get_current_value(["x"]), array([2, 2]))
     assert_equal(ds.get_current_value(["y"]), array([4, 4, 4]))
     assert "z" not in ds._current_value
+
+
+def test_to_scalar_variables():
+    """Check the splitting of design variables into scalar variables."""
+    space = DesignSpace()
+    space.add_variable("x", 1, "float", 1, 2)
+    space.add_variable("y", 2, "integer", [3, 5], [4, 6], [3, 6])
+    new_space = space.to_scalar_variables()
+    assert new_space.variable_names == ["x", "y!0", "y!1"]
+    assert new_space.get_type("x") == DesignSpace.DesignVariableType.FLOAT
+    assert new_space.get_size("x") == 1
+    assert new_space.get_size("y!0") == 1
+    assert new_space.get_type("y!0") == DesignSpace.DesignVariableType.INTEGER
+    assert new_space.get_size("y!1") == 1
+    assert new_space.get_type("y!1") == DesignSpace.DesignVariableType.INTEGER
+    assert_array_equal(new_space.get_lower_bounds(), [1, 3, 5])
+    assert_array_equal(new_space.get_upper_bounds(), [2, 4, 6])
+    with pytest.raises(KeyError, match="'x'"):
+        new_space.get_current_value(["x"])
+
+    assert_array_equal(new_space.get_current_value(["y!0", "y!1"]), [3, 6])
