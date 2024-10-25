@@ -145,8 +145,7 @@ def test_fail_wrongly_formatted_function() -> None:
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Two return statements use different variable names; ['y', 'x'] and ["
-            "'y']."
+            "Two return statements use different variable names; ['y', 'x'] and ['y']."
         ),
     ):
         AutoPyDiscipline(f4)

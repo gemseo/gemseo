@@ -597,7 +597,7 @@ def assert_xdsm_json_file_ok(generated_file: str, ref_file: str) -> None:
     ref_filepath = (current_dir / "data" / ref_file).with_suffix(".json")
 
     assert ref_filepath.exists(), (
-        f"Reference {ref_filepath!s} not found in data " f"directory."
+        f"Reference {ref_filepath!s} not found in data directory."
     )
 
     xdsm_str = ref_filepath.read_text()
@@ -624,7 +624,7 @@ def assert_xdsm_tikz_file_ok(generated_file: str, ref_file: str) -> None:
     ref_filepath = (current_dir / "data" / ref_file).with_suffix(".tikz")
 
     assert ref_filepath.exists(), (
-        f"Reference {ref_filepath!s} not found in data " f"directory."
+        f"Reference {ref_filepath!s} not found in data directory."
     )
 
     expected_tikz = remove_tikz_input(ref_filepath.read_text())

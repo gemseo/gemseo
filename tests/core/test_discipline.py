@@ -1178,11 +1178,7 @@ def test_repr_html() -> None:
     assert AnalyticDiscipline(
         name="foo", expressions={"z": "b+a", "y": "c+d+e"}
     )._repr_html_() == REPR_HTML_WRAPPER.format(
-        "foo<br/>"
-        "<ul>"
-        "<li>Inputs: a, b, c, d, e</li>"
-        "<li>Outputs: y, z</li>"
-        "</ul>"
+        "foo<br/><ul><li>Inputs: a, b, c, d, e</li><li>Outputs: y, z</li></ul>"
     )
 
 

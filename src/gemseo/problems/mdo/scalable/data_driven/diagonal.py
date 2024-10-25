@@ -435,8 +435,7 @@ class ScalableDiagonalModel(ScalableModel):
             The dependencies between the inputs and the outputs.
         """
         error_msg = (
-            "Fill factor must be a number, "
-            "either -1 or a real number between 0 and 1."
+            "Fill factor must be a number, either -1 or a real number between 0 and 1."
         )
         r_io_dependency = {}
         for function_name in self.output_names:
