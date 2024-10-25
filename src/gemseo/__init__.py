@@ -170,6 +170,7 @@ if TYPE_CHECKING:
     from gemseo.algos.base_driver_library import DriverLibrarySettingType
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
@@ -1878,24 +1879,23 @@ def import_database(
 def compute_doe(
     variables_space: DesignSpace | int,
     algo_name: str,
-    n_samples: int | None = None,
     unit_sampling: bool = False,
+    settings_model: BaseDOELibrarySettings | None = None,
     **settings: DriverLibrarySettingType,
 ) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 
     Args:
         variables_space: Either the variables space to be sampled or its dimension.
-        n_samples: The number of samples.
-            If ``None``,
-            it is deduced
-            from the ``algo_name``, the ``variables_spaces`` and the ``options``.
         algo_name: The DOE algorithm.
         unit_sampling: Whether to sample in the unit hypercube.
             If the value provided in ``variables_space`` is the dimension,
             the samples will be generated in the unit hypercube
             whatever the value of ``unit_sampling``.
-        **settings: The settings of the DOE algorithm.
+        settings_model: The DOE settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        **settings: The DOE settings.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
           The design of experiments
@@ -1916,7 +1916,10 @@ def compute_doe(
 
     library = DOELibraryFactory().create(algo_name)
     return library.compute_doe(
-        variables_space, n_samples=n_samples, unit_sampling=unit_sampling, **settings
+        variables_space,
+        unit_sampling=unit_sampling,
+        settings_model=settings_model,
+        **settings,
     )
 
 

@@ -89,6 +89,7 @@ from gemseo import write_design_space
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
@@ -737,18 +738,24 @@ def variables_space():
     return design_space
 
 
-def test_compute_doe_transformed(variables_space) -> None:
-    """Check the computation of a transformed DOE in a variables space."""
+@pytest.mark.parametrize(
+    "settings", [{"n_samples": 4}, {"settings_model": FullFactSettings(n_samples=4)}]
+)
+@pytest.mark.parametrize(
+    ("transformation", "expected_points"),
+    [
+        ({"unit_sampling": True}, [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]),
+        ({}, [[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]]),
+    ],
+)
+def test_compute_doe(
+    variables_space, settings, transformation, expected_points
+) -> None:
+    """Check the computation of a DOE in a variables space."""
     points = compute_doe(
-        variables_space, n_samples=4, algo_name="fullfact", unit_sampling=True
+        variables_space, algo_name="fullfact", **settings, **transformation
     )
-    assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
-
-
-def test_compute_doe_nontransformed(variables_space) -> None:
-    """Check the computation of a non-transformed DOE in a variables space."""
-    points = compute_doe(variables_space, n_samples=4, algo_name="fullfact")
-    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
+    assert (points == array(expected_points)).all()
 
 
 def test_import_analytic_discipline(tmp_wd) -> None:

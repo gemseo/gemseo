@@ -39,8 +39,10 @@ from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOESettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
+from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
@@ -173,16 +175,34 @@ def variables_space():
     return design_space
 
 
-def test_compute_doe_transformed(fullfact, variables_space) -> None:
-    """Check the computation of a transformed DOE in a variables space."""
-    points = fullfact.compute_doe(variables_space, n_samples=4, unit_sampling=True)
-    assert (points == array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])).all()
+@pytest.mark.parametrize(
+    "settings", [{"n_samples": 4}, {"settings_model": FullFactSettings(n_samples=4)}]
+)
+@pytest.mark.parametrize(
+    ("transformation", "expected_points"),
+    [
+        ({"unit_sampling": True}, [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]),
+        ({}, [[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]]),
+    ],
+)
+def test_compute_doe_from_space(
+    fullfact, variables_space, settings, transformation, expected_points
+) -> None:
+    """Check the computation of a DOE in a variables space."""
+    points = fullfact.compute_doe(variables_space, **settings, **transformation)
+    assert (points == array(expected_points)).all()
 
 
-def test_compute_doe_nontransformed(fullfact, variables_space) -> None:
-    """Check the computation of a non-transformed DOE in a variables space."""
-    points = fullfact.compute_doe(variables_space, n_samples=4)
-    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
+SAMPLES = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [{"samples": SAMPLES}, {"settings_model": CustomDOESettings(samples=SAMPLES)}],
+)
+def test_compute_doe_from_dimension(custom_doe, settings):
+    """Check BaseDOELibrary.compute_doe from the dimension of the variables space."""
+    assert_equal(custom_doe.compute_doe(3, **settings), SAMPLES)
 
 
 @pytest.fixture(scope="module")
@@ -346,7 +366,7 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
 
     error_message = "The components {2, 3, 4} of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
-        mc.compute_doe(design_space, 3)
+        mc.compute_doe(design_space, n_samples=3)
 
     with pytest.raises(ValueError, match=re.escape(error_message)):
         mc.execute(problem, n_samples=3)
@@ -363,7 +383,7 @@ def test_uunormalized_components_with_parameter_space(mc) -> None:
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(sum, "f")
 
-    mc.compute_doe(parameter_space, 3)
+    mc.compute_doe(parameter_space, n_samples=3)
     mc.execute(problem, n_samples=3)
 
 
@@ -415,12 +435,6 @@ def test_use_database(custom_doe, n_processes, problem, use_database):
         use_database=use_database,
     )
     assert bool(problem.database) is use_database
-
-
-def test_compute_doe(custom_doe):
-    """Check BaseDOELibrary.compute_doe from the dimension of the variables space."""
-    samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
-    assert_equal(custom_doe.compute_doe(3, samples=samples), samples)
 
 
 def test_serialize(custom_doe, tmp_wd):
