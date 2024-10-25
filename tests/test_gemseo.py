@@ -1122,7 +1122,7 @@ def test_generate_xdsm():
 
 def test_generate_xdsm_return():
     """Verify that generate_xdsm returns an XDSM."""
-    assert isinstance(generate_xdsm(Sellar1()), XDSM)
+    assert isinstance(generate_xdsm(Sellar1(), save_html=False), XDSM)
 
 
 @pytest.mark.parametrize(
