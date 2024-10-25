@@ -26,15 +26,17 @@ import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-import numpy as np
 from numpy import abs as np_abs
 from numpy import arange
 from numpy import array
 from numpy import atleast_2d
 from numpy import concatenate
+from numpy import full
+from numpy import inf
 from numpy import isinf
 from numpy import ndarray
 from numpy import zeros
+from numpy.linalg import LinAlgError
 from numpy.linalg import norm
 from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
@@ -161,31 +163,51 @@ class LagrangeMultipliers:
             self._store_multipliers(multipliers)
             return self.lagrange_multipliers
         lhs = jac_act.T
-        act_constr_nb = lhs.shape[1]
         # Compute the Lagrange multipliers as a feasible solution of a
         # linear optimization problem
         act_eq_constr_nb = len(self.active_eq_names)
         if act_eq_constr_nb == 0:
             # If the linear optimization failed then obtain the Lagrange
             # multipliers as a solution of a least-square problem
-            mul, residuals = nnls(lhs, rhs)
-            self.kkt_residual = norm(residuals)
-            LOGGER.info("Residuals norm = %s", self.kkt_residual)
+            try:
+                mul, residuals = nnls(lhs, rhs)
+            except LinAlgError:
+                # NNLS may have crashed on a singular submatrix
+                mul = self.__compute_bounded_least_squares_solution(lhs, rhs)
+            else:
+                self.kkt_residual = norm(residuals)
         else:
-            lower_bound = array(
-                [0.0] * (act_constr_nb - act_eq_constr_nb)
-                + [-np.inf] * act_eq_constr_nb
-            )
-            upper_bound = array([np.inf] * act_constr_nb)
-            optim_result = lsq_linear(lhs, rhs, bounds=(lower_bound, upper_bound))
-            mul = optim_result.x
-            self.kkt_residual = optim_result.cost
-            LOGGER.info("Residuals norm = %s", self.kkt_residual)
+            mul = self.__compute_bounded_least_squares_solution(lhs, rhs)
+
+        LOGGER.info("Residuals norm = %s", self.kkt_residual)
 
         # stores multipliers in a dictionary
         self._store_multipliers(mul)
 
         return self.lagrange_multipliers
+
+    def __compute_bounded_least_squares_solution(
+        self, lhs: ndarray, rhs: ndarray
+    ) -> ndarray:
+        """Compute the Lagrange multipliers by bounded Least Squares minimization.
+
+        Args:
+            lhs: The left-hand side of the linear system.
+            rhs: The right-hand side of the linear system.
+
+        Returns:
+            The Lagrange multipliers.
+        """
+        n_active_constraints = lhs.shape[1]
+        n_active_equalities = len(self.active_eq_names)
+        lower_bound = concatenate([
+            zeros(n_active_constraints - n_active_equalities),
+            full(n_active_equalities, -inf),
+        ])
+        upper_bound = full(n_active_constraints, inf)
+        solution = lsq_linear(lhs, rhs, (lower_bound, upper_bound))
+        self.kkt_residual = solution.cost
+        return solution.x
 
     def _check_feasibility(self, x_vect: ndarray) -> None:
         """Check that a point is in the design space and satisfies all the constraints.
