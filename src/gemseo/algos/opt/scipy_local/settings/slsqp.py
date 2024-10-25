@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
@@ -38,3 +40,5 @@ class SLSQPSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
             """
         ),
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["maxiter", "eps"]

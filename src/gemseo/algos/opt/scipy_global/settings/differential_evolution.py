@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
@@ -56,7 +58,7 @@ class DifferentialEvolutionSettings(BaseSciPyGlobalSettings):
     )
 
     recombination: NonNegativeFloat = Field(
-        0.7,
+        default=0.7,
         le=1.0,
         description="The recombination constant.",
     )
@@ -97,3 +99,5 @@ class DifferentialEvolutionSettings(BaseSciPyGlobalSettings):
             """The number of parallel workers the population is subdivised in."""
         ),
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["maxiter"]

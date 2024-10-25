@@ -16,8 +16,12 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.algos.opt.base_milp_settings import BaseMILPSettings
 
 
 class SciPyMILPSettings(BaseMILPSettings):
     """The SciPy mixed-integer linear programming library setting."""
+
+    _redundant_settings: Final[list[str]] = ["time_limit"]

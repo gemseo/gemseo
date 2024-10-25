@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import PositiveFloat  # noqa:TCH002
 
@@ -83,3 +85,5 @@ class DualAnnealingSettings(BaseSciPyGlobalSettings):
         default=False,
         description="""Whether to perform local search.""",
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["maxfun"]

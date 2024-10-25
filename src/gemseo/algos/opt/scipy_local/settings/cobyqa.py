@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from numpy import inf
 from pydantic import Field
 from pydantic import PositiveFloat  # noqa:TCH002
@@ -48,3 +50,5 @@ class COBYQASettings(BaseScipyLocalSettings):
         default=1e-6,
         description="""The final trust-region radius.""",
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["maxiter", "maxfev", "scale"]

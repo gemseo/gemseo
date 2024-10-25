@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TCH002
 
@@ -82,3 +84,5 @@ class TNCSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
             "The log10 scaling factor used to trigger the objectiv function rescaling."
         ),
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["eps", "scale"]
