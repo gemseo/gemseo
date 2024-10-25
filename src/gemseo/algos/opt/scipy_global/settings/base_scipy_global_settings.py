@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
-import sys
 from functools import partial
+from sys import maxsize
 
 from pydantic import NonNegativeFloat  # noqa:TCH002
 from pydantic import PositiveInt  # noqa:TCH002
@@ -39,7 +39,7 @@ class BaseSciPyGlobalSettings(BaseOptimizationLibrarySettings):
 
     ftol_abs: NonNegativeFloat = copy_field_opt("ftol_abs", default=1e-9)
 
-    max_iter: PositiveInt = copy_field_opt("max_iter", default=sys.maxsize)
+    max_iter: PositiveInt = copy_field_opt("max_iter", default=maxsize)
 
     xtol_rel: NonNegativeFloat = copy_field_opt("xtol_rel", default=1e-9)
 

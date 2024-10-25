@@ -71,6 +71,7 @@ from gemseo.algos.opt.nlopt.settings.nlopt_newuoa_settings import NLOPTNEWUOASet
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPTSLSQPSettings
 from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -307,15 +308,21 @@ class Nlopt(BaseOptimizationLibrary):
             nlopt_problem: The optimization problem from NLopt.
             **settings: The NLopt optimizer settings.
         """
-        nlopt_problem.set_maxtime(settings[self._MAX_TIME])
+        # Deactivate stopping criteria which are handled by GEMSEO
+        nlopt_problem.set_ftol_abs(0.0)
+        nlopt_problem.set_ftol_rel(0.0)
+
+        nlopt_problem.set_xtol_abs(0.0)
+        nlopt_problem.set_xtol_rel(0.0)
+
+        nlopt_problem.set_maxtime(C_LONG_MAX)
 
         # Only set an initial step size for derivative-free optimization algorithms.
         if not self.ALGORITHM_INFOS[self.algo_name].require_gradient:
             nlopt_problem.set_initial_step(settings[self._INIT_STEP])
 
-        max_eval = int(1.5 * settings[self._MAX_ITER])  # anti-cycling
-        nlopt_problem.set_maxeval(max_eval)
-
+        max_eval = int(1.5 * settings[self._MAX_ITER])
+        nlopt_problem.set_maxeval(max_eval)  # Anti-cycling
         nlopt_problem.set_stopval(settings[self._STOPVAL])
 
         if self.algo_name == "NLOPT_MMA":

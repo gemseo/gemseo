@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence  # noqa: TCH003
 from typing import Any
+from typing import ClassVar
 
 from numpy import asarray
 from pydantic import Field
@@ -56,6 +57,8 @@ class NelderMeadSettings(BaseScipyLocalSettings):
             "Whether to adapt the algorithm parameters to dimensionality of problem."
         ),
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["maxiter", "maxfev"]
 
     @model_validator(mode="before")
     @classmethod

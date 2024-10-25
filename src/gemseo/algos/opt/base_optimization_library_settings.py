@@ -16,9 +16,13 @@
 
 from __future__ import annotations
 
+from typing import Any
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
+from pydantic import model_validator
 
 from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
 
@@ -68,3 +72,26 @@ class BaseOptimizationLibrarySettings(BaseDriverLibrarySettings):
         default=0.0,
         description="""The absolute tolerance on the design parameters.""",
     )
+
+    _redundant_settings: ClassVar[list[str]] = []
+    """The settings that has a GEMSEO counterpart.
+
+    If such a setting is passed to the library by the end-user, it will be removed. The
+    user should rather use the corresponding setting from GEMSEO.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def remove_redundant_settings(cls, data: Any) -> Any:  # noqa: D102
+        for setting_name in cls._redundant_settings:
+            if setting_name in data:
+                msg = (
+                    f"The '{setting_name}' setting cannot be passed to the "
+                    "optimization library since there exists a GEMSEO counterpart. \n"
+                    "Please consider using the corresponding GEMSEO setting (see "
+                    "https://gemseo.readthedocs.io/en/stable/algorithms/index.html"
+                    "for more informations."
+                )
+                raise ValueError(msg)
+
+        return data

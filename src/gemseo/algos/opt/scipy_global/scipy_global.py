@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from sys import maxsize
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -167,6 +168,17 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         elif self._algo_name == "DIFFERENTIAL_EVOLUTION":
             constraints = self.__get_non_linear_constraints(problem)
             settings_["constraints"] = constraints
+
+        # Deactivate stopping criteria which are handled by GEMSEO
+        if self._algo_name == "SHGO":
+            settings_["options"].update(
+                dict.fromkeys(["maxev", "maxfev", "maxiter", "maxtime"], maxsize)
+            )
+            settings_["options"]["ftol"] = 0.0
+        elif self._algo_name == "DUAL_ANNEALING":
+            settings_["maxiter"] = settings_["maxfun"] = maxsize
+        else:  # Necessarily the differential evolution algorithm
+            settings_["maxiter"] = maxsize
 
         global_optimizer = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         opt_result = global_optimizer(

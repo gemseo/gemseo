@@ -22,11 +22,16 @@ from typing import TYPE_CHECKING
 from unittest.case import TestCase
 
 import pytest
+from numpy import array
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.scipy_global.scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
     DifferentialEvolutionSettings,
 )
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
@@ -100,3 +105,21 @@ def test_differential_evolution_parallel():
         ),
     )
     assert result.f_opt
+
+
+@pytest.fixture
+def unconstrained_problem() -> OptimizationProblem:
+    """An unconstrained optimization problem"""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", size=1, lower_bound=array([-1.0]), upper_bound=array([1.0])
+    )
+    problem = OptimizationProblem(design_space)
+    problem.objective = MDOFunction(name="f", func=lambda x: x**2)
+    return problem
+
+
+@pytest.mark.parametrize("algorithm_name", ScipyGlobalOpt.ALGORITHM_INFOS)
+def test_max_iter(algorithm_name, unconstrained_problem):
+    """Test that the maximum number of iteration is monitored by GEMSEO."""
+    ScipyGlobalOpt(algorithm_name).execute(unconstrained_problem, max_iter=10)

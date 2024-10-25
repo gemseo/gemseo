@@ -147,6 +147,9 @@ class ScipyMILP(BaseOptimizationLibrary):
         # Filter settings to get only the scipy.optimize.milp ones
         settings_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
 
+        # Deactivate stopping criteria which are handled by GEMSEO
+        settings["time_limit"] = inf
+
         # Pass the MILP to Scipy
         milp_result = milp(
             c=obj_coeff.real,

@@ -26,7 +26,14 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.scipy_global.settings.dual_annealing import DualAnnealingSettings
+from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
+    BaseSciPyLinProgSettings,
+)
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
+from gemseo.algos.opt.scipy_local.settings.tnc import TNCSettings
+from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILPSettings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -182,3 +189,24 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
     assert library._problem.constraints[2].evaluate(current_value) == pytest.approx(
         eq, 0, 1e-16
     )
+
+
+@pytest.mark.parametrize(
+    ("settings_model", "redundant_setting"),
+    [
+        (DualAnnealingSettings, "maxfun"),
+        (SLSQPSettings, "maxiter"),
+        (TNCSettings, "eps"),
+        (SciPyMILPSettings, "time_limit"),
+        (BaseSciPyLinProgSettings, "maxiter"),
+    ],
+)
+def test_removal_redundant_settings(caplog, settings_model, redundant_setting):
+    """Test that redundant settings are properly removed."""
+    msg = (
+        f"The '{redundant_setting}' setting cannot be passed to the "
+        "optimization library since there exists a GEMSEO counterpart. \n"
+        "Please consider using the corresponding GEMSEO setting."
+    )
+    with pytest.raises(ValueError, match=msg):
+        settings_model(**{redundant_setting: "foo"})

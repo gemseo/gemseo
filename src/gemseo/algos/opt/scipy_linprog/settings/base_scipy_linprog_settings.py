@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import model_validator
@@ -69,6 +70,8 @@ class BaseSciPyLinProgSettings(BaseOptimizationLibrarySettings):
             """
         ),
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["maxiter", "tol"]
 
     @model_validator(mode="after")
     def __check_scaling(self) -> Self:

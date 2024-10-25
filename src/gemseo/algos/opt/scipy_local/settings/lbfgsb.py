@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TCH002
 from pydantic import PositiveInt  # noqa: TCH002
@@ -59,3 +61,5 @@ class LBFGSBSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings)
         default=20,
         description="""The maximum number of line search steps per iteration.""",
     )
+
+    _redundant_settings: ClassVar[list[str]] = ["eps", "maxfun", "maxiter"]

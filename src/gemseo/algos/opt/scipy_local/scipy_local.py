@@ -47,6 +47,7 @@ from gemseo.algos.opt.scipy_local.settings.nelder_mead import NelderMeadSettings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNCSettings
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
+from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -148,6 +149,11 @@ class ScipyOpt(BaseOptimizationLibrary):
         # Filter settings to get only the scipy.optimize.minimize ones
         options_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
 
+        # Deactivate stopping criteria which are handled by GEMSEO
+        tolerance = 0.0
+        if self._algo_name != "TNC":
+            options_["maxiter"] = C_LONG_MAX
+
         opt_result = minimize(
             fun=lambda x: real(problem.objective.evaluate(x)),
             x0=x_0,
@@ -156,7 +162,7 @@ class ScipyOpt(BaseOptimizationLibrary):
             bounds=bounds,
             constraints=scipy_constraints,
             options=options_,
-            tol=0.0,  # Let GEMSEO monitor the convergence
+            tol=tolerance,
         )
 
         return opt_result.message, opt_result.status
