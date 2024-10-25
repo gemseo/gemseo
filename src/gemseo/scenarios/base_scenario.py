@@ -59,8 +59,8 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.algos._base_driver_library_settings import BaseDriverLibrarySettings
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
+    from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.discipline import Discipline
