@@ -283,7 +283,7 @@ def test_get_history_array_wrong_f_name(problem) -> None:
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "'foo' is not an output name; " "available ones are '@rosen' and 'rosen'."
+            "'foo' is not an output name; available ones are '@rosen' and 'rosen'."
         ),
     ):
         problem.database.get_history_array(function_names=["foo"])
@@ -384,7 +384,7 @@ def test__str__database() -> None:
     database.store(x1, {"Rosenbrock": value1})
     database.store(x2, {"Rosenbrock": value2})
 
-    ref = "{[1. 2.]: {'Rosenbrock': 100.0}, " "[3.  4.5]: {'Rosenbrock': 2029.0}}"
+    ref = "{[1. 2.]: {'Rosenbrock': 100.0}, [3.  4.5]: {'Rosenbrock': 2029.0}}"
 
     assert str(database) == ref
 

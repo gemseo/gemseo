@@ -143,8 +143,7 @@ def test_get_coefficients(model) -> None:
     with pytest.raises(
         NotImplementedError,
         match=(
-            "For now the coefficients can only be obtained "
-            "in the form of a NumPy array"
+            "For now the coefficients can only be obtained in the form of a NumPy array"
         ),
     ):
         model.get_coefficients(as_dict=True)

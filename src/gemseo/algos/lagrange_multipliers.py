@@ -421,9 +421,7 @@ class LagrangeMultipliers:
             if wrong_inds.size > 0:
                 names_neg = array(self.active_lb_names)[wrong_inds]
                 LOGGER.warning(
-                    "Negative Lagrange multipliers for "
-                    "lower bounds on variables"
-                    "%s !",
+                    "Negative Lagrange multipliers for lower bounds on variables%s !",
                     str(names_neg),
                 )
         n_act = len(self.active_ub_names)
@@ -435,9 +433,7 @@ class LagrangeMultipliers:
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ub_names)[wrong_inds]
                 LOGGER.warning(
-                    "Negative Lagrange multipliers for "
-                    "upper bounds on variables"
-                    "%s !",
+                    "Negative Lagrange multipliers for upper bounds on variables%s !",
                     str(names_neg),
                 )
         n_act = len(self.active_ineq_names)
@@ -449,9 +445,7 @@ class LagrangeMultipliers:
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ineq_names)[wrong_inds]
                 LOGGER.warning(
-                    "Negative Lagrange multipliers for "
-                    "inequality constraints"
-                    "%s !",
+                    "Negative Lagrange multipliers for inequality constraints%s !",
                     str(names_neg),
                 )
         n_act = len(self.active_eq_names)

@@ -88,8 +88,7 @@ class ParallelCoordinates(BasePost[ParallelCoordinatesSettings]):
             settings.fig_size,
         )
         fig.suptitle(
-            f"Objective function and constraints history "
-            f"colored by '{obj_name}' value."
+            f"Objective function and constraints history colored by '{obj_name}' value."
         )
         plt.tight_layout()
         self._add_figure(fig, "para_coord_funcs")

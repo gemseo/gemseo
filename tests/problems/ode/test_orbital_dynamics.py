@@ -114,8 +114,7 @@ def test_orbital(algo_name, eccentricity, atol) -> None:
         check_energy_bool = check_energy(xx, yy, vv)
         if not check_energy_bool:
             msg = (
-                f"FAILED check energy for e = {eccentricity}"
-                f" and algo = {algo_name_msg}"
+                f"FAILED check energy for e = {eccentricity} and algo = {algo_name_msg}"
             )
             raise ValueError(msg)
 

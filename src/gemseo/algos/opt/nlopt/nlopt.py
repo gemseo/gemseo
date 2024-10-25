@@ -147,7 +147,7 @@ class Nlopt(BaseOptimizationLibrary):
         "NLOPT_MMA": NLoptAlgorithmDescription(
             algorithm_name="MMA",
             description=(
-                "Method of Moving Asymptotes (MMA)" "implemented in the NLOPT library"
+                "Method of Moving Asymptotes (MMA)implemented in the NLOPT library"
             ),
             handle_inequality_constraints=True,
             internal_algorithm_name=LD_MMA,

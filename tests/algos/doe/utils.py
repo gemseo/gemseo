@@ -179,7 +179,7 @@ def generate_test_functions(
                     get_expected_nsamples,
                     deepcopy(options),
                 )
-                name = f"test_{opt_lib_name}_lib_{algo_name}" f"_on_Rosenbrock_n_{dim}"
+                name = f"test_{opt_lib_name}_lib_{algo_name}_on_Rosenbrock_n_{dim}"
                 name = name.replace("-", "_")
                 test_method.__name__ = name
                 tests.append(test_method)

@@ -33,8 +33,7 @@ class RadarChartSettings(BasePostSettings):  # noqa: D101
     )
     constraint_names: Sequence[str] = Field(
         (),
-        description="The names of the constraints. If empty, use all the "
-        "constraints.",
+        description="The names of the constraints. If empty, use all the constraints.",
     )
     show_names_radially: bool = Field(
         False,
