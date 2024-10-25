@@ -27,7 +27,10 @@ from numpy import array
 
 from gemseo import create_scenario
 from gemseo import execute_algo
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.error_estimators import compute_best_step
@@ -321,3 +324,22 @@ def test_2d_mixed(
         assert lag_approx["inequality"][1] > 0
     else:
         assert lag_approx["equality"][1][0] > 0
+
+
+def test_nnls_crash():
+    """Check that a case known to make SciPy's NNLS crash is handled correctly."""
+    space = DesignSpace()
+    space.add_variable("x", 1, lower_bound=0, upper_bound=1)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: 18 * x, "f", jac=lambda _: array([18]))
+    gradient = array([9.9, -1.98000003])
+    problem.add_constraint(
+        MDOFunction(
+            lambda x: x * gradient, "g", jac=lambda _: gradient.reshape((-1, 1))
+        ),
+        constraint_type="ineq",
+    )
+    multipliers = LagrangeMultipliers(problem).compute(array([0]))
+    assert 18 - multipliers["lower_bounds"][1] + gradient @ multipliers["inequality"][
+        1
+    ] == pytest.approx(0)

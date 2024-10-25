@@ -1,0 +1,2 @@
+When the computation of the Lagrange multipliers crashes with ``scipy.optimize.nnls``,
+fall back to ``scipy.optimize.lsq_linear``.
