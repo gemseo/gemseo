@@ -184,20 +184,27 @@ def test_compute_bootstrap_measure(dataset) -> None:
 
 
 @pytest.mark.parametrize(
-    "method", ["compute_bootstrap_measure", "compute_cross_validation_measure"]
+    ("method_name", "class_name"),
+    [
+        ("compute_bootstrap_measure", "Bootstrap"),
+        ("compute_cross_validation_measure", "CrossValidation"),
+    ],
 )
 @pytest.mark.parametrize("fit", [False, True])
-def test_fit_transformers(algo_for_transformer, method, fit) -> None:
-    """Check that the transformers are fitted with the sub-datasets.
+def test_fit_transformers(algo_for_transformer, class_name, method_name, fit) -> None:
+    """Check that the user can fit the transformers with the sub-datasets.
 
-    By default, the transformers are fitted with the sub-datasets. If False, use the
-    transformers of the assessed algorithm as they are.
+    Otherwise, use the transformers of the assessed algorithm as they are.
     """
-    m1 = MSEMeasure(algo_for_transformer)
-    m2 = MSEMeasure(algo_for_transformer, fit_transformers=fit)
-    e1 = getattr(m1, method)
-    e2 = getattr(m2, method)
-    assert allclose(e1(seed=0), e2(seed=0)) is fit
+    mse = MSEMeasure(algo_for_transformer)
+    method = getattr(mse, method_name)
+    method(seed=0, store_resampling_result=True)
+    model = algo_for_transformer.resampling_results[class_name][1][0]
+    mse = MSEMeasure(algo_for_transformer, fit_transformers=fit)
+    method = getattr(mse, method_name)
+    method(seed=0, store_resampling_result=True)
+    new_model = algo_for_transformer.resampling_results[class_name][1][0]
+    assert (model.algo.y_train_.sum() == new_model.algo.y_train_.sum()) is not fit
 
 
 @pytest.mark.parametrize(
