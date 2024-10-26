@@ -12,40 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the LSODA ODE solver from Scipy."""
+"""Settings for the SciPy ODE solvers using Jacobian with ``jac_sparsity``."""
 
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import NonNegativeInt  # noqa: TCH002
 
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
     BaseScipyODESolverJacSettings,
 )
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 
-class LSODASettings(BaseScipyODESolverJacSettings):
-    """Settings for the LSODA ODE solver from Scipy."""
+class BaseScipyODESolverJacSparsitySettings(BaseScipyODESolverJacSettings):
+    """Settings for the SciPy ODE solvers using Jacobian and ``jac_sparsity``."""
 
-    lband: int | None = Field(
+    jac_sparsity: NDArrayPydantic[float] | None = Field(
         default=None,
-        description=(
-            """Lower boundary of the bandwidth of the Jacobian.
-            The SciPy documentation does not mention what happens if ``None``.
-            """
-        ),
-    )
-
-    uband: int | None = Field(
-        default=None,
-        description=(
-            """Upper boundary of the bandwidth of the Jacobian.
-            The SciPy documentation does not mention what happens if ``None``.
-            """
-        ),
-    )
-
-    min_step: NonNegativeInt = Field(
-        default=0,
-        description="""Minimum allowed step size.""",
+        description="""Sparsity structure of the Jacobian matrix.""",
     )

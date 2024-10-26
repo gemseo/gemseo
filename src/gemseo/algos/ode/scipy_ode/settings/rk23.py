@@ -12,14 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the RK23 ODE solver algorithm from Scipy."""
+"""Settings for the RK23 ODE solver from Scipy."""
 
 from __future__ import annotations
 
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
-    BaseScipyODEAlgosSettings,
+    BaseScipyODESolverSettings,
 )
 
 
-class RK23Settings(BaseScipyODEAlgosSettings):
+class RK23Settings(BaseScipyODESolverSettings):
     """Settings for the RK23 ODE solver algorithm from Scipy."""

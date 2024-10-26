@@ -35,6 +35,9 @@ from scipy.integrate import solve_ivp
 from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
 from gemseo.algos.ode.base_ode_solver_library import ODESolverDescription
 from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
+from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
+    BaseScipyODESolverJacSettings,
+)
 from gemseo.algos.ode.scipy_ode.settings.bdf import BDFSettings
 from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853Settings
 from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODASettings
@@ -116,7 +119,10 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         settings_ = self._filter_settings(
             settings, model_to_exclude=BaseODESolverSettings
         )
-        settings_["jac"] = problem.jac.state
+        if issubclass(
+            self.ALGORITHM_INFOS[self.algo_name].Settings, BaseScipyODESolverJacSettings
+        ):
+            settings_["jac"] = problem.jac.state
 
         if problem.solve_at_algorithm_times:
             settings_["t_eval"] = problem.times
