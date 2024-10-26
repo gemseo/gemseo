@@ -53,7 +53,7 @@ from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgre
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos.base_driver_settings import BaseDriverSettings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
@@ -76,7 +76,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
 
-DriverLibrarySettingType = Union[
+DriverSettingType = Union[
     str, float, int, bool, list[str], ndarray, Iterable[CallbackType], StrKeyMapping
 ]
 LOGGER = logging.getLogger(__name__)
@@ -89,7 +89,7 @@ class DriverDescription(AlgorithmDescription):
     handle_integer_variables: bool = False
     """Whether the driver handles integer variables."""
 
-    Settings: type[BaseDriverLibrarySettings] = BaseDriverLibrarySettings
+    Settings: type[BaseDriverSettings] = BaseDriverSettings
     """The Pydantic model for the driver library settings."""
 
 
@@ -322,7 +322,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
         store_jacobian: bool = True,
-        settings_model: BaseDriverLibrarySettings | None = None,
+        settings_model: BaseDriverSettings | None = None,
         **settings: Any,
     ) -> OptimizationResult:
         """

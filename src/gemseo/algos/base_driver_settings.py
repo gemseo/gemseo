@@ -19,10 +19,10 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic.types import NonNegativeFloat  # noqa: TCH002
 
-from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
+from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 
 
-class BaseDriverLibrarySettings(BaseAlgorithmLibrarySettings):
+class BaseDriverSettings(BaseAlgorithmSettings):
     """The common parameters for all driver libraries."""
 
     enable_progress_bar: bool | None = Field(

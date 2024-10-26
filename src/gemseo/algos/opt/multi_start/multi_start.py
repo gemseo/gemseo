@@ -34,7 +34,7 @@ from gemseo.utils.multiprocessing.execution import execute
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.algos.base_driver_library import DriverLibrarySettingType
+    from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.typing import RealArray
 
 
@@ -62,7 +62,7 @@ class MultiStart(BaseOptimizationLibrary):
         )
     }
 
-    __opt_algo_settings: Mapping[str, DriverLibrarySettingType]
+    __opt_algo_settings: Mapping[str, DriverSettingType]
     """The settings of the sub-optimization algorithm."""
 
     def __init__(self, algo_name: str = "MultiStart") -> None:  # noqa: D107

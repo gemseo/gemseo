@@ -37,9 +37,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILPSettings
 from gemseo.algos.optimization_result import OptimizationResult
@@ -145,7 +143,7 @@ class ScipyMILP(BaseOptimizationLibrary):
             )
 
         # Filter settings to get only the scipy.optimize.milp ones
-        settings_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
+        settings_ = self._filter_settings(settings, BaseOptimizerSettings)
 
         # Deactivate stopping criteria which are handled by GEMSEO
         settings["time_limit"] = inf

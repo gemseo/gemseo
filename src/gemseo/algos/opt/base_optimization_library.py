@@ -34,9 +34,7 @@ from numpy import isinf
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.stop_criteria import DesignToleranceTester
 from gemseo.algos.stop_criteria import KKTConditionsTester
 from gemseo.algos.stop_criteria import ObjectiveToleranceTester
@@ -71,7 +69,7 @@ class OptimizationAlgorithmDescription(DriverDescription):
     require_gradient: bool = False
     """Whether the optimization algorithm requires the gradient."""
 
-    Settings: type[BaseOptimizationLibrarySettings] = BaseOptimizationLibrarySettings
+    Settings: type[BaseOptimizerSettings] = BaseOptimizerSettings
     """The settings validation model."""
 
 

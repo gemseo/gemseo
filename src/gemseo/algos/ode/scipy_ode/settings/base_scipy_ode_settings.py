@@ -20,13 +20,11 @@ from numpy import inf
 from pydantic import Field
 from pydantic import PositiveFloat  # noqa: TCH002
 
-from gemseo.algos.ode.base_ode_solver_library_settings import (
-    BaseODESolverLibrarySettings,
-)
+from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 
-class BaseScipyODEAlgosSettings(BaseODESolverLibrarySettings):
+class BaseScipyODEAlgosSettings(BaseODESolverSettings):
     """Settings for the SciPy ODE solver algorithms."""
 
     first_step: PositiveFloat | None = Field(

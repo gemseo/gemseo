@@ -35,9 +35,7 @@ from scipy.optimize import minimize
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
@@ -147,7 +145,7 @@ class ScipyOpt(BaseOptimizationLibrary):
         ]
 
         # Filter settings to get only the scipy.optimize.minimize ones
-        options_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
+        options_ = self._filter_settings(settings, BaseOptimizerSettings)
 
         # Deactivate stopping criteria which are handled by GEMSEO
         tolerance = 0.0

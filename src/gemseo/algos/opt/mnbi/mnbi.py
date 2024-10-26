@@ -81,7 +81,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.algos.base_driver_library import DriverLibrarySettingType
+    from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.algos.optimization_problem import OptimizationResult
     from gemseo.typing import RealArray
 
@@ -225,7 +225,7 @@ class MNBI(BaseOptimizationLibrary):
     file, in order to verify that the algorithm has worked as intended.
     """
 
-    __doe_algo_settings: Mapping[str, DriverLibrarySettingType]
+    __doe_algo_settings: Mapping[str, DriverSettingType]
     """The settings for the DOE algorithm."""
 
     __ineq_tolerance: float = 1e-4
@@ -271,7 +271,7 @@ class MNBI(BaseOptimizationLibrary):
     __sub_optim_algo: str
     """The algorithm used for the sub-optimizations."""
 
-    __sub_optim_algo_settings: Mapping[str, DriverLibrarySettingType]
+    __sub_optim_algo_settings: Mapping[str, DriverSettingType]
     """The settings for the sub-optimization algorithm."""
 
     __utopia: RealArray

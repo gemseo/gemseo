@@ -43,9 +43,7 @@ from scipy.optimize import shgo
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
@@ -160,7 +158,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             problem.add_listener(self._iter_callback)
 
         # Filter settings to get only the ones of the global optimizer
-        settings_ = self._filter_settings(settings, BaseOptimizationLibrarySettings)
+        settings_ = self._filter_settings(settings, BaseOptimizerSettings)
 
         if self._algo_name == "SHGO":
             constraints = self.__get_constraints_as_scipy_dictionary(problem)

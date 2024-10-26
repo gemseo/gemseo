@@ -20,11 +20,11 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 
-class MorrisDOESettings(BaseDOELibrarySettings):
+class MorrisDOESettings(BaseDOESettings):
     """The ``MorrisDOE`` settings."""
 
     n_samples: NonNegativeInt = Field(

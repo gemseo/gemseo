@@ -48,7 +48,7 @@ from gemseo.algos.linear_solvers.base_linear_solver_library import (
     LinearSolverDescription,
 )
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverLibrarySettings,
+    BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_settings import (  # noqa: E501
     BaseSciPyLinalgSettingsBase,
@@ -208,7 +208,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             settings["callback"] = self.__store_residuals
 
         settings_ = self._filter_settings(
-            settings, model_to_exclude=BaseLinearSolverLibrarySettings
+            settings, model_to_exclude=BaseLinearSolverSettings
         )
 
         linear_solver = self.__NAMES_TO_FUNCTIONS[self._algo_name]

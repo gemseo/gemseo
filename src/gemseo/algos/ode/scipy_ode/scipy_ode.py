@@ -34,9 +34,7 @@ from scipy.integrate import solve_ivp
 
 from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
 from gemseo.algos.ode.base_ode_solver_library import ODESolverDescription
-from gemseo.algos.ode.base_ode_solver_library_settings import (
-    BaseODESolverLibrarySettings,
-)
+from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.algos.ode.scipy_ode.settings.bdf import BDFSettings
 from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853Settings
 from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODASettings
@@ -116,7 +114,7 @@ class ScipyODEAlgos(BaseODESolverLibrary):
 
     def _run(self, problem: ODEProblem, **settings: Any) -> ODEResult:
         settings_ = self._filter_settings(
-            settings, model_to_exclude=BaseODESolverLibrarySettings
+            settings, model_to_exclude=BaseODESolverSettings
         )
         settings_["jac"] = problem.jac.state
 

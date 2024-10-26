@@ -41,9 +41,9 @@ from numpy import where
 
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.base_driver_library import DriverLibrarySettingType
+from gemseo.algos.base_driver_library import DriverSettingType
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
@@ -78,7 +78,7 @@ class DOEAlgorithmDescription(DriverDescription):
     minimum_dimension: int = 1
     """The minimum dimension of the parameter space."""
 
-    Settings: type[BaseDOELibrarySettings] = BaseDOELibrarySettings
+    Settings: type[BaseDOESettings] = BaseDOESettings
     """The Pydantic model for the DOE library settings."""
 
 
@@ -157,7 +157,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def _pre_run(
         self,
         problem: EvaluationProblem,
-        **settings: DriverLibrarySettingType,
+        **settings: DriverSettingType,
     ) -> None:
         super()._pre_run(problem, **settings)
         problem.stop_if_nan = False
@@ -166,7 +166,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self.__check_unnormalization_capability(design_space)
 
         # Filter settings to get only the ones of the global optimizer
-        settings = self._filter_settings(settings, BaseDOELibrarySettings)
+        settings = self._filter_settings(settings, BaseDOESettings)
 
         self.unit_samples = self._generate_unit_samples(design_space, **settings)
         LOGGER.debug(
@@ -384,8 +384,8 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self,
         variables_space: DesignSpace | int,
         unit_sampling: bool = False,
-        settings_model: BaseDOELibrarySettings | None = None,
-        **settings: DriverLibrarySettingType,
+        settings_model: BaseDOESettings | None = None,
+        **settings: DriverSettingType,
     ) -> RealArray:
         """Compute a design of experiments (DOE) in a variables space.
 
@@ -411,7 +411,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         # Validate and filter the settings
         settings = self._filter_settings(
             settings=self._validate_settings(settings_model=settings_model, **settings),
-            model_to_exclude=BaseDOELibrarySettings,
+            model_to_exclude=BaseDOESettings,
         )
 
         unit_samples = self._generate_unit_samples(design_space, **settings)

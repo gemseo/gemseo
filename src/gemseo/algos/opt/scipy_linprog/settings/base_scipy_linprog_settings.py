@@ -22,15 +22,13 @@ from typing import ClassVar
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class BaseSciPyLinProgSettings(BaseOptimizationLibrarySettings):
+class BaseSciPyLinProgSettings(BaseOptimizerSettings):
     """The SciPy linear programming library setting."""
 
     autoscale: bool = Field(

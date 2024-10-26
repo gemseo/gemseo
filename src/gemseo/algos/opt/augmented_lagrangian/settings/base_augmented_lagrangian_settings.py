@@ -22,16 +22,14 @@ from functools import partial
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TCH002
 
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa:TCH001
 from gemseo.utils.pydantic import copy_field
 
-copy_field_opt = partial(copy_field, model=BaseOptimizationLibrarySettings)
+copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)
 
 
-class BaseAugmentedLagragianSettings(BaseOptimizationLibrarySettings):
+class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
     """The base augmented lagrangian settings."""
 
     initial_rho: NonNegativeFloat = Field(

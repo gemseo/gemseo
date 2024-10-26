@@ -22,13 +22,11 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveInt
 
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 
-class MultiStartSettings(BaseOptimizationLibrarySettings):
+class MultiStartSettings(BaseOptimizerSettings):
     """The multi-start algorithm settings."""
 
     normalize_design_space: bool = Field(

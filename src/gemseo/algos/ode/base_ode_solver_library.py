@@ -26,9 +26,7 @@ from typing import Any
 
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-from gemseo.algos.ode.base_ode_solver_library_settings import (
-    BaseODESolverLibrarySettings,
-)
+from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 
 if TYPE_CHECKING:
     from gemseo.algos.ode.ode_problem import ODEProblem
@@ -40,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 class ODESolverDescription(AlgorithmDescription):
     """Description for the ODE solver."""
 
-    Settings: type[BaseODESolverLibrarySettings] = BaseODESolverLibrarySettings
+    Settings: type[BaseODESolverSettings] = BaseODESolverSettings
     """The settings validation model."""
 
 
