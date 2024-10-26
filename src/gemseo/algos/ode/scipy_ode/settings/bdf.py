@@ -12,14 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the BDF ODE solver algorithm from Scipy."""
+"""Settings for the BDF ODE solver from Scipy."""
 
 from __future__ import annotations
 
-from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
-    BaseScipyODEAlgosSettings,
+from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_sparsity_settings import (
+    BaseScipyODESolverJacSparsitySettings,
 )
 
 
-class BDFSettings(BaseScipyODEAlgosSettings):
-    """Settings for the BDF ODE solver algorithm from Scipy."""
+class BDFSettings(BaseScipyODESolverJacSparsitySettings):
+    """Settings for the BDF ODE solver from Scipy."""

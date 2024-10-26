@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the SciPy ODE solver algorithms."""
+"""Settings for the SciPy ODE solvers."""
 
 from __future__ import annotations
 
@@ -24,8 +24,8 @@ from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 
-class BaseScipyODEAlgosSettings(BaseODESolverSettings):
-    """Settings for the SciPy ODE solver algorithms."""
+class BaseScipyODESolverSettings(BaseODESolverSettings):
+    """Settings for the SciPy ODE solvers."""
 
     first_step: PositiveFloat | None = Field(
         default=None,
@@ -50,9 +50,4 @@ class BaseScipyODEAlgosSettings(BaseODESolverSettings):
     atol: PositiveFloat | NDArrayPydantic[PositiveFloat] = Field(
         default=1e-6,
         description="""The absolute tolerance.""",
-    )
-
-    jac_sparsity: NDArrayPydantic[float] | None = Field(
-        default=None,
-        description="""Sparsity structure of the Jacobian matrix.""",
     )

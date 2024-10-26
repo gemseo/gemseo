@@ -12,14 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the Radau ODE solver from Scipy."""
+"""Settings for the SciPy ODE solvers using Jacobian."""
 
 from __future__ import annotations
 
-from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_sparsity_settings import (
-    BaseScipyODESolverJacSparsitySettings,
+from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
+    BaseScipyODESolverSettings,
 )
 
 
-class RadauSettings(BaseScipyODESolverJacSparsitySettings):
-    """Settings for the Radau ODE solver from Scipy."""
+class BaseScipyODESolverJacSettings(BaseScipyODESolverSettings):
+    """Settings for the SciPy ODE solvers using Jacobian."""

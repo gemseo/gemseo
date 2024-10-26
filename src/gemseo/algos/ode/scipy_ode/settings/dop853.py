@@ -12,14 +12,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the DOP853 ODE solver algorithm from Scipy."""
+"""Settings for the DOP853 ODE solver from Scipy."""
 
 from __future__ import annotations
 
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
-    BaseScipyODEAlgosSettings,
+    BaseScipyODESolverSettings,
 )
 
 
-class DOP853Settings(BaseScipyODEAlgosSettings):
-    """Settings for the DOP853 ODE solver algorithm from Scipy."""
+class DOP853Settings(BaseScipyODESolverSettings):
+    """Settings for the DOP853 ODE solver from Scipy."""
