@@ -1,7 +1,7 @@
 ``BaseAlgorithmLibrary`` and its derived classes now validate their settings (referred to as options in previous
 versions of GEMSEO) using a Pydantic model. The Pydantic models replace the ``JSONGrammar`` validation used in previous
 versions of GEMSEO. The aforementioned models have a hierarchical structure, for instance, the
-``BaseDriverLibrarySettings`` shall inherit from ``BaseAlgorithmLibrary`` in the same way as ``BaseDriverLibrary``
+``BaseDriverSettings`` shall inherit from ``BaseAlgorithmSettings`` in the same way as ``BaseDriverLibrary``
 inherits from ``BaseAlgorithmLibrary``. Instead of passing the settings one by one,
 a Pydantic model can be passed using the special argument ``"settings_model"``.
 The ``CustomDOE`` module has been renamed from ``lib_custom_doe.py`` to ``custom_doe.py``.

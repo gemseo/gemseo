@@ -36,7 +36,7 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverLibrarySettings,
+    BaseLinearSolverSettings,
 )
 
 if TYPE_CHECKING:
@@ -61,7 +61,7 @@ class LinearSolverDescription(AlgorithmDescription):
     lhs_must_be_linear_operator: bool = False
     """Whether the left-hand side matrix must be a linear operator."""
 
-    Settings: type[BaseLinearSolverLibrarySettings] = BaseLinearSolverLibrarySettings
+    Settings: type[BaseLinearSolverSettings] = BaseLinearSolverSettings
     """The linear solver libraries settings."""
 
 

@@ -24,10 +24,10 @@ from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
 from pydantic import model_validator
 
-from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+from gemseo.algos.base_driver_settings import BaseDriverSettings
 
 
-class BaseOptimizationLibrarySettings(BaseDriverLibrarySettings):
+class BaseOptimizerSettings(BaseDriverSettings):
     """The common parameters for all optimization libraries."""
 
     ftol_rel: NonNegativeFloat = Field(

@@ -19,10 +19,10 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import PositiveInt  # noqa:TCH002
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 
 
-class BaseNSamplesBasedDOESettings(BaseDOELibrarySettings):
+class BaseNSamplesBasedDOESettings(BaseDOESettings):
     """The settings for DOE algorithms that require a defined number of samples."""
 
     n_samples: PositiveInt = Field(description="""The number of samples.""")

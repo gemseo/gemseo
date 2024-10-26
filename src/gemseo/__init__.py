@@ -164,13 +164,11 @@ from gemseo.utils.pickle import to_pickle  # noqa: F401
 if TYPE_CHECKING:
     from logging import Logger
 
-    from gemseo.algos.base_algorithm_library_settings import (
-        BaseAlgorithmLibrarySettings,
-    )
-    from gemseo.algos.base_driver_library import DriverLibrarySettingType
+    from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
+    from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
@@ -483,7 +481,7 @@ def get_algorithm_options_schema(
 
 
 def _get_json_schema_from_settings(
-    settings: BaseAlgorithmLibrarySettings,
+    settings: BaseAlgorithmSettings,
     output_json: bool,
     pretty_print: bool,
 ) -> str | dict[str, Any]:
@@ -1880,8 +1878,8 @@ def compute_doe(
     variables_space: DesignSpace | int,
     algo_name: str,
     unit_sampling: bool = False,
-    settings_model: BaseDOELibrarySettings | None = None,
-    **settings: DriverLibrarySettingType,
+    settings_model: BaseDOESettings | None = None,
+    **settings: DriverSettingType,
 ) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
 

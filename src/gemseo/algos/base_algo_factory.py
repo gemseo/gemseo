@@ -32,10 +32,8 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.algos._base_algorithm_library_settings import (
-        BaseAlgorithmLibrarySettings,
-    )
     from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
+    from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
     from gemseo.algos.base_problem import BaseProblem
     from gemseo.algos.ode.ode_result import ODEResult
     from gemseo.algos.optimization_result import OptimizationResult
@@ -191,7 +189,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         self,
         problem: BaseProblem,
         algo_name: str,
-        settings_model: BaseAlgorithmLibrarySettings | None = None,
+        settings_model: BaseAlgorithmSettings | None = None,
         **settings: Any,
     ) -> OptimizationResult | ODEResult:
         """Execute a problem with an algorithm.

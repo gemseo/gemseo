@@ -18,11 +18,11 @@ from __future__ import annotations
 
 from pydantic.types import PositiveFloat  # noqa: TCH002
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 
-class OATDOESettings(BaseDOELibrarySettings):
+class OATDOESettings(BaseDOESettings):
     """The settings of the OAT DOE."""
 
     initial_point: NDArrayPydantic

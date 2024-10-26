@@ -26,7 +26,7 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import model_validator
 
-from gemseo.algos.doe.base_doe_library_settings import BaseDOELibrarySettings
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ SamplesType = Union[
 ]
 
 
-class CustomDOESettings(BaseDOELibrarySettings):
+class CustomDOESettings(BaseDOESettings):
     """The settings for the ``CustomDOE``."""
 
     doe_file: str | Path = Field(

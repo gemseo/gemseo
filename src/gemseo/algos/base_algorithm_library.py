@@ -31,7 +31,7 @@ from typing import ClassVar
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.base_algorithm_library_settings import BaseAlgorithmLibrarySettings
+from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
 )
@@ -71,7 +71,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     #  in modules for which one library class handles many different algorithms. In the
     #  future we should have one algorithm per module and use the Settings class
     #  variable to validate the settings in _validate_settings.
-    Settings: type[BaseAlgorithmLibrarySettings] = BaseAlgorithmLibrarySettings
+    Settings: type[BaseAlgorithmSettings] = BaseAlgorithmSettings
     """The Pydantic model for the settings."""
 
 
@@ -121,7 +121,7 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _validate_settings(
         self,
-        settings_model: BaseAlgorithmLibrarySettings | None = None,
+        settings_model: BaseAlgorithmSettings | None = None,
         **settings: Any,
     ) -> dict[str, Any]:
         """Validate the settings with the appropriate Pydantic model.
@@ -144,7 +144,7 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     @staticmethod
     def _filter_settings(
         settings: StrKeyMapping,
-        model_to_exclude: type[BaseAlgorithmLibrarySettings],
+        model_to_exclude: type[BaseAlgorithmSettings],
     ) -> dict[str, Any]:
         """Filter settings.
 
@@ -194,7 +194,7 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     def execute(
         self,
         problem: BaseProblem,
-        settings_model: BaseAlgorithmLibrarySettings | None = None,
+        settings_model: BaseAlgorithmSettings | None = None,
         **settings: Any,
     ) -> Any:
         """Solve a problem with an algorithm from this library.

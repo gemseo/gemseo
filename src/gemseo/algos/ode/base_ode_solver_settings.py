@@ -12,15 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the algorithms."""
+"""Settings for the ODE Solver library."""
 
 from __future__ import annotations
 
-from pydantic import BaseModel
-from pydantic import ConfigDict
+from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 
 
-class BaseAlgorithmLibrarySettings(BaseModel):
-    """The settings common to all the algorithms."""
-
-    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+class BaseODESolverSettings(BaseAlgorithmSettings):
+    """Settings for the ODE Solver library."""

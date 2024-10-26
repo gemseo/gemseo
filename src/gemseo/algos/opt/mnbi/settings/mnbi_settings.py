@@ -26,9 +26,7 @@ from pydantic import PositiveInt
 from pydantic import field_validator
 from pydantic import model_validator
 
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
@@ -36,7 +34,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class MNBISettings(BaseOptimizationLibrarySettings):
+class MNBISettings(BaseOptimizerSettings):
     """The mNBI algorithm settings."""
 
     normalize_design_space: bool = Field(

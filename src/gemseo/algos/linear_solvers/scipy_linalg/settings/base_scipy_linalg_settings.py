@@ -28,12 +28,12 @@ from scipy.sparse import sparray  # noqa: TCH002
 from scipy.sparse.linalg import LinearOperator  # noqa: TCH002
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverLibrarySettings,
+    BaseLinearSolverSettings,
 )
 from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
 
 
-class BaseSciPyLinalgSettingsBase(BaseLinearSolverLibrarySettings):
+class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
     """The settings of the SciPy GMRES algorithm."""
 
     atol: NonNegativeFloat = Field(

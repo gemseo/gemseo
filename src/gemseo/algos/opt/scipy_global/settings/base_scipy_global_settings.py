@@ -22,15 +22,13 @@ from sys import maxsize
 from pydantic import NonNegativeFloat  # noqa:TCH002
 from pydantic import PositiveInt  # noqa:TCH002
 
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.utils.pydantic import copy_field
 
-copy_field_opt = partial(copy_field, model=BaseOptimizationLibrarySettings)
+copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)
 
 
-class BaseSciPyGlobalSettings(BaseOptimizationLibrarySettings):
+class BaseSciPyGlobalSettings(BaseOptimizerSettings):
     """The SciPy global optimization library setting."""
 
     eq_tolerance: NonNegativeFloat = copy_field_opt("eq_tolerance", default=1e-6)

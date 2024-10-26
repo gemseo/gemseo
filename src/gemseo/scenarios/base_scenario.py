@@ -60,7 +60,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
-    from gemseo.algos.base_driver_library_settings import BaseDriverLibrarySettings
+    from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.discipline import Discipline
@@ -235,7 +235,7 @@ class BaseScenario(BaseMonitoredProcess):
     def set_algorithm(
         self,
         name: str,
-        settings_model: BaseDriverLibrarySettings | None = None,
+        settings_model: BaseDriverSettings | None = None,
         **settings: Any,
     ) -> None:
         """Define the algorithm to execute the scenario.
@@ -584,7 +584,7 @@ class BaseScenario(BaseMonitoredProcess):
     def execute(
         self,
         algo_name: str = "",
-        algo_settings_model: BaseDriverLibrarySettings | None = None,
+        algo_settings_model: BaseDriverSettings | None = None,
         **algo_settings: Any,
     ) -> None:
         """Execute a scenario.

@@ -20,12 +20,10 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
 
-from gemseo.algos.opt.base_optimization_library_settings import (
-    BaseOptimizationLibrarySettings,
-)
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 
 
-class BaseMILPSettings(BaseOptimizationLibrarySettings):
+class BaseMILPSettings(BaseOptimizerSettings):
     """The mixed-integer linear programming library setting."""
 
     disp: bool = Field(
