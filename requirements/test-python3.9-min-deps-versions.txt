@@ -4,7 +4,7 @@ annotated-types==0.7.0
     # via pydantic
 attrs==24.2.0
     # via pytest
-cached-property==1.5.2
+cached-property==2.0.1
     # via h5py
 covdefaults==0.1.0
     # via gemseo (pyproject.toml)
@@ -20,7 +20,7 @@ dill==0.3.9
     # via openturns
 docstring-inheritance==1.0.0
     # via gemseo (pyproject.toml)
-et-xmlfile==1.1.0
+et-xmlfile==2.0.0
     # via openpyxl
 eval-type-backport==0.2.0
     # via gemseo (pyproject.toml)
