@@ -218,12 +218,12 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             disciplines,
             parameter_space,
             self._output_names,
-            n_samples,
             self._algo_name,
             formulation=formulation,
             formulation_options=formulation_options or {},
             name=f"{self.__class__.__name__}SamplingPhase",
             backup_settings=backup_settings,
+            n_samples=n_samples,
             **algo_settings,
         )
         return self.dataset

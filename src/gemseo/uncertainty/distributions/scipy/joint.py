@@ -67,7 +67,7 @@ class SPJointDistribution(BaseJointDistribution):
         super().__init__(distributions, copula=copula)
 
     def _create_distribution(
-        self, distribution_name: str, parameters: StrKeyMapping, **options: Any
+        self, distribution_name: str, parameters: StrKeyMapping, **kwargs: Any
     ) -> None:
         self.distribution = self.marginals
         self._set_bounds(self.marginals)
