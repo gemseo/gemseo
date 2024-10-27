@@ -137,9 +137,17 @@ class _RealJacobianOperator(JacobianOperator):
         self.__operator = operator
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self.__operator.matvec(x).real  # type: ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self.__operator.rmatvec(x).real  # type: ignore[no-any-return]
 
 
@@ -155,9 +163,17 @@ class _AdjointJacobianOperator(JacobianOperator):
         self.__operator = operator
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self.__operator.rmatvec(x)  # type: ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self.__operator.matvec(x)  # type: ignore[no-any-return]
 
 
@@ -172,9 +188,17 @@ class _IdentityOperator(JacobianOperator):
         super().__init__(dtype(float), (size, size))
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return x
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return x
 
 
@@ -206,9 +230,17 @@ class _SumOperation(_BaseOperation[JacobianOperator]):
     """A jacobian operator that handles the sum of 2 jacobian operators."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.matvec(x) + self._operand_2.matvec(x)  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.rmatvec(x) + self._operand_2.rmatvec(x)  # type:ignore[no-any-return]
 
 
@@ -216,9 +248,17 @@ class _SumOperationWithArray(_BaseOperation[SparseOrDenseRealArray]):
     """A jacobian operator that handles the sum operation with a standard jacobian."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.matvec(x) + self._operand_2 @ x  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.rmatvec(x) + self._operand_2.T @ x  # type:ignore[no-any-return]
 
 
@@ -226,9 +266,17 @@ class _SubOperation(_BaseOperation[JacobianOperator]):
     """A jacobian operator that handles the subtraction of 2 jacobian operators."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.matvec(x) - self._operand_2.matvec(x)  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.rmatvec(x) - self._operand_2.rmatvec(x)  # type:ignore[no-any-return]
 
 
@@ -236,9 +284,17 @@ class _SubOperationWithArray(_BaseOperation[SparseOrDenseRealArray]):
     """A jacobian operator that handles the subtraction with a standard jacobian."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.matvec(x) - self._operand_2 @ x  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.rmatvec(x) - self._operand_2.T @ x  # type:ignore[no-any-return]
 
 
@@ -277,9 +333,17 @@ class _ComposedOperationArrayOperator(
     """A jacobian operator that handles a left composition with a standard jacobian."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1 @ self._operand_2.matvec(x)  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_2.rmatvec(self._operand_1.T @ x)  # type:ignore[no-any-return]
 
 
@@ -289,9 +353,17 @@ class _ComposedOperationOperatorOperator(
     """A jacobian operator that compose another jacobian operator."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.matvec(self._operand_2.matvec(x))  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_2.rmatvec(self._operand_1.rmatvec(x))  # type:ignore[no-any-return]
 
 
@@ -301,7 +373,15 @@ class _ComposedOperationOperatorArray(
     """A jacobian operator that handles a right composition with a standard jacobian."""
 
     def _matvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_1.matvec(self._operand_2 @ x)  # type:ignore[no-any-return]
 
     def _rmatvec(self, x: RealArray) -> RealArray:
+        """
+        Args:
+            x: The vector to apply the transpose of ∂f/∂v to.
+        """  # noqa: D205 D212
         return self._operand_2.T @ self._operand_1.rmatvec(x)  # type:ignore[no-any-return]

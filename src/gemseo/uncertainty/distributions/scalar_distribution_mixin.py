@@ -108,12 +108,12 @@ class ScalarDistributionMixin:
     @abstractmethod
     def _pdf(
         self,
-        point: float,
+        value: float,
     ) -> float:
         """Probability density function (PDF).
 
         Args:
-            point: An evaluation point.
+            value: An evaluation point.
 
         Returns:
             The PDF value at the evaluation point.

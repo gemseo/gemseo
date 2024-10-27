@@ -964,7 +964,9 @@ def input_space() -> DesignSpace:
 )
 def test_sample_disciplines(disciplines, input_space, output_names, caplog):
     """Check the sampling of two disciplines."""
-    dataset = sample_disciplines(disciplines, input_space, output_names, 2, "fullfact")
+    dataset = sample_disciplines(
+        disciplines, input_space, output_names, "fullfact", n_samples=2
+    )
     assert dataset.name == "Sampling"
 
     assert_equal(
@@ -997,8 +999,8 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
         disciplines,
         input_space,
         "out1",
-        2,
         "fullfact",
+        n_samples=2,
         name="foo",
         # Use DisciplinaryOpt instead of MDF
         formulation="DisciplinaryOpt",
@@ -1026,8 +1028,8 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            2,
             "fullfact",
+            n_samples=2,
         )
 
     method.assert_not_called()
@@ -1036,9 +1038,9 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         disciplines,
         input_space,
         ["out1", "out2"],
-        2,
         "fullfact",
         backup_settings=BackupSettings("database.hdf5"),
+        n_samples=2,
     )
     assert len(Database.from_hdf("database.hdf5")) == 2
 
@@ -1047,9 +1049,9 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            2,
             "fullfact",
             backup_settings=BackupSettings("database.hdf5"),
+            n_samples=2,
         )
 
     assert method.call_args.kwargs == {
@@ -1064,7 +1066,6 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            2,
             "fullfact",
             backup_settings=BackupSettings(
                 "database.hdf5",
@@ -1073,6 +1074,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
                 erase=True,
                 load=True,
             ),
+            n_samples=2,
         )
 
     assert method.call_args.kwargs == {

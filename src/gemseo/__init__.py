@@ -1429,6 +1429,7 @@ def execute_algo(
     opt_problem: OptimizationProblem,
     algo_name: str,
     algo_type: str = "opt",
+    settings_model: BaseAlgorithmSettings | None = None,
     **settings: Any,
 ) -> OptimizationResult:
     """Solve an optimization problem.
@@ -1439,7 +1440,10 @@ def execute_algo(
         algo_type: The type of algorithm,
             either "opt" for optimization
             or "doe" for design of experiments.
-        **settings: The settings of the algorithm.
+        settings_model: The algorithm settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        **settings: The algorithm settings.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Examples:
         >>> from gemseo import execute_algo
@@ -1470,7 +1474,9 @@ def execute_algo(
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
 
-    return factory.execute(opt_problem, algo_name, **settings)
+    return factory.execute(
+        opt_problem, algo_name, settings_model=settings_model, **settings
+    )
 
 
 def monitor_scenario(
@@ -2199,13 +2205,13 @@ def sample_disciplines(
     disciplines: Sequence[Discipline],
     input_space: DesignSpace,
     output_names: str | Iterable[str],
-    n_samples: int,
     algo_name: str,
     formulation: str = "MDF",
     formulation_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "Sampling",
     backup_settings: BackupSettings | None = None,
-    **algo_options: Any,
+    doe_algo_settings_model: BaseDOESettings | None = None,
+    **doe_algo_settings: Any,
 ) -> IODataset:
     """Sample a set of disciplines associated with an MDO formulation.
 
@@ -2222,7 +2228,10 @@ def sample_disciplines(
             If empty, use the name of the discipline.
         backup_settings: The settings of the backup file to store the evaluations
             if any.
-        **algo_options: The options of the DOE algorithm.
+        doe_algo_settings_model: The DOE settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        **doe_algo_settings: The DOE settings.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
         The input-output samples of the disciplines.
@@ -2243,11 +2252,12 @@ def sample_disciplines(
     for output_name in output_names_iterator:
         scenario.add_observable(output_name)
 
-    if "log_problem" not in algo_options:
-        algo_options["log_problem"] = False
+    if not doe_algo_settings_model:
+        if "log_problem" not in doe_algo_settings:
+            doe_algo_settings["log_problem"] = False
 
-    if "use_one_line_progress_bar" not in algo_options:
-        algo_options["use_one_line_progress_bar"] = True
+        if "use_one_line_progress_bar" not in doe_algo_settings:
+            doe_algo_settings["use_one_line_progress_bar"] = True
 
     if backup_settings is not None and backup_settings.file_path:
         scenario.set_optimization_history_backup(
@@ -2257,7 +2267,11 @@ def sample_disciplines(
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
-    scenario.execute(algo_name=algo_name, n_samples=n_samples, **algo_options)
+    scenario.execute(
+        algo_name=algo_name,
+        algo_settings_model=doe_algo_settings_model,
+        **doe_algo_settings,
+    )
     return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )
