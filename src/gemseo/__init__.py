@@ -127,7 +127,7 @@ def generate_n2_plot(
     A coupling variable is outputted by a discipline horizontally
     and enters another vertically.
     On the static plot,
-    a blue diagonal block represent a self-coupled discipline,
+    a blue diagonal block represents a self-coupled discipline,
     i.e. a discipline having some of its outputs as inputs.
 
     Args:
@@ -160,17 +160,19 @@ def generate_coupling_graph(
     disciplines: Sequence[Discipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
-) -> GraphView:
+) -> GraphView | None:
     """Generate a graph of the couplings between disciplines.
 
     Args:
         disciplines: The disciplines from which the graph is generated.
         file_path: The path of the file to save the figure.
-        full: If ``True``, generate the full coupling graph.
-            Otherwise, generate the condensed one.
+            If empty, the figure is not saved.
+        full: Whether to generate the full coupling graph.
+            Otherwise, the condensed coupling graph is generated.
 
     Returns:
-        The graph of the couplings between disciplines.
+        Either the graph of the couplings between disciplines
+        or ``None`` when graphviz is not installed.
 
     Examples:
         >>> from gemseo import create_discipline, generate_coupling_graph
@@ -181,8 +183,8 @@ def generate_coupling_graph(
 
     coupling_structure = CouplingStructure(disciplines)
     if full:
-        return coupling_structure.graph.write_full_graph(file_path)
-    return coupling_structure.graph.write_condensed_graph(file_path)
+        return coupling_structure.graph.render_full_graph(file_path)
+    return coupling_structure.graph.render_condensed_graph(file_path)
 
 
 def get_available_formulations() -> list[str]:

@@ -282,22 +282,26 @@ class DependencyGraph:
             input_names.update(disc.io.input_grammar.names)
         return output_names & input_names
 
-    def __write_graph(
+    def __render_graph(
         self,
         graph: DiGraph,
         file_path: str | Path,
         is_full: bool,
     ) -> GraphView | None:
-        """Write the representation of a graph.
+        """Render the graph when graphviz is installed.
 
         Args:
             graph: A graph.
-            file_path: The file path to save the visualization.
+            file_path: The file path to save the graphical representation of the graph.
+                If empty, the graphical representation is not saved.
             is_full: Whether the graph is full.
+
+        Returns:
+            Either the graph or ``None`` when graphviz is not installed.
         """
         if GRAPHVIZ_IS_MISSING:
             LOGGER.warning(
-                "Cannot write graph: "
+                "Cannot render graph: "
                 "GraphView cannot be imported because graphviz is not installed."
             )
             return None
@@ -350,31 +354,37 @@ class DependencyGraph:
             graph_view.edge(node_name, tail_name, pretty_str(output_names, ","))
             graph_view.hide_node(tail_name)
 
-        # 4. Write the dot and target files.
-        graph_view.visualize(show=False, file_path=file_path, clean_up=False)
+        if file_path:
+            # 4. Write the dot and target files.
+            graph_view.visualize(show=False, file_path=file_path, clean_up=False)
+
         return graph_view
 
-    def write_full_graph(self, file_path: str | Path) -> GraphView | None:
-        """Write a representation of the full graph.
+    def render_full_graph(self, file_path: str | Path) -> GraphView | None:
+        """Render the full graph.
 
         Args:
-            file_path: The path to the file.
+            file_path: The file path
+                to save the graphical representation of the full graph.
+                If empty, the graphical representation is not saved.
 
         Returns:
-            The full graph or ``None`` otherwise.
+            Either the full graph or ``None`` when graphviz is not installed.
         """
-        return self.__write_graph(self.__graph, file_path, True)
+        return self.__render_graph(self.__graph, file_path, True)
 
-    def write_condensed_graph(self, file_path: str | Path) -> GraphView | None:
-        """Write a representation of the condensed graph.
+    def render_condensed_graph(self, file_path: str | Path) -> GraphView | None:
+        """Render the condensed graph.
 
         Args:
-            file_path: The path to the file.
+            file_path: The file path
+                to save the graphical representation of the condensed graph.
+                If empty, the graphical representation is not saved.
 
         Returns:
-            The condensed graph or ``None`` otherwise.
+            Either the condensed graph or ``None`` when graphviz is not installed.
         """
-        return self.__write_graph(self.__create_condensed_graph(), file_path, False)
+        return self.__render_graph(self.__create_condensed_graph(), file_path, False)
 
     @staticmethod
     def __get_leaves(graph: DiGraph) -> list[Discipline] | list[int]:
