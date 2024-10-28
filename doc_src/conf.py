@@ -342,11 +342,12 @@ def __filter_versions(
         if rtd_version["active"] and __VERSION_REGEX.match(slug):
             _versions.append((slug, url := rtd_version["urls"]["documentation"]))
             json_versions.append({"name": slug, "version": slug, "url": url})
-            parsed_slug = parse(slug)
             version_index += 1
-            if slug != "develop" and parsed_slug > stable_version:
-                stable_version = parsed_slug
-                stable_index = version_index
+            if slug != "develop":
+                parsed_slug = parse(slug)
+                if parsed_slug > stable_version:
+                    stable_version = parsed_slug
+                    stable_index = version_index
 
     json_versions[stable_index]["preferred"] = True
 
