@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable  # noqa:TCH003
 from functools import partial
+from typing import Any
+from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TCH002
@@ -55,6 +57,11 @@ class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
             which implies that the sub-problem is unconstrained.
             """
         ),
+    )
+
+    update_options_callback: Callable[[Any], Any] | None = Field(
+        default=None,  # Default is None since it's now exclusively a callable
+        description="""A callable for updating parameters or a function call.""",
     )
 
     ftol_rel: NonNegativeFloat = copy_field_opt("ftol_rel", default=1e-9)

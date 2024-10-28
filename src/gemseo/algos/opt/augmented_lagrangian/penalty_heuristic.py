@@ -16,8 +16,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 from gemseo.algos.opt.augmented_lagrangian.base_augmented_lagrangian import (
     BaseAugmentedLagrangian,
@@ -40,12 +44,12 @@ class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian):
     __MAX_RHO: Final[str] = "max_rho"
     """The name of `max_rho` option, which is the maximum penalty value."""
 
-    def _update_penalty(
+    def _update_penalty(  # noqa: D107
         self,
-        constraint_violation_current_iteration: float,
-        objective_function_current_iteration: float,
-        constraint_violation_previous_iteration: float,
-        current_penalty: float,
+        constraint_violation_current_iteration: float | RealArray,
+        objective_function_current_iteration: float | RealArray,
+        constraint_violation_previous_iteration: float | RealArray,
+        current_penalty: float | RealArray,
         iteration: int,
         **options: Any,
     ) -> float:

@@ -67,13 +67,23 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
     _function_outputs: dict[str, float | NumberArray]
     """The current iteration function outputs."""
 
+    _sub_problems: list[OptimizationProblem]
+    """The sub problems appended in the sequence of optimization problem."""
+
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
         self.__n_obj_func_calls = 0
         self._function_outputs = {}
+        self._sub_problems = []
+
+    @property
+    def n_obj_func_calls(self) -> int:
+        """The total number of objective function calls."""
+        return self.__n_obj_func_calls
 
     def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
         self._rho = settings[self.__INITIAL_RHO]
+        self._update_options_callback = settings["update_options_callback"]
 
         problem_ineq_constraints = [
             constr
@@ -99,7 +109,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         }
 
         active_constraint_residual = inf
-        x = problem.design_space.get_current_value()
+        x = self._problem.design_space.get_current_value()
         message = None
         for iteration in range(settings[self._MAX_ITER]):
             LOGGER.debug("iteration: %s", iteration)
@@ -247,6 +257,12 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         hv = concatenate(hv) if hv else hv
         return f_opt, hv, vk
 
+    @staticmethod
+    def _check_for_preconditioner(sub_algorithm_settings: StrKeyMapping) -> None:
+        """Check if 'precond' is in sub_algorithm_settings and log if detected."""
+        if sub_algorithm_settings and "precond" in sub_algorithm_settings:
+            LOGGER.info("Preconditioner Detected")
+
     def __solve_sub_problem(
         self,
         lambda0: dict[str, NumberArray],
@@ -285,12 +301,18 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
                 sub_problem.constraints.append(constraint)
         sub_problem.preprocess_functions(is_function_input_normalized=normalize)
 
+        if self._update_options_callback is not None:
+            self._update_options_callback(self._sub_problems, sub_algorithm_settings)
+
+        self._check_for_preconditioner(sub_algorithm_settings)
+
         # Solve the sub-problem.
         opt = OptimizationLibraryFactory().execute(
-            sub_problem,
-            sub_algorithm_name,
-            **sub_algorithm_settings,
+            sub_problem, sub_algorithm_name, **sub_algorithm_settings
         )
+
+        self._sub_problems.append(sub_problem)
+
         return sub_problem.objective.n_calls, opt.x_opt
 
     @abstractmethod
