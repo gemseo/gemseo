@@ -22,7 +22,6 @@ from __future__ import annotations
 from copy import deepcopy
 from os.path import dirname
 from os.path import join
-from pathlib import Path
 from subprocess import CalledProcessError
 
 import pytest
@@ -275,7 +274,7 @@ def test_parallel_execution(tmp_wd) -> None:
         command_line=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
-        directory_naming_method=DirectoryNamingMethod.NUMBERED,
+        directory_naming_method=DirectoryNamingMethod.UUID,
     )
 
     design_space = DesignSpace()
@@ -287,8 +286,7 @@ def test_parallel_execution(tmp_wd) -> None:
 
     scenario.execute(algo_name="OT_LHS", n_samples=2, n_processes=nb_process)
 
-    for i in range(nb_process):
-        assert Path(f"{i + 1}").is_dir()
+    assert len(tuple(tmp_wd.iterdir())) == nb_process
 
 
 @pytest.mark.parametrize("clean_after_execution", [True, False])
