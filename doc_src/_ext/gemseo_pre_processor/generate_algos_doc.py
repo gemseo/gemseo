@@ -27,6 +27,7 @@ from typing import Any
 from typing import Callable
 
 import jinja2
+from pydantic_core import PydanticUndefined
 
 from gemseo import _get_schema
 from gemseo import get_algorithm_features
@@ -47,6 +48,9 @@ from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
+    from pydantic.fields import FieldInfo
+
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.core.base_factory import BaseFactory
@@ -279,6 +283,36 @@ class AlgoOptionsDoc:
         with Path(output_file_path).open("w", encoding="utf-8") as outf:
             outf.write(doc)
 
+    @classmethod
+    def get_options_schema_from_pydantic_model(
+        cls,
+        model: BaseModel,
+    ) -> dict[str, dict[str, str]]:
+        return {
+            name: {
+                "ptype": field.annotation,
+                "description": field.description,
+                **(
+                    {}
+                    if field.is_required()
+                    else {"default": cls.__get_pydantic_default(field)}
+                ),
+            }
+            for name, field in model.model_fields.items()
+        }
+
+    @staticmethod
+    def __get_pydantic_default(field: FieldInfo) -> Any:
+        default = field.default
+        if default is PydanticUndefined:
+            default_factory = field.default_factory
+            if default_factory is dict:
+                return {}
+            if default_factory is list:
+                return []
+
+        return default
+
     @staticmethod
     def get_options_schema_from_method(
         method: Callable[[Any], Any],
@@ -297,8 +331,8 @@ class AlgoOptionsDoc:
         return {
             names[name]: {
                 "ptype": type_,
-                "default": defaults.get(name, ""),
                 "description": descriptions.get(name, ""),
+                **({"default": defaults[name]} if name in defaults else {}),
             }
             for name, type_ in types.items()
         }
@@ -326,7 +360,16 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         self.get_description = self.__default_description_getter(algo_factory)
         self.get_website = self.__default_website_getter(algo_factory)
         self.get_class = self.__default_class_getter(algo_factory)
-        self.get_options_schema = self.__default_options_schema_getter(algo_factory)
+
+        def get_options_schema(algo):
+            klass = self.get_class(algo)
+            schema = self.get_options_schema_from_pydantic_model(
+                klass.ALGORITHM_INFOS[algo].Settings
+            )
+            return schema
+
+        self.get_options_schema = get_options_schema
+
         if algo_type == "opt":
             self.get_features = get_algorithm_features
 
@@ -336,7 +379,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
     ) -> Callable[[str], dict[dict[str, str]]]:
         """Return the default algorithm description getter from a driver factory."""
 
-        def get_options_schema(algo: str) -> dict[dict[str, str]]:
+        def get_options_schema(algo: str) -> dict[str, str]:
             """Return the options schema.
 
             Args:
@@ -345,21 +388,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The options schema.
             """
-            options_schema = self.get_options_schema_from_method(
-                self.get_class(algo)._get_options
-            )
-            algo_lib = algo_factory.create(algo)
-            options_grammar = algo_lib._init_options_grammar()
-            options = {
-                k: v for k, v in options_schema.items() if k in options_grammar.names
-            }
-            for name in options_grammar.required_names:
-                if name not in options:
-                    options[name] = {}
-
-                options[name]["default"] = ""
-
-            return options
+            return self.get_class(algo).ALGORITHM_INFOS[algo].Settings.model_fields
 
         return get_options_schema
 
@@ -443,9 +472,7 @@ class BasePostAlgoOptionsDoc(AlgoOptionsDoc):
 
         def get_options_schema(algo):
             klass = self.get_class(algo)
-            schema = self.get_options_schema_from_method(klass.execute)
-            schema.update(self.get_options_schema_from_method(klass._run))
-            schema.update(self.get_options_schema_from_method(klass._plot))
+            schema = self.get_options_schema_from_pydantic_model(klass.Settings)
             return schema
 
         self.get_options_schema = get_options_schema
@@ -479,8 +506,10 @@ def main(gen_opts_path: str | Path) -> None:
     GEN_OPTS_PATH = gen_opts_path
 
     algos_options_docs = [
-        InitOptionsDoc("clustering", "Clustering algorithms", ClustererFactory()),
-        InitOptionsDoc(
+        BasePostAlgoOptionsDoc(
+            "clustering", "Clustering algorithms", ClustererFactory()
+        ),
+        BasePostAlgoOptionsDoc(
             "classification", "Classification algorithms", ClassifierFactory()
         ),
         InitOptionsDoc("ml_quality", "Quality measures", MLAlgoQualityFactory()),
@@ -516,7 +545,7 @@ def main(gen_opts_path: str | Path) -> None:
     for algos_options_doc in algos_options_docs:
         algos_options_doc.to_rst()
 
-    options_doc = InitOptionsDoc(
+    options_doc = BasePostAlgoOptionsDoc(
         "regression", "Regression algorithms", RegressorFactory()
     )
     options_doc.to_rst()

@@ -10,10 +10,3 @@ Surrogate discipline
 ====================
 
 Replace a costly discipline with a cheap surrogate model.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

@@ -157,7 +157,7 @@ More details about the algorithm and its settings on {{websites[algo]}}.
 
 {% set optional_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}
-{% if parameter[1]['default'] != '' or parameter[0].startswith('**') %}
+{% if 'default' in parameter[1] or parameter[0].startswith('**') %}
 {% set tmp = optional_parameters.append(parameter) %}
 {% endif %}
 {% endfor %}
@@ -169,7 +169,7 @@ More details about the algorithm and its settings on {{websites[algo]}}.
 
 {% set required_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}
-{% if parameter[1]['default'] == '' and not parameter[0].startswith('**') %}
+{% if 'default' not in parameter[1] and not parameter[0].startswith('**') %}
 {% set tmp = required_parameters.append(parameter) %}
 {% endif %}
 {% endfor %}
@@ -186,7 +186,7 @@ More details about the algorithm and its settings on {{websites[algo]}}.
 {% for arg in required_parameters %}
     <li>
 
-**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if 'default' in arg[1] %}, optional{% endif %}*
 
 {{arg[1]['description']}}
 

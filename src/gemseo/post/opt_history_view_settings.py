@@ -31,24 +31,24 @@ if TYPE_CHECKING:
 
 class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
     variable_names: Sequence[str] = Field(
-        (),
+        default=(),
         description="The names of the variables to display. "
         "If empty, use all design variables.",
     )
     obj_relative: bool = Field(
-        False,
+        default=False,
         description="Whether the difference between the objective and its initial "
         "value is plotted instead of the objective.",
     )
     obj_min: float | None = Field(
-        None,
+        default=None,
         description="The lower limit of the *y*-axis on which the objective is "
         "plotted. This limit must be less than or equal to the minimum "
         "value of the objective history. If ``None``, use the minimum "
         "value of the objective history.",
     )
     obj_max: float | None = Field(
-        None,
+        default=None,
         description="The upper limit of the *y*-axis on which the objective is "
         "plotted. This limit must be greater than or equal to the maximum "
         "value of the objective history. If ``None``, use the maximum "

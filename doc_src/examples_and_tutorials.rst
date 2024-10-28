@@ -10,14 +10,11 @@
    Contributors:
           :author: Matthias De Lozzo
 
-:parenttoc: True
 .. _examples_and_tutorials:
 
 Examples and tutorials
 ======================
 
-.. include:: /includes/big_toc_css.rst
-.. include:: /tune_toc.rst
 .. toctree::
    :maxdepth: 2
 

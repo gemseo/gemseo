@@ -31,6 +31,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPTCOBYLASettings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -64,14 +66,24 @@ design_space = SobieskiDesignSpace()
 # %%
 # Then, we build a sub-scenario for each strongly coupled disciplines,
 # using the following algorithm, maximum number of iterations and
-# algorithm options:
-algo_options = {
-    "xtol_rel": 1e-7,
-    "xtol_abs": 1e-7,
-    "ftol_rel": 1e-7,
-    "ftol_abs": 1e-7,
-    "ineq_tolerance": 1e-4,
-}
+# algorithm settings:
+
+slsqp_settings = SLSQPSettings(
+    xtol_rel=1e-7,
+    xtol_abs=1e-7,
+    ftol_rel=1e-7,
+    ftol_abs=1e-7,
+    ineq_tolerance=1e-4,
+)
+
+cobyla_settings = NLOPTCOBYLASettings(
+    xtol_rel=1e-7,
+    xtol_abs=1e-7,
+    ftol_rel=1e-7,
+    ftol_abs=1e-7,
+    ineq_tolerance=1e-4,
+)
+
 # %%
 # Build a sub-scenario for Propulsion
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -83,7 +95,7 @@ sc_prop = create_scenario(
     design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
 )
-sc_prop.set_algorithm("SLSQP", max_iter=30, **algo_options)
+sc_prop.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
 sc_prop.add_constraint("g_3", constraint_type="ineq")
 
 # %%
@@ -98,7 +110,7 @@ sc_aero = create_scenario(
     name="AerodynamicsScenario",
     maximize_objective=True,
 )
-sc_aero.set_algorithm("SLSQP", max_iter=30, **algo_options)
+sc_aero.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
 sc_aero.add_constraint("g_2", constraint_type="ineq")
 
 # %%
@@ -115,7 +127,7 @@ sc_str = create_scenario(
     maximize_objective=True,
 )
 sc_str.add_constraint("g_1", constraint_type="ineq")
-sc_str.set_algorithm("SLSQP", max_iter=30, **algo_options)
+sc_str.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
 
 # %%
 # Build a scenario for Mission
@@ -145,12 +157,14 @@ system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False)
+system_scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Execute the main scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=50, **algo_options)
+system_scenario.execute(
+    algo_name="NLOPT_COBYLA", max_iter=50, algo_settings_model=cobyla_settings
+)
 
 # %%
 # Plot the history of the MDA residuals

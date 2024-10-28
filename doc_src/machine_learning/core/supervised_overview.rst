@@ -11,5 +11,5 @@
 Supervised learning
 ===================
 
-.. automodule:: gemseo.mlearning.core.supervised
+.. automodule:: gemseo.mlearning.core.algos.supervised
    :noindex:

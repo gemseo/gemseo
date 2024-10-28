@@ -6,10 +6,6 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-..
-   Contributors:
-          :author: Matthias De Lozzo
-
 :parenttoc: True
 .. _examples:
 
@@ -25,8 +21,6 @@ the exercise by executing the script sequentially or modifying the inputs.
 If you are interested in the combination of these features to solve a design
 problem, :ref:`please refer to the tutorials <tutorials_sg>`.
 
-.. include:: /includes/big_toc_css.rst
-.. include:: /tune_toc.rst
 .. toctree::
    :glob:
    :maxdepth: 1

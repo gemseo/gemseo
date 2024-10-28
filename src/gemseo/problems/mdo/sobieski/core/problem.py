@@ -553,8 +553,8 @@ class SobieskiProblem:
             g_2: The constraint (pressure gradient) from the aerodynamics discipline.
             g_3: The constraints from the propulsion discipline:
                 ``g_3[0]`` is the engine scale factor,
-                 ``g_3[1]`` is the engine temperature
-                 and ``g_3[2]`` is the throttle setting constraint.
+                ``g_3[1]`` is the engine temperature
+                and ``g_3[2]`` is the throttle setting constraint.
             true_cstr: If ``True``,
                 return the value of the outputs.
                 Otherwise,

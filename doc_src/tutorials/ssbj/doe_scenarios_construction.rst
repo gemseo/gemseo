@@ -28,19 +28,19 @@ Similarities between trade-off studies and optimization problems
 Trade-off studies are supported by capabilities of :term:`Design Of Experiments <DOE>`. But,
 when comparing an optimization scenario and a trade-off scenario, similarities appear:
 
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Feature                            | MDO Scenario (implemented in :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`) | Trade-off study (implemented in :class:`~gemseo.scenarios.doe_scenario.DOEScenario`)           |
-+====================================+==============================================================================+===========================================================================================+
-| Sample evaluation                  | The sample :math:`i+1` requires the evaluation of the sample :math:`i`.      | The sequence is defined *a priori* by a :term:`DOE`; an iteration corresponds to a sample |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | They guide the convergence of an optimization problem.                       | They are only monitored evaluated outputs.                                                |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | They are not directly outputs of a :term:`discipline`.                       | They are not directly outputs of a :term:`discipline`.                                    |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | They can be computed by an :ref:`mda` for instance (e.g. MDF)                | They can be computed by an :ref:`mda` for instance.                                       |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | Target values can be used for the :term:`coupling variables` (e.g. IDF).     | Target values can be used for the :term:`coupling variables`.                             |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Feature                            | MDO Scenario (implemented in :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`) | Trade-off study (implemented in :class:`~gemseo.scenarios.doe_scenario.DOEScenario`)      |
++====================================+===================================================================================+===========================================================================================+
+| Sample evaluation                  | The sample :math:`i+1` requires the evaluation of the sample :math:`i`.           | The sequence is defined *a priori* by a :term:`DOE`; an iteration corresponds to a sample |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | They guide the convergence of an optimization problem.                            | They are only monitored evaluated outputs.                                                |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | They are not directly outputs of a :term:`discipline`.                            | They are not directly outputs of a :term:`discipline`.                                    |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | They can be computed by an :ref:`mda` for instance (e.g. MDF)                     | They can be computed by an :ref:`mda` for instance.                                       |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | Target values can be used for the :term:`coupling variables` (e.g. IDF).          | Target values can be used for the :term:`coupling variables`.                             |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
 
 That is why in |g|,
 
@@ -64,10 +64,10 @@ As mentioned previously, a trade-off script and an optimization script are very 
 For example, a :term:`MDF` trade-off study includes an :ref:`mda` sampling with respect to the :term:`design variables`
 provided by the :term:`DOE algorithm`.
 
-1. Define the :class:`.MDODiscipline`
+1. Define the :class:`.Discipline`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
+We first instantiate the :class:`~gemseo.core.discipline.Discipline`:
 
 .. code::
 
@@ -237,7 +237,7 @@ maximize the range, the disciplines should:
 1. Define the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
+We first instantiate the :class:`~gemseo.core.discipline.Discipline`:
 
 .. code::
 

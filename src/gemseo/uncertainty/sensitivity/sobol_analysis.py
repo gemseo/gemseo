@@ -285,6 +285,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     """A mapping from settings to the name of the interval getter.
 
     The settings are the following boolean parameters:
+
     - Whether control variates are used or not.
     - Whether the order of the computed Sobol' index is
       the first order or the total order.
@@ -414,8 +415,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             cv: A control variate.
 
         Returns:
-            The control variate with the output variances and output indices computed
-                if needed.
+            The control variate
+            with the output variances and output indices computed if needed.
         """
         if cv.variance and cv.indices:
             return cv

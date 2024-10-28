@@ -16,7 +16,7 @@ Build discipline from a MATLAB function
 
 As explained in :ref:`software_connection`,
 |g| can interface any simulation software through
-the :class:`.MDODiscipline` class.
+the :class:`.Discipline` class.
 When dealing with a MATLAB program given as a function,
 a generic interface is
 created in order to facilitate this task.
@@ -211,9 +211,9 @@ which gives:
 
 One can see that the Jacobian outputs are not included in the returned values.
 Since the argument ``is_jac_returned_by_func`` has been activated, the Jacobian matrices
-values are stored in the :attr:`.MDODiscipline.jac` attributes.
+values are stored in the :attr:`.Discipline.jac` attributes.
 Thus printing
-:attr:`.MDODiscipline.jac` in a pretty way gives:
+:attr:`.Discipline.jac` in a pretty way gives:
 
 .. code::
 

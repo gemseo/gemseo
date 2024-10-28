@@ -50,7 +50,7 @@ which returns an :class:`.OptimizationResult`:
     >>> from gemseo import execute_algo
     >>> optimization_result = execute_algo(problem, "lhs", algo_type="doe", n_samples=100)
 
-In the presence of an :class:`.MDODiscipline`,
+In the presence of an :class:`.Discipline`,
 it is advisable to create a :class:`.DOEScenario` with the function :func:`.create_scenario`
 and pass the DOE algorithm to :meth:`.DOEScenario.execute`:
 

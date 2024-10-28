@@ -27,22 +27,22 @@ from gemseo.utils.pydantic import update_field
 
 class CorrelationsSettings(BasePostSettings):  # noqa: D101
     n_plots_x: PositiveInt = Field(
-        5,
+        default=5,
         description="The number of horizontal plots.",
     )
     n_plots_y: PositiveInt = Field(
-        5,
+        default=5,
         description="The number of vertical plots.",
     )
     coeff_limit: float = Field(
-        0.95,
+        default=0.95,
         description="The minimum correlation coefficient below which the variable "
         "is not plotted.",
         ge=0.0,
         le=1.0,
     )
     func_names: Sequence[str] = Field(
-        (),
+        default=(),
         description="The names of the functions to be considered. "
         "If empty, all the functions are considered.",
     )

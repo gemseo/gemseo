@@ -213,19 +213,17 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # Step 3: Execution and visualization of the results
 # --------------------------------------------------
 #
-# The algorithm arguments are provided as a dictionary to the execution
-# method of the scenario:
-#
-# .. warning::
-#
-#    The mandatory arguments are the maximum number of iterations and the algorithm name.
-#    Any other options of the optimization algorithm can be prescribed through
-#    the argument ``algo_options`` with a dictionary, e.g.
-#    :code:`algo_args =
-#    {"max_iter": 10, "algo": "SLSQP": "algo_options": {"ftol_rel": 1e-6}}`.
-#    This list of available algorithm options are detailed here: :ref:`gen_opt_algos`.
-#
-# The scenario is executed by means of the line:
+# The scenario is executed from
+# an optimization algorithm name (see :ref:`gen_opt_algos`),
+# a maximum number of iterations
+# and possibly a few options.
+# The maximum number of iterations and the options can be passed
+# either as keyword arguments
+# e.g. ``scenario.execute(algo_name="SLSQP", max_iter=10, ftol_rel=1e-6)``
+# or as a Pydantic model of settings,
+# e.g. ``scenario.execute(algo_name="SLSQP", settings_model=NLOPTSLSQPSettings(max_iter=10, ftol_rel=1e-6))``
+# where the Pydantic model ``NLOPTSLSQPSettings`` is imported from ``gemseo.settings.opt``.
+# In this example, we do not use any option:
 scenario.execute(algo_name="SLSQP", max_iter=10)
 # %%
 # Post-processing options

@@ -15,3 +15,10 @@
 """The datasets."""
 
 from __future__ import annotations
+
+from strenum import StrEnum
+
+from gemseo.datasets.factory import DatasetFactory
+
+DatasetClassName = StrEnum("DatasetClassName", DatasetFactory().class_names)
+"""The enumeration of :class:`.Dataset` class names."""

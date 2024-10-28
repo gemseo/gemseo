@@ -40,7 +40,6 @@ from gemseo import create_discipline
 from gemseo import create_parameter_space
 from gemseo import create_scenario
 from gemseo.mlearning import create_regression_model
-from gemseo.mlearning import import_regression_model
 
 configure_logger()
 
@@ -84,7 +83,7 @@ prob_space.add_random_variable("x_1", "OTUniformDistribution")
 prob_space.add_random_variable("x_2", "OTUniformDistribution")
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model(
-    "PCERegressor", data=dataset, probability_space=prob_space, transformer=None
+    "PCERegressor", dataset, probability_space=prob_space, transformer={}
 )
 model.learn()
 model
@@ -96,22 +95,3 @@ model
 input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
 output_value = model.predict(input_value)
 output_value
-
-# %%
-# Save the regression model
-# -------------------------
-# Lastly, we save the model.
-directory = model.to_pickle()
-
-# %%
-# Load the regression model
-# -------------------------
-# In an other study, we could load this model.
-loaded_model = import_regression_model(directory)
-loaded_model
-
-# %%
-# Use the loaded regression model
-# -------------------------------
-# And use it!
-loaded_model.predict(input_value)

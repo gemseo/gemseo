@@ -90,20 +90,20 @@ def traverse_add_diff_io_mda(
 ) -> DisciplineIOMapping:
     """Set the required differentiated IOs for the disciplines in a chain.
 
-    Add the differentiated inputs and outputs to the disciplines in a chain of of
+    Add the differentiated inputs and outputs to the disciplines in a chain of
     executions, given the list of inputs with respect to which the derivation is made
     and the list of outputs to be derived. The inputs and outputs are a subset of all
     the inputs and outputs of the chain. This allows to minimize the number of
     linearizations to perform in the disciplines.
 
-    Uses a two ways (from inputs to outputs and then from outputs to inputs)
-     breadth first search graph traversal algorithm.
+    Uses a two-ways (from inputs to outputs and then from outputs to inputs)
+    breadth first search graph traversal algorithm.
     The graph is constructed by :class:`.DependencyGraph`, which represents the data
     connexions (edges) between the disciplines (nodes).
 
     Args:
         coupling_structure: The coupling structure of the MDA.
-        input_names: The inputs with respect to which the chain chain is differentiated.
+        input_names: The inputs with respect to which the chain is differentiated.
         output_names: The chain outputs to be differentiated.
 
     Returns:

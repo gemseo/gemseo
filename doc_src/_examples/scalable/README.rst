@@ -10,10 +10,3 @@ Scalable model
 ==============
 
 Use a data-driven scalable discipline for benchmark purposes.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

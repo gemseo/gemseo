@@ -14,7 +14,7 @@ Regression
 API
 ---
 
-.. automodule:: gemseo.mlearning.regression.regression
+.. automodule:: gemseo.mlearning.regression.algos
    :noindex:
 
 Algorithms

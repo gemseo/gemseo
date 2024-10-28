@@ -54,15 +54,6 @@ where :math:`F` is the load vector,
 :math:`N` is the number of elements,
 :math:`\overline{V}` is the allowable volume fraction and :math:`K` is the stiffness matrix.
 
-
-
 .. [1] Bendsøe, M. P. (1989). Optimal shape design as a material distribution problem. Structural optimization, 1(4), 193-202.
 .. [2] Sigmund, O. (2001). A 99 line topology optimization code written in Matlab. Structural and multidisciplinary optimization, 21(2), 120-127.
 .. [3] Andreassen, E., Clausen, A., Schevenels, M., Lazarov, B. S., & Sigmund, O. (2011). Efficient topology optimization in MATLAB using 88 lines of code. Structural and Multidisciplinary Optimization, 43(1), 1-16.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

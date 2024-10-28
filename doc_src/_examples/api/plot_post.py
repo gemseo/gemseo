@@ -34,7 +34,6 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo import get_available_post_processings
-from gemseo import get_post_processing_options_schema
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
 configure_logger()
@@ -49,18 +48,11 @@ configure_logger()
 get_available_post_processings()
 
 # %%
-# Get options schema
-# ------------------
-# For a given post-processing algorithm, e.g. ``"RadarChart"``,
-# we can get the options; e.g.
-get_post_processing_options_schema("RadarChart")
-
-# %%
 # Post-process a scenario
 # -----------------------
 # The API function :func:`.execute_post` can generate visualizations
-# of the optimization or DOE results. For that, it consider the object to
-# post-process ``to_post_proc``, the post processing ``post_name``
+# of the optimization or DOE results. For that, it considers the object to
+# post-process ``to_post_proc``, the post-processor ``post_name``
 # with its ``**options``. E.g.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 design_space = SellarDesignSpace()

@@ -22,15 +22,17 @@ Solve a system of coupled ODEs
 
 from __future__ import annotations
 
+from itertools import starmap
+
 from matplotlib import pyplot as plt
 from numpy import linspace
-from numpy.random import default_rng as rand
+from numpy.random import default_rng
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
-from gemseo.core.chain import MDOChain
+from gemseo.core.chains.chain import MDOChain
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.problems.ode._springs import Mass
 from gemseo.problems.ode._springs import create_chained_masses
 
 # %%
@@ -84,7 +86,7 @@ initial_velocity_0 = 0
 initial_velocity_1 = 0
 
 # Vector of times at which to solve the problem.
-time_vector = linspace(0, 1, 30)
+times = linspace(0, 1, 30)
 
 
 def compute_mass_0_rhs(
@@ -138,26 +140,21 @@ def compute_mass_1_rhs(
 
 
 # %%
-# We can then create a list of :class:`ODEDiscipline` objects
+# We can then create a list of :class:`.ODEDiscipline` objects
 #
 
 rhs_disciplines = [
-    create_discipline(
-        "AutoPyDiscipline",
-        py_func=compute_rhs,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
-    )
+    create_discipline("AutoPyDiscipline", py_func=compute_rhs)
     for compute_rhs in [compute_mass_0_rhs, compute_mass_1_rhs]
 ]
 ode_disciplines = [
     ODEDiscipline(
-        discipline=rhs_discipline,
-        state_var_names=[f"position_{i}", f"velocity_{i}"],
-        state_dot_var_names=[f"position_{i}_dot", f"velocity_{i}_dot"],
-        time_vector=time_vector,
-        initial_time=min(time_vector),
-        final_time=max(time_vector),
-        ode_solver_options={"rtol": 1e-12, "atol": 1e-12},
+        rhs_discipline,
+        times,
+        state_names=[f"position_{i}", f"velocity_{i}"],
+        return_trajectories=True,
+        rtol=1e-12,
+        atol=1e-12,
     )
     for i, rhs_discipline in enumerate(rhs_disciplines)
 ]
@@ -166,7 +163,7 @@ for ode_discipline in ode_disciplines:
 
 # %%
 # We apply an MDA with the Gauss-Seidel algorithm:
-mda = MDAGaussSeidel(ode_disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+mda = MDAGaussSeidel(ode_disciplines)
 local_data = mda.execute()
 
 # %%
@@ -178,8 +175,9 @@ mda.plot_residual_history()
 # %%
 # Plotting the solution
 # ---------------------
-plt.plot(time_vector, local_data["position_0"], label="mass 0")
-plt.plot(time_vector, local_data["position_1"], label="mass 1")
+plt.plot(times, local_data["position_0_trajectory"], label="mass 0")
+plt.plot(times, local_data["position_1_trajectory"], label="mass 1")
+plt.legend()
 plt.show()
 
 # %%
@@ -203,32 +201,24 @@ plt.show()
 # To do so, we can use the RHS disciplines we created earlier to define an
 # :class:`.MDOChain`.
 
-mda = MDOChain(
-    rhs_disciplines,
-    grammar_type=MDODiscipline.GrammarType.SIMPLE,
-)
+mda = MDOChain(rhs_disciplines)
 
 # %%
 # We then define the ODE discipline that contains the couplings and execute it.
 
 ode_discipline = ODEDiscipline(
-    discipline=mda,
-    state_var_names=["position_0", "velocity_0", "position_1", "velocity_1"],
-    state_dot_var_names=[
-        "position_0_dot",
-        "velocity_0_dot",
-        "position_1_dot",
-        "velocity_1_dot",
-    ],
-    time_vector=time_vector,
-    initial_time=min(time_vector),
-    final_time=max(time_vector),
-    ode_solver_options={"rtol": 1e-12, "atol": 1e-12},
+    mda,
+    times,
+    state_names=["position_0", "velocity_0", "position_1", "velocity_1"],
+    return_trajectories=True,
+    rtol=1e-12,
+    atol=1e-12,
 )
 local_data = ode_discipline.execute()
 
-plt.plot(time_vector, local_data["position_0"], label="mass 0")
-plt.plot(time_vector, local_data["position_1"], label="mass 1")
+plt.plot(times, local_data["position_0_trajectory"], label="mass 0")
+plt.plot(times, local_data["position_1_trajectory"], label="mass 1")
+plt.legend()
 plt.show()
 
 
@@ -238,11 +228,11 @@ plt.show()
 # The :mod:`.springs` module provides a shortcut to access this problem. The user can define
 # a list of masses, stiffnesses and initial positions, then create all the disciplines
 # with a single call.
-#
-masses = list(rand(3))
-stiffnesses = list(rand(4))
+rng = default_rng(123)
+masses = rng.random(3)
+stiffnesses = rng.random(4)
 positions = [1, 0, 0]
-
-chained_masses = create_chained_masses(masses, stiffnesses, positions)
-mda = MDOChain(chained_masses, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+masses = list(starmap(Mass, zip(masses, stiffnesses[:-1], positions)))
+chained_masses = create_chained_masses(stiffnesses[-1], *masses)
+mda = MDOChain(chained_masses)
 mda.execute()

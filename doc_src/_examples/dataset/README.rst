@@ -11,11 +11,4 @@ Dataset
 
 Use a standard format to post-process data.
 
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **
-
 .. start-after-label

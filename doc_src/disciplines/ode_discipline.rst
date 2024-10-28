@@ -15,7 +15,7 @@
 ODE disciplines
 ===============
 
-The typical workflow is to define a list of :class:`ODEDiscipline` s from a list of :class:`ODEProblem` s, then execute the list of disciplines like any other.
+The typical workflow is to define a list of :class:`.ODEDiscipline` s from a list of :class:`.ODEProblem` s, then execute the list of disciplines like any other.
 
 
 .. image:: ../_images/ode/ode-discipline-workflow.png
@@ -46,7 +46,7 @@ How to build an ODE discipline?
 -------------------------------
 
 
-In practice, an :class:`ODEDiscipline` is defined from an :class:`MDODiscipline` and an :class:`ODEProblem`.
+In practice, an :class:`.ODEDiscipline` is defined from an :class:`.Discipline` and an :class:`.ODEProblem`.
 
 
 .. image:: ../_images/ode/module_structure.png

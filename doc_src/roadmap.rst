@@ -48,7 +48,7 @@ as beta version capabilities.
 
 -  **MPI**
 
-   An extension of the GEMS process classes (MDODiscipline, MDAs, MDOChain etc), with the adjoint capabilities, to MPI communications will be released.
+   An extension of the GEMS process classes (Discipline, MDAs, MDOChain etc), with the adjoint capabilities, to MPI communications will be released.
    We are open to collaborate on real applications using these features, especially high fidelity HPC ones.
 
 -  **Uncertainty quantification and management**

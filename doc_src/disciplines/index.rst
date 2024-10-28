@@ -239,11 +239,11 @@ How to get information about an instantiated :class:`.Discipline`?
 5.a. How to get input and output data names?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can get the input and output data names by means of the :meth:`.Discipline.get_input_data_names` and :meth:`.Discipline.get_output_data_names` methods, e.g.:
+We can get the input and output data names by means of the :meth:`.Discipline.input_grammar.names` and :meth:`.Discipline.output_grammar.names` methods, e.g.:
 
 .. code::
 
-   print(sellar_system.get_input_data_names(), sellar_system.get_output_data_names())
+   print(sellar_system.input_grammar.names, sellar_system.output_grammar.names)
 
 which results in:
 
@@ -291,44 +291,6 @@ which results in:
 How to get input and output data values?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-All input or output data values as a list of arrays
----------------------------------------------------
-
-Once the discipline has been executed, we can get all the input data values (resp. output data values) of the last execution by means of the :meth:`.Discipline.get_all_inputs` method (resp. :meth:`.Discipline.get_all_outputs` method), e.g.
-
-.. code::
-
-   sellar_system.execute()
-   sellar_system.get_all_inputs()
-   sellar_system.get_all_outputs()
-
-which results in:
-
-.. parsed-literal::
-
-    [array([ 1.+0.j]), array([ 1.+0.j,  0.+0.j]), array([ 1.+0.j]), array([ 0.+0.j])]
-    [array([ 2.16+0.j]), array([-23.+0.j]), array([ 1.36787944+0.j])]
-
-The ``list`` returned by ``sellar_system.get_all_inputs()`` (resp. ``sellar_system.get_all_outputs()``) is sorted according to the order in ``sellar_system.get_input_data_names()`` (resp. ``sellar_system.get_output_data_names()``).
-
-All input or output data values as a large array
-------------------------------------------------
-
-This ``list`` of NumPy arrays can be converted into a large NumPy array by means of :meth:`.Discipline.get_inputs_asarray` method (resp. :meth:`.Discipline.get_outputs_asarray`), e.g.
-
-.. code::
-
-   sellar_system.execute()
-   sellar_system.get_inputs_asarray()
-   sellar_system.get_outputs_asarray()
-
-which results in:
-
-.. parsed-literal::
-
-   array([ 1.+0.j,  1.+0.j,  0.+0.j,  1.+0.j,  0.+0.j])
-   array([  2.16000000+0.j, -23.00000000+0.j,   1.36787944+0.j])
-
 All input or output data values as a dictionary
 -----------------------------------------------
 
@@ -347,36 +309,12 @@ which results in:
    {'x_local': array([ 0.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'y_1': array([ 1.+0.j]), 'y_0': array([ 1.+0.j])}
    {'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'obj': array([ 1.36787944+0.j])}
 
-Some input or output data values as a list
-------------------------------------------
-
-We can also get the data value for a given variable name or a given ``list`` of variable names by means of the  :meth:`.Discipline.get_inputs_by_name` or :meth:`.Discipline.get_outputs_by_name` method.
-
-How to get any local data value?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Once the discipline has been executed, we can get the value of any variable or ``list`` of variables (inputs, outputs and others)
-stored in the :attr:`!Discipline.local_data` attribute
-by means of the :meth:`.Discipline.get_local_data_by_name` method, e.g.
-
-.. code::
-
-   sellar_system.execute()
-   sellar_system.get_local_data_by_name('obj')
-   sellar_system.get_local_data_by_name(['obj', 'x_shared'])
-
-which results in:
-
-.. parsed-literal::
-
-   array([ 1.36787944+0.j])
-   [array([ 1.36787944+0.j]), array([ 1.+0.j,  0.+0.j])]
 
 How to store data in the :attr:`!Discipline.local_data` attribute?
 *********************************************************************
 
 We can store data in the :attr:`!Discipline.local_data` attribute
-by means of the :meth:`.Discipline._update_output_data` method
+by means of the :meth:`.Discipline.io.update_output_data` method
 whose arguments are the names of the variables to store. We can store either data for variables
 from input or output grammars, or data for other variables, e.g.:
 
@@ -384,5 +322,5 @@ from input or output grammars, or data for other variables, e.g.:
 
    print(sellar_system.local_data)
    {'obj': array([ 1.36787944+0.j]), 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
-   sellar_system._update_output_data({'obj': array([1.]), 'new_variable': 'value'})
+   sellar_system.io.update_output_data({'obj': array([1.]), 'new_variable': 'value'})
    {'obj': array([ 1.]), 'new_variable': 'value', 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}

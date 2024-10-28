@@ -8,10 +8,3 @@
 
 Disciplines
 ===========
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

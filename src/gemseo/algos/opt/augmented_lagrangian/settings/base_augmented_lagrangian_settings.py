@@ -18,11 +18,13 @@ from __future__ import annotations
 
 from collections.abc import Iterable  # noqa:TCH003
 from functools import partial
+from typing import Annotated
 from typing import Any
 from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TCH002
+from pydantic import WithJsonSchema
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa:TCH001
@@ -59,7 +61,9 @@ class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
         ),
     )
 
-    update_options_callback: Callable[[Any], Any] | None = Field(
+    update_options_callback: (
+        Annotated[Callable[[Any], Any], WithJsonSchema({})] | None
+    ) = Field(
         default=None,  # Default is None since it's now exclusively a callable
         description="""A callable for updating parameters or a function call.""",
     )

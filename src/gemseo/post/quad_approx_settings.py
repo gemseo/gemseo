@@ -29,7 +29,7 @@ class QuadApproxSettings(BasePostSettings):  # noqa: D101
         description="The function name to build the quadratic approximation.",
     )
     func_index: NonNegativeInt | None = Field(
-        None,
+        default=None,
         description="The index of the output of interest to be defined if the "
         "function has a multidimensional output. If ``None`` and if the "
         "output is multidimensional, an error is raised.",

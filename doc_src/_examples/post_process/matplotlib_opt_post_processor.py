@@ -48,7 +48,7 @@ scenario.execute(algo_name="NLOPT_COBYLA", max_iter=10)
 # %%
 # Then,
 # we can post-process this :class:`.MDOScenario` with an :class:`.OptHistoryView`.
-opt_post_processor = scenario.post_process("OptHistoryView", show=False, save=False)
+opt_post_processor = scenario.post_process("OptHistoryView", show=True, save=False)
 
 # %%
 # Instead of saving or showing this :class:`.OptHistoryView`,

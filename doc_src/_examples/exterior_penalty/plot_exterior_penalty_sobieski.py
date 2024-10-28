@@ -107,30 +107,29 @@ disciplines = create_discipline([
 design_space = SobieskiDesignSpace()
 x_0 = design_space.get_current_value(as_dict=True)
 # %%
-#     .. code::
+#   .. code::
 #
-#
-#           name      lower_bound      value      upper_bound  type
-#           x_shared      0.01          0.05          0.09     float
-#           x_shared    30000.0       45000.0       60000.0    float
-#           x_shared      1.4           1.6           1.8      float
-#           x_shared      2.5           5.5           8.5      float
-#           x_shared      40.0          55.0          70.0     float
-#           x_shared     500.0         1000.0        1500.0    float
-#           x_1           0.1           0.25          0.4      float
-#           x_1           0.75          1.0           1.25     float
-#           x_2           0.75          1.0           1.25     float
-#           x_3           0.1           0.5           1.0      float
-#           y_14        24850.0    50606.9741711    77100.0    float
-#           y_14        -7700.0    7306.20262124    45000.0    float
-#           y_32         0.235       0.50279625      0.795     float
-#           y_31         2960.0    6354.32430691    10185.0    float
-#           y_24          0.44       4.15006276      11.13     float
-#           y_34          0.44       1.10754577       1.98     float
-#           y_23         3365.0    12194.2671934    26400.0    float
-#           y_21        24850.0    50606.9741711    77250.0    float
-#           y_12        24850.0      50606.9742     77250.0    float
-#           y_12          0.45          0.95          1.5      float
+#      name      lower_bound      value      upper_bound  type
+#      x_shared      0.01          0.05          0.09     float
+#      x_shared    30000.0       45000.0       60000.0    float
+#      x_shared      1.4           1.6           1.8      float
+#      x_shared      2.5           5.5           8.5      float
+#      x_shared      40.0          55.0          70.0     float
+#      x_shared     500.0         1000.0        1500.0    float
+#      x_1           0.1           0.25          0.4      float
+#      x_1           0.75          1.0           1.25     float
+#      x_2           0.75          1.0           1.25     float
+#      x_3           0.1           0.5           1.0      float
+#      y_14        24850.0    50606.9741711    77100.0    float
+#      y_14        -7700.0    7306.20262124    45000.0    float
+#      y_32         0.235       0.50279625      0.795     float
+#      y_31         2960.0    6354.32430691    10185.0    float
+#      y_24          0.44       4.15006276      11.13     float
+#      y_34          0.44       1.10754577       1.98     float
+#      y_23         3365.0    12194.2671934    26400.0    float
+#      y_21        24850.0    50606.9741711    77250.0    float
+#      y_12        24850.0      50606.9742     77250.0    float
+#      y_12          0.45          0.95          1.5      float
 #
 # - The available :ref:`MDO formulations <mdo_formulations>` are located in the
 #   **gemseo.formulations** package, see :ref:`extending-gemseo` for extending
@@ -224,7 +223,7 @@ scenario.post_process(
 # %%
 # This solution is almost feasible.
 # The solution can better approximate the original problem solution increasing the value
-#  of `objective_scale` and  `scale_inequality` parameters.
+# of `objective_scale` and  `scale_inequality` parameters.
 # Step 4: Rerun the scenario with increased penalty and objective scaling.
 # ------------------------------------------------------------------------
 design_space.set_current_value(x_0)
@@ -241,8 +240,7 @@ scenario_2.set_differentiation_method()
 scenario_2.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
-algo_args_2 = {"max_iter": 1000, "algo": "L-BFGS-B"}
-scenario_2.execute(algo_args_2)
+scenario_2.execute(algo_name="L-BFGS-B", max_iter=1000)
 scenario_2.post_process("BasicHistory", variable_names=["-y_4"], save=False, show=True)
 scenario_2.post_process(
     "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=True

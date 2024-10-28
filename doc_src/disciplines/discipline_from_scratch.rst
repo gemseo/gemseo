@@ -229,16 +229,9 @@ Getting the input values from :attr:`!Discipline.local_data` of the discipline
 First, the data values shall be retrieved.
 For each input declared in the input grammar,
 |g| will pass the values as arrays to the :class:`.Discipline` during the execution of the process.
-There are different methods to get these values within the :meth:`!Discipline._run` method of the discipline:
-
-- as a dictionary through the :meth:`.Discipline.get_input_data` method, which is also already accessible in the :attr:`!Discipline.local_data` attribute of the :class:`.Discipline`
-- or here as a list of values using :meth:`.Discipline.get_inputs_by_name` with the data names passed as a list.
-
-.. code::
-
-        def _run(self):
-            x, z = self.get_inputs_by_name(['x', 'z'])
-            # TO BE COMPLETED
+Within the :meth:`!Discipline._run` method of the discipline,
+the input data can be retrieved using the :meth:`.Discipline.get_input_data` method
+which returns a dictionary.
 
 Computing the output values from the input ones
 -----------------------------------------------

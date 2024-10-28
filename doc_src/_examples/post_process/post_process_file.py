@@ -19,7 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Post-process an HDF5 file.
-=========================
+==========================
 """
 
 from __future__ import annotations

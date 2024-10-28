@@ -28,6 +28,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -98,24 +99,26 @@ for c_name in ["g_1", "g_2", "g_3"]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-scenario.xdsmize(save_html=False)
+scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Define the algorithm inputs
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer
-# and the optimizer options
-algo_options = {
-    "ftol_rel": 1e-10,
-    "ineq_tolerance": 1e-3,
-    "eq_tolerance": 1e-3,
-    "normalize_design_space": True,
-}
+# and the optimizer settings
+
+slsqp_settings = SLSQPSettings(
+    ftol_rel=1e-10,
+    ineq_tolerance=1e-3,
+    eq_tolerance=1e-3,
+    normalize_design_space=True,
+)
+
 
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(algo_name="SLSQP", max_iter=20, **algo_options)
+scenario.execute(algo_name="SLSQP", max_iter=20, algo_settings_model=slsqp_settings)
 
 # %%
 # Save the optimization history
@@ -136,7 +139,7 @@ scenario.print_execution_metrics()
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=True, show=True)
+scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the quadratic approximation of the objective

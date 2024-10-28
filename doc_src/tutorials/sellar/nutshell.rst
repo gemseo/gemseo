@@ -167,24 +167,19 @@ First,
 the data values shall be retrieved. For each input declared in the input grammar,
 |g| will pass the values as arrays to the :class:`.Discipline`
 during the execution of the process.
-There are different methods to get these values
-within the :meth:`!Discipline._run` method of the discipline:
-
-- as a dictionary through the :meth:`.Discipline.get_input_data` method,
-  which are also already accessible in the :attr:`!Discipline.local_data` attribute
-  of the :class:`.Discipline`
-- or here as a list of values using :meth:`.Discipline.get_inputs_by_name`
-  with the data names passed as a list.
+Within the :meth:`!Discipline._run` method of the discipline,
+the input data can be retrieved using the :meth:`.Discipline.get_input_data` method
+which returns a dictionary.
 
 .. tip::
 
    The list of all inputs names can also be retrieved
-   using the method :meth:`.Discipline.get_input_data_names`:
+   using the method :attr:`.Discipline.input_grammar.names`:
 
    .. code::
 
       sellar1 = Sellar1()
-      print(sellar1.get_input_data_names())
+      print(sellar1.input_grammar.names)
       # ['x_shared', 'y_2', 'x_local']
 
 Then, the computed outputs shall be stored in the :attr:`!Discipline.local_data`:
@@ -192,18 +187,20 @@ Then, the computed outputs shall be stored in the :attr:`!Discipline.local_data`
 .. code::
 
     def _run(self):
-        x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
+        x_local = self.local_data["x_local"]
+        x_shared = self.local_data["x_shared"]
+        y_2 = self.local_data["y_2"]
         y_1 = array([(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])**0.5])
-        self.local_data['y_1'] = y_1
+        self.local_data["y_1"] = y_1
 
-The :meth:`.Discipline._update_output_data` method can also be used to this aim:
+The :meth:`.Discipline.io.update_output_data` method can also be used to this aim:
 
 .. code::
 
     def _run(self):
         x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
         y_1 = array([(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])**0.5])
-        self._update_output_data(y_1=y_1)
+        self.io.update_output_data({"y_1": y_1})
 
 The other Sellar :class:`.Discipline` are created in a similar way.
 

@@ -159,7 +159,7 @@ system_scenario = create_scenario(
 # otherwise it cannot be used by the ParetoFront post-processing.
 system_scenario.add_constraint("cstr3")
 system_scenario.add_observable("obj2")
-system_scenario.xdsmize()
+system_scenario.xdsmize(save_html=False, pdf_build=False)
 # %%
 # Run the scenario
 # ----------------

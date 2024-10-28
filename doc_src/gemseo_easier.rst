@@ -15,13 +15,10 @@
 Make |g| easy to use
 --------------------
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
 .. toctree::
    :maxdepth: 2
 
-   api
    discipline_interface_easier
    mdo_scenario_easier
-   cheat_sheet
+   cheat_sheets/index
    extending

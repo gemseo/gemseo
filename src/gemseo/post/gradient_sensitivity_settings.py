@@ -26,18 +26,18 @@ from gemseo.utils.pydantic import update_field
 
 class GradientSensitivitySettings(BasePostSettings):  # noqa: D101
     iteration: NegativeInt | PositiveInt | None = Field(
-        None,
+        default=None,
         description="The iteration to plot the sensitivities. "
         "Can use either positive or negative indexing, "
         "e.g. ``5`` for the 5-th iteration or ``-2`` for the penultimate one. "
         "If ``None``, use the iteration of the optimum.",
     )
     scale_gradients: bool = Field(
-        False,
+        default=False,
         description="Whether to normalize each gradient w.r.t. the design variables.",
     )
     compute_missing_gradients: bool = Field(
-        False,
+        default=False,
         description="Whether to compute the gradients at the selected iteration "
         "if they were not computed by the algorithm."
         "\\n\\n.. warning::\\n"

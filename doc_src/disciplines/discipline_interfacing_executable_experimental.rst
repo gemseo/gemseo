@@ -83,8 +83,9 @@ from two float inputs : :code:`'a'` and :code:`'b'`.
 This executable must use a :file:`inputs.txt` file which looks like:
 
 .. code:: bash
-    a=1
-    b=2
+
+   a=1
+   b=2
 
 and the output is written to: :file:`outputs.txt` which looks like ``c=5``.
 The executable is run using the shell command :file:`./run_discipline.bash`.
@@ -108,7 +109,7 @@ The construction of this discipline consists in different steps:
 2. Implement :meth:`define_inputs` to write inputs into the input file, using the specific format,
 3. Implement :meth:`parse_outputs` to read outputs from the formatted file,
 
-The :class:`!MDODiscipline._run` method should not be modified.
+The :class:`!Discipline._run` method should not be modified.
 
 For this example, the discipline can be implemented in the following way:
 

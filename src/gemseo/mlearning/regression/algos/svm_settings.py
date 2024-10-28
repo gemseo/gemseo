@@ -16,9 +16,11 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from typing import Callable
 
 from pydantic import Field
+from pydantic import WithJsonSchema
 
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
     BaseRegressorSettings,
@@ -28,7 +30,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 class SVMRegressorSettings(BaseRegressorSettings):
     """The settings of the SVM regressor."""
 
-    kernel: str | Callable = Field(
+    kernel: str | Annotated[Callable, WithJsonSchema({})] = Field(
         default="rbf",
         description="""The name of the kernel or a callable for the SVM.
 

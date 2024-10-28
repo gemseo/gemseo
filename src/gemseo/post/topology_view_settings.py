@@ -35,12 +35,12 @@ class TopologyViewSettings(BasePostSettings):  # noqa: D101
         description="The number of elements in the vertical direction.",
     )
     observable: str = Field(
-        "",
+        default="",
         description="The name of the observable to be plotted. It should be of size "
         "``n_x*n_y``.",
     )
     iterations: int | Sequence[int] = Field(
-        (),
+        default=(),
         description="The iterations of the optimization history. If empty, "
         "the last iteration is taken.",
     )

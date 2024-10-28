@@ -18,7 +18,7 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """MDF-based MDO on the Sobieski SSBJ test case.
-============================================
+=============================================
 """
 
 from __future__ import annotations
@@ -27,6 +27,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -120,7 +121,7 @@ for c_name in ["g_1", "g_2", "g_3"]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-scenario.xdsmize(save_html=False)
+scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Define the algorithm inputs
@@ -134,11 +135,13 @@ scenario.xdsmize(save_html=False)
 # in the objective between two iterates ineq_tolerance the tolerance
 # determination of the optimum; this is specific to the |g| wrapping and not
 # in the solver.
-algo_options = {
-    "ftol_rel": 1e-10,
-    "ineq_tolerance": 2e-3,
-    "normalize_design_space": True,
-}
+
+slsqp_settings = SLSQPSettings(
+    ftol_rel=1e-10,
+    ineq_tolerance=2e-3,
+    normalize_design_space=True,
+)
+
 
 # %%
 # .. seealso::
@@ -162,7 +165,7 @@ algo_options = {
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(algo_name="SLSQP", max_iter=10, **algo_options)
+scenario.execute(algo_name="SLSQP", max_iter=10, algo_settings_model=slsqp_settings)
 
 # %%
 # Save the optimization history
@@ -249,7 +252,7 @@ scenario.post_process("ParallelCoordinates", save=False, show=True)
 # %%
 # Plot the robustness of the solution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("Robustness", save=True, show=True)
+scenario.post_process("Robustness", save=False, show=True)
 
 # %%
 # Plot the influence of the design variables

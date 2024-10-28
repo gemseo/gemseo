@@ -40,7 +40,7 @@ In this subsection, we will see how to use **|g|** to solve this problem :math:`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :func:`.create_discipline` API function,
-we create an :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
+we create an :class:`.Discipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code::
@@ -53,7 +53,7 @@ from a python function:
 
     discipline = create_discipline("AutoPyDiscipline", py_func=f)
 
-Now, we want to minimize this :class:`.MDODiscipline` over a design of experiments (DOE).
+Now, we want to minimize this :class:`.Discipline` over a design of experiments (DOE).
 
 1.b. Define the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,7 +74,7 @@ by using its :meth:`~.DesignSpace.add_variable` method.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the :func:`.create_scenario` API function,
-we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
+we define a :class:`.DOEScenario` from the :class:`.Discipline`
 and the :class:`.DesignSpace` defined above:
 
 .. code::
@@ -154,7 +154,7 @@ Firstly, we create the objective function and its gradient as standard python fu
 2.b. Minimize the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now, we can to minimize this :class:`.MDODiscipline` over its design space by means of
+Now, we can to minimize this :class:`.Discipline` over its design space by means of
 the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the function ``scipy.optimize.fmin_l_bfgs_b``.
 
 .. code-block:: python
@@ -204,7 +204,7 @@ from `SciPy <https://scipy.org/>`_ called through the optimization interface of 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :func:`.create_discipline` API function,
-we create an :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
+we create an :class:`.Discipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code-block:: python
@@ -222,7 +222,7 @@ from a python function:
 
     discipline = create_discipline("AutoPyDiscipline", py_func=g, py_jac=dgdx)
 
-Now, we can to minimize this :class:`.MDODiscipline` over a design space,
+Now, we can to minimize this :class:`.Discipline` over a design space,
 by means of a quasi-Newton method from the initial point :math:`0.5`.
 
 3.b. Define the design space
@@ -244,7 +244,7 @@ by using its :meth:`~.DesignSpace.add_variable` method.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the :func:`.create_scenario` API function,
-we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
+we define an :class:`.MDOScenario` from the :class:`.Discipline`
 and the :class:`.DesignSpace` defined above:
 
 .. code::

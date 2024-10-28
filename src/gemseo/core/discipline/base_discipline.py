@@ -74,7 +74,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     These data are in dictionary form,
     i.e. ``{variable_name: variable_value, ...}``.
     The input-output data resulting from an execution
-    can be accessed via :attr:`.local_date`
+    can be accessed via :attr:`.local_data`
     or separately via :meth:`.get_input_data` and :meth:`.get_output_data`.
 
     For both input and output variables,
@@ -480,6 +480,6 @@ class BaseDiscipline(BaseMonitoredProcess):
         See :meth:`.IO.update_output_data` for more information.
 
         Args:
-            output_data: The output data to update :attr:`.data` with.
+            output_data: The output data to update :attr:`.io.data` with.
         """
         self.io.update_output_data(output_data)

@@ -15,7 +15,7 @@ Clustering
 API
 ---
 
-.. automodule:: gemseo.mlearning.clustering.clustering
+.. automodule:: gemseo.mlearning.clustering.algos
    :noindex:
 
 Algorithms

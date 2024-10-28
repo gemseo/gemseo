@@ -181,7 +181,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         self,
         disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
-        n_samples: int | None,
+        n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
         algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,

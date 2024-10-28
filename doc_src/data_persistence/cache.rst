@@ -33,14 +33,14 @@ Caching disciplinary data helps to avoid wasting computing resources.
 The basics
 ----------
 
-In |g|, an :class:`.MDODiscipline` is composed of a :attr:`~.MDODiscipline.cache` to store these evaluations
+In |g|, a :class:`.Discipline` is composed of a :attr:`~.Discipline.cache` to store these evaluations
 expressed in terms of input, output and Jacobian data.
 
 The caching mechanism
 ~~~~~~~~~~~~~~~~~~~~~
 
-When the user passes an input value to the method :meth:`.MDODiscipline.execute`,
-the :class:`.MDODiscipline` looks in its :attr:`~.MDODiscipline.cache`
+When the user passes an input value to the method :meth:`.Discipline.execute`,
+the :class:`.Discipline` looks in its :attr:`~.Discipline.cache`
 if there is an output value associated with this input value.
 If so,
 it returns it to the user.
@@ -58,7 +58,7 @@ It could be something like ``2 * numpy.finfo(float).eps``.
 Export to another format
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :attr:`~.MDODiscipline.cache` can be converted to a :class:`.Dataset` for post-processing purposes
+The :attr:`~.Discipline.cache` can be converted to a :class:`.Dataset` for post-processing purposes
 using its method :meth:`~.BaseCache.to_dataset`.
 It can also be saved into an XML file to be read by `ggobi <http://ggobi.org/>`__
 using its method :meth:`~.BaseFullCache.to_ggobi`.
@@ -68,7 +68,7 @@ using its method :meth:`~.BaseFullCache.to_ggobi`.
    For the sake of performance,
    the input value of type ``Mapping[str, ndarray | int | float]`` is flatten to a NumPy array,
    hashed using the algorithm XXH64 of the `xxHash library <https://cyan4973.github.io/xxHash/>`__
-   and the hashed value compare to the ones stored in the :attr:`~.MDODiscipline.cache`.
+   and the hashed value compare to the ones stored in the :attr:`~.Discipline.cache`.
 
 Set the cache policy of a discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,22 +78,22 @@ The data can be cached either:
 - in memory:
 
   - the :class:`.SimpleCache` (default policy) only stores in memory
-    the data associated with the last call to :meth:`.MDODiscipline.execute`,
+    the data associated with the last call to :meth:`.Discipline.execute`,
   - the :class:`.MemoryFullCache` stores in memory
-    the data associated with all the calls to :meth:`.MDODiscipline.execute`,
+    the data associated with all the calls to :meth:`.Discipline.execute`,
 
 - on the disk:
 
   - the :class:`.HDF5Cache` stores in a node of an HDF file
-    the data associated with all the calls to :meth:`.MDODiscipline.execute`.
+    the data associated with all the calls to :meth:`.Discipline.execute`.
 
-The cache strategy of an :class:`.MDODiscipline` can be changed with the method :meth:`.MDODiscipline.set_cache`
+The cache strategy of an :class:`.Discipline` can be changed with the method :meth:`.Discipline.set_cache`
 by passing as first argument the name of the cache class, e.g. ``"MemoryFullCache"``.
 
 .. note::
 
     The types of cache can be extended by subclassing :class:`.BaseFullCache` or :class:`.MemoryFullCache`.
-    :meth:`~.MDODiscipline.set_cache` will find the new types automatically
+    :meth:`~.Discipline.set_cache` will find the new types automatically
     because it is based on a :class:`.CacheFactory`.
 
 Advanced use

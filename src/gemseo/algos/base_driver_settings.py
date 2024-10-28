@@ -31,7 +31,7 @@ class BaseDriverSettings(BaseAlgorithmSettings):
             """Whether to enable the progress bar in the optimization log.
 
             If ``None``, use the global value of ``enable_progress_bar`` (see the
-             ``configure`` function to change it globally).
+            ``configure`` function to change it globally).
             """
         ),
     )

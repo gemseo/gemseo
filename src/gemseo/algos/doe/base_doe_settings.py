@@ -18,11 +18,13 @@ from __future__ import annotations
 
 from collections.abc import Callable  # noqa:TCH003
 from collections.abc import Sequence  # noqa:TCH003
+from typing import Annotated
 from typing import Any  # noqa:TCH003
 
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TCH002
 from pydantic import PositiveInt  # noqa:TCH002
+from pydantic import WithJsonSchema
 
 from gemseo.algos.base_driver_settings import BaseDriverSettings
 from gemseo.algos.evaluation_problem import EvaluationType  # noqa:TCH001
@@ -48,7 +50,9 @@ class BaseDOESettings(BaseDriverSettings):
         description="""The time to wait between each sample evaluation, in seconds.""",
     )
 
-    callbacks: Sequence[Callable[[int, EvaluationType], Any]] = Field(
+    callbacks: Sequence[
+        Annotated[Callable[[int, EvaluationType], Any], WithJsonSchema({})]
+    ] = Field(
         default=(),
         description=(
             """The functions to be evaluated after each functions evaluation.

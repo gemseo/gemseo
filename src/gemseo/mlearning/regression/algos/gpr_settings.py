@@ -17,10 +17,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping  # noqa: TCH003
+from typing import Annotated
 from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeInt
+from pydantic import WithJsonSchema
 from sklearn.gaussian_process.kernels import Kernel  # noqa: TCH002
 
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
@@ -58,7 +60,7 @@ class GaussianProcessRegressorSettings(BaseRegressorSettings):
         default=1e-10, description="The nugget effect to regularize the model."
     )
 
-    optimizer: str | Callable = Field(
+    optimizer: str | Annotated[Callable, WithJsonSchema({})] = Field(
         default="fmin_l_bfgs_b",
         description="The optimization algorithm to find the parameter length scales.",
     )

@@ -55,7 +55,7 @@ uncertain_space = IshigamiSpace()
 # Then,
 # we run sensitivity analysis of type :class:`.MorrisAnalysis`:
 sensitivity_analysis = MorrisAnalysis()
-sensitivity_analysis.compute_samples([discipline], uncertain_space, n_samples=None)
+sensitivity_analysis.compute_samples([discipline], uncertain_space, n_samples=0)
 sensitivity_analysis.compute_indices()
 
 # %%

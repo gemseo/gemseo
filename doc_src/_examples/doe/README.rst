@@ -10,10 +10,3 @@ Design of experiments (DOE)
 ===========================
 
 Solve a design problem using a DOE.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

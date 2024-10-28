@@ -66,32 +66,32 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
     - the sheet shall define the input names of the discipline
       as a vertical succession of cells starting with ``"Inputs"``:
 
-        .. table:: Inputs
+      .. table:: Inputs
 
-            +--------------+
-            | Inputs       |
-            +--------------+
-            | input_name_1 |
-            +--------------+
-            | ...          |
-            +--------------+
-            | input_name_N |
-            +--------------+
+         +--------------+
+         | Inputs       |
+         +--------------+
+         | input_name_1 |
+         +--------------+
+         | ...          |
+         +--------------+
+         | input_name_N |
+         +--------------+
 
     - the sheet shall define the output names of the discipline
       as a vertical succession of cells starting with ``"Outputs"``:
 
     .. table:: Outputs
 
-            +---------------+
-            | Outputs       |
-            +---------------+
-            | output_name_1 |
-            +---------------+
-            | ...           |
-            +---------------+
-            | output_name_N |
-            +---------------+
+       +---------------+
+       | Outputs       |
+       +---------------+
+       | output_name_1 |
+       +---------------+
+       | ...           |
+       +---------------+
+       | output_name_N |
+       +---------------+
 
     - the empty lines of the series ``Inputs`` and ``Outputs`` are ignored,
     - the sheet may contain other data, but these will not be taken into account.
@@ -103,16 +103,13 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     .. table:: Scenario1
 
-        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
-        | Design variables | Objective function | Constraints | Disciplines |
-        Formulation |    Options    | Options values |
-        +==================+====================+=============+=============+=============+===============+================+
-        |       in1        |       out1         |    out2     |    Disc1    |    MDF
-            |   tolerance   |       0.1      |
-        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
-        |                  |                    |             |    Disc2    |
-            | main_mda_name |   MDAJacobi    |
-        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+       +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+       | Design variables | Objective function | Constraints | Disciplines | Formulation |    Options    | Options values |
+       +==================+====================+=============+=============+=============+===============+================+
+       |       in1        |       out1         |    out2     |    Disc1    |    MDF      |   tolerance   |       0.1      |
+       +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+       |                  |                    |             |    Disc2    |             | main_mda_name |   MDAJacobi    |
+       +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
 
     These columns must satisfy some constraints:
 

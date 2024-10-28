@@ -80,7 +80,7 @@ rbf_space.add_variable("epsilon", 1, "float", 0.01, 0.1, 0.05)
 selector.add_candidate(
     "RBFRegressor",
     calib_space=rbf_space,
-    calib_algo={"algo": "fullfact", "n_samples": 16},
+    calib_algo={"algo_name": "fullfact", "n_samples": 16},
     smooth=[0, 0.01, 0.1, 1, 10, 100],
 )
 

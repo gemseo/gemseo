@@ -32,3 +32,13 @@ to illustrate its capabilities:
 """
 
 from __future__ import annotations
+
+from strenum import StrEnum
+
+
+class DatasetType(StrEnum):
+    """The available datasets."""
+
+    BURGER = "BurgersDataset"
+    IRIS = "IrisDataset"
+    ROSENBROCK = "RosenbrockDataset"
