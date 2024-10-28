@@ -120,6 +120,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     __ROUND_INTS: Final[str] = "round_ints"
     __USE_DATABASE: Final[str] = "use_database"
     __USE_ONLINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
+    __STORE_JACOBIAN: Final[str] = "store_jacobian"
 
     enable_progress_bar: bool = True
     """Whether to enable the progress bar in the evaluation log."""
@@ -321,7 +322,6 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         eval_obs_jac: bool = False,
         skip_int_check: bool = False,
         max_design_space_dimension_to_log: int = 40,
-        store_jacobian: bool = True,
         settings_model: BaseDriverSettings | None = None,
         **settings: Any,
     ) -> OptimizationResult:
@@ -334,8 +334,6 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 to be logged.
                 If this number is higher than the dimension of the design space
                 then the design space will not be logged.
-            store_jacobian: Whether to store the Jacobian matrices in the database.
-                This argument is ignored when the ``use_database`` option is ``False``.
         """  # noqa: D205, D212
         is_optimization_problem = isinstance(problem, OptimizationProblem)
         self._problem = problem
@@ -366,7 +364,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             round_ints=settings[self.__ROUND_INTS],
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
-            store_jacobian=store_jacobian,
+            store_jacobian=settings[self.__STORE_JACOBIAN],
         )
         # A database contains both shared listeners
         # and listeners specific to a BaseDriverLibrary instance.
