@@ -195,7 +195,7 @@ html_theme_options = {
     "header_links_before_dropdown": 5,
     "header_dropdown_text": "More",
     "switcher": {
-        "json_url": "https://gemseo.readthedocs.io/en/stable/_static/versions.json",
+        "json_url": "https://gemseo.readthedocs.io/en/develop/_static/versions.json",
         "version_match": release,
     },
     # check_switcher may be set to False if docbuild pipeline fails. See
