@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -35,19 +36,23 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdo_functions.mdo_discipline_adapter import MDODisciplineAdapter
+    from gemseo.core.discipline import Discipline
+    from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
     from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
     from gemseo.typing import RealArray
 
 
 class BaseFunctor:
-    """A function with time and state as arguments, and an attribute 'terminal'.
+    """A function wrapping a RHS discipline.
 
-    This function derives from a MDODisciplineAdapter.
+    This function has time and state as arguments,
+    and an attribute 'terminal'.
+
+    Its subclasses are used to evaluate the outputs of the RHS discipline
+    or its Jacobian.
     """
 
-    _adapter: MDODisciplineAdapter
+    _adapter: DisciplineAdapter
     """The :class:`MDOFunction` wrapping the discipline defining the dynamic."""
 
     __parameter_names: tuple[str, ...]
@@ -62,15 +67,19 @@ class BaseFunctor:
     def __init__(
         self,
         ode_discipline: ODEDiscipline,
-        discipline: MDODiscipline,
-        state_names: Iterable[str],
+        discipline: Discipline,
+        state_names: Iterable[str] | Mapping[str, str],
         time_name: str,
     ) -> None:
         """
         Args:
             ode_discipline: The ODE discipline providing the local data.
-            discipline: The discipline defining the dynamic.
-            state_names: The names of the state variables.
+            discipline: The wrapped discipline defining the dynamic.
+            state_names: Either the names of the state variables,
+                passed as ``(state_name, ...)``,
+                or the names of the state variables
+                bound to the associated discipline outputs,
+                passed as ``{state_name: output_name, ...}``.
             time_name: The name of the time variables.
         """  # noqa: D205, D212, D415
         self.terminal = False
@@ -80,13 +89,19 @@ class BaseFunctor:
             name for name in discipline.default_input_data if name not in excluded_names
         )
         generator = DisciplineAdapterGenerator(discipline=discipline)
+        if isinstance(state_names, Mapping):
+            output_names = state_names.values()
+            state_names = tuple(state_names.keys())
+        else:
+            output_names = discipline.io.output_grammar.names
+
         self._adapter = generator.get_function(
             input_names=[
                 time_name,
                 *state_names,
                 *self.__parameter_names,
             ],
-            output_names=discipline.io.output_grammar.names,
+            output_names=output_names,
         )
 
     def _compute_input_vector(self, time: RealArray, state: RealArray) -> RealArray:
