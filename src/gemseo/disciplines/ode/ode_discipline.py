@@ -106,7 +106,11 @@ class ODEDiscipline(Discipline):
                 the times of interest are the instants chosen by the ODE solver
                 to compute the state trajectories.
             time_name: The name of the time variable.
-            state_names: The names of the state variables.
+            state_names: Either the names of the state variables,
+                passed as ``(state_name, ...)``,
+                or the names of the state variables
+                bound to the associated discipline outputs,
+                passed as ``{state_name: output_name, ...}``.
                 If empty, use all the discipline inputs.
             final_state_names: The names of the state variables
                 bound to their names at final time.
@@ -137,12 +141,12 @@ class ODEDiscipline(Discipline):
             **ode_solver_options: The options of the ODE solver.
         """  # noqa: D205, D212, D415
         # Define the names of the state variables
-        if not state_names:
+        if state_names:
+            self.__state_names = state_names
+        else:
             state_names = self.__state_names = [
                 name for name in discipline.io.input_grammar.names if name != time_name
             ]
-        else:
-            self.__state_names = state_names
 
         missing_names = set(state_names) - set(discipline.default_input_data)
         if missing_names:

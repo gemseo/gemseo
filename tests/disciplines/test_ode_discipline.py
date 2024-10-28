@@ -210,6 +210,72 @@ def test_ode_discipline_default_state_names() -> None:
     assert (key in input_keys for key in ("time", "position", "velocity"))
 
 
+def test_ode_discipline_wrong_ordering_time_derivatives():
+    """Test the explicit ordering of the state derivatives in time."""
+    _times = array([0.0, 1.0])
+
+    _init_time = array([0.0])
+    _init_state_a = array([0.0])
+    _init_state_b = array([0.0])
+
+    def _fct(time=_init_time, a=_init_state_a, b=_init_state_b):
+        a_dot = 1.0
+        b_dot = -1.0
+        return b_dot, a_dot  # noqa: RET504
+
+    mdo_discipline = AutoPyDiscipline(py_func=_fct)
+
+    ode_discipline_1 = ODEDiscipline(
+        discipline=mdo_discipline,
+        times=_times,
+        state_names={"a": "a_dot", "b": "b_dot"},
+        ode_solver_name="RK45",
+        return_trajectories=False,
+    )
+
+    res_ode_1 = ode_discipline_1.execute()
+    assert_allclose(res_ode_1["a_final"], 1.0)
+    assert_allclose(res_ode_1["b_final"], -1.0)
+
+    ode_discipline_2 = ODEDiscipline(
+        discipline=mdo_discipline,
+        times=_times,
+        state_names={"a": "a_dot", "b": "b_dot"},
+        ode_solver_name="RK45",
+        return_trajectories=False,
+    )
+
+    res_ode_2 = ode_discipline_2.execute()
+    assert_allclose(res_ode_2["a_final"], 1.0)
+    assert_allclose(res_ode_2["b_final"], -1.0)
+
+
+def test_ode_discipline_missing_names_time_derivatives():
+    """Test the error message when the time derivatives are explicitly named, but
+    do not correspond to the outputs of the discipline describing the RHS."""
+    _times = array([0.0, 1.0])
+
+    _init_time = array([0.0])
+    _init_state_a = array([0.0])
+    _init_state_b = array([0.0])
+
+    def _fct(time=_init_time, a=_init_state_a, b=_init_state_b):
+        a_dot = 1.0
+        b_dot = -1.0
+        return b_dot, a_dot  # noqa: RET504
+
+    mdo_discipline = AutoPyDiscipline(py_func=_fct)
+
+    with pytest.raises(ValueError, match=re.escape("are not names of outputs")):
+        ODEDiscipline(
+            discipline=mdo_discipline,
+            times=_times,
+            state_names={"a": "c_dot", "b": "b_dot"},
+            ode_solver_name="RK45",
+            return_trajectories=False,
+        )
+
+
 def test_ode_discipline_not_convergent():
     _times = linspace(0.0, 1.0, 20)
 
