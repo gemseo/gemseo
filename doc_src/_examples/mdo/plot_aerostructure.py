@@ -28,22 +28,32 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPTCOBYLASettings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPTSLSQPSettings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
 
 configure_logger()
 
+# Passed to algo settings
+cobyla_settings = NLOPTCOBYLASettings(
+    xtol_rel=1e-8,
+    xtol_abs=1e-8,
+    ftol_rel=1e-8,
+    ftol_abs=1e-8,
+    ineq_tolerance=1e-5,
+    eq_tolerance=1e-3,
+)
 
-algo_options = {
-    "xtol_rel": 1e-8,
-    "xtol_abs": 1e-8,
-    "ftol_rel": 1e-8,
-    "ftol_abs": 1e-8,
-    "ineq_tolerance": 1e-5,
-    "eq_tolerance": 1e-3,
-}
-
+lsqp_settings = NLOPTSLSQPSettings(
+    xtol_rel=1e-8,
+    xtol_abs=1e-8,
+    ftol_rel=1e-8,
+    ftol_abs=1e-8,
+    ineq_tolerance=1e-5,
+    eq_tolerance=1e-3,
+)
 # %%
 # Create discipline
 # -----------------
@@ -91,7 +101,9 @@ scenario = create_scenario(
 )
 scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 scenario.add_constraint("lift", value=0.5)
-scenario.execute(algo_name="NLOPT_SLSQP", max_iter=10, **algo_options)
+scenario.execute(
+    algo_name="NLOPT_SLSQP", max_iter=10, algo_settings_model=lsqp_settings
+)
 scenario.post_process("OptHistoryView", save=False, show=True)
 
 # %%
@@ -112,7 +124,7 @@ aero_scenario = create_scenario(
     design_space_ref.filter(["thick_airfoils"], copy=True),
     maximize_objective=True,
 )
-aero_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, **algo_options)
+aero_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, settings_model=lsqp_settings)
 
 # %%
 # Create the structure sub-scenario
@@ -126,7 +138,7 @@ struct_scenario = create_scenario(
     design_space_ref.filter(["thick_panels"], copy=True),
     maximize_objective=True,
 )
-struct_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, **algo_options)
+struct_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, settings_model=lsqp_settings)
 
 # %%
 # Create the system scenario
@@ -145,5 +157,8 @@ system_scenario = create_scenario(
 )
 system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 system_scenario.add_constraint("lift", value=0.5)
-system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=7, **algo_options)
+system_scenario.execute(
+    algo_name="NLOPT_COBYLA", max_iter=7, algo_settings_model=cobyla_settings
+)
+
 system_scenario.post_process("OptHistoryView", save=False, show=True)

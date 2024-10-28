@@ -50,6 +50,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBISettings
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
 
 configure_logger()
@@ -62,16 +63,14 @@ configure_logger()
 # a gradient-based optimization algorithm from the NLOPT library,
 # with a maximum of 50 iterations.
 # The analytic gradients are provided.
-
 opt_problem = Poloni()
-result = execute_algo(
-    opt_problem,
-    "MNBI",
+algo_settings = MNBISettings(
     max_iter=10000,
     sub_optim_max_iter=50,
     n_sub_optim=50,
     sub_optim_algo="SLSQP",
 )
+result = execute_algo(opt_problem, "MNBI", settings_model=algo_settings)
 
 # %%
 # Display the Pareto front

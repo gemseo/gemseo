@@ -19,7 +19,7 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Basic history.
-=============
+==============
 
 In this example, we illustrate the use of the :class:`.BasicHistory` plot
 on the Sobieski's SSBJ problem.

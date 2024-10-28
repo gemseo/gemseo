@@ -26,11 +26,11 @@ from gemseo.utils.pydantic import update_field
 
 class ScatterPlotMatrixSettings(BasePostSettings):  # noqa: D101
     filter_non_feasible: bool = Field(
-        False,
+        default=False,
         description="Whether to remove the non-feasible points from the data.",
     )
     variable_names: Sequence[str] = Field(
-        (),
+        default=(),
         description="The functions names or design variables to plot. If empty, "
         "plot all design variables.",
     )

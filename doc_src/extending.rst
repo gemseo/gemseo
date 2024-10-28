@@ -31,7 +31,7 @@ respectively:
    inherit from :class:`.BaseMDOFormulation`,
    and put the Python file in the :file:`src/gemseo/formulations` package,
  - for disciplines,
-   inherit from :class:`.MDODiscipline`,
+   inherit from :class:`.Discipline`,
    and put the Python file in the :file:`src/gemseo/problems/my_problem` package,
    which you created.
  - for job schedulers and HPC submission,

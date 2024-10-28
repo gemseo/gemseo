@@ -69,17 +69,21 @@ test = [
   "pytest-xdist>=3",
 ]
 doc = [
+  "autodoc_pydantic",
   "autodocsumm",
+  "setuptools",
   # For supporting DataFrame in pydantic models in an example.
   "pandera",
   "pillow",
+  "pydata-sphinx-theme",
   "pyenchant",
   "sphinx",
+  "sphinx-design",
   "sphinx_gallery",
+  "sphinxcontrib.apidoc",
   "sphinxcontrib.bibtex",
   "sphinxcontrib.plantuml",
   "sphinxcontrib.spelling",
-  "sphinxcontrib.apidoc",
 ]
 
 [project.urls]

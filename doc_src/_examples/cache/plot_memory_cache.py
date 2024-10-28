@@ -34,13 +34,6 @@ from gemseo.caches.memory_full_cache import MemoryFullCache
 configure_logger()
 
 # %%
-# Import
-# ------
-#
-# First, we import the `array` and the :class:`MemoryError` classes.
-
-
-# %%
 # Create
 # ------
 #

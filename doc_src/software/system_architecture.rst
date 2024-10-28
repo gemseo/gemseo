@@ -210,7 +210,7 @@ The high level classes that are key in the architecture are:
    inherit from the :class:`~gemseo.scenarios.base_scenario.BaseScenario` class that defines common features
    (bounds, constraints, …).
 
--  :class:`~gemseo.core.discipline.MDODiscipline` represents a wrapped :term:`simulation software` program or a chain of wrapped
+-  :class:`~gemseo.core.discipline.Discipline` represents a wrapped :term:`simulation software` program or a chain of wrapped
    software. It can either be a link to a :term:`discipline` integrated within a :term:`workflow engine`, or can
    be inherited to integrate a :term:`simulation software` directly. Its inputs and outputs are
    represented in a **Grammar** (see :class:`~gemseo.core.grammars.simple_grammar.SimpleGrammar` or :class:`~gemseo.core.grammars.json_grammar.JSONGrammar`).
@@ -241,7 +241,7 @@ Two low-level classes at the core of |g| are crucial for the understanding of it
    :term:`IDF`).
 
 -  :class:`~gemseo.core.mdofunctions.mdo_discipline_adapter_generator.DisciplineAdapterGenerator` is a utility class that handles the
-   :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` generation for a given :class:`~gemseo.core.discipline.MDODiscipline`.
+   :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` generation for a given :class:`~gemseo.core.discipline.Discipline`.
    It is a key class for the :term:`MDO formulations designer`.
 
 
@@ -255,7 +255,7 @@ contains the full classes description in the different sections as well as the f
    @startuml
    class BaseScenario {
    }
-   class MDODiscipline {
+   class Discipline {
    }
    class BaseMDOFormulation {
    }
@@ -270,12 +270,12 @@ contains the full classes description in the different sections as well as the f
    class BaseDriverLibrary {
    }
 
-   MDODiscipline <|- BaseScenario
-   BaseScenario "1" *-> "n" MDODiscipline
+   Discipline <|- BaseScenario
+   BaseScenario "1" *-> "n" Discipline
    BaseScenario "1" *-> "1" BaseMDOFormulation
    BaseMDOFormulation "1" --> "n" OptimizationProblem
    DisciplineAdapterGenerator "1" --> "n" MDOFunction
-   DisciplineAdapterGenerator "1" *-> "1" MDODiscipline
+   DisciplineAdapterGenerator "1" *-> "1" Discipline
    BaseScenario "1" *-> "1" BaseDriverLibrary
    OptimizationProblem "1" *-> "1" DesignSpace
    OptimizationProblem "1" *-> "n" MDOFunction
@@ -286,7 +286,7 @@ contains the full classes description in the different sections as well as the f
 .. uml::
 
    @startuml
-   class MDODiscipline {
+   class Discipline {
    }
    class MDA {
    }
@@ -299,15 +299,15 @@ contains the full classes description in the different sections as well as the f
    class MDAChain {
    }
 
-   MDODiscipline <|- MDA
-   MDA "1" *-> "1" MDODiscipline
+   Discipline <|- MDA
+   MDA "1" *-> "1" Discipline
    MDA <|- MDAJacobi
    MDA <|- MDAGaussSeidel
-   MDODiscipline <|- MDOChain
+   Discipline <|- MDOChain
    MDA <|- MDAChain
    MDOChain "1" <-- "1" MDAChain
    MDAChain "1" *-> "n" MDA
-   MDOChain "1" *-> "1" MDODiscipline
+   MDOChain "1" *-> "1" Discipline
 
 
    @end uml

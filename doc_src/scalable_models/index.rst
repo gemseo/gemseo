@@ -35,7 +35,7 @@ Scalable models
 
 .. uml::
 
-   MDODiscipline <|-- ScalableDiscipline
+   Discipline <|-- ScalableDiscipline
    ScalableDiscipline *-- ScalableModel
    ScalableModel <|-- ScalableDiagonalModel
    ScalableDiagonalModel *-- ScalableApproximation

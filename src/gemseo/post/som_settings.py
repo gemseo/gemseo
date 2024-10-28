@@ -25,15 +25,15 @@ from gemseo.utils.pydantic import update_field
 
 class SOMSettings(BasePostSettings):  # noqa: D101
     n_x: PositiveInt = Field(
-        4,
+        default=4,
         description="The number of grids in x.",
     )
     n_y: PositiveInt = Field(
-        4,
+        default=4,
         description="The number of grids in y.",
     )
     annotate: bool = Field(
-        False,
+        default=False,
         description="Whether to show the label of the neuron value.",
     )
 

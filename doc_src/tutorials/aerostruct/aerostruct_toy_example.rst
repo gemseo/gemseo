@@ -31,7 +31,7 @@ In this tutorial, we are creating the disciplines from their analytic formulatio
         Create the disciplines (aero, structure, OAD) with dummy formulas
 
         :returns: disciplines (aero, structure, OAD)
-        :rtype: dict(MDODiscipline)
+        :rtype: dict(Discipline)
         """
         aero_formulas = {"drag": "0.1*((sweep/360)**2 + 200 + thick_airfoils**2-thick_airfoils -4*displ)",
                          "forces": "10*sweep + 0.2*thick_airfoils-0.2*displ",
@@ -199,13 +199,13 @@ where:
         Create scalables disciplines.
 
         :param disciplines: disciplines
-        :type disciplines: list(MDODiscipline)
+        :type disciplines: list(Discipline)
         :param n_samples: number of samples
         :type n_samples: int
         :param fill_factor: fill factor
         :type fill_factor: float
         :return: scalable disciplines
-        :rtype: list(MDODiscipline)
+        :rtype: list(Discipline)
         """
         design_space = AerostructureDesignSpace()
         design_space.set_current_value(design_space.get_current_value().real)

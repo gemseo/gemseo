@@ -15,8 +15,6 @@
 Scalable models
 ---------------
 
-.. include:: includes/big_toc_css.rst
-.. include:: tune_toc.rst
 .. toctree::
    :maxdepth: 2
 

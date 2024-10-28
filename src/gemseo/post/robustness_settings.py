@@ -24,7 +24,7 @@ from gemseo.utils.pydantic import update_field
 
 class RobustnessSettings(BasePostSettings):  # noqa: D101
     stddev: float = Field(
-        0.01,
+        default=0.01,
         description="The standard deviation of the normal uncertain variable to be "
         "added to the optimal design value; expressed as a fraction of "
         "the bounds of the design variables.",

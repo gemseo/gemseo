@@ -16,11 +16,13 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
+from pydantic import WithJsonSchema
 
 from gemseo.mlearning.classification.algos.base_classifier_settings import (
     BaseClassifierSettings,
@@ -35,7 +37,7 @@ class SVMClassifierSettings(BaseClassifierSettings):
         default=1.0, description="The inverse L2 regularization parameter."
     )
 
-    kernel: str | Callable = Field(
+    kernel: str | Annotated[Callable, WithJsonSchema({})] = Field(
         default="rbf",
         description="""The name of the kernel or a callable for the SVM.
 

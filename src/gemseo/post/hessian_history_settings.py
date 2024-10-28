@@ -26,7 +26,7 @@ from gemseo.utils.pydantic import update_field
 
 class HessianHistorySettings(BasePostSettings):  # noqa: D101
     variable_names: Sequence[str] = Field(
-        (),
+        default=(),
         description="The names of the variables.",
     )
 

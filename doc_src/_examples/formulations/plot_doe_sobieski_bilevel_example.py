@@ -61,17 +61,7 @@ propu, aero, mission, struct = create_discipline([
 design_space = SobieskiDesignSpace()
 
 # %%
-# Then, we build a sub-scenario for each strongly coupled disciplines,
-# using the following algorithm, maximum number of iterations and
-# algorithm options:
-algo_options = {
-    "xtol_rel": 1e-7,
-    "xtol_abs": 1e-7,
-    "ftol_rel": 1e-7,
-    "ftol_abs": 1e-7,
-    "ineq_tolerance": 1e-4,
-}
-sub_sc_opts = {"max_iter": 30, "algo": "SLSQP", "algo_options": algo_options}
+# Then, we build a sub-scenario for each strongly coupled disciplines.
 
 # %%
 # Build a sub-scenario for Propulsion
@@ -155,7 +145,7 @@ for sub_sc in sub_disciplines[0:3]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False)
+system_scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Multiprocessing

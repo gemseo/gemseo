@@ -10,10 +10,3 @@ Study analysis
 ==============
 
 Analyse a problem from a spreadsheet.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

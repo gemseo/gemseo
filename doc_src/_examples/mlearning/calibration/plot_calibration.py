@@ -62,7 +62,7 @@ calibration = MLAlgoCalibration(
     measure_evaluation_method_name=measure_evaluation_method_name,
     measure_options=measure_options,
 )
-calibration.execute(algo="fullfact", n_samples=10)
+calibration.execute(algo_name="fullfact", n_samples=10)
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
 degree = x_opt["degree"][0]
@@ -105,7 +105,7 @@ calibration = MLAlgoCalibration(
     measure_options=measure_options,
     degree=10,
 )
-calibration.execute(algo="fullfact", n_samples=10)
+calibration.execute(algo_name="fullfact", n_samples=10)
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
 x_opt["penalty_level"][0], f_opt
@@ -148,7 +148,7 @@ calibration = MLAlgoCalibration(
     degree=10,
     l2_penalty_ratio=0.0,
 )
-calibration.execute(algo="fullfact", n_samples=10)
+calibration.execute(algo_name="fullfact", n_samples=10)
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
 x_opt["penalty_level"][0], f_opt
@@ -191,7 +191,7 @@ calibration = MLAlgoCalibration(
     measure_options=measure_options,
     degree=10,
 )
-calibration.execute(algo="fullfact", n_samples=100)
+calibration.execute(algo_name="fullfact", n_samples=100)
 x_opt = calibration.optimal_parameters
 f_opt = calibration.optimal_criterion
 x_opt["penalty_level"][0], x_opt["l2_penalty_ratio"][0], f_opt
@@ -243,7 +243,7 @@ calibration = MLAlgoCalibration(
     measure_options=measure_options,
     degree=10,
 )
-calibration.execute(algo="NLOPT_COBYLA", max_iter=100)
+calibration.execute("NLOPT_COBYLA", max_iter=100)
 x_opt2 = calibration.optimal_parameters
 f_opt2 = calibration.optimal_criterion
 

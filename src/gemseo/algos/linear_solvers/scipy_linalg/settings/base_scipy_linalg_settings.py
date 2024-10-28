@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable  # noqa: TCH003
+from typing import Annotated
 
 from numpy import ndarray  # noqa: TCH002
 from pydantic import AliasChoices
@@ -24,6 +25,7 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
+from pydantic import WithJsonSchema
 from scipy.sparse import sparray  # noqa: TCH002
 from scipy.sparse.linalg import LinearOperator  # noqa: TCH002
 
@@ -67,7 +69,7 @@ class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
             ),
         )
 
-    callback: Callable | None = Field(
+    callback: Annotated[Callable, WithJsonSchema({})] | None = Field(
         default=None,
         description=(
             """The user-supplied function to call after each iteration.

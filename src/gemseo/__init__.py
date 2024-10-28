@@ -14,9 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """|g| main package.
 
-Introduction
-************
-
 This module contains the high-level functions to easily use |g|
 without requiring a deep knowledge of this software.
 
@@ -33,103 +30,6 @@ To interface a simulation software with |g|,
 please refer to: :ref:`software_connection`.
 
 See also :ref:`extending-gemseo`.
-
-Table of contents
-*****************
-
-Algorithms
-----------
-
-- :func:`.create_scenario`
-- :func:`.execute_algo`
-- :func:`.get_available_opt_algorithms`
-- :func:`.get_available_doe_algorithms`
-- :func:`.get_algorithm_options_schema`
-
-Cache
------
-
-- :func:`.create_cache`
-- :func:`.get_available_caches`
-
-Configuration
--------------
-
-- :func:`.configure_logger`
-
-Coupling
---------
-
-- :func:`.generate_n2_plot`
-- :func:`.generate_coupling_graph`
-
-Design space
-------------
-
-- :func:`.read_design_space`
-- :func:`.write_design_space`
-- :func:`.create_design_space`
-
-Disciplines
------------
-
-- :func:`.create_discipline`
-- :func:`.import_discipline`
-- :func:`.get_available_disciplines`
-- :func:`.get_discipline_inputs_schema`
-- :func:`.get_discipline_outputs_schema`
-- :func:`.get_discipline_options_schema`
-- :func:`.get_discipline_options_defaults`
-- :func:`.sample_disciplines`
-
-Formulations
-------------
-
-- :func:`.create_scenario`
-- :func:`.get_available_formulations`
-- :func:`.get_formulation_options_schema`
-- :func:`.get_formulation_sub_options_schema`
-- :func:`.get_formulations_sub_options_defaults`
-- :func:`.get_formulations_options_defaults`
-
-MDA
----
-
-- :func:`.create_mda`
-- :func:`.get_available_mdas`
-- :func:`.get_mda_options_schema`
-
-Post-processing
----------------
-
-- :func:`.execute_post`
-- :func:`.get_available_post_processings`
-- :func:`.get_post_processing_options_schema`
-
-Scalable
---------
-
-- :func:`.create_scalable`
-
-Scenario
---------
-
-- :func:`.create_scenario`
-- :func:`.monitor_scenario`
-- :func:`.get_available_scenario_types`
-- :func:`.get_scenario_options_schema`
-- :func:`.get_scenario_inputs_schema`
-- :func:`.get_scenario_differentiation_modes`
-
-Surrogates
-----------
-
-- :func:`.create_surrogate`
-- :func:`.get_available_surrogates`
-- :func:`.get_surrogate_options_schema`
-
-High-level functions
-********************
 """
 
 from __future__ import annotations
@@ -147,11 +47,11 @@ from typing import Any
 from typing import NamedTuple
 
 from numpy import ndarray
-from strenum import StrEnum
 
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
-from gemseo.datasets.factory import DatasetFactory as __DatasetFactory
+from gemseo.datasets import DatasetClassName
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -247,9 +147,6 @@ def generate_n2_plot(
         >>> from gemseo import create_discipline, generate_n2_plot
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> generate_n2_plot(disciplines)
-
-    See Also:
-        generate_coupling_graph
     """
     from gemseo.core.coupling_structure import CouplingStructure
 
@@ -279,9 +176,6 @@ def generate_coupling_graph(
         >>> from gemseo import create_discipline, generate_coupling_graph
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> generate_coupling_graph(disciplines)
-
-    See Also:
-        generate_n2_plot
     """
     from gemseo.core.coupling_structure import CouplingStructure
 
@@ -300,13 +194,6 @@ def get_available_formulations() -> list[str]:
     Examples:
         >>> from gemseo import get_available_formulations
         >>> get_available_formulations()
-
-    See Also:
-        create_scenario
-        get_formulation_options_schema
-        get_formulation_sub_options_schema
-        get_formulations_options_defaults
-        get_formulations_sub_options_defaults
     """
     from gemseo.formulations.factory import MDOFormulationFactory
 
@@ -322,12 +209,6 @@ def get_available_opt_algorithms() -> list[str]:
     Examples:
         >>> from gemseo import get_available_opt_algorithms
         >>> get_available_opt_algorithms()
-
-    See Also:
-        create_scenario
-        execute_algo
-        get_available_doe_algorithms
-        get_algorithm_options_schema
     """
     from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
@@ -343,12 +224,6 @@ def get_available_doe_algorithms() -> list[str]:
     Examples;
         >>> from gemseo import get_available_doe_algorithms
         >>> get_available_doe_algorithms()
-
-    See Also:
-        create_scenario
-        execute_algo
-        get_available_opt_algorithms
-        get_algorithm_options_schema
     """
     from gemseo.algos.doe.factory import DOELibraryFactory
 
@@ -365,10 +240,6 @@ def get_available_surrogates() -> list[str]:
         >>> from gemseo import get_available_surrogates
         >>> print(get_available_surrogates())
         ['RBFRegressor', 'GaussianProcessRegressor', 'LinearRegressor', 'PCERegressor']
-
-    See Also:
-        create_surrogate
-        get_surrogate_options_schema
     """
     from gemseo.mlearning import get_regression_models
 
@@ -391,15 +262,6 @@ def get_available_disciplines() -> list[str]:
         'MDOScenarioAdapter', 'ScalableDiscipline', 'SellarSystem', 'Aerodynamics',
         'Mission', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3',
         'PropaneReaction', 'MDOParallelChain']
-
-    See Also:
-        create_discipline
-        import_discipline
-        get_available_disciplines
-        get_discipline_inputs_schema
-        get_discipline_outputs_schema
-        get_discipline_options_schema
-        get_discipline_options_defaults
     """
     from gemseo.disciplines.factory import DisciplineFactory
 
@@ -425,10 +287,6 @@ def get_surrogate_options_schema(
         >>> from gemseo import get_surrogate_options_schema
         >>> tmp = get_surrogate_options_schema('LinRegSurrogateDiscipline',
         >>>                                    pretty_print=True)
-
-    See Also:
-        create_surrogate
-        get_available_surrogates
     """
     from gemseo.mlearning import get_regression_options
 
@@ -456,13 +314,6 @@ def get_algorithm_options_schema(
     Examples:
         >>> from gemseo import get_algorithm_options_schema
         >>> schema = get_algorithm_options_schema("NLOPT_SLSQP", pretty_print=True)
-
-    See Also:
-        create_scenario
-        execute_algo
-        get_available_opt_algorithms
-        get_available_doe_algorithms
-        get_algorithm_options_schema
     """
     from gemseo.algos.doe.factory import DOELibraryFactory
     from gemseo.algos.opt.factory import OptimizationLibraryFactory
@@ -524,14 +375,6 @@ def get_discipline_inputs_schema(
         >>> from gemseo import create_discipline, get_discipline_inputs_schema
         >>> discipline = create_discipline("Sellar1")
         >>> schema = get_discipline_inputs_schema(discipline, pretty_print=True)
-
-    See Also:
-        create_discipline
-        import_discipline
-        get_available_disciplines
-        get_discipline_outputs_schema
-        get_discipline_options_schema
-        get_discipline_options_defaults
     """
     return _get_schema(discipline.input_grammar, output_json, pretty_print)
 
@@ -555,14 +398,6 @@ def get_discipline_outputs_schema(
         >>> from gemseo import get_discipline_outputs_schema, create_discipline
         >>> discipline = create_discipline("Sellar1")
         >>> get_discipline_outputs_schema(discipline, pretty_print=True)
-
-    See Also:
-        create_discipline
-        import_discipline
-        get_available_disciplines
-        get_discipline_inputs_schema
-        get_discipline_options_schema
-        get_discipline_options_defaults
     """
     return _get_schema(discipline.output_grammar, output_json, pretty_print)
 
@@ -580,10 +415,6 @@ def get_available_post_processings() -> list[str]:
         'RadarChart', 'Robustness', 'Correlations', 'SOM', 'KMeans',
         'ParallelCoordinates', 'GradientSensitivity', 'OptHistoryView',
         'BasicHistory', 'ObjConstrHist', 'QuadApprox']
-
-    See Also:
-        execute_post
-        get_post_processing_options_schema
     """
     from gemseo.post.factory import PostFactory
 
@@ -609,10 +440,6 @@ def get_post_processing_options_schema(
         >>> from gemseo import get_post_processing_options_schema
         >>> schema = get_post_processing_options_schema('OptHistoryView',
         >>>                                             pretty_print=True)
-
-    See Also:
-        execute_post
-        get_available_post_processings
     """
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -643,13 +470,6 @@ def get_formulation_options_schema(
     Examples:
         >>> from gemseo import get_formulation_options_schema
         >>> schema = get_formulation_options_schema("MDF", pretty_print=True)
-
-    See Also:
-        create_scenario
-        get_available_formulations
-        get_formulation_sub_options_schema
-        get_formulations_options_defaults
-        get_formulations_sub_options_defaults
     """
     from gemseo.formulations.factory import MDOFormulationFactory
 
@@ -680,13 +500,6 @@ def get_formulation_sub_options_schema(
         >>> schema = get_formulation_sub_options_schema('MDF',
         >>>                                             main_mda_name='MDAJacobi',
         >>>                                             pretty_print=True)
-
-    See Also:
-        create_scenario
-        get_available_formulations
-        get_formulation_options_schema
-        get_formulations_options_defaults
-        get_formulations_sub_options_defaults
     """
     from gemseo.formulations.factory import MDOFormulationFactory
 
@@ -714,13 +527,6 @@ def get_formulations_sub_options_defaults(
         >>> from gemseo import get_formulations_sub_options_defaults
         >>> get_formulations_sub_options_defaults('MDF',
         >>>                                       main_mda_name='MDAJacobi')
-
-    See Also:
-        create_scenario
-        get_available_formulations
-        get_formulation_options_schema
-        get_formulation_sub_options_schema
-        get_formulations_options_defaults
     """
     from gemseo.formulations.factory import MDOFormulationFactory
 
@@ -746,13 +552,6 @@ def get_formulations_options_defaults(
         {'main_mda_name': 'MDAChain',
          'maximize_objective': False,
          'inner_mda_name': 'MDAJacobi'}
-
-    See Also:
-        create_scenario
-        get_available_formulations
-        get_formulation_options_schema
-        get_formulation_sub_options_schema
-        get_formulations_sub_options_defaults
     """
     from gemseo.formulations.factory import MDOFormulationFactory
 
@@ -777,14 +576,6 @@ def get_discipline_options_schema(
     Examples:
         >>> from gemseo import get_discipline_options_schema
         >>> schema = get_discipline_options_schema("Sellar1", pretty_print=True)
-
-    See Also:
-        create_discipline
-        import_discipline
-        get_available_disciplines
-        get_discipline_inputs_schema
-        get_discipline_outputs_schema
-        get_discipline_options_defaults
     """
     from gemseo.disciplines.factory import DisciplineFactory
 
@@ -811,14 +602,6 @@ def get_scenario_options_schema(
     Examples:
         >>> from gemseo import get_scenario_options_schema
         >>> get_scenario_options_schema("MDO")
-
-    See Also:
-        create_scenario
-        monitor_scenario
-        get_available_scenario_types
-        get_scenario_options_schema
-        get_scenario_inputs_schema
-        get_scenario_differentiation_modes
     """
     if scenario_type not in get_available_scenario_types():
         msg = f"Unknown scenario type {scenario_type}"
@@ -854,13 +637,6 @@ def get_scenario_inputs_schema(
         >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
         'my_scenario', 'MDO')
         >>> get_scenario_inputs_schema(scenario)
-
-    See Also:
-        create_scenario
-        monitor_scenario
-        get_available_scenario_types
-        get_scenario_options_schema
-        get_scenario_differentiation_modes
     """
     return scenario.Settings.model_json_schema()
 
@@ -879,14 +655,6 @@ def get_discipline_options_defaults(
     Examples:
         >>> from gemseo import get_discipline_options_defaults
         >>> get_discipline_options_defaults("Sellar1")
-
-    See Also:
-        create_discipline
-        import_discipline
-        get_available_disciplines
-        get_discipline_inputs_schema
-        get_discipline_outputs_schema
-        get_discipline_options_schema
     """
     from gemseo.disciplines.factory import DisciplineFactory
 
@@ -904,13 +672,6 @@ def get_scenario_differentiation_modes() -> tuple[
     Examples:
         >>> from gemseo import get_scenario_differentiation_modes
         >>> get_scenario_differentiation_modes()
-
-    See Also:
-        create_scenario
-        monitor_scenario
-        get_available_scenario_types
-        get_scenario_options_schema
-        get_scenario_inputs_schema
     """
     from gemseo.algos.optimization_problem import OptimizationProblem
 
@@ -926,13 +687,6 @@ def get_available_scenario_types() -> list[str]:
     Examples:
         >>> from gemseo import get_available_scenario_types
         >>> get_available_scenario_types()
-
-    See Also:
-        create_scenario
-        monitor_scenario
-        get_scenario_options_schema
-        get_scenario_inputs_schema
-        get_scenario_differentiation_modes
     """
     return ["MDO", "DOE"]
 
@@ -1005,10 +759,6 @@ def get_available_mdas() -> list[str]:
     Examples:
         >>> from gemseo import get_available_mdas
         >>> get_available_mdas()
-
-    See Also:
-        create_mda
-        get_mda_options_schema
     """
     from gemseo.mda.factory import MDAFactory
 
@@ -1033,10 +783,6 @@ def get_mda_options_schema(
     Examples:
         >>> from gemseo import get_mda_options_schema
         >>> get_mda_options_schema("MDAJacobi")
-
-    See Also:
-        create_mda
-        get_available_mdas
     """
     from gemseo.mda.factory import MDAFactory
 
@@ -1083,13 +829,6 @@ def create_scenario(
         >>> scenario = create_scenario(
         >>>     disciplines, 'MDF', 'obj', design_space, name='SellarMDFScenario'
         >>> )
-
-    See Also:
-        monitor_scenario
-        get_available_scenario_types
-        get_scenario_options_schema
-        get_scenario_inputs_schema
-        get_scenario_differentiation_modes
     """
     from gemseo.scenarios.doe_scenario import DOEScenario
     from gemseo.scenarios.mdo_scenario import MDOScenario
@@ -1205,14 +944,6 @@ def create_discipline(
          'x_shared': array([1.+0.j, 0.+0.j]),
          'y_0': array([0.89442719+0.j]),
          'y_1': array([1.+0.j])}
-
-    See Also:
-        import_discipline
-        get_available_disciplines
-        get_discipline_inputs_schema
-        get_discipline_outputs_schema
-        get_discipline_options_schema
-        get_discipline_options_defaults
     """
     from gemseo.disciplines.factory import DisciplineFactory
 
@@ -1236,14 +967,6 @@ def import_discipline(
 
     Returns:
         The discipline.
-
-    See Also:
-        create_discipline
-        get_available_disciplines
-        get_discipline_inputs_schema
-        get_discipline_outputs_schema
-        get_discipline_options_schema
-        get_discipline_options_defaults
     """
     return from_pickle(file_path)
 
@@ -1321,10 +1044,6 @@ def create_surrogate(
                 If empty,
                 consider all input variables mentioned in the learning dataset.
             **parameters: The parameters of the machine learning algorithm.
-
-    See Also:
-        get_available_surrogates
-        get_surrogate_options_schema
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
@@ -1364,11 +1083,6 @@ def create_mda(
          'x_shared': array([1.+0.j, 0.+0.j]),
          'y_0': array([0.79999995+0.j]),
          'y_1': array([1.79999995+0.j])}
-
-    See Also:
-        create_mda
-        get_available_mdas
-        get_mda_options_schema
     """
     from gemseo.mda.factory import MDAFactory
 
@@ -1405,10 +1119,6 @@ def execute_post(
         'SellarMDFScenario')
         >>> scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
         >>> execute_post(scenario, "OptHistoryView", show=False, save=True)
-
-    See Also:
-        get_available_post_processings
-        get_post_processing_options_schema
     """
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.post.factory import PostFactory
@@ -1455,11 +1165,6 @@ def execute_algo(
         |_ Design variables: [0.99999787 0.99999581]
         |_ Objective function: 5.054173713127532e-12
         |_ Feasible solution: True
-
-    See Also:
-        get_available_opt_algorithms
-        get_available_doe_algorithms
-        get_algorithm_options_schema
     """
     if algo_type == "opt":
         from gemseo.algos.opt.factory import OptimizationLibraryFactory
@@ -1492,13 +1197,6 @@ def monitor_scenario(
     Args:
         scenario: The scenario to monitor.
         observer: The observer that handles an update of status.
-
-    See Also:
-        create_scenario
-        get_available_scenario_types
-        get_scenario_options_schema
-        get_scenario_inputs_schema
-        get_scenario_differentiation_modes
     """
     from gemseo.core.monitoring import Monitoring
 
@@ -1580,10 +1278,6 @@ def read_design_space(
         +------+-------------+-------+-------------+-------+
         | x    |      -1     |   0   |      1      | float |
         +------+-------------+-------+-------------+-------+
-
-    See Also:
-        write_design_space
-        create_design_space
     """
     from gemseo.algos.design_space import DesignSpace
 
@@ -1614,10 +1308,6 @@ def write_design_space(
         >>> design_space = create_design_space()
         >>> design_space.add_variable("x", lower_bound=-1, upper_bound=1, value=0.0)
         >>> write_design_space(design_space, "file.csv")
-
-    See Also:
-        read_design_space
-        create_design_space
     """
     design_space.to_file(
         output_file, fields=fields, header_char=header_char, **table_options
@@ -1641,12 +1331,6 @@ def create_design_space() -> DesignSpace:
         +------+-------------+-------+-------------+-------+
         | x    |      -1     |   0   |      1      | float |
         +------+-------------+-------+-------------+-------+
-
-    See Also:
-        read_design_space
-        write_design_space
-        create_design_space
-        gemseo.algos.design_space.DesignSpace
     """
     from gemseo.algos.design_space import DesignSpace
 
@@ -1674,10 +1358,6 @@ def get_available_caches() -> list[str]:
         >>> from gemseo import get_available_caches
         >>> get_available_caches()
         ['BaseFullCache', 'HDF5Cache', 'MemoryFullCache', 'SimpleCache']
-
-    See Also:
-        get_available_caches
-        gemseo.core.discipline.Discipline.create_cache
     """
     from gemseo.caches.factory import CacheFactory
 
@@ -1715,17 +1395,10 @@ def create_cache(
         | Output names |       None      |
         |    Length    |        0        |
         +--------------+-----------------+
-
-    See Also:
-        get_available_caches
-        gemseo.core.discipline.Discipline.create_cache
     """
     from gemseo.caches.factory import CacheFactory
 
     return CacheFactory().create(cache_type, name=name, **options)
-
-
-DatasetClassName = StrEnum("DatasetClassName", __DatasetFactory().class_names)
 
 
 def create_dataset(
@@ -1763,9 +1436,6 @@ def create_dataset(
 
     Raises:
         ValueError: If ``data`` is neither a file nor an array.
-
-    See Also:
-        create_benchmark_dataset
     """
     from gemseo.datasets.factory import DatasetFactory
 
@@ -1812,14 +1482,6 @@ def create_dataset(
     return dataset
 
 
-class DatasetType(StrEnum):
-    """The available datasets."""
-
-    BURGER = "BurgersDataset"
-    IRIS = "IrisDataset"
-    ROSENBROCK = "RosenbrockDataset"
-
-
 def create_benchmark_dataset(
     dataset_type: DatasetType,
     **options: Any,
@@ -1834,9 +1496,6 @@ def create_benchmark_dataset(
 
     Returns:
         The dataset.
-
-    See Also:
-        create_dataset
     """
     from gemseo.problems.dataset.burgers import create_burgers_dataset
     from gemseo.problems.dataset.iris import create_iris_dataset
@@ -1910,11 +1569,6 @@ def compute_doe(
         >>> variables_space = create_design_space()
         >>> variables_space.add_variable("x", 2, lower_bound=-1.0, upper_bound=1.0)
         >>> doe = compute_doe(variables_space, algo_name="lhs", n_samples=5)
-
-    See Also:
-        get_available_doe_algorithms
-        get_algorithm_options_schema
-        execute_algo
     """
     from gemseo.algos.doe.factory import DOELibraryFactory
 

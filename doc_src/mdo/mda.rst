@@ -46,7 +46,7 @@ for instance cannot be directly used.
 
 .. warning::
 
-    Any :class:`.MDODiscipline` placed in a :class:`.BaseMDA`
+    Any :class:`.Discipline` placed in a :class:`.BaseMDA`
     with strong couplings **must** define its default inputs.
     Otherwise, the execution will fail.
 
@@ -75,7 +75,7 @@ and `Jacobi <https://en.wikipedia.org/wiki/Jacobi_method>`__ algorithms.
    and :class:`.MDAJacobi`
    called by :func:`.create_mda`,
    inherit from :class:`.BaseMDA`,
-   itself inheriting from :class:`.MDODiscipline`.
+   itself inheriting from :class:`.Discipline`.
    Therefore,
    an MDA based on a fixed-point algorithm can be viewed as a discipline
    whose inputs are design variables and outputs are coupling variables.
@@ -116,7 +116,7 @@ The name of the variant should be provided with the argument ``method``.
    called by :func:`.create_mda`,
    inherit from :class:`.BaseMDARoot`,
    itself inheriting from :class:`.BaseMDA`,
-   itself inheriting from :class:`.MDODiscipline`.
+   itself inheriting from :class:`.Discipline`.
    Therefore,
    an MDA based on a root finding method can be viewed as a discipline
    whose inputs are design variables and outputs are coupling variables.
@@ -194,7 +194,7 @@ Classes organization
 
 The following inheritance diagram shows the different MDA classes in |g| and their organization.
 
-.. inheritance-diagram:: gemseo.mda.mda.MDA gemseo.mda.gauss_seidel.MDAGaussSeidel gemseo.mda.jacobi.MDAJacobi gemseo.mda.newton.MDANewtonRaphson gemseo.mda.sequential_mda.MDASequential gemseo.mda.sequential_mda.MDAGSNewton gemseo.mda.newton.MDAQuasiNewton gemseo.mda.mda_chain.MDAChain
+.. inheritance-diagram:: gemseo.mda.base_mda.BaseMDA gemseo.mda.gauss_seidel.MDAGaussSeidel gemseo.mda.jacobi.MDAJacobi gemseo.mda.newton.MDANewtonRaphson gemseo.mda.sequential_mda.MDASequential gemseo.mda.sequential_mda.MDAGSNewton gemseo.mda.newton.MDAQuasiNewton gemseo.mda.mda_chain.MDAChain
    :parts: 2
 
 

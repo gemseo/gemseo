@@ -26,17 +26,17 @@ from gemseo.utils.pydantic import update_field
 
 class RadarChartSettings(BasePostSettings):  # noqa: D101
     iteration: int | None = Field(
-        None,
-        description="Either an iteration in :math:`-N,\\\\ldots,-1,1,`ldots,N` or "
+        default=None,
+        description=r"Either an iteration in :math:`\{-N,\ldots,-1,1,\ldots,N\}` or "
         "``None`` for the iteration at which the optimum is located, where :math:`N` "
         "is the length of the database.",
     )
     constraint_names: Sequence[str] = Field(
-        (),
+        default=(),
         description="The names of the constraints. If empty, use all the constraints.",
     )
     show_names_radially: bool = Field(
-        False,
+        default=False,
         description="Whether to write the names of the constraints in the radial "
         "direction. Otherwise, write them horizontally. The radial "
         "direction can be useful for a high number of constraints.",

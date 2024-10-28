@@ -48,7 +48,7 @@ opt_lhs = OpenTURNS("OT_OPT_LHS")
 opt_lhs.execute(problem, n_samples=30)
 
 # %%
-# and save the samples in an :class:`IODataset`:
+# and save the samples in an :class:`.IODataset`:
 dataset_train = problem.to_dataset(opt_naming=False)
 
 # %%

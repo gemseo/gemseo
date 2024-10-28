@@ -62,13 +62,13 @@ class Parser(StrEnum):
     TEMPLATE = "TEMPLATE"
     """The output is expected as a JSON file with the following format:
 
-     .. code::
+    .. code::
 
-    {
-       "a": GEMSEO_OUTPUT{a::1.0},
-       "b": GEMSEO_OUTPUT{b::2.0},
-       "c": GEMSEO_OUTPUT{c::3.0}
-    }
+       {
+          "a": GEMSEO_OUTPUT{a::1.0},
+          "b": GEMSEO_OUTPUT{b::2.0},
+          "c": GEMSEO_OUTPUT{c::3.0}
+       }
     """
 
 

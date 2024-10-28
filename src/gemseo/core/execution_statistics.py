@@ -93,15 +93,19 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     It is ``None`` when time stamps recording is disabled.
 
     The structure is
-    {
-    "measure object name": [
-        (start time, end time, whether it is for linearization),
-        ...
-        ],
-    "other measure object name": [
-        ...
-        ],
-    }
+
+    .. code-block::
+
+       {
+       "measure object name": [
+           (start time, end time, whether it is for linearization),
+           ...
+           ],
+       "other measure object name": [
+           ...
+           ],
+       }
+
     """
 
     is_enabled: ClassVar[bool] = True

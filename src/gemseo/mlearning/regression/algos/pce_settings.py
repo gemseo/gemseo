@@ -12,7 +12,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings of the polynomial chaos expansion model."""
+r"""Settings of the polynomial chaos expansion model.
+
+.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
+.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FixedStrategy.html
+.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
+"""  # noqa: E501
 
 from __future__ import annotations
 

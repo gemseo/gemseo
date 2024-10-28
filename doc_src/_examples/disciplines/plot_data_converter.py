@@ -60,7 +60,7 @@ class DataConverter(JSONGrammarDataConverter):
 
 # %%
 # Use the converter
-# ----
+# -----------------
 #
 # In order to be used,
 # the custom data converter shall be set to the grammar class.

@@ -32,7 +32,7 @@ In this section we describe the |g|' scalable problem, or scalable discipline fe
 
 .. seealso::
 
-   Scalable model is implemented in the class :class:`.ScalableDiscipline` which inherited from :class:`.MDODiscipline`.
+   Scalable model is implemented in the class :class:`.ScalableDiscipline` which inherited from :class:`.Discipline`.
 
 .. seealso::
 

@@ -24,8 +24,6 @@ https://openturns.github.io/openturns/latest/user_manual/response_surface/_gener
 /openturns.FunctionalChaosAlgorithm.html
 .. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual
 /response_surface/_generated/openturns.CleaningStrategy.html
-.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual
-/response_surface/_generated/openturns.FixedStrategy.html
 .. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling
 /polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
 .. _hyperbolic and anisotropic enumerate function:
@@ -82,11 +80,11 @@ are estimated either by least-squares regression or a quadrature rule.
 In the case of least-squares regression,
 a sparse strategy can be considered with the `LARS`_ algorithm
 and in both cases,
-the ``CleaningStrategy`` can also remove the non-significant coefficients.
+the `CleaningStrategy`_ can also remove the non-significant coefficients.
 
 Dependence
 ----------
-The PCE model relies on the OpenTURNS class ``FunctionalChaosAlgorithm``.
+The PCE model relies on the OpenTURNS class `FunctionalChaosAlgorithm`_.
 """  # noqa: E501
 
 from __future__ import annotations

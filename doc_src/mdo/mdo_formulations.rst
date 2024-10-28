@@ -103,7 +103,7 @@ An example of an MDO study using an MDF formulation can be found in the :ref:`Se
 
 .. warning::
 
-    Any :class:`.MDODiscipline` that will be placed inside an :class:`.MDF` formulation with strong couplings **must**
+    Any :class:`.Discipline` that will be placed inside an :class:`.MDF` formulation with strong couplings **must**
     define its default inputs. Otherwise, the execution will fail.
 
 .. _idf_formulation:
@@ -170,7 +170,7 @@ This formulation was invented in the MDA-MDO project at IRT Saint Exupery :cite:
 
 .. warning::
 
-    Any :class:`.MDODiscipline` that will be placed inside a :class:`.BiLevel`
+    Any :class:`.Discipline` that will be placed inside a :class:`.BiLevel`
     formulation with strong couplings **must** define its default inputs.
     Otherwise, the execution will fail.
 

@@ -32,7 +32,7 @@ A scenario is an interface that:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Programmatically speaking, scenarios are implemented in |g| through the :class:`.BaseScenario` abstract class
-inheriting from the :class:`.MDODiscipline` class and derived classes:
+inheriting from the :class:`.Discipline` class and derived classes:
 
 - The :class:`.MDOScenario` class inheriting from :class:`.BaseScenario`
   is dedicated to optimization processes.
@@ -41,7 +41,7 @@ inheriting from the :class:`.MDODiscipline` class and derived classes:
 
 A :class:`.BaseScenario` is defined by four main elements:
 
-- the ``disciplines`` attribute: the list of :class:`.MDODiscipline`,
+- the ``disciplines`` attribute: the list of :class:`.Discipline`,
 - the ``formulation`` attribute: the multidisciplinary formulation based on :class:`~gemseo.algos.design_space.DesignSpace`,
 - the ``optimization_result`` attribute: the optimization results,
 - the ``post_factory`` attribute: the post-processing set of methods.
@@ -49,10 +49,10 @@ A :class:`.BaseScenario` is defined by four main elements:
 1.c. What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After the instantiation of the different :class:`.MDODiscipline`,
+After the instantiation of the different :class:`.Discipline`,
 an instance of this scenario can be created from the :meth:`~gemseo.create_scenario` API function whose arguments are:
 
-- ``disciplines``: the ``list`` of instantiated :class:`.MDODiscipline`,
+- ``disciplines``: the ``list`` of instantiated :class:`.Discipline`,
 - ``formulation``: the multidisciplinary formulation name (``str``)
 - ``objective_name``: the objective name (``str``)
 - ``design_space``: the instantiated :class:`~gemseo.algos.design_space.DesignSpace`,
@@ -85,7 +85,7 @@ from the :meth:`~gemseo.create_scenario` API function.
 2.a. Instantiate the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For that, we first instantiate the different :class:`.MDODiscipline`, e.g.
+For that, we first instantiate the different :class:`.Discipline`, e.g.
 
 .. code::
 
@@ -114,7 +114,7 @@ or by means of the file path of the design space:
 2.c. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The objective function should be an output taken among the output list of the different :class:`.MDODiscipline`, e.g.
+The objective function should be an output taken among the output list of the different :class:`.Discipline`, e.g.
 
 .. code::
 

@@ -179,7 +179,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
-        n_samples: int | None,
+        n_samples: int,
         output_names: Iterable[str] = (),
         algo: str = "",
         algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,
@@ -193,7 +193,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.
             n_samples: A number of samples.
-                If ``None``, the number of samples is computed by the algorithm.
+                If ``0``, the number of samples is computed by the algorithm.
             output_names: The disciplines' outputs to be considered for the analysis.
                 If empty, use all the outputs.
             algo: The name of the DOE algorithm.

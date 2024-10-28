@@ -94,7 +94,7 @@ problem.to_hdf("my_optim.hdf5")
 # %%
 # Post-process the results
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-execute_post(problem, "OptHistoryView", show=True, save=False)
+execute_post(problem, "OptHistoryView", save=False, show=True)
 
 # %%
 # .. note::

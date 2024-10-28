@@ -16,9 +16,11 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from typing import Callable
 
 from pydantic import Field
+from pydantic import WithJsonSchema
 from strenum import StrEnum
 
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
@@ -42,7 +44,9 @@ class Function(StrEnum):
 class RBFRegressorSettings(BaseRegressorSettings):
     """The settings of the RBF network for regression."""
 
-    function: Function | Callable[[float, float], float] = Field(
+    function: (
+        Function | Annotated[Callable[[float, float], float], WithJsonSchema({})]
+    ) = Field(
         default=Function.MULTIQUADRIC,
         description=r"""The radial basis function taking a radius :math:`r` as input,
         representing a distance between two points.
@@ -66,7 +70,10 @@ class RBFRegressorSettings(BaseRegressorSettings):
         """,
     )
 
-    der_function: Callable[[NDArrayPydantic], NDArrayPydantic] | None = Field(
+    der_function: (
+        Annotated[Callable[[NDArrayPydantic], NDArrayPydantic], WithJsonSchema({})]
+        | None
+    ) = Field(
         default=None,
         description=r"""The derivative of the radial basis function.
 
@@ -101,7 +108,12 @@ class RBFRegressorSettings(BaseRegressorSettings):
             """,
     )
 
-    norm: str | Callable[[NDArrayPydantic, NDArrayPydantic], float] = Field(
+    norm: (
+        str
+        | Annotated[
+            Callable[[NDArrayPydantic, NDArrayPydantic], float], WithJsonSchema({})
+        ]
+    ) = Field(
         default="euclidean",
         description="""The distance metric.
 

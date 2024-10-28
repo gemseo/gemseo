@@ -64,8 +64,10 @@ class AnalyticDiscipline(Discipline):
     """The outputs expressed as functions of the inputs."""
 
     output_names_to_symbols: dict[str, list[str]]
-    """The names of the inputs associated to the outputs, e.g. ``{'out': ['in_1',
-    'in_2']}``."""
+    """The names of the inputs associated to the outputs.
+
+    E.g. ``{"out": ["in_1", "in_2"]}``.
+    """
 
     input_names: list[str]
     """The names of the inputs."""

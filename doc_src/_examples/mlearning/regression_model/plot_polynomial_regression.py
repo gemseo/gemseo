@@ -82,7 +82,7 @@ scenario.execute(algo_name="fullfact", n_samples=9)
 # displays this model.
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model(
-    "PolynomialRegressor", data=dataset, degree=2, transformer=None
+    "PolynomialRegressor", dataset, degree=2, transformer={}
 )
 model.learn()
 model

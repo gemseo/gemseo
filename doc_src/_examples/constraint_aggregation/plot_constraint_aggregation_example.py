@@ -25,6 +25,7 @@ from copy import deepcopy
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPTMMASettings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
 
@@ -65,23 +66,17 @@ ds.add_variable(
 
 ds_new = deepcopy(ds)
 # %%
-# Build the optimization solver options
-max_iter = 1000
-ineq_tol = 1e-5
-convergence_tol = 1e-8
-normalize = True
-algo_options = {
-    "algo_name": "NLOPT_MMA",
-    "max_iter": max_iter,
-    "ineq_tolerance": ineq_tol,
-    "eq_tolerance": ineq_tol,
-    "xtol_rel": convergence_tol,
-    "xtol_abs": convergence_tol,
-    "ftol_rel": convergence_tol,
-    "ftol_abs": convergence_tol,
-    "ctol_abs": convergence_tol,
-    "normalize_design_space": normalize,
-}
+# Build the optimization solver settings
+mma_settings = NLOPTMMASettings(
+    ineq_tolerance=1e-5,
+    eq_tolerance=1e-5,
+    xtol_rel=1e-8,
+    xtol_abs=1e-8,
+    ftol_rel=1e-8,
+    ftol_abs=1e-8,
+    normalize_design_space=True,
+    max_iter=1000,
+)
 
 # %%
 # Build the optimization scenario
@@ -94,7 +89,7 @@ original_scenario = create_scenario(
 )
 original_scenario.add_constraint("g", constraint_type="ineq")
 
-original_scenario.execute(**algo_options)
+original_scenario.execute(algo_name="NLOPT_MMA", algo_settings_model=mma_settings)
 # Without constraint aggregation MMA iterations become more expensive, when a
 # large number of constraints are activated.
 
@@ -114,7 +109,7 @@ new_scenario.add_constraint("g", constraint_type="ineq")
 new_scenario.formulation.optimization_problem.constraints.aggregate(
     0, method="lower_bound_KS", rho=10.0
 )
-new_scenario.execute(algo_options)
+new_scenario.execute(algo_name="NLOPT_MMA", algo_settings_model=mma_settings)
 
 # %%
 # with constraint aggregation the last iteration is faster.

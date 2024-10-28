@@ -23,20 +23,21 @@ from gemseo.post.base_post_settings import BasePostSettings
 
 class VariableInfluenceSettings(BasePostSettings):  # noqa: D101
     level: float = Field(
-        0.99,
+        default=0.99,
         description="The proportion of the total sensitivity to use as a threshold to "
         "filter the variables.",
         ge=0.0,
         le=1.0,
     )
     absolute_value: bool = Field(
-        False, description="Whether to plot the absolute value of the influence."
+        default=False,
+        description="Whether to plot the absolute value of the influence.",
     )
     log_scale: bool = Field(
-        False, description="Whether to set the y-axis as log scale."
+        default=False, description="Whether to set the y-axis as log scale."
     )
     save_var_files: bool = Field(
-        False,
+        default=False,
         description="Whether to save the influential variables indices to a NumPy "
         "file.",
     )

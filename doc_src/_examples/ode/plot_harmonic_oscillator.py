@@ -30,8 +30,8 @@ from numpy import linspace
 from numpy import ndarray
 from numpy import sin
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
+from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 
@@ -97,7 +97,7 @@ from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 
 # As the first step, we introduce a discipline defining the dynamics of the problem,
 # that is a discipline representing the right-hand side of the ODE.
-# For a harmonic oscillator, the discipline can be an :class:`AutoPyDiscipline`.
+# For a harmonic oscillator, the discipline can be an :class:`.AutoPyDiscipline`.
 #
 # The discipline describing the RHS must include, among its inputs, the time variable
 # and the variables defining the state (in the case of the harmonic oscillator, the
@@ -127,18 +127,18 @@ def rhs_function(
 rhs_discipline = create_discipline(
     "AutoPyDiscipline",
     py_func=rhs_function,
-    grammar_type=MDODiscipline.GrammarType.SIMPLE,
+    grammar_type=Discipline.GrammarType.SIMPLE,
 )
 
 # %%
 # Step 2: Initialization of the ODEDiscipline
-# ...............................
+# ...........................................
 #
 # Once the discipline representing the right-hand side of the ODE has been created,
-# we can create an instance of :class:`ODEDiscipline`, representing the initial-value
+# we can create an instance of :class:`.ODEDiscipline`, representing the initial-value
 # problem to be solved.
 #
-# The constructor of the :class:`ODEDiscipline` must be provided with the arguments
+# The constructor of the :class:`.ODEDiscipline` must be provided with the arguments
 # `discipline` (the discipline representing the RHS of the ODE), and `times` (an
 # :type:`ArrayLike` with at least two entries: the fist representing the initial time,
 # and the last one the final time).
@@ -164,13 +164,13 @@ ode_discipline = ODEDiscipline(
 # Step 3: Execution of the ODEDiscipline
 # ......................................
 #
-# Once the :class:`ODEDiscipline` has been initialized, it can be executed like all
+# Once the :class:`.ODEDiscipline` has been initialized, it can be executed like all
 # other disciplines in |g| by the method `execute()`.
 
 ode_res_1 = ode_discipline.execute()
 
 # %%
-# The default inputs of the :class:`ODEDiscipline` are the default inputs of the
+# The default inputs of the :class:`.ODEDiscipline` are the default inputs of the
 # underlying discipline defining the RHS of the ODE. Therefore, `ode_res_1` contains
 # the solution of the problem of a harmonic oscillator with angular velocity `omega`
 # equal to :math:`2.0`, with initial position :math:`1.0` and initial velocity
@@ -209,11 +209,11 @@ ode_res_2 = ode_discipline.execute({
 # :math:`0` (for further information, consult `the SciPy documentation
 # <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>`_).
 # In |g|, the same result can be achieved by passing a list of disciplines to the
-# constructor of :class:`ODEDiscipline`, each representing a termination condition.
+# constructor of :class:`.ODEDiscipline`, each representing a termination condition.
 # All disciplines representing termination conditions must have the same inputs as the
 # discipline for the dynamic, and one real output.
 #
-# In this example, we consider a new :class:`ODEDiscipline`, describing the trajectory
+# In this example, we consider a new :class:`.ODEDiscipline`, describing the trajectory
 # of a harmonic oscillator from its starting point up to the instant when it crosses
 # the equilibrium position.
 
@@ -231,14 +231,14 @@ def termination_function(
 termination_discipline = create_discipline(
     "AutoPyDiscipline",
     py_func=termination_function,
-    grammar_type=MDODiscipline.GrammarType.SIMPLE,
+    grammar_type=Discipline.GrammarType.SIMPLE,
 )
 
 # %%
-# Here, `termination_discipline` is the :class:`AutoPyDiscipline` encoding the
+# Here, `termination_discipline` is the :class:`.AutoPyDiscipline` encoding the
 # termination condition. In order to include this condition in the solution of the ODE,
 # we pass the tuple `(termination_discipline,)` as the argument
-# `termination_event_disciplines` of the constructor of :class:`ODEDiscipline`.
+# `termination_event_disciplines` of the constructor of :class:`.ODEDiscipline`.
 
 ode_discipline_termination = ODEDiscipline(
     discipline=rhs_discipline,

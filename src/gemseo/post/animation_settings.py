@@ -34,31 +34,31 @@ class AnimationSettings(BasePostSettings):  # noqa: D101
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     frame_rate: PositiveInt = Field(
-        1,
+        default=1,
         description="The number of iterations per time step.",
     )
     first_iteration: int = Field(
-        -1, description="The iteration to begin the animation."
+        default=-1, description="The iteration to begin the animation."
     )
     time_step: PositiveFloat = Field(
-        100, description="The time step between two frames in milliseconds."
+        default=100, description="The time step between two frames in milliseconds."
     )
     n_repetitions: NonNegativeInt = Field(
-        0,
+        default=0,
         description="The number of times the animation is played. "
         "If ``0``, play infinitely.",
     )
     temporary_database_path: str | Path = Field(
-        "",
+        default="",
         description="The path to a temporary database to avoid deepcopy memory errors."
         "If empty, deepcopy is used instead.",
     )
     gif_file_path: str | Path = Field(
-        "animated_gif",
+        default="animated_gif",
         description="The path to the GIF file.",
     )
     remove_frames: bool = Field(
-        True,
+        default=True,
         description="Whether to remove the frame images after the GIF generation.",
     )
     post_processing: BasePost[Any] = Field(

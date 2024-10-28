@@ -127,7 +127,7 @@
    /zreferences
    /misc/glossary
    /genindex
-   /_modules/modules
+   /modules/modules
 
 .. raw:: latex
 

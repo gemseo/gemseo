@@ -19,7 +19,7 @@
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Pareto front on Binh and Korn problem.
-=====================================
+======================================
 
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
 on the Binh and Korn multi-objective problem.

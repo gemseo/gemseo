@@ -103,8 +103,10 @@ PydanticGrammar.DATA_CONVERTER_CLASS = DataConverter
 
 
 class DataFrameDiscipline(Discipline):
+    default_grammar_type = Discipline.GrammarType.PYDANTIC
+
     def __init__(self) -> None:
-        super().__init__(grammar_type=Discipline.GrammarType.PYDANTIC)
+        super().__init__()
         self.input_grammar = PydanticGrammar("inputs", model=InputGrammarModel)
         self.output_grammar = PydanticGrammar("outputs", model=OutputGrammarModel)
         self.default_input_data = {"df": DataFrame(data={"x": [0.0]})}

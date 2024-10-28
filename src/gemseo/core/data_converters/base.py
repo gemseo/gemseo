@@ -75,7 +75,7 @@ class BaseDataConverter(ABC, Generic[T]):
 
     .. warning::
 
-        Throughout this class, _NumPy array_ is equivalent to _1D numeric NumPy array_.
+        Throughout this class, *NumPy array* is equivalent to *1D numeric NumPy array*.
     """
 
     _grammar: T

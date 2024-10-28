@@ -81,7 +81,7 @@ scenario.execute(algo_name="fullfact", n_samples=9)
 # Then, we build the linear regression model from the database and
 # displays this model.
 dataset = scenario.to_dataset(opt_naming=False)
-model = create_regression_model("LinearRegressor", data=dataset, transformer=None)
+model = create_regression_model("LinearRegressor", dataset, transformer={})
 model.learn()
 model
 

@@ -31,7 +31,7 @@ class BasicHistorySettings(BasePostSettings):  # noqa: D101
         min_length=1,
     )
     normalize: bool = Field(
-        False,
+        default=False,
         description="Whether to normalize the data.",
     )
 

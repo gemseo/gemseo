@@ -288,7 +288,7 @@ Output variables
 
    * - Aerodynamics
      - :math:`L`
-     - Lift (:math:`lb)
+     - Lift (:math:`lb`)
      -
      - ``"y_2[0]"``
 

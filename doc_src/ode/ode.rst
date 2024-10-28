@@ -24,14 +24,14 @@ a given state at an initial time.
 This :class:`.ODEProblem` is built with a function of time and state, as well as an array
 describing the intial state, and a time interval.
 
-An :class:`ODEResult` represents the solution of an ODE evaluated at a discrete set of
+An :class:`.ODEResult` represents the solution of an ODE evaluated at a discrete set of
 times within the specified time interval.
 
 
 .. note::
 
     This feature is under active development. Future iterations include the integration of
-    :class:`.ODEProblem` s with :class:`.MDODiscipline`.
+    :class:`.ODEProblem` s with :class:`.Discipline`.
 
 
 Architecture
@@ -41,7 +41,7 @@ Architecture
 ODEProblem and ODEResult
 ........................
 
-The main classes in the ODE submodule are the :class:`.ODEProblem` and :class:`ODEResult`.
+The main classes in the ODE submodule are the :class:`.ODEProblem` and :class:`.ODEResult`.
 These represent respectively the first-order ODE with its initial conditions, and the
 solution of this problem evaluated at a discrete set of values for time.
 
@@ -82,7 +82,7 @@ interval :math:`[t_0,\ t_f]`.
 .. figure:: /_images/algorithms/ODEProblem_ODEResult_attributes_description.png
 
     Correspondance between the elements of an ordinary differential equation with initial
-    conditions and the attributes of the :class:`ODEProblem` and :class:`ODEResult` classes.
+    conditions and the attributes of the :class:`.ODEProblem` and :class:`.ODEResult` classes.
 
 
 Classes
@@ -101,10 +101,10 @@ The classes described by the ODE module are as such:
     class "ODESolverLibraryFactory" as gemseo.algos.ode.factory.ODESolverLibraryFactory {
       execute(problem: ODEProblem, algo_name: str) -> ODEResult
     }
-    class "ScipyODEAlgos" as gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos {
+    class "ScipyODEAlgos" as gemseo.algos.ode.scipy_ode.scipy_ode.ScipyODEAlgos {
 
     }
-    gemseo.algos.ode.lib_scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary
+    gemseo.algos.ode.scipy_ode.scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary
     gemseo.algos.ode.ode_result.ODEResult --* gemseo.algos.ode.ode_problem.ODEProblem : result
     gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary --* gemseo.algos.ode.factory.ODESolverLibraryFactory
     @enduml
@@ -121,20 +121,20 @@ The submodules are organized in the following fashion.
     set namespaceSeparator none
     package "gemseo.algos.ode" as gemseo.algos.ode {
     }
-    package "gemseo.algos.ode.lib_scipy_ode" as gemseo.algos.ode.lib_scipy_ode {
+    package "gemseo.algos.ode.scipy_ode.scipy_ode" as gemseo.algos.ode.scipy_ode.scipy_ode {
     }
     package "gemseo.algos.ode.ode_problem" as gemseo.algos.ode.ode_problem {
     }
     package "gemseo.algos.ode.ode_result" as gemseo.algos.ode.ode_result {
     }
-    package "gemseo.algos.ode.base_ode_solver_lib" as gemseo.algos.ode.base_ode_solver_lib {
+    package "gemseo.algos.ode.base_ode_solver_library" as gemseo.algos.ode.base_ode_solver_library {
     }
     package "gemseo.algos.ode.factory" as gemseo.algos.ode.factory {
     }
-    gemseo.algos.ode.lib_scipy_ode --> gemseo.algos.ode.ode_result
-    gemseo.algos.ode.lib_scipy_ode --> gemseo.algos.ode.base_ode_solver_lib
+    gemseo.algos.ode.scipy_ode.scipy_ode --> gemseo.algos.ode.ode_result
+    gemseo.algos.ode.scipy_ode.scipy_ode --> gemseo.algos.ode.base_ode_solver_library
     gemseo.algos.ode.ode_problem --> gemseo.algos.ode.ode_result
     gemseo.algos.ode.base_ode_solver_lib --> gemseo.algos.ode.ode_problem
     gemseo.algos.ode.factory --> gemseo.algos.ode.ode_problem
-    gemseo.algos.ode.factory --> gemseo.algos.ode.base_ode_solver_lib
+    gemseo.algos.ode.factory --> gemseo.algos.ode.base_ode_solver_library
     @enduml

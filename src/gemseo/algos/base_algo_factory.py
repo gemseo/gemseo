@@ -79,12 +79,16 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
     or any of its subclasses that can be imported from the given module sources.
     The base class and the module sources shall be defined as class attributes of the
     factory class,
-    for instance::
+    for instance:
 
-    class AFactory(BaseAlgoFactory):
-        _CLASS = ABaseClass
-        _PACKAGE_NAMES = ("first.module.fully.qualified.name",
-                         "second.module.fully.qualified.name")
+    .. code:: python
+
+       class AFactory(BaseAlgoFactory):
+           _CLASS = ABaseClass
+           _PACKAGE_NAMES = (
+               "first.module.fully.qualified.name",
+               "second.module.fully.qualified.name",
+           )
 
     A factory instance can use a cache for the objects it creates, this cache is only
     used by one factory instance and is not shared with another instance.

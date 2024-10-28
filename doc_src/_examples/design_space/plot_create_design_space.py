@@ -72,7 +72,7 @@ design_space
 
 # %%
 # By default, each variable infers its type from the given values. One may also
-# specify it with the `var_type` keyword
+# specify it with the `type_` keyword
 design_space.add_variable(
     "z",
     lower_bound=array([0, -1]),
@@ -80,14 +80,6 @@ design_space.add_variable(
     value=array([0, 1]),
     size=2,
     type_="integer",
-)
-design_space.add_variable(
-    "w",
-    lower_bound=array([-2, -5]),
-    upper_bound=array([3, 1]),
-    value=array([2, -2]),
-    size=2,
-    type_=["integer", "integer"],
 )
 design_space
 

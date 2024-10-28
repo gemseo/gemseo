@@ -14,11 +14,11 @@ Introduction to machine learning
 Introduction
 ------------
 
-When an :class:`.MDODiscipline` is costly to evaluate, it can be replaced by
+When an :class:`.Discipline` is costly to evaluate, it can be replaced by
 a :class:`.SurrogateDiscipline` cheap to evaluate, e.g. linear model, Kriging,
 RBF regressor, ...
 This :class:`.SurrogateDiscipline` is built from a few evaluations of this
-:class:`.MDODiscipline`. This learning phase commonly relies on a regression
+:class:`.Discipline`. This learning phase commonly relies on a regression
 model calibrated by machine learning techniques. This is the reason why
 |g| provides a machine learning package which includes the
 :class:`.BaseRegressor` class implementing the concept of regression model.
@@ -30,7 +30,7 @@ than regression: clustering, classification, dimension reduction, data scaling,
 
    :ref:`surrogates`
 
-.. automodule:: gemseo.mlearning.core.ml_algo
+.. automodule:: gemseo.mlearning.core.algos.ml_algo
    :noindex:
 
 Development

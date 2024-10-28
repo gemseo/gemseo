@@ -14,7 +14,7 @@ Transform data to improve the ML algorithm quality
 Introduction
 ------------
 
-.. automodule:: gemseo.mlearning.transformers.transformer
+.. automodule:: gemseo.mlearning.transformers.base_transformer
    noindex:
 
 .. automodule:: gemseo.mlearning.transformers.pipeline
@@ -35,7 +35,7 @@ Scaling
 Dimension reduction
 -------------------
 
-.. automodule:: gemseo.mlearning.transformers.dimension_reduction.dimension_reduction
+.. automodule:: gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction
    :noindex:
 
 .. automodule:: gemseo.mlearning.transformers.dimension_reduction.pca

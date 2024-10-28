@@ -27,15 +27,15 @@ from numpy import array
 from numpy import linspace
 from numpy import ndarray
 
-from gemseo import MDODiscipline
 from gemseo import create_discipline
+from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 
 # %%
 # This tutorial describes how to use an :class:`.ODEDiscipline`.
 #
-# An :class:`.ODEDiscipline` is an :class:`.MDODiscipline`
+# An :class:`.ODEDiscipline` is an :class:`.Discipline`
 # that solves an ordinary differential equation (ODE).
 #
 # To illustrate the basic usage of this feature, we use a simple oscillator problem.
@@ -110,13 +110,13 @@ times = linspace(0.0, 10, 200)
 # %%
 # Step 2: Create a discipline
 # ...........................
-# Next, we create an :class:`.MDODiscipline` that will be used to build the
+# Next, we create an :class:`.Discipline` that will be used to build the
 # :class:`.ODEDiscipline`:
 
 rhs_discipline = create_discipline(
     "AutoPyDiscipline",
     py_func=compute_rhs_function,
-    grammar_type=MDODiscipline.GrammarType.SIMPLE,
+    grammar_type=Discipline.GrammarType.SIMPLE,
 )
 
 # %%
@@ -126,14 +126,11 @@ rhs_discipline = create_discipline(
 # used as input for the ``compute_rhs_function``.
 # These strings are used to create the grammar of the :class:`.ODEDiscipline`.
 state_names = ["position", "velocity"]
-state_solution_names = ["position_sol", "velocity_sol"]
-
 ode_discipline = ODEDiscipline(
     discipline=rhs_discipline,
     times=times,
     state_names=state_names,
     return_trajectories=True,
-    state_trajectory_names=state_solution_names,
 )
 
 local_data = ode_discipline.execute()
@@ -141,9 +138,10 @@ local_data = ode_discipline.execute()
 # %%
 # Step 4: Visualize the result
 # ............................
-for state_variable_name in ("position_sol", "velocity_sol"):
-    plt.plot(times, local_data[state_variable_name], label=state_variable_name)
+for state_name in state_names:
+    plt.plot(times, local_data[f"{state_name}_trajectory"], label=state_name)
 
+plt.legend()
 plt.show()
 
 # %%
@@ -151,7 +149,4 @@ plt.show()
 # --------
 # The oscillator discipline is provided by |g| for direct use.
 ode_discipline = OscillatorDiscipline(omega=4, times=times, return_trajectories=True)
-ode_discipline.execute({
-    "position": position_init,
-    "velocity": velocity_init,
-})
+ode_discipline.execute({"position": position_init, "velocity": velocity_init})

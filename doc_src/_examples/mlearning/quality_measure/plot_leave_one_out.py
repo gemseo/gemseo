@@ -74,7 +74,7 @@ dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
 # and build a :class:`.PolynomialRegressor` with ``degree=3`` from it:
-polynomial = PolynomialRegressor(dataset_train, 3)
+polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 
 # %%

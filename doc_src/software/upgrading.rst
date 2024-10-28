@@ -34,9 +34,9 @@ Surrogate models
 - The high-level functions defined in ``gemseo.mlearning.api`` have been moved to ``gemseo.mlearning``.
 - ``stieltjes`` and ``strategy`` are no longer arguments of ``PCERegressor``.
 - Rename ``MLAlgo.save`` to ``MLAlgo.to_pickle``.
-- The name of the method to evaluate the quality measure is passed to ``MLAlgoAssessor`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"].
-- The name of the method to evaluate the quality measure is passed to ``MLAlgoSelection`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"].
-- The name of the method to evaluate the quality measure is passed to ``MLAlgoCalibration`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"].
+- The name of the method to evaluate the quality measure is passed to ``MLAlgoAssessor`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"]``.
+- The name of the method to evaluate the quality measure is passed to ``MLAlgoSelection`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"]``.
+- The name of the method to evaluate the quality measure is passed to ``MLAlgoCalibration`` with the argument ``measure_evaluation_method``; any of ``["LEARN", "TEST", "LOO", "KFOLDS", "BOOTSTRAP"]``.
 - The names of the methods to evaluate a quality measure can be accessed with ``MLAlgoQualityMeasure.EvaluationMethod``.
   `#464 <https://gitlab.com/gemseo/dev/gemseo/-/issues/464>`_
 - Rename ``gemseo.mlearning.qual_measure`` to ``gemseo.mlearning.quality_measures``.

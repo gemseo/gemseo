@@ -99,13 +99,13 @@ which may make the names of the
 grammar elements inconsistent with the names of the local variables in the discipline wrapper.
 The wrappers must be adapted to handle input names changes due to namespaces.
 To this aim, the :class:`.DisciplineData` values may be accessed from keys with or without
-namespaces. Also :meth:`.Discipline.get_input_data_names` has an argument "input_prefix" that
+namespaces. Also :attr:`.Discipline.input_grammar.names` has an argument "input_prefix" that
 allows to define whether to return namespace prefixes or not.
 
 Besides, :class:`.BaseGrammar` has the attributes :attr:`.BaseGrammar.to_namespaced` and
 :attr:`.BaseGrammar.from_namespaced` that map the names with and without namespace prefixes.
 
-Finally, :meth:`.Discipline._update_output_data` allows to pass variables names without namespace prefixes.
+Finally, :meth:`.Discipline.io.update_output_data` allows to pass variables names without namespace prefixes.
 This allows to adapt wrappers to support namespaces with only minor modifications.
 
 For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and supports namespaces:
@@ -114,4 +114,4 @@ For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and suppo
 
     def _run(self):
         output_values = self.py_func(**self.get_input_data(namespaces_prefix=False))
-        self._update_output_data(**output_values)
+        self.io.update_output_data(**output_values)

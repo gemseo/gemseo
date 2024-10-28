@@ -26,16 +26,16 @@ from gemseo.utils.pydantic import update_field
 
 class ParetoFrontSettings(BasePostSettings):  # noqa: D101
     show_non_feasible: bool = Field(
-        True,
+        default=True,
         description="Whether to show the non-feasible points in the plot.",
     )
     objectives: Sequence[str] = Field(
-        (),
+        default=(),
         description="The functions names or design variables to plot. If empty, "
         "use the objective function (maybe a vector).",
     )
     objectives_labels: Sequence[str] = Field(
-        (),
+        default=(),
         description="The labels of the objective components. If empty, use the "
         "objective name suffixed by an index.",
     )

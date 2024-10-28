@@ -18,7 +18,7 @@ Optimization and DOE framework
 In this section we describe |g|'s optimization and DOE framework.
 
 The standard way to use |g| is through an :class:`.MDOScenario`, which
-automatically creates an :class:`.OptimizationProblem` from a :ref:`MDO formulation <mdo_formulations>` and a set of :class:`~gemseo.core.discipline.MDODiscipline`.
+automatically creates an :class:`.OptimizationProblem` from a :ref:`MDO formulation <mdo_formulations>` and a set of :class:`~gemseo.core.discipline.Discipline`.
 
 However, one may be interested in directly creating an :class:`.OptimizationProblem` using the class :class:`.OptimizationProblem`,
 which can be solved using an :term:`optimization algorithm` or sampled with a :term:`DOE algorithm`.
@@ -92,7 +92,7 @@ with normalized design space, we have:
 
 Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the external
 library `SciPy <https://scipy.org/>`_
-and interfaced with |g| through the class :class:`~gemseo.algos.opt.lib_scipy.ScipyOpt`.
+and interfaced with |g| through the class :class:`~gemseo.algos.opt.scipy_local.scipy_local.ScipyOpt`.
 
 The list of available algorithms depend on the local setup of |g|, and the installed
 optimization libraries. It can be obtained using :
