@@ -84,3 +84,12 @@ class BaseDriverSettings(BaseAlgorithmSettings):
         default=False,
         description="""Whether to log the progress bar on a single line.""",
     )
+
+    store_jacobian: bool = Field(
+        default=True,
+        description="""Whether to store the Jacobian matrices in the database.
+
+        This argument is ignored when the ``use_database`` option is ``False``.
+        If a gradient-based algorithm is used,
+        this option cannot be set along with kkt options.""",
+    )

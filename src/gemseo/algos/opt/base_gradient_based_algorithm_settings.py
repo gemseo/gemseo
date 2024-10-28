@@ -16,10 +16,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import inf
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TCH002
+from pydantic import model_validator
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class BaseGradientBasedAlgorithmSettings(BaseModel):
@@ -44,3 +50,18 @@ class BaseGradientBasedAlgorithmSettings(BaseModel):
             """
         ),
     )
+
+    @model_validator(mode="after")
+    def __check_kkt_with_jacobian_in_database(self) -> Self:
+        """Check the consistency of KKT options with Jacobian storage.
+
+        Currently,
+        KKT options can only be used along with ``store_jacobian=True``
+        option (default option with all gradient-based algorithm).
+        """
+        if not self.store_jacobian and (
+            self.kkt_tol_abs is not inf or self.kkt_tol_rel is not inf
+        ):
+            msg = "KKT options can only be set with store_jacobian=True"
+            raise ValueError(msg)
+        return self
