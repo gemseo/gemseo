@@ -137,37 +137,47 @@ def scenario() -> MDOScenario:
     return scenario
 
 
-def test_generate_n2_plot(tmp_wd) -> None:
+@pytest.fixture(scope="module")
+def sobieski_disciplines():
+    """The Sobieski disciplines."""
+    return create_discipline([
+        "SobieskiMission",
+        "SobieskiAerodynamics",
+        "SobieskiStructure",
+        "SobieskiPropulsion",
+    ])
+
+
+def test_generate_n2_plot(tmp_wd, sobieski_disciplines) -> None:
     """Test the n2 plot with the Sobieski problem.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
     """
-    disciplines = create_discipline([
-        "SobieskiMission",
-        "SobieskiAerodynamics",
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-    ])
     file_path = "n2.png"
-    generate_n2_plot(disciplines, file_path, fig_size=(5, 5))
+    generate_n2_plot(sobieski_disciplines, file_path, fig_size=(5, 5))
     assert Path(file_path).exists()
 
 
 @pytest.mark.parametrize("full", [False, True])
-def test_generate_coupling_graph(tmp_wd, full) -> None:
+def test_generate_coupling_graph(tmp_wd, full, sobieski_disciplines) -> None:
     """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
-    disciplines = create_discipline([
-        "SobieskiMission",
-        "SobieskiAerodynamics",
-        "SobieskiStructure",
-        "SobieskiPropulsion",
-    ])
     file_path = "coupl.pdf"
-    assert isinstance(generate_coupling_graph(disciplines, file_path, full), GraphView)
+    graph_view = generate_coupling_graph(sobieski_disciplines, file_path, full)
+    assert isinstance(graph_view, GraphView)
     assert Path(file_path).exists()
     assert Path("coupl.dot").exists()
+
+
+@pytest.mark.parametrize("full", [False, True])
+def test_generate_coupling_graph_without_saving(
+    tmp_wd, full, sobieski_disciplines
+) -> None:
+    """Check the coupling graph without saving the files."""
+    graph_view = generate_coupling_graph(sobieski_disciplines, file_path="", full=full)
+    assert isinstance(graph_view, GraphView)
+    assert not list(tmp_wd.iterdir())
 
 
 def test_get_algorithm_options_schema() -> None:

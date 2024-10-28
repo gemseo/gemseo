@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from unittest.mock import patch
@@ -31,6 +32,7 @@ from numpy import ones
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.post._graph_view import GraphView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
@@ -140,25 +142,34 @@ def assert_file(file_path: Path) -> None:
     )
 
 
-def test_write_full_graph(tmp_wd, name_and_graph) -> None:
+def test_render_full_graph(tmp_wd, name_and_graph) -> None:
     """Test writing the full graph to disk.
 
     This also checks the expected contents of a graph.
     """
     name, graph = name_and_graph
     file_name = f"{name}.full_graph.pdf"
-    graph.write_full_graph(file_name)
+    graph.render_full_graph(file_name)
     assert_dot_file(file_name)
 
 
-def test_write_condensed_graph(tmp_wd, name_and_graph) -> None:
+@pytest.mark.parametrize("method_name", ["render_full_graph", "render_condensed_graph"])
+def test_render_without_saving(tmp_wd, method_name) -> None:
+    """Test rendering the graph without saving."""
+    graph = DependencyGraph((Sellar1(), Sellar2(), SellarSystem()))
+    graph_view = getattr(graph, method_name)(file_path="")
+    assert isinstance(graph_view, GraphView)
+    assert not os.listdir(tmp_wd)
+
+
+def test_render_condensed_graph(tmp_wd, name_and_graph) -> None:
     """Test writing the condensed graph to disk.
 
     This also checks the expected contents of a graph.
     """
     name, graph = name_and_graph
     file_name = f"{name}.condensed_graph.pdf"
-    graph.write_condensed_graph(file_name)
+    graph.render_condensed_graph(file_name)
     assert_dot_file(file_name)
 
 
@@ -210,8 +221,8 @@ def graph_with_self_coupling() -> DependencyGraph:
 @pytest.mark.parametrize(
     ("file_path", "method"),
     [
-        ("full_coupling_graph.pdf", "write_full_graph"),
-        ("condensed_coupling_graph.pdf", "write_condensed_graph"),
+        ("full_coupling_graph.pdf", "render_full_graph"),
+        ("condensed_coupling_graph.pdf", "render_condensed_graph"),
     ],
 )
 def test_coupling_structure_plot(
@@ -225,11 +236,11 @@ def test_coupling_structure_plot(
 def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
     """Check the message logged when graphviz is missing."""
     with patch("gemseo.core.dependency_graph.GRAPHVIZ_IS_MISSING", True):
-        assert graph_with_self_coupling.write_full_graph("graph.pdf") is None
+        assert graph_with_self_coupling.render_full_graph("graph.pdf") is None
         _, log_level, log_message = caplog.record_tuples[0]
         assert log_level == logging.WARNING
         assert log_message == (
-            "Cannot write graph: "
+            "Cannot render graph: "
             "GraphView cannot be imported because graphviz is not installed."
         )
 
@@ -251,5 +262,5 @@ def test_homonymous_disciplines(tmp_wd) -> None:
         AnalyticDiscipline({"d": "c"}),
     ])
     file_path = Path("homonymous_disciplines.pdf")
-    graph.write_full_graph(file_path)
+    graph.render_full_graph(file_path)
     assert re.match(regex, file_path.with_suffix(".dot").read_text().strip())

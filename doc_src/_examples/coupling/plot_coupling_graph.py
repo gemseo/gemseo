@@ -19,15 +19,15 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-N2 chart
-========
+Coupling graph
+==============
 """
 
 from __future__ import annotations
 
 from numpy import ones
 
-from gemseo import generate_n2_plot
+from gemseo import generate_coupling_graph
 from gemseo.core.discipline import Discipline
 
 # %%
@@ -62,23 +62,20 @@ for discipline_name, (inputs, outputs) in descriptions.items():
     disciplines.append(discipline)
 
 # %%
-# Generate the N2 chart
-# ---------------------
-# The N2 chart is a tabular way to visualize multidisciplinary coupling variables.
-# The disciplines are located on the diagonal of the chart
-# while the coupling variables are situated on the other blocks of the matrix view.
-# A coupling variable is outputted by a discipline horizontally
-# and enters another vertically.
-#
-# In the classical representation,
-# a blue diagonal block represents a self-coupled discipline,
-# *i.e.* a discipline having some of its outputs as inputs.
-#
-# Because of its tabular structure,
-# the N2 chart is hard to analyze when the number of disciplines increases.
-# This is the reason why in this example,
-# we propose to use an interactive representation in a web browser:
-generate_n2_plot(disciplines, save=False, show_html=True)
+# Generate the coupling graph
+# ---------------------------
+# The coupling graph represents each discipline by a node
+# and each coupling variable by an edge.
+# By default,
+# the :func:`.generate_coupling_graph` function saves the graphical representation
+# of the coupling graph as a PDF file.
+# Here,
+# we prefer to display it in this web page
+# by setting ``file_path`` to ``""``
+# (the same would work in a notebook).
+generate_coupling_graph(disciplines, file_path="")
 
 # %%
-# `Click here <../../_static/n2.html>`_ to see the rendering.
+# We can also draw the condensed coupling graph,
+# where each groups of strongly coupled disciplines is represented by a node:
+generate_coupling_graph(disciplines, file_path="", full=False)
