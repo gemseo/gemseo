@@ -35,7 +35,7 @@ Version 5.3.2 (2024-08-08)
 Added
 -----
 
-- The ``IDF`` formulation now accepts options at instanciation for the ``MDAChain`` executed at the begining of the process when ``start_at_equilibrium=True``.
+- The ``IDF`` formulation now accepts options at instantiation for the ``MDAChain`` executed at the begining of the process when ``start_at_equilibrium=True``.
   `#1259 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1259>`_
 
 Fixed
@@ -2456,8 +2456,8 @@ Fixed
 -----
 
 - Improper configuration of the logger in the MDAChain test leading to GEMS crashes if the user has not write permission on the GEMS installation directory.
-- Max versions of h5py and Openturns defined in environment and configuration files to prevent incorrect environments due to API incompatibilites.
-- Max version of numpy defined in order to avoid the occurence of a fmod/OpenBlas bug with Windows 10 2004 (https://developercommunity.visualstudio.com/content/problem/1207405/fmod-after-an-update-to-windows-2004-is-causing-a.html).
+- Max versions of h5py and Openturns defined in environment and configuration files to prevent incorrect environments due to API incompatibilities.
+- Max version of numpy defined in order to avoid the occurrence of a fmod/OpenBlas bug with Windows 10 2004 (https://developercommunity.visualstudio.com/content/problem/1207405/fmod-after-an-update-to-windows-2004-is-causing-a.html).
 
 
 Version 2.0.0 (July 2020)
@@ -2467,7 +2467,7 @@ Added
 -----
 
 - Support for Python3
-- String encoding: all the strings shall now be encoded in unicode. For Python 2 users, please read carefuly the Python2 and Python3 compatibility note to migrate your existing GEMS scripts.
+- String encoding: all the strings shall now be encoded in unicode. For Python 2 users, please read carefully the Python2 and Python3 compatibility note to migrate your existing GEMS scripts.
 - Documentation: gallery of examples and tutorials + cheat sheet
 - New conda file to automatically create a Python environment for GEMS under Linux, Windows and Mac OS.
 - ~35% improved performance on Python3
@@ -2538,7 +2538,7 @@ Fixed
 -----
 
 - Bug in Caching and Discipline for inouts (Thanks Romain Olivanti)
-- Bug in MDASequential convergence hisotry
+- Bug in MDASequential convergence history
 
 
 Version 1.3.0 (June 2019)
@@ -2675,7 +2675,7 @@ Added
     * analytical derivation of the chains of disciplines (MDOChain) via the chain rule
 
 - Post processing of optimization history: many plots to view the constraints, objective, design variables
-- More than 10 MDA (coupled problems) solver available, some gradient based (quasi newton) and hybrid multi-step methods (SequantialMDA) !
+- More than 10 MDA (coupled problems) solver available, some gradient based (quasi newton) and hybrid multi-step methods (SequentialMDA) !
 - OptimizationProblem and its solution can be written to disk and post processed afterwards
 - Handling of DOE and optimization algorithm options via JSON schemas
 - Introduced an OptimizationProblem class that is created by the MDOFormulation and passed to an algorithm for resolution
@@ -2690,7 +2690,7 @@ Changed
 - Code architecture refactoring for below items
 - Modularized post processing
 - Refactored algorithms part with factories
-- Removed dependency to json_shema_generator library, switched to GENSON (embeded with MIT licence)
+- Removed dependency to json_schema_generator library, switched to GENSON (embedded with MIT licence)
 - Moved from JsonSchema Draft 3 to Draft 4 standard
 - Refactored the connection between the functions and the optimizers
 - Refactored MDOScenario

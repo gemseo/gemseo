@@ -26,4 +26,4 @@ build:
       - git fetch --tags
       - git fetch origin develop
     pre_build:
-      - sphinx-apidoc -e -M -o doc_src/_modules src/gemseo
+      - sphinx-apidoc -e -M -o doc_src/modules src/gemseo

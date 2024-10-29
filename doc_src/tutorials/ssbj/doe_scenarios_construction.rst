@@ -328,7 +328,7 @@ process with respect to the :term:`system design variables` (optimization proble
                                      parallel_scenarios=False,
                                      # This is mandatory when doing
                                      # a DOE in parallel if we want
-                                     # reproductible
+                                     # reproducible
                                      # results, dont reuse previous xopt
                                      reset_x0_before_opt=True,
                                      design_space=deepcopy(
@@ -337,7 +337,7 @@ process with respect to the :term:`system design variables` (optimization proble
                                      scenario_type="DOE")
    # This is mandatory when doing
    # a DOE in parallel if we want always exactly the same
-   # results, dont warm start mda1 to have exactely the same
+   # results, dont warm start mda1 to have exactly the same
    # process whatever the execution order and process dispatch
    system_scenario.formulation.mda1.warm_start = False
    system_scenario.formulation.mda2.warm_start = False

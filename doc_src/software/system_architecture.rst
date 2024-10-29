@@ -92,7 +92,7 @@ Then the user can configure the overall :term:`process`, before execution, by ac
 
 #. At this stage, the scenario instantiates the :term:`MDO formulation` according to the user's choice.
 #. Then, the formulation possibly creates :term:`generic processes<generic process>` such as :term:`MDAs<MDA>` (for :term:`MDF`),
-   or MDO subscenarios, for :term:`bi-level` formulations.
+   or MDO sub-scenarios, for :term:`bi-level` formulations.
 #. Once this is performed, the :term:`MDO formulation` creates an :term:`optimization problem`.
 #. This :term:`optimization problem` is defined by the :term:`objective function`
    and :term:`constraints`, that eventually points to the :term:`generic processes<generic process>` or directly to the disciplines (for :term:`IDF` for instance).
@@ -114,7 +114,7 @@ During the process execution :
 #. The driver solves the optimization problem that was created by the MDO formulation at the building step.
 #. To this aim, the driver calls the objective function and constraints.
 #. These functions point to the generic processes (that aim at solving a coupling problem for an MDA)
-   or MDO subscenarios (for :term:`bi-level` scenarios), in order to find an optimum.
+   or MDO sub-scenarios (for :term:`bi-level` scenarios), in order to find an optimum.
 #. These calls trigger the :term:`generic process` execution, which themselves execute the :term:`disciplines<discipline>`.
 
 .. figure:: /_images/architecture/components_execute_process.png

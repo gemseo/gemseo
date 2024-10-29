@@ -29,22 +29,27 @@ Create a new discipline from scratch:
             self.default_input_data = {"x": array([0.0]), "z": array([0.0])}
 
         def _run(self):
-            x, z = self.get_inputs_by_name(["x", "z"])
+            x = self.io.data["x"]
+            z = self.io.data["z"]
             f = array([x[0] * z[0]])
             g = array([x[0] * (z[0] + 1.0) ** 2])
-            self.store_local_data(f=f)
-            self.store_local_data(g=g)
+            self.io.update_output_data({"f": f, "g": g})
 
-        def _compute_jacobian(self, inputs=None, outputs=None):
-            self._init_jacobian(with_zeros=True)
-            x, z = self.get_inputs_by_name(["x", "z"])
+        def _compute_jacobian(
+            self,
+            input_names: Iterable[str] = (),
+            output_names: Iterable[str] = (),
+        ) -> None:
+            x = self.io.data["x"]
+            z = self.io.data["z"]
             dfdx = z
             dfdz = x
             dgdx = array([(z[0] + 1.0) ** 2])
             dgdz = array([2 * x[0] * z[0] * (z[0] + 1.0)])
-            self.jac["f"] = {}
-            self.jac["f"]["x"] = atleast_2d(dfdx)
-            self.jac["f"]["z"] = atleast_2d(dfdz)
-            self.jac["g"] = {}
-            self.jac["g"]["x"] = atleast_2d(dgdx)
-            self.jac["g"]["z"] = atleast_2d(dgdz)
+            self.jac = {}
+            df = self.jac["f"] = {}
+            df["x"] = atleast_2d(dfdx)
+            df["z"] = atleast_2d(dfdz)
+            dg = self.jac["g"] = {}
+            dg["x"] = atleast_2d(dgdx)
+            dg["z"] = atleast_2d(dgdz)

@@ -153,7 +153,7 @@ Replacing :math:`\frac{d\mathcal{Y}}{d\mathbf{x}}` from the residual derivative 
 Adjoint versus direct methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The cost of evaluating the gradient of :math:`\mathbf{f}` is driven by the matrix invertion
+The cost of evaluating the gradient of :math:`\mathbf{f}` is driven by the matrix inversion
 :math:`\left( \frac{\partial \mathcal{R}}{\partial \mathcal{Y}} \right)^{-1}`.
 Two approaches are possible to compute the previous equation:
 

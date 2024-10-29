@@ -49,7 +49,7 @@ In practice, we write:
 .. note::
 
    |g| takes care of the grammars and :meth:`!Discipline._run` method generation from the ``expressions`` argument.
-   In the background, |g| considers that ``x`` is a monodimensional float input parameter and ``y_1`` and ``y_2`` are monodimensional float output parameters.
+   In the background, |g| considers that ``x`` is a mono-dimensional float input parameter and ``y_1`` and ``y_2`` are mono-dimensional float output parameters.
 
 Execute the discipline
 **********************

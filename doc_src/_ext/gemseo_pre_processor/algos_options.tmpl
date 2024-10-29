@@ -107,7 +107,7 @@
         <th onclick="sortTable(5)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(6)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(7)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(8)">Handle multiobjective<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(8)">Handle multi-objective<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(9)">Require gradient<br/>&#x25B2;&#x25BC;</th>
       </tr>
 {% for algo in algos %}
@@ -149,11 +149,6 @@ Module: :class:`{{modules[algo]}}`
 {% if websites[algo] %}
 More details about the algorithm and its settings on {{websites[algo]}}.
 {% endif %}
-
-.. raw:: html
-
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
 
 {% set optional_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}

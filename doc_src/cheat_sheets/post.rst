@@ -14,10 +14,10 @@ Visualization
 
     from gemseo import execute_post
 
-Post-process the results from an MDO or DOE scenario:
+Post-process the results from a scenario, an optimization problem or an history file path.
 
 .. code-block:: python
 
     execute_post("OptHistoryView", scenario)
-    execute_post("OptHistoryView", optproblem)
-    execute_post("OptHistoryView", hdf_optproblem)
+    execute_post("OptHistoryView", optimization_problem)
+    execute_post("OptHistoryView", hdf_file_path)

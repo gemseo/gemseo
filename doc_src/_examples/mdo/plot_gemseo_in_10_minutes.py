@@ -247,11 +247,11 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # %%
 # Post-processing the results
 # ---------------------------
-# Post-processings such as plots exhibiting the evolutions of the
+# Post-processors such as plots exhibiting the evolutions of the
 # objective function, the design variables or the constraints can be
 # extremely useful. The convergence of the objective function, design
 # variables and of the inequality constraints can be observed in the
-# following plots. Many other post-processings are available in |g| and
+# following plots. Many other post-processors are available in |g| and
 # are described in :ref:`Post-processing <post_processing>`.
 
 scenario.post_process("OptHistoryView", save=False, show=True)
@@ -259,7 +259,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # %%
 # .. note::
 #
-#    Such post-processings can be exported in PDF format,
+#    Such post-processors can be exported in PDF format,
 #    by setting ``save`` to ``True`` and potentially additional
 #    settings (see the :meth:`.Scenario.post_process` options).
 
