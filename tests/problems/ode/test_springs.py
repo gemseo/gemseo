@@ -41,7 +41,7 @@ from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.ode._springs import Mass
 from gemseo.problems.ode._springs import compute_analytic_mass_position
 from gemseo.problems.ode._springs import create_chained_masses
-from gemseo.problems.ode._springs import create_mass_mdo_discipline
+from gemseo.problems.ode._springs import create_mass_discipline
 from gemseo.problems.ode._springs import create_mass_ode_discipline
 from gemseo.problems.ode._springs import generic_mass_rhs_function
 
@@ -51,12 +51,12 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-def test_create_mass_mdo_discipline():
+def test_create_mass_discipline():
     times = linspace(0, 10, 30)
-    mdo_discipline = create_mass_mdo_discipline(mass=1, left_stiff=1, right_stiff=1)
+    discipline = create_mass_discipline(mass=1, left_stiff=1, right_stiff=1)
 
     ode_discipline = ODEDiscipline(
-        discipline=mdo_discipline,
+        discipline=discipline,
         state_names=["position", "velocity"],
         times=times,
     )
@@ -258,12 +258,12 @@ def test_2_chained_masses():
         )
         return position_1_dot, velocity_1_dot
 
-    mdo_discipline_0 = create_discipline(
+    discipline_0 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_0_rhs,
     )
     ode_discipline_0 = ODEDiscipline(
-        discipline=mdo_discipline_0,
+        discipline=discipline_0,
         state_names=["position_0", "velocity_0"],
         times=times,
         return_trajectories=True,
@@ -271,12 +271,12 @@ def test_2_chained_masses():
         atol=1e-6,
     )
 
-    mdo_discipline1 = create_discipline(
+    discipline1 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_1_rhs,
     )
     ode_discipline1 = ODEDiscipline(
-        discipline=mdo_discipline1,
+        discipline=discipline1,
         state_names=["position_1", "velocity_1"],
         times=times,
         return_trajectories=True,
@@ -392,16 +392,16 @@ def test_2_chained_masses_linear_coupling():
         )
         return position_2_dot, velocity_2_dot
 
-    mdo_discipline_1 = create_discipline(
+    discipline_1 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_1_rhs,
     )
-    mdo_discipline_2 = create_discipline(
+    discipline_2 = create_discipline(
         "AutoPyDiscipline",
         py_func=mass_2_rhs,
     )
     mda = MDOChain(
-        [mdo_discipline_1, mdo_discipline_2],
+        [discipline_1, discipline_2],
     )
     ode_discipline = ODEDiscipline(
         discipline=mda,

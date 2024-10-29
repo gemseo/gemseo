@@ -86,10 +86,12 @@ if TYPE_CHECKING:
     from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
         JobSchedulerDisciplineWrapper,
     )
+    from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
+    from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
@@ -802,7 +804,8 @@ def create_scenario(
     name: str = "",
     scenario_type: str = "MDO",
     maximize_objective: bool = False,
-    **formulation_options: Any,
+    formulation_settings_model: BaseFormulationSettings | None = None,
+    **formulation_settings: Any,
 ) -> BaseScenario:
     """Initialize a scenario.
 
@@ -821,7 +824,10 @@ def create_scenario(
             If empty, use the name of the class.
         scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
         maximize_objective: Whether to maximize the objective.
-        **formulation_options: The options of the :class:`.BaseMDOFormulation`.
+        formulation_settings_model: The formulation settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        **formulation_settings: The formulation settings.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario
@@ -858,7 +864,8 @@ def create_scenario(
         design_space,
         name=name,
         maximize_objective=maximize_objective,
-        **formulation_options,
+        formulation_settings_model=formulation_settings_model,
+        **formulation_settings,
     )
 
 
@@ -1096,7 +1103,8 @@ def create_mda(
 def execute_post(
     to_post_proc: BaseScenario | OptimizationProblem | str | Path,
     post_name: str,
-    **options: Any,
+    settings_model: BasePostSettings | None = None,
+    **settings: Any,
 ) -> BasePost:
     """Post-process a result.
 
@@ -1107,7 +1115,10 @@ def execute_post(
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
         post_name: The name of the post-processing.
-        **options: The post-processing options.
+        settings_model: The post-processor settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        **settings: The post-processor settings.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
         The post-processor.
@@ -1136,7 +1147,9 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return PostFactory().execute(opt_problem, post_name, **options)
+    return PostFactory().execute(
+        opt_problem, post_name, settings_model=settings_model, **settings
+    )
 
 
 def execute_algo(

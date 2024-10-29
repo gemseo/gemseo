@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import abs as np_abs
 from numpy import concatenate
@@ -35,10 +36,12 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.idf_settings import IDFSettings
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
     from typing import Any
 
     from gemseo.algos.design_space import DesignSpace
@@ -59,46 +62,24 @@ class IDF(BaseMDOFormulation):
     multidisciplinary analysis is made at the optimum.
     """
 
-    def __init__(
+    Settings: ClassVar[type[IDFSettings]] = IDFSettings
+
+    def __init__(  # noqa: D107
         self,
-        disciplines: Iterable[Discipline],
+        disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        maximize_objective: bool = False,
-        normalize_constraints: bool = True,
-        n_processes: int = 1,
-        use_threading: bool = True,
-        start_at_equilibrium: bool = False,
-        differentiated_input_names_substitute: Iterable[str] = (),
-        **mda_options_for_start_at_equilibrium: Any,
+        settings_model: IDFSettings | None = None,
+        **settings: Any,
     ) -> None:
-        """
-        Args:
-            normalize_constraints: Whether the outputs of the coupling consistency
-                constraints are scaled.
-            n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
-                used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution;
-                multiprocessing will copy (serialize) all the disciplines,
-                while threading will share all the memory.
-                This is important to note
-                if you want to execute the same discipline multiple times,
-                you shall use multiprocessing.
-            start_at_equilibrium: Whether an MDA is used to initialize the coupling
-                variables.
-            **mda_options_for_start_at_equilibrium: The options for the MDA when
-                ``start_at_equilibrium=True``.
-                See detailed options in :class:`.MDAChain`.
-        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
             design_space,
-            maximize_objective=maximize_objective,
-            differentiated_input_names_substitute=differentiated_input_names_substitute,
+            settings_model=settings_model,
+            **settings,
         )
+        n_processes = self._settings.n_processes
         if n_processes > 1:
             LOGGER.info(
                 "Running IDF formulation in parallel on n_processes = %s",
@@ -106,7 +87,7 @@ class IDF(BaseMDOFormulation):
             )
             self._parallel_exec = MDOParallelChain(
                 self.disciplines,
-                use_threading=use_threading,
+                use_threading=self._settings.use_threading,
                 n_processes=n_processes,
             )
         else:
@@ -115,12 +96,14 @@ class IDF(BaseMDOFormulation):
         self.coupling_structure = CouplingStructure(disciplines)
         self.all_couplings = self.coupling_structure.all_couplings
         self._update_design_space()
-        self.normalize_constraints = normalize_constraints
+        self.normalize_constraints = self._settings.normalize_constraints
         self._build_constraints()
         self._build_objective_from_disc(objective_name)
 
-        if start_at_equilibrium:
-            self._compute_equilibrium(**mda_options_for_start_at_equilibrium)
+        if self._settings.start_at_equilibrium:
+            self._compute_equilibrium(
+                **self._settings.mda_options_for_start_at_equilibrium
+            )
 
     def _compute_equilibrium(self, **mda_options: Any) -> None:
         """Run an MDA to compute the initial target couplings at equilibrium.
@@ -130,7 +113,9 @@ class IDF(BaseMDOFormulation):
         Args:
             mda_options: The options for the MDA chain.
         """
-        current_x = self.design_space.get_current_value(as_dict=True)
+        current_x = self.optimization_problem.design_space.get_current_value(
+            as_dict=True
+        )
         # run MDA to initialize target coupling variables
         mda = MDAChain(self.disciplines, **mda_options)
         res = mda.execute(current_x)
@@ -143,7 +128,7 @@ class IDF(BaseMDOFormulation):
                 current_x[name],
                 value,
             )
-            self.design_space.set_current_variable(name, value)
+            self.optimization_problem.design_space.set_current_variable(name, value)
 
     def _update_design_space(self) -> None:
         """Update the design space with the required variables."""
@@ -158,11 +143,11 @@ class IDF(BaseMDOFormulation):
             raise ValueError(msg)
         self._set_default_input_values_from_design_space()
 
-    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
+    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:  # noqa:D102
         # All functions and constraints are built from the top level disc
         # If we are in parallel mode: return the parallel execution
         if self._parallel_exec is not None:
-            return [self._parallel_exec]
+            return (self._parallel_exec,)
         # Otherwise the disciplines are top level
         return self.disciplines
 
@@ -180,8 +165,8 @@ class IDF(BaseMDOFormulation):
         """
         norm_fact = []
         for output in output_couplings:
-            u_b = self.design_space.get_upper_bound(output)
-            l_b = self.design_space.get_lower_bound(output)
+            u_b = self.optimization_problem.design_space.get_upper_bound(output)
+            l_b = self.optimization_problem.design_space.get_lower_bound(output)
             norm_fact.append(np_abs(u_b - l_b))
         return concatenate(norm_fact)
 

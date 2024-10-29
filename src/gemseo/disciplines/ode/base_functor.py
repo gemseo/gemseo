@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import concatenate
 
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
+    from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
     from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
     from gemseo.typing import RealArray
 

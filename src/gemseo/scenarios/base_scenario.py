@@ -66,6 +66,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.datasets.dataset import Dataset
+    from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post import BasePostOptionType
@@ -189,7 +190,8 @@ class BaseScenario(BaseMonitoredProcess):
         design_space: DesignSpace,
         name: str = "",
         maximize_objective: bool = False,
-        **formulation_options: Any,
+        formulation_settings_model: BaseFormulationSettings | None = None,
+        **formulation_settings: Any,
     ) -> None:
         """
         Args:
@@ -206,7 +208,10 @@ class BaseScenario(BaseMonitoredProcess):
             name: The name to be given to this scenario.
                 If empty, use the name of the class.
             maximize_objective: Whether to maximize the objective.
-            **formulation_options: The options of the :class:`.BaseMDOFormulation`.
+            formulation_settings_model: The formulation settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **formulation_settings: The formulation settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         self.__disciplines = tuple(disciplines)
@@ -224,9 +229,12 @@ class BaseScenario(BaseMonitoredProcess):
             formulation,
             objective_name,
             design_space,
-            maximize_objective,
-            **formulation_options,
+            formulation_settings_model,
+            **formulation_settings,
         )
+        if maximize_objective:
+            self.formulation.optimization_problem.minimize_objective = False
+
         self.formulation.optimization_problem.database.name = self.name
         self.clear_history_before_run = False
         self.__history_backup_is_set = False
@@ -420,8 +428,8 @@ class BaseScenario(BaseMonitoredProcess):
         formulation: str,
         objective_name: str,
         design_space: DesignSpace,
-        maximize_objective: bool,
-        **formulation_options: Any,
+        formulation_settings_model: BaseFormulationSettings | None,
+        **formulation_settings: Any,
     ) -> None:
         """Initialize the MDO formulation.
 
@@ -430,17 +438,18 @@ class BaseScenario(BaseMonitoredProcess):
                 also the name of a class inheriting from :class:`.BaseMDOFormulation`.
             objective_name: The name of the objective.
             design_space: The design space.
-            maximize_objective: Whether to maximize the objective.
-            **formulation_options: The options
-                to be passed to the :class:`.BaseMDOFormulation`.
+            formulation_settings_model: The formulation settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **formulation_settings: The formulation settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
         """
         self.formulation = self._form_factory.create(
             formulation,
             disciplines=self.__disciplines,
             objective_name=objective_name,
             design_space=design_space,
-            maximize_objective=maximize_objective,
-            **formulation_options,
+            settings_model=formulation_settings_model,
+            **formulation_settings,
         )
         self.formulation_name = formulation
 

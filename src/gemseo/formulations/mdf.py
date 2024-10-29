@@ -22,13 +22,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Final
+from typing import ClassVar
 
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.mdf_settings import MDFSettings
 from gemseo.mda.factory import MDAFactory
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
@@ -54,96 +55,60 @@ class MDF(BaseMDOFormulation):
     mda: BaseMDA
     """The MDA used in the formulation."""
 
-    _main_mda_name: str
-    """The name of the main MDA."""
+    Settings: ClassVar[type[MDFSettings]] = MDFSettings
 
-    _mda_factory: MDAFactory
-    """The MDA factory."""
-
-    DEFAULT_MAIN_MDA_NAME: Final[str] = "MDAChain"
-    """The default name of the main MDA."""
-
-    DEFAULT_INNER_MDA_NAME: Final[str] = "MDAJacobi"
-    """The default name of the inner MDA."""
-
-    def __init__(
+    def __init__(  # noqa: D107
         self,
-        disciplines: list[Discipline],
+        disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        maximize_objective: bool = False,
-        main_mda_name: str = DEFAULT_MAIN_MDA_NAME,
-        inner_mda_name: str = DEFAULT_INNER_MDA_NAME,
-        differentiated_input_names_substitute: Iterable[str] = (),
-        **main_mda_options: Any,
+        settings_model: MDFSettings | None = None,
+        **settings: Any,
     ) -> None:
-        """
-        Args:
-            main_mda_name: The name of the class used for the main MDA,
-                typically the :class:`.MDAChain`,
-                but one can force to use :class:`.MDAGaussSeidel` for instance.
-            inner_mda_name: The name of the class used for the inner-MDA of the main
-                MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
-            **main_mda_options: The options of the main MDA, which may include
-                those of the inner-MDA.
-        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
             design_space,
-            maximize_objective=maximize_objective,
-            differentiated_input_names_substitute=differentiated_input_names_substitute,
+            settings_model=settings_model,
+            **settings,
         )
-        self._main_mda_name = main_mda_name
-        self._mda_factory = MDAFactory()
-        self._instantiate_mda(main_mda_name, inner_mda_name, **main_mda_options)
-        self._update_design_space()
-        self._build_objective()
-
-    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
-        return [self.mda]
-
-    def _instantiate_mda(
-        self,
-        main_mda_name: str = DEFAULT_MAIN_MDA_NAME,
-        inner_mda_name: str = DEFAULT_INNER_MDA_NAME,
-        **mda_options: Any,
-    ) -> None:
-        """Create the MDA discipline.
-
-        Args:
-            main_mda_name: The name of the class of the main MDA.
-            inner_mda_name: The name of the class of the inner-MDA used by the
-                main MDA.
-        """
-        if main_mda_name == "MDAChain":
-            mda_options["inner_mda_name"] = inner_mda_name
-
-        self.mda = self._mda_factory.create(
-            main_mda_name,
+        self.mda = MDAFactory().create(
+            self._settings.main_mda_name,
             self.disciplines,
-            **mda_options,
+            **self._settings.main_mda_settings,
         )
+        self._update_design_space()
+        self._build_objective_from_disc(objective_name, discipline=self.mda)
+
+    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:  # noqa:D102
+        return (self.mda,)
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:  # noqa:D102
-        main_mda = options.get("main_mda_name")
-        if main_mda is None:
-            msg = "main_mda_name option required to deduce the sub options of MDF."
-            raise ValueError(msg)
-        return MDAFactory().get_options_grammar(main_mda)
+        return MDAFactory().get_options_grammar(cls.__check_mda(**options))
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:  # noqa:D102
-        main_mda = options.get("main_mda_name")
-        if main_mda is None:
+        return MDAFactory().get_default_option_values(cls.__check_mda(**options))
+
+    @staticmethod
+    def __check_mda(**options: str) -> str:
+        """Check that main_mda_name is available.
+
+        Args:
+            options: The options.
+
+        Returns:
+            The main MDA.
+
+        Raises:
+            ValueError: When main_mda_name is not available.
+        """
+        main_mda_name = options.get("main_mda_name")
+        if main_mda_name is None:
             msg = "main_mda_name option required to deduce the sub options of MDF."
             raise ValueError(msg)
-        return MDAFactory().get_default_option_values(main_mda)
-
-    def _build_objective(self) -> None:
-        """Build the objective function from the MDA and the objective name."""
-        self._build_objective_from_disc(self._objective_name, discipline=self.mda)
+        return main_mda_name
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
