@@ -107,7 +107,6 @@ packaging==24.1
     #   matplotlib
     #   pandera
     #   plotly
-    #   pydata-sphinx-theme
     #   sphinx
 pandas==2.2.2
     # via
@@ -142,7 +141,7 @@ pydantic-core==2.23.3
     # via pydantic
 pydantic-settings==2.6.0
     # via autodoc-pydantic
-pydata-sphinx-theme==0.15.4
+pydata-sphinx-theme==0.16.0
     # via gemseo (pyproject.toml)
 pydoe3==1.0.4
     # via gemseo (pyproject.toml)
