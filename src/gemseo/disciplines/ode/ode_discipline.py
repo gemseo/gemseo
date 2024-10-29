@@ -66,8 +66,9 @@ class ODEDiscipline(Discipline):
     __ode_solver_options: Mapping[str, Any]
     """The options of the ODE solver."""
 
-    __state_names: Iterable[str]
-    """The names of the state variables."""
+    __state_names: Iterable[str] | Mapping[str, str]
+    """The names of the state variables, eventually bound to the
+     names of their time derivatives."""
 
     __time_name: str
     """The name of the time variable."""
@@ -86,7 +87,7 @@ class ODEDiscipline(Discipline):
         discipline: Discipline,
         times: ArrayLike,
         time_name: str = "time",
-        state_names: Iterable[str] = (),
+        state_names: Iterable[str] | Mapping[str, str] = (),
         final_state_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
         state_trajectory_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
         return_trajectories: bool = False,
