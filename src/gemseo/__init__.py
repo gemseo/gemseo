@@ -64,6 +64,8 @@ from gemseo.utils.pickle import to_pickle  # noqa: F401
 if TYPE_CHECKING:
     from logging import Logger
 
+    from pydantic import BaseModel
+
     from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
     from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.algos.database import Database
@@ -323,7 +325,7 @@ def get_algorithm_options_schema(
     for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
-            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].Settings()
+            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].Settings
             return _get_json_schema_from_settings(
                 settings,
                 output_json,
@@ -334,7 +336,7 @@ def get_algorithm_options_schema(
 
 
 def _get_json_schema_from_settings(
-    settings: BaseAlgorithmSettings,
+    settings: type[BaseModel],
     output_json: bool,
     pretty_print: bool,
 ) -> str | dict[str, Any]:
@@ -451,7 +453,7 @@ def get_post_processing_options_schema(
     problem = OptimizationProblem(DesignSpace())
     problem.objective = MDOFunction(lambda x: x, "f")
     post_proc = PostFactory().create(post_proc_name, problem)
-    return _get_schema(post_proc.option_grammar, output_json, pretty_print)
+    return _get_json_schema_from_settings(post_proc.Settings, output_json, pretty_print)
 
 
 def get_formulation_options_schema(

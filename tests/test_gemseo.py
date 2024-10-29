@@ -75,6 +75,7 @@ from gemseo import get_formulation_sub_options_schema
 from gemseo import get_formulations_options_defaults
 from gemseo import get_formulations_sub_options_defaults
 from gemseo import get_mda_options_schema
+from gemseo import get_post_processing_options_schema
 from gemseo import get_scenario_differentiation_modes
 from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
@@ -196,6 +197,21 @@ def test_get_algorithm_options_schema() -> None:
         get_algorithm_options_schema("unknown")
 
     get_algorithm_options_schema("SLSQP", pretty_print=True)
+
+
+def test_get_post_processing_options_schema() -> None:
+    """Test that all available options are printed."""
+    schema_dict = get_post_processing_options_schema("OptHistoryView")
+    assert "properties" in schema_dict
+    assert len(schema_dict["properties"]) == 11
+
+    schema_json = get_post_processing_options_schema("OptHistoryView", output_json=True)
+    out_dict = json.loads(schema_json)
+    for key, val in schema_dict.items():
+        assert key in out_dict
+        assert out_dict[key] == val
+
+    get_post_processing_options_schema("OptHistoryView", pretty_print=True)
 
 
 def test_get_surrogate_options_schema() -> None:
