@@ -37,7 +37,7 @@ History
 .. raw :: html
 
     <p>
-    <div class="containter">
+    <div class="container">
       <div class="row">
          <div class="col-8">
 
@@ -67,7 +67,7 @@ with the aim to make it widely collaborative.
 .. raw :: html
 
     <p>
-    <div class="containter">
+    <div class="container">
       <div class="row">
          <div class="col-10">
 
@@ -80,7 +80,7 @@ and involving both academic and industrial partners.
 
          </div>
          <div class="col-2">
-            <a href='https://www.gouvernement.fr/le-programme-d-investissements-d-avenir' target="_blank"><img src="_static/contributors/pia.png" title="Programm of Investments for the Future"/></a>
+            <a href='https://www.gouvernement.fr/le-programme-d-investissements-d-avenir' target="_blank"><img src="_static/contributors/pia.png" title="Program of Investments for the Future"/></a>
          </div>
       </div>
     </div>

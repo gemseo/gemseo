@@ -26,12 +26,13 @@ if TYPE_CHECKING:
     from collections.abc import MutableSequence
 
     from gemseo.core.discipline import Discipline
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 LOGGER = logging.getLogger(__name__)
 
 
 def __get_all_disciplines(
-    disciplines: Iterable[Discipline],
+    disciplines: Iterable[Discipline | BaseScenario],
     skip_scenarios: bool,
 ) -> list[Discipline]:
     """Return the non-scenario disciplines or also the disciplines of the scenario ones.
@@ -86,7 +87,7 @@ def get_all_inputs(
 
 
 def get_all_outputs(
-    disciplines: Iterable[Discipline],
+    disciplines: Iterable[Discipline | BaseScenario],
     skip_scenarios: bool = True,
 ) -> list[str]:
     """Return all the output names of the disciplines.

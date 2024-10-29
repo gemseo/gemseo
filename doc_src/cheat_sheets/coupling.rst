@@ -22,7 +22,7 @@ Save or show the N2 chart:
 
 .. code-block:: python
 
-    discipline_names = ["disc1", "disc2", "disc3"]
+    discipline_names = ("disc1", "disc2", "disc3")
     disciplines = create_discipline(discipline_names)
     generate_n2_plot(disciplines, save=True, show=False)
 
@@ -30,7 +30,8 @@ Save the coupling graph:
 
 .. code-block:: python
 
-    disciplines = create_discipline(["disc1", "disc2", "disc3"])
+    discipline_names = ("disc1", "disc2", "disc3")
+    disciplines = create_discipline(discipline_names)
     generate_coupling_graph(disciplines)
 
 Get all the inputs or outputs:

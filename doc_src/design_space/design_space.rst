@@ -568,7 +568,7 @@ and ``print(new_array_point)`` to see the result:
 
 .. note::
 
-   An optional argument denoted ``'variable_names'``, which is a list of string and set at ``None`` by default, lists all of the variables to consider. If ``None``, all design variables are considerd.
+   An optional argument denoted ``'variable_names'``, which is a list of string and set at ``None`` by default, lists all of the variables to consider. If ``None``, all design variables are considered.
 
 How to cast the current value to complex?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

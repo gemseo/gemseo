@@ -67,9 +67,11 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
         problem: OptimizationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
-        **options: Any,
+        **settings: Any,
     ) -> None:
-        super()._post_run(problem, result, max_design_space_dimension_to_log, **options)
+        super()._post_run(
+            problem, result, max_design_space_dimension_to_log, **settings
+        )
         # Reset this cached attribute since an algorithm shall be stateless to take
         # full advantage of the algorithm factory cache.
         self.__lagrange_multiplier_calculator = None

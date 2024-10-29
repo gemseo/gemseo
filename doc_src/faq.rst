@@ -58,7 +58,7 @@ See the available :ref:`DOEs <gen_doe_algos>`,
 :ref:`MDO formulations <gen_formulation_algos>`,
 :ref:`MDAs <gen_mda_algos>`,
 :ref:`optimizers <gen_opt_algos>`,
-:ref:`post-processings <gen_post_algos>`
+:ref:`post-processors <gen_post_algos>`
 and :ref:`machine learners <gen_mlearning_algos>`
 (accessible from the main page of the documentation).
 

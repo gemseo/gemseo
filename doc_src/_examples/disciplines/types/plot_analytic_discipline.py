@@ -74,9 +74,9 @@ disc = create_discipline("AnalyticDiscipline", expressions=expressions)
 #    |g| takes care of the grammars and
 #    :meth:`!Discipline._run` method generation
 #    from the ``expressions`` argument.
-#    In the background, |g| considers that ``x`` is a monodimensional
+#    In the background, |g| considers that ``x`` is a mono-dimensional
 #    float input parameter and ``y_1`` and ``y_2`` are
-#    monodimensional float output parameters.
+#    mono-dimensional float output parameters.
 
 # %%
 # Execute the discipline

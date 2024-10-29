@@ -46,7 +46,7 @@ from gemseo.problems.ode._springs import create_chained_masses
 # system are connected to fixed points. We hereby study the response of the system to the
 # displacement of one of the point masses.
 #
-# .. figure:: ../_images/ode/springs.png
+# .. figure:: /_images/ode/springs.png
 #   :width: 400
 #   :alt: Illustration of the springs-masses problem.
 #
@@ -187,14 +187,14 @@ plt.show()
 # In the previous section, we considered the time-integration within each ODE discipline,
 # then coupled the disciplines, as illustrated in the next figure.
 #
-# .. figure:: ../_images/ode/coupling.png
+# .. figure:: /_images/ode/coupling.png
 #   :width: 400
 #   :alt: Integrate, then couple.
 #
 # Another possibility to tackle this problem is to define the couplings within a
 # discipline, as illustrated in the next figure.
 #
-# .. figure:: ../_images/ode/time_integration.png
+# .. figure:: /_images/ode/time_integration.png
 #   :width: 400
 #   :alt: Couple, then integrate.
 #

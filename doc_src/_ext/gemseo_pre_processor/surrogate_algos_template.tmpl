@@ -38,11 +38,6 @@ Module: :class:`{{modules[algo]}}`
 More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
-.. raw:: html
-
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
-
 {% set optional_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}
 {% if parameter[1]['default'] != '' or parameter[0].startswith('**') %}

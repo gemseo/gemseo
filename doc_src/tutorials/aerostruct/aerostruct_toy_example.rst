@@ -61,12 +61,12 @@ The goal of this study is to maximize the range :math:`range` with respect to th
    - thick_panels
    - sweep
 
-Different MDO formulations can be considered to adress this study.
+Different MDO formulations can be considered to address this study.
 
 Monolithic formulations
 -----------------------
 
-Monolithic formulations can be used to adress this MDO study:
+Monolithic formulations can be used to address this MDO study:
 
    - Multiple Discipline Feasible (MDF): a Multiple Disciplinary Analysis is performed for each optimisation iteration to converge the coupling variables disciplines to their equilibrium values
    - Individual Discipline Feasible (IDF): the coupling variables equalities between the disciplines are set as constraints of the optimizer.
@@ -175,7 +175,7 @@ The optimization problem for the structure discipline level reads:
 The scalable problem
 ********************
 
-In this section, we are going to build a scalable problem from the aerostructure problem. Futher information on the scalable problem methodolody can be found :ref:`here <scalable>`.
+In this section, we are going to build a scalable problem from the aerostructure problem. Further information on the scalable problem methodology can be found :ref:`here <scalable>`.
 
 Build the interpolation functions
 ---------------------------------
@@ -196,7 +196,7 @@ where:
 
     def create_scalable_disciplines(disciplines, n_samples=20, fill_factor=0.8):
         """
-        Create scalables disciplines.
+        Create scalable disciplines.
 
         :param disciplines: disciplines
         :type disciplines: list(Discipline)

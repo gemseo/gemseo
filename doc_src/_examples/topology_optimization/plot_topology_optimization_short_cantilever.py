@@ -56,7 +56,7 @@ penalty = 3
 
 # %%
 # Define the minimum member size in the solution:
-min_memeber_size = 1.5
+min_member_size = 1.5
 
 # %%
 # Instantiate the :class:`.DesignSpace` and the disciplines:
@@ -68,7 +68,7 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
     e0=e0,
     nu=nu,
     penalty=penalty,
-    min_member_size=min_memeber_size,
+    min_member_size=min_member_size,
     vf0=volume_fraction,
 )
 

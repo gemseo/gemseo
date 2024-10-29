@@ -14,8 +14,8 @@ Surrogate discipline
 
     from gemseo import create_surrogate
 
-Create a surrogate discipline from a dataset:
+Create a surrogate discipline from an :class:`.IODataset`:
 
 .. code-block:: python
 
-    surrogate = create_surrogate("LinearRegression", dataset)
+    surrogate = create_surrogate("LinearRegression", io_dataset)

@@ -255,7 +255,7 @@ scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPER
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
 scenario.formulation.mda.use_lu_fact = True
 # %%
-# Altenatively, |g| can implicitly create a matrix-vector product operator,
+# Alternatively, |g| can implicitly create a matrix-vector product operator,
 # which is sufficient for GMRES-like solvers. It avoids to create an additional
 # data structure. This can also be mandatory if the disciplines do not provide
 # full Jacobian matrices but only matrix-vector product operators.

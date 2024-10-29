@@ -33,7 +33,7 @@ configure_logger()
 # %%
 # Setup the topology optimization problem
 # ---------------------------------------
-# Define the target volume fractio:
+# Define the target volume fraction:
 volume_fraction = 0.3
 
 # %%

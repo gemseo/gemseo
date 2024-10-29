@@ -129,7 +129,7 @@ discipline.check_jacobian(
 
 # Advantages and drawbacks of each method
 # ---------------------------------------
-# Finite differnces and complex are first-order methods, they use one
+# Finite differences and complex are first-order methods, they use one
 # sampling point per input and the truncation error goes down linearly with the step.
 # Centered differences are second-order methods which use twice as many points as finite
 # differences and complex step. Complex step derivatives are less prone to numerical

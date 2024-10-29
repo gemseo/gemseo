@@ -41,7 +41,7 @@ respectively:
 
 |g| features can be extended with external Python modules.
 All kinds of additional features can be implemented:
-disciplines, algorithms, formulations, post-processings, surrogate models, ...
+disciplines, algorithms, formulations, post-processors, surrogate models, ...
 There are 2 ways to extend |g| with Python modules:
 
 - by creating a pip installable package with a setuptools entry point,

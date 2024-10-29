@@ -20,23 +20,25 @@ Instantiate an MDO or DOE scenario:
 
 .. code-block:: python
 
-    disc_names = ["disc1", "disc2", "disc3"]
-    disciplines = create_discipline(disc_names, "ext_path")
-    d_space = read_design_space("file.csv")
+    discipline_names = ["disc1", "disc2", "disc3"]
+    disciplines = create_discipline(discipline_names, "ext_path")
+    design_space = read_design_space("file.csv")
     scenario_type = "MDO"  # or 'DOE'
     scenario = create_scenario(
         disciplines,
         formulation="MDF",
         objective_name="obj",
-        design_space=d_space,
+        design_space=design_space,
         name="my_scenario",
         scenario_type=scenario_type,
         **formulation_options,
     )
-    scenario.add_constraint("cstr1", "ineq")  # <=0
-    scenario.add_constraint("cstr2", "ineq", positive=True)  # >=0
-    scenario.add_constraint("cstr3", "ineq", value=1.0)  # <=1
-    scenario.add_constraint("cstr4", "eq")  # =0
+    scenario.add_constraint("cstr1")  # =0
+    scenario.add_constraint("cstr2", value=1.0)  # =1
+    scenario.add_constraint("cstr3", constraint_type="ineq")  # <=0
+    scenario.add_constraint("cstr4", constraint_type="ineq", value=1.0)  # <=1
+    scenario.add_constraint("cstr5", constraint_type="ineq", positive=True)  # >=0
+    scenario.add_constraint("cstr6", constraint_type="ineq", positive=True, value=1.0)  # >=1
     scenario.xdsmize()  # Build the XDSM graph to check it.
 
 Execute the scenario:

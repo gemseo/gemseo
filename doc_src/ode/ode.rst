@@ -16,13 +16,13 @@ Ordinary Differential Equations (ODE)
 
 .. seealso::
 
-   `The examples related to ODE resolution. <examples/ode/index.html>`__
+   `The examples related to ODE resolution. <../examples/ode/index.html>`__
 
 
 An :class:`.ODEProblem` represents a first order ordinary differential equation (ODE) with
 a given state at an initial time.
 This :class:`.ODEProblem` is built with a function of time and state, as well as an array
-describing the intial state, and a time interval.
+describing the initial state, and a time interval.
 
 An :class:`.ODEResult` represents the solution of an ODE evaluated at a discrete set of
 times within the specified time interval.
@@ -65,7 +65,7 @@ interval :math:`[t_0,\ t_f]`.
     class "ODEProblem" as gemseo.algos.ode.ode_problem.ODEProblem {
     rhs_function
     initial_state
-    intitial_time
+    initial_time
     final_time
     algorithm_name
     }
@@ -81,7 +81,7 @@ interval :math:`[t_0,\ t_f]`.
 
 .. figure:: /_images/algorithms/ODEProblem_ODEResult_attributes_description.png
 
-    Correspondance between the elements of an ordinary differential equation with initial
+    Correspondence between the elements of an ordinary differential equation with initial
     conditions and the attributes of the :class:`.ODEProblem` and :class:`.ODEResult` classes.
 
 
