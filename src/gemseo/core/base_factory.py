@@ -361,7 +361,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             raise
 
     def get_options_doc(self, name: str) -> dict[str, str]:
-        """Return the constructor documentation of a class.
+        """Return the documentation for the arguments of a class.
 
         Args:
             name: The name of the class.
@@ -372,13 +372,13 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         return get_options_doc(self.get_class(name).__init__)
 
     def get_default_option_values(self, name: str) -> StrKeyMapping:
-        """Return the constructor kwargs default values of a class.
+        """Return the default values for the keyword arguments of a class.
 
         Args:
             name: The name of the class.
 
         Returns:
-            The mapping from the argument names to their default values.
+            The mapping from the keyword argument names to their default values.
         """
         return get_callable_argument_defaults(self.get_class(name).__init__)
 

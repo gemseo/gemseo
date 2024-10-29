@@ -38,7 +38,7 @@ from gemseo.algos.database import Database
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.core.mdo_functions.mdo_function import MDOFunction

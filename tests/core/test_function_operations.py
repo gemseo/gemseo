@@ -25,10 +25,10 @@ from numpy import ones
 from numpy import zeros
 from scipy.optimize import rosen
 
-from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
+from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.restricted_function import RestrictedFunction
 from gemseo.problems.optimization.rosen_mf import RosenMF

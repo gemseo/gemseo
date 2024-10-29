@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.base_formulation import BaseFormulation
+from gemseo.utils.source_parsing import get_callable_argument_defaults
+from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -62,3 +64,25 @@ class BaseFormulationFactory(BaseFactory[BaseFormulation]):
             The JSON grammar.
         """
         return self.get_class(name).get_default_sub_option_values(**options)
+
+    def get_options_doc(self, name: str) -> dict[str, str]:  # noqa: D102
+        cls = self.get_class(name)
+        options_doc = get_options_doc(cls.__init__)
+        del options_doc["settings_model"]
+        del options_doc["settings"]
+        options_doc.update({
+            field_name: field.description
+            for field_name, field in cls.Settings.model_fields.items()
+        })
+        return options_doc
+
+    def get_default_option_values(self, name: str) -> StrKeyMapping:  # noqa: D102
+        cls = self.get_class(name)
+        default_option_values = get_callable_argument_defaults(cls.__init__)
+        del default_option_values["settings_model"]
+        default_option_values.update({
+            field_name: field.get_default(call_default_factory=True)
+            for field_name, field in cls.Settings.model_fields.items()
+            if not field.is_required()
+        })
+        return default_option_values

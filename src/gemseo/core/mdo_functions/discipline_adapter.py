@@ -173,10 +173,10 @@ class DisciplineAdapter(MDOFunction):
         self.__output_names_to_slices = output_names_to_slices = {}
         start = 0
         output_size = 0
-        jac_row_id = self.differentiated_input_names_substitute[0]
-        for name in self.output_names:
-            output_size += jacobians[name][jac_row_id].shape[0]
-            output_names_to_slices[name] = slice(start, output_size)
+        for output_name in self.output_names:
+            input_name = next(iter(jacobians[output_name]))
+            output_size += jacobians[output_name][input_name].shape[0]
+            output_names_to_slices[output_name] = slice(start, output_size)
             start = output_size
         return output_size
 

@@ -172,7 +172,7 @@ def generic_mass_rhs_function(
     return position_dot, velocity_dot
 
 
-def create_mass_mdo_discipline(
+def create_mass_discipline(
     mass: float,
     left_stiff: float,
     right_stiff: float,
@@ -350,7 +350,7 @@ def create_mass_ode_discipline(
     Returns:
         The Discipline describing a single point mass.
     """
-    mass_discipline = create_mass_mdo_discipline(
+    mass_discipline = create_mass_discipline(
         mass,
         left_stiff,
         right_stiff,

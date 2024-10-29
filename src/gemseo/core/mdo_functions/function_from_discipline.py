@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
 
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
+    from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
     from gemseo.formulations.base_formulation import BaseFormulation
     from gemseo.typing import BooleanArray
     from gemseo.typing import NumberArray

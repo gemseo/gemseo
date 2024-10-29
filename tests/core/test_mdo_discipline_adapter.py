@@ -27,7 +27,7 @@ from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_equal
 
-from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
+from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 

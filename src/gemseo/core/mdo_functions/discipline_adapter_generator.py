@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.mdo_functions.mdo_discipline_adapter import DisciplineAdapter
+from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:

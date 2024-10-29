@@ -32,7 +32,7 @@ from scipy.optimize import rosen
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.core.parallel_execution.callable_parallel_execution import (

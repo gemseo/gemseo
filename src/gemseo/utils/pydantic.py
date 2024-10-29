@@ -16,13 +16,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from typing import Any
+from typing import TypeVar
 
+from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
-if TYPE_CHECKING:
-    from pydantic import BaseModel
+T = TypeVar("T", bound=BaseModel)
 
 
 def copy_field(name: str, model: type[BaseModel], **kwargs: Any) -> FieldInfo:
@@ -59,10 +59,10 @@ def update_field(
 
 
 def create_model(
-    Model: type[BaseModel],  # noqa: N803
-    settings_model: BaseModel | None = None,
+    Model: type[T],  # noqa: N803
+    settings_model: T | None = None,
     **settings: Any,
-) -> BaseModel:
+) -> T:
     """Create a Pydantic model.
 
     Args:

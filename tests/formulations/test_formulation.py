@@ -31,6 +31,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.utils import get_sub_disciplines
+from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.formulations.mdf import MDF
@@ -42,9 +43,16 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.testing.helpers import concretize_classes
 
 
+class NewMDOFormulationSettings(BaseFormulationSettings): ...
+
+
+class NewMDOFormulation(BaseMDOFormulation):
+    Settings = NewMDOFormulationSettings
+
+
 @pytest.fixture(scope="module")
 def patch_mdo_formulation():
-    with concretize_classes(BaseMDOFormulation):
+    with concretize_classes(NewMDOFormulation):
         yield
 
 
@@ -87,7 +95,7 @@ def test_jac_sign(patch_mdo_formulation) -> None:
     sm = SobieskiMission()
     design_space = DesignSpace()
     design_space.add_variable("x_shared")
-    f = BaseMDOFormulation([sm], "y_4", design_space)
+    f = NewMDOFormulation([sm], "y_4", design_space)
 
     g = MDOFunction(
         math.sin,
@@ -106,7 +114,7 @@ def test_jac_sign(patch_mdo_formulation) -> None:
 
 def test_get_x0(patch_mdo_formulation) -> None:
     """"""
-    BaseMDOFormulation([SobieskiMission()], "y_4", SobieskiDesignSpace())
+    NewMDOFormulation([SobieskiMission()], "y_4", SobieskiDesignSpace())
 
 
 def test_add_user_defined_constraint_error(patch_mdo_formulation) -> None:
@@ -147,7 +155,7 @@ def test_x_mask(patch_mdo_formulation) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 4)
     design_space.add_variable("y_14", 4)
-    f = BaseMDOFormulation([sm], "y_4", design_space)
+    f = NewMDOFormulation([sm], "y_4", design_space)
 
     x = np.concatenate([rid[n] for n in dvs])
     c = f.mask_x_swap_order(dvs, x, dvs)
@@ -181,7 +189,7 @@ def test_x_mask(patch_mdo_formulation) -> None:
         f.mask_x_swap_order(dvs, x)
 
 
-def test_remove_sub_scenario_dv_from_ds(patch_mdo_formulation) -> None:
+def test_remove_sub_scenario_dv_from_ds() -> None:
     ds2 = DesignSpace()
     ds2.add_variable("y_14")
     ds2.add_variable("x")
@@ -189,7 +197,7 @@ def test_remove_sub_scenario_dv_from_ds(patch_mdo_formulation) -> None:
     ds1.add_variable("x")
     sm = SobieskiMission()
     s1 = MDOScenario([sm], "IDF", "y_4", ds1)
-    f2 = BaseMDOFormulation([sm, s1], "y_4", ds2)
+    f2 = NewMDOFormulation([sm, s1], "y_4", ds2)
     assert "x" in f2.design_space
     f2._remove_sub_scenario_dv_from_ds()
     assert "x" not in f2.design_space
@@ -204,7 +212,7 @@ def test_get_obj(patch_mdo_formulation) -> None:
     for name in dvs:
         design_space.add_variable(name)
 
-    f = BaseMDOFormulation([sm], "Y5", design_space)
+    f = NewMDOFormulation([sm], "Y5", design_space)
     with pytest.raises(AttributeError):
         f.get_objective()
 
@@ -252,7 +260,7 @@ def test_get_sub_disciplines_recursive(
     chain3 = MDOChain([d1, chain2], "chain3")
     design_space = DesignSpace()
 
-    formulation = BaseMDOFormulation([chain3], "foo", design_space)
+    formulation = NewMDOFormulation([chain3], "foo", design_space)
 
     classes = [
         discipline.name

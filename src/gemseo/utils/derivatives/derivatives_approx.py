@@ -33,7 +33,7 @@ from typing import ClassVar
 
 from scipy.sparse import hstack as sparse_hstack
 
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.utils.compatibility.scipy import sparse_classes

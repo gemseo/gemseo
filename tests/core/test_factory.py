@@ -112,7 +112,7 @@ def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
 
     doc = factory.get_options_doc(formulation_name)
     assert "disciplines" in doc
-    assert "maximize_objective" in doc
+    assert "maximize_objective" not in doc
 
     opt_vals = factory.get_default_option_values(formulation_name)
     assert len(opt_vals) >= 1

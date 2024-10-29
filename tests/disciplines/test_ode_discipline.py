@@ -46,7 +46,7 @@ from gemseo import from_pickle
 from gemseo import to_pickle
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.core.mdo_functions.mdo_discipline_adapter_generator import (
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -223,10 +223,10 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
         b_dot = -1.0
         return b_dot, a_dot  # noqa: RET504
 
-    mdo_discipline = AutoPyDiscipline(py_func=_fct)
+    discipline = AutoPyDiscipline(py_func=_fct)
 
     ode_discipline_1 = ODEDiscipline(
-        discipline=mdo_discipline,
+        discipline=discipline,
         times=_times,
         state_names={"a": "a_dot", "b": "b_dot"},
         ode_solver_name="RK45",
@@ -238,7 +238,7 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
     assert_allclose(res_ode_1["b_final"], -1.0)
 
     ode_discipline_2 = ODEDiscipline(
-        discipline=mdo_discipline,
+        discipline=discipline,
         times=_times,
         state_names={"a": "a_dot", "b": "b_dot"},
         ode_solver_name="RK45",
@@ -264,11 +264,11 @@ def test_ode_discipline_missing_names_time_derivatives():
         b_dot = -1.0
         return b_dot, a_dot  # noqa: RET504
 
-    mdo_discipline = AutoPyDiscipline(py_func=_fct)
+    discipline = AutoPyDiscipline(py_func=_fct)
 
     with pytest.raises(ValueError, match=re.escape("are not names of outputs")):
         ODEDiscipline(
-            discipline=mdo_discipline,
+            discipline=discipline,
             times=_times,
             state_names={"a": "c_dot", "b": "b_dot"},
             ode_solver_name="RK45",
@@ -286,12 +286,12 @@ def test_ode_discipline_not_convergent():
         x_dot = x**2
         return x_dot  # noqa: RET504
 
-    mdo_discipline = AutoPyDiscipline(
+    discipline = AutoPyDiscipline(
         py_func=_fct,
     )
 
     ode_discipline = ODEDiscipline(
-        discipline=mdo_discipline,
+        discipline=discipline,
         times=_times,
         state_names=["x"],
         ode_solver_name="RK45",
@@ -341,13 +341,13 @@ def test_jacobian():
         jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
         return jacobian  # noqa: RET504
 
-    mdo_discipline = AutoPyDiscipline(
+    discipline = AutoPyDiscipline(
         py_func=fct,
         py_jac=jac_time_state,
     )
 
     ode_discipline = ODEDiscipline(
-        discipline=mdo_discipline,
+        discipline=discipline,
         state_names=["x", "y"],
         ode_solver_name="Radau",
         times=times,
@@ -355,7 +355,7 @@ def test_jacobian():
         atol=1e-12,
     )
 
-    check_jacobian1 = mdo_discipline.check_jacobian(
+    check_jacobian1 = discipline.check_jacobian(
         input_data={
             "time": array([_init_time]),
             "x": _init_state_x,
@@ -417,7 +417,7 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
         jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
         return jacobian  # noqa: RET504
 
-    mdo_discipline = create_discipline(
+    discipline = create_discipline(
         "AutoPyDiscipline",
         py_func=fct,
         py_jac=jac,
@@ -446,7 +446,7 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
     if name_of_algorithm == "non_existing_algorithm":
         with pytest.raises(ValueError) as error_info:
             ODEDiscipline(
-                mdo_discipline,
+                discipline,
                 state_names=["x", "y"],
                 ode_solver_name=name_of_algorithm,
                 times=times,
@@ -458,7 +458,7 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
         )
     else:
         ode_discipline = ODEDiscipline(
-            mdo_discipline,
+            discipline,
             state_names=["x", "y"],
             ode_solver_name=name_of_algorithm,
             times=times,

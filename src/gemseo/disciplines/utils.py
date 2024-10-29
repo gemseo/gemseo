@@ -113,7 +113,7 @@ def get_all_outputs(
 
 def get_sub_disciplines(
     disciplines: Iterable[Discipline], recursive: bool = False
-) -> Iterable[Discipline]:
+) -> list[Discipline]:
     """Determine the sub-disciplines.
 
     This method lists the sub-disciplines' disciplines. It will list up to one level
