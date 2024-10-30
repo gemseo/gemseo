@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from numpy import array
+from numpy import full
 
 from gemseo import create_scenario
 from gemseo import execute_algo
@@ -326,7 +327,7 @@ def test_2d_mixed(
         assert lag_approx["equality"][1][0] > 0
 
 
-def test_nnls_crash():
+def test_nnls_linalgerror():
     """Check that a case known to make SciPy's NNLS crash is handled correctly."""
     space = DesignSpace()
     space.add_variable("x", 1, lower_bound=0, upper_bound=1)
@@ -343,3 +344,21 @@ def test_nnls_crash():
     assert 18 - multipliers["lower_bounds"][1] + gradient @ multipliers["inequality"][
         1
     ] == pytest.approx(0)
+
+
+def test_nnls_runtimeerror():
+    """Check that a case known to make SciPy's NNLS crash is handled correctly."""
+    space = DesignSpace()
+    space.add_variable("x", 3, lower_bound=-1, upper_bound=1)
+    problem = OptimizationProblem(space)
+    problem.objective = MDOFunction(lambda x: 18 * x, "f", jac=lambda _: full(3, 18))
+    jacobian = array([
+        [0, 0, 9.9],
+        [-9.9000119968124, 0, 0],
+        [0, 0, -0.9900000000001],
+    ])
+    problem.add_constraint(
+        MDOFunction(lambda x: jacobian @ x, "g", jac=lambda _: jacobian),
+        constraint_type="ineq",
+    )
+    LagrangeMultipliers(problem).compute(array([0, 0, 0]))
