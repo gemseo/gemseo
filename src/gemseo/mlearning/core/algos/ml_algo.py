@@ -131,7 +131,7 @@ SavedObjectType = Union[
     Dataset, dict[str, BaseTransformer], list[int], str, bool, int, IntegerArray
 ]
 DataType = Union[RealArray, Mapping[str, ndarray]]
-MLAlgoParameterType = Optional[Any]
+MLAlgoSettingsType = Optional[Any]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
 
@@ -186,7 +186,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     DataFormatters: ClassVar[type[BaseDataFormatters]]
     """The data formatters for the learning and prediction methods."""
 
-    Settings: ClassVar[type[BaseMLAlgoSettings]] = BaseMLAlgoSettings
+    Settings: ClassVar[type[BaseMLAlgoSettings]]
     """The Pydantic model class for the settings of the machine learning algorithm."""
 
     _settings: BaseMLAlgoSettings

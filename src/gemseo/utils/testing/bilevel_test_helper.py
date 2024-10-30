@@ -39,11 +39,11 @@ def create_sobieski_bilevel_scenario(
         A function which generates a Sobieski scenario with specific options.
     """
 
-    def func(**options):
+    def func(**settings):
         """Create a Sobieski BiLevel scenario.
 
         Args:
-             **options: The options of the system scenario.
+             **settings: The settings of the system scenario.
 
         Returns:
             A Sobieski BiLevel Scenario.
@@ -58,7 +58,7 @@ def create_sobieski_bilevel_scenario(
             "y_4",
             SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
             maximize_objective=True,
-            **options,
+            **settings,
         )
         system.set_differentiation_method("finite_differences")
         return system

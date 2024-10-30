@@ -78,13 +78,13 @@ if TYPE_CHECKING:
 
 
 def build_sobieski_scenario(
-    formulation: str = "MDF", **options: dict[str, Any]
+    formulation: str = "MDF", **settings: dict[str, Any]
 ) -> MDOScenario:
     """Scenario based on Sobieski case.
 
     Args:
         formulation: The name of the formulation.
-        options: Any options for the scenario.
+        settings: The settings for the scenario.
 
     Returns
         The scenario.
@@ -100,7 +100,7 @@ def build_sobieski_scenario(
         formulation=formulation,
         objective_name="y_4",
         design_space=SobieskiDesignSpace(),
-        **options,
+        **settings,
         maximize_objective=False,
     )
 

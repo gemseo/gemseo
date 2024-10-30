@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.algos.ml_algo import MLAlgoSettingsType
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.mlearning.regression.quality.base_regressor_quality import (
         BaseRegressorQuality,
@@ -87,7 +87,7 @@ class SurrogateDiscipline(Discipline):
         default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
-        **parameters: MLAlgoParameterType,
+        **settings: MLAlgoSettingsType,
     ) -> None:
         """
         Args:
@@ -126,7 +126,7 @@ class SurrogateDiscipline(Discipline):
             output_names: The names of the output variables.
                 If empty,
                 consider all input variables mentioned in the learning dataset.
-            **parameters: The parameters of the machine learning algorithm.
+            **settings: The settings of the machine learning algorithm.
 
         Raises:
             ValueError: If the learning dataset is missing
@@ -146,7 +146,7 @@ class SurrogateDiscipline(Discipline):
                 transformer=transformer,
                 input_names=input_names,
                 output_names=output_names,
-                **parameters,
+                **settings,
             )
             name = f"{self.regression_model.SHORT_ALGO_NAME}_{data.name}"
 

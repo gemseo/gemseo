@@ -325,7 +325,7 @@ def create_mass_ode_discipline(
     right_position_name: str = "right_position",
     is_left_pos_fixed: bool = False,
     is_right_pos_fixed: bool = False,
-    **ode_solver_options: Any,
+    **ode_solver_settings: Any,
 ) -> ODEDiscipline:
     """Create a discipline describing the motion of a single mass in the chain.
 
@@ -345,7 +345,7 @@ def create_mass_ode_discipline(
             to the left.
         is_left_pos_fixed: True if the other end of the spring to the left is fixed.
         is_right_pos_fixed: True if the other end of the spring to the right is fixed.
-        **ode_solver_options: The options of the ODE solver.
+        **ode_solver_settings: The settings of the ODE solver.
 
     Returns:
         The Discipline describing a single point mass.
@@ -380,7 +380,7 @@ def create_mass_ode_discipline(
         state_names=state_names,
         times=times,
         return_trajectories=True,
-        **ode_solver_options,
+        **ode_solver_settings,
     )
 
 

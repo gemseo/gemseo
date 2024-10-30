@@ -77,7 +77,7 @@ from gemseo.mlearning.classification.quality.f1_measure import F1Measure
 from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.core.algos.ml_algo import DataType
-from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+from gemseo.mlearning.core.algos.ml_algo import MLAlgoSettingsType
 from gemseo.mlearning.core.algos.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
@@ -105,7 +105,7 @@ SavedObjectType = Union[_SavedObjectType, str, dict]
 MLAlgoType = dict[
     str,
     Optional[
-        Union[str, DesignSpace, dict[str, Union[str, int]], list[MLAlgoParameterType]]
+        Union[str, DesignSpace, dict[str, Union[str, int]], list[MLAlgoSettingsType]]
     ],
 ]
 
@@ -125,13 +125,13 @@ class MOERegressor(BaseRegressor):
     regress_algo: str
     """The name of the regression algorithm."""
 
-    cluster_params: MLAlgoParameterType
+    cluster_params: MLAlgoSettingsType
     """The parameters of the clustering algorithm."""
 
-    classif_params: MLAlgoParameterType
+    classif_params: MLAlgoSettingsType
     """The parameters of the classification algorithm."""
 
-    regress_params: MLAlgoParameterType
+    regress_params: MLAlgoSettingsType
     """The parameters of the regression algorithm."""
 
     cluster_measure: dict[str, str | EvalOptionType]
@@ -201,7 +201,7 @@ class MOERegressor(BaseRegressor):
     def set_clusterer(
         self,
         cluster_algo: str,
-        **cluster_params: MLAlgoParameterType | None,
+        **cluster_params: MLAlgoSettingsType | None,
     ) -> None:
         """Set the clustering algorithm.
 
@@ -215,7 +215,7 @@ class MOERegressor(BaseRegressor):
     def set_classifier(
         self,
         classif_algo: str,
-        **classif_params: MLAlgoParameterType | None,
+        **classif_params: MLAlgoSettingsType | None,
     ) -> None:
         """Set the classification algorithm.
 
@@ -229,7 +229,7 @@ class MOERegressor(BaseRegressor):
     def set_regressor(
         self,
         regress_algo: str,
-        **regress_params: MLAlgoParameterType | None,
+        **regress_params: MLAlgoSettingsType | None,
     ) -> None:
         """Set the regression algorithm.
 
@@ -293,7 +293,7 @@ class MOERegressor(BaseRegressor):
         name: str,
         calib_space: DesignSpace | None = None,
         calib_algo: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
-        **option_lists: list[MLAlgoParameterType] | None,
+        **option_lists: list[MLAlgoSettingsType] | None,
     ) -> None:
         """Add a candidate for clustering.
 
@@ -323,7 +323,7 @@ class MOERegressor(BaseRegressor):
         name: str,
         calib_space: DesignSpace | None = None,
         calib_algo: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
-        **option_lists: list[MLAlgoParameterType] | None,
+        **option_lists: list[MLAlgoSettingsType] | None,
     ) -> None:
         """Add a candidate for classification.
 
@@ -353,7 +353,7 @@ class MOERegressor(BaseRegressor):
         name: str,
         calib_space: DesignSpace | None = None,
         calib_algo: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
-        **option_lists: list[MLAlgoParameterType] | None,
+        **option_lists: list[MLAlgoSettingsType] | None,
     ) -> None:
         """Add a candidate for regression.
 

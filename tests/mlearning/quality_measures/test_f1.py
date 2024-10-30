@@ -28,8 +28,9 @@ from numpy import array
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.algos.knn import KNNClassifier
 from gemseo.mlearning.classification.quality.f1_measure import F1Measure
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.utils.testing.helpers import concretize_classes
+
+from ..core.test_ml_algo import DummyMLAlgo
 
 
 @pytest.fixture
@@ -56,8 +57,8 @@ def dataset_test() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLAlgo):
-        algo = BaseMLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        algo = DummyMLAlgo(dataset)
 
     measure = F1Measure(algo)
     assert measure.algo is not None

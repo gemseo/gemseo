@@ -1031,7 +1031,7 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
         # Use DisciplinaryOpt instead of MDF
         formulation="DisciplinaryOpt",
         # Sample -objective instead of objective
-        formulation_options={"maximize_objective": True},
+        formulation_settings={"maximize_objective": True},
         # Sample the gradients
         eval_jac=True,
         # Log the problem

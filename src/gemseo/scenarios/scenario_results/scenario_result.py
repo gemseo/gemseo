@@ -97,16 +97,16 @@ class ScenarioResult:
         """
         return self.optimization_problems_to_results[self._MAIN_PROBLEM_LABEL]
 
-    def plot(self, name: str, **options: Any) -> BasePost:
+    def plot(self, name: str, **settings: Any) -> BasePost:
         """Visualize the result.
 
         Args:
             name: The name of the post-processing.
-            **options: The options of the post-processing.
+            **settings: The settings of the post-processing.
 
         Returns:
             The post-processing of the result.
         """
         return self.POST_FACTORY.execute(
-            self.__obj_to_be_post_processed, name, **options
+            self.__obj_to_be_post_processed, name, **settings
         )

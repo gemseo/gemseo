@@ -95,7 +95,7 @@ class ODEDiscipline(Discipline):
         termination_event_disciplines: Iterable[Discipline] = (),
         solve_at_algorithm_times: bool | None = None,
         ode_solver_name: str = "RK45",
-        **ode_solver_options: Any,
+        **ode_solver_settings: Any,
     ):
         """
         Args:
@@ -139,7 +139,7 @@ class ODEDiscipline(Discipline):
                 if no terminal event is considered,
                 and ``True`` otherwise.
             ode_solver_name: The name of the ODE solver.
-            **ode_solver_options: The options of the ODE solver.
+            **ode_solver_settings: The settings of the ODE solver.
         """  # noqa: D205, D212, D415
         # Define the names of the state variables
         if state_names:
@@ -159,7 +159,7 @@ class ODEDiscipline(Discipline):
 
         # Store information concerning ODE solver
         self.__ode_solver = ODESolverLibraryFactory().create(ode_solver_name)
-        self.__ode_solver_options = ode_solver_options
+        self.__ode_solver_options = ode_solver_settings
 
         # Create ODE problem
         initial_state = self.__get_state_vector(discipline.default_input_data)
