@@ -171,9 +171,18 @@ class LagrangeMultipliers:
             # multipliers as a solution of a least-square problem
             try:
                 mul, residuals = nnls(lhs, rhs)
-            except LinAlgError:
-                # NNLS may have crashed on a singular submatrix
-                mul = self.__compute_bounded_least_squares_solution(lhs, rhs)
+            except LinAlgError as error:
+                if str(error) == "Matrix is singular.":
+                    # NNLS has crashed on a singular submatrix
+                    mul = self.__compute_bounded_least_squares_solution(lhs, rhs)
+                else:
+                    raise
+            except RuntimeError as error:
+                if str(error) == "Maximum number of iterations reached.":
+                    # NNLS has not converged
+                    mul = self.__compute_bounded_least_squares_solution(lhs, rhs)
+                else:
+                    raise
             else:
                 self.kkt_residual = norm(residuals)
         else:
