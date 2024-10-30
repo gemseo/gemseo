@@ -640,8 +640,13 @@ def get_scenario_inputs_schema(
         ... )
         >>> design_space = SellarDesignSpace()
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-        >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-        'my_scenario', 'MDO')
+        >>> scenario = create_scenario(
+        ...     disciplines,
+        ...     "obj",
+        ...     design_space,
+        ...     formulation_name="MDF",
+        ...     scenario_type="MDO",
+        ... )
         >>> get_scenario_inputs_schema(scenario)
     """
     return scenario.Settings.model_json_schema()
@@ -798,7 +803,6 @@ def get_mda_options_schema(
 
 def create_scenario(
     disciplines: Sequence[Discipline] | Discipline,
-    formulation: str,
     objective_name: str,
     design_space: DesignSpace | str | Path,
     name: str = "",
@@ -813,8 +817,6 @@ def create_scenario(
         disciplines: The disciplines
             used to compute the objective, constraints and observables
             from the design variables.
-        formulation: The class name of the :class:`.BaseMDOFormulation`,
-            e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
         objective_name: The name(s) of the discipline output(s) used as objective.
             If multiple names are passed, the objective will be a vector.
         design_space: The search space including at least the design variables
@@ -824,7 +826,8 @@ def create_scenario(
             If empty, use the name of the class.
         scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
         maximize_objective: Whether to maximize the objective.
-        formulation_settings_model: The formulation settings as a Pydantic model.
+        formulation_settings_model: The formulation settings as a Pydantic model,
+            including the formulation name (use the keyword ``"formulation"``).
             If ``None``, use ``**settings``.
         **formulation_settings: The formulation settings.
             These arguments are ignored when ``settings_model`` is not ``None``.
@@ -837,7 +840,7 @@ def create_scenario(
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
         >>> scenario = create_scenario(
-        >>>     disciplines, 'MDF', 'obj', design_space, name='SellarMDFScenario'
+        >>>     disciplines, "obj", design_space, formulation_name="MDF"
         >>> )
     """
     from gemseo.scenarios.doe_scenario import DOEScenario
@@ -859,7 +862,6 @@ def create_scenario(
 
     return cls(
         disciplines,
-        formulation,
         objective_name,
         design_space,
         name=name,
@@ -1102,7 +1104,6 @@ def create_mda(
 
 def execute_post(
     to_post_proc: BaseScenario | OptimizationProblem | str | Path,
-    post_name: str,
     settings_model: BasePostSettings | None = None,
     **settings: Any,
 ) -> BasePost:
@@ -1114,10 +1115,10 @@ def execute_post(
             an MDO scenario,
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
-        post_name: The name of the post-processing.
         settings_model: The post-processor settings as a Pydantic model.
             If ``None``, use ``**settings``.
-        **settings: The post-processor settings.
+        **settings: The post-processor settings,
+            including the algorithm name (use the keyword ``"post_name"``).
             These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
@@ -1130,10 +1131,15 @@ def execute_post(
         ... )
         >>> disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
         >>> design_space = SellarDesignSpace()
-        >>> scenario = create_scenario(disciplines, 'MDF', 'obj', design_space,
-        'SellarMDFScenario')
+        >>> scenario = create_scenario(
+        ...     disciplines,
+        ...     "obj",
+        ...     design_space,
+        ...     formulation_name="MDF",
+        ...     name="SellarMDFScenario",
+        ... )
         >>> scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
-        >>> execute_post(scenario, "OptHistoryView", show=False, save=True)
+        >>> execute_post(scenario, post_name="OptHistoryView", show=False, save=True)
     """
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.post.factory import PostFactory
@@ -1147,14 +1153,11 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return PostFactory().execute(
-        opt_problem, post_name, settings_model=settings_model, **settings
-    )
+    return PostFactory().execute(opt_problem, settings_model=settings_model, **settings)
 
 
 def execute_algo(
     opt_problem: OptimizationProblem,
-    algo_name: str,
     algo_type: str = "opt",
     settings_model: BaseAlgorithmSettings | None = None,
     **settings: Any,
@@ -1163,20 +1166,20 @@ def execute_algo(
 
     Args:
         opt_problem: The optimization problem to be solved.
-        algo_name: The name of the algorithm to be used to solve optimization problem.
         algo_type: The type of algorithm,
             either "opt" for optimization
             or "doe" for design of experiments.
         settings_model: The algorithm settings as a Pydantic model.
             If ``None``, use ``**settings``.
-        **settings: The algorithm settings.
+        **settings: The algorithm settings,
+            including the algorithm name (use the keyword ``"algo_name"``).
             These arguments are ignored when ``settings_model`` is not ``None``.
 
     Examples:
         >>> from gemseo import execute_algo
         >>> from gemseo.problems.optimization.rosenbrock import Rosenbrock
         >>> opt_problem = Rosenbrock()
-        >>> opt_result = execute_algo(opt_problem, "SLSQP")
+        >>> opt_result = execute_algo(opt_problem, algo_name="SLSQP")
         >>> opt_result
         Optimization result:
         |_ Design variables: [0.99999787 0.99999581]
@@ -1196,9 +1199,7 @@ def execute_algo(
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
 
-    return factory.execute(
-        opt_problem, algo_name, settings_model=settings_model, **settings
-    )
+    return factory.execute(opt_problem, settings_model=settings_model, **settings)
 
 
 def monitor_scenario(
@@ -1558,7 +1559,6 @@ def import_database(
 
 def compute_doe(
     variables_space: DesignSpace | int,
-    algo_name: str,
     unit_sampling: bool = False,
     settings_model: BaseDOESettings | None = None,
     **settings: DriverSettingType,
@@ -1567,14 +1567,14 @@ def compute_doe(
 
     Args:
         variables_space: Either the variables space to be sampled or its dimension.
-        algo_name: The DOE algorithm.
         unit_sampling: Whether to sample in the unit hypercube.
             If the value provided in ``variables_space`` is the dimension,
             the samples will be generated in the unit hypercube
             whatever the value of ``unit_sampling``.
         settings_model: The DOE settings as a Pydantic model.
             If ``None``, use ``**settings``.
-        **settings: The DOE settings.
+        **settings: The DOE settings,
+            including the algorithm name (use the keyword ``"algo_name"``).
             These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
@@ -1588,7 +1588,9 @@ def compute_doe(
         >>> doe = compute_doe(variables_space, algo_name="lhs", n_samples=5)
     """
     from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.utils.pydantic import get_algo_name
 
+    algo_name = get_algo_name(settings_model, settings)
     library = DOELibraryFactory().create(algo_name)
     return library.compute_doe(
         variables_space,
@@ -1805,9 +1807,10 @@ def wrap_discipline_in_job_scheduler(
         >>> wrapped_mda= wrap_discipline_in_job_scheduler(mda, scheduler_name="SLURM",
         >>>                                               workdir_path="workdir",
         >>>                                               cpus_per_task=24)
-        >>> scn=create_scenario(mda, "DisciplinaryOpt", "obj", SellarDesignSpace(),
-        >>>                     scenario_type="DOE")
-        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
+        >>> scn=create_scenario(
+        >>> ... mda, "obj", SellarDesignSpace(), formulation_name="DisciplinaryOpt", scenario_type="DOE"
+        >>> )
+        >>> scn.execute(algo_name="lhs", n_samples=100, n_processes=10)
 
         In this variant, each discipline is wrapped independently in the job scheduler,
         which allows to parallelize more the process because each discipline will run on
@@ -1823,11 +1826,13 @@ def wrap_discipline_in_job_scheduler(
         >>>                                                 cpus_per_task=24,
         >>>                                                 scheduler_name="SLURM"),
         >>>                for disc in disciplines]
-        >>> scn=create_scenario(wrapped_discs, "MDF", "obj", SellarDesignSpace(),
-        >>>                     scenario_type="DOE")
-        >>> scn.formulation.mda.set_cache(Discipline.HDF5_CACHE,
-        >>>                                      hdf_file_path="mda_cache.h5")
-        >>> scn.execute(algo="lhs", n_samples=100, algo_options={"n_processes": 10})
+        >>> scn=create_scenario(
+        >>>     wrapped_discs, "obj", SellarDesignSpace(), formulation_name="MDF", scenario_type="DOE"
+        >>> )
+        >>> scn.formulation.mda.set_cache(
+        ...     Discipline.HDF5_CACHE, hdf_file_path="mda_cache.h5"
+        ... )
+        >>> scn.execute(algo_name="lhs", n_samples=100, n_processes=10)
     """  # noqa:D205 D212 D415 E501
     from gemseo.disciplines.wrappers.job_schedulers.factory import (
         JobSchedulerDisciplineWrapperFactory,
@@ -1877,7 +1882,7 @@ def sample_disciplines(
     input_space: DesignSpace,
     output_names: str | Iterable[str],
     algo_name: str,
-    formulation: str = "MDF",
+    formulation_name: str = "MDF",
     formulation_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "Sampling",
     backup_settings: BackupSettings | None = None,
@@ -1892,7 +1897,7 @@ def sample_disciplines(
         output_names: The names of the outputs of interest.
         n_samples: The number of samples.
         algo_name: The name of the DOE algorithm.
-        formulation: The name of the MDO formulation.
+        formulation_name: The name of the MDO formulation.
         formulation_settings: The settings of the MDO formulation.
             If empty, use the default ones.
         name: The name of the returned dataset.
@@ -1914,9 +1919,9 @@ def sample_disciplines(
     output_names_iterator = iter(output_names)
     scenario = DOEScenario(
         disciplines,
-        formulation,
         next(output_names_iterator),
         input_space,
+        formulation_name=formulation_name,
         name=name,
         **formulation_settings,
     )

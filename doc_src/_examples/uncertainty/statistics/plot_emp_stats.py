@@ -67,7 +67,11 @@ parameter_space.filter(discipline.io.input_grammar.names)
 # by means of a :class:`.DOEScenario`
 # executed with a Monte Carlo algorithm and 100 samples.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_4", parameter_space, scenario_type="DOE"
+    [discipline],
+    "y_4",
+    parameter_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)
 

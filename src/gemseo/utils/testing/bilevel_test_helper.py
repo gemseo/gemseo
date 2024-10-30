@@ -28,12 +28,12 @@ from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 def create_sobieski_bilevel_scenario(
-    scenario_formulation: str = "BiLevel",
+    formulation_name: str = "BiLevel",
 ) -> Callable[[dict[str, Any]], MDOScenario]:
     """Create a function to generate a Sobieski Scenario.
 
     Args:
-        scenario_formulation: The name of the formulation of the scenario.
+        formulation_name: The name of the formulation of the scenario.
 
     Returns:
         A function which generates a Sobieski scenario with specific options.
@@ -50,13 +50,13 @@ def create_sobieski_bilevel_scenario(
         """
         sub_scenarios = create_sobieski_sub_scenarios()
         for scenario in sub_scenarios:
-            scenario.set_algorithm("SLSQP", max_iter=5)
+            scenario.set_algorithm(algo_name="SLSQP", max_iter=5)
 
         system = MDOScenario(
             [*sub_scenarios, SobieskiMission()],
-            scenario_formulation,
             "y_4",
             SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
+            formulation_name=formulation_name,
             maximize_objective=True,
             **settings,
         )
@@ -71,19 +71,19 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
     design_space = SobieskiProblem().design_space
     propulsion = MDOScenario(
         [SobieskiPropulsion()],
-        "DisciplinaryOpt",
         "y_34",
         design_space.filter("x_3", copy=True),
-        "PropulsionScenario",
+        name="PropulsionScenario",
+        formulation_name="DisciplinaryOpt",
     )
 
     # Maximize L/D
     aerodynamics = MDOScenario(
         [SobieskiAerodynamics()],
-        "DisciplinaryOpt",
         "y_24",
         design_space.filter("x_2", copy=True),
-        "AerodynamicsScenario",
+        formulation_name="DisciplinaryOpt",
+        name="AerodynamicsScenario",
         maximize_objective=True,
     )
 
@@ -91,10 +91,10 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
     # weight))
     structure = MDOScenario(
         [SobieskiStructure()],
-        "DisciplinaryOpt",
         "y_11",
         design_space.filter("x_1"),
-        "StructureScenario",
+        formulation_name="DisciplinaryOpt",
+        name="StructureScenario",
         maximize_objective=True,
     )
 

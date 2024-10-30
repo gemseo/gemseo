@@ -60,7 +60,9 @@ def disciplines_and_scenario() -> list[MyDiscipline]:
     ]
     design_space = DesignSpace()
     design_space.add_variable("xa")
-    scenario = MDOScenario(sub_disciplines, "DisciplinaryOpt", "ya", design_space)
+    scenario = MDOScenario(
+        sub_disciplines, "ya", design_space, formulation_name="DisciplinaryOpt"
+    )
     return [*disciplines, scenario]
 
 

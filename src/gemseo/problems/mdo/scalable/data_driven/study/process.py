@@ -409,49 +409,49 @@ class ScalabilityStudy:
 
     def add_optimization_strategy(
         self,
-        algo: str,
+        algo_name: str,
         max_iter: int,
-        formulation: str = "DisciplinaryOpt",
-        algo_options: StrKeyMapping | None = None,
-        formulation_options: str | None = None,
+        formulation_name: str = "DisciplinaryOpt",
+        algo_settings: StrKeyMapping | None = None,
+        formulation_settings: str | None = None,
         top_level_diff: str = "auto",
     ) -> None:
         """Add both optimization algorithm and MDO formulation and their options.
 
         Args:
-            algo: The name of the optimization algorithm.
+            algo_name: The name of the optimization algorithm.
             max_iter: The maximum number of iterations for the optimization algorithm.
-            formulation: The name of the MDO formulation.
-            algo_options: The options of the optimization algorithm.
-            formulation_options: The options of the MDO formulation.
+            formulation_name: The name of the MDO formulation.
+            algo_settings: The options of the optimization algorithm.
+            formulation_settings: The options of the MDO formulation.
             top_level_diff: The differentiation method for the top level disciplines.
         """
-        self.algorithms.append(algo)
-        if algo_options is None:
-            algo_options = {}
-        elif not isinstance(algo_options, dict):
-            msg = "algo_options must be a dictionary."
+        self.algorithms.append(algo_name)
+        if algo_settings is None:
+            algo_settings = {}
+        elif not isinstance(algo_settings, dict):
+            msg = "algo_settings must be a dictionary."
             raise TypeError(msg)
-        algo_options.update({"max_iter": max_iter})
-        self.algorithms_options.append(algo_options)
-        self.formulations.append(formulation)
-        self.formulations_options.append(formulation_options)
+        algo_settings.update({"max_iter": max_iter})
+        self.algorithms_options.append(algo_settings)
+        self.formulations.append(formulation_name)
+        self.formulations_options.append(formulation_settings)
         self.top_level_diff.append(top_level_diff)
-        if algo_options is not None:
-            algo_options = ", ".join([
-                f"{name}({value})" for name, value in algo_options.items()
+        if algo_settings is not None:
+            algo_settings = ", ".join([
+                f"{name}({value})" for name, value in algo_settings.items()
             ])
-        if formulation_options is not None:
-            formulation_options = ", ".join([
-                f"{name}({value})" for name, value in formulation_options.items()
+        if formulation_settings is not None:
+            formulation_settings = ", ".join([
+                f"{name}({value})" for name, value in formulation_settings.items()
             ])
         msg = MultiLineString()
         msg.add("Add optimization strategy # {}", len(self.formulations))
         msg.indent()
-        msg.add("Algorithm: {}", algo)
-        msg.add("Algorithm options: {}", algo_options)
-        msg.add("Formulation: {}", formulation)
-        msg.add("Formulation options: {}", formulation_options)
+        msg.add("Algorithm: {}", algo_name)
+        msg.add("Algorithm options: {}", algo_settings)
+        msg.add("Formulation: {}", formulation_name)
+        msg.add("Formulation options: {}", formulation_settings)
         LOGGER.info("%s", msg)
 
     def add_scaling_strategies(
@@ -666,20 +666,25 @@ class ScalabilityStudy:
                         self.__create_scenario(problem, formulation, opt_index)
                         msg.add("Execute MDO Scenario")
                         formulation_options = self.formulations_options[opt_index]
-                        algo_options = self.__execute_scenario(problem, algo, opt_index)
+                        algo_settings = self.__execute_scenario(
+                            problem, algo, opt_index
+                        )
 
                     path = self.__optview_path(algo, formulation, scal_index, replicate)
                     msg.add("Save optim history view in {}", path)
                     fpath = str(path) + "/"
                     problem.scenario.post_process(
-                        "OptHistoryView", save=True, show=False, file_path=fpath
+                        post_name="OptHistoryView",
+                        save=True,
+                        show=False,
+                        file_path=fpath,
                     )
                     result = ScalabilityResult(directory, scal_index + 1, replicate)
                     self.results.append(result)
                     statistics = self.__get_statistics(problem, scaling)
                     result.get(
                         algo=algo,
-                        algo_options=algo_options,
+                        algo_options=algo_settings,
                         formulation=formulation,
                         formulation_options=formulation_options,
                         scaling=scaling,
@@ -830,11 +835,11 @@ class ScalabilityStudy:
         top_level_disciplines = problem.scenario.formulation.get_top_level_disciplines()
         for disc in top_level_disciplines:
             disc.linearization_mode = self.top_level_diff[opt_index]
-        algo_options = deepcopy(self.algorithms_options[opt_index])
-        max_iter = algo_options["max_iter"]
-        del algo_options["max_iter"]
-        problem.scenario.execute(algo_name=algo, max_iter=max_iter, **algo_options)
-        return algo_options
+        algo_settings = deepcopy(self.algorithms_options[opt_index])
+        max_iter = algo_settings["max_iter"]
+        del algo_settings["max_iter"]
+        problem.scenario.execute(algo_name=algo, max_iter=max_iter, **algo_settings)
+        return algo_settings
 
     def __get_stop_index(self, problem: ScalableProblem) -> tuple[int, int]:
         """Get stop index from a database.

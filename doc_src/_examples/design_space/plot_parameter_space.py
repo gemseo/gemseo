@@ -134,7 +134,11 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 #    :class:`.DOEScenario` will consider all variables. In particular, the
 #    deterministic variables will be considered as uniformly distributed.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
+    [discipline],
+    "z",
+    parameter_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="lhs", n_samples=100)
 
@@ -162,7 +166,11 @@ parameter_space.filter(parameter_space.uncertain_variables)
 # Then, we create a new scenario from this parameter space
 # containing only the uncertain variables and execute it.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
+    [discipline],
+    "z",
+    parameter_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="lhs", n_samples=100)
 

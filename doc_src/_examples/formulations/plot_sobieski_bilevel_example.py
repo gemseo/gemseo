@@ -69,6 +69,7 @@ design_space = SobieskiDesignSpace()
 # algorithm settings:
 
 slsqp_settings = SLSQPSettings(
+    max_iter=30,
     xtol_rel=1e-7,
     xtol_abs=1e-7,
     ftol_rel=1e-7,
@@ -77,6 +78,7 @@ slsqp_settings = SLSQPSettings(
 )
 
 cobyla_settings = NLOPTCOBYLASettings(
+    max_iter=50,
     xtol_rel=1e-7,
     xtol_abs=1e-7,
     ftol_rel=1e-7,
@@ -90,12 +92,12 @@ cobyla_settings = NLOPTCOBYLASettings(
 # This sub-scenario will minimize SFC.
 sc_prop = create_scenario(
     propu,
-    "DisciplinaryOpt",
     "y_34",
     design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
+    formulation_name="DisciplinaryOpt",
 )
-sc_prop.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
+sc_prop.set_algorithm(slsqp_settings)
 sc_prop.add_constraint("g_3", constraint_type="ineq")
 
 # %%
@@ -104,13 +106,13 @@ sc_prop.add_constraint("g_3", constraint_type="ineq")
 # This sub-scenario will minimize L/D.
 sc_aero = create_scenario(
     aero,
-    "DisciplinaryOpt",
     "y_24",
     design_space.filter("x_2", copy=True),
     name="AerodynamicsScenario",
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
-sc_aero.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
+sc_aero.set_algorithm(slsqp_settings)
 sc_aero.add_constraint("g_2", constraint_type="ineq")
 
 # %%
@@ -120,14 +122,14 @@ sc_aero.add_constraint("g_2", constraint_type="ineq")
 # log(aircraft total weight / (aircraft total weight - fuel weight)).
 sc_str = create_scenario(
     struct,
-    "DisciplinaryOpt",
     "y_11",
     design_space.filter("x_1", copy=True),
     name="StructureScenario",
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
 sc_str.add_constraint("g_1", constraint_type="ineq")
-sc_str.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
+sc_str.set_algorithm(slsqp_settings)
 
 # %%
 # Build a scenario for Mission
@@ -136,7 +138,6 @@ sc_str.set_algorithm("SLSQP", max_iter=30, settings_model=slsqp_settings)
 # Mission and aims to maximize the range (Breguet).
 system_scenario = create_scenario(
     [sc_prop, sc_aero, sc_str, mission],
-    "BiLevel",
     "y_4",
     design_space.filter("x_shared", copy=True),
     apply_cstr_tosub_scenarios=False,
@@ -146,6 +147,7 @@ system_scenario = create_scenario(
     max_mda_iter=30,
     maximize_objective=True,
     sub_scenarios_log_level=WARNING,
+    formulation_name="BiLevel",
 )
 system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
 
@@ -162,9 +164,7 @@ system_scenario.xdsmize(save_html=False, pdf_build=False)
 # %%
 # Execute the main scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.execute(
-    algo_name="NLOPT_COBYLA", max_iter=50, algo_settings_model=cobyla_settings
-)
+system_scenario.execute(cobyla_settings)
 
 # %%
 # Plot the history of the MDA residuals
@@ -177,7 +177,7 @@ system_scenario.formulation.mda2.plot_residual_history(save=False, show=True)
 # %%
 # Plot the system optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("OptHistoryView", save=False, show=True)
+system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the structure optimization histories of the 2 first iterations
@@ -187,7 +187,7 @@ struct_databases = system_scenario.formulation.scenario_adapters[2].databases
 for database in struct_databases[:2]:
     opt_problem = deepcopy(sc_str.formulation.optimization_problem)
     opt_problem.database = database
-    execute_post(opt_problem, "OptHistoryView", save=False, show=True)
+    execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
 
 for disc in [propu, aero, mission, struct]:
     print(f"{disc.name}: {disc.execution_statistics.n_calls} calls.")

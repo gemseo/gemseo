@@ -343,7 +343,7 @@ class MNBI(BaseOptimizationLibrary):
         opt_problem.objective = MDOFunction(objective.compute_output, f"f_{i}", jac=jac)
         opt_result = OptimizationLibraryFactory().execute(
             opt_problem,
-            self.__sub_optim_algo,
+            algo_name=self.__sub_optim_algo,
             max_iter=self.__sub_optim_max_iter,
             enable_progress_bar=False,
             **self.__sub_optim_algo_settings,
@@ -514,7 +514,7 @@ class MNBI(BaseOptimizationLibrary):
         self.__beta_sub_optim.add_constraint(beta_sub_cstr, constraint_type="ineq")
         opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim,
-            self.__sub_optim_algo,
+            algo_name=self.__sub_optim_algo,
             max_iter=self.__sub_optim_max_iter,
             enable_progress_bar=False,
             **self.__sub_optim_algo_settings,

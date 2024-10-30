@@ -32,6 +32,8 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 class TNCSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
     """Settings for the SciPy TNC algorithm."""
 
+    _TARGET_CLASS_NAME = "TNC"
+
     offset: float | None = Field(
         default=None,
         description=(

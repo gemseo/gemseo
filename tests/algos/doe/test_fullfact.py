@@ -43,7 +43,7 @@ def doe_problem_dim_2():
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOELibrary, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     "expected",
@@ -72,7 +72,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOELibrary, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize("n_samples", [1, 100])
 @pytest.mark.parametrize("size", [2, 5])
@@ -101,7 +101,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOELibrary, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     ("options", "expected"),
@@ -129,7 +129,7 @@ def test_fullfact_levels(
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOELibrary, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     ("options", "exception", "error_msg"),

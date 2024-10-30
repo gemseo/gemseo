@@ -27,6 +27,8 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_setting
 class GMRESSettings(BaseSciPyLinalgSettingsBase):
     """The settings of the SciPy GMRES algorithm."""
 
+    _TARGET_CLASS_NAME = "GMRES"
+
     restart: PositiveInt = Field(
         default=20,
         description="""Number of iterations between restarts.""",

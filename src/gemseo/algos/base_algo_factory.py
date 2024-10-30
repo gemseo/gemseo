@@ -29,6 +29,7 @@ from typing import Any
 from typing import ClassVar
 
 from gemseo.core.base_factory import BaseFactory
+from gemseo.utils.pydantic import get_algo_name
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -192,7 +193,6 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
     def execute(
         self,
         problem: BaseProblem,
-        algo_name: str,
         settings_model: BaseAlgorithmSettings | None = None,
         **settings: Any,
     ) -> OptimizationResult | ODEResult:
@@ -200,7 +200,6 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
 
         Args:
             problem: The problem to execute.
-            algo_name: The name of the algorithm.
             settings_model: The algorithm settings as a Pydantic model.
                 If ``None``, use ``**settings``.
             **settings: The algorithm settings.
@@ -209,6 +208,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Returns:
             The result.
         """
+        algo_name = get_algo_name(settings_model, settings)
         return self.create(algo_name).execute(
             problem, settings_model=settings_model, **settings
         )

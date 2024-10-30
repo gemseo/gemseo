@@ -89,7 +89,7 @@ design_space.add_variable(
 # In this section,
 # we build the MDO scenario which links the disciplines with the formulation,
 # the design space and the objective function.
-scenario = create_scenario(disciplines, "MDF", "obj", design_space)
+scenario = create_scenario(disciplines, "obj", design_space, formulation_name="MDF")
 
 # %%
 # Add the constraints
@@ -159,13 +159,13 @@ dataset.get_view(variable_names=["y_1", "y2"])
 # we can generate plots with the observable variables. Have a look at the
 # Basic History plot and the Scatter Plot Matrix:
 scenario.post_process(
-    "BasicHistory",
+    post_name="BasicHistory",
     variable_names=["obj", "y_1", "y2"],
     save=False,
     show=True,
 )
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
     save=False,
     show=True,

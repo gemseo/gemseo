@@ -100,7 +100,7 @@ def calibration_space() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    "algo", [("fullfact", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
+    "algo", [("PYDOE_FULLFACT", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
 )
 def test_calibration(dataset, calibration_space, algo) -> None:
     """Test calibration."""

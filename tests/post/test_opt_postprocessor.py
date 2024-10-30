@@ -31,7 +31,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 def problem() -> Rosenbrock:
     """The Rosenbrock problem."""
     rosenbrock = Rosenbrock()
-    OptimizationLibraryFactory().execute(rosenbrock, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(rosenbrock, algo_name="L-BFGS-B")
     return rosenbrock
 
 

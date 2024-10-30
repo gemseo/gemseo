@@ -25,6 +25,8 @@ from gemseo.utils.pydantic import update_field
 
 
 class BasicHistorySettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "BasicHistory"
+
     variable_names: Sequence[str] = Field(
         ...,
         description="The names of the variables.",

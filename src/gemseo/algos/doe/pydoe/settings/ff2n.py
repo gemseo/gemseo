@@ -21,3 +21,5 @@ from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESetting
 
 class FF2NSettings(BasePyDOESettings):
     """The settings for the 2-Level Full-Factorial DOE from the pyDOE library."""
+
+    _TARGET_CLASS_NAME = "PYDOE_FF2N"

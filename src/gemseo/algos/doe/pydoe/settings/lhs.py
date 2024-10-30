@@ -40,6 +40,8 @@ class Criterion(StrEnum):
 class LHSSettings(BasePyDOESettings):
     """The settings for the LHS DOE from the pyDOE library."""
 
+    _TARGET_CLASS_NAME = "PYDOE_LHS"
+
     criterion: Criterion | None = Field(
         default=None,
         description=(

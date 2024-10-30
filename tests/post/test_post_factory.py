@@ -44,5 +44,7 @@ class TestBasePostFactory(unittest.TestCase):
 
     def test_execute_from_hdf(self) -> None:
         opt_problem = OptimizationProblem.from_hdf(POWER2)
-        post = PostFactory().execute(opt_problem, "OptHistoryView", save=False)
+        post = PostFactory().execute(
+            opt_problem, post_name="OptHistoryView", save=False
+        )
         assert isinstance(post, OptHistoryView)

@@ -28,6 +28,8 @@ from gemseo.algos.opt.nlopt.settings.base_nlopt_settings import BaseNLoptSetting
 class NLOPTMMASettings(BaseNLoptSettings, BaseGradientBasedAlgorithmSettings):
     """The settings for the NLopt MMA algorithm."""
 
+    _TARGET_CLASS_NAME = "NLOPT_MMA"
+
     inner_maxeval: NonNegativeInt = Field(
         default=0,
         description=(

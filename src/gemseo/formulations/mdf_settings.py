@@ -35,6 +35,8 @@ if TYPE_CHECKING:
 class MDFSettings(BaseFormulationSettings):
     """Settings of the :class:`.MDF` formulation."""
 
+    _TARGET_CLASS_NAME = "MDF"
+
     main_mda_name: str = Field(
         default=MDAChain.__name__,
         description="""The name of the class of the main MDA.

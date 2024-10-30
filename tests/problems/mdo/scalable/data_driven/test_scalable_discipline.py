@@ -202,9 +202,9 @@ class ScalableProblem(unittest.TestCase):
 
         scenario = MDOScenario(
             ScalableProblem.scalable_disciplines,
-            formulation,
             "y_4",
             design_space,
+            formulation_name=formulation,
             maximize_objective=True,
         )
         scenario.set_differentiation_method("finite_differences")

@@ -64,7 +64,7 @@ def test_orbital(algo_name, eccentricity, atol) -> None:
     """
     times = linspace(0, 7, 50)
     problem = OrbitalDynamics(eccentricity=eccentricity, times=times)
-    ODESolverLibraryFactory().execute(problem, algo_name, rtol=1.0e-5)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, rtol=1.0e-5)
     x_exact, y_exact = problem.analytic_solution(times)
 
     def check_orbital_constants(

@@ -86,9 +86,10 @@ class ScipyMILP(BaseOptimizationLibrary):
     ALGORITHM_INFOS: ClassVar[dict[str, ScipyMILPAlgorithmDescription]] = {
         "Scipy_MILP": ScipyMILPAlgorithmDescription(
             algorithm_name="Branch & Cut algorithm",
-            description=("Mixed-integer linear programming"),
+            description="Mixed-integer linear programming",
             internal_algorithm_name="milp",
             website=f"{__DOC}scipy.optimize.milp.html",
+            Settings=SciPyMILPSettings,
         ),
     }
 

@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
 
 class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "OptHistoryView"
     variable_names: Sequence[str] = Field(
         default=(),
         description="The names of the variables to display. "

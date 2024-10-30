@@ -82,14 +82,14 @@ mma_settings = NLOPTMMASettings(
 # Build the optimization scenario
 original_scenario = create_scenario(
     [disc, concat],
-    "DisciplinaryOpt",
     "o",
     ds,
     maximize_objective=False,
+    formulation_name="DisciplinaryOpt",
 )
 original_scenario.add_constraint("g", constraint_type="ineq")
 
-original_scenario.execute(algo_name="NLOPT_MMA", algo_settings_model=mma_settings)
+original_scenario.execute(mma_settings)
 # Without constraint aggregation MMA iterations become more expensive, when a
 # large number of constraints are activated.
 
@@ -97,10 +97,10 @@ original_scenario.execute(algo_name="NLOPT_MMA", algo_settings_model=mma_setting
 # exploiting constraint aggregation on the same scenario:
 new_scenario = create_scenario(
     [disc, concat],
-    "DisciplinaryOpt",
     "o",
     ds_new,
     maximize_objective=False,
+    formulation_name="DisciplinaryOpt",
 )
 new_scenario.add_constraint("g", constraint_type="ineq")
 
@@ -109,7 +109,7 @@ new_scenario.add_constraint("g", constraint_type="ineq")
 new_scenario.formulation.optimization_problem.constraints.aggregate(
     0, method="lower_bound_KS", rho=10.0
 )
-new_scenario.execute(algo_name="NLOPT_MMA", algo_settings_model=mma_settings)
+new_scenario.execute(mma_settings)
 
 # %%
 # with constraint aggregation the last iteration is faster.

@@ -24,6 +24,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class SOMSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "SOM"
     n_x: PositiveInt = Field(
         default=4,
         description="The number of grids in x.",

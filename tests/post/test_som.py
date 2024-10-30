@@ -53,5 +53,5 @@ def test_som(is_annotated, h5_path, baseline_images) -> None:
     """Test the SOM post-processing."""
     problem = OptimizationProblem.from_hdf(h5_path)
     PostFactory().execute(
-        problem, "SOM", n_x=4, n_y=3, save=False, annotate=is_annotated
+        problem, post_name="SOM", n_x=4, n_y=3, save=False, annotate=is_annotated
     )

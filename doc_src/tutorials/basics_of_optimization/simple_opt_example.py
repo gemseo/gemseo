@@ -39,7 +39,11 @@ design_space.add_variable("x1", lower_bound=-5, upper_bound=5, type_="integer")
 design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    discipline,
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="fullfact", n_samples=11**2)
 
@@ -75,7 +79,9 @@ design_space.add_variable(
     "x", lower_bound=-2.0, upper_bound=2.0, value=-0.5 * np.ones(1)
 )
 
-scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
+scenario = create_scenario(
+    discipline, "y", design_space, formulation_name="DisciplinaryOpt"
+)
 scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 opt_results = scenario.optimization_result

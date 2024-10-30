@@ -35,6 +35,8 @@ if TYPE_CHECKING:
 class IDFSettings(BaseFormulationSettings):
     """Settings of the :class:`.IDF` formulation."""
 
+    _TARGET_CLASS_NAME = "IDF"
+
     normalize_constraints: bool = Field(
         default=True,
         description=(

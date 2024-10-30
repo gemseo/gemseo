@@ -66,10 +66,10 @@ def test_pareto(tmp_wd, kwargs, baseline_images) -> None:
         baseline_images: The reference images to be compared.
     """
     problem = Power2()
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
     PostFactory().execute(
         problem,
-        "ParetoFront",
+        post_name="ParetoFront",
         save=False,
         file_path="power",
         objectives=problem.function_names,
@@ -87,16 +87,19 @@ def test_pareto_minimize(
     """
     problem = Power2()
     problem.minimize_objective = False
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
     PostFactory().execute(
-        problem, "ParetoFront", file_path="power", objectives=["pow2", "ineq1"]
+        problem,
+        post_name="ParetoFront",
+        file_path="power",
+        objectives=["pow2", "ineq1"],
     )
 
 
 def test_pareto_incorrect_objective_list() -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
     msg = (
         "objective_labels shall have the same dimension as the number of objectives "
         "to plot."
@@ -104,7 +107,7 @@ def test_pareto_incorrect_objective_list() -> None:
     with pytest.raises(ValueError, match=msg):
         PostFactory().execute(
             problem,
-            "ParetoFront",
+            post_name="ParetoFront",
             save=False,
             objectives=problem.function_names,
             objectives_labels=["fake_label"],
@@ -115,7 +118,7 @@ def test_pareto_incorrect_objective_list() -> None:
 def test_pareto_incorrect_objective_names() -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=50)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=50)
     msg = (
         "Cannot build Pareto front, Function \\w* is neither among"
         " optimization problem functions:.*\\.$"
@@ -123,7 +126,7 @@ def test_pareto_incorrect_objective_names() -> None:
     with pytest.raises(ValueError, match=msg):
         PostFactory().execute(
             problem,
-            "ParetoFront",
+            post_name="ParetoFront",
             save=False,
             objectives=["fake_obj"],
             file_path="power",
@@ -146,10 +149,10 @@ def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
         baseline_images: The reference images to be compared.
     """
     problem = BinhKorn()
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=100)
     PostFactory().execute(
         problem,
-        "ParetoFront",
+        post_name="ParetoFront",
         save=False,
         file_path="binh_korn",
         objectives=["compute_binhkorn"],
@@ -161,10 +164,10 @@ def test_pareto_binhkorn(tmp_wd, kwargs, baseline_images) -> None:
 def test_pareto_binhkorn_design_variable() -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=100)
     PostFactory().execute(
         problem,
-        "ParetoFront",
+        post_name="ParetoFront",
         save=False,
         file_path="binh_korn_design_variable",
         objectives=["x", "compute_binhkorn"],
@@ -176,10 +179,10 @@ def test_pareto_binhkorn_design_variable() -> None:
 def test_pareto_binhkorn_no_obj() -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOELibraryFactory().execute(problem, algo_name="fullfact", n_samples=100)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=100)
     PostFactory().execute(
         problem,
-        "ParetoFront",
+        post_name="ParetoFront",
         save=False,
         file_path="binh_korn_no_obj",
     )

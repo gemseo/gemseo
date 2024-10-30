@@ -23,3 +23,5 @@ from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
 
 class OTSobolSettings(BaseOpenTURNSSettings):
     """The settings for the Sobol sequence DOE from the OpenTURNS library."""
+
+    _TARGET_CLASS_NAME = "OT_SOBOL"

@@ -25,6 +25,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class ScatterPlotMatrixSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "ScatterPlotMatrix"
     filter_non_feasible: bool = Field(
         default=False,
         description="Whether to remove the non-feasible points from the data.",

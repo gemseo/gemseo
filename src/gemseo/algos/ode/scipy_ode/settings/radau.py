@@ -23,3 +23,5 @@ from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_sparsity_settings im
 
 class RadauSettings(BaseScipyODESolverJacSparsitySettings):
     """Settings for the Radau ODE solver from Scipy."""
+
+    _TARGET_CLASS_NAME = "Radau"

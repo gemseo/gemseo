@@ -30,6 +30,8 @@ from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
 class OTFullFactSettings(BaseOpenTURNSSettings):
     """The settings for the full factorial DOE from the OpenTURNS library."""
 
+    _TARGET_CLASS_NAME = "OT_FULLFACT"
+
     n_samples: NonNegativeInt = Field(
         default=0,
         description=(

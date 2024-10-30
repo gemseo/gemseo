@@ -52,7 +52,7 @@ def test_mnbi(n_sub_optim, opt_problem):
     """Tests the MNBI algo on several benchmark problems."""
     result = execute_algo(
         opt_problem,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=n_sub_optim,
@@ -72,7 +72,7 @@ def test_min_n_sub_optim():
     ):
         execute_algo(
             Viennet(),
-            "MNBI",
+            algo_name="MNBI",
             max_iter=10000,
             sub_optim_max_iter=100,
             n_sub_optim=3,
@@ -110,7 +110,7 @@ def test_mnbi_parallel(binh_korn):
     n_sub_optim = 10
     result = execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=n_sub_optim,
@@ -157,7 +157,7 @@ def test_protected_const(binh_korn):
     ):
         execute_algo(
             binh_korn,
-            "MNBI",
+            algo_name="MNBI",
             max_iter=10000,
             sub_optim_max_iter=100,
             n_sub_optim=5,
@@ -170,7 +170,7 @@ def test_debug_mode(tmp_wd, binh_korn, kwargs):
     """Test the creation of a debug file when the setting is enabled."""
     execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=3,
@@ -219,7 +219,7 @@ def test_skippable_points(caplog):
     """Test the mechanism that allows to skip sub-optimizations."""
     execute_algo(
         Poloni(),
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=5,
         n_sub_optim=30,
@@ -243,7 +243,7 @@ def test_exclusive_settings_error(binh_korn):
     ):
         execute_algo(
             binh_korn,
-            "MNBI",
+            algo_name="MNBI",
             max_iter=10000,
             sub_optim_max_iter=100,
             n_sub_optim=10,
@@ -271,7 +271,7 @@ def test_custom_anchor_points_error(binh_korn):
     ):
         execute_algo(
             binh_korn,
-            "MNBI",
+            algo_name="MNBI",
             max_iter=10000,
             sub_optim_max_iter=100,
             n_sub_optim=10,
@@ -289,7 +289,7 @@ def test_custom_anchor_points_error(binh_korn):
     ):
         execute_algo(
             binh_korn,
-            "MNBI",
+            algo_name="MNBI",
             max_iter=10000,
             sub_optim_max_iter=100,
             n_sub_optim=10,
@@ -303,7 +303,7 @@ def test_custom_phi_betas_warning(binh_korn, caplog):
     custom_phi_betas = [array([38, 17]), array([60, 10])]
     execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=10,
@@ -334,7 +334,7 @@ def test_custom_phi_betas_error(binh_korn):
     ):
         execute_algo(
             binh_korn,
-            "MNBI",
+            algo_name="MNBI",
             max_iter=10000,
             sub_optim_max_iter=100,
             n_sub_optim=10,
@@ -347,7 +347,7 @@ def test_mnbi_custom_anchor_points(binh_korn):
     """Tests the MNBI algo restart with custom anchor points."""
     result = execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=10,
@@ -355,7 +355,7 @@ def test_mnbi_custom_anchor_points(binh_korn):
     )
     result_restart = execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=10,
@@ -373,7 +373,7 @@ def test_mnbi_custom_phi_betas(binh_korn):
     """Tests the MNBI algo restart with custom values of phi_beta."""
     result = execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=10,
@@ -381,7 +381,7 @@ def test_mnbi_custom_phi_betas(binh_korn):
     )
     result_restart = execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=2,
@@ -406,7 +406,7 @@ def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
 
     result = execute_algo(
         binh_korn,
-        "MNBI",
+        algo_name="MNBI",
         max_iter=10000,
         sub_optim_max_iter=100,
         n_sub_optim=10,

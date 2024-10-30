@@ -30,6 +30,8 @@ from gemseo.typing import NumberArray  # noqa: TCH001
 class GCROTSettings(BaseSciPyLinalgSettingsBase):
     """The settings of the SciPy GCROT algorithm."""
 
+    _TARGET_CLASS_NAME = "GCROT"
+
     m: PositiveInt = Field(
         default=30,
         description="""Number of inner FGMRES iterations per each outer iteration.""",

@@ -142,7 +142,11 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 #    and the uncertain variables with their specified probability distributions.
 
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
+    [discipline],
+    "z",
+    parameter_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="lhs", n_samples=100)
 
@@ -170,7 +174,11 @@ uncertain_space = parameter_space.extract_uncertain_space()
 # Then, we clear the cache, create a new scenario from this parameter space
 # containing only the uncertain variables and execute it.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "z", uncertain_space, scenario_type="DOE"
+    [discipline],
+    "z",
+    uncertain_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="lhs", n_samples=100)
 

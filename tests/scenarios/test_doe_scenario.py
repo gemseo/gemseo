@@ -45,13 +45,13 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 
 
 def build_mdo_scenario(
-    formulation: str,
+    formulation_name: str,
     grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
 ) -> DOEScenario:
     """Build the DOE scenario for SSBJ.
 
     Args:
-        formulation: The name of the DOE scenario formulation.
+        formulation_name: The name of the DOE scenario formulation.
         grammar_type: The grammar type.
 
     Returns:
@@ -75,9 +75,9 @@ def build_mdo_scenario(
     design_space = SobieskiDesignSpace()
     return DOEScenario(
         disciplines,
-        formulation,
         "y_4",
         design_space,
+        formulation_name=formulation_name,
         maximize_objective=True,
     )
 
@@ -108,15 +108,15 @@ def test_parallel_doe_hdf_cache(caplog) -> None:
 
     scenario = create_scenario(
         disciplines,
-        "DisciplinaryOpt",
         "y_4",
         SobieskiDesignSpace(),
+        formulation_name="DisciplinaryOpt",
         maximize_objective=True,
         scenario_type="DOE",
     )
 
     n_samples = 10
-    scenario.execute(algo_name="lhs", n_samples=n_samples, n_processes=2)
+    scenario.execute(algo_name="LHS", n_samples=n_samples, n_processes=2)
     scenario.print_execution_metrics()
     assert len(scenario.formulation.optimization_problem.database) == n_samples
     for disc in disciplines:
@@ -136,7 +136,7 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
     """
     n_samples = 10
     mdf_variable_grammar_doe_scenario.execute(
-        algo_name="lhs", n_samples=n_samples, n_processes=1
+        algo_name="LHS", n_samples=n_samples, n_processes=1
     )
     mdf_variable_grammar_doe_scenario.print_execution_metrics()
     assert (
@@ -171,9 +171,9 @@ def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
     """
     return DOEScenario(
         [double_discipline],
-        "DisciplinaryOpt",
         "y",
         unit_design_space,
+        formulation_name="DisciplinaryOpt",
     )
 
 
@@ -212,9 +212,9 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
 
     scenario = DOEScenario(
         sellar_disciplines,
-        "MDF",
         "obj",
         SellarDesignSpace("float64"),
+        formulation_name="MDF",
         main_mda_name="MDAChain",
         main_mda_settings={
             "inner_mda_name": "MDAJacobi",
@@ -238,7 +238,11 @@ def test_other_exceptions_caught(caplog) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     scenario = DOEScenario(
-        [discipline], "MDF", "y", design_space, main_mda_name="MDAJacobi"
+        [discipline],
+        "y",
+        design_space,
+        main_mda_name="MDAJacobi",
+        formulation_name="MDF",
     )
     with pytest.raises(InvalidDataError):
         scenario.execute(algo_name="CustomDOE", samples=array([[0.0]]))
@@ -250,7 +254,9 @@ def test_export_to_dataset_with_repeated_inputs() -> None:
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
     design_space.add_variable("dv")
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
+    scenario = DOEScenario(
+        [discipline], "obj", design_space, formulation_name="DisciplinaryOpt"
+    )
     samples = array([[1.0], [2.0], [1.0]])
     scenario.execute(algo_name="CustomDOE", samples=samples)
     dataset = scenario.to_dataset()
@@ -263,7 +269,9 @@ def test_export_to_dataset_normalized_integers() -> None:
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
     design_space.add_variable("dv", type_="integer", lower_bound=1, upper_bound=10)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "obj", design_space)
+    scenario = DOEScenario(
+        [discipline], "obj", design_space, formulation_name="DisciplinaryOpt"
+    )
     samples = array([[1], [2], [10]])
     scenario.execute(algo_name="CustomDOE", samples=samples)
     dataset = scenario.to_dataset()
@@ -359,6 +367,6 @@ def test_scenario_without_initial_design_value() -> None:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.default_input_data = {}
-    scenario = DOEScenario([discipline], "MDF", "y", design_space)
-    scenario.execute(algo_name="lhs", n_samples=3)
+    scenario = DOEScenario([discipline], "y", design_space, formulation_name="MDF")
+    scenario.execute(algo_name="LHS", n_samples=3)
     assert len(scenario.formulation.optimization_problem.database) == 3

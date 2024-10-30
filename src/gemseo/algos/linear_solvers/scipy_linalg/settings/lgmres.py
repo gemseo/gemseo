@@ -28,6 +28,8 @@ from gemseo.typing import NumberArray  # noqa: TCH001
 class LGMRESSettings(BaseSciPyLinalgSettingsBase):
     """The settings of the SciPy LGMRES algorithm."""
 
+    _TARGET_CLASS_NAME = "LGMRES"
+
     inner_m: PositiveInt = Field(
         default=30,
         description="""Number of inner GMRES iterations per each outer iteration.""",

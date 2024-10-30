@@ -79,10 +79,10 @@ design_space
 # %%
 scenario = create_scenario(
     disciplines,
-    "IDF",
     "y_4",
     design_space,
     maximize_objective=True,
+    formulation_name="IDF",
 )
 
 # %%
@@ -108,6 +108,7 @@ scenario.xdsmize(save_html=False, pdf_build=False)
 # and the optimizer settings
 
 slsqp_settings = SLSQPSettings(
+    max_iter=20,
     ftol_rel=1e-10,
     ineq_tolerance=1e-3,
     eq_tolerance=1e-3,
@@ -118,7 +119,7 @@ slsqp_settings = SLSQPSettings(
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(algo_name="SLSQP", max_iter=20, algo_settings_model=slsqp_settings)
+scenario.execute(slsqp_settings)
 
 # %%
 # Save the optimization history
@@ -139,9 +140,9 @@ scenario.print_execution_metrics()
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process(post_name="QuadApprox", function="-y_4", save=False, show=True)

@@ -45,7 +45,7 @@ def test_xticks(class_name, kwargs, indices) -> None:
     """
     post = execute_post(
         Path(__file__).parent / "sobieski_doe_20.hdf5",
-        class_name,
+        post_name=class_name,
         save=False,
         show=False,
         **kwargs,

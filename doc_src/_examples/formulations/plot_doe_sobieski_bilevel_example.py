@@ -69,10 +69,10 @@ design_space = SobieskiDesignSpace()
 # This sub-scenario will minimize SFC.
 sc_prop = create_scenario(
     propu,
-    "DisciplinaryOpt",
     "y_34",
     design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -81,11 +81,11 @@ sc_prop = create_scenario(
 # This sub-scenario will minimize L/D.
 sc_aero = create_scenario(
     aero,
-    "DisciplinaryOpt",
     "y_24",
     design_space.filter("x_2", copy=True),
     name="AerodynamicsScenario",
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -95,11 +95,11 @@ sc_aero = create_scenario(
 # log(aircraft total weight / (aircraft total weight - fuel weight)).
 sc_str = create_scenario(
     struct,
-    "DisciplinaryOpt",
     "y_11",
     deepcopy(design_space).filter("x_1"),
     name="StructureScenario",
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -110,12 +110,12 @@ sc_str = create_scenario(
 sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 system_scenario = create_scenario(
     sub_disciplines,
-    "BiLevel",
     "y_4",
     design_space.filter("x_shared", copy=True),
     parallel_scenarios=False,
     reset_x0_before_opt=True,
     scenario_type="DOE",
+    formulation_name="BiLevel",
 )
 
 # %%
@@ -135,7 +135,7 @@ system_scenario.formulation.mda2.warm_start = False
 #    process whatever the execution order and process dispatch.
 
 for sub_sc in sub_disciplines[0:3]:
-    sub_sc.set_algorithm("L-BFGS-B", max_iter=20)
+    sub_sc.set_algorithm(algo_name="L-BFGS-B", max_iter=20)
 
 # %%
 # Visualize the XDSM
@@ -186,13 +186,13 @@ dataset = system_scenario.to_dataset("a_name_for_my_dataset")
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("OptHistoryView", save=False, show=True)
+system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["y_4", "x_shared"],
     save=False,
     show=True,
@@ -201,9 +201,9 @@ system_scenario.post_process(
 # %%
 # Plot parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("ParallelCoordinates", save=False, show=True)
+system_scenario.post_process(post_name="ParallelCoordinates", save=False, show=True)
 
 # %%
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
-system_scenario.post_process("Correlations", save=False, show=True)
+system_scenario.post_process(post_name="Correlations", save=False, show=True)

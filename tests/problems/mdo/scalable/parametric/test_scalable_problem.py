@@ -136,7 +136,7 @@ def test_create_quadratic_optimization_problem_with_coupling(scalable_problem) -
     qp_problem = scalable_problem.create_quadratic_programming_problem(
         add_coupling=True
     )
-    execute_algo(qp_problem, algo_name="lhs", n_samples=3, algo_type="doe")
+    execute_algo(qp_problem, algo_name="LHS", n_samples=3, algo_type="doe")
     assert qp_problem.database.get_function_history("coupling").shape == (3, 2)
 
 

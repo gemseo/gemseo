@@ -60,7 +60,13 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
     if upper_bound:
         problem.design_space.set_current_value(array([0.5, 0.9, -0.5]))
         problem.design_space.set_upper_bound("x", array([1.0, 1.0, 0.9]))
-    execute_algo(problem, "SLSQP", "opt", eq_tolerance=1e-6, ineq_tolerance=1e-6)
+    execute_algo(
+        problem,
+        algo_name="SLSQP",
+        algo_type="opt",
+        eq_tolerance=1e-6,
+        ineq_tolerance=1e-6,
+    )
     lagrange = LagrangeMultipliers(problem)
     x_opt = problem.solution.x_opt
     x_n = problem.design_space.normalize_vect(x_opt)
@@ -82,7 +88,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = normalize
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
-    execute_algo(problem, "SLSQP", "opt", **options)
+    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
@@ -91,7 +97,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
         dspace = problem.design_space
         dspace.set_current_value(array([1.0, 0.9, 1.0]))
         dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
-        execute_algo(problem, "SLSQP", "opt", **options)
+        execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
         return problem.solution.f_opt
 
     df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
@@ -101,14 +107,14 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
 
 
 def test_lagrangian_validation_eq(problem) -> None:
-    execute_algo(problem, "SLSQP", "opt", **SLSQP_OPTIONS)
+    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **SLSQP_OPTIONS)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-1] += eq_val
-        execute_algo(problem2, "SLSQP", "opt", **SLSQP_OPTIONS)
+        execute_algo(problem2, algo_name="SLSQP", algo_type="opt", **SLSQP_OPTIONS)
         return problem2.solution.f_opt
 
     eps = 1e-5
@@ -125,13 +131,13 @@ def test_lagrangian_validation_ineq_normalize() -> None:
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-2] += eq_val
-        execute_algo(problem2, "SLSQP", "opt", **options)
+        execute_algo(problem2, algo_name="SLSQP", algo_type="opt", **options)
         return problem2.solution.f_opt
 
     def obj_grad(eq_val):
         problem = Power2()
         problem.constraints[-2] += eq_val
-        execute_algo(problem, "SLSQP", "opt", **options)
+        execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
         lagrange = LagrangeMultipliers(problem)
         x_opt = problem.solution.x_opt
         lagrangian = lagrange.compute(x_opt)
@@ -152,9 +158,9 @@ def test_lagrangian_validation_ineq_normalize() -> None:
 def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
     scenario = create_scenario(
         sellar_disciplines,
-        "MDF",
         "obj",
         SellarDesignSpace(),
+        formulation_name="MDF",
     )
 
     scenario.add_constraint("c_1", constraint_type)
@@ -179,7 +185,7 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
 def test_lagrange_store(problem) -> None:
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = True
-    execute_algo(problem, "SLSQP", "opt", **options)
+    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrange.active_lb_names = [0]
     lagrange._store_multipliers(np.ones(10))
@@ -230,7 +236,7 @@ def test_2d_ineq(
     problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_ineq, "opt", **options.copy())
+    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options.copy())
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints:
@@ -308,7 +314,7 @@ def test_2d_mixed(
     problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_eq, "opt", **options.copy())
+    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options.copy())
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints:

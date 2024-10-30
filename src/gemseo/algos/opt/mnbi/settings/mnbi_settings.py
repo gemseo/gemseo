@@ -37,6 +37,8 @@ if TYPE_CHECKING:
 class MNBISettings(BaseOptimizerSettings):
     """The mNBI algorithm settings."""
 
+    _TARGET_CLASS_NAME = "MNBI"
+
     normalize_design_space: bool = Field(
         default=False,
         description=(
@@ -84,7 +86,7 @@ class MNBISettings(BaseOptimizerSettings):
     )
 
     doe_algo: str = Field(
-        default="fullfact",
+        default="PYDOE_FULLFACT",
         description=(
             """
             The design of experiments algo for the target points on the Pareto front.

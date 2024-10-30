@@ -27,6 +27,8 @@ from gemseo.typing import StrKeyMapping  # noqa: TCH001
 class MorrisDOESettings(BaseDOESettings):
     """The ``MorrisDOE`` settings."""
 
+    _TARGET_CLASS_NAME = "MorrisDOE"
+
     n_samples: NonNegativeInt = Field(
         default=0,
         description=(
@@ -38,7 +40,7 @@ class MorrisDOESettings(BaseDOESettings):
     )
 
     doe_algo_name: str = Field(
-        default="lhs",
+        default="PYDOE_LHS",
         description="""The name of the DOE algorithm to repeat the OAT DOE.""",
     )
 

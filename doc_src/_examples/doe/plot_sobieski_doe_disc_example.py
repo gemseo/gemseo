@@ -50,11 +50,11 @@ design_space.filter(["y_24", "y_34"])
 # The DOE algorithm.
 scenario = create_scenario(
     [discipline],
-    "DisciplinaryOpt",
     "y_4",
     design_space,
     maximize_objective=True,
     scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -66,13 +66,13 @@ scenario.execute(algo_name="lhs", n_samples=30)
 # %%
 # Plot optimization history view
 # ------------------------------
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot parallel coordinates
 # -------------------------
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["y_4", "y_24", "y_34"],
     save=False,
     show=True,

@@ -26,6 +26,8 @@ from gemseo.algos.doe.base_n_samples_based_doe_settings import (
 class DiagonalDOESettings(BaseNSamplesBasedDOESettings):
     """The settings of the diagonal DOE for scalable model construction."""
 
+    _TARGET_CLASS_NAME = "DiagonalDOE"
+
     n_samples: int = Field(
         2,
         ge=2,

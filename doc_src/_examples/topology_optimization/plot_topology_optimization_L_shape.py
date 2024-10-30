@@ -77,9 +77,9 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # Generate an :class:`.MDOScenario`:
 scenario = create_scenario(
     disciplines,
-    "DisciplinaryOpt",
     "compliance",
     design_space,
+    formulation_name="DisciplinaryOpt",
 )
 # %%
 # Add the volume fraction constraint to the scenario:
@@ -100,9 +100,9 @@ scenario.execute(algo_name="NLOPT_MMA", max_iter=200)
 # -------
 # Post-process the optimization history:
 scenario.post_process(
-    "BasicHistory", variable_names=["compliance"], show=True, save=False
+    post_name="BasicHistory", variable_names=["compliance"], show=True, save=False
 )
 
 # %%
 # Plot the solution
-scenario.post_process("TopologyView", n_x=n_x, n_y=n_y, show=True, save=False)
+scenario.post_process(post_name="TopologyView", n_x=n_x, n_y=n_y, show=True, save=False)

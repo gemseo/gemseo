@@ -139,25 +139,25 @@ def test_expected_workflow_with_adapter() -> None:
     design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
-        "DisciplinaryOpt",
         "y_4",
         design_space.filter("x_3", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
     )
     adapter_propu = MDOScenarioAdapter(scn_propu, ["x_1", "x_2"], ["x_3"])
     scn_aero = create_scenario(
         discs,
-        "DisciplinaryOpt",
         "y_4",
         design_space.filter("x_2", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="AeroScenario",
     )
     adapter_aero = MDOScenarioAdapter(scn_aero, ["x_1", "x_3"], ["x_2"])
     scn_struct = create_scenario(
         discs,
-        "DisciplinaryOpt",
         "y_4",
         design_space.filter("x_1", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="StructureScenario",
     )
     adapter_struct = MDOScenarioAdapter(scn_struct, ["x_2", "x_3"], ["x_1"])

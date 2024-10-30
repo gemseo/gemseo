@@ -78,9 +78,9 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 scenario.set_differentiation_method()
@@ -120,7 +120,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # is positive and relatively high compared to the previous one but the combined
 # effects of :math:`x_0` and  :math:`x_2` are non-negligible in comparison.
 
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process(post_name="QuadApprox", function="-y_4", save=False, show=True)
 
 # %%
 # The second plot represents the quadratic approximation of the objective around the

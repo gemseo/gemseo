@@ -25,8 +25,10 @@ from pydantic import PositiveInt  # noqa: TCH002
 from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 
 
-class FullFactSettings(BasePyDOESettings):
+class FULLFACTSettings(BasePyDOESettings):
     """The settings for the full factorial DOE from the pyDOE library."""
+
+    _TARGET_CLASS_NAME = "PYDOE_FULLFACT"
 
     n_samples: NonNegativeInt = Field(
         default=0,

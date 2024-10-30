@@ -23,3 +23,5 @@ from gemseo.algos.doe.openturns.settings.base_ot_stratified_doe import (
 
 class OTCompositeSettings(BaseOTStratifiedDOESettings):
     """The settings for the composite DOE from the OpenTURNS library."""
+
+    _TARGET_CLASS_NAME = "OT_COMPOSITE"

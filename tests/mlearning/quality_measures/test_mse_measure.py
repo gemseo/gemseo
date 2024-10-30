@@ -54,8 +54,10 @@ def dataset() -> Dataset:
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute(algo_name="fullfact", n_samples=20)
+    scenario = DOEScenario(
+        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=20)
     return MODEL.cache.to_dataset()
 
 
@@ -65,8 +67,10 @@ def dataset_test() -> Dataset:
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute(algo_name="fullfact", n_samples=5)
+    scenario = DOEScenario(
+        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=5)
     return MODEL.cache.to_dataset()
 
 

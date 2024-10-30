@@ -19,5 +19,7 @@ from __future__ import annotations
 from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 
 
-class PBDesignSettings(BasePyDOESettings):
+class PBDESIGNSettings(BasePyDOESettings):
     """The settings for the Plackett-Burman DOE from the pyDOE library."""
+
+    _TARGET_CLASS_NAME = "PYDOE_PBDESIGN"

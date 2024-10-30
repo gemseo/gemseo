@@ -24,6 +24,8 @@ from gemseo.formulations.mdf_settings import MDFSettings
 class BiLevelSettings(MDFSettings):
     """Settings of the :class:`.BiLevel` formulation."""
 
+    _TARGET_CLASS_NAME = "BiLevel"
+
     parallel_scenarios: bool = Field(
         default=False, description="Whether to run the sub-scenarios in parallel."
     )

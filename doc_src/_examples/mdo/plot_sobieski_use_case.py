@@ -159,9 +159,9 @@ get_all_inputs(disciplines)
 # we build the scenario:
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 # %%
@@ -221,7 +221,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # either as keyword arguments
 # e.g. ``scenario.execute(algo_name="SLSQP", max_iter=10, ftol_rel=1e-6)``
 # or as a Pydantic model of settings,
-# e.g. ``scenario.execute(algo_name="SLSQP", settings_model=NLOPTSLSQPSettings(max_iter=10, ftol_rel=1e-6))``
+# e.g. ``scenario.execute(NLOPTSLSQPSettings(max_iter=10, ftol_rel=1e-6))``
 # where the Pydantic model ``NLOPTSLSQPSettings`` is imported from ``gemseo.settings.opt``.
 # In this example, we do not use any option:
 scenario.execute(algo_name="SLSQP", max_iter=10)
@@ -233,7 +233,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # :ref:`post_processing`.
 #
 # To visualize the optimization history:
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Influence of gradient computation method on performance

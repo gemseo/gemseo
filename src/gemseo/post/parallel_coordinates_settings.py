@@ -21,7 +21,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class ParallelCoordinatesSettings(BasePostSettings):  # noqa: D101
-    ...
+    _TARGET_CLASS_NAME = "ParallelCoordinates"
 
 
 update_field(ParallelCoordinatesSettings, "fig_size", default=(10.0, 5.0))

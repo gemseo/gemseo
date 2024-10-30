@@ -77,7 +77,11 @@ input_space.filter(input_names)
 # In order to build a diagonal scalable discipline,
 # a :class:`.DiagonalDOE` must be used.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_2", input_space, scenario_type="DOE"
+    [discipline],
+    "y_2",
+    input_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 for output_name in discipline.io.output_grammar.names:
     if output_name != "y_2":

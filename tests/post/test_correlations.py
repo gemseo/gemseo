@@ -50,11 +50,11 @@ def test_correlations(tmp_wd, factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizationLibraryFactory().execute(problem, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
 
     post = factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         save=True,
         n_plots_x=4,
         n_plots_y=4,
@@ -76,7 +76,7 @@ def test_correlations_import(tmp_wd, factory) -> None:
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         save=True,
         n_plots_x=4,
         n_plots_y=4,
@@ -95,7 +95,7 @@ def test_correlations_func_name_error(factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizationLibraryFactory().execute(problem, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
 
     with pytest.raises(
         ValueError,
@@ -105,7 +105,11 @@ def test_correlations_func_name_error(factory) -> None:
         ),
     ):
         factory.execute(
-            problem, "Correlations", save=False, show=False, func_names=["toto"]
+            problem,
+            post_name="Correlations",
+            save=False,
+            show=False,
+            func_names=["toto"],
         )
 
 
@@ -127,7 +131,7 @@ def test_correlations_func_names(tmp_wd, factory, baseline_images, func_names) -
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         func_names=func_names,
         save=False,
         file_extension="png",
@@ -154,7 +158,7 @@ def test_func_name_sorting(tmp_wd, factory) -> None:
     problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
     factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         func_names=["obj", "c_1", "obj_constr"],
         save=False,
         file_extension="png",

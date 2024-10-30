@@ -57,7 +57,11 @@ print(Path("doe.txt").read_text())
 # with the option "doe_file".
 # We could also change the delimiter (default: ',')  or skip the first rows in the file.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    [discipline],
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="CustomDOE", doe_file="doe.txt")
 

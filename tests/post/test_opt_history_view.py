@@ -76,7 +76,7 @@ def test_opt_hist_const(baseline_images, obj_relative) -> None:
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     execute_post(
         problem,
-        "OptHistoryView",
+        post_name="OptHistoryView",
         show=False,
         save=False,
         variable_names=["x"],
@@ -126,7 +126,9 @@ def test_opt_hist_from_database(
     problem = OptimizationProblem.from_hdf(problem_path)
     # The use of the default value is deliberate;
     # to check that the JSON grammar works properly.
-    execute_post(problem, "OptHistoryView", variable_names=(), show=False, save=False)
+    execute_post(
+        problem, post_name="OptHistoryView", variable_names=(), show=False, save=False
+    )
 
 
 TEST_PARAMETERS = {
@@ -213,8 +215,8 @@ def test_461(case, baseline_images) -> None:
         )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
-    execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
-    execute_post(problem, "OptHistoryView", save=False, show=False)
+    execute_algo(problem, algo_name="NLOPT_SLSQP", max_iter=5)
+    execute_post(problem, post_name="OptHistoryView", save=False, show=False)
 
 
 @image_comparison(
@@ -228,7 +230,7 @@ def test_461(case, baseline_images) -> None:
 def test_variable_names() -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
-        "OptHistoryView",
+        post_name="OptHistoryView",
         variable_names=["x_2", "x_1"],
         save=False,
         show=False,
@@ -245,5 +247,7 @@ def test_no_gradient_history(caplog) -> None:
     problem.database.store(array([-1]), {"f": array([1])})
     problem.database.store(array([0]), {"f": array([0])})
     problem.database.store(array([1]), {"f": array([1])})
-    post_processor = execute_post(problem, "OptHistoryView", save=False, show=False)
+    post_processor = execute_post(
+        problem, post_name="OptHistoryView", save=False, show=False
+    )
     assert set(post_processor.figures.keys()) == {"variables", "objective", "x_xstar"}

@@ -176,10 +176,10 @@ class TestScipy(TestCase):
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
         OptimizationLibraryFactory().execute(
-            problem, "L-BFGS-B", normalize_design_space=True
+            problem, algo_name="L-BFGS-B", normalize_design_space=True
         )
         OptimizationLibraryFactory().execute(
-            problem, "L-BFGS-B", normalize_design_space=False
+            problem, algo_name="L-BFGS-B", normalize_design_space=False
         )
 
     def test_xtol_ftol_activation(self) -> None:
@@ -191,7 +191,7 @@ class TestScipy(TestCase):
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
             res = OptimizationLibraryFactory().execute(
-                problem, "L-BFGS-B", **algo_options
+                problem, algo_name="L-BFGS-B", **algo_options
             )
             return res, problem
 
@@ -273,7 +273,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     """
     optimization_result = OptimizationLibraryFactory().execute(
         opt_problem,
-        "SLSQP",
+        algo_name="SLSQP",
         ftol_abs=1e-10,
     )
     assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)
@@ -350,4 +350,4 @@ def test_cannot_handle_inequality_constraints():
             "because it does not handle inequality constraints."
         ),
     ):
-        OptimizationLibraryFactory().execute(problem, "TNC")
+        OptimizationLibraryFactory().execute(problem, algo_name="TNC")

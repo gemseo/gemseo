@@ -253,17 +253,17 @@ class ScalableProblem:
 
     def create_scenario(
         self,
-        formulation: str = "DisciplinaryOpt",
+        formulation_name: str = "DisciplinaryOpt",
         scenario_type: str = "MDO",
         start_at_equilibrium: bool = False,
         active_probability: float = 0.1,
         feasibility_level: float = 0.5,
-        **settings: Any,
+        **formulation_settings: Any,
     ) -> BaseScenario:
         """Create a :class:`.Scenario` from the scalable disciplines.
 
         Args:
-            formulation: The MDO formulation to use for the scenario.
+            formulation_name: The MDO formulation to use for the scenario.
             scenario_type: The type of scenario, either ``MDO`` or ``DOE``.
             start_at_equilibrium: Whether to start at equilibrium using a preliminary
                 MDA.
@@ -271,7 +271,7 @@ class ScalableProblem:
                 active at the initial step of the optimization.
             feasibility_level: The offset of satisfaction for inequality
                 constraints.
-            **settings: The formulation settings.
+            **formulation_settings: The formulation settings.
 
         Returns:
             The :class:`.Scenario` from the scalable disciplines.
@@ -281,18 +281,20 @@ class ScalableProblem:
             equilibrium = self.__get_equilibrium()
 
         disciplines = self.scaled_disciplines
-        design_space = self._create_design_space(disciplines, formulation)
-        if formulation == "BiLevel":
-            self.scenario = self._create_bilevel_scenario(disciplines, **settings)
+        design_space = self._create_design_space(disciplines, formulation_name)
+        if formulation_name == "BiLevel":
+            self.scenario = self._create_bilevel_scenario(
+                disciplines, **formulation_settings
+            )
         else:
             self.scenario = create_scenario(
                 disciplines,
-                formulation,
                 self.objective_function,
                 deepcopy(design_space),
+                formulation_name=formulation_name,
                 scenario_type=scenario_type,
                 maximize_objective=self.maximize_objective,
-                **settings,
+                **formulation_settings,
             )
         self.__add_ineq_constraints(active_probability, feasibility_level, equilibrium)
         self.__add_eq_constraints(equilibrium)
@@ -334,9 +336,9 @@ class ScalableProblem:
             sub_scenarios.append(
                 create_scenario(
                     sub_disciplines,
-                    "DisciplinaryOpt",
                     obj,
                     design_space,
+                    formulation_name="DisciplinaryOpt",
                     maximize_objective=max_obj,
                 )
             )
@@ -353,22 +355,24 @@ class ScalableProblem:
         sub_disciplines = sub_scenarios + wk_cpl_disciplines
         return create_scenario(
             sub_disciplines,
-            "BiLevel",
             obj,
             design_space,
+            formulation_name="BiLevel",
             maximize_objective=max_obj,
             mda_name="MDAJacobi",
             tolerance=1e-8,
         )
 
     def _create_design_space(
-        self, disciplines: Sequence[Discipline], formulation: str = "DisciplinaryOpt"
+        self,
+        disciplines: Sequence[Discipline],
+        formulation_name: str = "DisciplinaryOpt",
     ) -> DesignSpace:
         """Create a design space into the unit hypercube.
 
         Args:
             disciplines: The disciplines.
-            formulation: The name of the formulation.
+            formulation_name: The name of the formulation.
 
         Returns:
             The design space.
@@ -385,7 +389,7 @@ class ScalableProblem:
                 value=full(size, 0.5),
             )
 
-        if formulation == "IDF":
+        if formulation_name == "IDF":
             coupling_structure = CouplingStructure(disciplines)
             all_couplings = set(coupling_structure.all_couplings)
             for name in all_couplings:

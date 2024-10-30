@@ -27,6 +27,8 @@ from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import 
 class HiGHSInteriorPointSettings(BaseSciPyLinProgSettings):
     """The HiGHS interior point method setting."""
 
+    _TARGET_CLASS_NAME = "INTERIOR_POINT"
+
     dual_feasibility_tolerance: NonNegativeFloat = Field(
         default=1e-7,
         description=("""The tolerance on the feasibility of the dual problem."""),

@@ -89,3 +89,23 @@ def create_model(
         f"got {settings_model.__class__.__name__}."
     )
     raise ValueError(msg)
+
+
+def get_algo_name(settings_model: BaseModel | None, settings: dict[str, Any]) -> str:
+    """Return the algorithm name.
+
+    Args:
+        settings_model: The algorithm settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+        settings: The algorithm settings,
+            including the algorithm name (use the keyword ``"algo_name"``).
+            The function will remove the ``"algo_name"`` entry.
+            These settings are ignored when ``settings_model`` is not ``None``.
+
+    Returns:
+        The algorithm name.
+    """
+    if settings_model is None:
+        return settings.pop("algo_name")
+
+    return settings_model._TARGET_CLASS_NAME

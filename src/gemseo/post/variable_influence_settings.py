@@ -22,6 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 
 
 class VariableInfluenceSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "VariableInfluence"
     level: float = Field(
         default=0.99,
         description="The proportion of the total sensitivity to use as a threshold to "

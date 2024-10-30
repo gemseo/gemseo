@@ -23,3 +23,5 @@ from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings i
 
 class AugmentedLagrangianOrder0Settings(PenaltyHeuristicSettings):
     """The augmented Lagrangian of order 0 settings."""
+
+    _TARGET_CLASS_NAME = "Augmented_Lagrangian_order_0"

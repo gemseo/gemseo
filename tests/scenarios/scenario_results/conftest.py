@@ -40,12 +40,14 @@ def scenario() -> DOEScenario:
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = DOEScenario(
         [AnalyticDiscipline({"z": "x+y"})],
-        "DisciplinaryOpt",
         "z",
         design_space.filter(["y"], copy=True),
+        formulation_name="DisciplinaryOpt",
         name="FooScenario",
     )
-    sub_scenario.set_algorithm("CustomDOE", samples=array([[0.0], [1.0]]))
-    scenario = DOEScenario([sub_scenario], "BiLevel", "z", design_space.filter(["x"]))
-    scenario.set_algorithm("CustomDOE", samples=array([[0.0], [1.0]]))
+    sub_scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
+    scenario = DOEScenario(
+        [sub_scenario], "z", design_space.filter(["x"]), formulation_name="BiLevel"
+    )
+    scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
     return scenario

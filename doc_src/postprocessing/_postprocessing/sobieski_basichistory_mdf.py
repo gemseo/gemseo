@@ -27,10 +27,10 @@ disciplines = create_discipline([
 
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
+    "y_4",
+    "design_space.csv",
+    formulation_name="MDF",
     maximize_objective=True,
-    design_space="design_space.csv",
 )
 
 scenario.set_differentiation_method()
@@ -41,7 +41,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 scenario.execute(algo_name="SLSQP", max_iter=10)
 
 scenario.post_process(
-    "BasicHistory",
+    post_name="BasicHistory",
     variable_names=["g_2", "g_3"],
     save=True,
     show=False,
@@ -49,7 +49,7 @@ scenario.post_process(
     extension="png",
 )
 scenario.post_process(
-    "BasicHistory",
+    post_name="BasicHistory",
     variable_names=["y_4"],
     save=True,
     show=False,

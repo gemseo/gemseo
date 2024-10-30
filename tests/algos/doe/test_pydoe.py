@@ -53,7 +53,7 @@ def test_invalid_algo() -> None:
 def test_lhs_maximin() -> None:
     """Check that an optimal LHS and LHS are different."""
     dim = 3
-    algo_name = "lhs"
+    algo_name = "PYDOE_LHS"
     n_samples = 100
     doe_library = execute_problem(
         algo_name,
@@ -71,33 +71,33 @@ def test_lhs_maximin() -> None:
     ("algo_name", "options", "error"),
     [
         (
-            "ccdesign",
+            "PYDOE_CCDESIGN",
             {"alpha": "unknown_value"},
             "Input should be 'orthogonal', 'o', 'rotatable' or 'r'",
         ),
         (
-            "ccdesign",
+            "PYDOE_CCDESIGN",
             {"face": "unknown_value"},
             "Input should be 'circumscribed', 'ccc', 'inscribed', 'cci', 'faced' or"
             " 'ccf'",
         ),
         (
-            "ccdesign",
+            "PYDOE_CCDESIGN",
             {"center": 1},
             "Input should be a valid tuple",
         ),
         (
-            "bbdesign",
+            "PYDOE_BBDESIGN",
             {"center": (4, 4)},
             "Input should be a valid integer",
         ),
         (
-            "lhs",
+            "PYDOE_LHS",
             {"criterion": "corr", "iterations": "unknown_value", "n_samples": 2},
             "Input should be a valid integer",
         ),
         (
-            "lhs",
+            "PYDOE_LHS",
             {"criterion": "unknown_value", "n_samples": 2},
             "Input should be 'center', 'c', 'maximin', 'm', 'centermaximin', 'cm',"
             " 'correlation', 'corr' or 'lhsmu'",
@@ -114,12 +114,12 @@ def test_algo_with_unknown_options(algo_name, options, error) -> None:
 @pytest.mark.parametrize(
     ("algo_name", "dim", "n_samples", "options"),
     [
-        ("ccdesign", 5, 62, {"center": [10, 10]}),
-        ("bbdesign", 5, 41, {"center": 1}),
-        ("lhs", 2, 3, {"n_samples": 3, "criterion": "corr"}),
-        ("lhs", 2, 3, {"n_samples": 3, "criterion": "centermaximin"}),
-        ("lhs", 2, 3, {"n_samples": 3, "criterion": "center"}),
-        ("lhs", 2, 3, {"n_samples": 3, "criterion": "maximin"}),
+        ("PYDOE_CCDESIGN", 5, 62, {"center": [10, 10]}),
+        ("PYDOE_BBDESIGN", 5, 41, {"center": 1}),
+        ("PYDOE_LHS", 2, 3, {"n_samples": 3, "criterion": "corr"}),
+        ("PYDOE_LHS", 2, 3, {"n_samples": 3, "criterion": "centermaximin"}),
+        ("PYDOE_LHS", 2, 3, {"n_samples": 3, "criterion": "center"}),
+        ("PYDOE_LHS", 2, 3, {"n_samples": 3, "criterion": "maximin"}),
     ],
 )
 def test_algos(algo_name, dim, n_samples, options) -> None:
@@ -134,7 +134,7 @@ def test_integer_lhs() -> None:
     problem.design_space.add_variable(
         "y", type_="integer", lower_bound=10.0, upper_bound=15.0
     )
-    DOELibraryFactory().execute(problem, "lhs", n_samples=10)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_LHS", n_samples=10)
 
     for sample in problem.database.get_x_vect_history():
         assert int(sample[-1]) == sample[-1]
@@ -158,18 +158,18 @@ def get_expected_nsamples(
     Returns:
         The expected number of samples.
     """
-    if algo == "ff2n":
+    if algo == "PYDOE_FF2N":
         return 2**dim
-    if algo == "bbdesign" and dim == 5:
+    if algo == "PYDOE_BBDESIGN" and dim == 5:
         return 46
-    if algo == "pbdesign":
+    if algo == "PYDOE_PBDESIGN":
         if dim == 1:
             return 4
         if dim == 5:
             return 8
-    if algo == "ccdesign" and dim == 5:
+    if algo == "PYDOE_CCDESIGN" and dim == 5:
         return 50
-    if algo == "fullfact":
+    if algo == "PYDOE_FULLFACT":
         return None
     return n_samples
 
@@ -187,7 +187,7 @@ def get_options(
     Returns:
         The options of the DOE algorithm.
     """
-    if algo_name in ["lhs", "fullfact"]:
+    if algo_name in ["PYDOE_LHS", "PYDOE_FULLFACT"]:
         return {"n_samples": 13}
     return {}
 

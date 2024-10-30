@@ -26,7 +26,7 @@ Instantiate an MDO or DOE scenario:
     scenario_type = "MDO"  # or 'DOE'
     scenario = create_scenario(
         disciplines,
-        formulation="MDF",
+        formulation_name="MDF",
         objective_name="obj",
         design_space=design_space,
         name="my_scenario",

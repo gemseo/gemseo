@@ -34,18 +34,18 @@ def factory():
 
 def test_is_available(factory) -> None:
     """Check that the method is_available works."""
-    assert factory.is_available("fullfact")
+    assert factory.is_available("PYDOE_FULLFACT")
     assert not factory.is_available("unknown_algo_name")
 
 
 def test_algorithms(factory) -> None:
     """Check that the property algorithms works."""
-    assert "fullfact" in factory.algorithms
+    assert "PYDOE_FULLFACT" in factory.algorithms
 
 
 def test_algo_names_to_libraries(factory) -> None:
     """Check that the property algo_names_to_libraries works."""
-    assert factory.algo_names_to_libraries["fullfact"] == "PyDOELibrary"
+    assert factory.algo_names_to_libraries["PYDOE_FULLFACT"] == "PyDOELibrary"
 
 
 def test_libraries(factory) -> None:
@@ -55,9 +55,9 @@ def test_libraries(factory) -> None:
 
 def test_create_from_algo_name(factory) -> None:
     """Check that the method create works algorithm name."""
-    lib = factory.create("fullfact")
+    lib = factory.create("PYDOE_FULLFACT")
     assert isinstance(lib, PyDOELibrary)
-    assert lib._algo_name == "fullfact"
+    assert lib._algo_name == "PYDOE_FULLFACT"
 
 
 def test_create_from_unknown_name(factory) -> None:

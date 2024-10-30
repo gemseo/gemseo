@@ -94,9 +94,9 @@ design_space = SobieskiDesignSpace()
 # the Monte Carlo DOE algorithm and 30 samples.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
     scenario_type="DOE",
 )
@@ -121,7 +121,7 @@ scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=30)
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 
-scenario.post_process("SOM", save=False, show=True)
+scenario.post_process(post_name="SOM", save=False, show=True)
 
 # %%
 # The following figure illustrates another :term:`SOM` on the Sobieski

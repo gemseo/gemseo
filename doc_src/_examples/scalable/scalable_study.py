@@ -55,9 +55,9 @@ for discipline in disciplines:
     output_names = iter(discipline.io.output_grammar.names)
     scenario = create_scenario(
         discipline,
-        "DisciplinaryOpt",
         next(output_names),
         design_space,
+        formulation_name="DisciplinaryOpt",
         scenario_type="DOE",
     )
     for output_name in output_names:

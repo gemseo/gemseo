@@ -42,8 +42,10 @@ class Face(StrEnum):
     ccf = "ccf"
 
 
-class CCDesignSettings(BasePyDOESettings):
+class CCDESIGNSettings(BasePyDOESettings):
     """The settings for the central composite DOE from the pyDOE library."""
+
+    _TARGET_CLASS_NAME = "PYDOE_CCDESIGN"
 
     alpha: Alpha = Field(
         default=Alpha.orthogonal,

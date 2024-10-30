@@ -123,9 +123,9 @@ class XDSMizer:
             output_names = iter(discipline.output_grammar.names)
             discipline = MDOScenario(
                 [discipline],
-                "DisciplinaryOpt",
                 next(output_names),
                 design_space,
+                formulation_name="DisciplinaryOpt",
             )
             for output_name in output_names:
                 discipline.add_observable(output_name)

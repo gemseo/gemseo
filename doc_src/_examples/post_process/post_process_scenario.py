@@ -38,7 +38,9 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x**2"})
 design_space = create_design_space()
 design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
-scenario = create_scenario([discipline], "DisciplinaryOpt", "y", design_space)
+scenario = create_scenario(
+    [discipline], "y", design_space, formulation_name="DisciplinaryOpt"
+)
 
 # %%
 # We solve this optimization problem with the gradient-free algorithm COBYLA:
@@ -48,11 +50,11 @@ scenario.execute(algo_name="NLOPT_COBYLA", max_iter=10)
 # Then,
 # we can post-process this :class:`.MDOScenario`
 # either with its method :meth:`~.MDOScenario.post_process`:
-scenario.post_process("BasicHistory", variable_names=["y"])
+scenario.post_process(post_name="BasicHistory", variable_names=["y"])
 
 # %%
 # or with the function :func:`.execute_post`:
-execute_post(scenario, "BasicHistory", variable_names=["y"])
+execute_post(scenario, post_name="BasicHistory", variable_names=["y"])
 
 # %%
 # .. note::

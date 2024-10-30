@@ -110,9 +110,9 @@ def test_reset():
 
     scenario = MDOScenario(
         [Sellar1(), Sellar2(), SellarSystem()],
-        "MDF",
         "obj",
         design_space,
+        formulation_name="MDF",
     )
     initial_current_value = design_space.get_current_value()
     scenario.add_constraint("c_1", constraint_type="ineq")

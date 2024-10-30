@@ -25,6 +25,8 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 class OATDOESettings(BaseDOESettings):
     """The settings of the OAT DOE."""
 
+    _TARGET_CLASS_NAME = "OATDOE"
+
     initial_point: NDArrayPydantic
     """The initial point of the OAT DOE."""
 

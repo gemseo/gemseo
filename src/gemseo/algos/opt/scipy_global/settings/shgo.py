@@ -29,6 +29,8 @@ from gemseo.typing import StrKeyMapping  # noqa: TCH001
 class SHGOSettings(BaseSciPyGlobalSettings):
     """The SciPy differential evolution setting."""
 
+    _TARGET_CLASS_NAME = "SHGO"
+
     n: NonNegativeInt = Field(
         default=100,
         description=(

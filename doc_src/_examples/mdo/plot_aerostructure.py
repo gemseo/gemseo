@@ -38,6 +38,7 @@ configure_logger()
 
 # Passed to algo settings
 cobyla_settings = NLOPTCOBYLASettings(
+    max_iter=7,
     xtol_rel=1e-8,
     xtol_abs=1e-8,
     ftol_rel=1e-8,
@@ -46,7 +47,8 @@ cobyla_settings = NLOPTCOBYLASettings(
     eq_tolerance=1e-3,
 )
 
-lsqp_settings = NLOPTSLSQPSettings(
+slsqp_settings = NLOPTSLSQPSettings(
+    max_iter=10,
     xtol_rel=1e-8,
     xtol_abs=1e-8,
     ftol_rel=1e-8,
@@ -94,17 +96,15 @@ generate_n2_plot(disciplines, save=False, show=True)
 design_space = AerostructureDesignSpace()
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "range",
     design_space,
     maximize_objective=True,
+    formulation_name="MDF",
 )
 scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 scenario.add_constraint("lift", value=0.5)
-scenario.execute(
-    algo_name="NLOPT_SLSQP", max_iter=10, algo_settings_model=lsqp_settings
-)
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.execute(slsqp_settings)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Create an MDO scenario with bilevel formulation
@@ -119,12 +119,12 @@ design_space_ref = AerostructureDesignSpace()
 # with respect to the thick airfoils, based on the aerodynamics discipline.
 aero_scenario = create_scenario(
     [aerodynamics, mission],
-    "DisciplinaryOpt",
     "range",
     design_space_ref.filter(["thick_airfoils"], copy=True),
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
-aero_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, settings_model=lsqp_settings)
+aero_scenario.set_algorithm(slsqp_settings)
 
 # %%
 # Create the structure sub-scenario
@@ -133,12 +133,12 @@ aero_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, settings_model=lsqp_setti
 # with respect to the thick panels, based on the structure discipline.
 struct_scenario = create_scenario(
     [structure, mission],
-    "DisciplinaryOpt",
     "range",
     design_space_ref.filter(["thick_panels"], copy=True),
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
-struct_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, settings_model=lsqp_settings)
+struct_scenario.set_algorithm(slsqp_settings)
 
 # %%
 # Create the system scenario
@@ -148,17 +148,15 @@ struct_scenario.set_algorithm("NLOPT_SLSQP", max_iter=5, settings_model=lsqp_set
 design_space_system = design_space_ref.filter(["sweep"], copy=True)
 system_scenario = create_scenario(
     [aero_scenario, struct_scenario, mission],
-    "BiLevel",
     "range",
     design_space_system,
+    formulation_name="BiLevel",
     maximize_objective=True,
     inner_mda_name="MDAJacobi",
     tolerance=1e-8,
 )
 system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 system_scenario.add_constraint("lift", value=0.5)
-system_scenario.execute(
-    algo_name="NLOPT_COBYLA", max_iter=7, algo_settings_model=cobyla_settings
-)
+system_scenario.execute(cobyla_settings)
 
-system_scenario.post_process("OptHistoryView", save=False, show=True)
+system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)

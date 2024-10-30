@@ -104,12 +104,12 @@ disciplines = [
 
 sub_scenario = create_scenario(
     disciplines,
-    "DisciplinaryOpt",
     "obj2",
     design_space,
+    formulation_name="DisciplinaryOpt",
 )
 
-sub_scenario.set_algorithm("NLOPT_SLSQP", max_iter=100)
+sub_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=100)
 
 # %%
 # We add the Binh and Korn problem constraints.
@@ -140,10 +140,10 @@ system_design_space.add_variable(
 
 system_scenario = create_scenario(
     sub_scenario,
-    "BiLevel",
     "obj1",
     system_design_space,
     scenario_type="DOE",
+    formulation_name="BiLevel",
     sub_scenarios_log_level=WARNING,
 )
 
@@ -166,5 +166,5 @@ system_scenario.xdsmize(save_html=False, pdf_build=False)
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
 system_scenario.execute(algo_name="fullfact", n_samples=50)
 system_scenario.post_process(
-    "ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
+    post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )

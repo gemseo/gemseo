@@ -45,8 +45,10 @@ def dataset() -> Dataset:
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute(algo_name="fullfact", n_samples=LEARNING_SIZE)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 

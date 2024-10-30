@@ -26,6 +26,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class TopologyViewSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "TopologyView"
     n_x: PositiveInt = Field(
         ...,
         description="The number of elements in the horizontal direction.",

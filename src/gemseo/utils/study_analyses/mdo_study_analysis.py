@@ -186,9 +186,9 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
         scenario = create_scenario(
             disciplines,
-            scenario_description[XLSStudyParser.FORMULATION],
             scenario_description[XLSStudyParser.OBJECTIVE_FUNCTION],
             design_space,
+            formulation_name=scenario_description[XLSStudyParser.FORMULATION],
             **options,
         )
         for constraint_name in scenario_description[XLSStudyParser.CONSTRAINTS]:

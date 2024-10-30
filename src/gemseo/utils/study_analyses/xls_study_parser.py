@@ -390,7 +390,7 @@ class XLSStudyParser:
         constraints: Iterable[str],
         disciplines: Iterable[str],
         design_variables: Iterable[str],
-        formulation: str,
+        formulation_name: str,
         scenario_name: str,
     ) -> None:
         """Checks the optimization problem consistency.
@@ -400,7 +400,7 @@ class XLSStudyParser:
             constraints: The names of the constraints.
             disciplines: The names of the disciplines.
             design_variables: The names of the design variables.
-            formulation: The name of the MDO formulation.
+            formulation_name: The name of the MDO formulation.
             scenario_name: The name of the scenario.
 
         Raises:
@@ -421,7 +421,7 @@ class XLSStudyParser:
         string.add("Disciplines: {}", pretty_str(disciplines))
         string.add("Constraints: {}", pretty_str(constraints))
         string.add("Design variables: {}", pretty_str(design_variables))
-        string.add("Formulation: {}", formulation)
+        string.add("Formulation: {}", formulation_name)
         LOGGER.info("%s", string)
 
         missing = set(design_variables) - self.input_names
@@ -456,9 +456,9 @@ class XLSStudyParser:
             msg = f"{scenario_name}: no objectives are defined"
             raise ValueError(msg)
 
-        if formulation not in get_available_formulations():
+        if formulation_name not in get_available_formulations():
             msg = (
-                f"{scenario_name}: unknown formulation '{formulation}'; "
+                f"{scenario_name}: unknown formulation '{formulation_name}'; "
                 f"use one of: {get_available_formulations()}"
             )
             raise ValueError(msg)

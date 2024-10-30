@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
     from gemseo.post.base_post import BasePost
-    from gemseo.post.base_post import BasePostOptionType
+    from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
     from gemseo.utils.xdsm import XDSM
 
@@ -185,7 +185,6 @@ class BaseScenario(BaseMonitoredProcess):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        formulation: str,
         objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str = "",
@@ -198,8 +197,6 @@ class BaseScenario(BaseMonitoredProcess):
             disciplines: The disciplines
                 used to compute the objective, constraints and observables
                 from the design variables.
-            formulation: The class name of the :class:`.BaseMDOFormulation`,
-                e.g. ``"MDF"``, ``"IDF"`` or ``"BiLevel"``.
             objective_name: The name(s) of the discipline output(s) used as objective.
                 If multiple names are passed, the objective will be a vector.
             design_space: The search space including at least the design variables
@@ -210,7 +207,8 @@ class BaseScenario(BaseMonitoredProcess):
             maximize_objective: Whether to maximize the objective.
             formulation_settings_model: The formulation settings as a Pydantic model.
                 If ``None``, use ``**settings``.
-            **formulation_settings: The formulation settings.
+            **formulation_settings: The formulation settings,
+                including the formulation name (use the keyword ``"formulation_name"``).
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa: D205, D212, D415
         super().__init__(name)
@@ -224,9 +222,13 @@ class BaseScenario(BaseMonitoredProcess):
 
         self.optimization_result = None
         self.clear_history_before_execute = False
+        if formulation_settings_model is None:
+            formulation_name = formulation_settings.pop("formulation_name")
+        else:
+            formulation_name = formulation_settings_model._TARGET_CLASS_NAME
 
         self._init_formulation(
-            formulation,
+            formulation_name,
             objective_name,
             design_space,
             formulation_settings_model,
@@ -242,23 +244,28 @@ class BaseScenario(BaseMonitoredProcess):
 
     def set_algorithm(
         self,
-        name: str,
-        settings_model: BaseDriverSettings | None = None,
-        **settings: Any,
+        algo_settings_model: BaseDriverSettings | None = None,
+        **algo_settings: Any,
     ) -> None:
         """Define the algorithm to execute the scenario.
 
         Args:
-            name: The name of the algorithm.
-            settings_model: The algorithm settings as a Pydantic model.
+            algo_settings_model: The algorithm settings as a Pydantic model.
                 If ``None``, use ``**settings``.
-            **settings: The algorithm settings.
+            **algo_settings: The algorithm settings,
+                including the algorithm name (use the keyword ``"algo_name"``).
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
-        if settings_model is not None:
-            settings = {"settings_model": settings_model}
+        if algo_settings_model is None:
+            algo_name = algo_settings.pop("algo_name", None)
+            if algo_name is None:
+                msg = 'The algorithm name is missing; use the argument "name".'
+                raise ValueError(msg)
+        else:
+            algo_settings = {"settings_model": algo_settings_model}
+            algo_name = algo_settings_model._TARGET_CLASS_NAME
 
-        self._settings = self.Settings(algo_name=name, algo_settings=settings)
+        self._settings = self.Settings(algo_name=algo_name, algo_settings=algo_settings)
 
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
@@ -425,7 +432,7 @@ class BaseScenario(BaseMonitoredProcess):
 
     def _init_formulation(
         self,
-        formulation: str,
+        formulation_name: str,
         objective_name: str,
         design_space: DesignSpace,
         formulation_settings_model: BaseFormulationSettings | None,
@@ -434,7 +441,7 @@ class BaseScenario(BaseMonitoredProcess):
         """Initialize the MDO formulation.
 
         Args:
-            formulation: The name of the MDO formulation,
+            formulation_name: The name of the MDO formulation,
                 also the name of a class inheriting from :class:`.BaseMDOFormulation`.
             objective_name: The name of the objective.
             design_space: The design space.
@@ -444,14 +451,14 @@ class BaseScenario(BaseMonitoredProcess):
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
         self.formulation = self._form_factory.create(
-            formulation,
+            formulation_name,
             disciplines=self.__disciplines,
             objective_name=objective_name,
             design_space=design_space,
             settings_model=formulation_settings_model,
             **formulation_settings,
         )
-        self.formulation_name = formulation
+        self.formulation_name = formulation_name
 
     def get_optim_variable_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
@@ -559,7 +566,7 @@ class BaseScenario(BaseMonitoredProcess):
         """
         if len(self.formulation.optimization_problem.database) > 2:
             self.post_process(
-                "OptHistoryView",
+                post_name="OptHistoryView",
                 save=True,
                 show=False,
                 file_path=self._opt_hist_backup_path.stem,
@@ -572,46 +579,44 @@ class BaseScenario(BaseMonitoredProcess):
         return self.post_factory.class_names
 
     def post_process(
-        self,
-        post_name: str,
-        **post_settings: BasePostOptionType | Path,
+        self, settings_model: BasePostSettings | None = None, **settings: Any
     ) -> BasePost:
         """Post-process the optimization history.
 
         Args:
-            post_name: The name of the post-processor,
-                i.e. the name of a class inheriting from :class:`.BasePost`.
-            **post_settings: The settings for the post-processor.
+            settings_model: The post-processor settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The post-processor settings,
+                including the algorithm name (use the keyword ``"post_name"``).
+                These arguments are ignored when ``settings_model`` is not ``None``.
 
         Returns:
-            The post-processing instance related to the optimization scenario.
+            The post-processor.
         """
         return self.post_factory.execute(
-            self.formulation.optimization_problem, post_name, **post_settings
+            self.formulation.optimization_problem,
+            settings_model=settings_model,
+            **settings,
         )
 
     def execute(
         self,
-        algo_name: str = "",
         algo_settings_model: BaseDriverSettings | None = None,
         **algo_settings: Any,
     ) -> None:
         """Execute a scenario.
 
         Args:
-            algo_name: The name of the algorithm.
-                If empty,
-                the method will use the settings defined by :meth:`.set_algorithm`
-                and ignore ``algo_settings_model`` and ``algo_settings``.
             algo_settings_model: The algorithm settings as a Pydantic model.
-                If ``None``, use ``**settings``.
-            **algo_settings: The algorithm settings.
+                If ``None``, use ``**settings`` if any.
+                If ``None`` and no settings,
+                the method will use the settings defined by :meth:`.set_algorithm`.
+            **algo_settings: The algorithm settings,
+                including the algorithm name (use the keyword ``"algo_name"``).
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
-        if algo_name:
-            self.set_algorithm(
-                algo_name, settings_model=algo_settings_model, **algo_settings
-            )
+        if algo_settings_model is not None or algo_settings:
+            self.set_algorithm(algo_settings_model=algo_settings_model, **algo_settings)
 
         t_0 = timeit.default_timer()
         LOGGER.info(" ")
@@ -642,7 +647,7 @@ class BaseScenario(BaseMonitoredProcess):
     def _run(self) -> None:
         self.optimization_result = self._algo_factory.execute(
             self.formulation.optimization_problem,
-            self._settings.algo_name,
+            algo_name=self._settings.algo_name,
             **self._settings.algo_settings,
         )
 

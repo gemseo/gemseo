@@ -144,8 +144,8 @@ ode_problem_with_jacobian = ODEProblem(
 #
 # Whether the Jacobian is specified or not, once the problem is defined, the ODE
 # solver is called on the :class:`.ODEProblem` by using the :class:`.ODESolversFactory`:
-ODESolverLibraryFactory().execute(ode_problem, "RK45")
-ODESolverLibraryFactory().execute(ode_problem_with_jacobian, "RK45")
+ODESolverLibraryFactory().execute(ode_problem, algo_name="RK45")
+ODESolverLibraryFactory().execute(ode_problem_with_jacobian, algo_name="RK45")
 
 # %%
 # By default, the Runge-Kutta method of order 4(5) (``"RK45"``) is used, but other
@@ -179,4 +179,4 @@ plt.show()
 # The class :class:`.VanDerPol` is available in the package
 # :mod:`gemseo.problems.ode`, so it just needs to be imported to be used.
 ode_problem = VanDerPol()
-ODESolverLibraryFactory().execute(ode_problem, "RK45")
+ODESolverLibraryFactory().execute(ode_problem, algo_name="RK45")

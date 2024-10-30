@@ -166,7 +166,7 @@ def test_generic_mass_rhs_function():
         times=times,
     )
     ODESolverLibraryFactory().execute(
-        ode_problem, "RK45", first_step=1e-6, rtol=1e-12, atol=1e-12
+        ode_problem, algo_name="RK45", first_step=1e-6, rtol=1e-12, atol=1e-12
     )
     analytical_position_trajectory = compute_analytic_mass_position(
         initial_position=initial_position,
@@ -322,7 +322,9 @@ def test_2_chained_masses():
         ]),
         times=times,
     )
-    ODESolverLibraryFactory().execute(ode_problem, "RK45", rtol=1e-6, atol=1e-6)
+    ODESolverLibraryFactory().execute(
+        ode_problem, algo_name="RK45", rtol=1e-6, atol=1e-6
+    )
 
     assert allclose(
         ode_problem.result.state_trajectories[0],
@@ -425,7 +427,7 @@ def test_2_chained_masses_linear_coupling():
     )
     ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-12,
         atol=1e-12,
     )
@@ -505,7 +507,7 @@ def test_create_two_chained_masses():
     )
     ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-6,
         atol=1e-6,
     )
@@ -598,7 +600,7 @@ def test_one_mass_attached_to_moving_pins():
     )
     ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-12,
         atol=1e-12,
     )

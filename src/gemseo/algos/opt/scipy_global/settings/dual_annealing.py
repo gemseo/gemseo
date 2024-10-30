@@ -30,6 +30,8 @@ from gemseo.utils.seeder import SEED
 class DualAnnealingSettings(BaseSciPyGlobalSettings):
     """The SciPy dual annealing setting."""
 
+    _TARGET_CLASS_NAME = "DUAL_ANNEALING"
+
     initial_temp: float = Field(
         default=5230,
         gt=1e-2,

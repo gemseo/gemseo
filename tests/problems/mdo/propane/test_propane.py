@@ -62,7 +62,7 @@ class TestPropaneScenario(unittest.TestCase):
         data = [self.io_data.data[name] for name in data_names]
         return concatenate(data)
 
-    def build_mdo_scenario(self, formulation="MDF"):
+    def build_mdo_scenario(self, formulation_name="MDF"):
         """
 
         :param formulation: Default value = 'MDF')
@@ -77,9 +77,9 @@ class TestPropaneScenario(unittest.TestCase):
         design_space = get_design_space()
         return MDOScenario(
             disciplines,
-            formulation,
             "obj",
             design_space,
+            formulation_name=formulation_name,
         )
 
     def build_and_run_scenario(self, formulation, algo, lin_method="complex_step"):

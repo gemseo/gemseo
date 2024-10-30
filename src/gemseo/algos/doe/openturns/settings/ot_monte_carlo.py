@@ -23,3 +23,5 @@ from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
 
 class OTMonteCarloSettings(BaseOpenTURNSSettings):
     """The settings for the Monte Carlo DOE from the OpenTURNS library."""
+
+    _TARGET_CLASS_NAME = "OT_MONTE_CARLO"

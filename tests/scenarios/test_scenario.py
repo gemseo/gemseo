@@ -64,13 +64,13 @@ SOBIESKI_HDF5_PATH = PARENT_PATH / "mdf_backup.h5"
 
 
 def build_mdo_scenario(
-    formulation: str,
+    formulation_name: str,
     grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
 ) -> MDOScenario:
     """Build the scenario for SSBJ.
 
     Args:
-        formulation: The name of the scenario formulation.
+        formulation_name: The name of the scenario formulation.
         grammar_type: The grammar type.
 
     Returns:
@@ -94,9 +94,9 @@ def build_mdo_scenario(
     design_space = SobieskiDesignSpace()
     scenario = MDOScenario(
         disciplines,
-        formulation,
         "y_4",
         design_space,
+        formulation_name=formulation_name,
         maximize_objective=True,
     )
     for c_name in ["g_1", "g_2", "g_3"]:
@@ -349,7 +349,7 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     # Monitor in the console
     idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
 
-    idf_scenario.set_algorithm("SLSQP", max_iter=1)
+    idf_scenario.set_algorithm(algo_name="SLSQP", max_iter=1)
 
     inputs = ["x_shared"]
     outputs = ["y_4"]
@@ -559,7 +559,9 @@ def complex_step_scenario() -> MDOScenario:
         def _run(self) -> None:
             self.io.data["y"] = self.io.data["x"]
 
-    scenario = MDOScenario([MyDiscipline()], "DisciplinaryOpt", "y", design_space)
+    scenario = MDOScenario(
+        [MyDiscipline()], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.set_differentiation_method(scenario.DifferentiationMethod.COMPLEX_STEP)
     return scenario
 
@@ -599,9 +601,9 @@ def test_use_standardized_objective(
     discipline, design_space = sinus_use_case
     scenario = MDOScenario(
         [discipline],
-        "MDF",
         "y",
         design_space,
+        formulation_name="MDF",
         maximize_objective=maximize,
     )
     assert scenario.use_standardized_objective
@@ -657,7 +659,9 @@ def scenario_with_non_float_variables() -> MDOScenario:
     discipline.default_input_data["z"] = "some_str"
     discipline.default_input_data["w"] = array(1, dtype=int64)
 
-    return MDOScenario([discipline], "DisciplinaryOpt", "y", design_space)
+    return MDOScenario(
+        [discipline], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
 
 
 @pytest.mark.parametrize(
@@ -713,7 +717,12 @@ def test_check_disciplines() -> None:
         f"which ({discipline_1.name}|({discipline_2.name})), "
         "compute the same outputs: {'y'}",
     ):
-        MDOScenario([discipline_1, discipline_2], "DisciplinaryOpt", "y", design_space)
+        MDOScenario(
+            [discipline_1, discipline_2],
+            "y",
+            design_space,
+            formulation_name="DisciplinaryOpt",
+        )
 
 
 @pytest.fixture
@@ -721,7 +730,10 @@ def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return MDOScenario(
-        [AnalyticDiscipline({"y": "x"})], "DisciplinaryOpt", "y", design_space
+        [AnalyticDiscipline({"y": "x"})],
+        "y",
+        design_space,
+        formulation_name="DisciplinaryOpt",
     )
 
 
@@ -906,7 +918,7 @@ def scenario_for_linear_check(full_linear):
     ds.add_variable("x1", 1, lower_bound=0.0, upper_bound=1.0, value=0.5)
     if not full_linear:
         ds.add_variable("x2", 1, lower_bound=0.0, upper_bound=1.0, value=0.5)
-    return create_scenario(my_disc, "DisciplinaryOpt", "f", ds)
+    return create_scenario(my_disc, "f", ds, formulation_name="DisciplinaryOpt")
 
 
 def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
@@ -951,7 +963,9 @@ def test_scenario_to_dataset(tmp_wd):
     design_space.add_variable("x_float", size=2)
     design_space.add_variable("x_int", type_=DesignSpace.DesignVariableType.INTEGER)
 
-    scenario = DOEScenario([MyDisc()], "DisciplinaryOpt", "y1", design_space)
+    scenario = DOEScenario(
+        [MyDisc()], "y1", design_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.add_observable("y2")
     scenario.add_observable("name")
 

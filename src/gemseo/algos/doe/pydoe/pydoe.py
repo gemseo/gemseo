@@ -40,12 +40,12 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.pydoe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
-from gemseo.algos.doe.pydoe.settings.bbdesign import BBDesignSettings
-from gemseo.algos.doe.pydoe.settings.ccdesign import CCDesignSettings
+from gemseo.algos.doe.pydoe.settings.bbdesign import BBDESIGNSettings
+from gemseo.algos.doe.pydoe.settings.ccdesign import CCDESIGNSettings
 from gemseo.algos.doe.pydoe.settings.ff2n import FF2NSettings
-from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings
+from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings
 from gemseo.algos.doe.pydoe.settings.lhs import LHSSettings
-from gemseo.algos.doe.pydoe.settings.pbdesign import PBDesignSettings
+from gemseo.algos.doe.pydoe.settings.pbdesign import PBDESIGNSettings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -68,60 +68,60 @@ class PyDOELibrary(BaseDOELibrary):
     """The PyDOE DOE algorithms library."""
 
     __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
-        "bbdesign": bbdesign,
-        "ccdesign": ccdesign,
-        "ff2n": ff2n,
-        "lhs": lhs,
-        "pbdesign": pbdesign,
+        "PYDOE_BBDESIGN": bbdesign,
+        "PYDOE_CCDESIGN": ccdesign,
+        "PYDOE_FF2N": ff2n,
+        "PYDOE_LHS": lhs,
+        "PYDOE_OBDESIGN": pbdesign,
     }
     """The algorithm names bound to the corresponding pyDOE function."""
 
     __DOC: Final[str] = "https://pythonhosted.org/pyDOE/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
-        "bbdesign": PyDOEAlgorithmDescription(
-            algorithm_name="bbdesign",
+        "PYDOE_BBDESIGN": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_BBDESIGN",
             description="Box-Behnken design",
             internal_algorithm_name="bbdesign",
             website=f"{__DOC}rsm.html#box-behnken",
-            Settings=BBDesignSettings,
+            Settings=BBDESIGNSettings,
             minimum_dimension=3,
         ),
-        "ccdesign": PyDOEAlgorithmDescription(
-            algorithm_name="ccdesign",
+        "PYDOE_CCDESIGN": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_CCDESIGN",
             description="Central Composite",
             internal_algorithm_name="ccdesign",
             website=f"{__DOC}rsm.html#central-composite",
-            Settings=CCDesignSettings,
+            Settings=CCDESIGNSettings,
             minimum_dimension=2,
         ),
-        "ff2n": PyDOEAlgorithmDescription(
-            algorithm_name="ff2n",
+        "PYDOE_FF2N": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_FF2N",
             description="2-Level Full-Factorial",
             internal_algorithm_name="ff2n",
             website=f"{__DOC}factorial.html#level-full-factorial",
             Settings=FF2NSettings,
         ),
-        "fullfact": PyDOEAlgorithmDescription(
-            algorithm_name="fullfact",
+        "PYDOE_FULLFACT": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_FULLFACT",
             description="Full-Factorial",
             internal_algorithm_name="fullfact",
             website=f"{__DOC}factorial.html#general-full-factorial",
-            Settings=FullFactSettings,
+            Settings=FULLFACTSettings,
         ),
-        "lhs": PyDOEAlgorithmDescription(
-            algorithm_name="lhs",
+        "PYDOE_LHS": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_LHS",
             description="Latin Hypercube Sampling",
             internal_algorithm_name="lhs",
             website=f"{__DOC}randomized.html#latin-hypercube",
             Settings=LHSSettings,
         ),
-        "pbdesign": PyDOEAlgorithmDescription(
-            algorithm_name="pbdesign",
+        "PYDOE_OBDESIGN": PyDOEAlgorithmDescription(
+            algorithm_name="PYDOE_OBDESIGN",
             description="Plackett-Burman design",
             internal_algorithm_name="pbdesign",
             website=f"{__DOC}factorial.html#plackett-burman",
-            Settings=PBDesignSettings,
+            Settings=PBDESIGNSettings,
         ),
     }
 
@@ -129,11 +129,11 @@ class PyDOELibrary(BaseDOELibrary):
         self, design_space: DesignSpace, **settings: OptionType
     ) -> RealArray:
         n = design_space.dimension
-        if self._algo_name == "fullfact":
+        if self._algo_name == "PYDOE_FULLFACT":
             return PyDOEFullFactorialDOE().generate_samples(dimension=n, **settings)
 
         doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
-        if self._algo_name == "lhs":
+        if self._algo_name == "PYDOE_LHS":
             settings["random_state"] = RandomState(
                 self._seeder.get_seed(settings["random_state"])
             )

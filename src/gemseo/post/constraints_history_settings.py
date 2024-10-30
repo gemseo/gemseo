@@ -24,6 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 
 
 class ConstraintsHistorySettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "ConstraintsHistory"
     constraint_names: Sequence[str] = Field(
         ...,
         description="The names of the constraints.",

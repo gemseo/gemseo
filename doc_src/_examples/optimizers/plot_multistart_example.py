@@ -59,9 +59,9 @@ design_space.add_variable("x", lower_bound=-1.5, upper_bound=1.5, value=1.5)
 # we define the MDO scenario
 scenario = create_scenario(
     [objective, constraint],
-    "DisciplinaryOpt",
     "obj",
     design_space,
+    formulation_name="DisciplinaryOpt",
 )
 scenario.add_constraint("cstr", constraint_type="ineq")
 
@@ -69,7 +69,7 @@ scenario.add_constraint("cstr", constraint_type="ineq")
 # and execute it with the ``MultiStart`` optimization algorithm
 # combining the local optimization algorithm SLSQP
 # and the full-factorial DOE algorithm:
-algo_settings = MultiStartSettings(
+multistart_settings = MultiStartSettings(
     max_iter=100,
     opt_algo_name="SLSQP",
     doe_algo_name="fullfact",
@@ -77,7 +77,7 @@ algo_settings = MultiStartSettings(
     # Set multistart_file_path to save the history of the local optima.
     multistart_file_path="multistart.hdf5",
 )
-scenario.execute(algo_name="MultiStart", algo_settings_model=algo_settings)
+scenario.execute(multistart_settings)
 
 # %%
 # Lastly,

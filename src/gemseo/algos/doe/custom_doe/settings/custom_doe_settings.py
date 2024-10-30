@@ -42,6 +42,8 @@ SamplesType = Union[
 class CustomDOESettings(BaseDOESettings):
     """The settings for the ``CustomDOE``."""
 
+    _TARGET_CLASS_NAME = "CustomDOE"
+
     doe_file: str | Path = Field(
         default="",
         description=(

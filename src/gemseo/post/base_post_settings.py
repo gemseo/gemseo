@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import ClassVar
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -25,6 +26,9 @@ from pydantic import PositiveFloat
 
 class BasePostSettings(BaseModel):
     """The settings common to all the post-processing classes."""
+
+    _TARGET_CLASS_NAME: ClassVar[str]
+    """The class name of the post-processor."""
 
     save: bool = Field(
         True,

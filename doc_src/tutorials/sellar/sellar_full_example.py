@@ -120,9 +120,9 @@ def run_process() -> None:
     # The optimization algorithm
     scenario = MDOScenario(
         disciplines,
-        formulation="MDF",
-        objective_name="obj",
-        design_space=design_space,
+        "obj",
+        design_space,
+        formulation_name="MDF",
     )
 
     # Set the design constraints
@@ -136,7 +136,7 @@ def run_process() -> None:
     scenario.execute(algo_name="SLSQP", max_iter=15)
 
     # Generate a plot of the history in a file
-    scenario.post_process("OptHistoryView", save=True, show=True)
+    scenario.post_process(post_name="OptHistoryView", save=True, show=True)
 
     scenario.save_optimization_history(file_path="sellar_history.h5")
 
