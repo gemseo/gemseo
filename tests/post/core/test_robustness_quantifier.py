@@ -45,7 +45,7 @@ def database() -> Database:
     n = 2
     problem = Rosenbrock(n)
     problem.x_0 = 1.0 - 2 * arange(n) / float(n)
-    OptimizationLibraryFactory().execute(problem, "L-BFGS-B", max_iter=200)
+    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B", max_iter=200)
     return problem.database
 
 

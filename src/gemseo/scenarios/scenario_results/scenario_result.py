@@ -108,5 +108,5 @@ class ScenarioResult:
             The post-processing of the result.
         """
         return self.POST_FACTORY.execute(
-            self.__obj_to_be_post_processed, name, **settings
+            self.__obj_to_be_post_processed, post_name=name, **settings
         )

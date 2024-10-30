@@ -47,10 +47,15 @@ class FormulationsBaseTest(unittest.TestCase):
 
     DV_NAMES: ClassVar[list[str]] = ["x_1", "x_2", "x_3", "x_shared"]
 
-    def build_mdo_scenario(self, formulation="MDF", dtype="complex128", **options):
+    def build_mdo_scenario(
+        self,
+        formulation_name="MDF",
+        dtype="complex128",
+        **options,
+    ):
         """
 
-        :param formulation: Default value = 'MDF')
+        :param formulation_name: Default value = 'MDF')
         :param dtype: Default value = "complex128")
 
         """
@@ -63,9 +68,9 @@ class FormulationsBaseTest(unittest.TestCase):
         design_space = SobieskiDesignSpace()
         return MDOScenario(
             disciplines,
-            formulation,
             "y_4",
             design_space,
+            formulation_name=formulation_name,
             maximize_objective=True,
             **options,
         )

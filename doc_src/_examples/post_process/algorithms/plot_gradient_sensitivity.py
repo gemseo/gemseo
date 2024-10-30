@@ -76,9 +76,9 @@ design_space = SobieskiDesignSpace()
 # equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 # %%
@@ -126,7 +126,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 scenario.post_process(
-    "GradientSensitivity",
+    post_name="GradientSensitivity",
     compute_missing_gradients=True,
     save=False,
     show=True,

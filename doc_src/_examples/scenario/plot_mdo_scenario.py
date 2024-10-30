@@ -90,7 +90,9 @@ design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5 * o
 # we define an :class:`.MDOScenario` from the :class:`.Discipline`
 # and the :class:`.DesignSpace` defined above:
 
-scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
+scenario = create_scenario(
+    discipline, "y", design_space, formulation_name="DisciplinaryOpt"
+)
 
 # %%
 # What about the differentiation method?

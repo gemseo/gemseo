@@ -64,9 +64,11 @@ def probability_space() -> ParameterSpace:
 @pytest.fixture(scope="module")
 def dataset(discipline, probability_space) -> IODataset:
     """The learning dataset associated with the linear discipline."""
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y1", probability_space)
+    scenario = DOEScenario(
+        [discipline], "y1", probability_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.add_observable("y2")
-    scenario.execute(algo_name="fullfact", n_samples=9)
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
     dataset = scenario.to_dataset(opt_naming=False)
     dataset.add_variable("weight", 1)
     return dataset
@@ -92,9 +94,12 @@ def ishigami_probability_space() -> ParameterSpace:
 def ishigami_dataset(ishigami_discipline, ishigami_probability_space) -> IODataset:
     """The learning dataset associated with the Ishigami discipline."""
     scenario = DOEScenario(
-        [ishigami_discipline], "DisciplinaryOpt", "y", ishigami_probability_space
+        [ishigami_discipline],
+        "y",
+        ishigami_probability_space,
+        formulation_name="DisciplinaryOpt",
     )
-    scenario.execute(algo_name="fullfact", n_samples=125)
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=125)
     return scenario.to_dataset(opt_naming=False)
 
 
@@ -621,7 +626,9 @@ def test_multidimensional_variables() -> None:
         "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
     )
 
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", parameter_space)
+    scenario = DOEScenario(
+        [discipline], "y", parameter_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
     dataset = scenario.to_dataset(opt_naming=False)
 
@@ -649,7 +656,9 @@ def test_multidimensional_variables() -> None:
         "b", "OTUniformDistribution", minimum=-pi, maximum=pi
     )
 
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y", parameter_space)
+    scenario = DOEScenario(
+        [discipline], "y", parameter_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
     dataset = scenario.to_dataset(opt_naming=False)
 

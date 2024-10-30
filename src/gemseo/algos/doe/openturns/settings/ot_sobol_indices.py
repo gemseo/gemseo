@@ -26,6 +26,8 @@ from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
 class OTSobolIndicesSettings(BaseOpenTURNSSettings):
     """The settings for the Sobol indices DOE from the OpenTURNS library."""
 
+    _TARGET_CLASS_NAME = "OT_SOBOL_INDICES"
+
     eval_second_order: bool = Field(
         default=True,
         description=(

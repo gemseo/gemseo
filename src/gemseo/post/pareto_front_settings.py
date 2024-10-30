@@ -25,6 +25,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class ParetoFrontSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "ParetoFront"
     show_non_feasible: bool = Field(
         default=True,
         description="Whether to show the non-feasible points in the plot.",

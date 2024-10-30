@@ -187,9 +187,9 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
 
     scenario = create_scenario(
         disciplines,
-        "MDF",
         "obj",
         design_space,
+        formulation_name="MDF",
         main_mda_name="MDAChain",
         scenario_type="DOE",
         main_mda_settings={

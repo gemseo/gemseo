@@ -63,7 +63,7 @@ mnbi_settings = MNBISettings(
     n_sub_optim=3,
     sub_optim_algo="NLOPT_SLSQP",
 )
-result = execute_algo(opt_problem, "MNBI", settings_model=mnbi_settings)
+result = execute_algo(opt_problem, settings_model=mnbi_settings)
 # %%
 # Display the Pareto front
 # ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -80,7 +80,7 @@ execute_post(opt_problem, "ParetoFront", save=False, show=True)
 # The Pareto front is then refined with 10 sub-optimizations instead of 3.
 opt_problem = FonsecaFleming()
 mnbi_settings.n_sub_optim = 10
-result = execute_algo(opt_problem, "MNBI", settings_model=mnbi_settings)
+result = execute_algo(opt_problem, settings_model=mnbi_settings)
 # %%
 # Display the Pareto front
 # ^^^^^^^^^^^^^^^^^^^^^^^^

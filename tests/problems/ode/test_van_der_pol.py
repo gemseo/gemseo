@@ -51,7 +51,7 @@ parametrized_algo_names = pytest.mark.parametrize(
 def test_run(algo_name) -> None:
     """Solve Van der Pol with the jacobian analytical expression."""
     problem = VanDerPol()
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=10e-6)
     assert problem.result.algorithm_has_converged
     assert norm(problem.result.state_trajectories) > 0
     assert (
@@ -66,7 +66,7 @@ def test_van_der_pol_jacobian_explicit_expression() -> None:
     problem = VanDerPol()
     checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
     checking.function_of_state.check_grad(array([0.0, 0.0]))
-    ODESolverLibraryFactory().execute(problem, "Radau")
+    ODESolverLibraryFactory().execute(problem, algo_name="Radau")
     assert problem.result.algorithm_has_converged
 
 
@@ -74,7 +74,7 @@ def test_van_der_pol_jacobian_explicit_expression() -> None:
 def test_van_der_pol_with_initial_state(algo_name) -> None:
     """Solve Van der Pol for an initial condition that is not the default."""
     problem = VanDerPol(state=(1.0, -1.0))
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=10e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=10e-6)
     assert problem.result.algorithm_has_converged
     assert norm(problem.result.state_trajectories) > 0
     assert (

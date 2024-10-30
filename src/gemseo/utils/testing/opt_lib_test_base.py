@@ -144,7 +144,9 @@ class OptLibraryTestBase:
             The error message if the optimizer cannot find the solution,
             otherwise ``None``.
         """
-        opt = OptimizationLibraryFactory().execute(problem, algo_name, **settings)
+        opt = OptimizationLibraryFactory().execute(
+            problem, algo_name=algo_name, **settings
+        )
         x_opt, f_opt = problem.get_solution()
         x_err = OptLibraryTestBase.relative_norm(opt.x_opt, x_opt)
         f_err = OptLibraryTestBase.relative_norm(opt.f_opt, f_opt)

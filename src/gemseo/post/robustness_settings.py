@@ -23,6 +23,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class RobustnessSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "Robustness"
     stddev: float = Field(
         default=0.01,
         description="The standard deviation of the normal uncertain variable to be "

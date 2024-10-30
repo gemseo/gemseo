@@ -23,3 +23,5 @@ from gemseo.algos.opt.nlopt.settings.base_gradient_free_nlopt_settings import (
 
 class NLOPTNEWUOASettings(BaseGradientFreeNLoptSettings):
     """The settings for the NLopt NEWUOA algorithm."""
+
+    _TARGET_CLASS_NAME = "NLOPT_NEWUOA"

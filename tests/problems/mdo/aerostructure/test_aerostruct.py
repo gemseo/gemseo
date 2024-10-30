@@ -185,7 +185,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         return [Aerodynamics(), Structure(), Mission()]
 
     @staticmethod
-    def build_scenario(disciplines, formulation="MDF"):
+    def build_scenario(disciplines, formulation_name="MDF"):
         """Build a scenario in functional form with a given formulation.
 
         :param disciplines: list of disciplines
@@ -194,9 +194,9 @@ class TestAerostructureScenarios(unittest.TestCase):
         design_space = AerostructureDesignSpace()
         return MDOScenario(
             disciplines,
-            formulation,
             "range",
             design_space,
+            formulation_name=formulation_name,
         )
 
     @staticmethod

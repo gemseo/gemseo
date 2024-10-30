@@ -76,13 +76,13 @@ def scenario():
     design_space.filter(["x_1", "x_2", "x_3"])
     mdo_scenario = MDOScenario(
         disciplines,
-        "MDF",
         "y_4",
         design_space,
+        formulation_name="MDF",
         maximize_objective=True,
         name="MyScenario",
     )
-    mdo_scenario.set_algorithm("L-BFGS-B", max_iter=35)
+    mdo_scenario.set_algorithm(algo_name="L-BFGS-B", max_iter=35)
     return mdo_scenario
 
 
@@ -286,14 +286,14 @@ def build_struct_scenario():
     ds = SobieskiDesignSpace()
     sc_str = MDOScenario(
         [SobieskiStructure()],
-        "DisciplinaryOpt",
         "y_11",
         ds.filter("x_1", copy=True),
         name="StructureScenario",
+        formulation_name="DisciplinaryOpt",
         maximize_objective=True,
     )
     sc_str.add_constraint("g_1", constraint_type="ineq")
-    sc_str.set_algorithm("NLOPT_SLSQP", max_iter=20)
+    sc_str.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_str
 
 
@@ -301,13 +301,13 @@ def build_prop_scenario():
     ds = SobieskiDesignSpace()
     sc_prop = MDOScenario(
         [SobieskiPropulsion()],
-        "DisciplinaryOpt",
         "y_34",
         ds.filter("x_3", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
     )
     sc_prop.add_constraint("g_3", constraint_type="ineq")
-    sc_prop.set_algorithm("NLOPT_SLSQP", max_iter=20)
+    sc_prop.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_prop
 
 
@@ -613,12 +613,12 @@ def scenario_fixture(disciplines_fixture):
     )
     scenario = create_scenario(
         disciplines_fixture,
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=design_space,
+        "f",
+        design_space,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("g", MDOFunction.ConstraintType.INEQ, value=5)
-    scenario.set_algorithm("SLSQP", max_iter=10)
+    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_opt=True)
 
 
@@ -630,11 +630,11 @@ def test_scenario_adapter(scenario_fixture) -> None:
     )
     scenario = create_scenario(
         [scenario_fixture],
-        formulation="DisciplinaryOpt",
-        objective_name="f",
-        design_space=design_space,
+        "f",
+        design_space,
+        formulation_name="DisciplinaryOpt",
     )
-    scenario.set_algorithm("SLSQP", max_iter=10)
+    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     scenario.execute()
     assert scenario.formulation.optimization_problem.solution is not None
 

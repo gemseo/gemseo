@@ -51,7 +51,7 @@ def test_opt_hist_const(baseline_images, obj_relative) -> None:
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     execute_post(
         problem,
-        "HessianHistory",
+        post_name="HessianHistory",
         show=False,
         save=False,
         variable_names=["x"],
@@ -76,7 +76,9 @@ def test_opt_hist_from_database(
     problem = OptimizationProblem.from_hdf(problem_path)
     # The use of the default value is deliberate;
     # to check that the JSON grammar works properly.
-    execute_post(problem, "HessianHistory", variable_names=(), show=False, save=False)
+    execute_post(
+        problem, post_name="HessianHistory", variable_names=(), show=False, save=False
+    )
 
 
 def test_diag_with_nan() -> None:
@@ -87,7 +89,9 @@ def test_diag_with_nan() -> None:
     problem.objective = MDOFunction(
         lambda x: 2 * x, "obj", jac=lambda x: array([[2.0]])
     )
-    execute_algo(problem, "fullfact", n_samples=3, eval_jac=True, algo_type="doe")
+    execute_algo(
+        problem, algo_name="PYDOE_FULLFACT", n_samples=3, eval_jac=True, algo_type="doe"
+    )
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -95,7 +99,7 @@ def test_diag_with_nan() -> None:
             "because the approximated Hessian diagonal contains NaN."
         ),
     ):
-        execute_post(problem, "HessianHistory", save=False, show=False)
+        execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
 TEST_PARAMETERS = {
@@ -158,15 +162,15 @@ def test_461(case, baseline_images) -> None:
         )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
-    execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
-    execute_post(problem, "HessianHistory", save=False, show=False)
+    execute_algo(problem, algo_name="NLOPT_SLSQP", max_iter=5)
+    execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
 @image_comparison(baseline_images=["hessian_history_hessian_variable_names"])
 def test_variable_names() -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
-        "HessianHistory",
+        post_name="HessianHistory",
         variable_names=["x_2", "x_1"],
         save=False,
         show=False,
@@ -190,4 +194,4 @@ def test_no_gradient_history() -> None:
             "because the history of the gradient of the objective is empty."
         ),
     ):
-        execute_post(problem, "HessianHistory", save=False, show=False)
+        execute_post(problem, post_name="HessianHistory", save=False, show=False)

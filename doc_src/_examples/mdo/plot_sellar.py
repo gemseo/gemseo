@@ -200,7 +200,7 @@ design_space.add_variable("y_2", lower_bound=-100.0, upper_bound=100.0, value=on
 # In this section,
 # we build the MDO scenario which links the disciplines with the formulation,
 # the design space and the objective function.
-scenario = create_scenario(disciplines, "IDF", "obj", design_space)
+scenario = create_scenario(disciplines, "obj", design_space, formulation_name="IDF")
 
 # %%
 # Add the constraints
@@ -230,4 +230,4 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^
 # Finally,
 # we can generate plots of the optimization history:
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)

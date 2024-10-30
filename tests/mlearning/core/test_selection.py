@@ -101,7 +101,7 @@ def test_add_candidate(dataset) -> None:
     # Add RBF candidate
     space = DesignSpace()
     space.add_variable("smooth", 1, "float", 0.0, 10.0, 0.0)
-    algorithm = {"algo_name": "fullfact", "n_samples": 11}
+    algorithm = {"algo_name": "PYDOE_FULLFACT", "n_samples": 11}
     selector.add_candidate("RBFRegressor", space, algorithm)
     cand = selector.candidates[-1]
     assert isinstance(cand[0], RBFRegressor)

@@ -121,8 +121,9 @@ value of the objective and constraints
     from gemseo.algos import DOELibraryFactory
 
     # And solve it with |g| interface
-    opt = DOELibraryFactory().execute(problem, "lhs", n_samples=10,
-                               normalize_design_space=True)
+    opt = DOELibraryFactory().execute(
+        problem, algo_name="lhs", n_samples=10, normalize_design_space=True
+    )
 
 Results analysis
 ----------------

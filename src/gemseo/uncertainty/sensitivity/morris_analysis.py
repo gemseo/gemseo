@@ -164,7 +164,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
 
     _indices: SensitivityIndices
 
-    DEFAULT_DRIVER: ClassVar[str] = "lhs"
+    DEFAULT_DRIVER: ClassVar[str] = "PYDOE_LHS"
 
     class Method(StrEnum):
         """The names of the sensitivity methods."""
@@ -188,8 +188,8 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         backup_settings: BackupSettings | None = None,
         n_replicates: int = 5,
         step: float = 0.05,
-        formulation: str = "MDF",
-        **formulation_options: Any,
+        formulation_name: str = "MDF",
+        **formulation_settings: Any,
     ) -> IODataset:
         r"""
         Args:

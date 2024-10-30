@@ -42,7 +42,7 @@ from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOESettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
-from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings
+from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
@@ -60,13 +60,13 @@ FACTORY = DOELibraryFactory()
 @pytest.fixture(scope="module")
 def lhs():
     """A PyDOE-based LHS."""
-    return PyDOELibrary("lhs")
+    return PyDOELibrary("PYDOE_LHS")
 
 
 @pytest.fixture(scope="module")
 def fullfact():
     """A PyDOE-based full-factorial DOE."""
-    return PyDOELibrary("fullfact")
+    return PyDOELibrary("PYDOE_FULLFACT")
 
 
 @pytest.fixture(scope="module")
@@ -138,10 +138,10 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
 
     scenario = create_scenario(
         [disc],
-        "DisciplinaryOpt",
         "obj",
         design_space,
         scenario_type="DOE",
+        formulation_name="DisciplinaryOpt",
     )
 
     samples = array([[float(i)] for i in range(4)])
@@ -176,7 +176,7 @@ def variables_space():
 
 
 @pytest.mark.parametrize(
-    "settings", [{"n_samples": 4}, {"settings_model": FullFactSettings(n_samples=4)}]
+    "settings", [{"n_samples": 4}, {"settings_model": FULLFACTSettings(n_samples=4)}]
 )
 @pytest.mark.parametrize(
     ("transformation", "expected_points"),
@@ -218,7 +218,10 @@ def doe_database(request) -> Database:
     problem = OptimizationProblem(space)
     problem.objective = MDOFunction(lambda x: x, "func")
     execute_algo(
-        problem, "CustomDOE", samples=array([[-2.0], [0.0], [1.0]]), algo_type="doe"
+        problem,
+        algo_name="CustomDOE",
+        samples=array([[-2.0], [0.0], [1.0]]),
+        algo_type="doe",
     )
     return problem.database
 
@@ -243,7 +246,7 @@ def test_pre_run_debug(lhs, caplog) -> None:
     problem = Power2()
     lhs.execute(problem, n_samples=2)
     message = (
-        "The DOE algorithm lhs of PyDOELibrary has generated 2 samples "
+        "The DOE algorithm PYDOE_LHS of PyDOELibrary has generated 2 samples "
         "in the input unit hypercube of dimension 3."
     )
     message_is_logged = False
@@ -256,7 +259,7 @@ def test_pre_run_debug(lhs, caplog) -> None:
     assert message_is_logged
 
 
-@pytest.mark.parametrize("algo_name", ["OT_MONTE_CARLO", "lhs"])
+@pytest.mark.parametrize("algo_name", ["OT_MONTE_CARLO", "PYDOE_LHS"])
 def test_seed(algo_name) -> None:
     """Check the use of the seed at the BaseDOELibrary level."""
     problem = Power2()
@@ -288,7 +291,7 @@ def test_seed(algo_name) -> None:
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
-    if algo_name == "lhs":
+    if algo_name == "PYDOE_LHS":
         library.execute(problem, n_samples=2, random_state=2)
     else:
         library.execute(problem, n_samples=2, seed=2)
@@ -344,13 +347,13 @@ def test_variable_types(var_type1, var_type2) -> None:
 
     scenario = create_scenario(
         [Disc()],
-        "DisciplinaryOpt",
         "z",
         design_space,
         scenario_type="DOE",
+        formulation_name="DisciplinaryOpt",
     )
 
-    scenario.execute(algo_name="lhs", n_samples=1)
+    scenario.execute(algo_name="PYDOE_LHS", n_samples=1)
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
@@ -478,10 +481,10 @@ def test_parallel_doe_db(tmp_wd):
 
         scenario = create_scenario(
             [_DummyDisc()],
-            "DisciplinaryOpt",
             "z",
             design_space,
             scenario_type="DOE",
+            formulation_name="DisciplinaryOpt",
         )
         scenario.add_constraint("t")
         scenario.add_constraint("s1")
@@ -493,14 +496,14 @@ def test_parallel_doe_db(tmp_wd):
     scenario_ser.set_optimization_history_backup(
         bk_file_ser, at_each_function_call=True, at_each_iteration=True
     )
-    scenario_ser.execute(algo_name="fullfact", n_samples=4, n_processes=1)
+    scenario_ser.execute(algo_name="PYDOE_FULLFACT", n_samples=4, n_processes=1)
 
     scenario_par = _create_scn()
     bk_file_par = Path("par_out.h5")
     scenario_par.set_optimization_history_backup(
         bk_file_par, at_each_function_call=True, at_each_iteration=True
     )
-    scenario_par.execute(algo_name="fullfact", n_samples=4, n_processes=2)
+    scenario_par.execute(algo_name="PYDOE_FULLFACT", n_samples=4, n_processes=2)
 
     db_ser = Database.from_hdf(bk_file_ser)
     db_par = Database.from_hdf(bk_file_par)

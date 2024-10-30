@@ -52,10 +52,10 @@ def test_scatter(tmp_wd) -> None:
     """
     factory = PostFactory()
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
     post = factory.execute(
         problem,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         file_path="scatter1",
         variable_names=problem.function_names,
     )
@@ -74,7 +74,7 @@ def test_scatter_load(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         file_path="scatter2",
         variable_names=problem.function_names,
     )
@@ -82,7 +82,7 @@ def test_scatter_load(tmp_wd) -> None:
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
-    post = factory.execute(problem, "ScatterPlotMatrix", variable_names=[])
+    post = factory.execute(problem, post_name="ScatterPlotMatrix", variable_names=[])
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
@@ -101,7 +101,7 @@ def test_non_existent_var(tmp_wd) -> None:
         r"among optimization problem functions: .* "
         r"nor design variables: .*",
     ):
-        factory.execute(problem, "ScatterPlotMatrix", variable_names=["foo"])
+        factory.execute(problem, post_name="ScatterPlotMatrix", variable_names=["foo"])
 
 
 @pytest.mark.parametrize(
@@ -125,7 +125,7 @@ def test_scatter_plot(baseline_images, variables) -> None:
     infile = CURRENT_DIR / (baseline_images[0] + ".h5")
     execute_post(
         infile,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         save=False,
         file_path="scatter_sellar",
         file_extension="png",
@@ -156,18 +156,18 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
     )
     scenario = create_scenario(
         sellar_disciplines,
-        "MDF",
         "obj",
         design_space,
+        formulation_name="MDF",
         maximize_objective=True,
     )
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.set_differentiation_method("finite_differences")
-    scenario.set_algorithm("SLSQP", max_iter=10)
+    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     scenario.execute()
     post = scenario.post_process(
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         save=True,
         file_path="scatter_sellar",
         file_extension="png",
@@ -212,7 +212,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
     )
     factory.execute(
         problem,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         file_extension="png",
         save=False,
         filter_non_feasible=filter_non_feasible,
@@ -236,7 +236,10 @@ def test_filter_non_feasible_exception() -> None:
 
     with pytest.raises(ValueError, match="No feasible points were found."):
         factory.execute(
-            problem, "ScatterPlotMatrix", filter_non_feasible=True, variable_names=["x"]
+            problem,
+            post_name="ScatterPlotMatrix",
+            filter_non_feasible=True,
+            variable_names=["x"],
         )
 
 

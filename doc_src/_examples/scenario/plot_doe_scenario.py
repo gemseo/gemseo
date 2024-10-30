@@ -85,7 +85,11 @@ design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 # and the :class:`.DesignSpace` defined above:
 
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    discipline,
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%

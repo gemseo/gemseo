@@ -86,9 +86,9 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    "MDF",
     maximize_objective=True,
 )
 scenario.set_differentiation_method()
@@ -112,4 +112,4 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 #    the options for any post-processing algorithm.
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
-scenario.post_process("ParallelCoordinates", save=False, show=True)
+scenario.post_process(post_name="ParallelCoordinates", save=False, show=True)

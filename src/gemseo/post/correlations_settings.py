@@ -26,6 +26,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class CorrelationsSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "Correlations"
     n_plots_x: PositiveInt = Field(
         default=5,
         description="The number of horizontal plots.",

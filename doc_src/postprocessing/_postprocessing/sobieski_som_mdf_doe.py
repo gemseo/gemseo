@@ -31,11 +31,11 @@ disciplines = create_discipline([
 
 scenario = create_scenario(
     disciplines,
-    formulation="MDF",
-    objective_name="y_4",
+    "y_4",
+    "design_space.csv",
+    formulation_name="MDF",
     maximize_objective=True,
     scenario_type="DOE",
-    design_space="design_space.csv",
 )
 
 scenario.set_differentiation_method()
@@ -46,7 +46,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 scenario.execute(algo_name="lhs", n_samples=num)
 
 scenario.post_process(
-    "SOM",
+    post_name="SOM",
     n_x=2,
     n_y=2,
     save=True,
@@ -55,7 +55,7 @@ scenario.post_process(
     extension="png",
 )
 scenario.post_process(
-    "SOM",
+    post_name="SOM",
     n_x=4,
     n_y=4,
     save=True,
@@ -64,7 +64,7 @@ scenario.post_process(
     extension="png",
 )
 scenario.post_process(
-    "SOM",
+    post_name="SOM",
     n_x=16,
     n_y=16,
     save=True,

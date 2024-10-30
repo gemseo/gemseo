@@ -47,10 +47,10 @@ scenario_type = "MDO"
 ###
 
 scenario = create_scenario(
-    disciplines=disciplines,
-    formulation=formulation,
-    objective_name=objective_name,
-    design_space=design_space,
+    disciplines,
+    objective_name,
+    design_space,
+    formulation_name=formulation,
     scenario_type=scenario_type,
 )
 

@@ -78,7 +78,7 @@ def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
     }
     problem.reset()
     if store_jacobian:
-        OptimizationLibraryFactory().execute(problem, algorithm, **options)
+        OptimizationLibraryFactory().execute(problem, algo_name=algorithm, **options)
         kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
         obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
         obj_hist = problem.database.get_function_history(problem.objective.name)
@@ -92,4 +92,6 @@ def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
         )
     else:
         with pytest.raises(ValueError):
-            OptimizationLibraryFactory().execute(problem, algorithm, **options)
+            OptimizationLibraryFactory().execute(
+                problem, algo_name=algorithm, **options
+            )

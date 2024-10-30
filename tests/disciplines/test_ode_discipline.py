@@ -611,7 +611,7 @@ def test_ode_discipline_two_termination_events_1():
 
     res_ode = ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-12,
         atol=1e-12,
     )
@@ -710,7 +710,7 @@ def test_ode_discipline_two_termination_events_2():
 
     res_ode = ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-12,
         atol=1e-12,
     )
@@ -808,7 +808,7 @@ def test_ode_discipline_two_termination_events_3():
 
     res_ode = ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-12,
         atol=1e-12,
     )
@@ -892,7 +892,7 @@ def test_ode_discipline_two_termination_events_4():
 
     res_ode = ODESolverLibraryFactory().execute(
         ode_problem,
-        "RK45",
+        algo_name="RK45",
         rtol=1e-12,
         atol=1e-12,
     )

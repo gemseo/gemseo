@@ -150,7 +150,7 @@ class MLAlgoSelection:
                 If ``None``, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
-                e.g. {"algo_name": "fullfact", "n_samples": 10}.
+                e.g. {"algo_name": "PYDOE_FULLFACT", "n_samples": 10}.
                 If empty, do not perform calibration.
             **option_lists: The parameters
                 for the machine learning algorithm candidate.

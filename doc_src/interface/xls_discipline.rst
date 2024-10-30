@@ -96,7 +96,7 @@ Create the :class:`.DOEScenario` with the :class:`.XLSDiscipline`, the :class:`.
 
    scenario = create_scenario(
        xls_discipline,
-       formulation="DisciplinaryOpt",
+       formulation_name="DisciplinaryOpt",
        objective_name="c",
        design_space=design_space,
        scenario_type='DOE',
@@ -143,7 +143,7 @@ For that, we will use the :class:`.MDFFormulation`:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation="MDF",
+       formulation_name="MDF",
        objective_name="f",
        design_space=design_space,
        scenario_type='DOE',
@@ -197,7 +197,7 @@ The scenario creation would specify the MDA:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation="MDF",
+       formulation_name="MDF",
        main_mda_class="MDAJacobi",
        objective_name="f",
        design_space=design_space,
@@ -231,7 +231,7 @@ The scenario would be created as follows:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation="MDF",
+       formulation_name="MDF",
        main_mda_class="MDAJacobi",
        objective_name="f",
        design_space=design_space,

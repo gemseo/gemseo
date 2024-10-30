@@ -111,9 +111,9 @@ def test_l_shape(tmp_wd) -> None:
     )
     scenario = create_scenario(
         disciplines,
-        "DisciplinaryOpt",
         "compliance",
         design_space,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint(
         "volume fraction", constraint_type="ineq", value=volume_fraction
@@ -124,7 +124,7 @@ def test_l_shape(tmp_wd) -> None:
     )
     pp_settings = post_processing.Settings(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(
-        "Animation",
+        post_name="Animation",
         post_processing=post_processing,
         post_processing_settings=pp_settings,
     ).output_file_paths

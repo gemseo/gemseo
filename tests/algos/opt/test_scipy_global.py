@@ -60,7 +60,7 @@ class TestScipyGlobalOpt(TestCase):
 def pow2_database() -> Database:
     """The database resulting from the Power2 problem resolution."""
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, "SHGO", max_iter=20)
+    OptimizationLibraryFactory().execute(problem, algo_name="SHGO", max_iter=20)
     return problem.database
 
 
@@ -97,7 +97,7 @@ def test_differential_evolution_parallel():
     problem = Rosenbrock()
     result = OptimizationLibraryFactory().execute(
         problem,
-        "DIFFERENTIAL_EVOLUTION",
+        algo_name="DIFFERENTIAL_EVOLUTION",
         settings_model=DifferentialEvolutionSettings(
             max_iter=5,
             workers=2,

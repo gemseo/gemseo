@@ -69,7 +69,11 @@ design_space.add_variable("x", lower_bound=-1, upper_bound=1)
 # For that,
 # we express the sampling problem as a :class:`.DOEScenario`:
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    [discipline],
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%

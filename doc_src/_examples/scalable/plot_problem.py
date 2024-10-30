@@ -67,9 +67,9 @@ for discipline in disciplines:
     output_names = iter(discipline.io.output_grammar.names)
     scenario = create_scenario(
         discipline,
-        "DisciplinaryOpt",
         next(output_names),
         design_space,
+        formulation_name="DisciplinaryOpt",
         scenario_type="DOE",
     )
     for output_name in output_names:
@@ -133,4 +133,4 @@ scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
 # %%
 # We can post-process the results.
 # Here, we use the standard :class:`.OptHistoryView`.
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)

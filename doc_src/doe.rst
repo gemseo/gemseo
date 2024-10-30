@@ -39,7 +39,7 @@ Most of the DOE algorithms also need the number of samples when calling :meth:`~
 
     >>> from gemseo.algos.doe.lib_pydoe import PyDOE
     >>> pydoe_library = PyDOE()
-    >>> optimization_result = pydoe_library.execute(problem, "lhs", n_samples=100)
+    >>> optimization_result = pydoe_library.execute(problem, algo_name="lhs", n_samples=100)
 
 In the presence of an :class:`.OptimizationProblem`,
 it is advisable to apply DOE algorithms with the function :func:`.execute_algo`

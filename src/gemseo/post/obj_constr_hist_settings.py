@@ -25,6 +25,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class ObjConstrHistSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "ObjConstrHist"
     constraint_names: Sequence[str] = Field(
         default=(),
         description="The names of the constraints to plot. "

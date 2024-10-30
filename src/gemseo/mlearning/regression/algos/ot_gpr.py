@@ -118,7 +118,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     __multi_start_algo_name: DOEAlgorithmName
     """The names of the DOE algorithm for multi-start optimization."""
 
-    __multi_start_algo_options: StrKeyMapping
+    __multi_start_algo_settings: StrKeyMapping
     """The options of the DOE algorithm for multi-start optimization."""
 
     __multi_start_n_samples: int
@@ -170,7 +170,9 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         self.__optimizer = self._settings.optimizer
         self.__multi_start_n_samples = self._settings.multi_start_n_samples
         self.__multi_start_algo_name = self._settings.multi_start_algo_name
-        self.__multi_start_algo_options = dict(self._settings.multi_start_algo_options)
+        self.__multi_start_algo_settings = dict(
+            self._settings.multi_start_algo_settings
+        )
         self.__trend = self._settings.trend
         if self._settings.use_hmat is None:
             self.use_hmat = len(self.learning_set) > self.MAX_SIZE_FOR_LAPACK
@@ -266,7 +268,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
                 doe_algo.compute_doe(
                     design_space,
                     n_samples=self.__multi_start_n_samples,
-                    **self.__multi_start_algo_options,
+                    **self.__multi_start_algo_settings,
                 ),
             )
         else:

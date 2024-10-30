@@ -57,11 +57,11 @@ from gemseo.algos.doe.openturns.settings.ot_sobol import OTSobolSettings  # noqa
 from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (  # noqa: F401
     OTSobolIndicesSettings,
 )
-from gemseo.algos.doe.pydoe.settings.bbdesign import BBDesignSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.ccdesign import CCDesignSettings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.bbdesign import BBDESIGNSettings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.ccdesign import CCDESIGNSettings  # noqa: F401
 from gemseo.algos.doe.pydoe.settings.ff2n import FF2NSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.pbdesign import PBDesignSettings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.pbdesign import PBDESIGNSettings  # noqa: F401
 from gemseo.algos.doe.scipy.settings.halton import HaltonSettings  # noqa: F401
 from gemseo.algos.doe.scipy.settings.lhs import LHSSettings  # noqa: F401
 from gemseo.algos.doe.scipy.settings.mc import MCSettings  # noqa: F401

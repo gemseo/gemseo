@@ -112,16 +112,16 @@ class PostScalabilityStudy:
 
     def set_cost_function(
         self,
-        formulation: str,
+        formulation_name: str,
         cost: Callable[[Mapping[str, int], int, int, int, int], float],
     ) -> None:
         """Set cost function for each formulation.
 
         Args:
-            formulation: The name of the formulation.
+            formulation_name: The name of the formulation.
             cost: The cost function.
         """
-        self.cost_function[formulation] = cost
+        self.cost_function[formulation_name] = cost
 
     def set_cost_unit(self, cost_unit: str) -> None:
         """Set the measurement unit for cost evaluation.

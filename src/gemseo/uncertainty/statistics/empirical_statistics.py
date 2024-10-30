@@ -115,9 +115,9 @@ class EmpiricalStatistics(BaseStatistics):
         >>>
         >>> scenario = create_scenario(
         ...     [discipline],
-        ...     "DisciplinaryOpt",
         ...     "y1",
         ...     parameter_space,
+        ...     formulation_name="DisciplinaryOpt",
         ...     scenario_type="DOE",
         ... )
         >>> scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)

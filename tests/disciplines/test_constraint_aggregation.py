@@ -69,7 +69,9 @@ def test_aggregation_discipline(disc_constr) -> None:
     design_space.add_variable(
         "x", 3, lower_bound=-10, upper_bound=10, value=2 * ones(3)
     )
-    scenario = create_scenario(disciplines, "DisciplinaryOpt", "obj_f", design_space)
+    scenario = create_scenario(
+        disciplines, "obj_f", design_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.add_constraint("constr", constraint_type="ineq")
 
     scenario.execute(algo_name="SLSQP", max_iter=50)
@@ -89,7 +91,7 @@ def test_aggregation_discipline(disc_constr) -> None:
         "x", 3, lower_bound=-10, upper_bound=10, value=2 * ones(3)
     )
     scenario_agg = create_scenario(
-        disciplines, "DisciplinaryOpt", "obj_f", design_space
+        disciplines, "obj_f", design_space, formulation_name="DisciplinaryOpt"
     )
     scenario_agg.add_constraint("lower_bound_KS_constr", constraint_type="ineq")
 

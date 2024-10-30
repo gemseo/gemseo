@@ -304,7 +304,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         algo: str = "",
         algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,
         backup_settings: BackupSettings | None = None,
-        formulation: str = "MDF",
+        formulation_name: str = "MDF",
         compute_second_order: bool = True,
         **formulation_settings: Any,
     ) -> IODataset:
@@ -338,7 +338,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             algo=algo,
             algo_settings=algo_settings,
             backup_settings=backup_settings,
-            formulation=formulation,
+            formulation_name=formulation_name,
             **formulation_settings,
         )
         dataset = self.dataset

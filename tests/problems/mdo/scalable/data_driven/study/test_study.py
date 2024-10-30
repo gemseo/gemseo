@@ -66,7 +66,10 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
         input_names = set(design_space) & discipline.input_grammar.keys()
         design_space = design_space.filter(input_names)
         scenario = DOEScenario(
-            [discipline], "DisciplinaryOpt", objective_name, design_space
+            [discipline],
+            objective_name,
+            design_space,
+            formulation_name="DisciplinaryOpt",
         )
         scenario.execute(algo_name="DiagonalDOE", n_samples=n_samples)
     design_variables = [X_SHARED, X_1]
@@ -118,17 +121,19 @@ def test_scalabilitystudy1(sellar_use_case) -> None:
     study.add_optimization_strategy(
         "NLOPT_SLSQP",
         2,
-        "MDF",
-        formulation_options={"main_mda_settings": {"chain_linearize": True}},
+        formulation_name="MDF",
+        formulation_settings={"main_mda_settings": {"chain_linearize": True}},
     )
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
     study.add_scaling_strategies(variables=variables)
     study.execute()
     with pytest.raises(TypeError):
-        study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF", algo_options="dummy")
+        study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF", algo_settings="dummy")
     tol = 1e-4
-    algo_options = {"ftol_rel": tol, "xtol_rel": tol, "ftol_abs": tol, "xtol_abs": tol}
-    study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF", algo_options=algo_options)
+    algo_settings = {"ftol_rel": tol, "xtol_rel": tol, "ftol_abs": tol, "xtol_abs": tol}
+    study.add_optimization_strategy(
+        "NLOPT_SLSQP", 2, "MDF", algo_settings=algo_settings
+    )
     variables = [{X_SHARED: i} for i in range(1, 3)]
 
     with pytest.raises(ValueError):
@@ -168,8 +173,8 @@ def test_scalabilitystudy2(sellar_use_case) -> None:
         study.add_discipline(
             HDF5Cache(hdf_file_path=f_name, hdf_node_path=discipline_name).to_dataset()
         )
-    study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF")
-    study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
+    study.add_optimization_strategy("NLOPT_SLSQP", 2, formulation_name="MDF")
+    study.add_optimization_strategy("NLOPT_SLSQP", 2, formulation_name="IDF")
     study.add_scaling_strategies(
         coupling_size=1, eq_cstr_size=[1, 2], variables=variables
     )

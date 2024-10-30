@@ -82,11 +82,11 @@ design_space
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
     scenario_type="DOE",
+    formulation_name="MDF",
 )
 
 # %%
@@ -141,7 +141,7 @@ lhs_settings = LHSSettings(
     n_processes=1 if os_name == "nt" else 4,
 )
 
-scenario.execute(algo_name="lhs", algo_settings_model=lhs_settings)
+scenario.execute(lhs_settings)
 
 # %%
 # .. warning::
@@ -162,7 +162,7 @@ dataset = scenario.to_dataset("a_name_for_my_dataset")
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # .. tip::
@@ -177,7 +177,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     save=False,
     show=True,
     variable_names=["y_4", "x_shared"],
@@ -186,4 +186,4 @@ scenario.post_process(
 # %%
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
-scenario.post_process("Correlations", save=False, show=True)
+scenario.post_process(post_name="Correlations", save=False, show=True)

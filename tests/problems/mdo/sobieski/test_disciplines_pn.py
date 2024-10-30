@@ -197,9 +197,9 @@ def scenario_pn() -> DOEScenario:
     """A DOEScenario for the Sobieski's SSBJ use case with physical naming."""
     scn = DOEScenario(
         create_disciplines_with_physical_naming(),
-        "MDF",
         "range",
         create_design_space(physical_naming=True),
+        formulation_name="MDF",
     )
     for constraint_name in [
         "stress",
@@ -226,9 +226,9 @@ def scenario() -> DOEScenario:
             SobieskiPropulsion(),
             SobieskiMission(),
         ],
-        "MDF",
         "y_4",
         create_design_space(),
+        formulation_name="MDF",
     )
     for constraint_name in ["g_1", "g_2", "g_3"]:
         scn.add_constraint(constraint_name, constraint_type="ineq")

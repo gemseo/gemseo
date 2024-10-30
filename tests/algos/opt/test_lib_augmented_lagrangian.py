@@ -42,7 +42,7 @@ def test_kkt_norm_correctly_stored(problem) -> None:
     }
     problem.reset()
     OptimizationLibraryFactory().execute(
-        problem, "Augmented_Lagrangian_order_1", **options
+        problem, algo_name="Augmented_Lagrangian_order_1", **options
     )
     kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
@@ -94,7 +94,7 @@ def test_2d_ineq(
     problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo, "opt", **options.copy())
+    execute_algo(problem, algo_name=algo, algo_type="opt", **options.copy())
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:
@@ -118,7 +118,7 @@ def test_2d_ineq(
 @parametrized_algo
 def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d_eq.execute(algo, **options.copy())
+    analytical_test_2d_eq.execute(algo_name=algo, **options.copy())
     problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -133,7 +133,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
 @parametrized_algo
 def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d__multiple_eq.execute(algo, **options.copy())
+    analytical_test_2d__multiple_eq.execute(algo_name=algo, **options.copy())
     problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -170,7 +170,7 @@ def test_2d_mixed(
     problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo, "opt", **opt)
+    execute_algo(problem, algo_name=algo, algo_type="opt", **opt)
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:

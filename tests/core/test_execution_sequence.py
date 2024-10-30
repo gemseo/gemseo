@@ -227,9 +227,9 @@ def test_sub_scenario() -> None:
     design_space = SobieskiDesignSpace()
     sc_prop = MDOScenario(
         [d1],
-        "DisciplinaryOpt",
         "y_34",
         design_space.filter("x_3", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
     )
     d2 = MDOScenarioAdapter(sc_prop, [], [])

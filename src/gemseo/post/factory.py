@@ -41,7 +41,6 @@ class PostFactory(BaseFactory[BasePost[Any]]):
     def execute(
         self,
         opt_problem: OptimizationProblem,
-        post_name: str,
         settings_model: BasePostSettings | None = None,
         **settings: Any,
     ) -> BasePost[Any]:
@@ -49,15 +48,19 @@ class PostFactory(BaseFactory[BasePost[Any]]):
 
         Args:
             opt_problem: The optimization problem to be post-processed.
-            post_name: The name of the post-processor.
             settings_model: The post-processor settings as a Pydantic model.
                 If ``None``, use ``**settings``.
-            **settings: The post-processor settings.
+            **settings: The post-processor settings,
+                including the algorithm name (use the keyword ``"post_name"``).
                 These arguments are ignored when ``settings_model`` is not ``None``.
 
         Returns:
             The post-processor.
         """
+        if settings_model is None:
+            post_name = settings.pop("post_name")
+        else:
+            post_name = settings_model._TARGET_CLASS_NAME
         post = self.create(post_name, opt_problem)
         post.execute(settings_model=settings_model, **settings)
         return post

@@ -33,6 +33,8 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 class NelderMeadSettings(BaseScipyLocalSettings):
     """Settings for the SciPy Nelder-Mead algorithm."""
 
+    _TARGET_CLASS_NAME = "NELDER-MEAD"
+
     return_all: bool = Field(
         default=False,
         description=(

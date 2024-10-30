@@ -188,9 +188,9 @@ design_space
 
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "obj",
     design_space,
+    formulation_name="MDF",
     inner_mda_name="MDAGaussSeidel",
 )
 
@@ -254,7 +254,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # following plots. Many other post-processors are available in |g| and
 # are described in :ref:`Post-processing <post_processing>`.
 
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # .. note::

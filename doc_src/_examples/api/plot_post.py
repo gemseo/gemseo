@@ -56,6 +56,8 @@ get_available_post_processings()
 # with its ``**options``. E.g.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 design_space = SellarDesignSpace()
-scenario = create_scenario(disciplines, "MDF", "obj", design_space, "SellarMDFScenario")
+scenario = create_scenario(
+    disciplines, "obj", design_space, name="SellarMDFScenario", formulation_name="MDF"
+)
 scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
 execute_post(scenario, "OptHistoryView", save=False, show=True)

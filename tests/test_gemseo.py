@@ -90,7 +90,7 @@ from gemseo import write_design_space
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.fullfact import FullFactSettings
+from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
@@ -130,9 +130,9 @@ def scenario() -> MDOScenario:
     """An MDO scenario after execution."""
     scenario = create_scenario(
         create_discipline("SobieskiMission"),
-        "DisciplinaryOpt",
         "y_4",
         SobieskiDesignSpace(),
+        formulation_name="DisciplinaryOpt",
     )
     scenario.execute(algo_name="SLSQP", max_iter=10)
     return scenario
@@ -224,9 +224,9 @@ def test_create_scenario_and_monitor() -> None:
     """Test the creation of a scenario from the SobieskiMission discipline."""
     create_scenario(
         create_discipline("SobieskiMission"),
-        "DisciplinaryOpt",
         "y_4",
         SobieskiDesignSpace(),
+        formulation_name="DisciplinaryOpt",
     )
 
     with pytest.raises(
@@ -234,9 +234,9 @@ def test_create_scenario_and_monitor() -> None:
     ):
         create_scenario(
             create_discipline("SobieskiMission"),
-            "DisciplinaryOpt",
             "y_4",
             SobieskiDesignSpace(),
+            formulation_name="DisciplinaryOpt",
             scenario_type="unknown",
         )
 
@@ -245,9 +245,9 @@ def test_monitor_scenario() -> None:
     """Test the scenario monitoring API method."""
     scenario = create_scenario(
         create_discipline("SobieskiMission"),
-        "DisciplinaryOpt",
         "y_4",
         SobieskiDesignSpace(),
+        formulation_name="DisciplinaryOpt",
     )
 
     observer = Observer()
@@ -276,23 +276,23 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
         scenario.save_optimization_history(file_name)
         obj = file_name if obj_type is str else Path(file_name)
 
-    post = execute_post(obj, "OptHistoryView", save=False, show=False)
+    post = execute_post(obj, post_name="OptHistoryView", save=False, show=False)
     assert isinstance(post, OptHistoryView)
 
 
 def test_execute_post_type_error(scenario) -> None:
     """Test the method execute_post with a wrong typed argument."""
     with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
-        execute_post(1234, "OptHistoryView")
+        execute_post(1234, post_name="OptHistoryView")
 
 
 def test_create_doe_scenario() -> None:
     """Test the creation of a DOE scenario."""
     create_scenario(
         create_discipline("SobieskiMission"),
-        "DisciplinaryOpt",
         "y_4",
         SobieskiDesignSpace(),
+        formulation_name="DisciplinaryOpt",
         scenario_type="DOE",
     )
 
@@ -376,7 +376,7 @@ def test_get_scenario_inputs_schema() -> None:
     aero = create_discipline(["SobieskiAerodynamics"])
     design_space = SobieskiDesignSpace()
     sc_aero = create_scenario(
-        aero, "DisciplinaryOpt", "y_24", design_space.filter("x_2")
+        aero, "y_24", design_space.filter("x_2"), formulation_name="DisciplinaryOpt"
     )
 
     schema = get_scenario_inputs_schema(sc_aero)
@@ -389,17 +389,17 @@ def test_get_scenario_inputs_schema() -> None:
 def test_exec_algo() -> None:
     """Test the execution of an algorithm with the Rosenbrock problem."""
     problem = Rosenbrock()
-    sol = execute_algo(problem, "L-BFGS-B", max_iter=200)
+    sol = execute_algo(problem, algo_name="L-BFGS-B", max_iter=200)
     assert abs(sol.f_opt) < 1e-8
 
-    sol = execute_algo(problem, "lhs", algo_type="doe", n_samples=200)
+    sol = execute_algo(problem, algo_name="LHS", algo_type="doe", n_samples=200)
     assert abs(sol.f_opt) < 1e-8
 
     with pytest.raises(
         ValueError,
         match="Unknown algo type: unknown_algo, please use 'doe' or 'opt' !",
     ):
-        execute_algo(problem, "lhs", "unknown_algo", n_samples=200)
+        execute_algo(problem, algo_name="LHS", algo_type="unknown_algo", n_samples=200)
 
 
 def test_get_scenario_options_schema() -> None:
@@ -432,8 +432,8 @@ def test_get_available_opt_algorithms() -> None:
 def test_get_available_doe_algorithms() -> None:
     """Test that the doe algorithms are retrieved correctly."""
     algos = get_available_doe_algorithms()
-    assert "lhs" in algos
-    assert "fullfact" in algos
+    assert "LHS" in algos
+    assert "PYDOE_FULLFACT" in algos
 
 
 def test_get_available_formulations() -> None:
@@ -501,8 +501,8 @@ def test_create_surrogate() -> None:
     disc.set_cache(disc.CacheType.MEMORY_FULL)
     design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
-    doe = DOEScenario([disc], "DisciplinaryOpt", "y_4", design_space)
-    doe.execute(algo_name="fullfact", n_samples=10)
+    doe = DOEScenario([disc], "y_4", design_space, formulation_name="DisciplinaryOpt")
+    doe.execute(algo_name="PYDOE_FULLFACT", n_samples=10)
     surr = create_surrogate(
         "RBFRegressor",
         disc.cache.to_dataset(),
@@ -765,7 +765,7 @@ def variables_space():
 
 
 @pytest.mark.parametrize(
-    "settings", [{"n_samples": 4}, {"settings_model": FullFactSettings(n_samples=4)}]
+    "settings", [{"n_samples": 4}, {"settings_model": FULLFACTSettings(n_samples=4)}]
 )
 @pytest.mark.parametrize(
     ("transformation", "expected_points"),
@@ -779,7 +779,7 @@ def test_compute_doe(
 ) -> None:
     """Check the computation of a DOE in a variables space."""
     points = compute_doe(
-        variables_space, algo_name="fullfact", **settings, **transformation
+        variables_space, algo_name="PYDOE_FULLFACT", **settings, **transformation
     )
     assert (points == array(expected_points)).all()
 
@@ -991,7 +991,7 @@ def input_space() -> DesignSpace:
 def test_sample_disciplines(disciplines, input_space, output_names, caplog):
     """Check the sampling of two disciplines."""
     dataset = sample_disciplines(
-        disciplines, input_space, output_names, "fullfact", n_samples=2
+        disciplines, input_space, output_names, "PYDOE_FULLFACT", n_samples=2
     )
     assert dataset.name == "Sampling"
 
@@ -1025,11 +1025,11 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
         disciplines,
         input_space,
         "out1",
-        "fullfact",
+        "PYDOE_FULLFACT",
         n_samples=2,
         name="foo",
         # Use DisciplinaryOpt instead of MDF
-        formulation="DisciplinaryOpt",
+        formulation_name="DisciplinaryOpt",
         # Sample -objective instead of objective
         formulation_settings={"maximize_objective": True},
         # Sample the gradients
@@ -1054,7 +1054,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            "fullfact",
+            "PYDOE_FULLFACT",
             n_samples=2,
         )
 
@@ -1064,7 +1064,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         disciplines,
         input_space,
         ["out1", "out2"],
-        "fullfact",
+        "PYDOE_FULLFACT",
         backup_settings=BackupSettings("database.hdf5"),
         n_samples=2,
     )
@@ -1075,7 +1075,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            "fullfact",
+            "PYDOE_FULLFACT",
             backup_settings=BackupSettings("database.hdf5"),
             n_samples=2,
         )
@@ -1092,7 +1092,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            "fullfact",
+            "PYDOE_FULLFACT",
             backup_settings=BackupSettings(
                 "database.hdf5",
                 at_each_iteration=True,

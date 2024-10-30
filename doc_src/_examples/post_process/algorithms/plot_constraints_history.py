@@ -80,9 +80,9 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 scenario.set_differentiation_method()
@@ -112,7 +112,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 #    :ref:`gen_post_algos`.
 
 scenario.post_process(
-    "ConstraintsHistory",
+    post_name="ConstraintsHistory",
     constraint_names=all_constraints,
     save=False,
     show=True,

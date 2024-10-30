@@ -92,9 +92,9 @@ def scalable_optimization_problem_scenario(request, n, constraint_kind):
     ds.add_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
     scenario = create_scenario(
         [disc],
-        "DisciplinaryOpt",
         "f",
         ds,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("g", constraint_kind)
     return scenario

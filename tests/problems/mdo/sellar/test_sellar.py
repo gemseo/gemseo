@@ -168,9 +168,9 @@ def test_exec(formulation, algo, differentiation_method, disciplines, x_opt, n) 
     """Check the resolution of the Sellar problem."""
     scenario = MDOScenario(
         disciplines,
-        formulation,
         "obj",
         SellarDesignSpace(n=n),
+        formulation_name=formulation,
     )
     scenario.set_differentiation_method(differentiation_method)
     scenario.add_constraint(C_1, constraint_type=MDOFunction.ConstraintType.INEQ)

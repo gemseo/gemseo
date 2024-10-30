@@ -80,14 +80,14 @@ def problem() -> Rosenbrock:
 @pytest.fixture(scope="module")
 def dataset(problem) -> IODataset:
     """A 9-length full-factorial sampling of the Rosenbrock problem."""
-    execute_algo(problem, "fullfact", n_samples=9, algo_type="doe")
+    execute_algo(problem, algo_name="PYDOE_FULLFACT", n_samples=9, algo_type="doe")
     return problem.to_dataset(opt_naming=False)
 
 
 @pytest.fixture(scope="module")
 def dataset_2(problem) -> IODataset:
     """A 9-length full-factorial sampling of the Rosenbrock problem."""
-    execute_algo(problem, "fullfact", n_samples=9, algo_type="doe")
+    execute_algo(problem, algo_name="PYDOE_FULLFACT", n_samples=9, algo_type="doe")
     data = problem.to_dataset(opt_naming=False)
     data.add_variable(
         "rosen2",
@@ -332,7 +332,7 @@ def test_multi_start_optimization(dataset):
         dataset,
         multi_start_algo_name="LHS",
         multi_start_n_samples=9,
-        multi_start_algo_options={"strength": 2},
+        multi_start_algo_settings={"strength": 2},
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
         model.learn()

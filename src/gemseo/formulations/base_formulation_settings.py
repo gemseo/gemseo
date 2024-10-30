@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
@@ -25,6 +26,9 @@ from pydantic import Field
 
 class BaseFormulationSettings(BaseModel):
     """Base class for the settings of the formulations."""
+
+    _TARGET_CLASS_NAME: ClassVar[str]
+    """The name of the formulation class."""
 
     model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
 

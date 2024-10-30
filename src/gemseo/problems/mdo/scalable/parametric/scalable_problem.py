@@ -90,9 +90,9 @@ class ScalableProblem(_ScalableProblem):
         """
         scenario = create_scenario(
             self.disciplines,
-            formulation_name,
             OBJECTIVE_NAME,
             self.design_space,
+            formulation_name=formulation_name,
             scenario_type="MDO" if use_optimizer else "DOE",
             **formulation_settings,
         )

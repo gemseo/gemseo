@@ -87,9 +87,13 @@ def problem_executed_twice() -> OptimizationProblem:
     problem.add_observable(MDOFunction(lambda x: x, "obs"))
     problem.add_constraint(MDOFunction(lambda x: x, "cstr", f_type="ineq"))
 
-    execute_algo(problem, "CustomDOE", algo_type="doe", samples=array([[0.0]]))
+    execute_algo(
+        problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.0]])
+    )
     problem.evaluation_counter.current = 0
-    execute_algo(problem, "CustomDOE", algo_type="doe", samples=array([[0.5]]))
+    execute_algo(
+        problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.5]])
+    )
     return problem
 
 
@@ -452,7 +456,7 @@ def test_differentiation_method(pow2_problem) -> None:
 
 def test_get_dv_names() -> None:
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
     assert problem.design_space.variable_names == ["x"]
 
 
@@ -498,7 +502,7 @@ def test_feasible_optimum_points() -> None:
         problem.history.last_point  # noqa: B018
 
     OptimizationLibraryFactory().execute(
-        problem, "SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
+        problem, algo_name="SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
     )
     feasible_x = problem.history.feasible_points[0]
     assert len(feasible_x) >= 2
@@ -584,7 +588,7 @@ def test_normalize_linear_function() -> None:
 def test_export_hdf(tmp_wd) -> None:
     file_path = Path("power2.h5")
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
     problem.to_hdf(file_path, append=True)  # Shall still work now
 
     def check_pb(imp_pb) -> None:
@@ -848,7 +852,9 @@ def test_evaluate_jacobians_alone(constrained_problem, jacobian_names, keys) -> 
 
 def test_no_normalization() -> None:
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, "SLSQP", normalize_design_space=False)
+    OptimizationLibraryFactory().execute(
+        problem, algo_name="SLSQP", normalize_design_space=False
+    )
     f_opt, _, is_feas, _, _ = problem.optimum
     assert is_feas
     assert abs(f_opt - 2.192) < 0.01
@@ -921,7 +927,9 @@ def test_2d_objective() -> None:
     design_space = SobieskiDesignSpace()
     inputs = disc.io.input_grammar.names
     design_space.filter([name for name in inputs if not name.startswith("c_")])
-    doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
+    doe_scenario = DOEScenario(
+        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    )
     doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10)
 
 
@@ -942,7 +950,7 @@ def test_observable(pow2_problem) -> None:
         problem.observables.get_from_name("toto")
 
     # Check that the observable is stored in the database
-    OptimizationLibraryFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
     database = problem.database
     iter_norms = [norm(key.unwrap()) for key in database]
     iter_obs = [value[design_norm] for value in database.values()]
@@ -1060,7 +1068,7 @@ def test_gradient_with_random_variables() -> None:
 
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(lambda x: 3 * x**2, "func", jac=lambda x: 6 * x)
-    PyDOELibrary("fullfact").execute(problem, n_samples=3, eval_jac=True)
+    PyDOELibrary("PYDOE_FULLFACT").execute(problem, n_samples=3, eval_jac=True)
 
     data = problem.database.get_gradient_history("func")
 
@@ -1135,7 +1143,7 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(
 
 def test_database_name(problem) -> None:
     """Check the name of the database."""
-    DOELibraryFactory().execute(problem, "fullfact", n_samples=1)
+    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=1)
     problem.database.name = "my_database"
     dataset = problem.to_dataset()
     assert dataset.name == problem.database.name
@@ -1181,7 +1189,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     if skip_int_check:
         OptimizationLibraryFactory().execute(
             problem,
-            "SLSQP",
+            algo_name="SLSQP",
             normalize_design_space=True,
             skip_int_check=skip_int_check,
         )
@@ -1191,7 +1199,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
         with pytest.raises(ValueError, match=expected_message):
             OptimizationLibraryFactory().execute(
                 problem,
-                "SLSQP",
+                algo_name="SLSQP",
                 normalize_design_space=True,
                 skip_int_check=skip_int_check,
             )
@@ -1299,7 +1307,7 @@ def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     problem.add_observable(MDOFunction(sum, "obs"))
     problem.add_constraint(MDOFunction(sum, "cstr"), constraint_type="ineq")
     start_point = problem.design_space.get_current_value(as_dict=True)
-    execute_algo(problem, "lhs", n_samples=3, algo_type="doe")
+    execute_algo(problem, algo_name="LHS", n_samples=3, algo_type="doe")
     return problem, start_point
 
 
@@ -1597,7 +1605,7 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     "options",
     [
         {"algo_name": "SLSQP", "algo_type": "opt", "max_iter": 1},
-        {"algo_name": "fullfact", "algo_type": "doe", "n_samples": 1},
+        {"algo_name": "PYDOE_FULLFACT", "algo_type": "doe", "n_samples": 1},
     ],
 )
 @pytest.mark.parametrize("eval_obs_jac", [True, False])
@@ -1631,7 +1639,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     obs2 = MDOFunction(sum, "sum")
     pow2_problem.add_observable(obs2)
 
-    OptimizationLibraryFactory().execute(pow2_problem, "SLSQP")
+    OptimizationLibraryFactory().execute(pow2_problem, algo_name="SLSQP")
 
     # Export and import the optimization problem.
     file_path = "power2.h5"
@@ -1808,9 +1816,9 @@ def test_observables_normalization(sellar_disciplines) -> None:
     )
     scenario = create_scenario(
         sellar_disciplines,
-        "MDF",
         "obj",
         design_space,
+        formulation_name="MDF",
     )
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
@@ -1981,7 +1989,7 @@ def test_is_multi_objective() -> None:
 def test_optimization_result_save_nested_dict(tmp_wd) -> None:
     """Check that the nested dictionaries of OptimizationResult are correctly saved."""
     problem = Power2()
-    execute_algo(problem, "SLSQP")
+    execute_algo(problem, algo_name="SLSQP")
     problem.to_hdf("problem.hdf5")
     x_0_as_dict = problem.solution.x_0_as_dict
     x_opt_as_dict = problem.solution.x_opt_as_dict
@@ -2016,7 +2024,7 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     algo_opts = {"sub_algorithm_settings": {"eq_tolerance": 1e-1}}
     execute_algo(
         problem,
-        "Augmented_Lagrangian_order_0",
+        algo_name="Augmented_Lagrangian_order_0",
         sub_algorithm_name="SLSQP",
         **algo_opts,
     )
@@ -2111,7 +2119,7 @@ def test_no_initial_value_with_approximated_gradient(value, differentiation_meth
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x**2, "f")
     problem.differentiation_method = differentiation_method
-    optimization_result = execute_algo(problem, "SLSQP", max_iter=100)
+    optimization_result = execute_algo(problem, algo_name="SLSQP", max_iter=100)
     assert optimization_result.x_opt == 0
 
 

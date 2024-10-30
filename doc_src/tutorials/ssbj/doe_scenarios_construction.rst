@@ -102,7 +102,7 @@ The :ref:`MDF formulation <mdf_formulation>` is selected to build the :class:`~g
     from gemseo import create_scenario
 
     scenario = create_scenario(disciplines,
-                               formulation="MDF",
+                               formulation_name="MDF",
                                objective_name="y_4",
                                design_space=design_space,
                                scenario_type="DOE",
@@ -274,7 +274,7 @@ The propulsion scenario minimizes the fuel specific consumption:
 .. code::
 
     sc_prop = create_scenario(prop,
-                              formulation="DisciplinaryOpt",
+                              formulation_name="DisciplinaryOpt",
                               objective_name="y_34",
                               design_space=design_space_prop,
                               name="PropulsionScenario")
@@ -284,7 +284,7 @@ The aerodynamic scenario maximizes lift over drag:
 .. code::
 
     sc_aero = create_scenario(aero,
-                              formulation="DisciplinaryOpt",
+                              formulation_name="DisciplinaryOpt",
                               objective_name="y_24",
                               design_space=design_space_aero,
                               name="AerodynamicsScenario",
@@ -295,7 +295,7 @@ The structure scenario maximizes :math:`log \frac{aircraft total weight}{aircraf
 .. code::
 
     sc_struct = create_scenario(struct,
-                                formulation="DisciplinaryOpt",
+                                formulation_name="DisciplinaryOpt",
                                 objective_name="y_11",
                                 design_space=design_space_struct,
                                 name="StructureScenario",
@@ -323,7 +323,7 @@ process with respect to the :term:`system design variables` (optimization proble
 .. code::
 
    system_scenario = create_scenario(sub_disciplines,
-                                     formulation="BiLevel",
+                                     formulation_name="BiLevel",
                                      objective_name="y_4",
                                      parallel_scenarios=False,
                                      # This is mandatory when doing

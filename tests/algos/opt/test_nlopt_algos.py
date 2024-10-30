@@ -89,7 +89,7 @@ class TestNLOPT(TestCase):
         )
         problem = OptimizationProblem(design_space)
         problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
-        OptimizationLibraryFactory().execute(problem, "NLOPT_COBYLA")
+        OptimizationLibraryFactory().execute(problem, algo_name="NLOPT_COBYLA")
 
     def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
@@ -100,7 +100,7 @@ class TestNLOPT(TestCase):
             problem = OptimizationProblem(design_space)
             problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
             res = OptimizationLibraryFactory().execute(
-                problem, "NLOPT_SLSQP", **algo_options
+                problem, algo_name="NLOPT_SLSQP", **algo_options
             )
             return res, problem
 
@@ -132,7 +132,9 @@ def test_cast_to_float() -> None:
     problem.objective = MDOFunction(
         lambda x: x, "my_function", jac=lambda x: array([[1.0]])
     )
-    res = OptimizationLibraryFactory().execute(problem, "NLOPT_SLSQP", max_iter=100)
+    res = OptimizationLibraryFactory().execute(
+        problem, algo_name="NLOPT_SLSQP", max_iter=100
+    )
     assert res.x_opt == array([0.0])
     assert res.f_opt == 0.0
 

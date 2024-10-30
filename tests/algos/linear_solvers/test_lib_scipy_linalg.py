@@ -63,7 +63,7 @@ def test_default(kwargs) -> None:
     rng = default_rng(1)
     n = 5
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    factory.execute(problem, "DEFAULT", **kwargs)
+    factory.execute(problem, algo_name="DEFAULT", **kwargs)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
@@ -98,7 +98,7 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
             "store_outer_av": True,
             "prepend_outer_v": True,
         })
-    factory.execute(problem, algo_name, **options)
+    factory.execute(problem, algo_name=algo_name, **options)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
@@ -109,11 +109,11 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
 def test_common_dtype_cplx() -> None:
     factory = LinearSolverLibraryFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
-    factory.execute(problem, "DEFAULT")
+    factory.execute(problem, algo_name="DEFAULT")
     assert problem.compute_residuals() < RESIDUALS_TOL
 
     problem = LinearProblem(eye(2), ones(2, dtype="complex128"))
-    factory.execute(problem, "DEFAULT")
+    factory.execute(problem, algo_name="DEFAULT")
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
@@ -146,7 +146,7 @@ def test_hard_conv(tmp_wd, seed) -> None:
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     LinearSolverLibraryFactory().execute(
         problem,
-        "DEFAULT",
+        algo_name="DEFAULT",
         max_iter=3,
         store_residuals=True,
         use_ilu_precond=True,
@@ -163,13 +163,13 @@ def test_inconsistent_options() -> None:
         ValueError, match=re.escape("matrix and preconditioner have different shapes")
     ):
         LinearSolverLibraryFactory().execute(
-            problem, "DEFAULT", preconditioner=ones((3, 3))
+            problem, algo_name="DEFAULT", preconditioner=ones((3, 3))
         )
 
     with pytest.raises(
         ValueError, match=re.escape("shapes of A (2, 2) and x0 (3,) are incompatible")
     ):
-        LinearSolverLibraryFactory().execute(problem, "DEFAULT", x0=ones(3))
+        LinearSolverLibraryFactory().execute(problem, algo_name="DEFAULT", x0=ones(3))
 
     with pytest.raises(
         ValueError,
@@ -178,7 +178,10 @@ def test_inconsistent_options() -> None:
         ),
     ):
         LinearSolverLibraryFactory().execute(
-            problem, "DEFAULT", preconditioner=ones((2, 2)), use_ilu_precond=True
+            problem,
+            algo_name="DEFAULT",
+            preconditioner=ones((2, 2)),
+            use_ilu_precond=True,
         )
 
 

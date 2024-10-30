@@ -184,7 +184,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         algo: str = "",
         algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,
         backup_settings: BackupSettings | None = None,
-        formulation: str = "MDF",
+        formulation_name: str = "MDF",
         **formulation_settings: Any,
     ) -> IODataset:
         """Compute the samples for the estimation of the sensitivity indices.
@@ -201,7 +201,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             algo_settings: The settings of the DOE algorithm.
             backup_settings: The settings of the backup file to store the evaluations
                 if any.
-            formulation: The name of the :class:`.BaseMDOFormulation`
+            formulation_name: The name of the :class:`.BaseMDOFormulation`
                 to sample the disciplines.
             **formulation_settings: The settings of the :class:`.BaseMDOFormulation`.
 
@@ -219,7 +219,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             parameter_space,
             self._output_names,
             self._algo_name,
-            formulation=formulation,
+            formulation_name=formulation_name,
             formulation_settings=formulation_settings or {},
             name=f"{self.__class__.__name__}SamplingPhase",
             backup_settings=backup_settings,

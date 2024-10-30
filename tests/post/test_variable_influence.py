@@ -42,7 +42,7 @@ def test_variable_influence(tmp_wd) -> None:
     """
     factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
+    post = factory.execute(problem, post_name="VariableInfluence", file_path="var_infl")
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
         assert Path(outf).exists()
@@ -72,11 +72,13 @@ def test_variable_influence_doe(tmp_wd) -> None:
     design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
     design_space.filter(inputs)
-    doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
+    doe_scenario = DOEScenario(
+        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    )
     doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario.post_process(
-            "VariableInfluence",
+            post_name="VariableInfluence",
             file_path="doe",
             save=True,
         )
@@ -92,7 +94,7 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
     post = factory.execute(
         problem,
-        "VariableInfluence",
+        post_name="VariableInfluence",
         file_path="ssbj",
         log_scale=True,
         absolute_value=False,

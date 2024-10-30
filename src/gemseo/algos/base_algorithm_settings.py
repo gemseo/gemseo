@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import BaseModel
 from pydantic import ConfigDict
 
@@ -24,3 +26,6 @@ class BaseAlgorithmSettings(BaseModel):
     """The settings common to all the algorithms."""
 
     model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+
+    _TARGET_CLASS_NAME: ClassVar[str]
+    """The name of the algorithm class."""

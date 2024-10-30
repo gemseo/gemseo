@@ -31,6 +31,8 @@ from gemseo.utils.seeder import SEED
 class DifferentialEvolutionSettings(BaseSciPyGlobalSettings):
     """The SciPy differential evolution setting."""
 
+    _TARGET_CLASS_NAME = "DIFFERENTIAL_EVOLUTION"
+
     strategy: str = Field(
         default="best1bin",
         description="""The differential evolution strategy to use.""",

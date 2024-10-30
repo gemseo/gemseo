@@ -29,6 +29,8 @@ from gemseo.typing import StrKeyMapping  # noqa: TCH001
 class MultiStartSettings(BaseOptimizerSettings):
     """The multi-start algorithm settings."""
 
+    _TARGET_CLASS_NAME = "MultiStart"
+
     normalize_design_space: bool = Field(
         default=False,
         description=(

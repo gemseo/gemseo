@@ -158,14 +158,14 @@ def test_jac_pb(design_space) -> None:
 
     pb = OptimizationProblem(design_space)
     pb.objective = MDOFunction(rosen, "rosen", jac=rosen_der)
-    execute_algo(pb, algo, max_iter=max_iter)
+    execute_algo(pb, algo_name=algo, max_iter=max_iter)
     fopt_ref = pb.solution.f_opt
 
     scn = create_scenario(
         AutoPyDiscipline(rosen, rosen_der),
-        "DisciplinaryOpt",
         "r",
         design_space,
+        formulation_name="DisciplinaryOpt",
     )
     scn.execute(algo_name=algo, max_iter=max_iter)
 

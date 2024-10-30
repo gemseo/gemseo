@@ -51,7 +51,11 @@ samples = np.array([sample_1, sample_2])
 # For that, we can create a scenario and execute it with a :class:`.CustomDOE`
 # with the option "samples":
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    [discipline],
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="CustomDOE", samples=samples)
 

@@ -28,3 +28,5 @@ class AugmentedLagrangianOrder1Settings(
     PenaltyHeuristicSettings, BaseGradientBasedAlgorithmSettings
 ):
     """The augmented Lagrangian of order 1 settings."""
+
+    _TARGET_CLASS_NAME = "Augmented_Lagrangian_order_1"

@@ -21,3 +21,5 @@ from gemseo.formulations.base_formulation_settings import BaseFormulationSetting
 
 class DisciplinaryOptSettings(BaseFormulationSettings):
     """Settings of the :class:`.DisciplinaryOpt` formulation."""
+
+    _TARGET_CLASS_NAME = "DisciplinaryOpt"

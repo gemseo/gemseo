@@ -31,6 +31,8 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 class SLSQPSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
     """Settings for the SciPy SLSQP algorithm."""
 
+    _TARGET_CLASS_NAME = "SLSQP"
+
     iprint: int = Field(
         default=-1,
         description=(

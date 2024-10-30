@@ -24,4 +24,6 @@ from gemseo.algos.opt.base_milp_settings import BaseMILPSettings
 class SciPyMILPSettings(BaseMILPSettings):
     """The SciPy mixed-integer linear programming library setting."""
 
+    _TARGET_CLASS_NAME = "Scipy_MILP"
+
     _redundant_settings: Final[list[str]] = ["time_limit"]

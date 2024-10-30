@@ -33,6 +33,8 @@ class AnimationSettings(BasePostSettings):  # noqa: D101
     # This is required to supporting the field post_processor.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    _TARGET_CLASS_NAME = "Animation"
+
     frame_rate: PositiveInt = Field(
         default=1,
         description="The number of iterations per time step.",

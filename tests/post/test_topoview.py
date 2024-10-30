@@ -40,9 +40,9 @@ def scenario_and_dimensions():
     )
     scenario = create_scenario(
         disciplines,
-        "DisciplinaryOpt",
         "compliance",
         design_space,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_observable("xPhys")
     scenario.add_constraint("volume fraction", constraint_type="ineq", value=vf0)
@@ -57,7 +57,7 @@ def test_l_shape(scenario_and_dimensions) -> None:
     Here we consider the design value.
     """
     scenario_and_dimensions[0].post_process(
-        "TopologyView",
+        post_name="TopologyView",
         n_x=scenario_and_dimensions[1],
         n_y=scenario_and_dimensions[2],
         save=False,
@@ -72,7 +72,7 @@ def test_l_shape_xphys(scenario_and_dimensions) -> None:
     Here we consider the value of an observable.
     """
     scenario_and_dimensions[0].post_process(
-        "TopologyView",
+        post_name="TopologyView",
         n_x=scenario_and_dimensions[1],
         n_y=scenario_and_dimensions[2],
         save=False,
@@ -88,7 +88,7 @@ def test_l_shape_last_iter(scenario_and_dimensions) -> None:
     Here we consider the last iteration.
     """
     scenario_and_dimensions[0].post_process(
-        "TopologyView",
+        post_name="TopologyView",
         n_x=scenario_and_dimensions[1],
         n_y=scenario_and_dimensions[2],
         save=False,

@@ -38,6 +38,8 @@ from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
 class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
     """The settings of the SciPy GMRES algorithm."""
 
+    _TARGET_CLASS_NAME = "TFQMR"
+
     atol: NonNegativeFloat = Field(
         default=0.0,
         description=(

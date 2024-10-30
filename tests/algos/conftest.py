@@ -41,9 +41,9 @@ def analytical_test_2d_ineq(x0, y0):
     ds.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=y0)
     scenario = create_scenario(
         [disc],
-        "DisciplinaryOpt",
         "f",
         ds,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("g", constraint_type="ineq")
     return scenario
@@ -58,9 +58,9 @@ def analytical_test_2d_eq(x0, y0):
     ds.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=y0)
     scenario = create_scenario(
         [disc],
-        "DisciplinaryOpt",
         "f",
         ds,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("g")
     return scenario
@@ -80,9 +80,9 @@ def analytical_test_2d__multiple_eq():
     ds.add_variable("z", lower_bound=2.0, upper_bound=4.0, value=x0)
     scenario = create_scenario(
         [disc],
-        "DisciplinaryOpt",
         "f",
         ds,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("h1")
     scenario.add_constraint("h2")
@@ -106,9 +106,9 @@ def analytical_test_2d_mixed_rank_deficient():
     ds.add_variable("z", lower_bound=0.0, upper_bound=1.0, value=0.5)
     scenario = create_scenario(
         [disc],
-        "DisciplinaryOpt",
         "f",
         ds,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("g", constraint_type="ineq")
     scenario.add_constraint("h")

@@ -25,6 +25,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class RadarChartSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "RadarChart"
     iteration: int | None = Field(
         default=None,
         description=r"Either an iteration in :math:`\{-N,\ldots,-1,1,\ldots,N\}` or "

@@ -60,7 +60,7 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
     problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
-        "GradientSensitivity",
+        post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens1",
         save=True,
@@ -72,7 +72,7 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
     problem.database[x_0].pop("@eq")
     post = factory.execute(
         problem,
-        "GradientSensitivity",
+        post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens2",
         save=True,
@@ -94,20 +94,24 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
     design_space.filter(inputs)
-    doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
+    doe_scenario = DOEScenario(
+        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    )
     doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=True)
     doe_scenario.post_process(
-        "GradientSensitivity",
+        post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens",
         save=True,
     )
-    doe_scenario2 = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
+    doe_scenario2 = DOEScenario(
+        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    )
     doe_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
 
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario2.post_process(
-            "GradientSensitivity",
+            post_name="GradientSensitivity",
             file_path="grad_sens",
             save=True,
             scale_gradients=scale_gradients,
@@ -143,11 +147,11 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     design_sp.add_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
     design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
 
-    scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
+    scenario = create_scenario(disc, "y", design_sp, formulation_name="DisciplinaryOpt")
     scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 
     post = scenario.post_process(
-        "GradientSensitivity",
+        post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens_analytical",
         file_extension="png",
@@ -182,12 +186,12 @@ def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
     design_sp.add_variable("x1", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
     design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
 
-    scenario = create_scenario(disc, "DisciplinaryOpt", "y", design_sp)
+    scenario = create_scenario(disc, "y", design_sp, formulation_name="DisciplinaryOpt")
 
     scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 
     scenario.post_process(
-        "GradientSensitivity",
+        post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens_analytical",
         file_extension="png",
@@ -255,7 +259,7 @@ def test_compute_missing_gradients(
         ):
             factory.execute(
                 problem,
-                "GradientSensitivity",
+                post_name="GradientSensitivity",
                 compute_missing_gradients=compute_missing_gradients,
                 save=False,
                 show=False,
@@ -269,7 +273,7 @@ def test_compute_missing_gradients(
     else:
         factory.execute(
             problem,
-            "GradientSensitivity",
+            post_name="GradientSensitivity",
             compute_missing_gradients=compute_missing_gradients,
             save=False,
             show=False,
@@ -292,7 +296,7 @@ def test_compute_missing_gradients_with_eval(factory) -> None:
         mocked_evaluate_functions.return_value = (None, gradients)
         factory.execute(
             problem,
-            "GradientSensitivity",
+            post_name="GradientSensitivity",
             compute_missing_gradients=True,
             save=False,
             show=False,

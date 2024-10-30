@@ -152,10 +152,10 @@ get_all_inputs(disciplines)
 # we build the scenario:
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
+    formulation_name="MDF",
 )
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
@@ -218,7 +218,10 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 # To visualize the optimization history of the constraint violation one can use the
 # :class:`.BasicHistory`:
 scenario.post_process(
-    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=True
+    post_name="BasicHistory",
+    variable_names=["g_1", "g_2", "g_3"],
+    save=False,
+    show=True,
 )
 # %%
 # This solution is almost feasible.
@@ -229,10 +232,10 @@ scenario.post_process(
 design_space.set_current_value(x_0)
 scenario_2 = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
+    formulation_name="MDF",
 )
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario_2.add_constraint(constraint, constraint_type="ineq")
@@ -241,9 +244,14 @@ scenario_2.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
 scenario_2.execute(algo_name="L-BFGS-B", max_iter=1000)
-scenario_2.post_process("BasicHistory", variable_names=["-y_4"], save=False, show=True)
 scenario_2.post_process(
-    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=True
+    post_name="BasicHistory", variable_names=["-y_4"], save=False, show=True
+)
+scenario_2.post_process(
+    post_name="BasicHistory",
+    variable_names=["g_1", "g_2", "g_3"],
+    save=False,
+    show=True,
 )
 # %%
 # The solution feasibility was improved but this comes with a much higher number of

@@ -28,6 +28,8 @@ from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Optimizer
 class PoissonDiskSettings(BaseSciPyDOESettings):
     """The settings for the Poisson disk DOE from the SciPy library."""
 
+    _TARGET_CLASS_NAME = "PoissonDisk"
+
     optimization: Optimizer | None = Field(
         default=None,
         description=(

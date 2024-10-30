@@ -68,7 +68,7 @@ doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
 PostFactory().execute(
     problem,
-    "ParetoFront",
+    post_name="ParetoFront",
     show_non_feasible=False,
     objectives=["compute_binhkorn"],
     objectives_labels=["f1", "f2"],
@@ -78,7 +78,7 @@ PostFactory().execute(
 
 PostFactory().execute(
     problem,
-    "ParetoFront",
+    post_name="ParetoFront",
     objectives=["compute_binhkorn"],
     objectives_labels=["f1", "f2"],
     save=False,

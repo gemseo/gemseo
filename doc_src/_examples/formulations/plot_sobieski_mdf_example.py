@@ -100,10 +100,10 @@ design_space
 # %%
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
+    formulation_name="MDF",
     **formulation_settings,
 )
 
@@ -137,11 +137,11 @@ scenario.xdsmize(save_html=False, pdf_build=False)
 # in the solver.
 
 slsqp_settings = SLSQPSettings(
+    max_iter=10,
     ftol_rel=1e-10,
     ineq_tolerance=2e-3,
     normalize_design_space=True,
 )
-
 
 # %%
 # .. seealso::
@@ -165,7 +165,7 @@ slsqp_settings = SLSQPSettings(
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(algo_name="SLSQP", max_iter=10, algo_settings_model=slsqp_settings)
+scenario.execute(slsqp_settings)
 
 # %%
 # Save the optimization history
@@ -189,25 +189,25 @@ scenario.print_execution_metrics()
 #
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "BasicHistory", variable_names=["x_shared"], save=False, show=True
+    post_name="BasicHistory", variable_names=["x_shared"], save=False, show=True
 )
 
 # %%
 # Plot the constraints and objective history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ObjConstrHist", save=False, show=True)
+scenario.post_process(post_name="ObjConstrHist", save=False, show=True)
 
 # %%
 # Plot the constraints history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ConstraintsHistory",
+    post_name="ConstraintsHistory",
     constraint_names=["g_1", "g_2", "g_3"],
     save=False,
     show=True,
@@ -217,7 +217,7 @@ scenario.post_process(
 # Plot the constraints history using a radar chart
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "RadarChart",
+    post_name="RadarChart",
     constraint_names=["g_1", "g_2", "g_3"],
     save=False,
     show=True,
@@ -226,18 +226,18 @@ scenario.post_process(
 # %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process(post_name="QuadApprox", function="-y_4", save=False, show=True)
 
 # %%
 # Plot the functions using a SOM
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("SOM", save=False, show=True)
+scenario.post_process(post_name="SOM", save=False, show=True)
 
 # %%
 # Plot the scatter matrix of variables of interest
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["-y_4", "g_1"],
     save=False,
     show=True,
@@ -247,14 +247,16 @@ scenario.post_process(
 # %%
 # Plot the variables using the parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ParallelCoordinates", save=False, show=True)
+scenario.post_process(post_name="ParallelCoordinates", save=False, show=True)
 
 # %%
 # Plot the robustness of the solution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("Robustness", save=False, show=True)
+scenario.post_process(post_name="Robustness", save=False, show=True)
 
 # %%
 # Plot the influence of the design variables
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("VariableInfluence", fig_size=(14, 14), save=False, show=True)
+scenario.post_process(
+    post_name="VariableInfluence", fig_size=(14, 14), save=False, show=True
+)

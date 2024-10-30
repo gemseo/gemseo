@@ -80,9 +80,9 @@ def build_and_run_idf_scenario_with_constraints(
 
     scenario = MDOScenario(
         disciplines,
-        "IDF",
         "y_4",
         design_space,
+        formulation_name="IDF",
         normalize_constraints=normalize_cstr,
         n_processes=n_processes,
         use_threading=use_threading,

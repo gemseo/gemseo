@@ -106,7 +106,9 @@ def test_ode_problem_1d(times) -> None:
 
     algo_name = "DOP853"
     assert isinstance(
-        ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6),
+        ODESolverLibraryFactory().execute(
+            problem, algo_name=algo_name, first_step=1e-6
+        ),
         ODEResult,
     )
 
@@ -152,7 +154,7 @@ def test_ode_problem_2d() -> None:
     checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
     checking.function_of_state.check_grad(array([0.0, 1.0]))
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
     assert problem.result.algorithm_name == algo_name
     assert problem.result.state_trajectories is not None
@@ -186,7 +188,7 @@ def test_ode_problem_2d_array_jacobian() -> None:
     checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
     checking.function_of_state.check_grad(array([0.0, 1.0]))
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
     assert problem.result.algorithm_name == algo_name
     assert problem.result.state_trajectories is not None
@@ -219,7 +221,7 @@ def test_ode_problem_2d_array_time_state_jacobian() -> None:
     checking.function_of_state.check_grad(array([0.0, 1.0]))
     checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
     assert problem.result.algorithm_name == algo_name
     assert problem.result.state_trajectories is not None
@@ -259,7 +261,7 @@ def test_ode_problem_2d_array_time_state_callable_jacobian() -> None:
     checking.function_of_state.check_grad(array([1.0]), error_max=1e-6)
     checking.function_of_time_and_state.check_grad(array([0.0, 1.0]), error_max=1e-6)
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
     assert problem.result.algorithm_name == algo_name
     assert problem.result.state_trajectories is not None
@@ -288,7 +290,7 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
         times=arange(0, 1, 0.1),
     )
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
     try:
         checking.function_of_state.check_grad(array([0.0, 1.0]))
@@ -312,7 +314,7 @@ def test_ode_problem_without_jacobian() -> None:
         times=arange(0, 1, 0.1),
     )
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
     with pytest.raises(
         ValueError, match=re.escape("The function jac.time_state is not available.")

@@ -294,9 +294,9 @@ class MLAlgoCalibration:
 
         self.scenario = cls(
             [self.algo_assessor],
-            "DisciplinaryOpt",
             self.algo_assessor.CRITERION,
             self.calibration_space,
+            formulation_name="DisciplinaryOpt",
             maximize_objective=self.maximize_objective,
         )
         self.scenario.add_observable(self.algo_assessor.LEARNING)

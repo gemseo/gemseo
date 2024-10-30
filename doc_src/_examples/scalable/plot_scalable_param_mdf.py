@@ -67,7 +67,7 @@ scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
 # %%
 # Post-process the results
 # ------------------------
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Solve the associated quadratic programming problem

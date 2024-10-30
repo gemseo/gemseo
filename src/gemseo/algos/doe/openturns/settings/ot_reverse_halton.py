@@ -23,3 +23,5 @@ from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
 
 class OTReverseHaltonSettings(BaseOpenTURNSSettings):
     """The settings for the reverse Halton sequence DOE from OpenTURNS."""
+
+    _TARGET_CLASS_NAME = "OT_REVERSE_HALTON"

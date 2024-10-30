@@ -24,6 +24,7 @@ from gemseo.utils.pydantic import update_field
 
 
 class QuadApproxSettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "QuadApprox"
     function: str = Field(
         ...,
         description="The function name to build the quadratic approximation.",

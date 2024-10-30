@@ -138,6 +138,6 @@ class OTGaussianProcessRegressorSettings(BaseRegressorSettings):
         """,
     )
 
-    multi_start_algo_options: StrKeyMapping = Field(
+    multi_start_algo_settings: StrKeyMapping = Field(
         default_factory=dict, description="The settings of the DOE algorithm."
     )

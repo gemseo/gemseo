@@ -70,7 +70,7 @@ algo_settings = MNBISettings(
     n_sub_optim=50,
     sub_optim_algo="SLSQP",
 )
-result = execute_algo(opt_problem, "MNBI", settings_model=algo_settings)
+result = execute_algo(opt_problem, settings_model=algo_settings)
 
 # %%
 # Display the Pareto front

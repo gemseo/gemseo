@@ -25,6 +25,8 @@ from gemseo.utils.pydantic import update_field
 
 
 class GradientSensitivitySettings(BasePostSettings):  # noqa: D101
+    _TARGET_CLASS_NAME = "GradientSensitivity"
+
     iteration: NegativeInt | PositiveInt | None = Field(
         default=None,
         description="The iteration to plot the sensitivities. "

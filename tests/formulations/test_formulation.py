@@ -196,7 +196,7 @@ def test_remove_sub_scenario_dv_from_ds() -> None:
     ds1 = DesignSpace()
     ds1.add_variable("x")
     sm = SobieskiMission()
-    s1 = MDOScenario([sm], "IDF", "y_4", ds1)
+    s1 = MDOScenario([sm], "y_4", ds1, formulation_name="IDF")
     f2 = NewMDOFormulation([sm, s1], "y_4", ds2)
     assert "x" in f2.design_space
     f2._remove_sub_scenario_dv_from_ds()

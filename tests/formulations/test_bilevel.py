@@ -77,25 +77,25 @@ def dummy_bilevel_scenario() -> MDOScenario:
     sub_design_space_1.add_variable("x_1")
     sub_scenario_1 = create_scenario(
         [discipline_1, discipline_3],
-        "MDF",
         "obj",
         sub_design_space_1,
+        formulation_name="MDF",
     )
 
     sub_design_space_2 = create_design_space()
     sub_design_space_2.add_variable("x_2")
     sub_scenario_2 = create_scenario(
         [discipline_2, discipline_3],
-        "MDF",
         "obj",
         sub_design_space_2,
+        formulation_name="MDF",
     )
 
     return create_scenario(
         [sub_scenario_1, sub_scenario_2],
-        "BiLevel",
         "obj",
         system_design_space,
+        formulation_name="BiLevel",
     )
 
 
@@ -173,29 +173,29 @@ def test_bilevel_aerostructure() -> None:
     design_space_aero = design_space_ref.filter(["thick_airfoils"], copy=True)
     aero_scenario = create_scenario(
         [aerodynamics, mission],
-        "DisciplinaryOpt",
         "range",
         design_space_aero,
+        formulation_name="DisciplinaryOpt",
         maximize_objective=True,
     )
-    aero_scenario.set_algorithm("NLOPT_SLSQP", max_iter=2, **algo_options)
+    aero_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=2, **algo_options)
 
     design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
     struct_scenario = create_scenario(
         [structure, mission],
-        "DisciplinaryOpt",
         "range",
         design_space_struct,
+        formulation_name="DisciplinaryOpt",
         maximize_objective=True,
     )
-    struct_scenario.set_algorithm("NLOPT_SLSQP", max_iter=2, **algo_options)
+    struct_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=2, **algo_options)
 
     design_space_system = design_space_ref.filter(["sweep"], copy=True)
     system_scenario = create_scenario(
         [aero_scenario, struct_scenario, mission],
-        "BiLevel",
         "range",
         design_space_system,
+        formulation_name="BiLevel",
         maximize_objective=True,
         main_mda_name="MDAJacobi",
         main_mda_settings={"tolerance": 1e-8},
@@ -345,16 +345,20 @@ def test_scenario_log_level(caplog, options) -> None:
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
-        "DisciplinaryOpt",
         "z",
         design_space.filter(["y"], copy=True),
+        formulation_name="DisciplinaryOpt",
         name="FooScenario",
     )
-    sub_scenario.set_algorithm("NLOPT_COBYLA", max_iter=2)
+    sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
     scenario = MDOScenario(
-        [sub_scenario], "BiLevel", "z", design_space.filter(["x"]), **options
+        [sub_scenario],
+        "z",
+        design_space.filter(["x"]),
+        formulation_name="BiLevel",
+        **options,
     )
-    scenario.execute("NLOPT_COBYLA", max_iter=2)
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
     sub_scenarios_log_level = options.get("sub_scenarios_log_level")
     if sub_scenarios_log_level == logging.WARNING:
         assert "Start FooScenario execution" not in caplog.text

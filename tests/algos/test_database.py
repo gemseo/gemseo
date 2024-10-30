@@ -64,7 +64,7 @@ def rel_err(to_test, ref):
 def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     """The Rosenbrock problem solved with L-BFGS-B and the optimization result."""
     rosenbrock = Rosenbrock()
-    result = OptimizationLibraryFactory().execute(rosenbrock, "L-BFGS-B")
+    result = OptimizationLibraryFactory().execute(rosenbrock, algo_name="L-BFGS-B")
     return rosenbrock, result
 
 
@@ -187,7 +187,7 @@ def test_get_x_at_iteration() -> None:
     database = problem.database
     with pytest.raises(ValueError):
         database.get_x_vect(1)
-    OptimizationLibraryFactory().execute(problem, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
     hist_g2 = database.get_x_vect(21)
     assert database.get_iteration(hist_g2) - 1 == 20
     with pytest.raises(KeyError):

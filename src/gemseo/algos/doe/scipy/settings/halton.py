@@ -25,6 +25,8 @@ from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Optimizer
 class HaltonSettings(BaseSciPyDOESettings):
     """The settings for the Halton DOE sequence from the SciPy library."""
 
+    _TARGET_CLASS_NAME = "Halton"
+
     scramble: bool = Field(
         default=True,
         description=(

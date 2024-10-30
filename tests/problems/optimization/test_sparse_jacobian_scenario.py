@@ -75,9 +75,9 @@ def scenario(request) -> BaseScenario:
 
     scenario = create_scenario(
         [discipline],
-        request.param,
         "rho",
         design_space,
+        formulation_name=request.param,
     )
 
     scenario.add_constraint("eta", MDOFunction.ConstraintType.INEQ)

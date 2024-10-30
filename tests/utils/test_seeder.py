@@ -41,6 +41,6 @@ def test_setter():
     seeder = Seeder()
     seeder.default_seed = default_seed
     assert seeder.default_seed == default_seed
-    doe_library = PyDOELibrary("lhs")
+    doe_library = PyDOELibrary("PYDOE_LHS")
     doe_library.seed = default_seed
     assert doe_library._seeder.default_seed == default_seed

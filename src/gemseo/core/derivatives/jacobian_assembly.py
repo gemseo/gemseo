@@ -870,7 +870,7 @@ class JacobianAssembly:
         # solve the linear system
         linear_problem = LinearProblem(dres_dy, -residuals)
         self.__linear_solver_factory.execute(
-            linear_problem, linear_solver, **linear_solver_settings
+            linear_problem, algo_name=linear_solver, **linear_solver_settings
         )
         return linear_problem.solution, linear_problem.is_converged
 
@@ -1142,7 +1142,7 @@ class CoupledSystem:
         for var_index in range(n_variables):
             self.linear_problem.rhs = -dres_dx[:, var_index]
             self.__linear_solver_factory.execute(
-                self.linear_problem, linear_solver, **linear_solver_settings
+                self.linear_problem, algo_name=linear_solver, **linear_solver_settings
             )
             dy_dx[:, var_index] = self.linear_problem.solution
             self.n_linear_resolutions += 1
@@ -1194,7 +1194,9 @@ class CoupledSystem:
             for fun_component in range(dfunction_dy.shape[0]):
                 self.linear_problem.rhs = -dfunction_dy[fun_component, :].T
                 self.__linear_solver_factory.execute(
-                    self.linear_problem, linear_solver, **linear_solver_settings
+                    self.linear_problem,
+                    algo_name=linear_solver,
+                    **linear_solver_settings,
                 )
                 adjoint = self.linear_problem.solution
                 self.n_linear_resolutions += 1

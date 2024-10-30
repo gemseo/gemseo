@@ -414,15 +414,19 @@ def test_multithreading(memory_cache, sellar_disciplines) -> None:
     assert len(memory_cache) == 0
     par = MDOParallelChain([s_1, s_s])
     ds = SellarDesignSpace("float64")
-    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+    scen = create_scenario(
+        par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
+    )
 
-    options = {"algo_name": "fullfact", "n_samples": 10, "n_processes": 4}
+    options = {"algo_name": "PYDOE_FULLFACT", "n_samples": 10, "n_processes": 4}
     scen.execute(**options)
 
     nexec_1 = s_1.execution_statistics.n_calls
     nexec_2 = s_s.execution_statistics.n_calls
 
-    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+    scen = create_scenario(
+        par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
+    )
     scen.execute(**options)
 
     assert nexec_1 == s_1.execution_statistics.n_calls

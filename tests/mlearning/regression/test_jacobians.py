@@ -71,9 +71,9 @@ def create_dataset(
     for name, bounds in design_space_variables.items():
         design_space.add_variable(name, **bounds)
     scenario = DOEScenario(
-        [discipline], "DisciplinaryOpt", objective_name, design_space
+        [discipline], objective_name, design_space, formulation_name="DisciplinaryOpt"
     )
-    scenario.execute(algo_name="lhs", n_samples=LEARNING_SIZE)
+    scenario.execute(algo_name="LHS", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset(dataset_name)
 
 
