@@ -28,18 +28,12 @@ class SobieskiMDAJacobi(MDAJacobi):
 
     def __init__(
         self,
-        n_processes: int = 1,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
-        **mda_options: Any,
+        **settings: Any,
     ) -> None:
         """
         Args:
-            n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
-                used to parallelize the execution.
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
-            **mda_options: The options of the MDA.
+            **settings: The settings of the MDA.
         """  # noqa: D205 D212
-        super().__init__(
-            create_disciplines(dtype), n_processes=n_processes, **mda_options
-        )
+        super().__init__(create_disciplines(dtype), **settings)

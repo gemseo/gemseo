@@ -24,6 +24,7 @@ from numpy import array
 from numpy import linalg
 
 from gemseo.mda.quasi_newton import MDAQuasiNewton
+from gemseo.mda.quasi_newton import QuasiNewtonMethod
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
@@ -38,8 +39,8 @@ SELLAR_Y_REF = array([0.80004953, 1.79981434])
 @pytest.mark.parametrize(
     "method",
     [
-        MDAQuasiNewton.QuasiNewtonMethod.BROYDEN1,
-        MDAQuasiNewton.QuasiNewtonMethod.BROYDEN2,
+        QuasiNewtonMethod.BROYDEN1,
+        QuasiNewtonMethod.BROYDEN2,
     ],
 )
 def test_broyden_sellar(method) -> None:
@@ -50,7 +51,7 @@ def test_broyden_sellar(method) -> None:
     assert mda.residual_history[-1] < 1e-5
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
-    mda.warm_start = True
+    mda.settings.warm_start = True
     mda.execute({X_SHARED: mda.default_input_data[X_SHARED] + 0.1})
 
 
@@ -69,7 +70,7 @@ def test_lm_sellar() -> None:
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAQuasiNewton(
         disciplines,
-        method=MDAQuasiNewton.QuasiNewtonMethod.LEVENBERG_MARQUARDT,
+        method=QuasiNewtonMethod.LEVENBERG_MARQUARDT,
         use_gradient=True,
     )
     mda.execute()
@@ -79,9 +80,7 @@ def test_lm_sellar() -> None:
 
 def test_dfsane_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
-    mda = MDAQuasiNewton(
-        [Sellar1(), Sellar2()], method=MDAQuasiNewton.QuasiNewtonMethod.DF_SANE
-    )
+    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=QuasiNewtonMethod.DF_SANE)
     mda.execute()
 
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
@@ -90,7 +89,7 @@ def test_dfsane_sellar() -> None:
 def test_broyden_sellar2() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), SellarSystem()]
-    mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.QuasiNewtonMethod.BROYDEN1)
+    mda = MDAQuasiNewton(disciplines, method=QuasiNewtonMethod.BROYDEN1)
     mda.reset_history_each_run = True
     mda.execute()
 
@@ -105,7 +104,7 @@ def test_self_coupled() -> None:
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton.QuasiNewtonMethod)
+@pytest.mark.parametrize("method", QuasiNewtonMethod)
 def test_methods_supporting_callbacks(method):
     """Test MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS."""
     mda = MDAQuasiNewton([Sellar1(), SellarSystem()], method=method)

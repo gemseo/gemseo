@@ -45,7 +45,9 @@ from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
@@ -89,12 +91,14 @@ def test_reset(sellar_mda, sellar_inputs) -> None:
 
 def test_input_couplings() -> None:
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1()])
         mda._set_resolved_variables([])
 
     assert len(mda.get_current_resolved_variables_vector()) == 0
 
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver(
             create_discipline([
                 "SobieskiPropulsion",
@@ -122,7 +126,9 @@ def test_resolved_couplings() -> None:
     assert set(mda._resolved_variable_names) == set(mda._input_couplings)
 
     mda = MDAGaussSeidel(disciplines)
-    assert set(mda._resolved_variable_names) == set(mda.strong_couplings)
+    assert set(mda._resolved_variable_names) == set(
+        mda.coupling_structure.strong_couplings
+    )
 
     with pytest.raises(AttributeError):
         mda._resolved_variable_names = "a"
@@ -130,7 +136,7 @@ def test_resolved_couplings() -> None:
 
 def test_jacobian(sellar_mda, sellar_inputs) -> None:
     """Check the Jacobian computation."""
-    sellar_mda.use_lu_fact = True
+    sellar_mda.settings.use_lu_fact = True
     sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     with pytest.raises(
         ValueError, match="Unsupported LU factorization for LinearOperators"
@@ -140,7 +146,7 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
             compute_all_jacobians=True,
         )
 
-    sellar_mda.use_lu_fact = False
+    sellar_mda.settings.use_lu_fact = False
     sellar_mda.linearize(sellar_inputs)
     assert sellar_mda.jac == {}
 
@@ -163,7 +169,7 @@ def test_warm_start() -> None:
     """Check that the warm start does not fail even at first execution."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     mda_sellar = MDAGaussSeidel(disciplines)
-    mda_sellar.warm_start = True
+    mda_sellar.settings.warm_start = True
     mda_sellar.execute()
 
 
@@ -212,6 +218,7 @@ def test_consistency_fail(desc, log_message, caplog) -> None:
         caplog: Fixture to access and control log capturing.
     """
     with concretize_classes(BaseMDA):
+        BaseMDA.Settings = BaseMDASettings
         BaseMDA(analytic_disciplines_from_desc(desc))
     assert log_message in caplog.text
 
@@ -236,10 +243,11 @@ def test_array_couplings(mda_class, grammar_type) -> None:
 
 def test_convergence_warning(caplog) -> None:
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    mda.tolerance = 1.0
+    mda.settings.tolerance = 1.0
     mda.normed_residual = 2.0
-    mda.max_mda_iter = 1
+    mda.settings.max_mda_iter = 1
     caplog.clear()
 
     residual_is_small, max_iter_is_reached = mda._warn_convergence_criteria()
@@ -248,7 +256,7 @@ def test_convergence_warning(caplog) -> None:
 
     mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
 
-    mda._set_resolved_variables(mda.strong_couplings)
+    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
     mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
     mda._compute_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
 
@@ -277,26 +285,27 @@ def test_coupling_structure(sellar_disciplines) -> None:
 def test_log_convergence(caplog) -> None:
     """Check that the boolean log_convergence is correctly set."""
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    assert not mda.log_convergence
+    assert not mda.settings.log_convergence
 
-    mda.log_convergence = True
-    assert mda.log_convergence
+    mda.settings.log_convergence = True
+    assert mda.settings.log_convergence
 
     caplog.set_level(logging.INFO)
 
-    mda._set_resolved_variables(mda.strong_couplings)
+    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
     mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
     mda._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
-    mda._log_convergence = False
+    mda.settings.log_convergence = False
     mda._compute_normalized_residual_norm(store_it=False)
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
         not in caplog.text
     )
 
-    mda._log_convergence = True
+    mda.settings.log_convergence = True
     mda._compute_normalized_residual_norm()
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
@@ -319,6 +328,7 @@ def test_not_numeric_couplings(caplog) -> None:
     sub_prop["type"] = "string"
 
     with concretize_classes(BaseMDA):
+        BaseMDA.Settings = BaseMDASettings
         BaseMDA([sellar1, sellar2])
         msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
         assert msg in caplog.text
@@ -568,9 +578,7 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
 
     mda = mda_class(disciplines)
     mda.add_differentiated_inputs(["a"])
-    mda.add_differentiated_outputs([
-        "obj"
-    ]) if include_weak_couplings else mda.add_differentiated_outputs(["b"])
+    mda.add_differentiated_outputs(["obj"] if include_weak_couplings else ["b"])
 
     inputs = {
         "a_file": "test",
@@ -598,6 +606,7 @@ def test_scaling_method() -> None:
     sellar2 = Sellar2()
 
     with concretize_classes(BaseMDA):
+        BaseMDA.Settings = BaseMDASettings
         mda = BaseMDA([sellar1, sellar2])
         mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
         assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
@@ -607,3 +616,15 @@ def test_namespaces(sellar_mda) -> None:
     """Test the well functionning with namespaces."""
     sellar_mda.add_namespace_to_output(sellar_mda.NORMALIZED_RESIDUAL_NORM, "foo")
     sellar_mda.execute()
+
+
+def test_settings_type_error():
+    settings = "toto"
+    msg = (
+        f"The Pydantic model must be a {BaseMDA.Settings.__name__}; "
+        f"got {settings.__class__.__name__}"
+    )
+
+    BaseMDA.Settings = BaseMDASettings
+    with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
+        BaseMDA([], settings_model=settings)

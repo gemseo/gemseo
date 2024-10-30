@@ -64,6 +64,8 @@ class IDF(BaseMDOFormulation):
 
     Settings: ClassVar[type[IDFSettings]] = IDFSettings
 
+    _settings: IDFSettings
+
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
@@ -101,33 +103,25 @@ class IDF(BaseMDOFormulation):
         self._build_objective_from_disc(objective_name)
 
         if self._settings.start_at_equilibrium:
-            self._compute_equilibrium(
-                **self._settings.mda_options_for_start_at_equilibrium
-            )
+            self._compute_equilibrium()
 
-    def _compute_equilibrium(self, **mda_settings: Any) -> None:
+    def _compute_equilibrium(self) -> None:
         """Run an MDA to compute the initial target couplings at equilibrium.
 
-        The values at equilibrium are set in the initial design space.
-
-        Args:
-            mda_settings: The settings for the MDA chain.
+        The values at equilibrium are used to set the design space current value.
         """
         current_x = self.optimization_problem.design_space.get_current_value(
             as_dict=True
         )
-        # run MDA to initialize target coupling variables
-        mda = MDAChain(self.disciplines, **mda_settings)
-        res = mda.execute(current_x)
 
+        output = MDAChain(
+            self.disciplines,
+            settings_model=self._settings.mda_chain_settings_for_start_at_equilibrium,
+        ).execute(current_x)
         for name in self.all_couplings:
-            value = res[name]
-            LOGGER.info(
-                "IDF: changing the initial value of %s from %s to %s (equilibrium)",
-                name,
-                current_x[name],
-                value,
-            )
+            value = output[name]
+            msg = "IDF: changing the initial value of %s from %s to %s (equilibrium)."
+            LOGGER.info(msg, name, current_x[name], value)
             self.optimization_problem.design_space.set_current_variable(name, value)
 
     def _update_design_space(self) -> None:

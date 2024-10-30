@@ -26,9 +26,9 @@ from pathlib import Path
 import numpy as np
 
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.gs_newton import MDAGSNewton
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
@@ -65,30 +65,30 @@ def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAGSNewton(disciplines)
-    assert not mda.log_convergence
+    assert not mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert not sub_mda.log_convergence
+        assert not sub_mda.settings.log_convergence
 
     mda = MDAGSNewton(disciplines, log_convergence=True)
-    assert mda.log_convergence
+    assert mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert sub_mda.log_convergence
+        assert sub_mda.settings.log_convergence
 
     mda = MDAGSNewton(disciplines)
-    mda.log_convergence = True
-    assert mda.log_convergence
+    mda.settings.log_convergence = True
+    assert mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert sub_mda.log_convergence
+        assert sub_mda.settings.log_convergence
 
-    mda.log_convergence = False
-    assert not mda.log_convergence
+    mda.settings.log_convergence = False
+    assert not mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert not sub_mda.log_convergence
+        assert not sub_mda.settings.log_convergence
 
 
 def test_parallel_doe() -> None:
     """Test the execution of GaussSeidel in parallel."""
-    obj = generate_parallel_doe(inner_mda_name="MDAGSNewton")
+    obj = generate_parallel_doe(main_mda_settings={"inner_mda_name": "MDAGSNewton"})
     assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)
 
 
@@ -119,8 +119,9 @@ def test_mda_gs_newton_tolerances() -> None:
         tolerance=tolerance,
         linear_solver_tolerance=linear_solver_tolerance,
     )
-    assert mda.tolerance == tolerance
-    assert mda.linear_solver_tolerance == linear_solver_tolerance
-    assert mda.mda_sequence[0].tolerance == tolerance
-    assert mda.mda_sequence[1].tolerance == tolerance
-    assert mda.mda_sequence[1].linear_solver_tolerance == linear_solver_tolerance
+    assert mda.settings.tolerance == tolerance
+    assert mda.settings.linear_solver_tolerance == linear_solver_tolerance
+    assert mda.mda_sequence[0].settings.tolerance == tolerance
+    assert mda.mda_sequence[1].settings.tolerance == tolerance
+    mda1_tol = mda.mda_sequence[1].settings.linear_solver_tolerance
+    assert mda1_tol == linear_solver_tolerance

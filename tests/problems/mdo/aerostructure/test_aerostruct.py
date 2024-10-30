@@ -134,7 +134,7 @@ class TestAerostructure(unittest.TestCase):
         disciplines = [aerodynamics, structure, mission]
         mda = MDAGaussSeidel(disciplines)
         mda.execute(indata)
-        mda.tolerance = 1e-14
+        mda.settings.tolerance = 1e-14
         mda.max_iter = 40
         indata = mda.io.data
         for discipline in disciplines:
@@ -153,7 +153,7 @@ class TestAerostructure(unittest.TestCase):
         indata = TestAerostructure.get_input_data_linearization()
         disciplines = [aerodynamics, structure, mission]
         mda = MDAJacobi(disciplines)
-        mda.tolerance = 1e-14
+        mda.settings.tolerance = 1e-14
         mda.max_iter = 40
         assert mda.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 

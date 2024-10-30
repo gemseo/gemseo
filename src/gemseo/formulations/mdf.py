@@ -57,6 +57,11 @@ class MDF(BaseMDOFormulation):
 
     Settings: ClassVar[type[MDFSettings]] = MDFSettings
 
+    _settings: MDFSettings
+
+    __mda_factory: ClassVar[MDAFactory] = MDAFactory()
+    """The MDA factory."""
+
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
@@ -72,10 +77,10 @@ class MDF(BaseMDOFormulation):
             settings_model=settings_model,
             **settings,
         )
-        self.mda = MDAFactory().create(
+        self.mda = self.__mda_factory.create(
             self._settings.main_mda_name,
             self.disciplines,
-            **self._settings.main_mda_settings,
+            settings_model=self._settings.main_mda_settings,
         )
         self._update_design_space()
         self._build_objective_from_disc(objective_name, discipline=self.mda)
@@ -85,11 +90,11 @@ class MDF(BaseMDOFormulation):
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:  # noqa:D102
-        return MDAFactory().get_options_grammar(cls.__check_mda(**options))
+        return cls.__mda_factory.get_options_grammar(cls.__check_mda(**options))
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:  # noqa:D102
-        return MDAFactory().get_default_option_values(cls.__check_mda(**options))
+        return cls.__mda_factory.get_default_option_values(cls.__check_mda(**options))
 
     @staticmethod
     def __check_mda(**options: str) -> str:
@@ -121,6 +126,6 @@ class MDF(BaseMDOFormulation):
     def _remove_couplings_from_ds(self) -> None:
         """Remove the coupling variables from the design space."""
         design_space = self.optimization_problem.design_space
-        for coupling in self.mda.all_couplings:
+        for coupling in self.mda.coupling_structure.all_couplings:
             if coupling in design_space:
                 design_space.remove_variable(coupling)

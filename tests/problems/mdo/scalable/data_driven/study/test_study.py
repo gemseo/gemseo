@@ -116,7 +116,10 @@ def test_scalabilitystudy1(sellar_use_case) -> None:
     with pytest.raises(ValueError):
         study.execute()
     study.add_optimization_strategy(
-        "NLOPT_SLSQP", 2, "MDF", formulation_options={"chain_linearize": True}
+        "NLOPT_SLSQP",
+        2,
+        "MDF",
+        formulation_options={"main_mda_settings": {"chain_linearize": True}},
     )
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
     study.add_scaling_strategies(variables=variables)

@@ -1,0 +1,16 @@
+The following properties of ``BaseMDA`` has been removed:
+-  ``acceleration_method``,
+-  ``over_relaxation_factor``,
+-  ``max_mda_iter``,
+-  ``log_convergence``,
+-  ``tolerance``.
+
+The following properties of ``MDAChain`` has been removed:
+-  ``max_mda_iter``,
+-  ``log_convergence``,
+
+The following property of ``MDASequential`` has been removed:
+-  ``log_convergence``,
+
+The ``inner_mda_name`` argument of ``MDF`` and ``BiLevel`` formulations has been removed.
+When relevant, this argument must now be passed via ``main_mda_settings={"inner_mda_name": "foo"}``.

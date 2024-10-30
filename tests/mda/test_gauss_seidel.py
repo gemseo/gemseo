@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 from numpy import allclose as allclose_
 from numpy import array
@@ -28,11 +26,13 @@ from numpy import isclose
 from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
+from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
@@ -44,24 +44,21 @@ from gemseo.utils.testing.helpers import image_comparison
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 from .utils import generate_parallel_doe
 
-if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
-
 
 def allclose(a, b):
     return allclose_(a, b, atol=1e-10, rtol=0.0)
 
 
-@pytest.fixture(scope="module")
-def mda_setting() -> StrKeyMapping:
+@pytest.fixture
+def mda_setting() -> MDAGaussSeidelSettings:
     """Returns the setting for all subsequent MDAs."""
-    return {"tolerance": 1e-12, "max_mda_iter": 30}
+    return MDAGaussSeidelSettings(tolerance=1e-12, max_mda_iter=30)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def reference(mda_setting) -> MDAGaussSeidel:
     """An instance of Gauss-Seidel MDA on the Sobieski problem."""
-    mda_gauss_seidel = SobieskiMDAGaussSeidel(**mda_setting)
+    mda_gauss_seidel = SobieskiMDAGaussSeidel(settings_model=mda_setting)
     mda_gauss_seidel.execute()
     return mda_gauss_seidel
 
@@ -69,7 +66,8 @@ def reference(mda_setting) -> MDAGaussSeidel:
 @pytest.mark.parametrize("relaxation", [0.8, 1.0, 1.2])
 def test_over_relaxation(mda_setting, relaxation, reference) -> None:
     """Tests the relaxation factor."""
-    mda = SobieskiMDAGaussSeidel(**mda_setting, over_relaxation_factor=relaxation)
+    mda_setting.over_relaxation_factor = relaxation
+    mda = SobieskiMDAGaussSeidel(settings_model=mda_setting)
     mda.execute()
 
     assert allclose(
@@ -85,7 +83,8 @@ def test_over_relaxation(mda_setting, relaxation, reference) -> None:
 @pytest.mark.parametrize("acceleration", AccelerationMethod)
 def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     """Tests the acceleration methods."""
-    mda = SobieskiMDAGaussSeidel(**mda_setting, acceleration_method=acceleration)
+    mda_setting.acceleration_method = acceleration
+    mda = SobieskiMDAGaussSeidel(settings_model=mda_setting)
     mda.execute()
 
     assert mda._current_iter <= reference._current_iter
@@ -107,7 +106,7 @@ def test_sobieski(tmp_wd) -> None:
     mda.default_input_data["x_shared"] += 0.1
     mda.execute()
     mda.default_input_data["x_shared"] += 0.1
-    mda.warm_start = True
+    mda.settings.warm_start = True
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
@@ -226,15 +225,15 @@ def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     mda = MDAGaussSeidel(disciplines)
-    assert not mda.log_convergence
-    mda = MDAGaussSeidel(disciplines, log_convergence=True)
-    assert mda.log_convergence
+    assert not mda.settings.log_convergence
+    mda = create_mda("MDAGaussSeidel", disciplines, log_convergence=True)
+    assert mda.settings.log_convergence
 
 
 def test_parallel_doe() -> None:
     """Test the execution of GaussSeidel in parallel."""
     obj = generate_parallel_doe("MDAGaussSeidel")
-    assert isclose(array([-obj]), array([608.185]), atol=1e-3)
+    assert isclose(array([-obj]), array([608.185]), rtol=1e-4)
 
 
 @pytest.mark.parametrize(

@@ -629,7 +629,7 @@ class JacobianAssembly:
         exec_cache_tol: float | None = None,
         execute: bool = True,
         residual_variables: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
-        **linear_solver_options: Any,
+        **linear_solver_settings: Any,
     ) -> dict[str, dict[str, RealOrComplexArray]] | dict[Any, dict[Any, None]]:
         """Compute the Jacobian of total derivatives of the coupled system.
 
@@ -653,10 +653,10 @@ class JacobianAssembly:
                 with the right input data;
                 it can be almost free if the corresponding output data
                 have been stored in the :attr:`.Discipline.cache`.
-            linear_solver_options: The options passed to the linear solver factory.
+            linear_solver_settings: The options passed to the linear solver factory.
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
-            **linear_solver_options: The options passed to the linear solver factory.
+            **linear_solver_settings: The options passed to the linear solver factory.
 
         Returns:
             The total coupled derivatives.
@@ -745,7 +745,7 @@ class JacobianAssembly:
                 dfun_dy,
                 linear_solver,
                 use_lu_fact=use_lu_fact,
-                **linear_solver_options,
+                **linear_solver_settings,
             )
         elif mode == self.DerivationMode.ADJOINT:
             # transposed square matrix ∂R/∂y^T
@@ -765,7 +765,7 @@ class JacobianAssembly:
                 dfun_dy,
                 linear_solver,
                 use_lu_fact=use_lu_fact,
-                **linear_solver_options,
+                **linear_solver_settings,
             )
         else:
             raise ValueError("Incorrect linearization mode " + str(mode))
@@ -833,7 +833,7 @@ class JacobianAssembly:
         matrix_type: JacobianType = JacobianType.MATRIX,
         residuals: RealOrComplexArray | None = None,
         resolved_residual_names: Collection[str] = (),
-        **linear_solver_options: Any,
+        **linear_solver_settings: Any,
     ) -> tuple[RealOrComplexArray, bool]:
         """Compute the Newton step for the coupled system of disciplines residuals.
 
@@ -845,7 +845,7 @@ class JacobianAssembly:
                 linear operator).
             residuals: The residuals vector, if ``None`` use :attr:`.residuals`.
             resolved_residual_names: The names of residual variables.
-            **linear_solver_options: The options passed to the linear solver factory.
+            **linear_solver_settings: The options passed to the linear solver factory.
 
         Returns:
             The Newton step - relax_factor . [∂R/∂y]^-1 . R as an array of steps
@@ -870,7 +870,7 @@ class JacobianAssembly:
         # solve the linear system
         linear_problem = LinearProblem(dres_dy, -residuals)
         self.__linear_solver_factory.execute(
-            linear_problem, linear_solver, **linear_solver_options
+            linear_problem, linear_solver, **linear_solver_settings
         )
         return linear_problem.solution, linear_problem.is_converged
 
@@ -1025,7 +1025,7 @@ class CoupledSystem:
         dfun_dy: Mapping[str, dok_matrix],
         linear_solver: str = DEFAULT_LINEAR_SOLVER,
         use_lu_fact: bool = False,
-        **linear_solver_options: Any,
+        **linear_solver_settings: Any,
     ) -> dict[str, dok_matrix]:
         """Compute the total derivative Jacobian in direct mode.
 
@@ -1039,7 +1039,7 @@ class CoupledSystem:
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy once.
-            **linear_solver_options: The optional parameters.
+            **linear_solver_settings: The optional parameters.
 
         Returns:
             The Jacobian of the total coupled derivatives.
@@ -1060,7 +1060,7 @@ class CoupledSystem:
             dfun_dx,
             dfun_dy,
             linear_solver,
-            **linear_solver_options,
+            **linear_solver_settings,
         )
 
     def adjoint_mode(
@@ -1072,7 +1072,7 @@ class CoupledSystem:
         dfun_dy: Mapping[str, dok_matrix],
         linear_solver: str = DEFAULT_LINEAR_SOLVER,
         use_lu_fact: bool = False,
-        **linear_solver_options: Any,
+        **linear_solver_settings: Any,
     ) -> dict[str, RealArray]:
         """Compute the total derivative Jacobian in adjoint mode.
 
@@ -1084,7 +1084,7 @@ class CoupledSystem:
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             use_lu_fact: Whether to factorize dres_dy_t once.
-            **linear_solver_options: The optional parameters.
+            **linear_solver_settings: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -1101,7 +1101,7 @@ class CoupledSystem:
             dfun_dx,
             dfun_dy,
             linear_solver,
-            **linear_solver_options,
+            **linear_solver_settings,
         )
 
     def _direct_mode(
@@ -1114,7 +1114,7 @@ class CoupledSystem:
         dfun_dx: Mapping[str, dok_matrix],
         dfun_dy: Mapping[str, dok_matrix],
         linear_solver: str = DEFAULT_LINEAR_SOLVER,
-        **linear_solver_options: Any,
+        **linear_solver_settings: Any,
     ) -> dict[str, dok_matrix]:
         """Compute the total derivative Jacobian in direct mode.
 
@@ -1127,7 +1127,7 @@ class CoupledSystem:
             dfun_dx: The Jacobian of the functions wrt the design variables.
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
-            **linear_solver_options: The optional parameters.
+            **linear_solver_settings: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -1138,11 +1138,11 @@ class CoupledSystem:
         self.linear_problem = LinearProblem(dres_dy)
         if linear_solver in {"DEFAULT", "LGMRES"}:
             # Reinit outerV, and store it for all RHS
-            linear_solver_options["outer_v"] = []
+            linear_solver_settings["outer_v"] = []
         for var_index in range(n_variables):
             self.linear_problem.rhs = -dres_dx[:, var_index]
             self.__linear_solver_factory.execute(
-                self.linear_problem, linear_solver, **linear_solver_options
+                self.linear_problem, linear_solver, **linear_solver_settings
             )
             dy_dx[:, var_index] = self.linear_problem.solution
             self.n_linear_resolutions += 1
@@ -1160,7 +1160,7 @@ class CoupledSystem:
         dfun_dx: Mapping[str, dok_matrix],
         dfun_dy: Mapping[str, dok_matrix],
         linear_solver: str = DEFAULT_LINEAR_SOLVER,
-        **linear_solver_options: Any,
+        **linear_solver_settings: Any,
     ) -> dict[str, RealArray]:
         """Compute the total derivative Jacobian in adjoint mode.
 
@@ -1172,7 +1172,7 @@ class CoupledSystem:
             dfun_dy: The Jacobian of the functions wrt the coupling variables.
             linear_solver: The name of the linear solver.
             dres_dy_t: The derivatives of the residuals wrt coupling vars.
-            **linear_solver_options: The optional parameters.
+            **linear_solver_settings: The optional parameters.
 
         Returns:
             The Jacobian of total coupled derivatives.
@@ -1182,7 +1182,7 @@ class CoupledSystem:
         # adjoint vector for each interest function
         if linear_solver in {"DEFAULT", "LGMRES"}:
             # Reinit outerV, and store it for all RHS
-            linear_solver_options["outer_v"] = []
+            linear_solver_settings["outer_v"] = []
 
         self.linear_problem = LinearProblem(dres_dy_t)
 
@@ -1194,7 +1194,7 @@ class CoupledSystem:
             for fun_component in range(dfunction_dy.shape[0]):
                 self.linear_problem.rhs = -dfunction_dy[fun_component, :].T
                 self.__linear_solver_factory.execute(
-                    self.linear_problem, linear_solver, **linear_solver_options
+                    self.linear_problem, linear_solver, **linear_solver_settings
                 )
                 adjoint = self.linear_problem.solution
                 self.n_linear_resolutions += 1

@@ -586,7 +586,7 @@ def test_get_scenario_differentiation_modes() -> None:
 def test_get_formulation_options_schema() -> None:
     """Test that the formulation options schemas are retrieved correctly."""
     mdf_schema = get_formulation_options_schema("MDF")
-    for prop in ["differentiated_input_names_substitute", "inner_mda_name"]:
+    for prop in ["differentiated_input_names_substitute", "main_mda_settings"]:
         assert prop in mdf_schema["properties"]
 
     idf_schema = get_formulation_options_schema("IDF")

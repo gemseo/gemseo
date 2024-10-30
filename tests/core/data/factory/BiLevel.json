@@ -10,10 +10,6 @@
       "description": "The name of the class of the main MDA. Typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance.",
       "type": "string"
     },
-    "inner_mda_name": {
-      "description": "The name of the class of the inner MDA if any. Typically when the main MDA is an :class:`.MDAChain`.",
-      "type": "string"
-    },
     "main_mda_settings": {
       "description": "The settings of the main MDA. These settings may include those of the inner-MDA.",
       "type": "object"

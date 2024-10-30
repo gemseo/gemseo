@@ -16,13 +16,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.base_mda_settings import BaseMDASettings  # noqa: TCH001
+from gemseo.mda.factory import MDAFactory
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
@@ -41,14 +43,7 @@ class MDFSettings(BaseFormulationSettings):
         but one can force to use :class:`.MDAGaussSeidel` for instance.""",
     )
 
-    inner_mda_name: str = Field(
-        default=MDAJacobi.__name__,
-        description="""The name of the class of the inner MDA if any.
-
-        Typically when the main MDA is an :class:`.MDAChain`.""",
-    )
-
-    main_mda_settings: StrKeyMapping = Field(
+    main_mda_settings: StrKeyMapping | BaseMDASettings = Field(
         default_factory=dict,
         description="""The settings of the main MDA.
 
@@ -56,12 +51,16 @@ class MDFSettings(BaseFormulationSettings):
     )
 
     @model_validator(mode="after")
-    def __update_main_mda_settings(self) -> Self:
-        """Update the ``main_mda_settings`` with ``model_extra``."""
-        if self.model_extra:
-            self.main_mda_settings = dict(self.main_mda_settings)
-            self.main_mda_settings.update(self.model_extra)
-
-        if self.main_mda_name == MDAChain.__name__:
-            self.main_mda_settings["inner_mda_name"] = self.inner_mda_name
+    def __validate_mda_settings(self) -> Self:
+        """Validate the main MDA settings using the appropriate Pydantic model."""
+        settings_model = MDAFactory().get_class(self.main_mda_name).Settings
+        if isinstance(self.main_mda_settings, Mapping):
+            self.main_mda_settings = settings_model(**self.main_mda_settings)
+        if not isinstance(self.main_mda_settings, settings_model):
+            msg = (
+                f"The {self.main_mda_name} settings model has the wrong type: "
+                f"expected {settings_model.__name__}, "
+                f"got {self.main_mda_settings.__class__.__name__}."
+            )
+            raise TypeError(msg)
         return self

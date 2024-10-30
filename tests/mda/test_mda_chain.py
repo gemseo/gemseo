@@ -67,11 +67,11 @@ def test_set_tolerances(sellar_disciplines) -> None:
     mda_chain = MDAChain(
         sellar_disciplines, tolerance=1e-3, linear_solver_tolerance=1e-6
     )
-    assert mda_chain.tolerance == 1e-3
-    assert mda_chain.linear_solver_tolerance == 1e-6
+    assert mda_chain.settings.tolerance == 1e-3
+    assert mda_chain.settings.linear_solver_tolerance == 1e-6
 
-    assert mda_chain.mdo_chain.disciplines[0].tolerance == 1e-3
-    assert mda_chain.mdo_chain.disciplines[0].linear_solver_tolerance == 1e-6
+    assert mda_chain.mdo_chain.disciplines[0].settings.tolerance == 1e-3
+    assert mda_chain.mdo_chain.disciplines[0].settings.linear_solver_tolerance == 1e-6
 
 
 def test_set_solver(sellar_disciplines) -> None:
@@ -82,25 +82,26 @@ def test_set_solver(sellar_disciplines) -> None:
         linear_solver_tolerance=1e-6,
         use_lu_fact=True,
         linear_solver="LGMRES",
-        linear_solver_options={"restart": 5},
+        linear_solver_settings={"restart": 5},
     )
-    assert mda_chain.linear_solver == "LGMRES"
-    assert mda_chain.use_lu_fact
-    assert mda_chain.linear_solver_options == {"restart": 5}
+    assert mda_chain.settings.linear_solver == "LGMRES"
+    assert mda_chain.settings.use_lu_fact
+    assert mda_chain.settings.linear_solver_settings == {"restart": 5}
 
-    assert mda_chain.mdo_chain.disciplines[0].linear_solver == "LGMRES"
-    assert mda_chain.mdo_chain.disciplines[0].use_lu_fact
-    assert mda_chain.mdo_chain.disciplines[0].linear_solver_options == {"restart": 5}
+    sub_mda1_settings = mda_chain.mdo_chain.disciplines[0].settings
+    assert sub_mda1_settings.linear_solver == "LGMRES"
+    assert sub_mda1_settings.use_lu_fact
+    assert sub_mda1_settings.linear_solver_settings == {"restart": 5}
 
 
 def test_set_linear_solver_tolerance_from_options_constructor(
     sellar_disciplines,
 ) -> None:
-    """Test that the tolerance cannot be set from the linear_solver_options dictionary.
+    """Test that the tolerance cannot be set from the linear_solver_settings dictionary.
 
     In this test, we check that an exception is raised at the MDA instantiation.
     """
-    linear_solver_options = {"rtol": 1e-6}
+    linear_solver_settings = {"rtol": 1e-6}
     msg = (
         "The linear solver tolerance shall be set"
         " using the linear_solver_tolerance argument."
@@ -109,20 +110,20 @@ def test_set_linear_solver_tolerance_from_options_constructor(
         MDAChain(
             sellar_disciplines,
             tolerance=1e-12,
-            linear_solver_options=linear_solver_options,
+            linear_solver_settings=linear_solver_settings,
         )
 
 
 def test_set_linear_solver_tolerance_from_options_set_attribute(
     sellar_disciplines,
 ) -> None:
-    """Test that the tolerance cannot be set from the linear_solver_options dictionary.
+    """Test that the tolerance cannot be set from the linear_solver_settings dictionary.
 
     In this test, we check that the exception is raised when linearizing the MDA.
     """
-    linear_solver_options = {"rtol": 1e-6}
+    linear_solver_settings = {"rtol": 1e-6}
     mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
-    mda_chain.linear_solver_options = linear_solver_options
+    mda_chain.settings.linear_solver_settings = linear_solver_settings
     input_data = get_initial_data()
     inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
@@ -138,7 +139,9 @@ def test_set_linear_solver_tolerance_from_options_set_attribute(
 
 def test_sellar(tmp_wd, sellar_disciplines) -> None:
     """"""
-    mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
+    mda_chain = MDAChain(
+        sellar_disciplines, inner_mda_name="MDAJacobi", tolerance=1e-12
+    )
     input_data = get_initial_data()
     inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
@@ -242,14 +245,14 @@ def test_sub_coupling_structures(sellar_disciplines) -> None:
 
 def test_log_convergence(sellar_disciplines) -> None:
     mda_chain = MDAChain(sellar_disciplines)
-    assert not mda_chain.log_convergence
+    assert not mda_chain.settings.log_convergence
     for mda in mda_chain.inner_mdas:
-        assert not mda.log_convergence
+        assert not mda.settings.log_convergence
 
-    mda_chain.log_convergence = True
-    assert mda_chain.log_convergence
+    mda_chain.settings.log_convergence = True
+    assert mda_chain.settings.log_convergence
     for mda in mda_chain.inner_mdas:
-        assert mda.log_convergence
+        assert mda.settings.log_convergence
 
 
 def test_parallel_doe() -> None:
@@ -297,23 +300,23 @@ def test_mdachain_parallelmdochain() -> None:
 PARALLEL_OPTIONS = [
     {
         "mdachain_parallelize_tasks": False,
-        "mdachain_parallel_options": {},
+        "mdachain_parallel_settings": {},
     },
     {
         "mdachain_parallelize_tasks": True,
-        "mdachain_parallel_options": {"use_threading": True, "n_processes": 1},
+        "mdachain_parallel_settings": {"use_threading": True, "n_processes": 1},
     },
     {
         "mdachain_parallelize_tasks": True,
-        "mdachain_parallel_options": {"use_threading": False, "n_processes": 1},
+        "mdachain_parallel_settings": {"use_threading": False, "n_processes": 1},
     },
     {
         "mdachain_parallelize_tasks": True,
-        "mdachain_parallel_options": {"use_threading": True, "n_processes": 2},
+        "mdachain_parallel_settings": {"use_threading": True, "n_processes": 2},
     },
     {
         "mdachain_parallelize_tasks": True,
-        "mdachain_parallel_options": {"use_threading": False, "n_processes": 2},
+        "mdachain_parallel_settings": {"use_threading": False, "n_processes": 2},
     },
 ]
 
@@ -332,12 +335,12 @@ def test_mdachain_parallelmdochain_options(parallel_options) -> None:
         {"obj": "obj1+obj2"},
     ))
     mdachain_parallelize_tasks = parallel_options["mdachain_parallelize_tasks"]
-    mdo_parallel_chain_options = parallel_options["mdachain_parallel_options"]
+    mdo_parallel_chain_options = parallel_options["mdachain_parallel_settings"]
     mdachain = MDAChain(
         disciplines,
         name="mdachain_lower",
         mdachain_parallelize_tasks=mdachain_parallelize_tasks,
-        mdachain_parallel_options=mdo_parallel_chain_options,
+        mdachain_parallel_settings=mdo_parallel_chain_options,
     )
     assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
 
@@ -351,14 +354,14 @@ def test_max_mda_iter(sellar_disciplines) -> None:
         chain_linearize=True,
         warm_start=True,
     )
-    assert mda_chain.max_mda_iter == 30
+    assert mda_chain.settings.max_mda_iter == 30
     for mda in mda_chain.inner_mdas:
-        assert mda.max_mda_iter == 30
+        assert mda.settings.max_mda_iter == 30
 
-    mda_chain.max_mda_iter = 10
-    assert mda_chain.max_mda_iter == 10
+    mda_chain.settings.max_mda_iter = 10
+    assert mda_chain.settings.max_mda_iter == 10
     for mda in mda_chain.inner_mdas:
-        assert mda.max_mda_iter == 10
+        assert mda.settings.max_mda_iter == 10
 
 
 def test_scaling(sellar_disciplines) -> None:

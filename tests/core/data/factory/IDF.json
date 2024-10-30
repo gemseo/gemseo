@@ -22,8 +22,8 @@
       "description": "Whether an MDA is used to initialize the coupling variables.",
       "type": "boolean"
     },
-    "mda_options_for_start_at_equilibrium": {
-      "description": "The options for the MDA when ``start_at_equilibrium=True``. See detailed options in :class:`.MDAChain`.",
+    "mda_chain_settings_for_start_at_equilibrium": {
+      "description": "The settings for the MDA when ``start_at_equilibrium=True``. See detailed settings in :class:`.MDAChain`.",
       "type": "object"
     }
   }

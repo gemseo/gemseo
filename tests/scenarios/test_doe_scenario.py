@@ -216,9 +216,11 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
         "obj",
         SellarDesignSpace("float64"),
         main_mda_name="MDAChain",
-        inner_mda_name="MDAJacobi",
-        use_threading=use_threading,
-        n_processes=2,
+        main_mda_settings={
+            "inner_mda_name": "MDAJacobi",
+            "use_threading": use_threading,
+            "n_processes": 2,
+        },
     )
     scenario.execute(algo_name="CustomDOE", samples=array([[0.0, 0.0, -10.0, 0.0]]))
 

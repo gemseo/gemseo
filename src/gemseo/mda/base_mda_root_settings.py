@@ -12,31 +12,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Charlie Vanaret, Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Base settings class for MDAs based on root finding algorithms."""
+
 from __future__ import annotations
 
-import pytest
-from numpy import array
-from numpy import isclose
+from pydantic import Field
 
-from .utils import generate_parallel_doe
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 
 
-@pytest.mark.parametrize(
-    "mda_class",
-    ["MDAQuasiNewton", "MDANewtonRaphson", "MDAGaussSeidel"],
-)
-def test_parallel_doe(mda_class) -> None:
-    """Test the execution of Newton methods in parallel.
+class BaseMDARootSettings(BaseParallelMDASettings):
+    """The settings for MDAs based on root finding algorithms."""
 
-    Args:
-        mda_class: The specific Newton MDA to test.
-    """
-    obj = generate_parallel_doe(
-        "MDAChain", main_mda_settings={"inner_mda_name": mda_class}
+    execute_before_linearizing: bool = Field(
+        default=True,
+        description="""Whether to start by executing the disciplines before linearizing.
+            This ensures that the discipline are executed and linearized with the same
+            input data. It can be almost free if the corresponding output data have been
+            stored in the :attr:`.BaseMDA.cache`.""",
     )
-    assert isclose(array([obj]), array([-608.17]), atol=1e-3, rtol=1e-3)

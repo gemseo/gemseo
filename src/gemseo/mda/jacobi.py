@@ -21,20 +21,20 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
-from gemseo.utils.constants import N_CPUS
+from gemseo.mda.jacobi_settings import MDAJacobiSettings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import ClassVar
 
-    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
@@ -101,75 +101,42 @@ class MDAJacobi(BaseMDASolver):
         \right.
     """
 
-    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
-
-    __n_processes: int
-    """The maximum number of threads or processes for parallel execution."""
+    Settings: ClassVar[type[MDAJacobiSettings]] = MDAJacobiSettings
+    """The pydantic model for the settings."""
 
     parallel_execution: DiscParallelExecution | None
     """Either an executor of disciplines in parallel or ``None`` in serial mode."""
 
-    def __init__(
+    settings: MDAJacobiSettings
+    """The settings of the MDA"""
+
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
+    def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        max_mda_iter: int = 10,
-        name: str = "",
-        n_processes: int = N_CPUS,
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        use_threading: bool = True,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        acceleration_method: AccelerationMethod = AccelerationMethod.ALTERNATE_2_DELTA,
-        over_relaxation_factor: float = 1.0,
+        settings_model: MDAJacobiSettings | None = None,
+        **settings: Any,
     ) -> None:
-        """
-        Args:
-            n_processes: The maximum simultaneous number of threads if ``use_threading``
-                is set to True, otherwise processes, used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes to parallelize
-                the execution. Processes will copy (serialize) the disciplines,
-                while threads will share the memory. If one wants to execute the
-                same discipline multiple times then multiprocessing should be preferred.
-        """  # noqa:D205 D212 D415
-        self.__n_processes = n_processes
-        super().__init__(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=name,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            coupling_structure=coupling_structure,
-            log_convergence=log_convergence,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            acceleration_method=acceleration_method,
-            over_relaxation_factor=over_relaxation_factor,
-        )
+        super().__init__(disciplines, settings_model=settings_model, **settings)
 
         self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
-        if n_processes == 1:
+        if self.settings.n_processes == 1:
             self._execute_disciplines = self._execute_disciplines_sequentially
             self.parallel_execution = None
         else:
             self._execute_disciplines = self._execute_disciplines_in_parallel
             self.parallel_execution = DiscParallelExecution(
                 disciplines,
-                n_processes,
-                use_threading,
+                self.settings.n_processes,
+                self.settings.use_threading,
                 exceptions_to_re_raise=(ValueError,),
             )
 
     def get_process_flow(self) -> BaseProcessFlow:  # noqa: D102
         process_flow = super().get_process_flow()
-        process_flow.is_parallel = self.__n_processes > 1
+        process_flow.is_parallel = self.settings.n_processes > 1
         return process_flow
 
     def _compute_input_coupling_names(self) -> None:

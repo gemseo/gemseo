@@ -27,13 +27,9 @@ import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from strenum import StrEnum
-
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_root import BaseMDARoot
-from gemseo.utils.constants import N_CPUS
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphsonSettings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -42,10 +38,8 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
-    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.typing import StrKeyMapping
 
 
 LOGGER = logging.getLogger(__name__)
@@ -74,80 +68,30 @@ class MDANewtonRaphson(BaseMDARoot):
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
     """
 
+    Settings: ClassVar[type[MDANewtonRaphsonSettings]] = MDANewtonRaphsonSettings
+    """The pydantic model for the settings."""
+
+    settings: MDANewtonRaphsonSettings
+    """The settings of the MDA"""
+
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
-
-    class NewtonLinearSolver(StrEnum):
-        """A linear solver for the Newton method."""
-
-        DEFAULT = "DEFAULT"
-        GMRES = "GEMRES"
-        BICGSTAB = "BICGSTAB"
-
-    __newton_linear_solver_options: StrKeyMapping
-    """The options of the Newton linear solver."""
-
-    _newton_coupling_names: list[str]
-    """The coupling data names used to form the residuals."""
 
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        max_mda_iter: int = 10,
-        name: str = "",
-        linear_solver: str = "DEFAULT",
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        newton_linear_solver_name: NewtonLinearSolver = NewtonLinearSolver.DEFAULT,
-        newton_linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        use_threading: bool = True,
-        n_processes: int = N_CPUS,
-        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
-        over_relaxation_factor: float = 0.99,
-        execute_before_linearizing: bool = False,
+        settings_model: MDANewtonRaphsonSettings | None = None,
+        **settings: Any,
     ) -> None:
         """
-        Args:
-            newton_linear_solver_name: The name of the linear solver for the Newton
-                method.
-            newton_linear_solver_options: The options for the Newton linear solver.
-
         Raises:
             ValueError: When there are no coupling variables, or when there are weakly
                 coupled disciplines. In these cases, use MDAChain.
         """  # noqa:D205 D212 D415
-        super().__init__(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=name,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            coupling_structure=coupling_structure,
-            log_convergence=log_convergence,
-            use_threading=use_threading,
-            n_processes=n_processes,
-            acceleration_method=acceleration_method,
-            over_relaxation_factor=over_relaxation_factor,
-            execute_before_linearizing=execute_before_linearizing,
-        )
+        super().__init__(disciplines, settings_model=settings_model, **settings)
 
         # We use all couplings to form the Newton matrix otherwise the effect of the
         # weak couplings are not taken into account in the coupling updates.
-        self._newton_coupling_names = sorted(self.all_couplings)
-
-        self.linear_solver = linear_solver
-        self.__newton_linear_solver_name = newton_linear_solver_name
-        self.__newton_linear_solver_options = newton_linear_solver_options or {}
-
-        if not self._newton_coupling_names:
+        if not sorted(self.coupling_structure.all_couplings):
             msg = "There is no couplings to compute. Please consider using MDAChain."
             raise ValueError(msg)
 
@@ -209,18 +153,18 @@ class MDANewtonRaphson(BaseMDARoot):
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
             self._resolved_variable_names,
-            self.__newton_linear_solver_name,
+            self.settings.newton_linear_solver_name,
             matrix_type=self.matrix_type,
             residuals=self.get_current_resolved_residual_vector(),
             resolved_residual_names=self._resolved_residual_names,
-            **self.__newton_linear_solver_options,
+            **self.settings.newton_linear_solver_settings,
         )
 
         if not is_converged:
             LOGGER.warning(
                 "The linear solver %s failed "
                 "to converge during the Newton's step computation.",
-                self.__newton_linear_solver_name,
+                self.settings.newton_linear_solver_name,
             )
 
         return newton_step
