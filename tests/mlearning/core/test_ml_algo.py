@@ -30,11 +30,16 @@ from numpy import array
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.algos.kmeans import KMeans
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import concretize_classes
 
 from .new_ml_algo.new_ml_algo import NewMLAlgo
+
+
+class DummyMLAlgo(BaseMLAlgo):
+    Settings = BaseMLAlgoSettings
 
 
 @pytest.fixture
@@ -50,8 +55,8 @@ def dataset() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLAlgo):
-        ml_algo = BaseMLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        ml_algo = DummyMLAlgo(dataset)
 
     assert ml_algo.algo is None
     assert not ml_algo.is_trained
@@ -114,8 +119,8 @@ def test_repr_html(dataset) -> None:
 )
 def test_transformer(dataset, transformer) -> None:
     """Check if transformers are correctly passed."""
-    with concretize_classes(BaseMLAlgo):
-        ml_algo = BaseMLAlgo(dataset, transformer={"parameters": transformer})
+    with concretize_classes(DummyMLAlgo):
+        ml_algo = DummyMLAlgo(dataset, transformer={"parameters": transformer})
 
     assert isinstance(ml_algo.transformer["parameters"], Scaler)
     if isinstance(transformer, tuple):
@@ -132,9 +137,9 @@ def test_transformer_wrong_type(dataset) -> None:
                 "either BaseTransformer, Tuple[str, StrKeyMapping] or str."
             ),
         ),
-        concretize_classes(BaseMLAlgo),
+        concretize_classes(DummyMLAlgo),
     ):
-        BaseMLAlgo(dataset, transformer={"parameters": 1})
+        DummyMLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_transformers_error(dataset) -> None:
@@ -150,6 +155,6 @@ def test_transformers_error(dataset) -> None:
                 "for one variable of this group."
             ),
         ),
-        concretize_classes(BaseMLAlgo),
+        concretize_classes(DummyMLAlgo),
     ):
-        BaseMLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
+        DummyMLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

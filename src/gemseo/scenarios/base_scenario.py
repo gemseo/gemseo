@@ -574,20 +574,20 @@ class BaseScenario(BaseMonitoredProcess):
     def post_process(
         self,
         post_name: str,
-        **options: BasePostOptionType | Path,
+        **post_settings: BasePostOptionType | Path,
     ) -> BasePost:
         """Post-process the optimization history.
 
         Args:
             post_name: The name of the post-processor,
                 i.e. the name of a class inheriting from :class:`.BasePost`.
-            **options: The options for the post-processor.
+            **post_settings: The settings for the post-processor.
 
         Returns:
             The post-processing instance related to the optimization scenario.
         """
         return self.post_factory.execute(
-            self.formulation.optimization_problem, post_name, **options
+            self.formulation.optimization_problem, post_name, **post_settings
         )
 
     def execute(

@@ -27,12 +27,13 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
+
+from ..core.test_ml_algo import DummyMLAlgo
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -70,8 +71,8 @@ def dataset_test() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLAlgo):
-        algo = BaseMLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        algo = DummyMLAlgo(dataset)
 
     measure = R2Measure(algo)
     assert measure.algo is not None

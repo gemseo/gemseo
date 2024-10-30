@@ -15,12 +15,14 @@
 from __future__ import annotations
 
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 
 
 class NewMLAlgo(BaseMLAlgo):
     """New machine learning algorithm class."""
 
     LIBRARY = "NewLibrary"
+    Settings = BaseMLAlgoSettings
 
     def learn(self, samples=()) -> None:
         super().learn(samples=samples)

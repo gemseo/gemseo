@@ -28,13 +28,14 @@ from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
+
+from ..core.test_ml_algo import DummyMLAlgo
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -71,8 +72,8 @@ def dataset_test() -> Dataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLAlgo):
-        algo = BaseMLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        algo = DummyMLAlgo(dataset)
 
     measure = MSEMeasure(algo)
     assert measure.algo is not None

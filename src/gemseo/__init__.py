@@ -487,7 +487,7 @@ def get_formulation_sub_options_schema(
     formulation_name: str,
     output_json: bool = False,
     pretty_print: bool = False,
-    **formulation_options: Any,
+    **formulation_settings: Any,
 ) -> str | dict[str, Any]:
     """Return the schema of the sub-options of a formulation.
 
@@ -495,7 +495,7 @@ def get_formulation_sub_options_schema(
         formulation_name: The name of the formulation.
         output_json: Whether to apply the JSON format to the schema.
         pretty_print: Whether to print the schema in a tabular way.
-        **formulation_options: The options of the formulation
+        **formulation_settings: The settings of the formulation
             required for its instantiation.
 
     Returns:
@@ -510,20 +510,20 @@ def get_formulation_sub_options_schema(
     from gemseo.formulations.factory import MDOFormulationFactory
 
     grammar = MDOFormulationFactory().get_sub_options_grammar(
-        formulation_name, **formulation_options
+        formulation_name, **formulation_settings
     )
     return _get_schema(grammar, output_json, pretty_print)
 
 
 def get_formulations_sub_options_defaults(
     formulation_name: str,
-    **formulation_options: Any,
+    **formulation_settings: Any,
 ) -> dict[str, Any]:
     """Return the default values of the sub-options of a formulation.
 
     Args:
         formulation_name: The name of the formulation.
-        **formulation_options: The options of the formulation
+        **formulation_settings: The settings of the formulation
             required for its instantiation.
 
     Returns:
@@ -537,7 +537,7 @@ def get_formulations_sub_options_defaults(
     from gemseo.formulations.factory import MDOFormulationFactory
 
     return MDOFormulationFactory().get_default_sub_option_values(
-        formulation_name, **formulation_options
+        formulation_name, **formulation_settings
     )
 
 
@@ -1073,14 +1073,14 @@ def create_surrogate(
 def create_mda(
     mda_name: str,
     disciplines: Sequence[Discipline],
-    **options: Any,
+    **formulation_settings: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
     Args:
         mda_name: The name of the MDA.
         disciplines: The disciplines.
-        **options: The options of the MDA.
+        **formulation_settings: The settings of the MDA.
 
     Returns:
         The MDA.
@@ -1097,7 +1097,7 @@ def create_mda(
     """
     from gemseo.mda.factory import MDAFactory
 
-    return MDAFactory().create(mda_name, disciplines, **options)
+    return MDAFactory().create(mda_name, disciplines, **formulation_settings)
 
 
 def execute_post(
@@ -1878,7 +1878,7 @@ def sample_disciplines(
     output_names: str | Iterable[str],
     algo_name: str,
     formulation: str = "MDF",
-    formulation_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    formulation_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "Sampling",
     backup_settings: BackupSettings | None = None,
     doe_algo_settings_model: BaseDOESettings | None = None,
@@ -1893,7 +1893,7 @@ def sample_disciplines(
         n_samples: The number of samples.
         algo_name: The name of the DOE algorithm.
         formulation: The name of the MDO formulation.
-        formulation_options: The options of the MDO formulation.
+        formulation_settings: The settings of the MDO formulation.
             If empty, use the default ones.
         name: The name of the returned dataset.
             If empty, use the name of the discipline.
@@ -1918,7 +1918,7 @@ def sample_disciplines(
         next(output_names_iterator),
         input_space,
         name=name,
-        **formulation_options,
+        **formulation_settings,
     )
     for output_name in output_names_iterator:
         scenario.add_observable(output_name)

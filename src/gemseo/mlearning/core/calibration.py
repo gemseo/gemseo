@@ -64,7 +64,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-    from gemseo.mlearning.core.algos.ml_algo import MLAlgoParameterType
+    from gemseo.mlearning.core.algos.ml_algo import MLAlgoSettingsType
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.scenarios.base_scenario import BaseScenario
 
@@ -85,7 +85,7 @@ class MLAlgoAssessor(Discipline):
     measure_options: dict[str, int | Dataset]
     """The options of the quality measure."""
 
-    parameters: dict[str, MLAlgoParameterType]
+    parameters: dict[str, MLAlgoSettingsType]
     """The parameters of the machine learning algorithm."""
 
     dataset: Dataset
@@ -111,7 +111,7 @@ class MLAlgoAssessor(Discipline):
         measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
         transformer: TransformerType = READ_ONLY_EMPTY_DICT,
-        **algo_options: MLAlgoParameterType,
+        **algo_settings: MLAlgoSettingsType,
     ) -> None:
         """
         Args:
@@ -137,8 +137,7 @@ class MLAlgoAssessor(Discipline):
                 the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
                 If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
-
-            **algo_options: The options of the machine learning algorithm.
+            **algo_settings: The settings of the machine learning algorithm.
 
         Raises:
             ValueError: If the measure option "multioutput" is True.
@@ -150,7 +149,7 @@ class MLAlgoAssessor(Discipline):
         self.measure = measure
         self.measure_options = dict(measure_options)
         self.__measure_evaluation_method_name = measure_evaluation_method_name
-        self.parameters = algo_options
+        self.parameters = algo_settings
         self.data = dataset
         self.transformer = transformer
         self.algos = []
@@ -228,7 +227,7 @@ class MLAlgoCalibration:
         # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
         transformer: TransformerType = READ_ONLY_EMPTY_DICT,
-        **algo_options: MLAlgoParameterType,
+        **algo_settings: MLAlgoSettingsType,
     ) -> None:
         """
         Args:
@@ -254,7 +253,7 @@ class MLAlgoCalibration:
                 the :class:`.BaseTransformer` will be applied
                 to all the variables of this group.
                 If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
-            **algo_options: The options of the machine learning algorithm.
+            **algo_settings: The settings of the machine learning algorithm.
         """  # noqa: D205 D212
         disc = MLAlgoAssessor(
             algo,
@@ -264,7 +263,7 @@ class MLAlgoCalibration:
             measure_evaluation_method_name=measure_evaluation_method_name,
             measure_options=measure_options,
             transformer=transformer,
-            **algo_options,
+            **algo_settings,
         )
         self.algo_assessor = disc
         self.calibration_space = calibration_space

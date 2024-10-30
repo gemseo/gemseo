@@ -25,10 +25,11 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
 from gemseo.utils.testing.helpers import concretize_classes
+
+from ..core.test_ml_algo import DummyMLAlgo
 
 
 @pytest.fixture(scope="module")
@@ -42,16 +43,16 @@ def dataset() -> IODataset:
 @pytest.fixture(scope="module")
 def measure(dataset) -> BaseMLAlgoQuality:
     """The quality measure related to a trained machine learning algorithm."""
-    with concretize_classes(BaseMLAlgoQuality, BaseMLAlgo):
-        return BaseMLAlgoQuality(BaseMLAlgo(dataset))
+    with concretize_classes(BaseMLAlgoQuality, DummyMLAlgo):
+        return BaseMLAlgoQuality(DummyMLAlgo(dataset))
 
 
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_constructor(fit_transformers, dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLAlgoQuality, BaseMLAlgo):
+    with concretize_classes(BaseMLAlgoQuality, DummyMLAlgo):
         measure = BaseMLAlgoQuality(
-            BaseMLAlgo(dataset), fit_transformers=fit_transformers
+            DummyMLAlgo(dataset), fit_transformers=fit_transformers
         )
 
     assert measure.algo.learning_set.name == "the_dataset"

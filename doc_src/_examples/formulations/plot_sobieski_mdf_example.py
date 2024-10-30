@@ -75,7 +75,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # During the instantiation of the scenario, we provide some options for the
 # MDF formulations:
-formulation_options = {
+formulation_settings = {
     "tolerance": 1e-14,
     "max_mda_iter": 50,
     "warm_start": True,
@@ -104,7 +104,7 @@ scenario = create_scenario(
     "y_4",
     design_space,
     maximize_objective=True,
-    **formulation_options,
+    **formulation_settings,
 )
 
 # %%

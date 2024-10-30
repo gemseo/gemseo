@@ -306,7 +306,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         backup_settings: BackupSettings | None = None,
         formulation: str = "MDF",
         compute_second_order: bool = True,
-        **formulation_options: Any,
+        **formulation_settings: Any,
     ) -> IODataset:
         r"""
         Args:
@@ -339,7 +339,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             algo_settings=algo_settings,
             backup_settings=backup_settings,
             formulation=formulation,
-            **formulation_options,
+            **formulation_settings,
         )
         dataset = self.dataset
         dataset.misc["output_names_to_sobol_algos"] = {}

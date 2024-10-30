@@ -105,19 +105,19 @@ class IDF(BaseMDOFormulation):
                 **self._settings.mda_options_for_start_at_equilibrium
             )
 
-    def _compute_equilibrium(self, **mda_options: Any) -> None:
+    def _compute_equilibrium(self, **mda_settings: Any) -> None:
         """Run an MDA to compute the initial target couplings at equilibrium.
 
         The values at equilibrium are set in the initial design space.
 
         Args:
-            mda_options: The options for the MDA chain.
+            mda_settings: The settings for the MDA chain.
         """
         current_x = self.optimization_problem.design_space.get_current_value(
             as_dict=True
         )
         # run MDA to initialize target coupling variables
-        mda = MDAChain(self.disciplines, **mda_options)
+        mda = MDAChain(self.disciplines, **mda_settings)
         res = mda.execute(current_x)
 
         for name in self.all_couplings:

@@ -258,7 +258,7 @@ class ScalableProblem:
         start_at_equilibrium: bool = False,
         active_probability: float = 0.1,
         feasibility_level: float = 0.5,
-        **options,
+        **settings: Any,
     ) -> BaseScenario:
         """Create a :class:`.Scenario` from the scalable disciplines.
 
@@ -271,7 +271,7 @@ class ScalableProblem:
                 active at the initial step of the optimization.
             feasibility_level: The offset of satisfaction for inequality
                 constraints.
-            **options: The formulation options.
+            **settings: The formulation settings.
 
         Returns:
             The :class:`.Scenario` from the scalable disciplines.
@@ -283,7 +283,7 @@ class ScalableProblem:
         disciplines = self.scaled_disciplines
         design_space = self._create_design_space(disciplines, formulation)
         if formulation == "BiLevel":
-            self.scenario = self._create_bilevel_scenario(disciplines, **options)
+            self.scenario = self._create_bilevel_scenario(disciplines, **settings)
         else:
             self.scenario = create_scenario(
                 disciplines,
@@ -292,7 +292,7 @@ class ScalableProblem:
                 deepcopy(design_space),
                 scenario_type=scenario_type,
                 maximize_objective=self.maximize_objective,
-                **options,
+                **settings,
             )
         self.__add_ineq_constraints(active_probability, feasibility_level, equilibrium)
         self.__add_eq_constraints(equilibrium)
@@ -402,7 +402,9 @@ class ScalableProblem:
         return design_space
 
     def __get_equilibrium(
-        self, mda_name: str = "MDAJacobi", **options: Any
+        self,
+        mda_name: str = "MDAJacobi",
+        **mda_settings: Any,
     ) -> dict[str, NDArray[float]]:
         """Get the equilibrium point from an MDA method.
 
@@ -414,9 +416,11 @@ class ScalableProblem:
         """
         LOGGER.info("Build a preliminary MDA to start at equilibrium")
         factory = MDAFactory()
-        mda = factory.create(mda_name, self.scaled_disciplines, **options)
+        mda = factory.create(mda_name, self.scaled_disciplines, **mda_settings)
         if len(mda.strong_couplings) == 0:
-            mda = factory.create("MDAQuasiNewton", self.scaled_disciplines, **options)
+            mda = factory.create(
+                "MDAQuasiNewton", self.scaled_disciplines, **mda_settings
+            )
         return mda.execute()
 
     def __add_ineq_constraints(

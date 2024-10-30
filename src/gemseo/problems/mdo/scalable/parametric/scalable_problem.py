@@ -76,14 +76,14 @@ class ScalableProblem(_ScalableProblem):
         self,
         use_optimizer: bool = True,
         formulation_name: str = "MDF",
-        **formulation_options: Any,
+        **formulation_settings: Any,
     ) -> BaseScenario:
         """Create the DOE or MDO scenario associated with this scalable problem.
 
         Args:
             use_optimizer: Whether to use an optimizer or a design of experiments.
             formulation_name: The name of the formulation.
-            **formulation_options: The options of the formulation.
+            **formulation_settings: The settings of the formulation.
 
         Returns:
             The scenario to be executed.
@@ -94,7 +94,7 @@ class ScalableProblem(_ScalableProblem):
             OBJECTIVE_NAME,
             self.design_space,
             scenario_type="MDO" if use_optimizer else "DOE",
-            **formulation_options,
+            **formulation_settings,
         )
         for index, _ in enumerate(self.scalable_disciplines):
             scenario.add_constraint(
