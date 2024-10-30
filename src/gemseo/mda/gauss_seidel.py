@@ -21,18 +21,18 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
@@ -122,42 +122,24 @@ class MDAGaussSeidel(BaseMDASolver):
     These :math:`n` steps account for one iteration of the Gauss-Seidel method.
     """
 
+    Settings: ClassVar[type[MDAGaussSeidelSettings]] = MDAGaussSeidelSettings
+    """The pydantic model for the settings."""
+
+    settings: MDAGaussSeidelSettings
+    """The settings of the MDA"""
+
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
 
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        name: str = "",
-        max_mda_iter: int = 10,
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
-        over_relaxation_factor: float = 1.0,
+        settings_model: MDAGaussSeidelSettings | None = None,
+        **settings: Any,
     ) -> None:
-        super().__init__(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=name,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            coupling_structure=coupling_structure,
-            log_convergence=log_convergence,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            acceleration_method=acceleration_method,
-            over_relaxation_factor=over_relaxation_factor,
-        )
+        super().__init__(disciplines, settings_model=settings_model, **settings)
         self._compute_input_coupling_names()
-        self._set_resolved_variables(self.strong_couplings)
-        if max_mda_iter == 0:
+        self._set_resolved_variables(self.coupling_structure.strong_couplings)
+        if self.settings.max_mda_iter == 0:
             del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def _initialize_grammars(self) -> None:
@@ -179,7 +161,7 @@ class MDAGaussSeidel(BaseMDASolver):
     def _run(self) -> None:
         super()._run()
         self._execute_disciplines_and_update_local_data()
-        if self.max_mda_iter == 0:
+        if self.settings.max_mda_iter == 0:
             return
 
         while True:

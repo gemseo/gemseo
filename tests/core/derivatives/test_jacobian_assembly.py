@@ -162,7 +162,7 @@ def couplings() -> list[str]:
 def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
     """A Gauss-Seidel MDA for the SSBJ use case."""
     gs_mda = SobieskiMDAGaussSeidel("complex128")
-    gs_mda.tolerance = 1e-14
+    gs_mda.settings.tolerance = 1e-14
     gs_mda.max_iter = 100
     gs_mda.add_differentiated_inputs(variables)
     gs_mda.add_differentiated_outputs(functions)

@@ -34,11 +34,6 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from strenum import LowercaseStrEnum
 
-from gemseo import READ_ONLY_EMPTY_DICT
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
-    RelaxationAcceleration,
-)
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
@@ -47,7 +42,9 @@ from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.process_discipline import ProcessDiscipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.pydantic import create_model
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -58,7 +55,9 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy.typing import NDArray
 
+    from gemseo.core.discipline.base_discipline import _CacheType
     from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -108,40 +107,29 @@ class BaseMDA(ProcessDiscipline):
 
     NORMALIZED_RESIDUAL_NORM: Final[str] = "MDA residuals norm"
 
-    default_cache_type: ClassVar[ProcessDiscipline.CacheType] = (
-        ProcessDiscipline.CacheType.SIMPLE
-    )
+    default_cache_type: ClassVar[_CacheType] = ProcessDiscipline.CacheType.SIMPLE
 
     _linearize_on_last_state: ClassVar[bool] = True
+    """Whether to update the local data from the input data before linearizing."""
 
-    tolerance: float
-    """The tolerance of the iterative direct coupling solver."""
+    # TODO: use generics to handle the type of the settings
+    Settings: ClassVar[type[BaseMDASettings]]
+    """The Pydantic model for the settings."""
 
-    linear_solver: str
-    """The name of the linear solver."""
+    settings: BaseMDASettings
+    """The settings of the MDA."""
 
-    linear_solver_tolerance: float
-    """The tolerance of the linear solver in the adjoint equation."""
-
-    linear_solver_options: StrKeyMapping
-    """The options of the linear solver."""
-
-    _max_mda_iter: int
-    """The maximum iterations number for the MDA algorithm."""
+    assembly: JacobianAssembly
+    """The Jacobian assembly."""
 
     coupling_structure: CouplingStructure
     """The coupling structure to be used by the MDA."""
-
-    assembly: JacobianAssembly
 
     residual_history: list[float]
     """The history of the MDA residuals."""
 
     reset_history_each_run: bool
     """Whether to reset the history of MDA residuals before each run."""
-
-    warm_start: bool
-    """Whether the second iteration and ongoing start from the previous solution."""
 
     _scaling: ResidualScaling
     """The scaling method applied to MDA residuals for convergence monitoring."""
@@ -155,29 +143,14 @@ class BaseMDA(ProcessDiscipline):
     normed_residual: float
     """The normed residual."""
 
-    strong_couplings: list[str]
-    """The names of the strong coupling variables."""
-
-    all_couplings: list[str]
-    """The names of the coupling variables."""
-
     matrix_type: JacobianAssembly.JacobianType
     """The type of the matrix."""
-
-    use_lu_fact: bool
-    """Whether to store a LU factorization of the matrix."""
 
     lin_cache_tol_fact: float
     """The tolerance factor to cache the Jacobian."""
 
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
-
-    _sequence_transformer: RelaxationAcceleration
-    """The sequence transformer aimed at improving the convergence rate.
-
-    The transformation applies a relaxation followed by an acceleration.
-    """
 
     class ResidualScaling(LowercaseStrEnum):
         """The scaling method applied to MDA residuals for convergence monitoring."""
@@ -244,67 +217,35 @@ class BaseMDA(ProcessDiscipline):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        max_mda_iter: int = 10,
-        name: str = "",
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
-        over_relaxation_factor: float = 1.0,
+        settings_model: BaseMDASettings | None = None,
+        **settings: Any,
     ) -> None:
         """
         Args:
             disciplines: The disciplines from which to compute the MDA.
-            max_mda_iter: The maximum iterations number for the MDA algorithm.
-                If 0,
-                evaluate the coupling the coupling process
-                without trying to solve the coupling equations.
-            name: The name to be given to the MDA.
-                If empty, use the name of the class.
-            tolerance: The tolerance of the iterative direct coupling solver;
-                the norm of the current residuals divided by initial residuals norm
-                shall be lower than the tolerance to stop iterating.
-            linear_solver_tolerance: The tolerance of the linear solver
-                in the adjoint equation.
-            warm_start: Whether the second iteration and ongoing start
-                from the previous coupling solution.
-            use_lu_fact: Whether to store a LU factorization of the matrix
-                when using adjoint/forward differentiation.
-                to solve faster multiple RHS problem.
-            coupling_structure: The coupling structure to be used by the MDA.
-                If ``None``, it is created from `disciplines`.
-            log_convergence: Whether to log the MDA convergence,
-                expressed in terms of normed residuals.
-            linear_solver: The name of the linear solver.
-            linear_solver_options: The options passed to the linear solver factory.
-            acceleration_method: The acceleration method to be used to improve the
-                convergence rate of the fixed point iteration method.
-            over_relaxation_factor: The over-relaxation factor.
+            settings_model: The MDA settings as a Pydantic model.
+                If ``None``, use ``**settings``.
+            **settings: The MDA settings.
+                These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa:D205 D212 D415
-        super().__init__(disciplines, name=name)
-        self.tolerance = tolerance
-        self.linear_solver = linear_solver
-        self.linear_solver_tolerance = linear_solver_tolerance
-        self.linear_solver_options = linear_solver_options or {}
-        self.max_mda_iter = max_mda_iter
-        if coupling_structure is None:
-            self.coupling_structure = CouplingStructure(disciplines)
-        else:
-            self.coupling_structure = coupling_structure
+        self.settings = create_model(
+            self.Settings,
+            settings_model=settings_model,
+            **settings,
+        )
+
+        super().__init__(disciplines, name=self.settings.name)
+
+        self.coupling_structure = (
+            CouplingStructure(disciplines)
+            if self.settings.coupling_structure is None
+            else self.settings.coupling_structure
+        )
+
         self.assembly = JacobianAssembly(self.coupling_structure)
         self.residual_history = []
         self._starting_indices = []
         self.reset_history_each_run = False
-        self.warm_start = warm_start
-
-        self._sequence_transformer = RelaxationAcceleration(
-            over_relaxation_factor, acceleration_method
-        )
 
         self._scaling = self.ResidualScaling.INITIAL_RESIDUAL_NORM
         self._scaling_data = None
@@ -314,49 +255,17 @@ class BaseMDA(ProcessDiscipline):
         self.norm0 = None
         self._current_iter = 0
         self.normed_residual = 1.0
-        self.strong_couplings = self.coupling_structure.strong_couplings
-        self.all_couplings = self.coupling_structure.all_couplings
         self._input_couplings = []
         self._non_numeric_array_variables = []
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
-        self.use_lu_fact = use_lu_fact
         # By default don't use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
         self.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
         self._check_consistency()
-        self.__check_linear_solver_options()
+        self.__check_linear_solver_settings()
         self._check_coupling_types()
-        self._log_convergence = log_convergence
-
-    @property
-    def acceleration_method(self) -> AccelerationMethod:
-        """The acceleration method."""
-        return self._sequence_transformer.acceleration_method
-
-    @acceleration_method.setter
-    def acceleration_method(self, acceleration_method: AccelerationMethod) -> None:
-        self._sequence_transformer.acceleration_method = acceleration_method
-
-    @property
-    def over_relaxation_factor(self) -> float:
-        """The over-relaxation factor."""
-        return self._sequence_transformer.over_relaxation_factor
-
-    @over_relaxation_factor.setter
-    def over_relaxation_factor(self, over_relaxation_factor: float) -> None:
-        self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
-
-    @property
-    def max_mda_iter(self) -> int:
-        """The maximum iterations number of the MDA algorithm."""
-        return self._max_mda_iter
-
-    @max_mda_iter.setter
-    def max_mda_iter(self, max_mda_iter: int) -> None:
-        # This setter will be overloaded in certain child classes.
-        self._max_mda_iter = max_mda_iter
 
     @property
     def scaling(self) -> ResidualScaling:
@@ -374,20 +283,7 @@ class BaseMDA(ProcessDiscipline):
             self.input_grammar.update(discipline.input_grammar)
             self.output_grammar.update(discipline.output_grammar)
 
-    @property
-    def log_convergence(self) -> bool:
-        """Whether to log the MDA convergence."""
-        return self._log_convergence
-
-    @log_convergence.setter
-    def log_convergence(
-        self,
-        value: bool,
-    ) -> None:
-        # This setter will be overloaded in certain child classes
-        self._log_convergence = value
-
-    def __check_linear_solver_options(self) -> None:
+    def __check_linear_solver_settings(self) -> None:
         """Check the linear solver options.
 
         The linear solver tolerance cannot be set
@@ -395,9 +291,9 @@ class BaseMDA(ProcessDiscipline):
         as it is set using the linear_solver_tolerance keyword argument.
 
         Raises:
-            ValueError: If the ``rtol`` keyword is in :attr:`.linear_solver_options`.
+            ValueError: If the ``rtol`` keyword is in :attr:`.linear_solver_settings`.
         """
-        if "rtol" in self.linear_solver_options:
+        if "rtol" in self.settings.linear_solver_settings:
             msg = (
                 "The linear solver tolerance shall be set"
                 " using the linear_solver_tolerance argument."
@@ -454,7 +350,9 @@ class BaseMDA(ProcessDiscipline):
     def _compute_input_coupling_names(self) -> None:
         """Compute the strong couplings that are inputs of the MDA."""
         self._input_couplings = sorted(
-            set(self.strong_couplings).intersection(self.io.input_grammar.names)
+            set(self.coupling_structure.strong_couplings).intersection(
+                self.io.input_grammar.names
+            )
         )
 
     def _get_differentiated_io(
@@ -462,7 +360,7 @@ class BaseMDA(ProcessDiscipline):
         compute_all_jacobians: bool = False,
     ) -> tuple[set[str] | list[str], set[str] | list[str]]:
         if compute_all_jacobians:
-            strong_cpl = set(self.strong_couplings)
+            strong_cpl = set(self.coupling_structure.strong_couplings)
             inputs = set(self.io.input_grammar.names)
             outputs = self.io.output_grammar.names
             # Don't linearize wrt
@@ -500,7 +398,7 @@ class BaseMDA(ProcessDiscipline):
         follows an improper setup.
         """
         not_arrays = set()
-        for coupling_name in self.all_couplings:
+        for coupling_name in self.coupling_structure.all_couplings:
             for discipline in self.disciplines:
                 for grammar in (discipline.input_grammar, discipline.output_grammar):
                     if (
@@ -527,14 +425,16 @@ class BaseMDA(ProcessDiscipline):
         # of first discipline
         # have changed at convergence, therefore the cache is not exactly
         # the same as the current value
-        exec_cache_tol = self.lin_cache_tol_fact * self.tolerance
-        self.__check_linear_solver_options()
+        exec_cache_tol = self.lin_cache_tol_fact * self.settings.tolerance
+        self.__check_linear_solver_settings()
         residual_variables = {}
         for disc in self.disciplines:
             residual_variables.update(disc.io.residual_to_state_variable)
 
         couplings_adjoint = sorted(
-            set(self.all_couplings).difference(self._non_numeric_array_variables)
+            set(self.coupling_structure.all_couplings).difference(
+                self._non_numeric_array_variables
+            )
             - residual_variables.keys()
             - set(residual_variables.values())
         )
@@ -551,15 +451,15 @@ class BaseMDA(ProcessDiscipline):
             output_names,
             input_names,
             couplings_adjoint,
-            rtol=self.linear_solver_tolerance,
+            rtol=self.settings.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
-            use_lu_fact=self.use_lu_fact,
+            use_lu_fact=self.settings.use_lu_fact,
             exec_cache_tol=exec_cache_tol,
             execute=exec_cache_tol == 0.0,
-            linear_solver=self.linear_solver,
+            linear_solver=self.settings.linear_solver,
             residual_variables=residual_variables,
-            **self.linear_solver_options,
+            **self.settings.linear_solver_settings,
         )
 
     def _prepare_io_for_check_jacobian(
@@ -575,7 +475,7 @@ class BaseMDA(ProcessDiscipline):
         input_names = list(input_names)
         output_names = list(output_names)
 
-        for coupling in self.all_couplings:
+        for coupling in self.coupling_structure.all_couplings:
             if coupling in output_names:
                 output_names.remove(coupling)
             if coupling in input_names:
@@ -662,7 +562,7 @@ class BaseMDA(ProcessDiscipline):
         fig_ax.plot(
             self.residual_history[:n_iterations], linestyle="-", c="k", zorder=1
         )
-        fig_ax.axhline(y=self.tolerance, c="blue", linewidth=0.5, zorder=0)
+        fig_ax.axhline(y=self.settings.tolerance, c="blue", linewidth=0.5, zorder=0)
         fig_ax.set_title(f"{self.name}: residual plot")
 
         fig_ax.set_yscale("log")
@@ -713,7 +613,7 @@ class BaseMDA(ProcessDiscipline):
 
     @abstractmethod
     def _run(self) -> None:  # noqa:D103
-        if self.warm_start:
+        if self.settings.warm_start:
             self._prepare_warm_start()
 
     def _execute_disciplines_and_update_local_data(

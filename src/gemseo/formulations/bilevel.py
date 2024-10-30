@@ -76,13 +76,12 @@ class BiLevel(BaseMDOFormulation):
     SUBSCENARIOS_LEVEL = "sub-scenarios"
     LEVELS = (SYSTEM_LEVEL, SUBSCENARIOS_LEVEL)
 
-    __sub_scenarios_log_level: int | None
-    """The level of the root logger during the sub-scenarios executions.
-
-    If ``None``, do not change the level of the root logger.
-    """
-
     Settings: ClassVar[type[BiLevelSettings]] = BiLevelSettings
+
+    _settings: BiLevelSettings
+
+    __mda_factory: ClassVar[MDAFactory] = MDAFactory()
+    """The MDA factory."""
 
     def __init__(  # noqa: D107
         self,
@@ -115,12 +114,12 @@ class BiLevel(BaseMDOFormulation):
         self._build_objective_from_disc(self._objective_name)
 
     @property
-    def mda1(self) -> Discipline:
+    def mda1(self) -> BaseMDA | None:
         """The MDA1 instance."""
         return self._mda1
 
     @property
-    def mda2(self) -> Discipline:
+    def mda2(self) -> BaseMDA:
         """The MDA2 instance."""
         return self._mda2
 
@@ -266,7 +265,7 @@ class BiLevel(BaseMDOFormulation):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return MDAFactory().get_options_grammar(main_mda_name)
+        return cls.__mda_factory.get_options_grammar(main_mda_name)
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:
@@ -281,7 +280,7 @@ class BiLevel(BaseMDOFormulation):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return MDAFactory().get_default_option_values(main_mda_name)
+        return cls.__mda_factory.get_default_option_values(main_mda_name)
 
     def _create_mdas(self) -> tuple[BaseMDA | None, BaseMDA]:
         """Build the chain on top of which all functions are built.
@@ -292,35 +291,29 @@ class BiLevel(BaseMDOFormulation):
             The first MDA, in presence of strongly coupled discipline,
             and the second MDA.
         """
-        if self._settings.main_mda_name == "MDAChain":
-            self._settings.main_mda_settings["inner_mda_name"] = (
-                self._settings.inner_mda_name
-            )
-
-        mda_factory = MDAFactory()
         mda1 = None
         strongly_coupled_disciplines = (
             self.coupling_structure.strongly_coupled_disciplines
         )
         if len(strongly_coupled_disciplines) > 0:
-            mda1 = mda_factory.create(
+            mda1 = self.__mda_factory.create(
                 self._settings.main_mda_name,
                 strongly_coupled_disciplines,
-                **self._settings.main_mda_settings,
+                settings_model=self._settings.main_mda_settings,
             )
-            mda1.warm_start = True
+            mda1.settings.warm_start = True
         else:
             LOGGER.warning(
                 "No strongly coupled disciplines detected, "
-                " MDA1 is disabled in the BiLevel formulation"
+                "MDA1 is disabled in the BiLevel formulation"
             )
 
-        mda2 = mda_factory.create(
+        mda2 = self.__mda_factory.create(
             self._settings.main_mda_name,
             get_sub_disciplines(self.disciplines),
-            **self._settings.main_mda_settings,
+            settings_model=self._settings.main_mda_settings,
         )
-        mda2.warm_start = False
+        mda2.settings.warm_start = False
         return mda1, mda2
 
     def _build_chain_dis_sub_opts(
@@ -404,10 +397,10 @@ class BiLevel(BaseMDOFormulation):
 
     def _remove_couplings_from_ds(self) -> None:
         """Removes the coupling variables from the design space."""
-        if hasattr(self._mda2, "strong_couplings"):
+        if hasattr(self._mda2.settings, "coupling_structure"):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
-            couplings = self.mda2.strong_couplings
+            couplings = self.mda2.coupling_structure.strong_couplings
             design_space = self.optimization_problem.design_space
             for coupling in couplings:
                 if coupling in design_space:

@@ -198,7 +198,7 @@ def test_bilevel_aerostructure() -> None:
         design_space_system,
         maximize_objective=True,
         main_mda_name="MDAJacobi",
-        tolerance=1e-8,
+        main_mda_settings={"tolerance": 1e-8},
     )
     system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
     system_scenario.add_constraint("lift", value=0.5)

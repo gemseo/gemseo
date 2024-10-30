@@ -16,11 +16,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
+
+if TYPE_CHECKING:
+    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
 
 
 class SobieskiMDAGaussSeidel(MDAGaussSeidel):
@@ -29,11 +33,14 @@ class SobieskiMDAGaussSeidel(MDAGaussSeidel):
     def __init__(
         self,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
-        **mda_options: Any,
+        settings_model: MDAGaussSeidelSettings | None = None,
+        **settings: Any,
     ) -> None:
         """
         Args:
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
-            **mda_options: The options of the MDA.
+            **settings: The settings of the MDA.
         """  # noqa: D205 D212
-        super().__init__(create_disciplines(dtype), **mda_options)
+        super().__init__(
+            create_disciplines(dtype), settings_model=settings_model, **settings
+        )

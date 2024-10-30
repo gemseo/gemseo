@@ -23,12 +23,18 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from typing import Optional
 from typing import Union
+
+from pydantic_core import PydanticUndefined
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.mda.base_mda import BaseMDA
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 MDAOptionType = Optional[
     Union[float, int, bool, str, Iterable[CouplingStructure], Sequence[BaseMDA]]
@@ -40,3 +46,35 @@ class MDAFactory(BaseFactory):
 
     _CLASS = BaseMDA
     _PACKAGE_NAMES = ("gemseo.mda",)
+
+    def get_options_doc(self, name: str) -> dict[str, str]:
+        """Return the constructor documentation of a class.
+
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The mapping from the argument names to their documentation.
+        """
+        fields = self.get_class(name).Settings.model_fields
+        return {k: v.description for k, v in fields.items()}
+
+    def get_default_option_values(self, name: str) -> StrKeyMapping:
+        """Return the constructor kwargs default values of a class.
+
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The mapping from the argument names to their default values.
+        """
+        fields = self.get_class(name).Settings.model_fields
+        defaults = {}
+        for field_name, field_default in fields.items():
+            default_value = field_default.default
+            if default_value == PydanticUndefined:
+                factory = field_default.default_factory
+                default_value = factory() if factory != PydanticUndefined else None
+
+            defaults[field_name] = default_value
+        return defaults

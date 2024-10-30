@@ -20,6 +20,8 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
 
 from numpy import abs as np_abs
 from numpy import array
@@ -27,25 +29,38 @@ from numpy import concatenate
 from numpy import ndarray
 from numpy.linalg import norm
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
+    RelaxationAcceleration,
+)
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.coupling_structure import CouplingStructure
+    from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline import Discipline
+    from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
     from gemseo.typing import MutableStrKeyMapping
-    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
 
 class BaseMDASolver(BaseMDA):
     """The base class for MDA solvers."""
+
+    Settings: ClassVar[type[BaseMDASolverSettings]]
+    """The Pydantic model for the settings."""
+
+    settings: BaseMDASolverSettings
+    """The settings of the MDA."""
+
+    _sequence_transformer: RelaxationAcceleration
+    """The sequence transformer aimed at improving the convergence rate.
+
+    The transformation applies a relaxation followed by an acceleration.
+    """
 
     __resolved_variable_names_to_slices: dict[BaseDataConverter, dict[str, slice]]
     """The mapping from names to slices for converting array to data structures.
@@ -83,34 +98,16 @@ class BaseMDASolver(BaseMDA):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        max_mda_iter: int = 10,
-        name: str = "",
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        acceleration_method: AccelerationMethod = AccelerationMethod.NONE,
-        over_relaxation_factor: float = 1.0,
+        settings_model: BaseMDASolverSettings | None = None,
+        **settings: Any,
     ) -> None:
-        super().__init__(
-            disciplines,
-            max_mda_iter,
-            name,
-            tolerance,
-            linear_solver_tolerance,
-            warm_start,
-            use_lu_fact,
-            coupling_structure,
-            log_convergence,
-            linear_solver,
-            linear_solver_options,
-            acceleration_method,
-            over_relaxation_factor,
+        super().__init__(disciplines, settings_model=settings_model, **settings)
+
+        self._sequence_transformer = RelaxationAcceleration(
+            self.settings.over_relaxation_factor,
+            self.settings.acceleration_method,
         )
+
         self.__resolved_variable_names_to_slices = {}
         self.__resolved_variable_names = ()
 
@@ -118,6 +115,24 @@ class BaseMDASolver(BaseMDA):
         self.__resolved_residual_names = ()
 
         self._current_residuals = {}
+
+    @property
+    def acceleration_method(self) -> AccelerationMethod:
+        """The acceleration method."""
+        return self._sequence_transformer.acceleration_method
+
+    @acceleration_method.setter
+    def acceleration_method(self, acceleration_method: AccelerationMethod) -> None:
+        self._sequence_transformer.acceleration_method = acceleration_method
+
+    @property
+    def over_relaxation_factor(self) -> float:
+        """The over-relaxation factor."""
+        return self._sequence_transformer.over_relaxation_factor
+
+    @over_relaxation_factor.setter
+    def over_relaxation_factor(self, over_relaxation_factor: float) -> None:
+        self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
 
     @property
     def _resolved_variable_names(self) -> tuple[str, ...]:
@@ -182,14 +197,16 @@ class BaseMDASolver(BaseMDA):
             * Whether the normed residual is lower than the tolerance.
             * Whether the maximum number of iterations is reached.
         """
-        residual_is_small = self.normed_residual <= self.tolerance
-        max_iter_is_reached = self.max_mda_iter <= self._current_iter
+        residual_is_small = self.normed_residual <= self.settings.tolerance
+        max_iter_is_reached = self.settings.max_mda_iter <= self._current_iter
         if max_iter_is_reached and not residual_is_small:
             msg = (
                 "%s has reached its maximum number of iterations "
                 "but the normed residual %s is still above the tolerance %s."
             )
-            LOGGER.warning(msg, self.name, self.normed_residual, self.tolerance)
+            LOGGER.warning(
+                msg, self.name, self.normed_residual, self.settings.tolerance
+            )
         return residual_is_small, max_iter_is_reached
 
     @property
@@ -382,7 +399,7 @@ class BaseMDASolver(BaseMDA):
         self.normed_residual = normed_residual
         self._scaling_data = _scaling_data
 
-        if self._log_convergence:
+        if self.settings.log_convergence:
             LOGGER.info(
                 "%s running... Normed residual = %s (iter. %s)",
                 self.name,

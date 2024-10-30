@@ -152,10 +152,10 @@ def test_options() -> None:
 
     assert analysis.scenarios["Scenario"].name == "my_test_scenario"
     assert isinstance(mda, MDAGaussSeidel)
-    assert mda.warm_start is False
-    assert mda.tolerance == pytest.approx(1e-5)
+    assert mda.settings.warm_start is True
+    assert mda.settings.tolerance == pytest.approx(1e-5)
     assert mda.over_relaxation_factor == pytest.approx(1.2)
-    assert mda.max_mda_iter == pytest.approx(20)
+    assert mda.settings.max_mda_iter == pytest.approx(20)
 
 
 def test_xls_study_parser(tmp_wd, caplog) -> None:

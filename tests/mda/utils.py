@@ -19,14 +19,19 @@ from __future__ import annotations  # noqa: I001
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 def generate_parallel_doe(
     main_mda_name: str = "MDAChain",
     n_samples: int = 4,
-    inner_mda_name: str = "MDAJacobi",
+    main_mda_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
 ) -> float:
     """Execute a parallel DOE with a custom `main_mda_name`.
 
@@ -34,7 +39,7 @@ def generate_parallel_doe(
         main_mda_name: The main mda class to be used to execute the
             parallel DOE scenario.
         n_samples: The number of samples for the DOE.
-        inner_mda_name: The inner mda class.
+        main_mda_settings: The main MDA settings.
 
     Returns:
         The optimum solution of the parallel DOE scenario.
@@ -53,7 +58,7 @@ def generate_parallel_doe(
         scenario_type="DOE",
         maximize_objective=True,
         main_mda_name=main_mda_name,
-        inner_mda_name=inner_mda_name,
+        main_mda_settings=main_mda_settings,
     )
     scenario.execute(
         algo_name="DiagonalDOE",

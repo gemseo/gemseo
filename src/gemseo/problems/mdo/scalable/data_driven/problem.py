@@ -417,7 +417,7 @@ class ScalableProblem:
         LOGGER.info("Build a preliminary MDA to start at equilibrium")
         factory = MDAFactory()
         mda = factory.create(mda_name, self.scaled_disciplines, **mda_settings)
-        if len(mda.strong_couplings) == 0:
+        if len(mda.coupling_structure.strong_couplings) == 0:
             mda = factory.create(
                 "MDAQuasiNewton", self.scaled_disciplines, **mda_settings
             )

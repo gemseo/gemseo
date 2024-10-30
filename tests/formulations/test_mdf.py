@@ -18,9 +18,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from functools import partial
+
+import pytest
 from numpy.testing import assert_allclose
 
 from gemseo.formulations.mdf import MDF
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
@@ -53,7 +58,9 @@ class TestMDFFormulation(FormulationsBaseTest):
         """
         if not linearize:
             dtype = "complex128"
-        scenario = self.build_mdo_scenario(formulation, dtype, **options)
+        scenario = self.build_mdo_scenario(
+            formulation, dtype, main_mda_settings=options
+        )
         if linearize:
             scenario.set_differentiation_method("user")
         else:
@@ -118,3 +125,39 @@ def test_reset():
 
     scenario.execute(algo_name="SLSQP", max_iter=5)
     assert_allclose(design_space.get_current_value(), final_current_value)
+
+
+create_sellar_mdf = partial(
+    MDF,
+    disciplines=[Sellar1(), Sellar2(), SellarSystem()],
+    objective_name="obj",
+    design_space=SellarDesignSpace(),
+)
+
+
+def test_mda_settings():
+    """Test that the MDA settings are properly handled."""
+    mdf = create_sellar_mdf(
+        main_mda_name="MDAGaussSeidel",
+        main_mda_settings={"max_mda_iter": 13},
+    )
+
+    assert isinstance(mdf.mda, MDAGaussSeidel)
+    assert mdf.mda.settings.max_mda_iter == 13
+    mdf = create_sellar_mdf(
+        main_mda_name="MDAGaussSeidel",
+        main_mda_settings=MDAGaussSeidelSettings(max_mda_iter=13),
+    )
+
+    assert isinstance(mdf.mda, MDAGaussSeidel)
+    assert mdf.mda.settings.max_mda_iter == 13
+
+    msg = (
+        "The MDANewtonRaphson settings model has the wrong type: "
+        "expected MDANewtonRaphsonSettings, got MDAGaussSeidel."
+    )
+    with pytest.raises(TypeError, match=msg):
+        mdf = create_sellar_mdf(
+            main_mda_name="MDANewtonRaphson",
+            main_mda_settings=MDAGaussSeidelSettings(max_mda_iter=13),
+        )

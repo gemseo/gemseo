@@ -161,7 +161,7 @@ def test_save_optimization_history_format(mdf_scenario, file_format, tmp_wd) -> 
 def test_init_mdf(mdf_scenario) -> None:
     assert (
         sorted(["y_12", "y_21", "y_23", "y_31", "y_32"])
-        == mdf_scenario.formulation.mda.strong_couplings
+        == mdf_scenario.formulation.mda.coupling_structure.strong_couplings
     )
 
 

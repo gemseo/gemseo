@@ -166,7 +166,9 @@ def test_xdsmize_mdf(options) -> None:
     """Test xdsmization of Sobieski problem solved with MDF with and without
     constraint."""
 
-    scenario = build_sobieski_scenario(inner_mda_name="MDAGaussSeidel")
+    scenario = build_sobieski_scenario(
+        main_mda_settings={"inner_mda_name": "MDAGaussSeidel"}
+    )
     assert_xdsm(scenario, **options("xdsmized_sobieski_mdf"))
 
     # with constraints
@@ -252,7 +254,7 @@ def test_xdsmize_bilevel(options) -> None:
         apply_cstr_tosub_scenarios=False,
         parallel_scenarios=False,
         apply_cstr_to_system=True,
-        n_processes=5,
+        main_mda_settings={"n_processes": 5},
     )
     system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
     assert_xdsm(system_scenario, **options("xdsmized_sobieski_bilevel"))
@@ -266,8 +268,7 @@ def test_xdsmize_bilevel(options) -> None:
         apply_cstr_tosub_scenarios=False,
         apply_cstr_to_system=True,
         parallel_scenarios=True,
-        n_processes=4,
-        use_threading=True,
+        main_mda_settings={"n_processes": 5, "use_threading": True},
     )
     system_scenario_par.add_constraint(["g_1", "g_2", "g_3"], "ineq")
     assert_xdsm(system_scenario_par, **options("xdsmized_sobieski_bilevel_parallel"))
@@ -709,15 +710,17 @@ def test_xdsmize_mdf_mdoparallelchain(options) -> None:
     ))
     design_space = DesignSpace()
     design_space.add_variable("x")
-    mdachain_parallel_options = {"use_threading": True, "n_processes": 2}
+    mdachain_parallel_settings = {"use_threading": True, "n_processes": 2}
     scenario = MDOScenario(
         disciplines,
         "MDF",
         "y2",
         design_space,
-        mdachain_parallelize_tasks=True,
-        mdachain_parallel_options=mdachain_parallel_options,
-        inner_mda_name="MDAGaussSeidel",
+        main_mda_settings={
+            "mdachain_parallelize_tasks": True,
+            "mdachain_parallel_settings": mdachain_parallel_settings,
+            "inner_mda_name": "MDAGaussSeidel",
+        },
     )
 
     assert_xdsm(scenario, **options("xdsmized_mdf_mdoparallelchain"))

@@ -52,7 +52,7 @@ def test_scalable_disciplines(scalable_problem) -> None:
 @pytest.mark.parametrize(
     ("formulation_name", "options"),
     [
-        ("MDF", {"inner_mda_name": "MDAGaussSeidel"}),
+        ("MDF", {"main_mda_settings": {"inner_mda_name": "MDAGaussSeidel"}}),
         ("IDF", {"start_at_equilibrium": True}),
     ],
 )

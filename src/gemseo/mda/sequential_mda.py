@@ -23,72 +23,62 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
 
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.mda.sequential_mda_settings import MDASequentialSettings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
 
 
 class MDASequential(BaseMDA):
     """A sequence of elementary MDAs."""
 
+    Settings: ClassVar[type[MDASequentialSettings]] = MDASequentialSettings
+    """The pydantic model for the settings."""
+
+    settings: MDASequentialSettings
+    """The settings of the MDA"""
+
     def __init__(
         self,
         disciplines: Sequence[Discipline],
         mda_sequence: Sequence[BaseMDA],
-        name: str = "",
-        max_mda_iter: int = 10,
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        settings_model: MDASequentialSettings | None = None,
+        **settings: Any,
     ) -> None:
         """
         Args:
             mda_sequence: The sequence of MDAs.
         """  # noqa:D205 D212 D415
-        super().__init__(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=name,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            coupling_structure=coupling_structure,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-        )
+        super().__init__(disciplines, settings_model=settings_model, **settings)
         self._compute_input_coupling_names()
+        self._init_mda_sequence(mda_sequence)
 
+    def _init_mda_sequence(self, mda_sequence: Sequence[BaseMDA]) -> None:
+        """Initialize the MDA sequence.
+
+        Args:
+           mda_sequence: The sequence of MDAs to chain.
+        """
         self.mda_sequence = mda_sequence
+        self.settings._sub_mdas = self.mda_sequence
+
+        log_convergence = self.settings.log_convergence
         for mda in self.mda_sequence:
             mda.reset_history_each_run = True
-            self._log_convergence = self._log_convergence or mda.log_convergence
+            log_convergence = log_convergence or mda.settings.log_convergence
 
     @BaseMDA.scaling.setter
     def scaling(self, scaling: BaseMDA.ResidualScaling) -> None:  # noqa: D102
         self._scaling = scaling
         for mda in self.mda_sequence:
             mda.scaling = scaling
-
-    @BaseMDA.log_convergence.setter
-    def log_convergence(self, value: bool) -> None:  # noqa: D102
-        self._log_convergence = value
-        for mda in self.mda_sequence:
-            mda.log_convergence = value
 
     def _run(self) -> None:
         super()._run()
@@ -106,66 +96,5 @@ class MDASequential(BaseMDA):
             # Extend the residual history
             self.residual_history += mda.residual_history
 
-            if mda.normed_residual < self.tolerance:
+            if mda.normed_residual < self.settings.tolerance:
                 break
-
-
-class MDAGSNewton(MDASequential):
-    """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
-
-    def __init__(
-        self,
-        disciplines: Sequence[Discipline],
-        name: str = "",
-        tolerance: float = 1e-6,
-        max_mda_iter: int = 10,
-        linear_solver: str = "DEFAULT",
-        max_mda_iter_gs: int = 3,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: CouplingStructure | None = None,
-        linear_solver_options: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        log_convergence: bool = False,
-        **newton_mda_options: float | str | None,
-    ) -> None:
-        """
-        Args:
-            max_mda_iter_gs: The maximum number of iterations of the Gauss-Seidel MDA.
-            linear_solver: The name of the linear solver for the Newton method.
-            linear_solver_options: The options for the Newton linear solver.
-            log_convergence: Whether to log the MDA convergence,
-                expressed in terms of normed residuals.
-            **newton_mda_options: The options for the Newton MDA.
-        """  # noqa:D205 D212 D415
-        mda_gauss_seidel = MDAGaussSeidel(
-            disciplines,
-            max_mda_iter=max_mda_iter_gs,
-            tolerance=tolerance,
-            log_convergence=log_convergence,
-        )
-
-        mda_newton = MDANewtonRaphson(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            use_lu_fact=use_lu_fact,
-            coupling_structure=coupling_structure,
-            tolerance=tolerance,
-            log_convergence=log_convergence,
-            linear_solver_tolerance=linear_solver_tolerance,
-            linear_solver_options=linear_solver_options,
-            **newton_mda_options,
-        )
-
-        super().__init__(
-            disciplines,
-            [mda_gauss_seidel, mda_newton],
-            max_mda_iter=max_mda_iter,
-            name=name,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            coupling_structure=coupling_structure,
-        )

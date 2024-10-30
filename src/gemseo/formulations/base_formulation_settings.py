@@ -26,7 +26,7 @@ from pydantic import Field
 class BaseFormulationSettings(BaseModel):
     """Base class for the settings of the formulations."""
 
-    model_config = ConfigDict(extra="allow", arbitrary_types_allowed=True)
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
 
     differentiated_input_names_substitute: Sequence[str] = Field(
         default=(),

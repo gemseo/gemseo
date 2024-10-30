@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -23,6 +24,8 @@ from pydantic import PositiveInt
 from pydantic import model_validator
 
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.mda_chain_settings import MDAChainSettings  # noqa: TCH001
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 if TYPE_CHECKING:
@@ -62,20 +65,21 @@ class IDFSettings(BaseFormulationSettings):
         description="Whether an MDA is used to initialize the coupling variables.",
     )
 
-    mda_options_for_start_at_equilibrium: StrKeyMapping = Field(
-        default_factory=dict,
-        description="""The options for the MDA when ``start_at_equilibrium=True``.
+    mda_chain_settings_for_start_at_equilibrium: StrKeyMapping | MDAChainSettings = (
+        Field(
+            default_factory=dict,
+            description="""The settings for the MDA when ``start_at_equilibrium=True``.
 
-        See detailed options in :class:`.MDAChain`.""",
+        See detailed settings in :class:`.MDAChain`.""",
+        )
     )
 
     @model_validator(mode="after")
-    def __update_main_mda_settings(self) -> Self:
-        """Update the ``main_mda_settings`` with ``model_extra``."""
-        if self.model_extra:
-            self.mda_options_for_start_at_equilibrium = dict(
-                self.mda_options_for_start_at_equilibrium
+    def __validate_mda_settings(self) -> Self:
+        """Validate the MDA chain settings."""
+        mda_settings = self.mda_chain_settings_for_start_at_equilibrium
+        if isinstance(mda_settings, Mapping):
+            self.mda_chain_settings_for_start_at_equilibrium = MDAChain.Settings(
+                **mda_settings
             )
-            self.mda_options_for_start_at_equilibrium.update(self.model_extra)
-
         return self

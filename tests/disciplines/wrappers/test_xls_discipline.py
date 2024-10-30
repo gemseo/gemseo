@@ -191,9 +191,11 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
         "obj",
         design_space,
         main_mda_name="MDAChain",
-        inner_mda_name="MDAJacobi",
         scenario_type="DOE",
-        tolerance=1e-14,
+        main_mda_settings={
+            "tolerance": 1e-14,
+            "inner_mda_name": "MDAJacobi",
+        },
     )
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
