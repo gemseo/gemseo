@@ -1,0 +1,2 @@
+Algorithm ``"Augmented_Lagrangian_order_1"`` now updates all the Lagrange multipliers,
+even those which correspond to constraints that are inactive at the current iteration.

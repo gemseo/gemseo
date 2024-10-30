@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
     AugmentedLagrangianPenaltyHeuristic,
@@ -84,36 +83,15 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
     ) -> None:  # noqa:D107
         if self.__lagrange_multiplier_calculator is None:
             self.__lagrange_multiplier_calculator = LagrangeMultipliers(self._problem)
-        lag_ms = self.__lagrange_multiplier_calculator.compute(x_opt)
-        for constraint in self._problem.constraints:
-            if constraint.name in ineq_lag and LagrangeMultipliers.INEQUALITY in lag_ms:
-                for var_compo_name, lag_value in zip(
-                    lag_ms[LagrangeMultipliers.INEQUALITY][0],
-                    lag_ms[LagrangeMultipliers.INEQUALITY][1],
-                ):
-                    if constraint.name in var_compo_name:
-                        if DesignSpace.SEP in var_compo_name:
-                            var_component_index = int(
-                                var_compo_name.replace(constraint.name, "").replace(
-                                    DesignSpace.SEP, ""
-                                )
-                            )
-                            ineq_lag[constraint.name][var_component_index] = lag_value
-                        else:
-                            ineq_lag[constraint.name] = lag_value
 
-            elif constraint.name in eq_lag and LagrangeMultipliers.EQUALITY in lag_ms:
-                for var_compo_name, lag_value in zip(
-                    lag_ms[LagrangeMultipliers.EQUALITY][0],
-                    lag_ms[LagrangeMultipliers.EQUALITY][1],
-                ):
-                    if constraint.name in var_compo_name:
-                        if DesignSpace.SEP in var_compo_name:
-                            var_component_index = int(
-                                var_compo_name.replace(constraint.name, "").replace(
-                                    DesignSpace.SEP, ""
-                                )
-                            )
-                            eq_lag[constraint.name][var_component_index] = lag_value
-                        else:
-                            eq_lag[constraint.name] = lag_value
+        self.__lagrange_multiplier_calculator.compute(x_opt)
+        lag_ms = self.__lagrange_multiplier_calculator.get_multipliers_arrays()
+        for constraint in self._problem.constraints.get_equality_constraints():
+            eq_lag[constraint.name] = lag_ms[LagrangeMultipliers.EQUALITY][
+                constraint.name
+            ]
+
+        for constraint in self._problem.constraints.get_inequality_constraints():
+            ineq_lag[constraint.name] = lag_ms[LagrangeMultipliers.INEQUALITY][
+                constraint.name
+            ]
