@@ -58,8 +58,8 @@ sensitivity_analysis.main_method = "total"
 sensitivity_analysis.compute_indices()
 
 # %%
-# The resulting indices are the first-order and total Sobol' indices:
-pprint.pprint(sensitivity_analysis.indices)
+# The resulting indices are the first-order, second-order and total-order Sobol' indices:
+sensitivity_analysis.indices
 
 # %%
 # They can also be accessed separately:

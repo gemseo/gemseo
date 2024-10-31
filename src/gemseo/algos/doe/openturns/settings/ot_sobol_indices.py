@@ -30,10 +30,7 @@ class OTSobolIndicesSettings(BaseOpenTURNSSettings):
 
     eval_second_order: bool = Field(
         default=True,
-        description=(
-            """Whether to build a DOE to evaluate also the second-order indices.
+        description="""Whether to build a DOE to evaluate also the second-order indices.
 
-            If ``False``, the DOE is designed for first and total-order indices only.
-            """
-        ),
+If ``False``, the DOE is designed for first and total-order indices only.""",
     )

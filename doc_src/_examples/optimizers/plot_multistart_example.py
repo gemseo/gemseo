@@ -72,7 +72,7 @@ scenario.add_constraint("cstr", constraint_type="ineq")
 multistart_settings = MultiStartSettings(
     max_iter=100,
     opt_algo_name="SLSQP",
-    doe_algo_name="fullfact",
+    doe_algo_name="PYDOE_FULLFACT",
     n_start=10,
     # Set multistart_file_path to save the history of the local optima.
     multistart_file_path="multistart.hdf5",

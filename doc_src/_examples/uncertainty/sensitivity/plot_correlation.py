@@ -68,7 +68,7 @@ sensitivity_analysis.compute_indices()
 # - the Standard Regression Coefficients (SRC),
 # - the Standard Rank Regression Coefficient (SRRC),
 # - the Signed Standard Rank Regression Coefficient (SSRRC):
-pprint.pprint(sensitivity_analysis.indices)
+sensitivity_analysis.indices
 
 # %%
 # The main indices corresponds to the Spearman correlation indices

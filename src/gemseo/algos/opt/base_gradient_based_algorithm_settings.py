@@ -33,22 +33,16 @@ class BaseGradientBasedAlgorithmSettings(BaseModel):
 
     kkt_tol_abs: NonNegativeFloat = Field(
         default=inf,
-        description=(
-            """The absolute tolerance on the KKT residual norm.
+        description="""The absolute tolerance on the KKT residual norm.
 
-            If ``inf`` this criterion is not activated.
-            """
-        ),
+If ``inf`` this criterion is not activated.""",
     )
 
     kkt_tol_rel: NonNegativeFloat = Field(
         default=inf,
-        description=(
-            """The relative tolerance on the KKT residual norm.
+        description="""The relative tolerance on the KKT residual norm.
 
-            If ``inf`` this criterion is not activated.
-            """
-        ),
+If ``inf`` this criterion is not activated.""",
     )
 
     @model_validator(mode="after")

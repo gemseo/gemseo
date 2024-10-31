@@ -35,38 +35,31 @@ class BaseDOESettings(BaseDriverSettings):
 
     eval_jac: bool = Field(
         default=False,
-        description="""Whether to evaluate the Jacobian function.""",
+        description="Whether to evaluate the Jacobian function.",
     )
 
     n_processes: PositiveInt = Field(
         default=1,
-        description=(
-            """The maximum number of processes used to parallelize the execution."""
-        ),
+        description="The maximum number of processes to parallelize the execution.",
     )
 
     wait_time_between_samples: NonNegativeFloat = Field(
         default=0.0,
-        description="""The time to wait between each sample evaluation, in seconds.""",
+        description="The time to wait between each sample evaluation, in seconds.",
     )
 
     callbacks: Sequence[
         Annotated[Callable[[int, EvaluationType], Any], WithJsonSchema({})]
     ] = Field(
         default=(),
-        description=(
-            """The functions to be evaluated after each functions evaluation.
+        description="""The functions to be evaluated after each functions evaluation.
 
-            The functions evaluation is done by
-            :meth:`.OptimizationProblem.evaluate_functions` and the callback must be
-            called as ``callback(index, (output, Jacobian))``.
-            """
-        ),
+The functions evaluation is done by
+:meth:`.OptimizationProblem.evaluate_functions` and the callback must be
+called as ``callback(index, (output, Jacobian))``.""",
     )
 
     normalize_design_space: bool = Field(
         default=False,
-        description=(
-            """Whether to normalize the design space variables between 0 and 1."""
-        ),
+        description="Whether to normalize the design space variables between 0 and 1.",
     )

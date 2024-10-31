@@ -41,10 +41,8 @@ class HiGHSDualSimplexSettings(BaseSciPyLinProgSettings):
 
     simplex_dual_edge_weight_strategy: str = Field(
         default="steepest-devex",
-        description=(
-            """Strategy for simplex dual edge weights.
+        description="""Strategy for simplex dual edge weights.
 
-            Available strategies: `dantzig`, `devex`, `steepest` and `steepest-devex`.
-            """
-        ),
+Available strategies: `dantzig`, `devex`, `steepest` and `steepest-devex`.
+""",
     )

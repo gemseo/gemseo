@@ -295,7 +295,7 @@ or sampling the problem, e.g.
        design_space=design_space,
        scenario_type="DOE",
    )
-   doe_scenario.execute(algo_name="lhs", n_samples=100) # DOE case
+   doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100) # DOE case
 
 .. note::
 

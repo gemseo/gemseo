@@ -15,11 +15,17 @@
    Some capabilities may require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
    and some others may depend on :ref:`plugins <plugins>`.
 
-.. note::
+.. warning::
    All the features of the wrapped libraries may not be exposed through |g|.
 
+{% if use_pydantic_model %}
 .. note::
-   The algorithm settings can be passed to a function of the form ``function(..., **settings: Any)``,
+   The algorithm settings can be passed to a function of the form
+
+   .. code-block:: python
+
+      function(..., settings_model: Base | None = None, **settings: Any)
+
    either one by one:
 
    .. code-block:: python
@@ -31,7 +37,9 @@
    .. code-block:: python
 
       settings = AlgorithmSettings(setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
-      function(..., settings=settings)
+      function(..., settings_model=settings)
+
+{% endif %}
 
 {% if user_guide_anchor %}
 .. seealso::
@@ -175,6 +183,8 @@ More details about the algorithm and its settings on {{websites[algo]}}.
 {% endif %}
 
 {% if required_parameters %}
+.. raw:: html
+
     <dl class="field-list simple">
     <dt class="field-odd">Required settings</dt>
     <dd class="field-odd"><ul class="simple">
@@ -195,6 +205,8 @@ More details about the algorithm and its settings on {{websites[algo]}}.
 {% endif %}
 
 {% if optional_parameters %}
+.. raw:: html
+
     <dl class="field-list simple">
     <dt class="field-odd">Optional settings</dt>
     <dd class="field-odd"><ul class="simple">

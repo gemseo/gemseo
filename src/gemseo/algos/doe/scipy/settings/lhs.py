@@ -30,22 +30,16 @@ class LHSSettings(BaseSciPyDOESettings):
 
     scramble: bool = Field(
         default=True,
-        description=(
-            """Whether to use scrambling (Owen type).
+        description="""Whether to use scrambling (Owen type).
 
-            Only available with SciPy >= 1.10.0.
-            """
-        ),
+Only available with SciPy >= 1.10.0.""",
     )
 
     optimization: Optimizer | None = Field(
         default=None,
-        description=(
-            """The name of an optimization scheme to improve the quality of the DOE.
+        description="""The name of an optimization scheme to improve the DOE's quality.
 
-            If ``None``, use the DOE as is. New in SciPy 1.10.0.
-            """
-        ),
+If ``None``, use the DOE as is. New in SciPy 1.10.0.""",
     )
 
     strength: Strength = Field(
@@ -55,10 +49,7 @@ class LHSSettings(BaseSciPyDOESettings):
 
     centered: bool = Field(
         default=False,
-        description=(
-            """Whether to center the samples within the multi-dimensional grid cells.
+        description="""Whether to center the samples within the multi-dimensional grid cells.
 
-            If SciPy >= 1.10.0, this argument is ignored; use ``scramble`` instead.
-            """
-        ),
+If SciPy >= 1.10.0, this argument is ignored; use ``scramble`` instead.""",  # noqa: E501
     )

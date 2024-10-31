@@ -163,7 +163,7 @@ system_scenario.xdsmize(save_html=False, pdf_build=False)
 #    As an alternative, we recommend the method
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
 n_processes = 1 if os_name == "nt" else 4
-system_scenario.execute(algo_name="lhs", n_samples=30, n_processes=n_processes)
+system_scenario.execute(algo_name="PYDOE_LHS", n_samples=30, n_processes=n_processes)
 
 system_scenario.print_execution_metrics()
 

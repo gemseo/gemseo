@@ -32,12 +32,9 @@ class PoissonDiskSettings(BaseSciPyDOESettings):
 
     optimization: Optimizer | None = Field(
         default=None,
-        description=(
-            """The name of an optimization scheme to improve the quality of the DOE.
+        description="""The name of an optimization scheme to improve the DOE's quality.
 
-            If ``None``, use the DOE as is. New in SciPy 1.10.0.
-            """
-        ),
+If ``None``, use the DOE as is. New in SciPy 1.10.0.""",
     )
 
     radius: NonNegativeFloat = Field(
@@ -49,15 +46,12 @@ class PoissonDiskSettings(BaseSciPyDOESettings):
 
     hypersphere: Hypersphere = Field(
         default=Hypersphere.volume,
-        description=(
-            """The sampling strategy to generate potential candidates.
+        description="""The sampling strategy to generate potential candidates.
 
-            The candidates will be added in the final sample.
-            """
-        ),
+The candidates will be added in the final sample.""",
     )
 
     ncandidates: PositiveInt = Field(
         default=30,
-        description="""The number of candidates to sample per iteration.""",
+        description="The number of candidates to sample per iteration.",
     )

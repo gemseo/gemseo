@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Literal
 
 from pydantic import Field
 from pydantic import model_validator
@@ -46,9 +47,7 @@ class BaseSciPyLinProgSettings(BaseOptimizerSettings):
         description=(
             """Whether to perform a preliminary analysis on the problem before solving.
 
-            It attempts to detect infeasibility, unboundedness or problem
-            simplifications.
-            """
+It attempts to detect infeasibility, unboundedness or problem simplifications."""
         ),
     )
 
@@ -57,16 +56,12 @@ class BaseSciPyLinProgSettings(BaseOptimizerSettings):
         description="""Whether to remove linearly dependent equality-constraints.""",
     )
 
-    rr_method: str | None = Field(
+    rr_method: Literal["SVD", "pivot", "ID", None] = Field(
         default=None,
-        description=(
-            """The method to remove redundancy, either 'SVD', 'pivot' or 'ID'.
+        description="""The method to remove redundancy, either 'SVD', 'pivot' or 'ID'.
 
-            If ``None``, use “svd” if the matrix is nearly full rank. If not, uses
-            “pivot”. The behavior of this default is subject to change without prior
-            notice.
-            """
-        ),
+If ``None``, use “SVD” if the matrix is nearly full rank. If not, uses
+“pivot”. The behavior of this default is subject to change without prior notice.""",
     )
 
     _redundant_settings: ClassVar[list[str]] = ["maxiter", "tol"]

@@ -26,7 +26,7 @@ class BaseLinearSolverSettings(BaseAlgorithmSettings):
 
     store_residuals: bool = Field(
         default=False,
-        description="""Whether to store the residual norms at each iterations.""",
+        description="Whether to store the residual norms at each iterations.",
     )
 
     use_ilu_precond: bool = Field(

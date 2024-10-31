@@ -34,6 +34,5 @@ class SVMRegressorSettings(BaseRegressorSettings):
         default="rbf",
         description="""The name of the kernel or a callable for the SVM.
 
-        Examples of names: "linear", "poly", "rbf", "sigmoid", "precomputed".
-        """,
+Examples of names: "linear", "poly", "rbf", "sigmoid", "precomputed".""",
     )

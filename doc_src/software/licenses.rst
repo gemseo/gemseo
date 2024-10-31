@@ -31,11 +31,11 @@ The |g| documentation is licensed under the
 `CC-BY-SA 4.0 International <https://creativecommons.org/licenses/by-sa/4.0/>`_
 licence, with the following exceptions:
 
- - The utility Python and shell scripts in the :file:`doc_src`
-   folder are licensed under the
-   `LGPL-3.0 <https://www.gnu.org/licenses/lgpl-3.0.en.html>`_ license.
- - The examples, tutorials and other code snippets are licensed under the
-   `BSD Zero-clause <https://opensource.org/licenses/0BSD>`_ licence.
+- The utility Python and shell scripts in the :file:`doc_src`
+folder are licensed under the
+`LGPL-3.0 <https://www.gnu.org/licenses/lgpl-3.0.en.html>`_ license.
+- The examples, tutorials and other code snippets are licensed under the
+`BSD Zero-clause <https://opensource.org/licenses/0BSD>`_ licence.
 
 Examples and tutorials
 **********************

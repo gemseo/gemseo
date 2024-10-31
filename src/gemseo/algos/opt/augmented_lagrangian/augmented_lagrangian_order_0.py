@@ -43,7 +43,7 @@ class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
         "Augmented_Lagrangian_order_0": OptimizationAlgorithmDescription(
             algorithm_name="Augmented_Lagrangian_order_0",
-            description=("Augmented Lagrangian algorithm for gradient-less functions."),
+            description="Augmented Lagrangian algorithm for gradient-less functions.",
             internal_algorithm_name="Augmented_Lagrangian",
             handle_equality_constraints=True,
             handle_inequality_constraints=True,

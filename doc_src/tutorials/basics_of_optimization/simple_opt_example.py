@@ -45,7 +45,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="fullfact", n_samples=11**2)
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
 
 opt_results = scenario.optimization_result
 print(f"The solution of P is (x*, f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")

@@ -35,7 +35,6 @@ from numpy import pi as np_pi
 from numpy import sin
 from numpy.testing import assert_equal
 
-from gemseo import AlgorithmFeatures
 from gemseo import DatasetClassName
 from gemseo import compute_doe
 from gemseo import configure
@@ -55,7 +54,6 @@ from gemseo import execute_post
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo import generate_xdsm
-from gemseo import get_algorithm_features
 from gemseo import get_algorithm_options_schema
 from gemseo import get_available_caches
 from gemseo import get_available_disciplines
@@ -860,30 +858,6 @@ def test_configure_default() -> None:
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseDriverLibrary.enable_progress_bar is True
-
-
-def test_algo_features() -> None:
-    """Check that get_algorithm_features returns the features of an optimizer."""
-    expected = AlgorithmFeatures(
-        library_name="SciPy Local",
-        algorithm_name="SLSQP",
-        root_package_name="gemseo",
-        handle_equality_constraints=True,
-        handle_inequality_constraints=True,
-        handle_float_variables=True,
-        handle_integer_variables=False,
-        handle_multiobjective=False,
-        require_gradient=True,
-    )
-    assert get_algorithm_features("SLSQP") == expected
-
-
-def test_algo_features_error() -> None:
-    """Check that asking for the features of a wrong optimizer raises an error."""
-    with pytest.raises(
-        ValueError, match="wrong_name is not the name of an optimization algorithm."
-    ):
-        assert get_algorithm_features("wrong_name")
 
 
 def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:

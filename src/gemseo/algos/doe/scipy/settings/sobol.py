@@ -30,22 +30,16 @@ class SobolSettings(BaseSciPyDOESettings):
 
     optimization: Optimizer | None = Field(
         default=None,
-        description=(
-            """The name of an optimization scheme to improve the quality of the DOE.
+        description="""The name of an optimization scheme to improve the DOE's quality.
 
-            If ``None``, use the DOE as is. New in SciPy 1.10.0.
-            """
-        ),
+If ``None``, use the DOE as is. New in SciPy 1.10.0.""",
     )
 
     scramble: bool = Field(
         default=True,
-        description=(
-            """Whether to use scrambling (Owen type).
+        description="""Whether to use scrambling (Owen type).
 
-            Only available with SciPy >= 1.10.0.
-            """
-        ),
+Only available with SciPy >= 1.10.0.""",
     )
 
     bits: PositiveInt = Field(

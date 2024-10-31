@@ -155,7 +155,7 @@ thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' sett
 
   .. code::
 
-     ['ff2n', 'OT_FACTORIAL', 'OT_FAURE', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'ccdesign', 'OT_SOBOL', 'fullfact', 'OT_FULLFACT', 'OT_AXIAL', 'lhs', 'OT_LHSC', 'OT_MONTE_CARLO', 'OT_RANDOM', 'OT_COMPOSITE', 'CustomDOE', 'pbdesign', 'OT_LHS', 'bbdesign']
+     ['PYDOE_FF2N', 'OT_FACTORIAL', 'OT_FAURE', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'PYDOE_CCDESIGN', 'OT_SOBOL', 'PYDOE_FULLFACT', 'OT_FULLFACT', 'OT_AXIAL', 'lhs', 'OT_LHSC', 'OT_MONTE_CARLO', 'OT_RANDOM', 'OT_COMPOSITE', 'CustomDOE', 'PYDOE_PBDESIGN', 'OT_LHS', 'PYDOE_BBDESIGN']
 
 
 4. Execute the trade-off study
@@ -351,7 +351,7 @@ dictionary of options (including all :term:`DOE` settings) for the main scenario
 
 .. code::
 
-    system_scenario.execute(algo_name="lhs", n_samples=30)
+    system_scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 
 
 Comparison of trade-off results: :ref:`bi-level <bilevel_formulation>` versus :ref:`MDF <mdf_formulation>` formulations

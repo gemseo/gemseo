@@ -45,12 +45,9 @@ class MultiStartSettings(BaseOptimizerSettings):
 
     opt_algo_max_iter: NonNegativeInt = Field(
         default=0,
-        description=(
-            """The maximum number of iterations for each sub-optimization.
+        description="""The maximum number of iterations for each sub-optimization.
 
-            If 0, this number is ``int(max_iter/n_start)``.
-            """
-        ),
+If 0, this number is ``int(max_iter/n_start)``.""",
     )
 
     opt_algo_name: str = Field(
@@ -65,12 +62,9 @@ class MultiStartSettings(BaseOptimizerSettings):
 
     doe_algo_name: str = Field(
         default="LHS",
-        description=(
-            """The name of the DOE algorithm.
+        description="""The name of the DOE algorithm.
 
-            The DOE algorthm is used to generate the sub-optimizations starting points.
-            """
-        ),
+The DOE algorthm is used to generate the sub-optimizations starting points.""",
     )
 
     doe_algo_settings: StrKeyMapping = Field(
@@ -80,12 +74,9 @@ class MultiStartSettings(BaseOptimizerSettings):
 
     multistart_file_path: str | Path = Field(
         default="",
-        description=(
-            """The database file path to save the local optima.
+        description="""The database file path to save the local optima.
 
-            If empty, do not save the local optima.
-            """
-        ),
+If empty, do not save the local optima.""",
     )
 
     n_processes: PositiveInt = Field(

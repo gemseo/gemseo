@@ -49,27 +49,17 @@ class CCDESIGNSettings(BasePyDOESettings):
 
     alpha: Alpha = Field(
         default=Alpha.orthogonal,
-        description=(
-            """A parameter to describe how the variance is distributed.
+        description="""A parameter to describe how the variance is distributed.
 
-            Either "orthogonal" or "rotatable".
-            """
-        ),
+Either "orthogonal" or "rotatable".""",
     )
 
     center: tuple[int, int] = Field(
         default=(4, 4),
-        description=(
-            """The 2-tuple of center points for the central composite design."""
-        ),
+        description="The 2-tuple of center points for the central composite design.",
     )
 
     face: Face = Field(
         default=Face.circumscribed,
-        description=(
-            """The relation between the start points and the corner (factorial) points.
-
-            Either "circumscribed", "inscribed" or "faced".
-            """
-        ),
+        description="The relation between the start and corner (factorial) points.",
     )

@@ -21,45 +21,41 @@
 """
 Coupling graph
 ==============
+
+This example illustrates the notion of coupling graph.
 """
 
 from __future__ import annotations
 
-from numpy import ones
-
 from gemseo import generate_coupling_graph
-from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DummyDiscipline
 
 # %%
 # Create the disciplines
 # ----------------------
-descriptions = {
-    "A": ([f"a{i}" for i in range(500)], ["b"]),
-    "B": (["c"], [f"a{i}" for i in range(500)] + ["n"]),
-    "C": (["b", "d"], ["c", "e"]),
-    "D": (["f"], ["d", "g"]),
-    "E": (["e"], ["f", "h", "o"]),
-    "F": (["g", "j"], ["i"]),
-    "G": (["i", "h"], ["k", "l"]),
-    "H": (["k", "m"], ["j"]),
-    "I": (["l"], ["m", "w"]),
-    "J": (["n", "o"], ["p", "q"]),
-    "K": (["y"], ["x"]),
-    "L": (["w", "x"], ["y", "z"]),
-    "M": (["p", "s"], ["r"]),
-    "N": (["r"], ["t", "u"]),
-    "O": (["q", "t"], ["s", "v"]),
-    "P": (["u", "v", "z"], ["z"]),
-}
-disciplines = []
-data = ones(1)
-for discipline_name, (inputs, outputs) in descriptions.items():
-    inputs = dict.fromkeys(inputs, data)
-    outputs = dict.fromkeys(outputs, data)
-    discipline = Discipline(discipline_name)
-    discipline.input_grammar.update_from_data(dict.fromkeys(inputs, data))
-    discipline.output_grammar.update_from_data(dict.fromkeys(outputs, data))
-    disciplines.append(discipline)
+# First,
+# we create dummy disciplines that do nothing:
+dummy_disciplines = [
+    DummyDiscipline(name=name, input_names=input_names, output_names=output_names)
+    for (name, input_names, output_names) in (
+        ("A", ["a"], ["b"]),
+        ("B", ["c"], ["a", "n"]),
+        ("C", ["b", "d"], ["c", "e"]),
+        ("D", ["f"], ["d", "g"]),
+        ("E", ["e"], ["f", "h", "o"]),
+        ("F", ["g", "j"], ["i"]),
+        ("G", ["i", "h"], ["k", "l"]),
+        ("H", ["k", "m"], ["j"]),
+        ("I", ["l"], ["m", "w"]),
+        ("J", ["n", "o"], ["p", "q"]),
+        ("K", ["y"], ["x"]),
+        ("L", ["w", "x"], ["y", "z"]),
+        ("M", ["p", "s"], ["r"]),
+        ("N", ["r"], ["t", "u"]),
+        ("O", ["q", "t"], ["s", "v"]),
+        ("P", ["u", "v", "z"], ["z"]),
+    )
+]
 
 # %%
 # Generate the coupling graph
@@ -73,9 +69,9 @@ for discipline_name, (inputs, outputs) in descriptions.items():
 # we prefer to display it in this web page
 # by setting ``file_path`` to ``""``
 # (the same would work in a notebook).
-generate_coupling_graph(disciplines, file_path="")
+generate_coupling_graph(dummy_disciplines)
 
 # %%
 # We can also draw the condensed coupling graph,
 # where each groups of strongly coupled disciplines is represented by a node:
-generate_coupling_graph(disciplines, file_path="", full=False)
+generate_coupling_graph(dummy_disciplines, file_path="", full=False)

@@ -35,12 +35,9 @@ class SLSQPSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
 
     iprint: int = Field(
         default=-1,
-        description=(
-            """The flag to control the frequency of output.
+        description="""The flag to control the frequency of output.
 
-            Default is no output.
-            """
-        ),
+Default is no output.""",
     )
 
     _redundant_settings: ClassVar[list[str]] = ["maxiter", "eps"]

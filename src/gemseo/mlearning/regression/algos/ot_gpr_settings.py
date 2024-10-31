@@ -85,10 +85,9 @@ class OTGaussianProcessRegressorSettings(BaseRegressorSettings):
         default=None,
         description="""Whether to use the HMAT or LAPACK as linear algebra method.
 
-        If ``None``,
-        use HMAT when the learning size is greater than
-        :attr:`~.OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK`.
-        """,
+If ``None``,
+use HMAT when the learning size is greater than
+:attr:`~.OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK`.""",
     )
 
     trend: Trend = Field(default=Trend.CONSTANT, description="The name of the trend.")
@@ -102,40 +101,36 @@ class OTGaussianProcessRegressorSettings(BaseRegressorSettings):
         default=None,
         description="""The covariance model parameter space.
 
-        The size of a variable must take into account the size of the output space.
-        If ``None``,
-        the algorithm will use a design space with bounds defined by OpenTURNS.
-    """,
+The size of a variable must take into account the size of the output space.
+If ``None``,
+the algorithm will use a design space with bounds defined by OpenTURNS.""",
     )
 
     covariance_model: Sequence[CovarianceModelType] | CovarianceModelType = Field(
         default=CovarianceModel.MATERN52,
         description="""The covariance model of the Gaussian process.
 
-        Either an OpenTURNS covariance model class,
-        an OpenTURNS covariance model class instance,
-        a name of covariance model,
-        or a list of OpenTURNS covariance model classes,
-        OpenTURNS class instances and covariance model names,
-        whose size is equal to the output dimension.
-        """,
+Either an OpenTURNS covariance model class,
+an OpenTURNS covariance model class instance,
+a name of covariance model,
+or a list of OpenTURNS covariance model classes,
+OpenTURNS class instances and covariance model names,
+whose size is equal to the output dimension.""",
     )
 
     multi_start_n_samples: NonNegativeInt = Field(
         default=10,
         description="""The number of starting points of the multi-start optimizer.
 
-        This optimizer is used for the covariance model parameters.
-        """,
+This optimizer is used for the covariance model parameters.""",
     )
 
     multi_start_algo_name: DOEAlgorithmName = Field(
         default=DOEAlgorithmName.OT_OPT_LHS,
         description="""The name of the DOE algorithm.
 
-        This DOE is used for the multi-start optimization
-        of the covariance model parameters.
-        """,
+This DOE is used for the multi-start optimization
+of the covariance model parameters.""",
     )
 
     multi_start_algo_settings: StrKeyMapping = Field(

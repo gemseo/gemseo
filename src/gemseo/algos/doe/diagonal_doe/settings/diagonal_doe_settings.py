@@ -31,17 +31,14 @@ class DiagonalDOESettings(BaseNSamplesBasedDOESettings):
     n_samples: int = Field(
         2,
         ge=2,
-    )
-    """The number of samples.
+        description="""The number of samples.
 
-    The number of samples must be greater than or equal than 2.
-    """
+The number of samples must be greater than or equal than 2.""",
+    )
 
     reverse: list[str] = Field(
         default_factory=list,
-    )
-    """The dimensions or variables to sample from their upper bounds to their lower
-    bounds.
+        description="""The dimensions or variables to sample from upper to lower bounds.
 
-    If empty, every dimension will be sampled from its lower bound to its upper bound.
-    """
+If empty, every dimension will be sampled from lower to upper bounds.""",
+    )

@@ -34,20 +34,14 @@ class OTFullFactSettings(BaseOpenTURNSSettings):
 
     n_samples: NonNegativeInt = Field(
         default=0,
-        description=(
-            """The number of samples.
+        description="""The number of samples.
 
-            If 0, set from the options.
-            """
-        ),
+If 0, set from the options.""",
     )
 
     levels: PositiveInt | Sequence[PositiveInt] = Field(
         default=(),
-        description=(
-            """The number of levels per input direction.
+        description="""The number of levels per input direction.
 
-            If scalar, this value is applied to each input direction.
-            """
-        ),
+If scalar, this value is applied to each input direction.""",
     )

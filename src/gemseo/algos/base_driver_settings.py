@@ -30,9 +30,8 @@ class BaseDriverSettings(BaseAlgorithmSettings):
         description=(
             """Whether to enable the progress bar in the optimization log.
 
-            If ``None``, use the global value of ``enable_progress_bar`` (see the
-            ``configure`` function to change it globally).
-            """
+If ``None``, use the global value of ``enable_progress_bar`` (see the
+``configure`` function to change it globally)."""
         ),
     )
 
@@ -89,7 +88,7 @@ class BaseDriverSettings(BaseAlgorithmSettings):
         default=True,
         description="""Whether to store the Jacobian matrices in the database.
 
-        This argument is ignored when the ``use_database`` option is ``False``.
-        If a gradient-based algorithm is used,
-        this option cannot be set along with kkt options.""",
+This argument is ignored when the ``use_database`` option is ``False``.
+If a gradient-based algorithm is used,
+this option cannot be set along with kkt options.""",
     )

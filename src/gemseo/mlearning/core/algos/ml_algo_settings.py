@@ -39,16 +39,16 @@ class BaseMLAlgoSettings(BaseModel):
         default_factory=dict,
         description="""The strategies to transform the variables.
 
-                The values are instances of :class:`.BaseTransformer`
-                while the keys are the names of
-                either the variables
-                or the groups of variables,
-                e.g. ``"inputs"`` or ``"outputs"``
-                in the case of the regression algorithms.
-                If a group is specified,
-                the :class:`.BaseTransformer` will be applied
-                to all the variables of this group.
-                If :attr:`.IDENTITY`, do not transform the variables.""",
+The values are instances of :class:`.BaseTransformer`
+while the keys are the names of
+either the variables
+or the groups of variables,
+e.g. ``"inputs"`` or ``"outputs"``
+in the case of the regression algorithms.
+If a group is specified,
+the :class:`.BaseTransformer` will be applied
+to all the variables of this group.
+If :attr:`.IDENTITY`, do not transform the variables.""",
     )
 
     parameters: StrKeyMapping = Field(

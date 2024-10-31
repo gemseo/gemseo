@@ -34,17 +34,13 @@ class FULLFACTSettings(BasePyDOESettings):
         default=0,
         description="""The number of samples.
 
-        If 0, set from the settings.
-        """,
+If 0, set from the settings.""",
     )
 
     levels: Sequence[PositiveInt] | PositiveInt = Field(
         default=(),
-        description=(
-            """The levels.
+        description="""The levels.
 
-            One must either specify ``n_samples`` or ``levels``.  The levels are
-            inferred from the number of samples if the former is specified.
-            """
-        ),
+One must either specify ``n_samples`` or ``levels``.  The levels are
+inferred from the number of samples if the former is specified.""",
     )

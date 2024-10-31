@@ -94,7 +94,7 @@ Precisely, we choose a `full factorial design <https://en.wikipedia.org/wiki/Fac
 
 .. code::
 
-   scenario.execute(algo_name="fullfact", "n_samples": 11**2)
+   scenario.execute(algo_name="PYDOE_FULLFACT", "n_samples": 11**2)
 
 The optimum results can be found in the execution log. It is also possible to
 extract them by invoking the :meth:`~.BaseScenario.get_optimum` method. It

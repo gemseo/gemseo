@@ -86,7 +86,7 @@ class AnalyticDiscipline(Discipline):
         Args:
             expressions: The outputs expressed as functions of the inputs.
             name: The name of the discipline.
-                If ``None``, use the class name.
+                If empty, use the class name.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         self.expressions = expressions

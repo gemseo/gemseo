@@ -52,10 +52,7 @@ class BaseSciPyDOESettings(BaseNSamplesBasedDOESettings):
 
     seed: int | None = Field(
         default=None,
-        description=(
-            """The seed used for reproducibility reasons.
+        description="""The seed used for reproducibility reasons.
 
-            If ``None``, use :attr:`.seed`.
-            """
-        ),
+If ``None``, use :attr:`.seed`.""",
     )

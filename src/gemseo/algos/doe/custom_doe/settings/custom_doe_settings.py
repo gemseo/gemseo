@@ -46,23 +46,17 @@ class CustomDOESettings(BaseDOESettings):
 
     doe_file: str | Path = Field(
         default="",
-        description=(
-            """The path to the file containing the input samples.
+        description="""The path to the file containing the input samples.
 
-            If empty, use ``samples``.
-            """
-        ),
+If empty, use ``samples``.""",
     )
 
     samples: SamplesType = Field(
         default_factory=dict,
-        description=(
-            """The input samples.
+        description="""The input samples.
 
-            They must be at least a 2D-array, a dictionary of 2D-arrays
-            or a list of dictionaries of 1D-arrays. If empty, use ``doe_file``.
-            """
-        ),
+They must be at least a 2D-array, a dictionary of 2D-arrays
+or a list of dictionaries of 1D-arrays. If empty, use ``doe_file``.""",
     )
 
     delimiter: str = Field(
@@ -72,12 +66,9 @@ class CustomDOESettings(BaseDOESettings):
 
     comments: str | Sequence[str] = Field(
         default="#",
-        description=(
-            """The (list of) characters used to indicate the start of a comment.
+        description="""The (list of) characters used to indicate the start of a comment.
 
-            No comments if empty.
-            """
-        ),
+No comments if empty.""",
     )
 
     skiprows: NonNegativeInt = Field(

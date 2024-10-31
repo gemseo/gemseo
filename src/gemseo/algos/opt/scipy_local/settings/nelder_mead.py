@@ -44,13 +44,9 @@ class NelderMeadSettings(BaseScipyLocalSettings):
 
     initial_simplex: Sequence[float] | NDArrayPydantic[float] | None = Field(
         default=None,
-        description=(
-            """The initial simplex.
+        description="""The initial simplex.
 
-            If provided, the expected shape is `(N+1, N)` where `N` is the problem
-            dimension.
-            """
-        ),
+If provided, the expected shape is `(N+1, N)` where `N` is the problem dimension.""",
     )
 
     adaptive: bool = Field(

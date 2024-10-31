@@ -65,56 +65,50 @@ class PCERegressorSettings(BaseRegressorSettings):
         default=None,
         description="""The discipline to be sampled.
 
-        Used only when ``use_quadrature`` is ``True`` and ``data`` is ``None``.
-        """,
+Used only when ``use_quadrature`` is ``True`` and ``data`` is ``None``.""",
     )
 
     use_quadrature: bool = Field(
         default=False,
         description="""Whether to estimate the coefficients of the PCE by quadrature.
 
-        If so,
-        use the quadrature points stored in ``data`` or sample ``discipline``.
-        Otherwise,
-        estimate the coefficients by least-squares regression.
-    """,
+If so,
+use the quadrature points stored in ``data`` or sample ``discipline``.
+Otherwise,
+estimate the coefficients by least-squares regression.""",
     )
 
     use_lars: bool = Field(
         default=False,
         description="""Whether to use the `LARS`_ algorithm.
 
-        This argument is ignored when ``use_quadrature`` is ``True``.
-        """,
+This argument is ignored when ``use_quadrature`` is ``True``.""",
     )
 
     use_cleaning: bool = Field(
         default=False,
         description="""Whether to use the `CleaningStrategy`_ algorithm.
 
-        Otherwise,
-        use a fixed truncation strategy (`FixedStrategy`_).
-        """,
+Otherwise,
+use a fixed truncation strategy (`FixedStrategy`_).""",
     )
 
     hyperbolic_parameter: PositiveFloat = Field(
         default=1.0,
         description="""The :math:`q`-quasi norm parameter of the `hyperbolic and
-        anisotropic enumerate function`_, defined over the interval
-        :math:`]0,1]`.""",
+anisotropic enumerate function`_, defined over the interval:math:`]0,1]`.""",
     )
 
     n_quadrature_points: NonNegativeInt = Field(
         default=0,
         description="""The total number of quadrature points.
 
-        These points are used
-        to compute the marginal number of points by input dimension
-        when ``discipline`` is not ``None``.
-        If ``0``, use :math:`(1+P)^d` points,
-        where :math:`d` is the dimension of the input space
-        and :math:`P` is the polynomial degree of the PCE.
-        """,
+These points are used
+to compute the marginal number of points by input dimension
+when ``discipline`` is not ``None``.
+If ``0``, use :math:`(1+P)^d` points,
+where :math:`d` is the dimension of the input space
+and :math:`P` is the polynomial degree of the PCE.""",
     )
 
     cleaning_options: CleaningOptions | None = Field(

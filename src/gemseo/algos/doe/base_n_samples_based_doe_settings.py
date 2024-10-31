@@ -25,4 +25,4 @@ from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 class BaseNSamplesBasedDOESettings(BaseDOESettings):
     """The settings for DOE algorithms that require a defined number of samples."""
 
-    n_samples: PositiveInt = Field(description="""The number of samples.""")
+    n_samples: PositiveInt = Field(description="The number of samples.")

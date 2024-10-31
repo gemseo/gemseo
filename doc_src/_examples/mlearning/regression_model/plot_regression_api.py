@@ -68,7 +68,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="fullfact", n_samples=9)
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
 
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", data=dataset)

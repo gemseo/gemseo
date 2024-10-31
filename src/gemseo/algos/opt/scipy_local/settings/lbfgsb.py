@@ -51,12 +51,9 @@ class LBFGSBSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings)
 
     iprint: int = Field(
         default=-1,
-        description=(
-            """The flag to control the frequency of output.
+        description="""The flag to control the frequency of output.
 
-            Default is no output.
-            """
-        ),
+Default is no output.""",
     )
 
     maxls: PositiveInt = Field(

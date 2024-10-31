@@ -39,7 +39,7 @@ Most of the DOE algorithms also need the number of samples when calling :meth:`~
 
     >>> from gemseo.algos.doe.lib_pydoe import PyDOE
     >>> pydoe_library = PyDOE()
-    >>> optimization_result = pydoe_library.execute(problem, algo_name="lhs", n_samples=100)
+    >>> optimization_result = pydoe_library.execute(problem, algo_name="PYDOE_LHS", n_samples=100)
 
 In the presence of an :class:`.OptimizationProblem`,
 it is advisable to apply DOE algorithms with the function :func:`.execute_algo`
@@ -48,7 +48,7 @@ which returns an :class:`.OptimizationResult`:
 .. code::
 
     >>> from gemseo import execute_algo
-    >>> optimization_result = execute_algo(problem, "lhs", algo_type="doe", n_samples=100)
+    >>> optimization_result = execute_algo(problem, "PYDOE_LHS", algo_type="doe", n_samples=100)
 
 In the presence of an :class:`.Discipline`,
 it is advisable to create a :class:`.DOEScenario` with the function :func:`.create_scenario`
@@ -56,7 +56,7 @@ and pass the DOE algorithm to :meth:`.DOEScenario.execute`:
 
 .. code::
 
-    >>> doe_scenario.execute(algo_name="lhs", n_samples=100)
+    >>> doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 Algorithms
 ----------
@@ -86,21 +86,21 @@ These DOE algorithms can be classified into categories:
   the range of each input is partitioned into :math:`N` equal intervals and,
   for each interval,
   one and only one of the points has its corresponding input value inside the interval;
-  the algorithms are ``"lhs"``, ``"OT_LHS"`` and ``"OT_LHSC"``,
+  the algorithms are ``"PYDOE_LHS"``, ``"OT_LHS"`` and ``"OT_LHSC"``,
 - the optimized LHS is an LHS optimized by Monte Carlo replicates or simulated annealing;
   the algorithm is ``"OT_OPT_LHS"``,
 - the stratified DOEs makes the inputs, also called *factors*, vary by level;
 
   - a full factorial DOE considers all the possible combinations of these levels across all the inputs;
-    the algorithms are ``"ff2n"``, ``"fullfact"`` and ``"OT_FULLFACT"``;
+    the algorithms are ``"PYDOE_FF2N"``, ``"PYDOE_FULLFACT"`` and ``"OT_FULLFACT"``;
   - a factorial DOE samples the diagonals of the input space, symmetrically with respect to its center;
     the algorithm is ``"OT_FACTORIAL"``;
   - an axial DOE samples the axes of the input space, symmetrically with respect to its center;
     the algorithm is ``"OT_AXIAL"``;
   - a central composite DOE combines a factorial and an axial DOEs;
-    the algorithms are ``"OT_COMPOSITE"`` and ``"ccdesign"``;
+    the algorithms are ``"OT_COMPOSITE"`` and ``"PYDOE_CCDESIGN"``;
   - Box–Behnken and Plackett-Burman DOEs for response surface methodology;
-    the algorithms are ``"bbdesign"`` and ``"pbdesign"``.
+    the algorithms are ``"PYDOE_BBDESIGN"`` and ``"PYDOE_PBDESIGN"``.
 
 |g| also offers a :class:`.CustomDOE` to set its own input values,
 either as a CSV file or a two-dimensional NumPy array.

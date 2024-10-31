@@ -33,32 +33,32 @@ class BiLevelSettings(MDFSettings):
     multithread_scenarios: bool = Field(
         default=True,
         description="""If ``True`` and parallel_scenarios=True,
-        the sub-scenarios are run in parallel using multi-threading;
-        if False and parallel_scenarios=True, multiprocessing is used.""",
+the sub-scenarios are run in parallel using multi-threading;
+if False and parallel_scenarios=True, multiprocessing is used.""",
     )
 
     apply_cstr_tosub_scenarios: bool = Field(
         default=True,
         description="""Whether the :meth:`.add_constraint` method
-        adds the constraint to the optimization problem of the sub-scenario
-        capable of computing the constraint.""",
+adds the constraint to the optimization problem of the sub-scenario
+capable of computing the constraint.""",
     )
 
     apply_cstr_to_system: bool = Field(
         default=True,
         description="""Whether the :meth:`.add_constraint` method adds
-        the constraint to the optimization problem of the system scenario.""",
+the constraint to the optimization problem of the system scenario.""",
     )
 
     reset_x0_before_opt: bool = Field(
         default=False,
         description="""Whether to restart the sub optimizations
-        from the initial guesses, otherwise warm start them.""",
+from the initial guesses, otherwise warm start them.""",
     )
 
     sub_scenarios_log_level: int | None = Field(
         default=None,
         description="""The level of the root logger
-        during the sub-scenarios executions.
-        If ``None``, do not change the level of the root logger.""",
+during the sub-scenarios executions.
+If ``None``, do not change the level of the root logger.""",
     )

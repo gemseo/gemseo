@@ -148,7 +148,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="lhs", n_samples=100)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
 # We can export the optimization problem to a :class:`.Dataset`:
@@ -180,7 +180,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="lhs", n_samples=100)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
 # Finally,
