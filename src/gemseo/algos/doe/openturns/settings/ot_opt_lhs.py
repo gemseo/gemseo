@@ -38,32 +38,24 @@ class OTOptLHSSettings(BaseOpenTURNSSettings):
 
     temperature: TemperatureProfile = Field(
         default=TemperatureProfile.GEOMETRIC,
-        description=(
-            """The temperature profile for simulated annealing.
+        description="""The temperature profile for simulated annealing.
 
-            Either "Geometric" or "Linear".
-            """
-        ),
+Either "Geometric" or "Linear".""",
     )
 
     criterion: SpaceFillingCriterion = Field(
         default=SpaceFillingCriterion.C2,
-        description=(
-            """The space-filling criterion, either "C2", "PhiP" or "MinDist."""
-        ),
+        description="The space-filling criterion.",
     )
 
     annealing: bool = Field(
         default=True,
-        description=(
-            """Whether to use simulated annealing to optimize the LHS.
+        description="""Whether to use simulated annealing to optimize the LHS.
 
-            If ``False``, the crude Monte Carlo method is used.
-            """
-        ),
+If ``False``, the crude Monte Carlo method is used.""",
     )
 
     n_replicates: PositiveInt = Field(
         default=1_000,
-        description="""The number of Monte Carlo replicates to optimize LHS.""",
+        description="The number of Monte Carlo replicates to optimize LHS.",
     )

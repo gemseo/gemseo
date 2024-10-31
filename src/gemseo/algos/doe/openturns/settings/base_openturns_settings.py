@@ -31,7 +31,7 @@ class BaseOpenTURNSSettings(BaseNSamplesBasedDOESettings):
         description=(
             """The seed used for reproducibility reasons.
 
-            If ``None``, use :class:`~.BaseDOELibrary.seed`.
-            """
+If ``None``, use :class:`~.BaseDOELibrary.seed`.
+"""
         ),
     )

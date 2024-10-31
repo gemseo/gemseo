@@ -108,5 +108,5 @@ execute_post(problem, "OptHistoryView", save=False, show=True)
 # We can also see this optimization problem as a trade-off problem
 # and solve it by means of a design of experiments (DOE).
 problem.reset()
-optimization_result = execute_algo(problem, "lhs", n_samples=10, algo_type="doe")
+optimization_result = execute_algo(problem, "PYDOE_LHS", n_samples=10, algo_type="doe")
 optimization_result

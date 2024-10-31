@@ -72,7 +72,7 @@ problem.objective = objective
 # We can see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE),
 # e.g. full factorial design
-execute_algo(problem, "fullfact", n_samples=11**2, algo_type="doe")
+execute_algo(problem, "PYDOE_FULLFACT", n_samples=11**2, algo_type="doe")
 
 # %%
 # Post-process the results

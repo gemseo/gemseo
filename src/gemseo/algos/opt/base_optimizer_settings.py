@@ -47,12 +47,9 @@ class BaseOptimizerSettings(BaseDriverSettings):
 
     scaling_threshold: NonNegativeFloat | None = Field(
         default=None,
-        description=(
-            """The threshold on the reference function value that triggers scaling.
+        description="""The threshold on the reference function value that triggers scaling.
 
-            If ``None``, do not scale the functions.
-            """
-        ),
+If ``None``, do not scale the functions.""",  # noqa: E501
     )
 
     stop_crit_n_x: int = Field(
@@ -76,9 +73,8 @@ class BaseOptimizerSettings(BaseDriverSettings):
     _redundant_settings: ClassVar[list[str]] = []
     """The settings that has a GEMSEO counterpart.
 
-    If such a setting is passed to the library by the end-user, it will be removed. The
-    user should rather use the corresponding setting from GEMSEO.
-    """
+If such a setting is passed to the library by the end-user, it will be removed.
+The user should rather use the corresponding setting from GEMSEO."""
 
     @model_validator(mode="before")
     @classmethod

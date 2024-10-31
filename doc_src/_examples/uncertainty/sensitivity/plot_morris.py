@@ -61,7 +61,7 @@ sensitivity_analysis.compute_indices()
 # %%
 # The resulting indices are the empirical means and the standard deviations
 # of the absolute output variations due to input changes.
-pprint.pprint(sensitivity_analysis.indices)
+sensitivity_analysis.indices
 
 # %%
 # The main indices corresponds to these empirical means

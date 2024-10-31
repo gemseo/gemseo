@@ -100,7 +100,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="fullfact", n_samples=25)
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)
 scenario.post_process(
     post_name="ScatterPlotMatrix",
     variable_names=["x1", "x2", "y"],
@@ -154,4 +154,4 @@ scenario = create_scenario(
     formulation_name="DisciplinaryOpt",
 )
 monitor_scenario(scenario, Observer())
-scenario.execute(algo_name="fullfact", n_samples=25)
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)

@@ -164,7 +164,7 @@ system_scenario.xdsmize(save_html=False, pdf_build=False)
 # Run the scenario
 # ----------------
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
-system_scenario.execute(algo_name="fullfact", n_samples=50)
+system_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=50)
 system_scenario.post_process(
     post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )

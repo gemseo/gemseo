@@ -105,42 +105,42 @@ MDO processes
   `#558 <https://gitlab.com/gemseo/dev/gemseo/-/issues/558>`_
 - ``Scenario.xdsmize``
 
-    - Rename ``latex_output`` to ``save_pdf``.
-    - Rename ``html_output`` to ``save_html``.
-    - Rename ``json_output`` to ``save_json``.
-    - Rename ``open_browser`` to ``show_html``.
-    - Rename ``outfilename`` to ``file_name`` and do not use suffix.
-    - Rename ``outdir`` to ``directory_path``.
+  - Rename ``latex_output`` to ``save_pdf``.
+  - Rename ``html_output`` to ``save_html``.
+  - Rename ``json_output`` to ``save_json``.
+  - Rename ``open_browser`` to ``show_html``.
+  - Rename ``outfilename`` to ``file_name`` and do not use suffix.
+  - Rename ``outdir`` to ``directory_path``.
 
 - ``XDSMizer``
 
-    - Rename ``latex_output`` to ``save_pdf``.
-    - Rename ``open_browser`` to ``show_html``.
-    - Rename ``output_dir`` to ``directory_path``.
-    - Rename ``XDSMizer.outdir`` to ``XDSMizer.directory_path``.
-    - Rename ``XDSMizer.outfilename`` to ``XDSMizer.json_file_name``.
-    - Rename ``XDSMizer.latex_output`` to ``XDSMizer.save_pdf``.
+  - Rename ``latex_output`` to ``save_pdf``.
+  - Rename ``open_browser`` to ``show_html``.
+  - Rename ``output_dir`` to ``directory_path``.
+  - Rename ``XDSMizer.outdir`` to ``XDSMizer.directory_path``.
+  - Rename ``XDSMizer.outfilename`` to ``XDSMizer.json_file_name``.
+  - Rename ``XDSMizer.latex_output`` to ``XDSMizer.save_pdf``.
 
 - ``XDSMizer.monitor``
 
-    - Rename ``latex_output`` to ``save_pdf``.
-    - Rename ``outfilename`` to ``file_name`` and do not use suffix.
-    - Rename ``outdir`` to ``directory_path``.
+  - Rename ``latex_output`` to ``save_pdf``.
+  - Rename ``outfilename`` to ``file_name`` and do not use suffix.
+  - Rename ``outdir`` to ``directory_path``.
 
 - ``XDSMizer.run``
 
-    - Rename ``latex_output`` to ``save_pdf``.
-    - Rename ``html_output`` to ``save_html``.
-    - Rename ``json_output`` to ``save_json``.
-    - Rename ``open_browser`` to ``show_html``.
-    - Rename ``outfilename`` to ``file_name`` and do not use suffix.
-    - Rename ``outdir`` to ``directory_path`` and use ``"."`` as default value.
+  - Rename ``latex_output`` to ``save_pdf``.
+  - Rename ``html_output`` to ``save_html``.
+  - Rename ``json_output`` to ``save_json``.
+  - Rename ``open_browser`` to ``show_html``.
+  - Rename ``outfilename`` to ``file_name`` and do not use suffix.
+  - Rename ``outdir`` to ``directory_path`` and use ``"."`` as default value.
 
 - ``StudyAnalysis.generate_xdsm``
 
-    - Rename ``latex_output`` to ``save_pdf``.
-    - Rename ``open_browser`` to ``show_html``.
-    - Rename ``output_dir`` to ``directory_path``.
+  - Rename ``latex_output`` to ``save_pdf``.
+  - Rename ``open_browser`` to ``show_html``.
+  - Rename ``output_dir`` to ``directory_path``.
 
 - ``CouplingStructure.plot_n2_chart``: rename ``open_browser`` to ``show_html``.
 - ``N2HTML``: rename ``open_browser`` to ``show_html``.
@@ -266,16 +266,16 @@ MDO processes
 - Renamed ``GradientApproximationFactory`` to ``GradientApproximatorFactory`` and moved it to the module ``gradient_approximator_factory.py``,
 - Moved the duplicated functions to ``error_estimators.py``:
 
-    - ``finite_differences.comp_best_step``
-    - ``finite_differences.compute_truncature_error``
-    - ``finite_differences.compute_cancellation_error``
-    - ``finite_differences.approx_hess``
-    - ``derivatives_approx.comp_best_step``
-    - ``derivatives_approx.compute_truncature_error``
-    - ``derivatives_approx.compute_cancellation_error``
-    - ``derivatives_approx.approx_hess``
-    - ``comp_best_step`` was renamed to ``compute_best_step``
-    - ``approx_hess`` was renamed to ``compute_hessian_approximation``
+  - ``finite_differences.comp_best_step``
+  - ``finite_differences.compute_truncature_error``
+  - ``finite_differences.compute_cancellation_error``
+  - ``finite_differences.approx_hess``
+  - ``derivatives_approx.comp_best_step``
+  - ``derivatives_approx.compute_truncature_error``
+  - ``derivatives_approx.compute_cancellation_error``
+  - ``derivatives_approx.approx_hess``
+  - ``comp_best_step`` was renamed to ``compute_best_step``
+  - ``approx_hess`` was renamed to ``compute_hessian_approximation``
 
   `#735 <https://gitlab.com/gemseo/dev/gemseo/-/issues/735>`_
 
@@ -662,10 +662,10 @@ API changes that impact user scripts code
 - The :class:`.BiLevel` formulation now takes ``main_mda_name`` as argument instead of ``mda_name``. It is now possible to explicitly define an ``inner_mda_name`` as well.
 - In :class:`.DesignSpace`:
 
-    - ``get_current_x``  has been renamed to :meth:`~.DesignSpace.get_current_value`.
-    - ``has_current_x``  has been renamed to :meth:`~.DesignSpace.has_current_value`.
-    - ``set_current_x``  has been renamed to :meth:`~.DesignSpace.set_current_value`.
-    - Remove ``get_current_x_normalized`` and ``get_current_x_dict``.
+  - ``get_current_x``  has been renamed to :meth:`~.DesignSpace.get_current_value`.
+  - ``has_current_x``  has been renamed to :meth:`~.DesignSpace.has_current_value`.
+  - ``set_current_x``  has been renamed to :meth:`~.DesignSpace.set_current_value`.
+  - Remove ``get_current_x_normalized`` and ``get_current_x_dict``.
 
 - The short names of some machine learning algorithms have been replaced by conventional acronyms.
 - :meth:`.MatlabDiscipline.__init__`: ``input_data_list`` and ``output_data_list``  has been renamed to ``input_names`` and ``output_names``.
@@ -693,19 +693,19 @@ API changes that impact discipline wrappers
 
 - In Grammar:
 
-    - ``update_from`` has been renamed to :meth:`~.BaseGrammar.update`.
-    - ``remove_item(name)`` has been replaced by ``del grammar[name]``.
-    - ``get_data_names`` has been renamed to :meth:`~.BaseGrammar.keys`.
-    - ``initialize_from_data_names`` has been renamed to :meth:`~.BaseGrammar.update`.
-    - ``initialize_from_base_dict`` has been renamed to :meth:`~.BaseGrammar.update_from_data`.
-    - ``update_from_if_not_in`` has been renamed to now use :meth:`~.BaseGrammar.update` with ``exclude_names``.
-    - ``set_item_value`` has been removed.
-    - ``remove_required(name)`` has been replaced by ``required_names.remove(name)``.
-    - ``data_names`` has been renamed to :meth:`~.BaseGrammar.keys`.
-    - ``data_types`` has been renamed to :meth:`~.BaseGrammar.values`.
-    - ``update_elements`` has been renamed to :meth:`~.BaseGrammar.update`.
-    - ``update_required_elements`` has been removed.
-    - ``init_from_schema_file`` has been renamed to :meth:`~.BaseGrammar.update_from_file`.
+  - ``update_from`` has been renamed to :meth:`~.BaseGrammar.update`.
+  - ``remove_item(name)`` has been replaced by ``del grammar[name]``.
+  - ``get_data_names`` has been renamed to :meth:`~.BaseGrammar.keys`.
+  - ``initialize_from_data_names`` has been renamed to :meth:`~.BaseGrammar.update`.
+  - ``initialize_from_base_dict`` has been renamed to :meth:`~.BaseGrammar.update_from_data`.
+  - ``update_from_if_not_in`` has been renamed to now use :meth:`~.BaseGrammar.update` with ``exclude_names``.
+  - ``set_item_value`` has been removed.
+  - ``remove_required(name)`` has been replaced by ``required_names.remove(name)``.
+  - ``data_names`` has been renamed to :meth:`~.BaseGrammar.keys`.
+  - ``data_types`` has been renamed to :meth:`~.BaseGrammar.values`.
+  - ``update_elements`` has been renamed to :meth:`~.BaseGrammar.update`.
+  - ``update_required_elements`` has been removed.
+  - ``init_from_schema_file`` has been renamed to :meth:`~.BaseGrammar.update_from_file`.
 
 API changes that affect plugin or features developers
 -----------------------------------------------------
@@ -714,19 +714,19 @@ API changes that affect plugin or features developers
 - ``gemseo.utils.data_conversion.FLAT_JAC_SEP``  has been renamed to :attr:`.STRING_SEPARATOR`.
 - In :mod:`gemseo.utils.data_conversion`:
 
-    - ``DataConversion.dict_to_array``  has been renamed to :func:`.concatenate_dict_of_arrays_to_array`.
-    - ``DataConversion.list_of_dict_to_array`` removed.
-    - ``DataConversion.array_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
-    - ``DataConversion.jac_2dmat_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
-    - ``DataConversion.jac_3dmat_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
-    - ``DataConversion.dict_jac_to_2dmat`` removed.
-    - ``DataConversion.dict_jac_to_dict``  has been renamed to :func:`.flatten_nested_dict`.
-    - ``DataConversion.flat_jac_name`` removed.
-    - ``DataConversion.dict_to_jac_dict``  has been renamed to :func:`.nest_flat_bilevel_dict`.
-    - ``DataConversion.update_dict_from_array``  has been renamed to :func:`.update_dict_of_arrays_from_array`.
-    - ``DataConversion.deepcopy_datadict``  has been renamed to :func:`.deepcopy_dict_of_arrays`.
-    - ``DataConversion.get_all_inputs``  has been renamed to :func:`.get_all_inputs`.
-    - ``DataConversion.get_all_outputs``  has been renamed to :func:`.get_all_outputs`.
+  - ``DataConversion.dict_to_array``  has been renamed to :func:`.concatenate_dict_of_arrays_to_array`.
+  - ``DataConversion.list_of_dict_to_array`` removed.
+  - ``DataConversion.array_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
+  - ``DataConversion.jac_2dmat_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
+  - ``DataConversion.jac_3dmat_to_dict``  has been renamed to :func:`.split_array_to_dict_of_arrays`.
+  - ``DataConversion.dict_jac_to_2dmat`` removed.
+  - ``DataConversion.dict_jac_to_dict``  has been renamed to :func:`.flatten_nested_dict`.
+  - ``DataConversion.flat_jac_name`` removed.
+  - ``DataConversion.dict_to_jac_dict``  has been renamed to :func:`.nest_flat_bilevel_dict`.
+  - ``DataConversion.update_dict_from_array``  has been renamed to :func:`.update_dict_of_arrays_from_array`.
+  - ``DataConversion.deepcopy_datadict``  has been renamed to :func:`.deepcopy_dict_of_arrays`.
+  - ``DataConversion.get_all_inputs``  has been renamed to :func:`.get_all_inputs`.
+  - ``DataConversion.get_all_outputs``  has been renamed to :func:`.get_all_outputs`.
 
 - ``DesignSpace.get_current_value`` can now return a dictionary of NumPy arrays or normalized design values.
 - The method ``MDOFormulation.check_disciplines`` has been removed.
@@ -739,8 +739,8 @@ API changes that affect plugin or features developers
 
 - In :class:`.ParallelExecution`:
 
-    - ``input_data_list`` has been renamed to :attr:`~.ParallelExecution.input_values`.
-    - ``worker_list`` has been renamed to :attr:`~.ParallelExecution.workers`.
+  - ``input_data_list`` has been renamed to :attr:`~.ParallelExecution.input_values`.
+  - ``worker_list`` has been renamed to :attr:`~.ParallelExecution.workers`.
 
 - In Grammar, ``is_type_array`` has been renamed to :meth:`~.BaseGrammar.is_array`.
 
@@ -749,23 +749,23 @@ Internal changes that rarely or not affect users
 
 - In Grammar:
 
-    - ``load_data`` has been renamed to :meth:`~.BaseGrammar.validate`.
-    - ``is_data_name_existing(name)`` has been renamed to ``name in grammar``.
-    - ``is_all_data_names_existing(names)`` has been replaced by ``set(names) <= set(keys())``.
-    - ``to_simple_grammar`` has been renamed to :meth:`~.BaseGrammar.convert_to_simple_grammar`.
-    - ``is_required(name)`` has been renamed to ``name in required_names``.
-    - ``write_schema`` has been renamed to :meth:`~.BaseGrammar.write`.
-    - ``schema_dict`` has been renamed to :attr:`~.BaseGrammar.schema`.
-    - ``JSONGrammar`` class attributes removed has been renamed to ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``.
-    - ``AbstractGrammar`` has been renamed to :class:`.BaseGrammar`.
+  - ``load_data`` has been renamed to :meth:`~.BaseGrammar.validate`.
+  - ``is_data_name_existing(name)`` has been renamed to ``name in grammar``.
+  - ``is_all_data_names_existing(names)`` has been replaced by ``set(names) <= set(keys())``.
+  - ``to_simple_grammar`` has been renamed to :meth:`~.BaseGrammar.convert_to_simple_grammar`.
+  - ``is_required(name)`` has been renamed to ``name in required_names``.
+  - ``write_schema`` has been renamed to :meth:`~.BaseGrammar.write`.
+  - ``schema_dict`` has been renamed to :attr:`~.BaseGrammar.schema`.
+  - ``JSONGrammar`` class attributes removed has been renamed to ``PROPERTIES_FIELD``, ``REQUIRED_FIELD``, ``TYPE_FIELD``, ``OBJECT_FIELD``, ``TYPES_MAP``.
+  - ``AbstractGrammar`` has been renamed to :class:`.BaseGrammar`.
 
 - ``AnalyticDiscipline.expr_symbols_dict``  has been renamed to :attr:`.AnalyticDiscipline.output_names_to_symbols`.
 - ``AtomicExecSequence.get_state_dict``  has been renamed to :meth:`AtomicExecSequence.get_statuses`.
 
 - In :class:`.CompositeExecSequence`:
 
-    - ``CompositeExecSequence.get_state_dict``  has been renamed to :meth:`CompositeExecSequence.get_statuses`.
-    - ``CompositeExecSequence.sequence_list``  has been renamed to :attr:`CompositeExecSequence.sequences`.
+  - ``CompositeExecSequence.get_state_dict``  has been renamed to :meth:`CompositeExecSequence.get_statuses`.
+  - ``CompositeExecSequence.sequence_list``  has been renamed to :attr:`CompositeExecSequence.sequences`.
 
 - Remove ``gemseo.utils.multi_processing``.
 

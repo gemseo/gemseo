@@ -44,7 +44,6 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import NamedTuple
 
 from numpy import ndarray
 
@@ -1643,56 +1642,6 @@ def _log_settings() -> str:
         add_not_prefix(BaseDriverLibrary.enable_progress_bar),
     )
     return str(text)
-
-
-class AlgorithmFeatures(NamedTuple):
-    """The features of an algorithm."""
-
-    algorithm_name: str
-    library_name: str
-    root_package_name: str
-    handle_equality_constraints: bool
-    handle_inequality_constraints: bool
-    handle_float_variables: bool
-    handle_integer_variables: bool
-    handle_multiobjective: bool
-    require_gradient: bool
-
-
-def get_algorithm_features(
-    algorithm_name: str,
-) -> AlgorithmFeatures:
-    """Return the features of an optimization algorithm.
-
-    Args:
-        algorithm_name: The name of the optimization algorithm.
-
-    Returns:
-        The features of the optimization algorithm.
-
-    Raises:
-        ValueError: When the optimization algorithm does not exist.
-    """
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
-
-    factory = OptimizationLibraryFactory()
-    if not factory.is_available(algorithm_name):
-        msg = f"{algorithm_name} is not the name of an optimization algorithm."
-        raise ValueError(msg)
-
-    driver = factory.create(algorithm_name)
-    description = driver.ALGORITHM_INFOS[algorithm_name]
-    return AlgorithmFeatures(
-        algorithm_name=description.algorithm_name,
-        library_name=description.library_name,
-        root_package_name=factory.get_library_name(driver.__class__.__name__),
-        handle_equality_constraints=description.handle_equality_constraints,
-        handle_inequality_constraints=description.handle_inequality_constraints,
-        handle_float_variables=True,
-        handle_integer_variables=description.handle_integer_variables,
-        handle_multiobjective=description.handle_multiobjective,
-        require_gradient=description.require_gradient,
-    )
 
 
 def configure(

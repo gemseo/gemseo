@@ -32,10 +32,7 @@ class NLOPTMMASettings(BaseNLoptSettings, BaseGradientBasedAlgorithmSettings):
 
     inner_maxeval: NonNegativeInt = Field(
         default=0,
-        description=(
-            """The maximum number of inner iterations of the algorithm.
+        description="""The maximum number of inner iterations of the algorithm.
 
-            The value 0 means that there is no limit.
-            """
-        ),
+The value 0 means that there is no limit.""",
     )

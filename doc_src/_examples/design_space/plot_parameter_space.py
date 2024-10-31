@@ -140,7 +140,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="lhs", n_samples=100)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
 # We can visualize the result by encapsulating the database in
@@ -172,7 +172,7 @@ scenario = create_scenario(
     scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="lhs", n_samples=100)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
 # Finally, we build a dataset from the disciplinary cache and visualize it.

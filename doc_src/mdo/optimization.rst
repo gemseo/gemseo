@@ -122,7 +122,7 @@ value of the objective and constraints
 
     # And solve it with |g| interface
     opt = DOELibraryFactory().execute(
-        problem, algo_name="lhs", n_samples=10, normalize_design_space=True
+        problem, algo_name="PYDOE_LHS", n_samples=10, normalize_design_space=True
     )
 
 Results analysis

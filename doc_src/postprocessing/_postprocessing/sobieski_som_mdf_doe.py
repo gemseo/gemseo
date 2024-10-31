@@ -43,7 +43,7 @@ scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
-scenario.execute(algo_name="lhs", n_samples=num)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=num)
 
 scenario.post_process(
     post_name="SOM",

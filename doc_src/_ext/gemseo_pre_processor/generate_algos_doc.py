@@ -25,12 +25,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import NamedTuple
 
 import jinja2
 from pydantic_core import PydanticUndefined
 
 from gemseo import _get_schema
-from gemseo import get_algorithm_features
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
@@ -56,6 +56,56 @@ if TYPE_CHECKING:
     from gemseo.core.base_factory import BaseFactory
 
 GEN_OPTS_PATH = None
+
+
+class AlgorithmFeatures(NamedTuple):
+    """The features of an algorithm."""
+
+    algorithm_name: str
+    library_name: str
+    root_package_name: str
+    handle_equality_constraints: bool
+    handle_inequality_constraints: bool
+    handle_float_variables: bool
+    handle_integer_variables: bool
+    handle_multiobjective: bool
+    require_gradient: bool
+
+
+def get_algorithm_features(
+    algorithm_name: str,
+) -> AlgorithmFeatures:
+    """Return the features of an optimization algorithm.
+
+    Args:
+        algorithm_name: The name of the optimization algorithm.
+
+    Returns:
+        The features of the optimization algorithm.
+
+    Raises:
+        ValueError: When the optimization algorithm does not exist.
+    """
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+
+    factory = OptimizationLibraryFactory()
+    if not factory.is_available(algorithm_name):
+        msg = f"{algorithm_name} is not the name of an optimization algorithm."
+        raise ValueError(msg)
+
+    driver = factory.create(algorithm_name)
+    description = driver.ALGORITHM_INFOS[algorithm_name]
+    return AlgorithmFeatures(
+        algorithm_name=description.algorithm_name,
+        library_name=description.library_name,
+        root_package_name=factory.get_library_name(driver.__class__.__name__),
+        handle_equality_constraints=description.handle_equality_constraints,
+        handle_inequality_constraints=description.handle_inequality_constraints,
+        handle_float_variables=True,
+        handle_integer_variables=description.handle_integer_variables,
+        handle_multiobjective=description.handle_multiobjective,
+        require_gradient=description.require_gradient,
+    )
 
 
 def get_options_schemas(
@@ -146,6 +196,7 @@ class AlgoOptionsDoc:
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
     ) -> None:
         """Args:
         algo_type: The name of the algorithm type, e.g. "formulation",
@@ -158,6 +209,7 @@ class AlgoOptionsDoc:
             If None, :attr:`AlgoOptionsDoc.TEMPLATE` will be used.
         user_guide_anchor: The anchor of the section of the user guide
             about these algorithms.
+        use_pydantic_model: Whether the classes use Pydantic settings.
         """
         if template is None:
             self.template = self.TEMPLATE
@@ -187,6 +239,7 @@ class AlgoOptionsDoc:
         self.get_description = None
         self.get_features = None
         self.user_guide_anchor = user_guide_anchor
+        self.use_pydantic_model = use_pydantic_model
 
     def get_module(self, algo_name: str) -> str:
         """Return the module path of an algorithm.
@@ -278,6 +331,7 @@ class AlgoOptionsDoc:
             features=self.features,
             libraries=self.libraries,
             user_guide_anchor=self.user_guide_anchor,
+            use_pydantic_model=self.use_pydantic_model,
         )
         output_file_path = Path(GEN_OPTS_PATH).parent / output_file_name
         with Path(output_file_path).open("w", encoding="utf-8") as outf:
@@ -348,6 +402,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
     ) -> None:
         super().__init__(
             algo_type,
@@ -355,6 +410,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             algo_factory,
             template=template,
             user_guide_anchor=user_guide_anchor,
+            use_pydantic_model=use_pydantic_model,
         )
         self.algos_names = algo_factory.algorithms
         self.get_description = self.__default_description_getter(algo_factory)
@@ -461,6 +517,7 @@ class BasePostAlgoOptionsDoc(AlgoOptionsDoc):
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
     ) -> None:
         super().__init__(
             algo_type,
@@ -468,6 +525,7 @@ class BasePostAlgoOptionsDoc(AlgoOptionsDoc):
             algo_factory,
             template=template,
             user_guide_anchor=user_guide_anchor,
+            use_pydantic_model=use_pydantic_model,
         )
 
         def get_options_schema(algo):
@@ -488,6 +546,7 @@ class InitOptionsDoc(AlgoOptionsDoc):
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
     ) -> None:
         super().__init__(
             algo_type,
@@ -495,6 +554,7 @@ class InitOptionsDoc(AlgoOptionsDoc):
             algo_factory,
             template=template,
             user_guide_anchor=user_guide_anchor,
+            use_pydantic_model=use_pydantic_model,
         )
         self.get_options_schema = lambda algo: self.get_options_schema_from_method(
             self.get_class(algo).__init__
@@ -512,7 +572,12 @@ def main(gen_opts_path: str | Path) -> None:
         BasePostAlgoOptionsDoc(
             "classification", "Classification algorithms", ClassifierFactory()
         ),
-        InitOptionsDoc("ml_quality", "Quality measures", MLAlgoQualityFactory()),
+        InitOptionsDoc(
+            "ml_quality",
+            "Quality measures",
+            MLAlgoQualityFactory(),
+            use_pydantic_model=False,
+        ),
         InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
         InitOptionsDoc("formulation", "MDO formulations", MDOFormulationFactory()),
         BasePostAlgoOptionsDoc("post", "Post-processing algorithms", PostFactory()),
@@ -529,17 +594,19 @@ def main(gen_opts_path: str | Path) -> None:
             "ode", "Ordinary differential equations solvers", ODESolverLibraryFactory()
         ),
         InitOptionsDoc(
-            "distribution", "Probability distributions", DistributionFactory()
+            "distribution",
+            "Probability distributions",
+            DistributionFactory(),
+            use_pydantic_model=False,
         ),
         InitOptionsDoc(
             "sensitivity",
             "Sensitivity analysis algorithms",
             SensitivityAnalysisFactory(),
+            use_pydantic_model=False,
         ),
         InitOptionsDoc(
-            "discipline",
-            "Disciplines",
-            DisciplineFactory(),
+            "discipline", "Disciplines", DisciplineFactory(), use_pydantic_model=False
         ),
     ]
     for algos_options_doc in algos_options_docs:

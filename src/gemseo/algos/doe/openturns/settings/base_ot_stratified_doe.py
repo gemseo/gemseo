@@ -31,39 +31,32 @@ class BaseOTStratifiedDOESettings(BaseOpenTURNSSettings):
 
     n_samples: NonNegativeInt = Field(
         default=0,
-        description=(
-            """The number of samples.
+        description="""The number of samples.
 
-            If 0, set from the options.
-            """
-        ),
+If 0, set from the options.""",
     )
 
     levels: float | Sequence[float] = Field(
         default=(),
-        description=(
-            """The levels.
+        description="""The levels.
 
-        In the case of axial, composite and factorial DOEs, the positions of the levels
-        relative to the center; the levels will be equispaced and symmetrical relative
-        to the center; e.g. ``[0.2, 0.8]`` in dimension 1 will generate the samples
-        ``[0.15, 0.6, 0.75, 0.8, 0.95, 1]`` for an axial DOE; the values must be in
-        :math:`]0,1]`.
+In the case of axial, composite and factorial DOEs, the positions of the levels
+relative to the center; the levels will be equispaced and symmetrical relative
+to the center; e.g. ``[0.2, 0.8]`` in dimension 1 will generate the samples
+``[0.15, 0.6, 0.75, 0.8, 0.95, 1]`` for an axial DOE; the values must be in
+:math:`]0,1]`.
 
-        In the case of a full-factorial DOE, the number of levels per input direction;
-        if scalar, this value is applied to each input direction.
-        """
-        ),
+In the case of a full-factorial DOE, the number of levels per input direction;
+if scalar, this value is applied to each input direction.
+""",
     )
 
     centers: Sequence[float] | float = Field(
         default=0.5,
-        description=(
-            """The center of DOE in the unit hypercube.
+        description="""The center of DOE in the unit hypercube.
 
-            This option is available for the axial, composite and factorial DOE
-            algorithm. If scalar, this value is applied to each direction of the
-            hypercube; the values must be in :math:`]0,1[`.
-            """
-        ),
+This option is available for the axial, composite and factorial DOE
+algorithm. If scalar, this value is applied to each direction of the
+hypercube; the values must be in :math:`]0,1[`.
+""",
     )

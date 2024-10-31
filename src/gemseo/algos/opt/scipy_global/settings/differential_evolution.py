@@ -50,13 +50,10 @@ class DifferentialEvolutionSettings(BaseSciPyGlobalSettings):
 
     mutation: float | tuple[float, float] = Field(
         default=(0.5, 1.0),
-        description=(
-            """The mutation constant.
+        description="""The mutation constant.
 
-            If specified as a float it should be in the range [0, 2]. If specified as a
-            tuple(min, max) dithering is employed.
-            """
-        ),
+If specified as a float it should be in the range [0, 2]. If specified as a
+tuple(min, max) dithering is employed.""",
     )
 
     recombination: NonNegativeFloat = Field(

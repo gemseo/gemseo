@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic.types import PositiveFloat  # noqa: TCH002
 
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
@@ -27,10 +28,15 @@ class OATDOESettings(BaseDOESettings):
 
     _TARGET_CLASS_NAME = "OATDOE"
 
-    initial_point: NDArrayPydantic
-    """The initial point of the OAT DOE."""
+    initial_point: NDArrayPydantic = Field(
+        description="The initial point of the OAT DOE."
+    )
 
-    step: PositiveFloat = 0.05
-    """The relative step of the OAT DOE so that the step in the ``x`` direction is
-    ``step*(max_x-min_x)`` if ``x+step*(max_x-min_x)<=max_x`` and ``-step*(max_x-
-    min_x)`` otherwise."""
+    step: PositiveFloat = Field(
+        default=0.05,
+        description="""The relative step of the OAT DOE.
+
+The step in the ``x`` direction is
+step*(max_x-min_x)`` if ``x+step*(max_x-min_x)<=max_x`` and
+``-step*(max_x- min_x)`` otherwise.""",
+    )

@@ -42,63 +42,49 @@ class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
 
     atol: NonNegativeFloat = Field(
         default=0.0,
-        description=(
-            """The absolute tolerance.
+        description="""The absolute tolerance.
 
-            Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).
-            """
-        ),
+Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
     )
 
     if SCIPY_LOWER_THAN_1_12:
         tol: PositiveFloat = Field(
             default=1e-12,
-            description=(
-                """The relative tolerance.
+            description="""The relative tolerance.
 
-                Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).
-                """
-            ),
+Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
         )  # pragma: no cover
     else:
         rtol: PositiveFloat = Field(
             default=1e-12,
-            description=(
-                """The relative tolerance.
+            description="""The relative tolerance.
 
-                Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).
-                """
-            ),
+Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
         )
 
     callback: Annotated[Callable, WithJsonSchema({})] | None = Field(
         default=None,
-        description=(
-            """The user-supplied function to call after each iteration.
+        description="""The user-supplied function to call after each iteration.
 
-            It is called as callback(xk), where xk is the current solution vector. If
-            ``None``, no function is called.
-            """
-        ),
+It is called as callback(xk), where xk is the current solution vector.
+If ``None``, no function is called.""",
     )
 
     maxiter: PositiveInt = Field(
         default=1000,
         validation_alias=AliasChoices("max_iter", "maxiter"),
-        description="""Maximum number of iterations.""",
+        description="Maximum number of iterations.",
     )
 
     x0: ndarray | None = Field(
         default=None,
-        description=(
-            """Starting guess for the solution.
-            If ``None``, start from a matrix of zeros.
-            """
-        ),
+        description="""Starting guess for the solution.
+
+If ``None``, start from a matrix of zeros.""",
     )
 
     M: LinearOperator | ndarray | sparray | None = Field(
         default=None,
         validation_alias=AliasChoices("M", "preconditioner"),
-        description="""The preconditioner approximating the inverse of A.""",
+        description="The preconditioner approximating the inverse of A.",
     )

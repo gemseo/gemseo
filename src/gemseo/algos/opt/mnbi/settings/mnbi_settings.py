@@ -41,15 +41,12 @@ class MNBISettings(BaseOptimizerSettings):
 
     normalize_design_space: bool = Field(
         default=False,
-        description=(
-            """Whether to normalize the design space variables between 0 and 1.
+        description="""Whether to normalize the design space variables between 0 and 1.
 
-            The mNBI algorithm does not allow to normalize the design space at the top
-            level, only the sub-optimizations accept design space normalization. To do
-            this, pass the setting ``normalize_design_space`` to
-            ``sub_optim_algo_settings``.
-            """
-        ),
+The mNBI algorithm does not allow to normalize the design space at the top
+level, only the sub-optimizations accept design space normalization. To do
+this, pass the setting ``normalize_design_space`` to
+``sub_optim_algo_settings``.""",
     )
 
     sub_optim_algo: str = Field(
@@ -60,14 +57,11 @@ class MNBISettings(BaseOptimizerSettings):
 
     n_sub_optim: PositiveInt = Field(
         default=1,
-        description=(
-            """The number of sub-optimizations points.
+        description="""The number of sub-optimizations points.
 
-            mNBI generates ``n_sub_optim`` points on the Pareto front between the
-            `n-objective` individual minima. This value must be strictly greater than
-            the number of objectives of the problem.
-            """
-        ),
+mNBI generates ``n_sub_optim`` points on the Pareto front between the
+`n-objective` individual minima. This value must be strictly greater than
+the number of objectives of the problem.""",
     )
 
     sub_optim_algo_settings: StrKeyMapping = Field(
@@ -77,25 +71,19 @@ class MNBISettings(BaseOptimizerSettings):
 
     sub_optim_max_iter: NonNegativeInt = Field(
         default=0,
-        description=(
-            """The maximum number of iterations of the sub optimization algorithms.
+        description="""The maximum number of iterations of the sub-optimization algorithms.
 
-            If 0, the ``max_iter`` value is used.
-            """
-        ),
+If 0, the ``max_iter`` value is used.""",  # noqa: E501
     )
 
     doe_algo: str = Field(
         default="PYDOE_FULLFACT",
-        description=(
-            """
+        description="""
             The design of experiments algo for the target points on the Pareto front.
 
-            A ``fullfactorial`` DOE is used default as these tend to be low dimensions,
-            usually not more than 3 objectives for a given problem.
-            This setting is relevant only for problems with more than 2 objectives.
-            """
-        ),
+A ``fullfactorial`` DOE is used default as these tend to be low dimensions,
+usually not more than 3 objectives for a given problem.
+This setting is relevant only for problems with more than 2 objectives.""",  # noqa: E501
     )
 
     doe_algo_settings: StrKeyMapping = Field(
@@ -117,13 +105,10 @@ class MNBISettings(BaseOptimizerSettings):
 
     skip_betas: bool = Field(
         default=True,
-        description=(
-            """Whether to skip the sub-optimizations of relevant.
+        description="""Whether to skip the sub-optimizations of relevant.
 
-            The sub-optimizations are skipped if they correspond to values of beta for
-            which the theoretical result has already been found.
-            """
-        ),
+The sub-optimizations are skipped if they correspond to values of beta for
+which the theoretical result has already been found.""",
     )
 
     custom_anchor_points: Sequence[NDArrayPydantic] = Field(

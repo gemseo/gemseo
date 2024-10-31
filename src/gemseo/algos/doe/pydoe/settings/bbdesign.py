@@ -29,10 +29,7 @@ class BBDESIGNSettings(BasePyDOESettings):
 
     center: PositiveInt | None = Field(
         default=None,
-        description=(
-            """The number of center points for the Box-Behnken design.
+        description="""The number of center points for the Box-Behnken design.
 
-            If ``None``, use a pre-determined number of points.
-            """
-        ),
+If ``None``, use a pre-determined number of points.""",
     )

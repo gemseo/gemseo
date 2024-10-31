@@ -137,7 +137,7 @@ scenario = create_scenario(
 
 # %%
 # Lastly, we execute the process with the :term:`LHS` algorithm and 30 samples.
-scenario.execute(algo_name="lhs", n_samples=30)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 mission_dataset = scenario.to_dataset(opt_naming=False)
 
 # %%

@@ -52,13 +52,10 @@ class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
 
     sub_problem_constraints: Iterable[str] = Field(
         default=(),
-        description=(
-            """The constraints to keep in the sub-problem.
+        description="""The constraints to keep in the sub-problem.
 
-            If ``empty``, all constraints are handled by the Augmented Lagrangian method
-            which implies that the sub-problem is unconstrained.
-            """
-        ),
+If ``empty``, all constraints are handled by the Augmented Lagrangian method
+which implies that the sub-problem is unconstrained.""",
     )
 
     update_options_callback: (

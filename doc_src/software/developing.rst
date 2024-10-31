@@ -479,19 +479,20 @@ The commit message should be structured as follows:
 
   [optional footer(s)]
 
-Where:
+where:
 
 * *<type>* defines the type of change you are committing
 
-    * feat: A new feature
-    * fix: A bug fix
-    * docs: Documentation only changes
-    * style: Changes that do not affect the meaning of the code
-    * refactor: A code change that neither fixes a bug nor adds a feature
-    * perf: A code change that improves performance
-    * test: Adding missing tests or correcting existing tests
-    * build: Changes that affect the build system or external dependencies
-    * ci: Changes to our CI configuration files and scripts
+  * feat: A new feature
+  * fix: A bug fix
+  * docs: Documentation only changes
+  * style: Changes that do not affect the meaning of the code
+  * refactor: A code change that neither fixes a bug nor adds a feature
+  * perf: A code change that improves performance
+  * test: Adding missing tests or correcting existing tests
+  * build: Changes that affect the build system or external dependencies
+  * ci: Changes to our CI configuration files and scripts
+
 * *(optional scope)* provide additional contextual information and is contained
   within parentheses
 * *<description>* is a concise description of the changes,

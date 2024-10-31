@@ -34,13 +34,10 @@ class COBYQASettings(BaseScipyLocalSettings):
 
     f_target: float = Field(
         default=-inf,
-        description=(
-            """The target value for the objective function.
+        description="""The target value for the objective function.
 
-            The optimization procedure is terminated when the objective function value
-            of a feasible point is less than or equal to this target.
-            """
-        ),
+The optimization procedure is terminated when the objective function value
+of a feasible point is less than or equal to this target.""",
     )
 
     initial_tr_radius: PositiveFloat = Field(

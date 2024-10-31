@@ -287,21 +287,6 @@ Features
     .. grid-item-card::
         :text-align: center
 
-        **Linear solvers**
-        ^^^
-
-        Define and solve a linear problem, typically in the context of an MDA.
-
-        Based on
-        `PETSc <https://petsc.org/release/>`_ and
-        `SciPy <https://scipy.org/>`_.
-        +++
-
-        :bdg-link-primary-line:`Algorithms <algorithms/linear_solver_algos.html>`
-
-    .. grid-item-card::
-        :text-align: center
-
         **Surrogate models**
         ^^^
 

@@ -36,12 +36,9 @@ class DualAnnealingSettings(BaseSciPyGlobalSettings):
         default=5230,
         gt=1e-2,
         le=5e-4,
-        description=(
-            """The initial temperature.
+        description="""The initial temperature.
 
-    Use higher values to facilitates a wider search of the energy landscape.
-    """
-        ),
+Use higher values to facilitates a wider search of the energy landscape.""",
     )
 
     restart_temp_ratio: PositiveFloat = Field(
@@ -56,26 +53,19 @@ class DualAnnealingSettings(BaseSciPyGlobalSettings):
         default=2.62,
         gt=1,
         le=3,
-        description=(
-            """The visiting distribution parameter.
+        description="""The visiting distribution parameter.
 
-            Higher values give the visiting distribution a heavier tail, this makes the
-            algorithm jump to a more distant region.
-            """
-        ),
+Higher values give the visiting distribution a heavier tail, this makes the
+algorithm jump to a more distant region.""",
     )
 
     accept: float = Field(
         default=-5,
         gt=-1e-4,
         le=-5,
-        description=(
-            """The acceptance distribution parameter.
+        description="""The acceptance distribution parameter.
 
-            The lower the acceptance parameter, the smaller the probability of
-            acceptance.
-            """
-        ),
+The lower the acceptance parameter, the smaller the probability of acceptance.""",
     )
 
     seed: int = Field(

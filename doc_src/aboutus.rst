@@ -168,16 +168,16 @@ Citation
 
 If you produce communications (scientific papers, conferences, reports) about work using |g|, thank you for citing us :
 
-    - Gallard, F., Vanaret, C., Guénot, D, *et al.*, `GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation <https://arc.aiaa.org/doi/10.2514/6.2018-0657>`_. In : 2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference. 2018. p. 0657.
+- Gallard, F., Vanaret, C., Guénot, D, *et al.*, `GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation <https://arc.aiaa.org/doi/10.2514/6.2018-0657>`_. In : 2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference. 2018. p. 0657.
 
-    Bibtex entry::
+Bibtex entry::
 
-        @inproceedings{gemseo_paper,
-        title={GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation},
-        author={Gallard, F. and Vanaret, C. and Guénot, D. and Gachelin, V. and Lafage, R. and Pauwels, B. and Barjhoux, P.-J. and Gazaix, A.},
-        booktitle={2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference},
-        year={2018}
-        }
+    @inproceedings{gemseo_paper,
+    title={GEMS: A Python Library for Automation of Multidisciplinary Design Optimization Process Generation},
+    author={Gallard, F. and Vanaret, C. and Guénot, D. and Gachelin, V. and Lafage, R. and Pauwels, B. and Barjhoux, P.-J. and Gazaix, A.},
+    booktitle={2018 AIAA/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference},
+    year={2018}
+    }
 
 References
 ----------

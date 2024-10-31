@@ -41,15 +41,15 @@ class MDFSettings(BaseFormulationSettings):
         default=MDAChain.__name__,
         description="""The name of the class of the main MDA.
 
-        Typically the :class:`.MDAChain`,
-        but one can force to use :class:`.MDAGaussSeidel` for instance.""",
+Typically the :class:`.MDAChain`,
+but one can force to use :class:`.MDAGaussSeidel` for instance.""",
     )
 
     main_mda_settings: StrKeyMapping | BaseMDASettings = Field(
         default_factory=dict,
         description="""The settings of the main MDA.
 
-        These settings may include those of the inner-MDA.""",
+These settings may include those of the inner-MDA.""",
     )
 
     @model_validator(mode="after")

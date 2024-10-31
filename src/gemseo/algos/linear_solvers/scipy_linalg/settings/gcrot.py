@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable  # noqa: TCH003
+from typing import Literal
 
 from pydantic import Field
 from pydantic import PositiveInt  # noqa: TCH002
@@ -34,25 +35,21 @@ class GCROTSettings(BaseSciPyLinalgSettingsBase):
 
     m: PositiveInt = Field(
         default=30,
-        description="""Number of inner FGMRES iterations per each outer iteration.""",
+        description="Number of inner FGMRES iterations per each outer iteration.",
     )
 
     k: PositiveInt = Field(
         default=30,
-        description=(
-            """Number of vectors to carry between inner FGMRES iterations.
-            If ``None`` use the same value as ``m``.
-            """
-        ),
+        description="""Number of vectors to carry between inner FGMRES iterations.
+
+If ``None`` use the same value as ``m``.""",
     )
 
     CU: Iterable[tuple[NumberArray, NumberArray]] | None = Field(
         default=None,
-        description=(
-            """List of tuples `(c, u)` required to form the matrices C and U.
-            If ``None`` start from empty matrices.
-            """
-        ),
+        description="""List of tuples `(c, u)` required to form the matrices C and U.
+
+If ``None`` start from empty matrices.""",
     )
 
     discard_C: bool = Field(  # noqa: N815
@@ -60,12 +57,6 @@ class GCROTSettings(BaseSciPyLinalgSettingsBase):
         description="""Whether to discard the C-vectors at the end.""",
     )
 
-    truncate: str = Field(
-        default="oldest",
-        description=(
-            """The vectors from the previous cycle to drop.
-
-            Either `oldest` or `smallest`.
-            """
-        ),
+    truncate: Literal["oldest", "smallest"] = Field(
+        default="oldest", description="The vectors from the previous cycle to drop."
     )

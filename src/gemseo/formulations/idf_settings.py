@@ -47,19 +47,19 @@ class IDFSettings(BaseFormulationSettings):
     n_processes: PositiveInt = Field(
         default=1,
         description="""The maximum simultaneous number of threads
-        if ``use_threading`` is True, or processes otherwise,
-        used to parallelize the execution.""",
+if ``use_threading`` is True, or processes otherwise,
+used to parallelize the execution.""",
     )
 
     use_threading: bool = Field(
         default=True,
         description="""Whether to use threads instead of processes
-        to parallelize the execution;
-        multiprocessing will copy (serialize) all the disciplines,
-        while threading will share all the memory.
-        This is important to note
-        if you want to execute the same discipline multiple times,
-        you shall use multiprocessing.""",
+to parallelize the execution;
+multiprocessing will copy (serialize) all the disciplines,
+while threading will share all the memory.
+This is important to note
+if you want to execute the same discipline multiple times,
+you shall use multiprocessing.""",
     )
 
     start_at_equilibrium: bool = Field(
@@ -72,7 +72,7 @@ class IDFSettings(BaseFormulationSettings):
             default_factory=dict,
             description="""The settings for the MDA when ``start_at_equilibrium=True``.
 
-        See detailed settings in :class:`.MDAChain`.""",
+See detailed settings in :class:`.MDAChain`.""",
         )
     )
 

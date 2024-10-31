@@ -37,27 +37,24 @@ class LinearRegressorSettings(BaseRegressorSettings):
         default=0.0,
         description="""The penalty level greater or equal to 0.
 
-        If zero, there is no penalty.
-        """,
+If zero, there is no penalty.""",
     )
 
     l2_penalty_ratio: NonNegativeFloat = Field(
         default=1.0,
         description="""The penalty ratio related to the l2 regularization.
 
-        If 1, use the Ridge penalty.
-        If 0, use the Lasso penalty.
-        Between 0 and 1, use the ElasticNet penalty.
-        """,
+If 1, use the Ridge penalty.
+If 0, use the Lasso penalty.
+Between 0 and 1, use the ElasticNet penalty.""",
     )
 
     random_state: NonNegativeInt | None = Field(
         default=SEED,
         description="""The random state parameter in the case of a penalty.
 
-        If ``None``, use the global random state instance from ``numpy.random``.
-        Creating the model multiple times will produce different results.
-        If ``int``, use a new random number generator seeded by this integer.
-        This will produce the same results.
-        """,
+If ``None``, use the global random state instance from ``numpy.random``.
+Creating the model multiple times will produce different results.
+If ``int``, use a new random number generator seeded by this integer.
+This will produce the same results.""",
     )

@@ -261,9 +261,10 @@ def create_disciplines_from_desc(
         ]
 
     This will generate two disciplines:
-      - One named "Disc_name1" with the inputs ["in1"] and the outputs ["out1", "out2"].
-      - Another named "Disc_name2" with the inputs ["in2", "out1"]
-        and the outputs ["out3", "out2"].
+
+    - One named "Disc_name1" with the inputs ["in1"] and the outputs ["out1", "out2"].
+    - Another named "Disc_name2" with the inputs ["in2", "out1"]
+      and the outputs ["out3", "out2"].
 
     Args:
         disc_descriptions: The specification of the disciplines,
