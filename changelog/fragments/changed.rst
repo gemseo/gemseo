@@ -62,3 +62,27 @@ The arguments of the function ``gemseo.configure`` have changed:
   - ``activate_discipline_cache``: ``enable_discipline_cache``
   - ``check_input_data``: ``validate_input_data``
   - ``check_output_data``: ``validate_output_data``
+
+API changes (scenario):
+
+- ``BaseScenario``: the positional argument ``formulation`` is now a keyword argument, renamed to ``formulation_name``.
+  The formulation must be specified using
+  either the ``formulation_settings_model`` Pydantic model or the ``**formulation_settings`` keyword arguments,
+  including ``formulation_name``.
+- ``BaseScenario.default_inputs``: removed;
+  use ``set_algorithm`` instead,
+  defined by
+  either an ``algo_settings_model`` Pydantic model or ``**algo_settings`` keyword arguments, including ``algo_name``.
+- ``BaseScenario.execute`` no longer uses an ``input_data`` dictionary,
+  but an ``algo_settings_model`` Pydantic model and ``**algo_settings`` keyword arguments, including ``algo_name``.
+  At most one of the two must be specified.
+  When none is specified, the execution uses the algorithm specified by ``BaseScenario.set_algorithm``.
+  When ``algo_settings_model`` is ``None``, the execution uses ``**algo_settings``.
+
+API changes (PyDOE algorithms) from old to new:
+- ``"bbdesign"``: ``"PYDOE_BBDESIGN"``
+- ``"ccdesign"``: ``"PYDOE_CCDESIGN"``
+- ``"ff2n"``: ``"PYDOE_FF2N"``
+- ``"fullfact"``: ``"PYDOE_FULLFACT"``
+- ``"lhs"``: ``"PYDOE_LHS"``
+- ``"pbdesign"``: ``"PYDOE_PBDESIGN"``
