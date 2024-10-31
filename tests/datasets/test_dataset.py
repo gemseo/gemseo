@@ -389,19 +389,6 @@ def test_update_data_errors(dataset) -> None:
         )
 
 
-def test_from_array(data) -> None:
-    """Test the method from_array."""
-    dataset = Dataset.from_array(data)
-    columns = MultiIndex.from_tuples(
-        [("parameters", "x_0", 0), ("parameters", "x_1", 0), ("parameters", "x_2", 0)],
-        names=["GROUP", "VARIABLE", "COMPONENT"],
-    )
-    dataframe = DataFrame(data, columns=columns)
-    dataframe._metadata = ["name"]
-    dataframe.name = Dataset.__name__
-    assert_frame_equal(dataset, dataframe)
-
-
 from_array_parameters = pytest.mark.parametrize(
     "variable_names,variable_names_to_n_components,variable_names_to_group_names,expected_column_multi_index",
     [
@@ -444,14 +431,14 @@ from_array_parameters = pytest.mark.parametrize(
 
 
 @from_array_parameters
-def test_from_array_with_options(
+def test_from_array(
     data,
     variable_names,
     variable_names_to_n_components,
     variable_names_to_group_names,
     expected_column_multi_index,
 ) -> None:
-    """Test the method from_array with its options."""
+    """Test the method ``from_array`` with its options."""
     dataset = Dataset.from_array(
         data,
         variable_names=variable_names,
@@ -641,6 +628,75 @@ def test_from_txt(
     dataframe = DataFrame(small_data, columns=columns).astype("int32")
     dataframe._metadata = ["name"]
     dataframe.name = Dataset.__name__
+    assert_frame_equal(dataset, dataframe)
+
+
+@from_array_parameters
+def test_from_txt_with_header(
+    tmp_wd,
+    small_data,
+    variable_names,
+    variable_names_to_n_components,
+    variable_names_to_group_names,
+    expected_column_multi_index,
+):
+    """Test ``from_txt`` with a header.
+
+    If variable_names is not provided, it tests the case where no header is given.
+    """
+    data_file = "small_data.txt"
+    header = ",".join(variable_names)
+    savetxt(
+        data_file,
+        small_data,
+        delimiter=",",
+        header=header,
+        comments="",
+    )
+
+    dataset = Dataset.from_txt(
+        data_file,
+        variable_names_to_n_components=variable_names_to_n_components,
+        variable_names_to_group_names=variable_names_to_group_names,
+        header=bool(header),  # If no header defined in the file, then False.
+    ).astype("int32")
+
+    columns = MultiIndex.from_tuples(
+        expected_column_multi_index,
+        names=["GROUP", "VARIABLE", "COMPONENT"],
+    )
+    dataframe = DataFrame(small_data, columns=columns).astype("int32")
+    dataframe._metadata = ["name"]
+    dataframe.name = Dataset.__name__
+    assert_frame_equal(dataset, dataframe)
+
+
+def test_from_txt_different_dtypes(tmp_wd) -> None:
+    """Test ``from_txt`` with different data types."""
+    data_file = "datafile.txt"
+    with open(data_file, "w") as f_data:
+        f_data.write("x,x_str\n")
+        f_data.write("1,one\n")
+        f_data.write("2,two\n")
+
+    dataset = Dataset.from_txt(
+        data_file,
+        header=True,
+    )
+
+    # Build the same Dataset from scratch.
+    columns = MultiIndex.from_tuples(
+        [("parameters", "x", 0), ("parameters", "x_str", 0)],
+        names=["GROUP", "VARIABLE", "COMPONENT"],
+    )
+    dataframe = DataFrame([[1, "one"], [2, "two"]], columns=columns)
+    dataframe["parameters", "x", 0] = dataframe["parameters", "x", 0].astype("int64")
+    dataframe["parameters", "x_str", 0] = dataframe["parameters", "x_str", 0].astype(
+        "str"
+    )
+    dataframe._metadata = ["name"]
+    dataframe.name = Dataset.__name__
+
     assert_frame_equal(dataset, dataframe)
 
 

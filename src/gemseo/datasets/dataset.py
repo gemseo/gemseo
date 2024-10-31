@@ -781,9 +781,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names_to_n_components: The number of components of the variables.
                 If empty,
                 assume that all the variables have a single component.
+                Ignored if ``variable_names`` is empty.
             variable_names_to_group_names: The groups of the variables.
                 If empty,
                 use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
+                Ignored if ``variable_names`` is empty.
 
         Returns:
             A dataset built from the NumPy array.
@@ -798,7 +800,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 for component in arange(n_total_components)
             ]
 
-            # Do not consider groups nor n_components.
+            # In that case, we ignore groups nor n_components.
             variable_to_group = {}
             variable_to_n_component = {}
 
@@ -837,6 +839,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names: The names of the variables.
                 If empty and ``header`` is ``True``,
                 read the names from the first line of the file.
+
                 If empty and ``header`` is ``False``,
                 use default names
                 based on the patterns the :attr:`.DEFAULT_NAMES`
@@ -851,16 +854,38 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             header: Whether to read the names of the variables
                 on the first line of the file.
 
+        Note:
+            When the ``variable_names`` are not provided,
+            and the ``header`` is ``True``, the file is accessed twice:
+            During the first access,
+            only the first line is read to retrieve the variable names.
+            In the second access,
+            reading starts from the second line to the end of the file.
+
         Returns:
             A dataset built from the text file.
         """
-        header = "infer" if header else None
-        return cls.from_array(
-            read_csv(file_path, delimiter=delimiter, header=header).to_numpy(),
+        skiprows = 1 if header else None
+
+        if header and not variable_names:
+            # Reads a first time to get the variable names.
+            # Only focus on the first line.
+            variable_names = read_csv(
+                file_path, delimiter=delimiter, header="infer", nrows=1
+            ).columns.tolist()
+
+        data = read_csv(file_path, delimiter=delimiter, header=None, skiprows=skiprows)
+
+        dataset = cls.from_array(
+            data.to_numpy(),
             variable_names,
             variable_names_to_n_components,
             variable_names_to_group_names,
         )
+
+        return dataset.astype({
+            col: data.dtypes[i] for i, col in enumerate(dataset.columns)
+        })
 
     @classmethod
     def from_csv(
