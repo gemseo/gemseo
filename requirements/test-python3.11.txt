@@ -148,7 +148,7 @@ tomli==2.0.2
     # via coverage
 tqdm==4.66.5
     # via gemseo (pyproject.toml)
-typeguard==4.4.0
+typeguard==4.4.1
     # via pandera
 typing-extensions==4.12.2
     # via
