@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import logging
 from abc import abstractmethod
 from copy import deepcopy
 from typing import TYPE_CHECKING
@@ -29,7 +30,6 @@ from numpy import zeros_like
 from numpy.linalg import norm
 from numpy.ma import allequal
 
-from gemseo import LOGGER
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
@@ -43,6 +43,8 @@ if TYPE_CHECKING:
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
+
+LOGGER = logging.getLogger(__name__)
 
 
 class BaseAugmentedLagrangian(BaseOptimizationLibrary):
