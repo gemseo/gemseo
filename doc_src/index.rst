@@ -8,6 +8,12 @@
 
 :html_theme.sidebar_secondary.remove: true
 
+####################
+GEMSEO documentation
+####################
+
+**Version**: |version|
+
 .. image:: _static/gemseo_schema.png
    :align: left
 
@@ -35,14 +41,13 @@ and a whole set of executables that can be called from Python.
 
 Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licences <software/licenses.html>`_).
 
-
 .. grid:: auto
     :gutter: 1 1 1 1
 
     .. grid-item::
 
         .. button-link:: software/installation.html
-            :color: primary
+            :color: secondary
             :shadow:
             :align: center
 
@@ -51,7 +56,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
     .. grid-item::
 
         .. button-link:: contributing.html
-            :color: primary
+            :color: secondary
             :shadow:
             :align: center
 
@@ -60,7 +65,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
     .. grid-item::
 
         .. button-link:: aboutus.html
-            :color: primary
+            :color: secondary
             :shadow:
             :align: center
 
@@ -69,7 +74,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
     .. grid-item::
 
         .. button-link:: software/changelog.html
-            :color: primary
+            :color: secondary
             :shadow:
             :align: center
 
@@ -78,7 +83,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
     .. grid-item::
 
         .. button-link:: examples/mdo/plot_gemseo_in_10_minutes.html
-            :color: primary
+            :color: secondary
             :shadow:
             :align: center
 
@@ -87,17 +92,19 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
     .. grid-item::
 
         .. button-link:: plugins.html
-            :color: primary
+            :color: secondary
             :shadow:
             :align: center
 
             :octicon:`plug` Plugins
 
-Main concepts
--------------
 
-.. grid:: 1 2 3 3
-    :gutter: 1 2 3 3
+.. raw:: html
+
+   <h1 class="h1-center">Main concepts<a class="headerlink" href="#main-concepts" title="Link to this heading">#</a></h1>
+
+.. grid:: 1 1 2 2
+    :gutter: 2 3 4 4
 
     .. grid-item-card::
         :text-align: center
@@ -115,9 +122,9 @@ Main concepts
 
         +++
 
-        :bdg-link-primary-line:`Read more <discipline.html>`
-        :bdg-link-primary-line:`Examples <examples/disciplines/index.html>`
-        :bdg-link-primary-line:`Types <algorithms/discipline_algos.html>`
+        :bdg-link-secondary-line:`Read more <discipline.html>`
+        :bdg-link-secondary-line:`Examples <examples/disciplines/index.html>`
+        :bdg-link-secondary-line:`Types <algorithms/discipline_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -132,8 +139,8 @@ Main concepts
         `uncertain (or mixed) parameter space <modules/gemseo.algos.parameter_space.html>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <design_space/design_space.html>`
-        :bdg-link-primary-line:`Examples <examples/design_space/index.html>`
+        :bdg-link-secondary-line:`Read more <design_space/design_space.html>`
+        :bdg-link-secondary-line:`Examples <examples/design_space/index.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -148,8 +155,8 @@ Main concepts
         `MDO scenario <modules/gemseo.scenarios.mdo_scenario.html>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <scenario.html>`
-        :bdg-link-primary-line:`Examples <examples/scenario/index.html>`
+        :bdg-link-secondary-line:`Read more <scenario.html>`
+        :bdg-link-secondary-line:`Examples <examples/scenario/index.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -163,14 +170,15 @@ Main concepts
         and make them easy to handle for visualization, display and query purposes.
         +++
 
-        :bdg-link-primary-line:`Read more <data_persistence/index.html>`
-        :bdg-link-primary-line:`Examples <examples/cache/index.html>`
+        :bdg-link-secondary-line:`Read more <data_persistence/index.html>`
+        :bdg-link-secondary-line:`Examples <examples/cache/index.html>`
 
-Features
---------
+.. raw:: html
 
-.. grid:: 1 2 3 3
-    :gutter: 1 2 3 3
+   <h1 class="h1-center">Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h1>
+
+.. grid:: 1 1 2 2
+    :gutter: 2 3 4 4
 
     .. grid-item-card::
         :text-align: center
@@ -189,8 +197,8 @@ Features
         even before wrapping any software.
         +++
 
-        :bdg-link-primary-line:`Read more <interface/study_analysis.html>`
-        :bdg-link-primary-line:`Examples <examples/study_analysis/index.html>`
+        :bdg-link-secondary-line:`Read more <interface/study_analysis.html>`
+        :bdg-link-secondary-line:`Examples <examples/study_analysis/index.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -209,9 +217,9 @@ Features
         `SciPy <https://scipy.org/>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <optimization.html>`
-        :bdg-link-primary-line:`Examples <examples/optimization_problem/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/opt_algos.html>`
+        :bdg-link-secondary-line:`Read more <optimization.html>`
+        :bdg-link-secondary-line:`Examples <examples/optimization_problem/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/opt_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -226,9 +234,9 @@ Features
         `pyDOE <https://pythonhosted.org/pyDOE/>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <doe.html>`
-        :bdg-link-primary-line:`Examples <examples/doe/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/doe_algos.html>`
+        :bdg-link-secondary-line:`Read more <doe.html>`
+        :bdg-link-secondary-line:`Examples <examples/doe/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/doe_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -239,9 +247,9 @@ Features
         Define the way as the disciplinary coupling is formulated and managed by the optimization or DOE algorithm.
         +++
 
-        :bdg-link-primary-line:`Read more <mdo/mdo_formulations.html>`
-        :bdg-link-primary-line:`Examples <examples/formulations/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/formulation_algos.html>`
+        :bdg-link-secondary-line:`Read more <mdo/mdo_formulations.html>`
+        :bdg-link-secondary-line:`Examples <examples/formulations/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/formulation_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -252,9 +260,9 @@ Features
         Find the coupled state of a multidisciplinary system using a multi-disciplinary analysis.
         +++
 
-        :bdg-link-primary-line:`Read more <mdo/mda.html>`
-        :bdg-link-primary-line:`Examples <examples/mda/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/mda_algos.html>`
+        :bdg-link-secondary-line:`Read more <mdo/mda.html>`
+        :bdg-link-secondary-line:`Examples <examples/mda/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/mda_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -269,7 +277,7 @@ Features
         `SciPy <https://scipy.org/>`_.
         +++
 
-        :bdg-link-primary-line:`Algorithms <algorithms/linear_solver_algos.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/linear_solver_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -280,9 +288,9 @@ Features
         Generate graphical representations of optimization histories.
         +++
 
-        :bdg-link-primary-line:`Read more <postprocessing/index.html>`
-        :bdg-link-primary-line:`Examples <examples/post_process/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/post_algos.html>`
+        :bdg-link-secondary-line:`Read more <postprocessing/index.html>`
+        :bdg-link-secondary-line:`Examples <examples/post_process/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/post_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -297,9 +305,9 @@ Features
         `scikit-learn <https://scikit-learn.org/stable/>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <surrogate.html>`
-        :bdg-link-primary-line:`Examples <examples/surrogate/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/surrogate_algos.html>`
+        :bdg-link-secondary-line:`Read more <surrogate.html>`
+        :bdg-link-secondary-line:`Examples <examples/surrogate/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/surrogate_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -316,8 +324,8 @@ Features
         `diagonal-based <scalable_models/index.html#scalable-diagonal-model>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <scalable.html>`
-        :bdg-link-primary-line:`Examples <examples/scalable/index.html>`
+        :bdg-link-secondary-line:`Read more <scalable.html>`
+        :bdg-link-secondary-line:`Examples <examples/scalable/index.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -335,9 +343,9 @@ Features
         `data transformation <machine_learning/transform/transformer.html>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <machine_learning/index.html>`
-        :bdg-link-primary-line:`Examples <examples/mlearning/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/mlearning_algos.html>`
+        :bdg-link-secondary-line:`Read more <machine_learning/index.html>`
+        :bdg-link-secondary-line:`Examples <examples/mlearning/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/mlearning_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -358,9 +366,9 @@ Features
         `OpenTURNS <https://openturns.github.io/www/>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <uncertainty/index.html>`
-        :bdg-link-primary-line:`Examples <examples/uncertainty/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/uncertainty_algos.html>`
+        :bdg-link-secondary-line:`Read more <uncertainty/index.html>`
+        :bdg-link-secondary-line:`Examples <examples/uncertainty/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/uncertainty_algos.html>`
 
     .. grid-item-card::
         :text-align: center
@@ -374,9 +382,9 @@ Features
         `SciPy <https://scipy.org/>`_.
         +++
 
-        :bdg-link-primary-line:`Read more <ode/ode.html>`
-        :bdg-link-primary-line:`Examples <examples/ode/index.html>`
-        :bdg-link-primary-line:`Algorithms <algorithms/ode_algos.html>`
+        :bdg-link-secondary-line:`Read more <ode/ode.html>`
+        :bdg-link-secondary-line:`Examples <examples/ode/index.html>`
+        :bdg-link-secondary-line:`Algorithms <algorithms/ode_algos.html>`
 
 .. toctree::
    :hidden:

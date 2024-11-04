@@ -39,5 +39,4 @@ Examples
 --------
 
 .. include:: /examples/dataset/index.rst
-   :no-index:
    :start-after: start-after-label

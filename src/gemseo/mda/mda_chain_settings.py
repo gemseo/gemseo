@@ -35,10 +35,12 @@ class MDAChainSettings(BaseParallelMDASettings, ComposedMDASettings):
 
     chain_linearize: bool = Field(
         default=False,
-        description="""Whether to linearize the chain of execution. Otherwise,
-        linearize the overall MDA with base class method. This last option is
-        preferred to minimize computations in adjoint mode, while in direct
-        mode, linearizing the chain may be cheaper.""",
+        description="""Whether to linearize the chain of execution.
+
+Otherwise,
+linearize the overall MDA with base class method.
+This last option is preferred to minimize computations in adjoint mode,
+while in direct mode, linearizing the chain may be cheaper.""",
     )
 
     inner_mda_name: str = Field(
@@ -53,8 +55,8 @@ class MDAChainSettings(BaseParallelMDASettings, ComposedMDASettings):
     initialize_defaults: bool = Field(
         default=False,
         description="""Whether to create a :class:`.MDOInitializationChain`
-        to compute the eventually missing :attr:`.default_inputs` at the first
-        execution.""",
+to compute the eventually missing :attr:`.default_inputs` at the first
+execution.""",
     )
 
     mdachain_parallel_settings: StrKeyMapping = Field(
@@ -70,7 +72,8 @@ class MDAChainSettings(BaseParallelMDASettings, ComposedMDASettings):
     sub_coupling_structures: Sequence[CouplingStructure] = Field(
         default_factory=list,
         description="""The coupling structures to be used by the inner MDAs.
-            If empty, they are created from ``disciplines``.""",
+
+If empty, they are created from ``disciplines``.""",
     )
 
     _settings_names_to_be_cascaded: ClassVar[Sequence[str]] = [

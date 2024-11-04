@@ -105,6 +105,9 @@ templates_path = ["_templates"]
 # generate autosummary even if no references
 autosummary_generate = True
 
+# If False, class ClassName instead of class module_path.ClassName
+add_module_names = False
+
 autodoc_default_options = {"members": True, "inherited-members": False}
 
 autodoc_member_order = "groupwise"
@@ -272,6 +275,7 @@ html_sidebars = {
 
 
 def setup(app) -> None:
+    app.add_css_file("gemseo.css")
     app.add_css_file("xdsm/fontello.css")
     app.add_css_file("xdsm/xdsmjs.css")
     app.add_js_file("xdsm/xdsmjs.js")

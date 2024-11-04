@@ -213,7 +213,7 @@ High quality PNG and SVG logos are available:
 Authors
 -------
 
-.. include:: authors.rst
+.. include:: _authors.txt
 
 Contributing
 ------------

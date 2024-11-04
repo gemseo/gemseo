@@ -45,7 +45,8 @@ class BaseMDASettings(BaseModel):
     coupling_structure: CouplingStructure | None = Field(
         default=None,
         description="""The coupling structure to be used by the MDA.
-            If ``None``, the coupling structure is created from the disciplines.""",
+
+If ``None``, the coupling structure is created from the disciplines.""",
     )
 
     linear_solver: LinearSolver = Field(
@@ -60,47 +61,54 @@ class BaseMDASettings(BaseModel):
     linear_solver_tolerance: NonNegativeFloat = Field(
         default=1e-12,
         description="""The linear solver tolerance.
-        Linear solvers are used to compute the total derivatives.""",
+
+Linear solvers are used to compute the total derivatives.""",
     )
 
     log_convergence: bool = Field(
         default=False,
         description="""Whether to log the MDA convergence.
-        The log displays the normalized residual norm.""",
+
+The log displays the normalized residual norm.""",
     )
 
     max_mda_iter: NonNegativeInt = Field(
         default=20,
         description="""The maximum number of iterations for the MDA algorithm.
-        If 0, evaluate the coupling variables without trying to solve the coupling
-        equations.""",
+
+If 0,
+evaluate the coupling variables without trying to solve the coupling equations.""",
     )
 
     name: str = Field(
         default="",
         description="""The name to be given to the MDA.
-        If empty, use the name of the class.""",
+
+If empty, use the name of the class.""",
     )
 
     tolerance: NonNegativeFloat = Field(
         default=1e-6,
         description="""The tolerance for the MDA algorithm residual.
-        The available normalization strategies for the residual are described in
-        attr:`.BaseMDA.ResidualScaling`.""",
+
+The available normalization strategies for the residual
+are described in :attr:`.BaseMDA.ResidualScaling`.""",
     )
 
     use_lu_fact: bool = Field(
         default=False,
         description="""Whether to perform an LU factorization.
-        The factorization is used to solve the linear systems arising in the computation
-        of the total derivatives. Since there are possibly several right-hand side, if
-        affordable, such a factorization may improve the solution time.""",
+
+The factorization is used to solve the linear systems arising in the computation
+of the total derivatives. Since there are possibly several right-hand side, if
+affordable, such a factorization may improve the solution time.""",
     )
 
     warm_start: bool = Field(
         default=False,
         description="""Whether to warm start the execution of the MDA algorithm.
-        The warm start strategy consists in using the last cached values for the
-        coupling variables as an initial guess. This is expected to reduce the number
-        of iteration of the MDA algorithm required to reach convergence.""",
+
+The warm start strategy consists in using the last cached values for the
+coupling variables as an initial guess. This is expected to reduce the number
+of iteration of the MDA algorithm required to reach convergence.""",
     )

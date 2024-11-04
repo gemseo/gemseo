@@ -191,8 +191,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         >>> analysis.compute_samples([discipline], parameter_space, n_samples=10000)
         >>> indices = analysis.compute_indices()
 
-    .. note:: The second-order Sobol' indices cannot be yet estimated with control
-    variates.
+    .. note:: The second-order Sobol' indices cannot be estimated with control variates.
     """
 
     @dataclass(frozen=True)

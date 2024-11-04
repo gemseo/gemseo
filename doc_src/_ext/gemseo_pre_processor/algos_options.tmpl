@@ -150,6 +150,10 @@
 
 Module: :class:`{{modules[algo]}}`
 
+{% if pydantic_model_imports[algo] %}
+:code:`{{pydantic_model_imports[algo]}}`
+{% endif %}
+
 {% if descriptions[algo] %}
 {{descriptions[algo]}}
 {% endif %}

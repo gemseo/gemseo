@@ -33,7 +33,7 @@ respectively:
 - for disciplines,
   inherit from :class:`.Discipline`,
   and put the Python file in the :file:`src/gemseo/disciplines` package,
-which you created.
+  which you created.
 - for job schedulers and HPC submission,
   inherit from :class:`.JobSchedulerDisciplineWrapper`,
   and put the Python file in the :file:`src/gemseo/disciplines/wrappers/job_schedulers` package,
