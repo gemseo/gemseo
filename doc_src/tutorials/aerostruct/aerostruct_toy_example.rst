@@ -20,18 +20,24 @@ This tutorial describes how to build and run a scalable problem by means of |g| 
 Creation of the disciplines
 ***************************
 
-In this tutorial, we are creating the disciplines from their analytic formulation using the :class:`~gemseo.disciplines.analytic.AnalyticDiscipline` discipline class:
+In this tutorial, we are creating the disciplines from their analytic formulation using the :class:`~gemseo.disciplines.analytic.AnalyticDiscipline` discipline class.
+We also configure the GEMSEO logger with the :func:`configure_logger` function.
 
 .. code::
 
+    from typing import Iterable
+
+    from gemseo import configure_logger
     from gemseo import create_discipline
+    from gemseo.core.discipline.discipline import Discipline
 
-    def create_disciplines():
-        """
-        Create the disciplines (aero, structure, OAD) with dummy formulas
+    configure_logger()
 
-        :returns: disciplines (aero, structure, OAD)
-        :rtype: dict(Discipline)
+    def create_disciplines() -> Iterable[Discipline]:
+        """Create the disciplines (aero, structure, OAD) with analytic formulas.
+
+        Returns:
+             The disciplines (aero, structure, OAD).
         """
         aero_formulas = {"drag": "0.1*((sweep/360)**2 + 200 + thick_airfoils**2-thick_airfoils -4*displ)",
                          "forces": "10*sweep + 0.2*thick_airfoils-0.2*displ",
@@ -57,9 +63,9 @@ Description of the MDO study
 
 The goal of this study is to maximize the range :math:`range` with respect to the design parameters which are:
 
-   - thick_airfoils
-   - thick_panels
-   - sweep
+   - :math:`thick\_airfoils`
+   - :math:`thick\_panels`
+   - :math:`sweep`
 
 Different MDO formulations can be considered to address this study.
 
@@ -68,13 +74,13 @@ Monolithic formulations
 
 Monolithic formulations can be used to address this MDO study:
 
-   - Multiple Discipline Feasible (MDF): a Multiple Disciplinary Analysis is performed for each optimisation iteration to converge the coupling variables disciplines to their equilibrium values
-   - Individual Discipline Feasible (IDF): the coupling variables equalities between the disciplines are set as constraints of the optimizer.
+   - Multiple Discipline Feasible (:class:`.MDF`): a Multiple Disciplinary Analysis is performed for each optimisation iteration to converge the coupling variables disciplines to their equilibrium values
+   - Individual Discipline Feasible (:class:`.IDF`): the coupling variables equalities between the disciplines are set as constraints of the optimizer.
 
 MDF
 ^^^
 
-The MDF MDO formulation for the current problem is as follows:
+The :class:`.MDF` formulation for the current problem is as follows:
 
 .. code::
 
@@ -94,7 +100,7 @@ The XDSM for the MDF formulation is displayed below:
 IDF
 ^^^
 
-The MDF MDO formulation for the current problem is as follows:
+The :class:`.IDF` formulation for the current problem is as follows:
 
 .. code::
 
@@ -115,10 +121,10 @@ As previously stressed, the coupling variables have become optimization variable
 
 .. figure:: xdsm_idf.png
 
-Bi-level
---------
+BiLevel
+-------
 
-A bi-level formulation can be considered for the following MDO problem. It consists of performing optimizations at two levels:
+A :class:`.BiLevel` formulation can be considered for the following MDO problem. It consists of performing optimizations at two levels:
 
    - at the system level, an optimization is made with respect to the shared design variables
    - at the discipline level, for each discipline, an optimization is made with respect to the local discipline design variable.
@@ -180,50 +186,47 @@ In this section, we are going to build a scalable problem from the aerostructure
 Build the interpolation functions
 ---------------------------------
 
-We build the interpolation functions from the discipline:
+We build the interpolation functions from the disciplines:
 
 .. code::
 
-    disciplines_scal = create_scalable_disciplines(disciplines)
+    from gemseo.problems.mdo.aerostructure.aerostructure_design_space import AerostructureDesignSpace
+    from gemseo.problems.mdo.scalable.data_driven.diagonal import ScalableDiagonalModel
 
-where:
 
-.. code::
+    def create_scalable_models(disciplines: Iterable[Discipline], n_samples: int = 20,
+        fill_factor: float = 0.8) -> Iterable[ScalableDiagonalModel]:
+        """Create the scalable disciplines.
 
-    from gemseo import create_scenario
-    from gemseo.problems.aerostructure.aerostructure_design_space import AerostructureDesignSpace
-    from copy import deepcopy
+        Args:
+            disciplines: The disciplines.
+            n_samples: The number of samples.
+            fill_factor: The fill factor.
 
-    def create_scalable_disciplines(disciplines, n_samples=20, fill_factor=0.8):
-        """
-        Create scalable disciplines.
-
-        :param disciplines: disciplines
-        :type disciplines: list(Discipline)
-        :param n_samples: number of samples
-        :type n_samples: int
-        :param fill_factor: fill factor
-        :type fill_factor: float
-        :return: scalable disciplines
-        :rtype: list(Discipline)
+        Returns:
+            The scalable models.
         """
         design_space = AerostructureDesignSpace()
         design_space.set_current_value(design_space.get_current_value().real)
         sizes = design_space.variable_sizes
-        disciplines_scal = []
+        scalable_models = []
         for discipline in disciplines:
             discipline.set_cache(cache_type=discipline.CacheType.MEMORY_FULL)
-            output = discipline.get_output_data_names()[0]
+            output = next(iter(discipline.output_grammar.names))
             disc_design_space = deepcopy(design_space)
-            disc_design_space.filter(discipline.get_input_data_names())
-            scenario = create_scenario([discipline], 'DisciplinaryOpt', output,
-                                           disc_design_space, scenario_type='DOE')
-            scenario.execute(algo_name='DiagonalDOE', n_samples=n_samples)
-            discipline_scal = create_discipline(
-                'ScalableDiagonalModel', discipline.cache, sizes, fill_factor=fill_factor
+            disc_design_space.filter(discipline.input_grammar.names)
+            scenario = create_scenario([discipline], "DisciplinaryOpt", output,
+                                           disc_design_space, scenario_type="DOE")
+            scenario.execute(algo_name="DiagonalDOE", n_samples=n_samples)
+            scalable_model = ScalableDiagonalModel(
+                discipline.cache.to_dataset(), sizes, fill_factor=fill_factor
             )
-            disciplines_scal.append(discipline_scal)
-        return disciplines_scal
+            scalable_models.append(scalable_model)
+        return scalable_models
+
+.. code::
+
+    scalable_models = create_scalable_models(disciplines)
 
 Plot the interpolation function
 -------------------------------
@@ -232,8 +235,8 @@ We can easily plot the interpolation functions:
 
 .. code::
 
-   for scal in disciplines_scal:
-            scal.scalable_model.plot_1d_interpolations(save=True)
+   for scalable_model in scalable_models:
+       scalable_model.plot_1d_interpolations(save=True)
 
 We obtain the following plots for the three disciplines.
 

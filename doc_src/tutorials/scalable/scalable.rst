@@ -20,7 +20,7 @@ we are going to build a scalable version
 of the :class:`.Sellar1` :class:`.Discipline`.
 As a reminder, its expression reads:
 
-:math:`y_1(x_{shared},x_{local},y_2)=\sqrt{x_{shared,1}^2+x_{shared,2}+x_{local}-0.2y_2`}.
+:math:`y_1(x_{shared},x_{local},y_2)=\sqrt{x_{shared,1}^2+x_{shared,2}+x_{local}-0.2y_2}`.
 
 .. seealso::
 
