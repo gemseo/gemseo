@@ -12,23 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Base settings class for MDAs based on root finding algorithms."""
+"""Settings of the MDO formulations."""
 
 from __future__ import annotations
 
-from pydantic import Field
-
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-
-
-class BaseMDARootSettings(BaseParallelMDASettings):
-    """The settings for MDAs based on root finding algorithms."""
-
-    execute_before_linearizing: bool = Field(
-        default=True,
-        description="""Whether to start by executing the disciplines before linearizing.
-
-This ensures that the discipline are executed and linearized with the same input data.
-It can be almost free
-if the corresponding output data have been stored in the :attr:`.BaseMDA.cache`.""",
-    )
+from gemseo.formulations.bilevel_settings import BiLevelSettings  # noqa: F401
+from gemseo.formulations.disciplinary_opt_settings import (  # noqa: F401
+    DisciplinaryOptSettings,
+)
+from gemseo.formulations.idf_settings import IDFSettings  # noqa: F401
+from gemseo.formulations.mdf_settings import MDFSettings  # noqa: F401

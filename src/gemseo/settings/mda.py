@@ -12,23 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Base settings class for MDAs based on root finding algorithms."""
+"""Settings of the MDA algorithms."""
 
 from __future__ import annotations
 
-from pydantic import Field
-
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-
-
-class BaseMDARootSettings(BaseParallelMDASettings):
-    """The settings for MDAs based on root finding algorithms."""
-
-    execute_before_linearizing: bool = Field(
-        default=True,
-        description="""Whether to start by executing the disciplines before linearizing.
-
-This ensures that the discipline are executed and linearized with the same input data.
-It can be almost free
-if the corresponding output data have been stored in the :attr:`.BaseMDA.cache`.""",
-    )
+from gemseo.mda.composed_mda_settings import ComposedMDASettings  # noqa: F401
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings  # noqa: F401
+from gemseo.mda.gs_newton_settings import MDAGSNewtonSettings  # noqa: F401
+from gemseo.mda.jacobi_settings import MDAJacobiSettings  # noqa: F401
+from gemseo.mda.mda_chain_settings import MDAChainSettings  # noqa: F401
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphsonSettings  # noqa: F401
+from gemseo.mda.quasi_newton_settings import MDAQuasiNewtonSettings  # noqa: F401
+from gemseo.mda.sequential_mda_settings import MDASequentialSettings  # noqa: F401

@@ -35,5 +35,5 @@ def create_authors_page(path) -> None:
 
     doc = template.render(authors=authors)
 
-    with Path(path / "authors.rst").open("w", encoding="utf-8") as f:
+    with Path(path / "_authors.txt").open("w", encoding="utf-8") as f:
         f.write(doc)

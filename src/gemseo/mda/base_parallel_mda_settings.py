@@ -29,15 +29,17 @@ class BaseParallelMDASettings(BaseMDASolverSettings):
     n_processes: PositiveInt = Field(
         default=N_CPUS,
         description="""The number of threads/processes.
-            Threads if ``use_threading``, processes otherwise.""",
+
+Threads if ``use_threading``, processes otherwise.""",
     )
 
     use_threading: bool = Field(
         default=True,
         description=(
             """Whether to use threads instead of processes to parallelize the execution.
-            Processes will copy (serialize) the disciplines, while threads will share
-            the memory. If one wants to execute the same discipline multiple times then
-            multiprocessing should be preferred."""
+
+Processes will copy (serialize) the disciplines, while threads will share the memory.
+If one wants to execute the same discipline multiple times,
+then multiprocessing should be preferred."""
         ),
     )

@@ -19,7 +19,9 @@ from typing import TYPE_CHECKING
 import pytest
 
 import gemseo.settings.doe as doe
+import gemseo.settings.formulations as formulations
 import gemseo.settings.linear_solvers as linear_solvers
+import gemseo.settings.mda as mda
 import gemseo.settings.mlearning as mlearning
 import gemseo.settings.ode as ode
 import gemseo.settings.opt as opt
@@ -31,6 +33,8 @@ from gemseo.algos.linear_solvers.base_linear_solver_settings import (
 from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.core.base_factory import BaseFactory
+from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 from gemseo.post.base_post_settings import BasePostSettings
 
@@ -118,5 +122,25 @@ def test_post_settings(class_name):
     get_setting_class_names(BaseMLAlgoSettings, "gemseo.mlearning", mlearning),
 )
 def test_machine_learning_settings(class_name):
+    _module, class_name = class_name
+    getattr(_module, class_name)
+
+
+@pytest.mark.parametrize(
+    "class_name",
+    get_setting_class_names(
+        BaseFormulationSettings, "gemseo.formulations", formulations
+    ),
+)
+def test_formulation_settings(class_name):
+    _module, class_name = class_name
+    getattr(_module, class_name)
+
+
+@pytest.mark.parametrize(
+    "class_name",
+    get_setting_class_names(BaseMDASettings, "gemseo.mda", mda),
+)
+def test_mda_settings(class_name):
     _module, class_name = class_name
     getattr(_module, class_name)
