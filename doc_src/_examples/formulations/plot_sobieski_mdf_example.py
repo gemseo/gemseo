@@ -74,7 +74,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # During the instantiation of the scenario, we provide some options for the
-# MDF formulations:
+# MDF formulations (which are passed through the main mda settings):
 formulation_settings = {
     "tolerance": 1e-14,
     "max_mda_iter": 50,
@@ -104,7 +104,7 @@ scenario = create_scenario(
     design_space,
     maximize_objective=True,
     formulation_name="MDF",
-    **formulation_settings,
+    main_mda_settings=formulation_settings,
 )
 
 # %%

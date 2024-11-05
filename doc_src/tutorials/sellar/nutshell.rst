@@ -67,7 +67,7 @@ After having called the superconstructor :meth:`!Discipline.__init__`,
 we complete the constructor of the new discipline
 by declaring the :ref:`Sellar <sellar_problem>` discipline input data names :attr:`!Discipline.input_grammar`
 and discipline output data names :attr:`!Discipline.output_grammar`
-in a straightforward way with :meth:`.JSONGrammar.update_from_names` .
+in a straightforward way with :meth:`.BaseGrammar.update_from_names` .
 
 .. warning::
 

@@ -78,7 +78,7 @@ problem.objective = objective
 #
 # Solve the problem
 # ^^^^^^^^^^^^^^^^^
-optimization_result = execute_algo(problem, "L-BFGS-B")
+optimization_result = execute_algo(problem, algo_name="L-BFGS-B")
 optimization_result
 
 # %%
@@ -94,7 +94,7 @@ problem.to_hdf("my_optim.hdf5")
 # %%
 # Post-process the results
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-execute_post(problem, "OptHistoryView", save=False, show=True)
+execute_post(problem, post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # .. note::
@@ -108,5 +108,7 @@ execute_post(problem, "OptHistoryView", save=False, show=True)
 # We can also see this optimization problem as a trade-off problem
 # and solve it by means of a design of experiments (DOE).
 problem.reset()
-optimization_result = execute_algo(problem, "PYDOE_LHS", n_samples=10, algo_type="doe")
+optimization_result = execute_algo(
+    problem, algo_name="PYDOE_LHS", n_samples=10, algo_type="doe"
+)
 optimization_result

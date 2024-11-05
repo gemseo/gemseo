@@ -119,7 +119,7 @@ problem.objective = function
 
 # %%
 # and solve it:
-execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2)
+execute_algo(problem, algo_name="OT_OPT_LHS", algo_type="doe", n_samples=2)
 problem.database.get_last_n_x_vect(2)
 
 # %%
@@ -129,19 +129,19 @@ problem.database.get_last_n_x_vect(2)
 #     unlike the :class:`.Scenario`.
 #
 # Solving again this problem with the same configuration leads to the same result:
-execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2)
+execute_algo(problem, algo_name="OT_OPT_LHS", algo_type="doe", n_samples=2)
 problem.database.get_last_n_x_vect(2)
 
 # %%
 # and the result is still the same if we take 1 as random seed,
 # as 1 is the default value of this seed:
-execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2, seed=1)
+execute_algo(problem, algo_name="OT_OPT_LHS", algo_type="doe", n_samples=2, seed=1)
 problem.database.get_last_n_x_vect(2)
 
 # %%
 # If you want to use a different random seed,
 # you only have to change the value of ``seed``:
-execute_algo(problem, "OT_OPT_LHS", algo_type="doe", n_samples=2, seed=3)
+execute_algo(problem, algo_name="OT_OPT_LHS", algo_type="doe", n_samples=2, seed=3)
 problem.database.get_last_n_x_vect(2)
 
 # %%

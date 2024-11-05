@@ -104,6 +104,7 @@ mdachain = MDAChain(
     disciplines,
     name="mdachain_lower",
     mdachain_parallelize_tasks=True,
-    mdachain_parallel_options=mdo_parallel_chain_options,
+    use_threading=True,
+    n_processes=2,
 )
 res = mdachain.execute()

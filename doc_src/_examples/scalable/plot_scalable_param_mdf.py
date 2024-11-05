@@ -78,4 +78,4 @@ execute_algo(problem, algo_name="NLOPT_SLSQP", max_iter=100)
 # %%
 # Post-process the results
 # ------------------------
-execute_post(problem, "OptHistoryView", save=False, show=True)
+execute_post(problem, post_name="OptHistoryView", save=False, show=True)

@@ -34,7 +34,7 @@ from gemseo import import_database
 # or a :class:`.Scenario`,
 # we can visualize the evaluation history using the function :func:`.execute_post`
 # and a specific visualization tool such as ``"BasicHistory"``:
-execute_post("my_results.hdf5", "BasicHistory", variable_names=["y_4"])
+execute_post("my_results.hdf5", post_name="BasicHistory", variable_names=["y_4"])
 
 # %%
 # .. note::

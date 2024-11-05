@@ -10,7 +10,7 @@
    Contributors:
           :author: Matthias De Lozzo
 
-Learn the basics of **|g|** through a series of tutorials:
+Learn the basics of |g| through a series of tutorials:
 
 	- Tutorial 1: Solve an optimization problem - :ref:`See more...  <simple_opt_example>`
 	- Tutorial 2: Solve a :term:`MDO` problem - :ref:`See more...  <sellar_mdo>`

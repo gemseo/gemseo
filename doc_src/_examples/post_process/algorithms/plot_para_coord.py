@@ -88,7 +88,7 @@ scenario = create_scenario(
     disciplines,
     "y_4",
     design_space,
-    "MDF",
+    formulation_name="MDF",
     maximize_objective=True,
 )
 scenario.set_differentiation_method()

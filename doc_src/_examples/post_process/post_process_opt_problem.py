@@ -51,7 +51,7 @@ execute_algo(optimization_problem, "NLOPT_COBYLA", max_iter=10)
 # Then,
 # we can post-process this :class:`.OptimizationProblem`
 # with the function :func:`.execute_post`:
-execute_post(optimization_problem, "BasicHistory", variable_names=["y"])
+execute_post(optimization_problem, post_name="BasicHistory", variable_names=["y"])
 
 # %%
 # .. note::
