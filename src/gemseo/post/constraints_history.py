@@ -38,11 +38,11 @@ from numpy import max as np_max
 from numpy import sign
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.constraints_history_settings import ConstraintsHistorySettings
+from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
 from gemseo.post.core.colormaps import RG_SEISMIC
 
 
-class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
+class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
     r"""A matrix of constraint history plots.
 
     A blue line represents the values of a constraint w.r.t. the iterations.
@@ -63,9 +63,9 @@ class ConstraintsHistory(BasePost[ConstraintsHistorySettings]):
     constraint is (or should be) active.
     """
 
-    Settings: ClassVar[type[ConstraintsHistorySettings]] = ConstraintsHistorySettings
+    Settings: ClassVar[type[ConstraintsHistory_Settings]] = ConstraintsHistory_Settings
 
-    def _plot(self, settings: ConstraintsHistorySettings) -> None:
+    def _plot(self, settings: ConstraintsHistory_Settings) -> None:
         """
         Raises:
             ValueError: When an item of ``constraint_names`` is not a constraint name.

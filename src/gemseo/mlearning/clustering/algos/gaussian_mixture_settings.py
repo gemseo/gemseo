@@ -21,5 +21,5 @@ from gemseo.mlearning.clustering.algos.base_clusterer_settings import (
 )
 
 
-class GaussianMixtureSettings(BaseClustererSettings):
+class GaussianMixture_Settings(BaseClustererSettings):  # noqa: N801
     """The settings of the Gaussian mixture model."""

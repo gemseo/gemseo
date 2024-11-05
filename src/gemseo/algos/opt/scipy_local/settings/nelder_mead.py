@@ -30,7 +30,7 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 
-class NelderMeadSettings(BaseScipyLocalSettings):
+class NELDER_MEAD_Settings(BaseScipyLocalSettings):  # noqa: N801
     """Settings for the SciPy Nelder-Mead algorithm."""
 
     _TARGET_CLASS_NAME = "NELDER-MEAD"

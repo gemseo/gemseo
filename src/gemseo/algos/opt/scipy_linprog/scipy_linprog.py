@@ -39,10 +39,10 @@ from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import 
     BaseSciPyLinProgSettings,
 )
 from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
-    HiGHSDualSimplexSettings,
+    DUAL_SIMPLEX_Settings,
 )
 from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
-    HiGHSInteriorPointSettings,
+    INTERIOR_POINT_Settings,
 )
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
@@ -95,14 +95,14 @@ class ScipyLinprog(BaseOptimizationLibrary):
             description=("Linear programming using the HiGHS interior point solver."),
             internal_algorithm_name="highs-ipm",
             website=f"{__DOC}optimize.linprog-highs-ipm.html",
-            Settings=HiGHSInteriorPointSettings,
+            Settings=INTERIOR_POINT_Settings,
         ),
         "DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
             algorithm_name="Dual simplex",
             description=("Linear programming using the HiGHS dual simplex solver."),
             internal_algorithm_name="highs-ds",
             website=f"{__DOC}optimize.linprog-highs-ds.html",
-            Settings=HiGHSDualSimplexSettings,
+            Settings=DUAL_SIMPLEX_Settings,
         ),
     }
 

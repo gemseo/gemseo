@@ -31,7 +31,7 @@ from numpy import array
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.parallel_coordinates_settings import ParallelCoordinatesSettings
+from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -42,12 +42,14 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class ParallelCoordinates(BasePost[ParallelCoordinatesSettings]):
+class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
     """Parallel coordinates plot."""
 
-    Settings: ClassVar[type[ParallelCoordinatesSettings]] = ParallelCoordinatesSettings
+    Settings: ClassVar[type[ParallelCoordinates_Settings]] = (
+        ParallelCoordinates_Settings
+    )
 
-    def _plot(self, settings: ParallelCoordinatesSettings) -> None:
+    def _plot(self, settings: ParallelCoordinates_Settings) -> None:
         problem = self.optimization_problem
 
         variable_history, variable_names, _ = self.database.get_history_array(

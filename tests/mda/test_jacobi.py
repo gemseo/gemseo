@@ -35,7 +35,7 @@ from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.jacobi_settings import MDAJacobiSettings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -263,7 +263,7 @@ def test_no_coupling():
 
 def test_settings():
     disciplines = [Sellar1(), Sellar2()]
-    settings = MDAJacobiSettings(max_mda_iter=5, tolerance=0)
+    settings = MDAJacobi_Settings(max_mda_iter=5, tolerance=0)
 
     mda = create_mda("MDAJacobi", disciplines, settings_model=settings)
     assert mda.settings.max_mda_iter == 5

@@ -21,26 +21,26 @@
 from __future__ import annotations
 
 from gemseo.algos.linear_solvers.scipy_linalg.settings.bicg import (
-    BICGSettings,  # noqa: F401
+    BICG_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab import (
-    BICGStabSettings,  # noqa: F401
+    BICGSTAB_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import (
-    CGSettings,  # noqa: F401
+    CG_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import (
-    CGSSettings,  # noqa: F401
+    CGS_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import (
-    GCROTSettings,  # noqa: F401
+    GCROT_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import (
-    GMRESSettings,  # noqa: F401
+    GMRES_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import (
-    LGMRESSettings,  # noqa: F401
+    LGMRES_Settings,  # noqa: F401
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.tfqmr import (
-    TFQMRSettings,  # noqa: F401
+    TFQMR_Settings,  # noqa: F401
 )

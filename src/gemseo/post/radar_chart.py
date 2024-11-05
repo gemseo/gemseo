@@ -28,15 +28,15 @@ from numpy import zeros
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.base_post import BasePost
 from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
-from gemseo.post.radar_chart_settings import RadarChartSettings
+from gemseo.post.radar_chart_settings import RadarChart_Settings
 
 
-class RadarChart(BasePost[RadarChartSettings]):
+class RadarChart(BasePost[RadarChart_Settings]):
     """Plot the constraints on a radar chart at a given database index."""
 
-    Settings: ClassVar[type[RadarChartSettings]] = RadarChartSettings
+    Settings: ClassVar[type[RadarChart_Settings]] = RadarChart_Settings
 
-    def _plot(self, settings: RadarChartSettings) -> None:
+    def _plot(self, settings: RadarChart_Settings) -> None:
         """
         Raises:
             ValueError: When a requested name is not a constraint

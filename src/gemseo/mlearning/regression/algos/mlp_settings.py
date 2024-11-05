@@ -26,7 +26,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class MLPRegressorSettings(BaseRegressorSettings):
+class MLPRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the multiLayer perceptron (MLP)."""
 
     hidden_layer_sizes: tuple[PositiveInt, ...] = Field(

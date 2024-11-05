@@ -26,14 +26,16 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.algos.opt.scipy_global.settings.dual_annealing import DualAnnealingSettings
+from gemseo.algos.opt.scipy_global.settings.dual_annealing import (
+    DUAL_ANNEALING_Settings,
+)
 from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
     BaseSciPyLinProgSettings,
 )
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
-from gemseo.algos.opt.scipy_local.settings.tnc import TNCSettings
-from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILPSettings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
+from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -194,10 +196,10 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
 @pytest.mark.parametrize(
     ("settings_model", "redundant_setting"),
     [
-        (DualAnnealingSettings, "maxfun"),
-        (SLSQPSettings, "maxiter"),
-        (TNCSettings, "eps"),
-        (SciPyMILPSettings, "time_limit"),
+        (DUAL_ANNEALING_Settings, "maxfun"),
+        (SLSQP_Settings, "maxiter"),
+        (TNC_Settings, "eps"),
+        (SciPyMILP_Settings, "time_limit"),
         (BaseSciPyLinProgSettings, "maxiter"),
     ],
 )

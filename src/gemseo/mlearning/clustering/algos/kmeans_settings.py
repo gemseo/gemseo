@@ -21,5 +21,5 @@ from gemseo.mlearning.clustering.algos.base_clusterer_settings import (
 )
 
 
-class KMeansSettings(BaseClustererSettings):
+class KMeans_Settings(BaseClustererSettings):  # noqa: N801
     """The settings of the k-means clustering model."""

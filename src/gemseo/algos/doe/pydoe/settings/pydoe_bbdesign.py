@@ -22,7 +22,7 @@ from pydantic import PositiveInt  # noqa: TCH002
 from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 
 
-class BBDESIGNSettings(BasePyDOESettings):
+class PYDOE_BBDESIGN_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the Box-Behnken DOE from the pyDOE library."""
 
     _TARGET_CLASS_NAME = "PYDOE_BBDESIGN"

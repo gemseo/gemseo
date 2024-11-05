@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class ScatterPlotMatrixSettings(BasePostSettings):  # noqa: D101
+class ScatterPlotMatrix_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "ScatterPlotMatrix"
     filter_non_feasible: bool = Field(
         default=False,
@@ -37,4 +37,4 @@ class ScatterPlotMatrixSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(ScatterPlotMatrixSettings, "fig_size", default=(10.0, 10.0))
+update_field(ScatterPlotMatrix_Settings, "fig_size", default=(10.0, 10.0))

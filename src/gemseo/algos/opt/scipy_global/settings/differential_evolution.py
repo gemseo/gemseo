@@ -28,7 +28,7 @@ from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class DifferentialEvolutionSettings(BaseSciPyGlobalSettings):
+class DIFFERENTIAL_EVOLUTION_Settings(BaseSciPyGlobalSettings):  # noqa: N801
     """The SciPy differential evolution setting."""
 
     _TARGET_CLASS_NAME = "DIFFERENTIAL_EVOLUTION"

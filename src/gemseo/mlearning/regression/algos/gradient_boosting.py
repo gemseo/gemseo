@@ -29,7 +29,7 @@ from sklearn.ensemble import GradientBoostingRegressor as SKLGradientBoosting
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.gradient_boosting_settings import (
-    GradientBoostingRegressorSettings,
+    GradientBoostingRegressor_Settings,
 )
 
 if TYPE_CHECKING:
@@ -42,8 +42,8 @@ class GradientBoostingRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_ALGO_NAME: ClassVar[str] = "GradientBoostingRegressor"
 
-    Settings: ClassVar[type[GradientBoostingRegressorSettings]] = (
-        GradientBoostingRegressorSettings
+    Settings: ClassVar[type[GradientBoostingRegressor_Settings]] = (
+        GradientBoostingRegressor_Settings
     )
 
     def _post_init(self):

@@ -22,7 +22,7 @@ from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import BaseSciPyDOE
 from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Optimizer
 
 
-class HaltonSettings(BaseSciPyDOESettings):
+class Halton_Settings(BaseSciPyDOESettings):  # noqa: N801
     """The settings for the Halton DOE sequence from the SciPy library."""
 
     _TARGET_CLASS_NAME = "Halton"

@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class MNBISettings(BaseOptimizerSettings):
+class MNBI_Settings(BaseOptimizerSettings):  # noqa: N801
     """The mNBI algorithm settings."""
 
     _TARGET_CLASS_NAME = "MNBI"

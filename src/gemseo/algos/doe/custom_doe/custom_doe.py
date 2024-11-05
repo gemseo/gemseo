@@ -40,7 +40,7 @@ from pandas import read_csv
 
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOESettings
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -79,7 +79,7 @@ class CustomDOE(BaseDOELibrary):
             ),
             internal_algorithm_name="CustomDOE",
             library_name="CustomDOE",
-            Settings=CustomDOESettings,
+            Settings=CustomDOE_Settings,
         )
     }
 

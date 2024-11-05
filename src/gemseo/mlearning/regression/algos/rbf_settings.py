@@ -41,7 +41,7 @@ class Function(StrEnum):
     THIN_PLATE = "thin_plate"
 
 
-class RBFRegressorSettings(BaseRegressorSettings):
+class RBFRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the RBF network for regression."""
 
     function: (

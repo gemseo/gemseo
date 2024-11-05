@@ -27,7 +27,7 @@ from typing import ClassVar
 from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -122,10 +122,10 @@ class MDAGaussSeidel(BaseMDASolver):
     These :math:`n` steps account for one iteration of the Gauss-Seidel method.
     """
 
-    Settings: ClassVar[type[MDAGaussSeidelSettings]] = MDAGaussSeidelSettings
+    Settings: ClassVar[type[MDAGaussSeidel_Settings]] = MDAGaussSeidel_Settings
     """The pydantic model for the settings."""
 
-    settings: MDAGaussSeidelSettings
+    settings: MDAGaussSeidel_Settings
     """The settings of the MDA"""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
@@ -133,7 +133,7 @@ class MDAGaussSeidel(BaseMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAGaussSeidelSettings | None = None,
+        settings_model: MDAGaussSeidel_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(disciplines, settings_model=settings_model, **settings)

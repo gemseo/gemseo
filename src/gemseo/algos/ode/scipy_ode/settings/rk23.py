@@ -21,7 +21,7 @@ from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
 )
 
 
-class RK23Settings(BaseScipyODESolverSettings):
+class RK23_Settings(BaseScipyODESolverSettings):  # noqa: N801
     """Settings for the RK23 ODE solver algorithm from Scipy."""
 
     _TARGET_CLASS_NAME = "RK23"

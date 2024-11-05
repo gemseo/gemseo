@@ -19,5 +19,5 @@ from __future__ import annotations
 from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
 
 
-class MDAGaussSeidelSettings(BaseMDASolverSettings):
+class MDAGaussSeidel_Settings(BaseMDASolverSettings):  # noqa: N801
     """The settings for :class:`.MDAGaussSeidel`."""

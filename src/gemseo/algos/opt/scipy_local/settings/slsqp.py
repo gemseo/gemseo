@@ -28,7 +28,7 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 )
 
 
-class SLSQPSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
+class SLSQP_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy SLSQP algorithm."""
 
     _TARGET_CLASS_NAME = "SLSQP"

@@ -21,7 +21,7 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_setting
 )
 
 
-class BICGSettings(BaseSciPyLinalgSettingsBase):
+class BICG_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
     """The settings of the SciPy BICG algorithm."""
 
     _TARGET_CLASS_NAME = "BICG"

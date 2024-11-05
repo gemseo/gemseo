@@ -259,7 +259,7 @@ class BaseScenario(BaseMonitoredProcess):
         if algo_settings_model is None:
             algo_name = algo_settings.pop("algo_name", None)
             if algo_name is None:
-                msg = 'The algorithm name is missing; use the argument "name".'
+                msg = 'The algorithm name is missing; use the argument "algo_name".'
                 raise ValueError(msg)
         else:
             algo_settings = {"settings_model": algo_settings_model}

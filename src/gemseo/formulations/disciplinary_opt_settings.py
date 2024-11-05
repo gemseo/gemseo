@@ -19,7 +19,7 @@ from __future__ import annotations
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
 
 
-class DisciplinaryOptSettings(BaseFormulationSettings):
+class DisciplinaryOpt_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the :class:`.DisciplinaryOpt` formulation."""
 
     _TARGET_CLASS_NAME = "DisciplinaryOpt"

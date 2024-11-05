@@ -28,17 +28,17 @@ from numpy import arange
 from numpy import newaxis
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.basic_history_settings import BasicHistorySettings
+from gemseo.post.basic_history_settings import BasicHistory_Settings
 from gemseo.post.dataset.lines import Lines
 
 
-class BasicHistory(BasePost[BasicHistorySettings]):
+class BasicHistory(BasePost[BasicHistory_Settings]):
     """Plot the history of selected constraint, objective and observable functions.
 
     This post-processor requires the names of these selected outputs.
     """
 
-    Settings: ClassVar[type[BasicHistorySettings]] = BasicHistorySettings
+    Settings: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
 
     __ITERATION_NAME: Final[str] = ",;:!"
     """The name for the variable iteration in the dataset.
@@ -46,7 +46,7 @@ class BasicHistory(BasePost[BasicHistorySettings]):
     A name that a user cannot chose for its own variables. Only used in the background.
     """
 
-    def _plot(self, settings: BasicHistorySettings) -> None:  # noqa: D205, D212, D415
+    def _plot(self, settings: BasicHistory_Settings) -> None:  # noqa: D205, D212, D415
         problem = self.optimization_problem
         dataset = problem.to_dataset(opt_naming=False)
         dataset.add_variable(

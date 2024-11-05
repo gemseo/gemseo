@@ -39,15 +39,15 @@ from numpy import ones_like
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.post.hessian_history_settings import HessianHistorySettings
+from gemseo.post.hessian_history_settings import HessianHistory_Settings
 
 
 class HessianHistory(BasePost):
     """Plot the history of the diagonal of the Hessian matrix."""
 
-    Settings: ClassVar[type[HessianHistorySettings]] = HessianHistorySettings
+    Settings: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
 
-    def _plot(self, settings: HessianHistorySettings) -> None:
+    def _plot(self, settings: HessianHistory_Settings) -> None:
         if self.database.check_output_history_is_empty(
             self.database.get_gradient_name(self._standardized_obj_name)
         ):

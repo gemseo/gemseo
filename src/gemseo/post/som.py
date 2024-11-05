@@ -45,7 +45,7 @@ from numpy import zeros
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.som_settings import SOMSettings
+from gemseo.post.som_settings import SOM_Settings
 from gemseo.third_party import sompy
 
 if TYPE_CHECKING:
@@ -58,13 +58,13 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class SOM(BasePost[SOMSettings]):
+class SOM(BasePost[SOM_Settings]):
     """Self organizing map clustering optimization history.
 
     Options of the plot method are the x- and y- numbers of cells in the SOM.
     """
 
-    Settings: ClassVar[type[SOMSettings]] = SOMSettings
+    Settings: ClassVar[type[SOM_Settings]] = SOM_Settings
     __CMAP: Final[tuple[str, tuple[tuple[float, float, float], ...]]] = PARULA
 
     @staticmethod
@@ -100,7 +100,7 @@ class SOM(BasePost[SOMSettings]):
         var_som.train(verbose=verbose)
         return var_som
 
-    def _plot(self, settings: SOMSettings) -> None:
+    def _plot(self, settings: SOM_Settings) -> None:
         n_x = settings.n_x
         n_y = settings.n_y
         annotate = settings.annotate

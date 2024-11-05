@@ -32,7 +32,7 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 from gemseo.utils.seeder import SEED
 
 
-class GaussianProcessRegressorSettings(BaseRegressorSettings):
+class GaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the Gaussian process regressor from scikit-learn."""
 
     kernel: Annotated[Kernel, WithJsonSchema({})] | None = Field(

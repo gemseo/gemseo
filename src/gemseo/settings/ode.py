@@ -16,9 +16,9 @@
 
 from __future__ import annotations
 
-from gemseo.algos.ode.scipy_ode.settings.bdf import BDFSettings  # noqa: F401
-from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853Settings  # noqa: F401
-from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODASettings  # noqa: F401
-from gemseo.algos.ode.scipy_ode.settings.radau import RadauSettings  # noqa: F401
-from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23Settings  # noqa: F401
-from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45Settings  # noqa: F401
+from gemseo.algos.ode.scipy_ode.settings.bdf import BDF_Settings  # noqa: F401
+from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853_Settings  # noqa: F401
+from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODA_Settings  # noqa: F401
+from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings  # noqa: F401
+from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23_Settings  # noqa: F401
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings  # noqa: F401

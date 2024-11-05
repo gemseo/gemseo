@@ -23,7 +23,7 @@ from gemseo.algos.doe.base_n_samples_based_doe_settings import (
 )
 
 
-class DiagonalDOESettings(BaseNSamplesBasedDOESettings):
+class DiagonalDOE_Settings(BaseNSamplesBasedDOESettings):  # noqa: N801
     """The settings of the diagonal DOE for scalable model construction."""
 
     _TARGET_CLASS_NAME = "DiagonalDOE"

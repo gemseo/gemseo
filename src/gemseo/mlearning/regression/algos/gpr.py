@@ -116,7 +116,7 @@ from gemseo.mlearning.regression.algos.base_random_process_regressor import (
     BaseRandomProcessRegressor,
 )
 from gemseo.mlearning.regression.algos.gpr_settings import (
-    GaussianProcessRegressorSettings,
+    GaussianProcessRegressor_Settings,
 )
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -134,8 +134,8 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
 
-    Settings: ClassVar[type[GaussianProcessRegressorSettings]] = (
-        GaussianProcessRegressorSettings
+    Settings: ClassVar[type[GaussianProcessRegressor_Settings]] = (
+        GaussianProcessRegressor_Settings
     )
 
     def _post_init(self):

@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class ParetoFrontSettings(BasePostSettings):  # noqa: D101
+class ParetoFront_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "ParetoFront"
     show_non_feasible: bool = Field(
         default=True,
@@ -42,4 +42,4 @@ class ParetoFrontSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(ParetoFrontSettings, "fig_size", default=(10.0, 10.0))
+update_field(ParetoFront_Settings, "fig_size", default=(10.0, 10.0))

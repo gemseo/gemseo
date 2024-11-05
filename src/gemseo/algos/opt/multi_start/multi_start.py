@@ -26,7 +26,7 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
-    MultiStartSettings,
+    MultiStart_Settings,
 )
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.utils.multiprocessing.execution import execute
@@ -58,7 +58,7 @@ class MultiStart(BaseOptimizationLibrary):
             handle_integer_variables=True,
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
-            Settings=MultiStartSettings,
+            Settings=MultiStart_Settings,
         )
     }
 

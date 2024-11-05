@@ -24,7 +24,7 @@ from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import 
 )
 
 
-class HiGHSDualSimplexSettings(BaseSciPyLinProgSettings):
+class DUAL_SIMPLEX_Settings(BaseSciPyLinProgSettings):  # noqa: N801
     """The HiGHS dual simplex method setting."""
 
     _TARGET_CLASS_NAME = "DUAL_SIMPLEX"

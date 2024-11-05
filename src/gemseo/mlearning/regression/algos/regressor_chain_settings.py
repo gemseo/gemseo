@@ -21,5 +21,5 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 )
 
 
-class RegressorChainSettings(BaseRegressorSettings):
+class RegressorChain_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the regressor chain."""

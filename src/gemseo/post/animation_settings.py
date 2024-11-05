@@ -29,7 +29,7 @@ from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
 
 
-class AnimationSettings(BasePostSettings):  # noqa: D101
+class Animation_Settings(BasePostSettings):  # noqa: D101, N801
     # This is required to supporting the field post_processor.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

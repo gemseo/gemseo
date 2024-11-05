@@ -45,7 +45,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBISettings
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 configure_logger()
@@ -59,7 +59,7 @@ configure_logger()
 # with a maximum of 200 iterations.
 # The analytic gradients are provided.
 problem = BinhKorn()
-mnbi_settings = MNBISettings(
+mnbi_settings = MNBI_Settings(
     max_iter=10000,
     sub_optim_max_iter=200,
     n_sub_optim=50,

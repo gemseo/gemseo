@@ -27,7 +27,7 @@ from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
 )
 
 
-class OTFullFactSettings(BaseOpenTURNSSettings):
+class OT_FULLFACT_Settings(BaseOpenTURNSSettings):  # noqa: N801
     """The settings for the full factorial DOE from the OpenTURNS library."""
 
     _TARGET_CLASS_NAME = "OT_FULLFACT"

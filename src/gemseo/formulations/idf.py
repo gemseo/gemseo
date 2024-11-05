@@ -36,7 +36,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-from gemseo.formulations.idf_settings import IDFSettings
+from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
@@ -62,16 +62,16 @@ class IDF(BaseMDOFormulation):
     multidisciplinary analysis is made at the optimum.
     """
 
-    Settings: ClassVar[type[IDFSettings]] = IDFSettings
+    Settings: ClassVar[type[IDF_Settings]] = IDF_Settings
 
-    _settings: IDFSettings
+    _settings: IDF_Settings
 
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        settings_model: IDFSettings | None = None,
+        settings_model: IDF_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(

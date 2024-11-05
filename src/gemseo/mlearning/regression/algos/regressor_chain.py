@@ -37,7 +37,7 @@ from typing import NamedTuple
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.regressor_chain_settings import (
-    RegressorChainSettings,
+    RegressorChain_Settings,
 )
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -59,7 +59,7 @@ class RegressorChain(BaseRegressor):
 
     SHORT_ALGO_NAME: ClassVar[str] = "RegressorChain"
 
-    Settings: ClassVar[type[RegressorChainSettings]] = RegressorChainSettings
+    Settings: ClassVar[type[RegressorChain_Settings]] = RegressorChain_Settings
 
     def _post_init(self):
         super()._post_init()

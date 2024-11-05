@@ -83,7 +83,7 @@ from gemseo.mlearning.core.selection import MLAlgoSelection
 from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.factory import RegressorFactory
-from gemseo.mlearning.regression.algos.moe_settings import MOESettings
+from gemseo.mlearning.regression.algos.moe_settings import MOE_Settings
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
@@ -170,7 +170,7 @@ class MOERegressor(BaseRegressor):
 
     DataFormatters = MOEDataFormatters
 
-    Settings: ClassVar[type[MOESettings]] = MOESettings
+    Settings: ClassVar[type[MOE_Settings]] = MOE_Settings
 
     def _post_init(self):
         super()._post_init()

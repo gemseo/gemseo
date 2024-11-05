@@ -88,7 +88,7 @@ from gemseo import write_design_space
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
@@ -763,7 +763,8 @@ def variables_space():
 
 
 @pytest.mark.parametrize(
-    "settings", [{"n_samples": 4}, {"settings_model": FULLFACTSettings(n_samples=4)}]
+    "settings",
+    [{"n_samples": 4}, {"settings_model": PYDOE_FULLFACT_Settings(n_samples=4)}],
 )
 @pytest.mark.parametrize(
     ("transformation", "expected_points"),

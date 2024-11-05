@@ -23,18 +23,18 @@ from matplotlib import colors
 from matplotlib import pyplot as plt
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.topology_view_settings import TopologyViewSettings
+from gemseo.post.topology_view_settings import TopologyView_Settings
 from gemseo.typing import RealArray
 
 
-class TopologyView(BasePost[TopologyViewSettings]):
+class TopologyView(BasePost[TopologyView_Settings]):
     """Visualization of the solution of a 2D topology optimization problem."""
 
-    Settings: ClassVar[type[TopologyViewSettings]] = TopologyViewSettings
+    Settings: ClassVar[type[TopologyView_Settings]] = TopologyView_Settings
 
     def _plot(
         self,
-        settings: TopologyViewSettings,
+        settings: TopologyView_Settings,
     ) -> None:
         iterations = settings.iterations
         observable = settings.observable

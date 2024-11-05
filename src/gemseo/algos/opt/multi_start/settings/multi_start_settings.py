@@ -26,7 +26,7 @@ from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 
-class MultiStartSettings(BaseOptimizerSettings):
+class MultiStart_Settings(BaseOptimizerSettings):  # noqa: N801
     """The multi-start algorithm settings."""
 
     _TARGET_CLASS_NAME = "MultiStart"

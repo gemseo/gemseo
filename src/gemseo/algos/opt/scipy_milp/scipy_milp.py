@@ -39,7 +39,7 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILPSettings
+from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import get_row
@@ -68,7 +68,7 @@ class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     handle_integer_variables: bool = True
     """Whether the optimization algorithm handles integer variables."""
 
-    Settings: type[SciPyMILPSettings] = SciPyMILPSettings
+    Settings: type[SciPyMILP_Settings] = SciPyMILP_Settings
     """The option validation model for SciPy linear programming library."""
 
 
@@ -89,7 +89,7 @@ class ScipyMILP(BaseOptimizationLibrary):
             description="Mixed-integer linear programming",
             internal_algorithm_name="milp",
             website=f"{__DOC}scipy.optimize.milp.html",
-            Settings=SciPyMILPSettings,
+            Settings=SciPyMILP_Settings,
         ),
     }
 

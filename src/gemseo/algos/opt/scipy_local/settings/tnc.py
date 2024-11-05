@@ -29,7 +29,7 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 )
 
 
-class TNCSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
+class TNC_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy TNC algorithm."""
 
     _TARGET_CLASS_NAME = "TNC"

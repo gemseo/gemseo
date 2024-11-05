@@ -28,7 +28,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -107,7 +107,7 @@ scenario.xdsmize(save_html=False, pdf_build=False)
 # We set the maximum number of iterations, the optimizer
 # and the optimizer settings
 
-slsqp_settings = SLSQPSettings(
+slsqp_settings = SLSQP_Settings(
     max_iter=20,
     ftol_rel=1e-10,
     ineq_tolerance=1e-3,

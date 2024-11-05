@@ -38,12 +38,12 @@ from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
     BaseScipyODESolverJacSettings,
 )
-from gemseo.algos.ode.scipy_ode.settings.bdf import BDFSettings
-from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853Settings
-from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODASettings
-from gemseo.algos.ode.scipy_ode.settings.radau import RadauSettings
-from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23Settings
-from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45Settings
+from gemseo.algos.ode.scipy_ode.settings.bdf import BDF_Settings
+from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853_Settings
+from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODA_Settings
+from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings
+from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23_Settings
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 
 if TYPE_CHECKING:
     from gemseo.algos.ode.ode_problem import ODEProblem
@@ -73,28 +73,28 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             internal_algorithm_name="RK45",
             description="Explicit Runge-Kutta method of order 5(4)",
             website=f"{__DOC}scipy.integrate.RK45.html",
-            Settings=RK45Settings,
+            Settings=RK45_Settings,
         ),
         "RK23": ScipyODESolverDescription(
             algorithm_name="RK23",
             internal_algorithm_name="RK23",
             description="Explicit Runge-Kutta method of order 3(2)",
             website=f"{__DOC}scipy.integrate.RK23.html",
-            Settings=RK23Settings,
+            Settings=RK23_Settings,
         ),
         "DOP853": ScipyODESolverDescription(
             algorithm_name="DOP853",
             internal_algorithm_name="DOP853",
             description="Explicit Runge-Kutta method of order 8",
             website=f"{__DOC}scipy.integrate.DOP853.html",
-            Settings=DOP853Settings,
+            Settings=DOP853_Settings,
         ),
         "Radau": ScipyODESolverDescription(
             algorithm_name="Radau",
             internal_algorithm_name="Radau",
             description="Implicit Runge-Kutta method of the Radau IIA type of order 5",
             website=f"{__DOC}scipy.integrate.Radau.html",
-            Settings=RadauSettings,
+            Settings=Radau_Settings,
         ),
         "BDF": ScipyODESolverDescription(
             algorithm_name="BDF",
@@ -104,14 +104,14 @@ class ScipyODEAlgos(BaseODESolverLibrary):
                 " differentiation formula for the derivative approximation"
             ),
             website=f"{__DOC}scipy.integrate.BDF.html",
-            Settings=BDFSettings,
+            Settings=BDF_Settings,
         ),
         "LSODA": ScipyODESolverDescription(
             algorithm_name="LSODA",
             internal_algorithm_name="LSODA",
             description="Adams/BDF method with automatic stiffness detection/switching",
             website=f"{__DOC}scipy.integrate.LSODA.html",
-            Settings=LSODASettings,
+            Settings=LSODA_Settings,
         ),
     }
 

@@ -30,7 +30,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core._process_flow.execution_sequences.execution_sequence import (
     ExecutionSequence,
 )
@@ -201,7 +201,7 @@ def test_xdsmize_bilevel(options) -> None:
     structure = SobieskiStructure()
     mission = SobieskiMission()
 
-    settings_model = SLSQPSettings(
+    settings_model = SLSQP_Settings(
         max_iter=100,
         xtol_rel=1e-7,
         xtol_abs=1e-7,

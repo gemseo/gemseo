@@ -29,7 +29,7 @@ from typing import ClassVar
 
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_root import BaseMDARoot
-from gemseo.mda.newton_raphson_settings import MDANewtonRaphsonSettings
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -68,10 +68,10 @@ class MDANewtonRaphson(BaseMDARoot):
     where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
     """
 
-    Settings: ClassVar[type[MDANewtonRaphsonSettings]] = MDANewtonRaphsonSettings
+    Settings: ClassVar[type[MDANewtonRaphson_Settings]] = MDANewtonRaphson_Settings
     """The pydantic model for the settings."""
 
-    settings: MDANewtonRaphsonSettings
+    settings: MDANewtonRaphson_Settings
     """The settings of the MDA"""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
@@ -79,7 +79,7 @@ class MDANewtonRaphson(BaseMDARoot):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDANewtonRaphsonSettings | None = None,
+        settings_model: MDANewtonRaphson_Settings | None = None,
         **settings: Any,
     ) -> None:
         """

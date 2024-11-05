@@ -21,7 +21,7 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_setting
 )
 
 
-class BICGStabSettings(BaseSciPyLinalgSettingsBase):
+class BICGSTAB_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
     """The settings of the SciPy BICGStab algorithm."""
 
     _TARGET_CLASS_NAME = "BICGSTAB"

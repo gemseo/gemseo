@@ -37,11 +37,11 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.scipy.settings.halton import HaltonSettings
-from gemseo.algos.doe.scipy.settings.lhs import LHSSettings
-from gemseo.algos.doe.scipy.settings.mc import MCSettings
-from gemseo.algos.doe.scipy.settings.poisson_disk import PoissonDiskSettings
-from gemseo.algos.doe.scipy.settings.sobol import SobolSettings
+from gemseo.algos.doe.scipy.settings.halton import Halton_Settings
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
+from gemseo.algos.doe.scipy.settings.poisson_disk import PoissonDisk_Settings
+from gemseo.algos.doe.scipy.settings.sobol import Sobol_Settings
 from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import SCIPY_VERSION
 from gemseo.utils.seeder import SEED
@@ -132,31 +132,31 @@ class SciPyDOE(BaseDOELibrary):
             algorithm_name=__HALTON,
             description=__NAMES_TO_CLASSES[__HALTON].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__HALTON].__name__,
-            Settings=HaltonSettings,
+            Settings=Halton_Settings,
         ),
         __LHS: SciPyDOEAlgorithmDescription(
             algorithm_name=__LHS,
             description=__NAMES_TO_CLASSES[__LHS].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__LHS].__name__,
-            Settings=LHSSettings,
+            Settings=LHS_Settings,
         ),
         __MONTE_CARLO: SciPyDOEAlgorithmDescription(
             algorithm_name=__MONTE_CARLO,
             description=__NAMES_TO_CLASSES[__MONTE_CARLO].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__MONTE_CARLO].__name__,
-            Settings=MCSettings,
+            Settings=MC_Settings,
         ),
         __POISSON_DISK: SciPyDOEAlgorithmDescription(
             algorithm_name=__POISSON_DISK,
             description=__NAMES_TO_CLASSES[__POISSON_DISK].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__POISSON_DISK].__name__,
-            Settings=PoissonDiskSettings,
+            Settings=PoissonDisk_Settings,
         ),
         __SOBOL: SciPyDOEAlgorithmDescription(
             algorithm_name=__SOBOL,
             description=__NAMES_TO_CLASSES[__SOBOL].__doc__.split("\n")[0][:-1],
             internal_algorithm_name=__NAMES_TO_CLASSES[__SOBOL].__name__,
-            Settings=SobolSettings,
+            Settings=Sobol_Settings,
         ),
     }
 

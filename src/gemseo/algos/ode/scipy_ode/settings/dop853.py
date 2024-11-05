@@ -21,7 +21,7 @@ from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
 )
 
 
-class DOP853Settings(BaseScipyODESolverSettings):
+class DOP853_Settings(BaseScipyODESolverSettings):  # noqa: N801
     """Settings for the DOP853 ODE solver from Scipy."""
 
     _TARGET_CLASS_NAME = "DOP853"

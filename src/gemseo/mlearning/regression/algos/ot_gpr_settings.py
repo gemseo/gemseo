@@ -78,7 +78,7 @@ TNC: Final[TNC] = OT_TNC()
 """The TNC algorithm."""
 
 
-class OTGaussianProcessRegressorSettings(BaseRegressorSettings):
+class OTGaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the Gaussian process regressor from OpenTURNS."""
 
     use_hmat: bool | None = Field(

@@ -49,7 +49,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_history_view_settings import OptHistoryViewSettings
+from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class OptHistoryView(BasePost[OptHistoryViewSettings]):
+class OptHistoryView(BasePost[OptHistoryView_Settings]):
     """Plot the history of the design variables, objective and constraints.
 
     This post-processing generates one plot for the design variables, one plot for the
@@ -74,7 +74,7 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
     constraints (if any).
     """
 
-    Settings: ClassVar[type[OptHistoryViewSettings]] = OptHistoryViewSettings
+    Settings: ClassVar[type[OptHistoryView_Settings]] = OptHistoryView_Settings
 
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
@@ -95,7 +95,7 @@ class OptHistoryView(BasePost[OptHistoryViewSettings]):
     __INEQ_CSTR_CMAP: Final[ListedColormap] = RG_SEISMIC
     __EQ_CSTR_CMAP: Final[str] = "seismic"
 
-    def _plot(self, settings: OptHistoryViewSettings) -> None:
+    def _plot(self, settings: OptHistoryView_Settings) -> None:
         variable_names = settings.variable_names
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(

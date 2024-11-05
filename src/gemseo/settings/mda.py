@@ -16,11 +16,10 @@
 
 from __future__ import annotations
 
-from gemseo.mda.composed_mda_settings import ComposedMDASettings  # noqa: F401
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings  # noqa: F401
-from gemseo.mda.gs_newton_settings import MDAGSNewtonSettings  # noqa: F401
-from gemseo.mda.jacobi_settings import MDAJacobiSettings  # noqa: F401
-from gemseo.mda.mda_chain_settings import MDAChainSettings  # noqa: F401
-from gemseo.mda.newton_raphson_settings import MDANewtonRaphsonSettings  # noqa: F401
-from gemseo.mda.quasi_newton_settings import MDAQuasiNewtonSettings  # noqa: F401
-from gemseo.mda.sequential_mda_settings import MDASequentialSettings  # noqa: F401
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings  # noqa: F401
+from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings  # noqa: F401
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings  # noqa: F401
+from gemseo.mda.mda_chain_settings import MDAChain_Settings  # noqa: F401
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings  # noqa: F401
+from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings  # noqa: F401
+from gemseo.mda.sequential_mda_settings import MDASequential_Settings  # noqa: F401

@@ -26,7 +26,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class RandomForestRegressorSettings(BaseRegressorSettings):
+class RandomForestRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the multiLayer perceptron (MLP)."""
 
     n_estimators: PositiveInt = Field(

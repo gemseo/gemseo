@@ -28,7 +28,7 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_setting
 from gemseo.typing import NumberArray  # noqa: TCH001
 
 
-class GCROTSettings(BaseSciPyLinalgSettingsBase):
+class GCROT_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
     """The settings of the SciPy GCROT algorithm."""
 
     _TARGET_CLASS_NAME = "GCROT"

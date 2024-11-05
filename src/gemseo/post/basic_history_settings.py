@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class BasicHistorySettings(BasePostSettings):  # noqa: D101
+class BasicHistory_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "BasicHistory"
 
     variable_names: Sequence[str] = Field(
@@ -38,4 +38,4 @@ class BasicHistorySettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(BasicHistorySettings, "fig_size", default=(11.0, 6.0))
+update_field(BasicHistory_Settings, "fig_size", default=(11.0, 6.0))

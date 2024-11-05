@@ -35,7 +35,7 @@ from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.correlations_settings import CorrelationsSettings
+from gemseo.post.correlations_settings import Correlations_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class Correlations(BasePost[CorrelationsSettings]):
+class Correlations(BasePost[Correlations_Settings]):
     """Scatter plots of the correlated variables.
 
     These variables can be design variables, constraints, objective or observables. This
@@ -58,9 +58,9 @@ class Correlations(BasePost[CorrelationsSettings]):
     MAXIMUM_CORRELATION_COEFFICIENT: ClassVar[float] = 1.0 - 1e-9
     """The maximum correlation coefficient above which the variable is not plotted."""
 
-    Settings: ClassVar[type[CorrelationsSettings]] = CorrelationsSettings
+    Settings: ClassVar[type[Correlations_Settings]] = Correlations_Settings
 
-    def _plot(self, settings: CorrelationsSettings) -> None:
+    def _plot(self, settings: Correlations_Settings) -> None:
         """
         Raises:
             ValueError: If an element of ``func_names`` is unknown.

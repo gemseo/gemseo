@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
+class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "OptHistoryView"
     variable_names: Sequence[str] = Field(
         default=(),
@@ -72,4 +72,4 @@ class OptHistoryViewSettings(BasePostSettings):  # noqa: D101
         return self
 
 
-update_field(OptHistoryViewSettings, "fig_size", default=(11.0, 6.0))
+update_field(OptHistoryView_Settings, "fig_size", default=(11.0, 6.0))

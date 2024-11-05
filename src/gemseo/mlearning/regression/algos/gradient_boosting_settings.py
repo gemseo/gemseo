@@ -24,7 +24,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 )
 
 
-class GradientBoostingRegressorSettings(BaseRegressorSettings):
+class GradientBoostingRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the gradient boosting for regression."""
 
     n_estimators: PositiveInt = Field(

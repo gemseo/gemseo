@@ -28,7 +28,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_global.scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
-    DifferentialEvolutionSettings,
+    DIFFERENTIAL_EVOLUTION_Settings,
 )
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -98,7 +98,7 @@ def test_differential_evolution_parallel():
     result = OptimizationLibraryFactory().execute(
         problem,
         algo_name="DIFFERENTIAL_EVOLUTION",
-        settings_model=DifferentialEvolutionSettings(
+        settings_model=DIFFERENTIAL_EVOLUTION_Settings(
             max_iter=5,
             workers=2,
             popsize=2,

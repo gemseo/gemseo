@@ -31,7 +31,7 @@ from pydantic import ValidationError
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
-from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOESettings
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.doe.factory import DOELibraryFactory
 
 from .utils import execute_problem
@@ -191,7 +191,7 @@ def test_use_custom_doe_directly():
     "kwargs",
     [
         {"samples": array([[1.0, 2.0]])},
-        {"settings_model": CustomDOESettings(samples=array([[1.0, 2.0]]))},
+        {"settings_model": CustomDOE_Settings(samples=array([[1.0, 2.0]]))},
     ],
 )
 def test_compute_doe(kwargs):

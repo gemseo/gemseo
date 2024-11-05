@@ -25,7 +25,7 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_setting
 from gemseo.typing import NumberArray  # noqa: TCH001
 
 
-class LGMRESSettings(BaseSciPyLinalgSettingsBase):
+class LGMRES_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
     """The settings of the SciPy LGMRES algorithm."""
 
     _TARGET_CLASS_NAME = "LGMRES"
@@ -60,4 +60,4 @@ class LGMRESSettings(BaseSciPyLinalgSettingsBase):
     )
 
 
-DEFAULTSettings = LGMRESSettings
+DEFAULTSettings = LGMRES_Settings

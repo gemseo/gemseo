@@ -30,7 +30,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.doe.pydoe.settings.lhs import LHSSettings
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -131,7 +131,7 @@ scenario.set_differentiation_method()
 # We define the algorithm options. Here the criterion = center option of pyDOE
 # centers the points within the sampling intervals.
 
-lhs_settings = LHSSettings(
+lhs_settings = PYDOE_LHS_Settings(
     n_samples=30,
     criterion="center",
     # Evaluate gradient of the MDA

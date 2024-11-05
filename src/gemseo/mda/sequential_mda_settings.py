@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for SequentialMDA ."""
+"""Settings for MDASequential ."""
 
 from __future__ import annotations
 
@@ -20,5 +20,5 @@ from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.composed_mda_settings import ComposedMDASettings
 
 
-class MDASequentialSettings(BaseMDASettings, ComposedMDASettings):
-    """The settings for :class:`.SequentialMDA`."""
+class MDASequential_Settings(BaseMDASettings, ComposedMDASettings):  # noqa: N801
+    """The settings for :class:`.MDASequential`."""

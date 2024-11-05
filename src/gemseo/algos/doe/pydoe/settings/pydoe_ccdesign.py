@@ -42,7 +42,7 @@ class Face(StrEnum):
     ccf = "ccf"
 
 
-class CCDESIGNSettings(BasePyDOESettings):
+class PYDOE_CCDESIGN_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the central composite DOE from the pyDOE library."""
 
     _TARGET_CLASS_NAME = "PYDOE_CCDESIGN"

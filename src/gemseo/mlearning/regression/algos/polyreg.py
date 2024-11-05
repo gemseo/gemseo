@@ -87,7 +87,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.regression.algos.polyreg_settings import (
-    PolynomialRegressorSettings,
+    PolynomialRegressor_Settings,
 )
 from gemseo.utils.compatibility.sklearn import get_n_input_features_
 
@@ -101,7 +101,9 @@ class PolynomialRegressor(LinearRegressor):
 
     SHORT_ALGO_NAME: ClassVar[str] = "PolyReg"
 
-    Settings: ClassVar[type[PolynomialRegressorSettings]] = PolynomialRegressorSettings
+    Settings: ClassVar[type[PolynomialRegressor_Settings]] = (
+        PolynomialRegressor_Settings
+    )
 
     def _post_init(self):
         """

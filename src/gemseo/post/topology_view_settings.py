@@ -25,7 +25,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class TopologyViewSettings(BasePostSettings):  # noqa: D101
+class TopologyView_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "TopologyView"
     n_x: PositiveInt = Field(
         ...,
@@ -47,4 +47,4 @@ class TopologyViewSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(TopologyViewSettings, "fig_size", default=(6.4, 4.8))
+update_field(TopologyView_Settings, "fig_size", default=(6.4, 4.8))

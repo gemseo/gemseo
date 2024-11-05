@@ -33,7 +33,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-from gemseo.formulations.bilevel_settings import BiLevelSettings
+from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -76,9 +76,9 @@ class BiLevel(BaseMDOFormulation):
     SUBSCENARIOS_LEVEL = "sub-scenarios"
     LEVELS = (SYSTEM_LEVEL, SUBSCENARIOS_LEVEL)
 
-    Settings: ClassVar[type[BiLevelSettings]] = BiLevelSettings
+    Settings: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
 
-    _settings: BiLevelSettings
+    _settings: BiLevel_Settings
 
     __mda_factory: ClassVar[MDAFactory] = MDAFactory()
     """The MDA factory."""
@@ -88,7 +88,7 @@ class BiLevel(BaseMDOFormulation):
         disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        settings_model: BiLevelSettings | None = None,
+        settings_model: BiLevel_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(

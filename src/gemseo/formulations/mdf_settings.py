@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class MDFSettings(BaseFormulationSettings):
+class MDF_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the :class:`.MDF` formulation."""
 
     _TARGET_CLASS_NAME = "MDF"

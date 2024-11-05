@@ -121,7 +121,7 @@ from openturns import StandardDistributionPolynomialFactory
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.pce_settings import CleaningOptions
-from gemseo.mlearning.regression.algos.pce_settings import PCERegressorSettings
+from gemseo.mlearning.regression.algos.pce_settings import PCERegressor_Settings
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import pretty_str
@@ -146,12 +146,12 @@ class PCERegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "OpenTURNS"
     __WEIGHT: Final[str] = "weight"
 
-    Settings: ClassVar[type[PCERegressorSettings]] = PCERegressorSettings
+    Settings: ClassVar[type[PCERegressor_Settings]] = PCERegressor_Settings
 
     def __init__(
         self,
         data: IODataset | None,
-        settings_model: PCERegressorSettings | None = None,
+        settings_model: PCERegressor_Settings | None = None,
         **settings: Any,
     ) -> None:
         """

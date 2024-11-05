@@ -79,7 +79,7 @@ from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
 from gemseo.mlearning.clustering.algos.gaussian_mixture_settings import (
-    GaussianMixtureSettings,
+    GaussianMixture_Settings,
 )
 
 if TYPE_CHECKING:
@@ -94,7 +94,7 @@ class GaussianMixture(BasePredictiveClusterer):
     SHORT_ALGO_NAME: ClassVar[str] = "GMM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[GaussianMixtureSettings]] = GaussianMixtureSettings
+    Settings: ClassVar[type[GaussianMixture_Settings]] = GaussianMixture_Settings
 
     def _post_init(self):
         super()._post_init()

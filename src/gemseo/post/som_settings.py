@@ -23,7 +23,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class SOMSettings(BasePostSettings):  # noqa: D101
+class SOM_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "SOM"
     n_x: PositiveInt = Field(
         default=4,
@@ -39,4 +39,4 @@ class SOMSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(SOMSettings, "fig_size", default=(12.0, 18.0))
+update_field(SOM_Settings, "fig_size", default=(12.0, 18.0))

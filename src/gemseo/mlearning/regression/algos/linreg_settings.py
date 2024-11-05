@@ -26,7 +26,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class LinearRegressorSettings(BaseRegressorSettings):
+class LinearRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the linear regressor."""
 
     fit_intercept: bool = Field(

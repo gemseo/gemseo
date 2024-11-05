@@ -32,7 +32,7 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
@@ -50,9 +50,9 @@ def allclose(a, b):
 
 
 @pytest.fixture
-def mda_setting() -> MDAGaussSeidelSettings:
+def mda_setting() -> MDAGaussSeidel_Settings:
     """Returns the setting for all subsequent MDAs."""
-    return MDAGaussSeidelSettings(tolerance=1e-12, max_mda_iter=30)
+    return MDAGaussSeidel_Settings(tolerance=1e-12, max_mda_iter=30)
 
 
 @pytest.fixture

@@ -33,7 +33,7 @@ from numpy import newaxis
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOESettings,
+    DiagonalDOE_Settings,
 )
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ class DiagonalDOE(BaseDOELibrary):
             description="Diagonal design of experiments",
             internal_algorithm_name="DiagonalDOE",
             library_name="GEMSEO",
-            Settings=DiagonalDOESettings,
+            Settings=DiagonalDOE_Settings,
         )
     }
 

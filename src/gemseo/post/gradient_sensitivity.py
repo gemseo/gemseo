@@ -32,7 +32,7 @@ from numpy import ndarray
 from numpy import where
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.gradient_sensitivity_settings import GradientSensitivitySettings
+from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -46,12 +46,14 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class GradientSensitivity(BasePost[GradientSensitivitySettings]):
+class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
     """Derivatives of the objective and constraints at a given iteration."""
 
-    Settings: ClassVar[type[GradientSensitivitySettings]] = GradientSensitivitySettings
+    Settings: ClassVar[type[GradientSensitivity_Settings]] = (
+        GradientSensitivity_Settings
+    )
 
-    def _plot(self, settings: GradientSensitivitySettings) -> None:
+    def _plot(self, settings: GradientSensitivity_Settings) -> None:
         compute_missing_gradients = settings.compute_missing_gradients
 
         if settings.iteration is None:

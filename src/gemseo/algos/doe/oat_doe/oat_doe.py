@@ -27,7 +27,7 @@ from numpy import array
 
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
-from gemseo.algos.doe.oat_doe.settings.oat_doe_settings import OATDOESettings
+from gemseo.algos.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -76,7 +76,7 @@ class OATDOE(BaseDOELibrary):
             description="The DOE used by a One-factor-at-a-Time sensitivity analysis.",
             internal_algorithm_name="OATDOE",
             library_name="OATDOE",
-            Settings=OATDOESettings,
+            Settings=OATDOE_Settings,
         )
     }
 

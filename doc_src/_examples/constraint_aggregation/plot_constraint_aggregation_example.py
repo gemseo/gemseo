@@ -25,7 +25,7 @@ from copy import deepcopy
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPTMMASettings
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
 
@@ -67,7 +67,7 @@ ds.add_variable(
 ds_new = deepcopy(ds)
 # %%
 # Build the optimization solver settings
-mma_settings = NLOPTMMASettings(
+mma_settings = NLOPT_MMA_Settings(
     ineq_tolerance=1e-5,
     eq_tolerance=1e-5,
     xtol_rel=1e-8,

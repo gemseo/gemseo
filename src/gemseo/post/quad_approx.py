@@ -37,7 +37,7 @@ from numpy import arange
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.post.quad_approx_settings import QuadApproxSettings
+from gemseo.post.quad_approx_settings import QuadApprox_Settings
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class QuadApprox(BasePost[QuadApproxSettings]):
+class QuadApprox(BasePost[QuadApprox_Settings]):
     """Quadratic approximation of a function.
 
     And cuts of the approximation.
@@ -53,9 +53,9 @@ class QuadApprox(BasePost[QuadApproxSettings]):
     The function index can be passed as option.
     """
 
-    Settings: ClassVar[type[QuadApproxSettings]] = QuadApproxSettings
+    Settings: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
-    def _plot(self, settings: QuadApproxSettings) -> None:
+    def _plot(self, settings: QuadApprox_Settings) -> None:
         function = settings.function
         func_index = settings.func_index
 

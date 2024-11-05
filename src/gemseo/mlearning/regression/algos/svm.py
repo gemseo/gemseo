@@ -28,7 +28,7 @@ from numpy import array
 from sklearn.svm import SVR
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.svm_settings import SVMRegressorSettings
+from gemseo.mlearning.regression.algos.svm_settings import SVMRegressor_Settings
 
 if TYPE_CHECKING:
     from gemseo.typing import NumberArray
@@ -40,7 +40,7 @@ class SVMRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_ALGO_NAME: ClassVar[str] = "SVMRegression"
 
-    Settings: ClassVar[type[SVMRegressorSettings]] = SVMRegressorSettings
+    Settings: ClassVar[type[SVMRegressor_Settings]] = SVMRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

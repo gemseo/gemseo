@@ -21,7 +21,7 @@ from gemseo.algos.opt.nlopt.settings.base_gradient_free_nlopt_settings import (
 )
 
 
-class NLOPTCOBYLASettings(BaseGradientFreeNLoptSettings):
+class NLOPT_COBYLA_Settings(BaseGradientFreeNLoptSettings):  # noqa: N801
     """The settings for the NLopt COBYLA algorithm."""
 
     _TARGET_CLASS_NAME = "NLOPT_COBYLA"

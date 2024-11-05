@@ -24,7 +24,7 @@ from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 
-class MorrisDOESettings(BaseDOESettings):
+class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801
     """The ``MorrisDOE`` settings."""
 
     _TARGET_CLASS_NAME = "MorrisDOE"
