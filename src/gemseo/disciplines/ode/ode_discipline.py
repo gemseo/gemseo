@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
     from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
 
 
 class ODEDiscipline(Discipline):
@@ -211,8 +212,8 @@ class ODEDiscipline(Discipline):
         """
         return concatenate_dict_of_arrays_to_array(input_data, names=self.__state_names)
 
-    def _run(self) -> None:
-        self._ode_problem.initial_state = self.__get_state_vector(self.io.data)
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        self._ode_problem.initial_state = self.__get_state_vector(input_data)
         self.__ode_solver.execute(self._ode_problem, **self.__ode_solver_options)
         result = self._ode_problem.result
         if not result.algorithm_has_converged:
@@ -222,13 +223,13 @@ class ODEDiscipline(Discipline):
             )
             raise RuntimeError(msg)
 
-        self.io.data.update(
-            dict(zip(self.__final_state_names, result.terminal_event_state))
-        )
+        output_data = dict(zip(self.__final_state_names, result.terminal_event_state))
+
         if self.output_trajectory:
-            self.io.data.update(
+            output_data.update(
                 dict(zip(self.__trajectory_state_names, result.state_trajectories))
             )
 
-        self.io.data.update({self.__TERMINATION_TIME: result.terminal_event_time})
-        self.io.data[self.__TIMES] = result.times
+        output_data[self.__TERMINATION_TIME] = result.terminal_event_time
+        output_data[self.__TIMES] = result.times
+        return output_data

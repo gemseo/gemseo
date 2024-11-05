@@ -16,15 +16,18 @@
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import TYPE_CHECKING
+from typing import NoReturn
+from typing import final
 
-from gemseo.core._execution_status_observer import DisciplinesStatusObserver
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.typing import StrKeyMapping
 
 
 class ProcessDiscipline(Discipline):
@@ -44,9 +47,6 @@ class ProcessDiscipline(Discipline):
         self.__disciplines = tuple(disciplines)
         if self.cache is not None:
             self.cache._post_set_tolerance = self._post_set_cache_tolerance
-        self.execution_status.add_observer(
-            DisciplinesStatusObserver(self.__disciplines)
-        )
 
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
@@ -58,3 +58,13 @@ class ProcessDiscipline(Discipline):
         for discipline in self.__disciplines:
             if discipline.cache is not None:
                 discipline.cache.tolerance = self.cache.tolerance
+
+    @final
+    def _run(self, input_data: StrKeyMapping) -> NoReturn:
+        """This method shall be implemented, implement _execute instead."""
+        msg = "Do not use _run for process disciplines, use _execute."
+        raise NotImplementedError(msg)
+
+    @abstractmethod
+    def _execute(self) -> None:
+        pass

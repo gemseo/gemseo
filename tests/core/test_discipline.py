@@ -28,6 +28,7 @@ import re
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
@@ -61,6 +62,9 @@ from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 Status = ExecutionStatus.Status
 
@@ -295,7 +299,7 @@ def test_serialize_run_deserialize(tmp_wd) -> None:
     saero_u.execute(input_data)
     to_pickle(saero_u, out_file)
     saero_loc = from_pickle(out_file)
-    saero_loc.execution_status.value = "PENDING"
+    saero_loc.execution_status.value = "DONE"
     saero_loc.execute(input_data)
 
     for k, v in saero_loc.io.data.items():
@@ -358,7 +362,7 @@ def test_linearize_errors() -> None:
             self.input_grammar.update_from_names(["x"])
             self.output_grammar.update_from_names(["y"])
 
-        def _run(self) -> None:
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["y"] = array([2.0])
 
         def _compute_jacobian(self, input_names=(), output_names=()) -> None:
@@ -452,7 +456,7 @@ def test_check_jacobian_2() -> None:
             self.jac_key = "x"
             self.jac_len = 2
 
-        def _run(self) -> None:
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["y"] = array([2.0])
 
         def _compute_jacobian(self, input_names=(), output_names=()) -> None:
@@ -500,7 +504,7 @@ def test_execute_rerun_errors() -> None:
     """Test the execution and errors during re-run of Discipline."""
 
     class MyDisc(Discipline):
-        def _run(self) -> None:
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["b"] = array([1.0])
 
     d = MyDisc()
@@ -510,8 +514,6 @@ def test_execute_rerun_errors() -> None:
     d.execution_status.value = Status.RUNNING
     with pytest.raises(ValueError):
         d.execute({"a": [2]})
-    with pytest.raises(ValueError):
-        d.execution_status.value = Status.PENDING
 
     d.execution_status.value = Status.DONE
     d.execute({"a": [1]})
@@ -630,10 +632,11 @@ def test_cache_run_and_linearize() -> None:
     sm = SobieskiMission()
     run_orig = sm._run
 
-    def run_and_lin() -> None:
-        run_orig()
+    def run_and_lin(input_data) -> None:
+        output_data = run_orig(input_data)
         sm._compute_jacobian()
         sm._has_jacobian = True
+        return output_data
 
     sm._run = run_and_lin
     sm.set_cache(sm.CacheType.SIMPLE)
@@ -715,12 +718,13 @@ def test_has_jacobian() -> None:
     del aero
 
     class Aero2(SobieskiAerodynamics):
-        def _run(self):
-            super()._run()
+        def _run(self, input_data: StrKeyMapping):
+            output_data = super()._run(input_data)
             self._compute_jacobian(
                 self.io.input_grammar.names, self.io.output_grammar.names
             )
             self._has_jacobian = True
+            return output_data
 
     aero2 = Aero2()
     aero2.execute()
@@ -1014,8 +1018,8 @@ def test_statuses(observer) -> None:
 
     assert not observer.statuses
 
-    disc.execution_status.value = Status.PENDING
-    assert observer.statuses == [Status.PENDING]
+    disc.execution_status.value = Status.DONE
+    assert observer.statuses == [Status.DONE]
     observer.reset()
 
     disc.execute()
@@ -1027,14 +1031,14 @@ def test_statuses(observer) -> None:
 
     disc.linearize(compute_all_jacobians=True)
     assert observer.statuses == [
-        Status.PENDING,
+        Status.DONE,
         Status.LINEARIZING,
         Status.DONE,
     ]
     observer.reset()
 
     class KODisc(Discipline):
-        def _run(self):
+        def _run(self, input_data: StrKeyMapping):
             1 / 0  # noqa: B018
 
     disc = KODisc()
@@ -1054,7 +1058,6 @@ def test_statuses_linearize(observer) -> None:
 
     disc.linearize(compute_all_jacobians=True)
     assert observer.statuses == [
-        Status.PENDING,
         Status.RUNNING,
         Status.DONE,
         Status.LINEARIZING,
@@ -1103,7 +1106,7 @@ def test_virtual_exe() -> None:
     disc_1.output_grammar.update_from_names(["y"])
     disc_1.output_grammar.defaults = {"y": ones([1])}
 
-    disc_1.status = Status.PENDING
+    disc_1.status = Status.DONE
     disc_1.virtual_execution = True
 
     disc_1.execute()
@@ -1129,7 +1132,7 @@ class DisciplineWithPaths(Discipline):
         self.output_grammar.update_from_types({"out_path": Path})
         self.local_path = Path()
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["out_path"] = self.io.data["path"]
 
 

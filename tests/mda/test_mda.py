@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
@@ -63,6 +64,9 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
 
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
+
 DIRNAME = os.path.dirname(__file__)
 
 
@@ -83,10 +87,6 @@ def test_reset(sellar_mda, sellar_inputs) -> None:
     for discipline in disciplines:
         discipline.execute(sellar_inputs)
         assert discipline.execution_status.value == ExecutionStatus.Status.DONE
-
-    sellar_mda.execution_status.value = ExecutionStatus.Status.PENDING
-    for discipline in disciplines:
-        assert discipline.execution_status.value == ExecutionStatus.Status.PENDING
 
 
 def test_input_couplings() -> None:
@@ -159,8 +159,7 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
 def test_expected_workflow(sellar_mda) -> None:
     """"""
     expected = (
-        "{MDAGaussSeidel(PENDING), [Sellar1(PENDING), Sellar2(PENDING), "
-        "SellarSystem(PENDING)]}"
+        "{MDAGaussSeidel(DONE), [Sellar1(DONE), Sellar2(DONE), SellarSystem(DONE)]}"
     )
     assert str(sellar_mda.get_process_flow().get_execution_flow()) == expected
 
@@ -413,7 +412,7 @@ class LinearImplicitDiscipline(Discipline):
 
         self.default_input_data = {k: 0.5 * ones(size) for k in input_names}
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         if self.io.state_equations_are_solved:
             self.io.data["w"] = solve(self.mat, self.io.data["a"])
 
@@ -475,7 +474,7 @@ class DiscWithNonNumericInputs1(Discipline):
         self.default_input_data["a"] = array([0.5])
         self.default_input_data["b_file"] = array(["my_b_file"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
         a = self.io.data["a"]
         y = x
@@ -506,7 +505,7 @@ class DiscWithNonNumericInputs2(Discipline):
         self.default_input_data["y"] = array([0.5])
         self.default_input_data["a_file"] = "my_a_file"
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y = self.io.data["y"]
         x = 1.0 - 0.3 * y
         self.io.data.update({"x": x, "b_file": array(["my_b_file"])})
@@ -536,7 +535,7 @@ class DiscWithNonNumericInputs3(Discipline):
         self.default_input_data["b"] = array([0.5])
         self.default_input_data["a_file"] = "my_a_file"
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
         y = self.io.data["y"]
         obj = x - y

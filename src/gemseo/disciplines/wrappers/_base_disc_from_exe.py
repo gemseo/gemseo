@@ -66,11 +66,11 @@ class _BaseDiscFromExe(Discipline):
             The output data for updating the discipline's ``data``.
         """
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self._executable_runner.directory_creator.create()
         self._create_inputs()
         self._executable_runner.execute()
-        self.io.update_output_data(self._parse_outputs())
-
+        output_data = self._parse_outputs()
         if self.__clean_after_execution:
             rmtree(self._executable_runner.directory_creator.last_directory)
+        return output_data

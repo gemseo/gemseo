@@ -275,10 +275,10 @@ class XLSDiscipline(Discipline):
     def __write_inputs(self, input_data: Mapping[str, float]) -> None:
         """Write the inputs values to the Inputs sheet."""
         sht = self._book.sheets["Inputs"]
-        for i, key in enumerate(self.input_names):
+        for i, key in enumerate(input_data):
             sht[i, 1].value = input_data[key][0]
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Run the discipline.
 
         Eventually calls the execute macro.
@@ -299,7 +299,7 @@ class XLSDiscipline(Discipline):
             pythoncom.CoInitialize()
             self.__create_book(quit_xls_at_exit=False)
 
-        self.__write_inputs(self.io.data)
+        self.__write_inputs(input_data)
 
         if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
             try:
@@ -317,9 +317,6 @@ class XLSDiscipline(Discipline):
             )
             raise ValueError(msg) from None
 
-        outputs = {k: array([v]) for k, v in zip(self.output_names, out_vals)}
-        self.io.update_output_data(outputs)
-
         # When using threads, each computation is made with a unique `_xls_app`.
         # If we do not quit at this point, we loose the reference and
         # the process ends up hung.
@@ -327,3 +324,5 @@ class XLSDiscipline(Discipline):
         # For this same reason, overloading __del__ is not an option.
         if self._recreate_book_at_run:
             self.__reset_xls_objects()
+
+        return {k: array([v]) for k, v in zip(self.output_names, out_vals)}

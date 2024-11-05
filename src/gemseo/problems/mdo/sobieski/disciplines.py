@@ -117,21 +117,20 @@ class SobieskiMission(SobieskiDiscipline):
         super().__init__(dtype=dtype)
         self.enable_delay = enable_delay
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         if self.enable_delay:
             if isinstance(self.enable_delay, Number):
                 time.sleep(self.enable_delay)
             else:
                 time.sleep(1.0)
 
-        local_data = self.io.data
         y_4 = self.sobieski_problem.mission.execute(
-            local_data["x_shared"],
-            local_data["y_14"],
-            local_data["y_24"],
-            local_data["y_34"],
+            input_data["x_shared"],
+            input_data["y_14"],
+            input_data["y_24"],
+            input_data["y_34"],
         )
-        self.io.update_output_data({"y_4": y_4})
+        return {"y_4": y_4}
 
     def _compute_jacobian(
         self,
@@ -190,24 +189,23 @@ class SobieskiStructure(SobieskiDiscipline):
         self.default_input_data["c_1"] = array([self.sobieski_problem.constants[1]])
         self.default_input_data["c_2"] = array([self.sobieski_problem.constants[2]])
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
-            local_data["x_shared"],
-            local_data["y_21"],
-            local_data["y_31"],
-            local_data["x_1"],
-            c_0=local_data["c_0"][0],
-            c_1=local_data["c_1"][0],
-            c_2=local_data["c_2"][0],
+            input_data["x_shared"],
+            input_data["y_21"],
+            input_data["y_31"],
+            input_data["x_1"],
+            c_0=input_data["c_0"][0],
+            c_1=input_data["c_1"][0],
+            c_2=input_data["c_2"][0],
         )
-        self.io.update_output_data({
+        return {
             "y_1": y_1,
             "y_11": y_11,
             "y_12": y_12,
             "y_14": y_14,
             "g_1": g_1,
-        })
+        }
 
     def _compute_jacobian(
         self,
@@ -265,22 +263,21 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         super().__init__(dtype=dtype)
         self.default_input_data["c_4"] = array([self.sobieski_problem.constants[4]])
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
-            local_data["x_shared"],
-            local_data["y_12"],
-            local_data["y_32"],
-            local_data["x_2"],
-            c_4=local_data["c_4"][0],
+            input_data["x_shared"],
+            input_data["y_12"],
+            input_data["y_32"],
+            input_data["x_2"],
+            c_4=input_data["c_4"][0],
         )
-        self.io.update_output_data({
+        return {
             "y_2": y_2,
             "y_21": y_21,
             "y_23": y_23,
             "y_24": y_24,
             "g_2": g_2,
-        })
+        }
 
     def _compute_jacobian(
         self,
@@ -335,21 +332,20 @@ class SobieskiPropulsion(SobieskiDiscipline):
         super().__init__(dtype=dtype)
         self.default_input_data["c_3"] = array([self.sobieski_problem.constants[3]])
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.propulsion.execute(
-            local_data["x_shared"],
-            local_data["y_23"],
-            local_data["x_3"],
-            c_3=local_data["c_3"][0],
+            input_data["x_shared"],
+            input_data["y_23"],
+            input_data["x_3"],
+            c_3=input_data["c_3"][0],
         )
-        self.io.update_output_data({
+        return {
             "y_3": y_3,
             "y_34": y_34,
             "y_31": y_31,
             "y_32": y_32,
             "g_3": g_3,
-        })
+        }
 
     def _compute_jacobian(
         self,

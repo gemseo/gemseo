@@ -170,7 +170,7 @@ def test_ext_plugin_gemseo_path(monkeypatch, reset_factory) -> None:
 def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
     monkeypatch.setenv("GEMSEO_PATH", DATA / "gemseo_dummy_plugins")
-    assert MDOFormulationFactory().failed_imports == {"bad": "division by zero"}
+    assert MDOFormulationFactory().failed_imports["bad"] == "division by zero"
 
 
 def test_wanted_classes_with_entry_points(monkeypatch, reset_factory) -> None:

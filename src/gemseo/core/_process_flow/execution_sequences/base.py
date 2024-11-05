@@ -64,7 +64,7 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.uuid = str(uuid4())
         self.uuid_to_disc = {}
         self.disc_to_uuids = {}
-        self.status = _Status.PENDING
+        self.status = _Status.DONE
         self.__is_enabled = False
         self._parent = None
 
@@ -114,7 +114,7 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     # TODO: API: use a property setter for is_enabled.
     def enable(self) -> None:
         """Enable the execution sequence."""
-        self.status = _Status.PENDING
+        self.status = _Status.DONE
         self.__is_enabled = True
 
     def disable(self) -> None:

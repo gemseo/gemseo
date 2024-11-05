@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.regression.quality.base_regressor_quality import (
         BaseRegressorQuality,
     )
+    from gemseo.typing import StrKeyMapping
 
 
 class SurrogateDiscipline(Discipline):
@@ -220,11 +221,11 @@ class SurrogateDiscipline(Discipline):
         else:
             self.default_input_data = self.regression_model.input_space_center
 
-    def _run(self) -> None:
-        for name, value in self.regression_model.predict(
-            self.io.get_input_data()
-        ).items():
-            self.io.data[name] = value.flatten()
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        output_data = {}
+        for name, value in self.regression_model.predict(input_data).items():
+            output_data[name] = value.flatten()
+        return output_data
 
     def _compute_jacobian(
         self,

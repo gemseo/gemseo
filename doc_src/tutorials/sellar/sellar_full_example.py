@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from math import exp
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import ones
@@ -30,6 +31,9 @@ from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import Discipline
 from gemseo.scenarios.mdo_scenario import MDOScenario
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 configure_logger()
 
@@ -46,18 +50,18 @@ class SellarSystem(Discipline):
     #         self.default_input_data = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         # The run method defines what happens at execution
         # ie how outputs are computed from inputs
-        local_data = self.io.data
-        x = local_data["x"]
-        z = local_data["z"]
-        y_0 = local_data["y_0"]
-        y_1 = local_data["y_1"]
-        # The ouputs are stored here
-        self.local_data["obj"] = array([x[0] ** 2 + z[1] + y_0[0] ** 2 + exp(-y_1[0])])
-        self.local_data["c_1"] = array([3.16 - y_0[0] ** 2])
-        self.local_data["c_2"] = array([y_1[0] - 24.0])
+        x = input_data["x"]
+        z = input_data["z"]
+        y_0 = input_data["y_0"]
+        y_1 = input_data["y_1"]
+        return {
+            "obj": array([x[0] ** 2 + z[1] + y_0[0] ** 2 + exp(-y_1[0])]),
+            "c_1": array([3.16 - y_0[0] ** 2]),
+            "c_2": array([y_1[0] - 24.0]),
+        }
 
 
 class Sellar1(Discipline):
@@ -69,14 +73,11 @@ class Sellar1(Discipline):
     #         self.default_input_data = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
-    def _run(self) -> None:
-        local_data = self.io.data
-        x = local_data["x"]
-        z = local_data["z"]
-        y_1 = local_data["y_1"]
-        self.local_data["y_0"] = array([
-            (z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5
-        ])
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = input_data["x"]
+        z = input_data["z"]
+        y_1 = input_data["y_1"]
+        return {"y_0": array([(z[0] ** 2 + z[1] + x[0] - 0.2 * y_1[0]) ** 0.5])}
 
 
 class Sellar2(Discipline):
@@ -88,11 +89,10 @@ class Sellar2(Discipline):
     #         self.default_input_data = {"x": ones(1), "z": array([4., 3.]),
     #                                "y_0": ones(1), "y_1": ones(1)}
 
-    def _run(self) -> None:
-        local_data = self.io.data
-        z = local_data["z"]
-        y_0 = local_data["y_0"]
-        self.local_data["y_1"] = array([abs(y_0[0]) + z[0] + z[1]])
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        z = input_data["z"]
+        y_0 = input_data["y_0"]
+        return {"y_1": array([abs(y_0[0]) + z[0] + z[1]])}
 
 
 def run_process() -> None:

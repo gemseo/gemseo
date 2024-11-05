@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from typing import Any
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.discipline.discipline_data import DisciplineData
 
 LOGGER = logging.getLogger(__name__)
 
@@ -216,8 +215,8 @@ class MDAQuasiNewton(BaseMDARoot):
             local_data_before_execution, self._resolved_variable_names
         ).real
 
-    def _run(self) -> DisciplineData:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
 
         self._execute_disciplines_and_update_local_data()
 
@@ -257,5 +256,4 @@ class MDAQuasiNewton(BaseMDARoot):
             self.io.update_output_data({
                 self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual]),
             })
-
-        return self.io.data
+        return None

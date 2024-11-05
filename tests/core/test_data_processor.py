@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import unittest
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import complex128
@@ -32,6 +33,9 @@ from gemseo.core.discipline.data_processor import ComplexDataProcessor
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 class TestDataProcessor(unittest.TestCase):
@@ -96,5 +100,5 @@ class LocalDisc(Discipline):
         self.input_grammar.update_from_names(["A", "B"])
         self.output_grammar.update_from_names(["O"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["o"] = self.io.data["a"] + self.io.data["b"]

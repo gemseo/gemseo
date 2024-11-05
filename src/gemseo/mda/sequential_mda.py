@@ -26,7 +26,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda_settings import MDASequential_Settings
 
@@ -80,16 +79,14 @@ class MDASequential(BaseMDA):
         for mda in self.mda_sequence:
             mda.scaling = scaling
 
-    def _run(self) -> None:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
 
         if self.reset_history_each_run:
             self.residual_history = []
 
         # Execute the MDAs in sequence
         for mda in self.mda_sequence:
-            mda.execution_status.value = ExecutionStatus.Status.PENDING
-
             # Execute the i-th MDA
             self.io.data = mda.execute(self.io.data)
 

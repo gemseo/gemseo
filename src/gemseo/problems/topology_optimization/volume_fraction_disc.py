@@ -33,6 +33,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
+
 
 class VolumeFraction(Discipline):
     """Compute the volume fraction from the density.
@@ -65,9 +67,9 @@ class VolumeFraction(Discipline):
         self.output_grammar.update_from_names(["volume fraction"])
         self.default_input_data = {"rho": ones(n_x * n_y)}
 
-    def _run(self) -> None:
-        rho = self.io.data["rho"]
-        self.io.data["volume fraction"] = array([mean(rho.ravel())])
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        rho = input_data["rho"]
+        self.io.update_output_data({"volume fraction": array([mean(rho.ravel())])})
         self._has_jacobian = True
         self._init_jacobian()
         self.jac["volume fraction"] = {"rho": atleast_2d(ones_like(rho).T / size(rho))}

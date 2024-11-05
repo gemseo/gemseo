@@ -382,7 +382,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self._wait_job(current_workdir)
         self._handle_outputs(current_workdir, outputs_path)
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self._run_or_compute_jacobian(False)
 
     def linearize(  # noqa: D102

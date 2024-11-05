@@ -50,6 +50,7 @@ from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
     from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.typing import StrKeyMapping
 
 
 @pytest.fixture
@@ -75,14 +76,14 @@ class Ishigami1D(Discipline):
         self.input_grammar.update_from_names(["x1", "x2", "x3"])
         self.output_grammar.update_from_names(["out"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         local_data = self.io.data
         x_1 = local_data["x1"]
         x_2 = local_data["x2"]
         x_3 = local_data["x3"]
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
-        self.io.update_output_data({"out": output})
+        return {"out": output}
 
 
 class MockSensitivityAnalysis(BaseSensitivityAnalysis):

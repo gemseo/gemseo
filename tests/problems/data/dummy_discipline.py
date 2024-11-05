@@ -21,7 +21,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 class DummyDisciplineIMP(Discipline):
@@ -32,5 +37,5 @@ class DummyDisciplineIMP(Discipline):
         self.opts1 = opts1
         self.jac_approx_n_processes = jac_approx_n_processes
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Dummy."""

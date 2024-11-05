@@ -420,8 +420,8 @@ class BaseMDASolver(BaseMDA):
         return self.normed_residual
 
     @abstractmethod
-    def _run(self) -> None:  # noqa:D103
-        super()._run()
+    def _execute(self) -> None:  # noqa:D103
+        super()._execute()
         self._sequence_transformer.clear()
 
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:

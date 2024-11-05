@@ -53,6 +53,7 @@ from gemseo.utils.discipline import DummyDiscipline
 
 if TYPE_CHECKING:
     from gemseo.scenarios.doe_scenario import DOEScenario
+    from gemseo.typing import StrKeyMapping
 
 FACTORY = DOELibraryFactory()
 
@@ -465,7 +466,7 @@ class _DummyDisc(Discipline):
             "t": ndarray,
         })
 
-    def _run(self):
+    def _run(self, input_data: StrKeyMapping):
         x = self.io.data["x"]
         self.io.data["z"] = array([sum(x)])
         self.io.data["t"] = 2 * x + 3

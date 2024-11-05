@@ -64,6 +64,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.typing import StrKeyMapping
 
 
 class ScalableDiscipline(Discipline):
@@ -106,8 +107,8 @@ class ScalableDiscipline(Discipline):
             data.get_variable_names(data.OUTPUT_GROUP)
         )
 
-    def _run(self) -> None:
-        self.io.data.update(self.scalable_model.scalable_function(self.io.data))
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return self.scalable_model.scalable_function(input_data)
 
     def _compute_jacobian(
         self,

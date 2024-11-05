@@ -35,7 +35,6 @@ from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
-from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
@@ -335,7 +334,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         """
         return constraint_name + MDOScenarioAdapter.MULTIPLIER_SUFFIX
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         self._pre_run()
         with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
             self.scenario.execute()
@@ -353,8 +352,6 @@ class MDOScenarioAdapter(ProcessDiscipline):
             for disc in top_leveld:
                 if indata in disc.io.input_grammar:
                     disc.default_input_data[indata] = self.io.data[indata]
-
-        self.scenario.execution_status.value = ExecutionStatus.Status.PENDING
 
         self._reset_optimization_problem()
 

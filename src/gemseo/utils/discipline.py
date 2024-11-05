@@ -24,6 +24,9 @@ from gemseo.core.discipline.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
+
 
 class DummyDiscipline(Discipline):
     """A dummy discipline that does nothing."""
@@ -43,5 +46,5 @@ class DummyDiscipline(Discipline):
         self.input_grammar.update_from_names(input_names)
         self.output_grammar.update_from_names(output_names)
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         pass

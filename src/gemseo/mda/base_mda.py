@@ -500,7 +500,8 @@ class BaseMDA(ProcessDiscipline):
         return input_names, output_names
 
     def execute(  # noqa:D102
-        self, input_data: StrKeyMapping | None = None
+        self,
+        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> DisciplineData:
         self._current_iter = 0
         return super().execute(input_data=input_data)
@@ -612,7 +613,7 @@ class BaseMDA(ProcessDiscipline):
                 yield input_name, input_value
 
     @abstractmethod
-    def _run(self) -> None:  # noqa:D103
+    def _execute(self) -> None:  # noqa:D103
         if self.settings.warm_start:
             self._prepare_warm_start()
 

@@ -31,6 +31,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
+
 
 class Concatenater(Discipline):
     """Concatenate input variables into a single output variable.
@@ -74,13 +76,13 @@ class Concatenater(Discipline):
 
         self.__output_name = output_variable
 
-    def _run(self) -> None:
-        """Run the discipline."""
-        input_data = self.io.get_input_data()
-        self.io.data[self.__output_name] = concatenate([
-            self.__coefficients[input_name] * input_data[input_name]
-            for input_name in self.io.input_grammar.names
-        ])
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {
+            self.__output_name: concatenate([
+                self.__coefficients[input_name] * input_value
+                for input_name, input_value in input_data.items()
+            ])
+        }
 
     def _compute_jacobian(
         self,

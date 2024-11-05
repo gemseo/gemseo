@@ -67,6 +67,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import MLAlgoSettingsType
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.typing import StrKeyMapping
 
 
 class MLAlgoAssessor(Discipline):
@@ -159,7 +160,7 @@ class MLAlgoAssessor(Discipline):
 
         self.measure_options[self.MULTIOUTPUT] = False
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Run method.
 
         This method creates a new instance of the machine learning algorithm, from the
@@ -181,11 +182,11 @@ class MLAlgoAssessor(Discipline):
             measure,
             measure.EvaluationFunctionName[self.__measure_evaluation_method_name],
         )
-        self.io.update_output_data({
+        self.algos.append(algo)
+        return {
             "criterion": array([compute_criterion(**self.measure_options)]),
             "learning": array([measure.compute_learning_measure(multioutput=False)]),
-        })
-        self.algos.append(algo)
+        }
 
 
 class MLAlgoCalibration:

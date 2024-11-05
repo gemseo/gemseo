@@ -60,8 +60,8 @@ def disciplines() -> Disciplines:
 
 def test_atomic_exec_sequence() -> None:
     tmp = ExecutionSequence(SobieskiAerodynamics())
-    assert tmp.__str__() == "SobieskiAerodynamics(PENDING)"
-    assert tmp.__repr__() == ("SobieskiAerodynamics(PENDING, " + str(tmp.uuid) + ")")
+    assert tmp.__str__() == "SobieskiAerodynamics(DONE)"
+    assert tmp.__repr__() == ("SobieskiAerodynamics(DONE, " + str(tmp.uuid) + ")")
 
 
 def test_atom(disciplines) -> None:
@@ -114,14 +114,14 @@ def test_loop(disciplines) -> None:
 def test_serial_execution(disciplines) -> None:
     seq = SequentialExecSequence([disciplines.d1, disciplines.d1])
     seq.enable()
-    assert seq.status == ExecutionStatus.Status.PENDING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
-    assert seq.status == ExecutionStatus.Status.PENDING
+    assert seq.status == ExecutionStatus.Status.DONE
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
+    assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.RUNNING
     assert seq.status == ExecutionStatus.Status.RUNNING
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.RUNNING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.RUNNING
     disciplines.d1.execution_status.value = ExecutionStatus.Status.RUNNING
     assert seq.status == ExecutionStatus.Status.RUNNING
@@ -134,26 +134,26 @@ def test_serial_execution(disciplines) -> None:
 def test_serial_execution_failed(disciplines) -> None:
     seq = SequentialExecSequence([disciplines.d1, disciplines.d2])
     seq.enable()
-    assert seq.status == ExecutionStatus.Status.PENDING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
-    assert seq.status == ExecutionStatus.Status.PENDING
+    assert seq.status == ExecutionStatus.Status.DONE
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
+    assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.RUNNING
     assert seq.status == ExecutionStatus.Status.RUNNING
     disciplines.d1.execution_status.value = ExecutionStatus.Status.FAILED
     assert seq.status == ExecutionStatus.Status.FAILED
     disciplines.d1.execution_status.value = (
-        ExecutionStatus.Status.PENDING
-    )  # check PENDING ignored
+        ExecutionStatus.Status.DONE
+    )  # check DONE ignored
     assert seq.status == ExecutionStatus.Status.FAILED
 
 
 def test_parallel_execution(disciplines) -> None:
     seq = ParallelExecSequence([disciplines.d1, disciplines.d2])
     seq.enable()
-    assert seq.status == ExecutionStatus.Status.PENDING
-    disciplines.d2.execution_status.value = ExecutionStatus.Status.PENDING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
-    assert seq.status == ExecutionStatus.Status.PENDING
+    assert seq.status == ExecutionStatus.Status.DONE
+    disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
+    assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.RUNNING
     assert seq.status == ExecutionStatus.Status.RUNNING
     disciplines.d2.execution_status.value = ExecutionStatus.Status.RUNNING
@@ -169,10 +169,10 @@ def test_parallel_execution(disciplines) -> None:
 def test_parallel_execution_failed(disciplines) -> None:
     seq = ParallelExecSequence([disciplines.d1, disciplines.d2])
     seq.enable()
-    assert seq.status == ExecutionStatus.Status.PENDING
-    disciplines.d2.execution_status.value = ExecutionStatus.Status.PENDING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
-    assert seq.status == ExecutionStatus.Status.PENDING
+    assert seq.status == ExecutionStatus.Status.DONE
+    disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
+    assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.FAILED
     assert seq.status == ExecutionStatus.Status.FAILED
 
@@ -183,12 +183,12 @@ def test_loop_execution(disciplines) -> None:
         SequentialExecSequence([disciplines.d1, disciplines.d2]),
     )
     seq.enable()
-    disciplines.d3.execution_status.value = ExecutionStatus.Status.PENDING
-    assert seq.status == ExecutionStatus.Status.PENDING
+    disciplines.d3.execution_status.value = ExecutionStatus.Status.DONE
+    assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d3.execution_status.value = ExecutionStatus.Status.RUNNING
     assert seq.status == ExecutionStatus.Status.RUNNING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
-    disciplines.d2.execution_status.value = ExecutionStatus.Status.PENDING
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
+    disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.RUNNING
     disciplines.d1.execution_status.value = ExecutionStatus.Status.RUNNING
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
@@ -197,8 +197,8 @@ def test_loop_execution(disciplines) -> None:
     disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.iteration_count == 1
     assert seq.status == ExecutionStatus.Status.RUNNING
-    disciplines.d1.execution_status.value = ExecutionStatus.Status.PENDING
-    disciplines.d2.execution_status.value = ExecutionStatus.Status.PENDING
+    disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
+    disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.RUNNING
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
     disciplines.d2.execution_status.value = ExecutionStatus.Status.RUNNING
@@ -236,19 +236,19 @@ def test_sub_scenario() -> None:
     seq = SequentialExecSequence([d1])
     seq.extend(d2.get_process_flow().get_execution_flow())
     seq.enable()
-    d1.execution_status.value = ExecutionStatus.Status.PENDING
-    assert status_of(seq, d1) == ExecutionStatus.Status.PENDING
-    assert status_of(seq, sc_prop) is ExecutionStatus.Status.PENDING
+    d1.execution_status.value = ExecutionStatus.Status.DONE
+    assert status_of(seq, d1) == ExecutionStatus.Status.DONE
+    assert status_of(seq, sc_prop) is ExecutionStatus.Status.DONE
     with pytest.raises(IndexError):
         status_of(seq, d1, 1)
     d1.execution_status.value = ExecutionStatus.Status.RUNNING
     assert status_of(seq, d1) == ExecutionStatus.Status.RUNNING
-    assert status_of(seq, sc_prop) is ExecutionStatus.Status.PENDING
+    assert status_of(seq, sc_prop) is ExecutionStatus.Status.DONE
     with pytest.raises(IndexError):
         status_of(seq, d1, 1)
     d1.execution_status.value = ExecutionStatus.Status.DONE
     assert status_of(seq, d1) == ExecutionStatus.Status.DONE
-    assert status_of(seq, sc_prop) == ExecutionStatus.Status.PENDING
+    assert status_of(seq, sc_prop) == ExecutionStatus.Status.DONE
     with pytest.raises(IndexError):
         status_of(seq, d1, 1)
     sc_prop.execution_status.value = ExecutionStatus.Status.RUNNING

@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
 
 
 class SellarSystem(BaseSellar):
@@ -94,14 +95,14 @@ class SellarSystem(BaseSellar):
         self.__eye_n = eye(n)
         self.__ones_n = ones((n, 1))
 
-    def _run(self) -> None:
-        x_1 = self.io.data[X_1]
-        x_2 = self.io.data[X_2]
-        x_shared = self.io.data[X_SHARED]
-        y_1 = self.io.data[Y_1]
-        y_2 = self.io.data[Y_2]
-        alpha = self.io.data[ALPHA]
-        beta = self.io.data[BETA]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_1 = input_data[X_1]
+        x_2 = input_data[X_2]
+        x_shared = input_data[X_SHARED]
+        y_1 = input_data[Y_1]
+        y_2 = input_data[Y_2]
+        alpha = input_data[ALPHA]
+        beta = input_data[BETA]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
 
@@ -110,11 +111,11 @@ class SellarSystem(BaseSellar):
             + x_shared[1]
             + exp(-y_2.mean())
         ])
-        self.io.update_output_data({
+        return {
             "obj": obj,
             "c_1": alpha - y_1**2,
             "c_2": y_2 - beta,
-        })
+        }
 
     def _compute_jacobian(
         self,

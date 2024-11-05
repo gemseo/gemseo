@@ -93,7 +93,7 @@ class ExecutionSequence(BaseExecutionSequence):
             status: The new status.
         """
         if self.is_enabled and self.status != status.value:
-            self.status = status.value or _Status.PENDING
+            self.status = status.value or _Status.DONE
             if self.status in {_Status.DONE, _Status.FAILED}:
                 self.disable()
             if self._parent:

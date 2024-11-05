@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from gemseo.core.discipline import Discipline
 
@@ -49,9 +50,9 @@ class FilteringDiscipline(Discipline):
                 If ``None``, use all the inputs.
             output_names: The names of the outputs of interest.
                 If ``None``, use all the outputs.
-            keep_in: Whether to the inputs of interest.
+            keep_in: Whether to keep the inputs of interest.
                 Otherwise, remove them.
-            keep_out: Whether to the outputs of interest.
+            keep_out: Whether to keep the outputs of interest.
                 Otherwise, remove them.
         """  # noqa:D205 D212 D415
         self.discipline = discipline
@@ -82,10 +83,8 @@ class FilteringDiscipline(Discipline):
         )
         self.add_differentiated_outputs(list(diff_outputs))
 
-    def _run(self) -> None:
-        self.discipline.execute(self.io.get_input_data())
-        self.io.update_output_data(self.__filter_inputs(self.discipline.io.data))
-        self.io.update_output_data(self.__filter_outputs(self.discipline.io.data))
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return self.__filter_outputs(self.discipline.execute(self.io.get_input_data()))
 
     def _compute_jacobian(
         self,
@@ -99,7 +98,7 @@ class FilteringDiscipline(Discipline):
             for input_name in self.io.input_grammar.names:
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
-    def __filter_inputs(self, data: StrKeyMapping):
+    def __filter_inputs(self, data: StrKeyMapping) -> dict[str, Any]:
         """Filter a mapping by input names.
 
         Args:
@@ -110,7 +109,7 @@ class FilteringDiscipline(Discipline):
         """
         return {name: data[name] for name in self.io.input_grammar.names}
 
-    def __filter_outputs(self, data):
+    def __filter_outputs(self, data) -> dict[str, Any]:
         """Filter a mapping by output names.
 
         Args:

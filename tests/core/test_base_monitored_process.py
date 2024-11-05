@@ -49,7 +49,7 @@ def test_execute_monitored(process, monkeypatch):
     assert process.execution_statistics.n_calls == 0
     assert process.execution_statistics.n_calls_linearize == 0
     assert process.execution_statistics.duration == 0.0
-    assert process.execution_status.value == ExecutionStatus.Status.PENDING
+    assert process.execution_status.value == ExecutionStatus.Status.DONE
     process._execute_monitored()
     assert process.execution_status.value == ExecutionStatus.Status.DONE
     assert process.execution_statistics.n_calls == 1

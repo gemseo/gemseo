@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
@@ -78,17 +79,17 @@ class Sellar2(BaseSellar):
         self.__k_eye_n = k * self.__eye_n
         self.__zeros_n = csr_array((n, n))
 
-    def _run(self) -> None:
-        x_2 = self.io.data[X_2]
-        x_shared = self.io.data[X_SHARED]
-        y_1 = self.io.data[Y_1]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_2 = input_data[X_2]
+        x_shared = input_data[X_SHARED]
+        y_1 = input_data[Y_1]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
         out = x_shared[0] + x_shared[1] - x_2
         y_2 = where(y_1.real > 0, self.__k * y_1 + out, -self.__k * y_1 + out)
         inds_where = y_1.real == 0
         y_2[inds_where] = out[inds_where]
-        self.io.data[Y_2] = y_2
+        return {Y_2: y_2}
 
     def _compute_jacobian(
         self,

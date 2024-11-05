@@ -174,7 +174,7 @@ def test_disc_from_exe_fail_exe(tmp_wd) -> None:
     with pytest.raises(ValueError):
         disc.execute(indata)
 
-    disc.execution_status.value = disc.execution_status.Status.PENDING
+    disc.execution_status.value = disc.execution_status.Status.DONE
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f err_code"
     disc._executable_runner.command_line = exec_cmd
     with pytest.raises(CalledProcessError):

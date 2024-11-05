@@ -86,7 +86,7 @@ This may change the coupling structure graph, as illustrated in the next figure.
 
 
 Impact on the Discipline wrappers
-------------------------------------
+---------------------------------
 
 The discipline that wraps a simulation code,
 such as :class:`.AutoPyDiscipline`, declares its input
@@ -97,10 +97,9 @@ After instantiation,
 a namespace may be added to the discipline,
 which may make the names of the
 grammar elements inconsistent with the names of the local variables in the discipline wrapper.
-The wrappers must be adapted to handle input names changes due to namespaces.
-To this aim, the :class:`.DisciplineData` values may be accessed from keys with or without
-namespaces. Also :attr:`.Discipline.input_grammar.names` has an argument "input_prefix" that
-allows to define whether to return namespace prefixes or not.
+To this aim,
+the method :meth:`.Discipline._run` takes the inputs with names without namespaces as argument
+and can return the outputs with names without namespaces.
 
 Besides, :class:`.BaseGrammar` has the attributes :attr:`.BaseGrammar.to_namespaced` and
 :attr:`.BaseGrammar.from_namespaced` that map the names with and without namespace prefixes.
@@ -112,6 +111,5 @@ For instance, the :meth:`.AutoPyDiscipline._run` method is as follows, and suppo
 
 .. code::
 
-    def _run(self):
-        output_values = self.py_func(**self.get_input_data(namespaces_prefix=False))
-        self.io.update_output_data(**output_values)
+    def _run(self, input_data):
+        return self.py_func(**input_data)

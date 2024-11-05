@@ -145,17 +145,6 @@ def test_names(grammar, names_to_types) -> None:
     assert grammar.names == names_to_types.keys()
 
 
-@parametrized_names_to_types
-def test_names_without_namespace(grammar, names_to_types) -> None:
-    """Verify names_without_namespace."""
-    grammar.update_from_types(names_to_types)
-    assert tuple(grammar.names_without_namespace) == tuple(names_to_types.keys())
-
-    if names_to_types:
-        grammar.add_namespace("name", "n")
-        assert tuple(grammar.names_without_namespace) == tuple(names_to_types.keys())
-
-
 def create_defaults(names_to_types: Mapping[str, type]) -> dict[str, Any]:
     """Return default data from names to types.
 

@@ -158,8 +158,8 @@ class MDAGaussSeidel(BaseMDASolver):
             discipline.execute(input_data)
             self.io.data.update(discipline.io.get_output_data())
 
-    def _run(self) -> None:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
         self._execute_disciplines_and_update_local_data()
         if self.settings.max_mda_iter == 0:
             return

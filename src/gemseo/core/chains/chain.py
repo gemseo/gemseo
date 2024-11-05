@@ -109,7 +109,7 @@ class MDOChain(ProcessDiscipline):
             )
             self.output_grammar.update(discipline.output_grammar)
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         for discipline in self.disciplines:
             self.io.data.update(discipline.execute(self.io.data))
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 import unittest
 from os.path import exists
 from random import shuffle
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -48,6 +49,9 @@ from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
 from .test_dependency_graph import create_disciplines_from_desc
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -142,7 +146,7 @@ class SelfCoupledDisc(Discipline):
         self.output_grammar.update_from_names(["y"])
         self.default_input_data["y"] = array([0.2])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["y"] = 1.0 - self.io.data["y"]
 
 

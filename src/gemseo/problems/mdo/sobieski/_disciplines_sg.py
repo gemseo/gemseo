@@ -36,6 +36,8 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
+    from gemseo.typing import StrKeyMapping
+
 
 class SobieskiDisciplineWithSimpleGrammar(Discipline):
     """Base discipline for the Sobieski's SSBJ use case with simple grammars."""
@@ -71,9 +73,6 @@ class SobieskiDisciplineWithSimpleGrammar(Discipline):
             self.io.input_grammar.names
         )
 
-    def _run(self) -> None:
-        raise NotImplementedError
-
 
 class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
     """Mission discipline of the Sobieski's SSBJ use case with a simple grammar.
@@ -97,15 +96,14 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
         self.output_grammar.update_from_names(["y_4"])
         self._set_default_inputs()
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_4 = self.sobieski_problem.mission.execute(
-            local_data["x_shared"],
-            local_data["y_14"],
-            local_data["y_24"],
-            local_data["y_34"],
+            input_data["x_shared"],
+            input_data["y_14"],
+            input_data["y_24"],
+            input_data["y_34"],
         )
-        self.io.update_output_data({"y_4": y_4})
+        return {"y_4": y_4}
 
     def _compute_jacobian(
         self,
@@ -133,21 +131,20 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
         self.output_grammar.update_from_names(["y_1", "y_11", "y_12", "y_14", "g_1"])
         self._set_default_inputs()
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
-            local_data["x_shared"],
-            local_data["y_21"],
-            local_data["y_31"],
-            local_data["x_1"],
+            input_data["x_shared"],
+            input_data["y_21"],
+            input_data["y_31"],
+            input_data["x_1"],
         )
-        self.io.update_output_data({
+        return {
             "y_1": y_1,
             "y_11": y_11,
             "y_12": y_12,
             "y_14": y_14,
             "g_1": g_1,
-        })
+        }
 
     def _compute_jacobian(
         self,
@@ -175,21 +172,20 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
         self.output_grammar.update_from_names(["y_2", "y_21", "y_23", "y_24", "g_2"])
         self._set_default_inputs()
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
-            local_data["x_shared"],
-            local_data["y_12"],
-            local_data["y_32"],
-            local_data["x_2"],
+            input_data["x_shared"],
+            input_data["y_12"],
+            input_data["y_32"],
+            input_data["x_2"],
         )
-        self.io.update_output_data({
+        return {
             "y_2": y_2,
             "y_21": y_21,
             "y_23": y_23,
             "y_24": y_24,
             "g_2": g_2,
-        })
+        }
 
     def _compute_jacobian(
         self,
@@ -217,18 +213,17 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
         self.output_grammar.update_from_names(["y_3", "y_34", "y_31", "y_32", "g_3"])
         self._set_default_inputs()
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.propulsion.execute(
-            local_data["x_shared"], local_data["y_23"], local_data["x_3"]
+            input_data["x_shared"], input_data["y_23"], input_data["x_3"]
         )
-        self.io.update_output_data({
+        return {
             "y_3": y_3,
             "y_34": y_34,
             "y_31": y_31,
             "y_32": y_32,
             "g_3": g_3,
-        })
+        }
 
     def _compute_jacobian(
         self,

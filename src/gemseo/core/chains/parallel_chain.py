@@ -123,7 +123,7 @@ class MDOParallelChain(ProcessDiscipline):
 
         return [self.io.data] * len(self.disciplines)
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
 
         # Update data according to input order of priority

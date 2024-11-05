@@ -42,10 +42,10 @@ if TYPE_CHECKING:
     from enum import EnumType
     from pathlib import Path
 
-    from gemseo import StrKeyMapping
     from gemseo.caches.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
 
 
 def _default_dict_factory() -> dict:
@@ -191,7 +191,6 @@ class Discipline(BaseDiscipline):
             return self.jac
 
         if execute:
-            self.execution_status.value = self.execution_status.Status.PENDING
             self.execute(input_data)
 
         if not self._linearize_on_last_state:

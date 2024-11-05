@@ -44,6 +44,7 @@ from gemseo.problems.mdo.sellar.variables import Y_2
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
@@ -69,17 +70,17 @@ class Sellar1(BaseSellar):
         self.__k = k
         self.__zeros_n = csr_array((n, n))
 
-    def _run(self) -> None:
-        x_1 = self.io.data[X_1]
-        x_shared = self.io.data[X_SHARED]
-        y_2 = self.io.data[Y_2]
-        gamma = self.io.data[GAMMA]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_1 = input_data[X_1]
+        x_shared = input_data[X_SHARED]
+        y_2 = input_data[Y_2]
+        gamma = input_data[GAMMA]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
 
         y_1_sq = x_shared[0] ** 2 + x_shared[1] + x_1 - gamma * self.__k * y_2
         y_1 = maximum(sqrt(where(y_1_sq.real >= 0, y_1_sq, -y_1_sq)), 1e-16)
-        self.io.update_output_data({"y_1": y_1})
+        return {"y_1": y_1}
 
     def _compute_jacobian(
         self,

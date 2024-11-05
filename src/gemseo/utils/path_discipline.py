@@ -19,8 +19,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 class PathDiscipline(Discipline):
@@ -40,5 +44,5 @@ class PathDiscipline(Discipline):
         self.default_input_data["x"] = tmp_path
         self.local_path = tmp_path
 
-    def _run(self) -> None:
-        self.io.data["y"] = 1
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": 1}

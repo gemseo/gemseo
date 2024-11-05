@@ -41,6 +41,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.typing import StrKeyMapping
+
 
 class ScalableDiscipline(BaseDiscipline):
     r"""A scalable discipline.
@@ -84,21 +86,19 @@ class ScalableDiscipline(BaseDiscipline):
         self.__u_i_name = get_u_local_name(self._discipline.index)
         self.__x_i_name = get_x_local_name(self._discipline.index)
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         if self.__u_i_name in self.input_grammar:
-            u_i = self.io.data[self.__u_i_name]
+            u_i = input_data[self.__u_i_name]
         else:
             u_i = 0
-        self.io.update_output_data(
-            self._discipline(
-                self.io.data[SHARED_DESIGN_VARIABLE_NAME],
-                self.io.data[self.__x_i_name],
-                u_i,
-                **{
-                    y_j_name: self.io.data[y_j_name]
-                    for y_j_name in self._discipline.coefficients.C_ij
-                },
-            )
+        return self._discipline(
+            input_data[SHARED_DESIGN_VARIABLE_NAME],
+            input_data[self.__x_i_name],
+            u_i,
+            **{
+                y_j_name: input_data[y_j_name]
+                for y_j_name in self._discipline.coefficients.C_ij
+            },
         )
 
     def _compute_jacobian(

@@ -86,22 +86,22 @@ class BaseMonitoredProcess(
     def _execute_monitored(self) -> None:
         """Execute and monitor the internal business logic.
 
-        This method handles the execution of :meth:`._run` monitored with
+        This method handles the execution of :meth:`._execute` monitored with
         the execution status and statistics.
         It shall be called by :meth:`.execute`.
         """
-        # TODO: why not handling over the full execute() instead of _run?
+        # TODO: why not handling over the full execute() instead of _execute?
         with (
             self.execution_statistics.record(),
             self.execution_status.run(),
         ):
-            self._run()
+            self._execute()
 
     @abstractmethod
-    def _run(self) -> None:
+    def _execute(self) -> None:
         """Execute the internal business logic.
 
-        This protected method shall contain the actual processing specific to a process.
+        This shall contain the actual processing specific to a discipline.
         It shall be called by :meth:`._execute_monitored``.
         """
 
@@ -109,7 +109,7 @@ class BaseMonitoredProcess(
     def execute(self) -> None:
         """Execute the business logic.
 
-        This is the main entry point to use a process.
+        This is the main entry point to use a discipline.
         """
 
     def get_process_flow(self) -> BaseProcessFlow:

@@ -23,6 +23,7 @@ import os
 import pickle
 import unittest
 from itertools import permutations
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
@@ -43,6 +44,9 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.mdo.sobieski.process.mdo_chain import SobieskiChain
 from gemseo.utils.discipline import DummyDiscipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -266,7 +270,7 @@ def test_non_ndarray_inputs():
             self.output_grammar.update_from_types({"out": str})
             self.default_input_data["in"] = "foo"
 
-        def _run(self) -> None:
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["out"] = self.io.data["in"] * 2
 
     mdo_parallel_chain = MDOParallelChain([StringDuplicator()])

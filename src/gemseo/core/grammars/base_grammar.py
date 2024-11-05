@@ -35,7 +35,6 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
-from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import update_namespaces
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -44,7 +43,6 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Iterator
     from collections.abc import KeysView
     from collections.abc import Mapping
 
@@ -207,11 +205,6 @@ class BaseGrammar(
     def names(self) -> KeysView[str]:
         """The names of the elements."""
         return self.keys()
-
-    @property
-    def names_without_namespace(self) -> Iterator[str]:
-        """The names of the elements without namespace prefixes."""
-        return remove_prefix(self.keys())
 
     def has_names(self, names: Iterable[str]) -> bool:
         """Return whether names are all element names.

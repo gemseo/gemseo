@@ -42,7 +42,6 @@ from strenum import StrEnum
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
-from gemseo.core._execution_status_observer import DisciplinesStatusObserver
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
 from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
@@ -213,10 +212,6 @@ class BaseScenario(BaseMonitoredProcess):
         """  # noqa: D205, D212, D415
         super().__init__(name)
         self.__disciplines = tuple(disciplines)
-        self.execution_status.add_observer(
-            DisciplinesStatusObserver(self.__disciplines)
-        )
-
         self._form_factory = self._formulation_factory
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
 
@@ -644,7 +639,7 @@ class BaseScenario(BaseMonitoredProcess):
                 x_vect = database.get_x_vect(n_x_a)
                 self._execute_backup_callback(x_vect)
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         self.optimization_result = self._algo_factory.execute(
             self.formulation.optimization_problem,
             algo_name=self._settings.algo_name,

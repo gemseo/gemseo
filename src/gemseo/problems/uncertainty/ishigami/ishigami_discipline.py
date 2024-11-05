@@ -28,6 +28,8 @@ from gemseo.problems.uncertainty.ishigami.functions import compute_output
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 class IshigamiDiscipline(Discipline):
     r"""The Ishigami function as a discipline."""
@@ -40,10 +42,8 @@ class IshigamiDiscipline(Discipline):
             name: array([0.0]) for name in self.input_grammar.names
         })
 
-    def _run(self) -> None:
-        local_data = self.io.data
-        inputs_array = concatenate([local_data[name] for name in self.io.input_grammar])
-        self.io.update_output_data({"y": array([compute_output(inputs_array)])})
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"y": array([compute_output(concatenate(list(input_data.values())))])}
 
     def _compute_jacobian(
         self,

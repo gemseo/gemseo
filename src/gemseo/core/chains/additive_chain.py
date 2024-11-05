@@ -65,9 +65,9 @@ class MDOAdditiveChain(MDOParallelChain):
         super().__init__(disciplines, name, use_threading, n_processes)
         self._outputs_to_sum = outputs_to_sum
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         # Run the disciplines in parallel
-        super()._run()
+        super()._execute()
 
         # Sum the required outputs across disciplines
         for output_name in self._outputs_to_sum:

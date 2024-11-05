@@ -26,6 +26,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 class LinearCombination(Discipline):
     r"""Discipline computing a linear combination of its inputs.
@@ -100,12 +102,14 @@ class LinearCombination(Discipline):
         self.__offset = offset
         self.__output_name = output_name
 
-    def _run(self) -> None:
-        self.io.data[self.__output_name] = self.__offset
-        for input_name, input_value in self.io.get_input_data().items():
-            self.io.data[self.__output_name] += (
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        output_data = {}
+        output_data[self.__output_name] = self.__offset
+        for input_name, input_value in input_data.items():
+            output_data[self.__output_name] += (
                 self.__coefficients[input_name] * input_value
             )
+        return output_data
 
     def _compute_jacobian(
         self,

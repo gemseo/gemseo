@@ -32,6 +32,7 @@ from typing import ClassVar
 
 from numpy import array
 
+from gemseo import READ_ONLY_EMPTY_DICT
 from gemseo.core._process_flow.execution_sequences.sequential import (
     SequentialExecSequence,
 )
@@ -263,7 +264,8 @@ class MDAChain(BaseMDA):
         super()._check_consistency()
 
     def execute(  # noqa:D102
-        self, input_data: StrKeyMapping | None = None
+        self,
+        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> DisciplineData:
         # The initialization is needed for MDA loops.
         if (
@@ -273,7 +275,7 @@ class MDAChain(BaseMDA):
         ):
             init_chain = MDOInitializationChain(
                 self.disciplines,
-                available_data_names=input_data or (),
+                available_data_names=input_data,
             )
 
             self.default_input_data.update({
@@ -284,8 +286,8 @@ class MDAChain(BaseMDA):
             self.settings.initialize_defaults = False
         return super().execute(input_data=input_data)
 
-    def _run(self) -> None:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
 
         self.io.data = self.mdo_chain.execute(self.io.data)
 
