@@ -70,4 +70,4 @@ result = execute_algo(problem, settings_model=mnbi_settings)
 # Display the Pareto front
 # ------------------------
 # |g| detects the Pareto optimal points and the dominated ones.
-execute_post(problem, "ParetoFront", save=False, show=True)
+execute_post(problem, post_name="ParetoFront", save=False, show=True)

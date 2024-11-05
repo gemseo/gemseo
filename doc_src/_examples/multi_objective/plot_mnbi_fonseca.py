@@ -72,7 +72,7 @@ result = execute_algo(opt_problem, settings_model=mnbi_settings)
 # its Pareto front is not convex.
 # The mNBI algorithm successfully computes it.
 
-execute_post(opt_problem, "ParetoFront", save=False, show=True)
+execute_post(opt_problem, post_name="ParetoFront", save=False, show=True)
 
 # %%
 # Solve the Fonseca-Fleming optimization problem more finely
@@ -86,4 +86,4 @@ result = execute_algo(opt_problem, settings_model=mnbi_settings)
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # We can clearly see the effect of the refinement.
 
-execute_post(opt_problem, "ParetoFront", save=False, show=True)
+execute_post(opt_problem, post_name="ParetoFront", save=False, show=True)

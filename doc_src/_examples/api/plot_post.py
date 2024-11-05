@@ -60,4 +60,4 @@ scenario = create_scenario(
     disciplines, "obj", design_space, name="SellarMDFScenario", formulation_name="MDF"
 )
 scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
-execute_post(scenario, "OptHistoryView", save=False, show=True)
+execute_post(scenario, post_name="OptHistoryView", save=False, show=True)

@@ -35,7 +35,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 # Let us solve the :class:`.Rosenbrock` optimization problem
 # with the SLSQP algorithm and 10 iterations:
 optimization_problem = Rosenbrock()
-execute_algo(optimization_problem, "SLSQP", max_iter=10)
+execute_algo(optimization_problem, algo_name="SLSQP", max_iter=10)
 
 # %%
 # Then,

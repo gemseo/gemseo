@@ -79,4 +79,4 @@ result = execute_algo(opt_problem, settings_model=algo_settings)
 # There is one interesting area that has a hole in the Pareto front.
 # The mNBI algorithm avoids running sub-optimizations in this area
 # which saves computation time.
-execute_post(opt_problem, "ParetoFront", save=False, show=True)
+execute_post(opt_problem, post_name="ParetoFront", save=False, show=True)

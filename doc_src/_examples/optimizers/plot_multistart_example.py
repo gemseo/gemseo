@@ -83,10 +83,16 @@ scenario.execute(multistart_settings)
 # Lastly,
 # we can plot the history of the objective,
 # either by concatenating the 10 sub-optimization histories:
-execute_post(scenario, "BasicHistory", variable_names=["obj"], save=False, show=True)
+execute_post(
+    scenario, post_name="BasicHistory", variable_names=["obj"], save=False, show=True
+)
 
 # %%
 # or by filtering the local optima (one per starting point):
 execute_post(
-    "multistart.hdf5", "BasicHistory", variable_names=["obj"], save=False, show=True
+    "multistart.hdf5",
+    post_name="BasicHistory",
+    variable_names=["obj"],
+    save=False,
+    show=True,
 )

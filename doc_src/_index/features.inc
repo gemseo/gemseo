@@ -21,7 +21,7 @@ Basics of MDO
 - Use different surrogate models to substitute a costly discipline within a process: linear regression, RBF model and Gaussian process regression  :ref:`See more... <surrogates>`
 - Visualize the optimization results by means of many graphs  :ref:`See more... <post_processing>`
 - Record and cache the disciplines inputs and outputs into :term:`HDF` files  :ref:`See more... <caching>`
-- Experiment with different **|g|** 's benchmark :term:`MDO` problems  :ref:`See more... <benchmark_problems>`
+- Experiment with different |g| 's benchmark :term:`MDO` problems  :ref:`See more... <benchmark_problems>`
 
 Advanced techniques in MDO
 **************************
@@ -33,7 +33,7 @@ Advanced techniques in MDO
 Development
 ***********
 
-- Interface simulation software with **|g|** using :term:`JSON` schema based grammars for inputs and output description and a wrapping class for execution  :ref:`See more... <software_connection>`
+- Interface simulation software with |g| using :term:`JSON` schema based grammars for inputs and output description and a wrapping class for execution  :ref:`See more... <software_connection>`
 
 Plug-in options
 ***************
