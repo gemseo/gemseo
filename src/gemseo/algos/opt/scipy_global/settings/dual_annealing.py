@@ -27,7 +27,7 @@ from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class DualAnnealingSettings(BaseSciPyGlobalSettings):
+class DUAL_ANNEALING_Settings(BaseSciPyGlobalSettings):  # noqa: N801
     """The SciPy dual annealing setting."""
 
     _TARGET_CLASS_NAME = "DUAL_ANNEALING"

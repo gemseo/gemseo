@@ -29,18 +29,18 @@ from pandas.core.frame import DataFrame
 from pandas.plotting import scatter_matrix
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrixSettings
+from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrix_Settings
 
 
-class ScatterPlotMatrix(BasePost[ScatterPlotMatrixSettings]):
+class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
     """Scatter plot matrix among design variables, output functions and constraints.
 
     The list of variable names has to be passed as arguments of the plot method.
     """
 
-    Settings: ClassVar[type[ScatterPlotMatrixSettings]] = ScatterPlotMatrixSettings
+    Settings: ClassVar[type[ScatterPlotMatrix_Settings]] = ScatterPlotMatrix_Settings
 
-    def _plot(self, settings: ScatterPlotMatrixSettings) -> None:
+    def _plot(self, settings: ScatterPlotMatrix_Settings) -> None:
         """
         Raises:
             ValueError: If `filter_non_feasible` is set to True and no feasible

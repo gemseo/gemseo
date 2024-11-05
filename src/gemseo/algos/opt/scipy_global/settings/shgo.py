@@ -26,7 +26,7 @@ from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 
-class SHGOSettings(BaseSciPyGlobalSettings):
+class SHGO_Settings(BaseSciPyGlobalSettings):  # noqa: N801
     """The SciPy differential evolution setting."""
 
     _TARGET_CLASS_NAME = "SHGO"

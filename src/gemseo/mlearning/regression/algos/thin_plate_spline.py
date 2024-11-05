@@ -25,7 +25,7 @@ from typing import ClassVar
 
 from gemseo.mlearning.regression.algos.rbf import RBFRegressor
 from gemseo.mlearning.regression.algos.thin_plate_spline_settings import (
-    TPSRegressorSettings,
+    TPSRegressor_Settings,
 )
 
 
@@ -34,4 +34,4 @@ class TPSRegressor(RBFRegressor):
 
     SHORT_ALGO_NAME: ClassVar[str] = "TPS"
 
-    Settings: ClassVar[type[TPSRegressorSettings]] = TPSRegressorSettings
+    Settings: ClassVar[type[TPSRegressor_Settings]] = TPSRegressor_Settings

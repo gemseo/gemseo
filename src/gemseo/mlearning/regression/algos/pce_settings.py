@@ -50,7 +50,7 @@ class CleaningOptions:
     """The threshold to select the efficient coefficients of the polynomial basis."""
 
 
-class PCERegressorSettings(BaseRegressorSettings):
+class PCERegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the polynomial chaos expansion model."""
 
     probability_space: ParameterSpace = Field(

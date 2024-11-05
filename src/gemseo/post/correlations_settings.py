@@ -25,7 +25,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class CorrelationsSettings(BasePostSettings):  # noqa: D101
+class Correlations_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "Correlations"
     n_plots_x: PositiveInt = Field(
         default=5,
@@ -49,4 +49,4 @@ class CorrelationsSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(CorrelationsSettings, "fig_size", default=(15.0, 10.0))
+update_field(Correlations_Settings, "fig_size", default=(15.0, 10.0))

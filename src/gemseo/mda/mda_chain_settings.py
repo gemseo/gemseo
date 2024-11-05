@@ -30,7 +30,7 @@ from gemseo.mda.composed_mda_settings import ComposedMDASettings
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 
-class MDAChainSettings(BaseParallelMDASettings, ComposedMDASettings):
+class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
     """The settings for :class:`.MDAChain`."""
 
     chain_linearize: bool = Field(

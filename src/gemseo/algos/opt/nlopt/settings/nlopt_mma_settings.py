@@ -25,7 +25,7 @@ from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
 from gemseo.algos.opt.nlopt.settings.base_nlopt_settings import BaseNLoptSettings
 
 
-class NLOPTMMASettings(BaseNLoptSettings, BaseGradientBasedAlgorithmSettings):
+class NLOPT_MMA_Settings(BaseNLoptSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """The settings for the NLopt MMA algorithm."""
 
     _TARGET_CLASS_NAME = "NLOPT_MMA"

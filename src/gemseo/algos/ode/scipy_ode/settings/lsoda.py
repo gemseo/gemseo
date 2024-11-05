@@ -24,7 +24,7 @@ from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
 )
 
 
-class LSODASettings(BaseScipyODESolverJacSettings):
+class LSODA_Settings(BaseScipyODESolverJacSettings):  # noqa: N801
     """Settings for the LSODA ODE solver from Scipy."""
 
     _TARGET_CLASS_NAME = "LSODA"

@@ -43,7 +43,7 @@ from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.factory import MDAFactory
-from gemseo.mda.mda_chain_settings import MDAChainSettings
+from gemseo.mda.mda_chain_settings import MDAChain_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -82,7 +82,7 @@ class MDAChain(BaseMDA):
     The execution sequence is provided by the :class:`.DependencyGraph`.
     """
 
-    Settings: ClassVar[type[MDAChainSettings]] = MDAChainSettings
+    Settings: ClassVar[type[MDAChain_Settings]] = MDAChain_Settings
     """The pydantic model for the settings."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
@@ -93,7 +93,7 @@ class MDAChain(BaseMDA):
     mdo_chain: MDOChain
     """The chain of MDAs."""
 
-    settings: MDAChainSettings
+    settings: MDAChain_Settings
     """The settings of the MDA"""
 
     __inner_mda_settings: BaseMDASettings
@@ -102,7 +102,7 @@ class MDAChain(BaseMDA):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAChainSettings | None = None,
+        settings_model: MDAChain_Settings | None = None,
         **settings: Any,
     ) -> None:
         self.mdo_chain = None

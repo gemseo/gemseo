@@ -23,7 +23,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 )
 
 
-class MOESettings(BaseRegressorSettings):
+class MOE_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the mixture of experts."""
 
     hard: bool = Field(

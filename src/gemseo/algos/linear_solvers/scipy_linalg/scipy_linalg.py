@@ -53,14 +53,14 @@ from gemseo.algos.linear_solvers.base_linear_solver_settings import (
 from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_settings import (  # noqa: E501
     BaseSciPyLinalgSettingsBase,
 )
-from gemseo.algos.linear_solvers.scipy_linalg.settings.bicg import BICGSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab import BICGStabSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import CGSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import CGSSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import GCROTSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import GMRESSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.bicg import BICG_Settings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.bicgstab import BICGSTAB_Settings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import CG_Settings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import CGS_Settings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import GCROT_Settings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import GMRES_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import DEFAULTSettings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRESSettings
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
 from gemseo.utils.compatibility.scipy import TOL_OPTION
 from gemseo.utils.compatibility.scipy import array_classes
 
@@ -116,14 +116,14 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             description="BI-Conjugate Gradient",
             internal_algorithm_name="bicg",
             website=f"{__DOC}generated/scipy.sparse.linalg.bicg.html",
-            Settings=BICGSettings,
+            Settings=BICG_Settings,
         ),
         "BICGSTAB": LinearSolverDescription(
             algorithm_name="BICGSTAB",
             description="Bi-Conjugate Gradient STABilized",
             internal_algorithm_name="bicgstab",
             website=f"{__DOC}generated/scipy.sparse.linalg.bicgstab.html",
-            Settings=BICGStabSettings,
+            Settings=BICGSTAB_Settings,
         ),
         "CG": LinearSolverDescription(
             algorithm_name="CG",
@@ -132,35 +132,35 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             lhs_must_be_symmetric=True,
             lhs_must_be_positive_definite=True,
             website=f"{__DOC}generated/scipy.sparse.linalg.cg.html",
-            Settings=CGSettings,
+            Settings=CG_Settings,
         ),
         "CGS": LinearSolverDescription(
             algorithm_name="CGS",
             description="Conjugate Gradient Squared",
             internal_algorithm_name="cgs",
             website=f"{__DOC}generated/scipy.sparse.linalg.cgs.html",
-            Settings=CGSSettings,
+            Settings=CGS_Settings,
         ),
         "GCROT": LinearSolverDescription(
             algorithm_name="GCROT",
             description="Generalized Conjugate Residual with Optimal Truncation",
             internal_algorithm_name="gcrotmk",
             website=f"{__DOC}generated/scipy.sparse.linalg.gcrotmk.html",
-            Settings=GCROTSettings,
+            Settings=GCROT_Settings,
         ),
         "GMRES": LinearSolverDescription(
             algorithm_name="GMRES",
             description="Generalized Minimum RESidual",
             internal_algorithm_name="gmres",
             website=f"{__DOC}generated/scipy.sparse.linalg.gmres.html",
-            Settings=GMRESSettings,
+            Settings=GMRES_Settings,
         ),
         "LGMRES": LinearSolverDescription(
             algorithm_name="LGMRES",
             description="Loose Generalized Minimum RESidual",
             internal_algorithm_name="lgmres",
             website=f"{__DOC}generated/scipy.sparse.linalg.lgmres.html",
-            Settings=LGMRESSettings,
+            Settings=LGMRES_Settings,
         ),
         "TFQMR": LinearSolverDescription(
             algorithm_name="TFQMR",

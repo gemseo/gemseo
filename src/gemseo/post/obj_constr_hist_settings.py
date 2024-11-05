@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class ObjConstrHistSettings(BasePostSettings):  # noqa: D101
+class ObjConstrHist_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "ObjConstrHist"
     constraint_names: Sequence[str] = Field(
         default=(),
@@ -33,4 +33,4 @@ class ObjConstrHistSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(ObjConstrHistSettings, "fig_size", default=(11.0, 6.0))
+update_field(ObjConstrHist_Settings, "fig_size", default=(11.0, 6.0))

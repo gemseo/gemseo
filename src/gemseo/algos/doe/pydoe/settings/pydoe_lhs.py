@@ -37,7 +37,7 @@ class Criterion(StrEnum):
     lhsmu = "lhsmu"
 
 
-class LHSSettings(BasePyDOESettings):
+class PYDOE_LHS_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the LHS DOE from the pyDOE library."""
 
     _TARGET_CLASS_NAME = "PYDOE_LHS"

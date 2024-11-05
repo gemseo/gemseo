@@ -21,7 +21,7 @@ from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_settings import (
 )
 
 
-class RK45Settings(BaseScipyODESolverSettings):
+class RK45_Settings(BaseScipyODESolverSettings):  # noqa: N801
     """Settings for the RK45 ODE solver from Scipy."""
 
     _TARGET_CLASS_NAME = "RK45"

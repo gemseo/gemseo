@@ -65,7 +65,7 @@ from sklearn.linear_model import Ridge
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressorSettings
+from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
     BaseDimensionReduction,
 )
@@ -81,7 +81,7 @@ class LinearRegressor(BaseRegressor):
     SHORT_ALGO_NAME: ClassVar[str] = "LinReg"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[LinearRegressorSettings]] = LinearRegressorSettings
+    Settings: ClassVar[type[LinearRegressor_Settings]] = LinearRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

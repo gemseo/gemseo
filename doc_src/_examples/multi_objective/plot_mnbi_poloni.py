@@ -50,7 +50,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBISettings
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
 
 configure_logger()
@@ -64,7 +64,7 @@ configure_logger()
 # with a maximum of 50 iterations.
 # The analytic gradients are provided.
 opt_problem = Poloni()
-algo_settings = MNBISettings(
+algo_settings = MNBI_Settings(
     max_iter=10000,
     sub_optim_max_iter=50,
     n_sub_optim=50,

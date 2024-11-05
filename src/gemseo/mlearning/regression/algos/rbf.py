@@ -56,7 +56,7 @@ from scipy.interpolate import Rbf
 
 from gemseo.mlearning.core.algos.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressorSettings
+from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressor_Settings
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -81,7 +81,7 @@ class RBFRegressor(BaseRegressor):
 
     EUCLIDEAN: Final[str] = "euclidean"
 
-    Settings: ClassVar[type[RBFRegressorSettings]] = RBFRegressorSettings
+    Settings: ClassVar[type[RBFRegressor_Settings]] = RBFRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

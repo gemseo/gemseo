@@ -30,7 +30,7 @@ from gemseo.utils.pydantic import copy_field
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
-class MDANewtonRaphsonSettings(BaseMDARootSettings):
+class MDANewtonRaphson_Settings(BaseMDARootSettings):  # noqa: N801
     """The settings for :class:`.MDANewtonRaphson`."""
 
     execute_before_linearizing: bool = copy_field(

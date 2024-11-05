@@ -17,54 +17,54 @@
 from __future__ import annotations
 
 from gemseo.mlearning.classification.algos.knn_settings import (  # noqa: F401
-    KNNClassifierSettings,
+    KNNClassifier_Settings,
 )
 from gemseo.mlearning.classification.algos.random_forest_settings import (  # noqa: F401
-    RandomForestClassifierSettings,
+    RandomForestClassifier_Settings,
 )
 from gemseo.mlearning.classification.algos.svm_settings import (  # noqa: F401
-    SVMClassifierSettings,
+    SVMClassifier_Settings,
 )
 from gemseo.mlearning.clustering.algos.gaussian_mixture_settings import (  # noqa: F401
-    GaussianMixtureSettings,
+    GaussianMixture_Settings,
 )
 from gemseo.mlearning.clustering.algos.kmeans_settings import (  # noqa: F401
-    KMeansSettings,
+    KMeans_Settings,
 )
 from gemseo.mlearning.regression.algos.gpr_settings import (  # noqa: F401
-    GaussianProcessRegressorSettings,
+    GaussianProcessRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.gradient_boosting_settings import (  # noqa: F401
-    GradientBoostingRegressorSettings,
+    GradientBoostingRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.linreg_settings import (  # noqa: F401
-    LinearRegressorSettings,
+    LinearRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.mlp_settings import (  # noqa: F401
-    MLPRegressorSettings,
+    MLPRegressor_Settings,
 )
-from gemseo.mlearning.regression.algos.moe_settings import MOESettings  # noqa: F401
+from gemseo.mlearning.regression.algos.moe_settings import MOE_Settings  # noqa: F401
 from gemseo.mlearning.regression.algos.ot_gpr_settings import (  # noqa: F401
-    OTGaussianProcessRegressorSettings,
+    OTGaussianProcessRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.pce_settings import (  # noqa: F401
-    PCERegressorSettings,
+    PCERegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.polyreg_settings import (  # noqa: F401
-    PolynomialRegressorSettings,
+    PolynomialRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.random_forest_settings import (  # noqa: F401
-    RandomForestRegressorSettings,
+    RandomForestRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.rbf_settings import (  # noqa: F401
-    RBFRegressorSettings,
+    RBFRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.regressor_chain_settings import (  # noqa: F401
-    RegressorChainSettings,
+    RegressorChain_Settings,
 )
 from gemseo.mlearning.regression.algos.svm_settings import (  # noqa: F401
-    SVMRegressorSettings,
+    SVMRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.thin_plate_spline_settings import (  # noqa: F401
-    TPSRegressorSettings,
+    TPSRegressor_Settings,
 )

@@ -28,7 +28,7 @@ from typing import ClassVar
 
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.sequential_mda_settings import MDASequentialSettings
+from gemseo.mda.sequential_mda_settings import MDASequential_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -39,17 +39,17 @@ if TYPE_CHECKING:
 class MDASequential(BaseMDA):
     """A sequence of elementary MDAs."""
 
-    Settings: ClassVar[type[MDASequentialSettings]] = MDASequentialSettings
+    Settings: ClassVar[type[MDASequential_Settings]] = MDASequential_Settings
     """The pydantic model for the settings."""
 
-    settings: MDASequentialSettings
+    settings: MDASequential_Settings
     """The settings of the MDA"""
 
     def __init__(
         self,
         disciplines: Sequence[Discipline],
         mda_sequence: Sequence[BaseMDA],
-        settings_model: MDASequentialSettings | None = None,
+        settings_model: MDASequential_Settings | None = None,
         **settings: Any,
     ) -> None:
         """

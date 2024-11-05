@@ -31,8 +31,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPTCOBYLASettings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQPSettings
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -68,7 +68,7 @@ design_space = SobieskiDesignSpace()
 # using the following algorithm, maximum number of iterations and
 # algorithm settings:
 
-slsqp_settings = SLSQPSettings(
+slsqp_settings = SLSQP_Settings(
     max_iter=30,
     xtol_rel=1e-7,
     xtol_abs=1e-7,
@@ -77,7 +77,7 @@ slsqp_settings = SLSQPSettings(
     ineq_tolerance=1e-4,
 )
 
-cobyla_settings = NLOPTCOBYLASettings(
+cobyla_settings = NLOPT_COBYLA_Settings(
     max_iter=50,
     xtol_rel=1e-7,
     xtol_abs=1e-7,

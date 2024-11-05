@@ -23,7 +23,7 @@ from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import BaseSciPyDOE
 from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Optimizer
 
 
-class SobolSettings(BaseSciPyDOESettings):
+class Sobol_Settings(BaseSciPyDOESettings):  # noqa: N801
     """The settings for the Sobol sequence DOE from the SciPy library."""
 
     _TARGET_CLASS_NAME = "Sobol"

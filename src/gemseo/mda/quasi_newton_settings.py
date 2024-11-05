@@ -37,7 +37,7 @@ class QuasiNewtonMethod(StrEnum):
     LINEAR_MIXING = "linearmixing"
 
 
-class MDAQuasiNewtonSettings(BaseMDARootSettings):
+class MDAQuasiNewton_Settings(BaseMDARootSettings):  # noqa: N801
     """The settings for :class:`.MDAQuasiNewton`."""
 
     method: QuasiNewtonMethod = Field(

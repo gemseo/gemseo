@@ -25,7 +25,7 @@ from typing import Any
 from typing import ClassVar
 
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-from gemseo.formulations.mdf_settings import MDFSettings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.factory import MDAFactory
 
 if TYPE_CHECKING:
@@ -55,9 +55,9 @@ class MDF(BaseMDOFormulation):
     mda: BaseMDA
     """The MDA used in the formulation."""
 
-    Settings: ClassVar[type[MDFSettings]] = MDFSettings
+    Settings: ClassVar[type[MDF_Settings]] = MDF_Settings
 
-    _settings: MDFSettings
+    _settings: MDF_Settings
 
     __mda_factory: ClassVar[MDAFactory] = MDAFactory()
     """The MDA factory."""
@@ -67,7 +67,7 @@ class MDF(BaseMDOFormulation):
         disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        settings_model: MDFSettings | None = None,
+        settings_model: MDF_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(

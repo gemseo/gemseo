@@ -29,7 +29,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
-    HiGHSDualSimplexSettings,
+    DUAL_SIMPLEX_Settings,
 )
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -142,5 +142,5 @@ def test_sparse_linprog_algorithms(
 @pytest.mark.parametrize("scaling_threshold", [None, 0.1])
 def test_autoscale_setting(scaling_threshold):
     """Check that the ``scale_threshold`` setting enables the ``autoscale`` setting."""
-    settings = HiGHSDualSimplexSettings(scaling_threshold=scaling_threshold)
+    settings = DUAL_SIMPLEX_Settings(scaling_threshold=scaling_threshold)
     assert settings.autoscale if scaling_threshold else not settings.autoscale

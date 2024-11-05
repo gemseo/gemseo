@@ -33,7 +33,7 @@ from numpy import ndarray
 from scipy.optimize import root
 
 from gemseo.mda.base_mda_root import BaseMDARoot
-from gemseo.mda.quasi_newton_settings import MDAQuasiNewtonSettings
+from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ class MDAQuasiNewton(BaseMDARoot):
     Jacobian of :math:`f` at :math:`x_k`.
     """
 
-    Settings: ClassVar[type[MDAQuasiNewtonSettings]] = MDAQuasiNewtonSettings
+    Settings: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
     """The pydantic model for the settings."""
 
     _METHODS_SUPPORTING_CALLBACKS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
@@ -81,7 +81,7 @@ class MDAQuasiNewton(BaseMDARoot):
     disciplines: tuple[Discipline, ...]
     """The disciplines."""
 
-    settings: MDAQuasiNewtonSettings
+    settings: MDAQuasiNewton_Settings
     """The settings of the MDA"""
 
     __current_couplings: ndarray
@@ -90,7 +90,7 @@ class MDAQuasiNewton(BaseMDARoot):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAQuasiNewtonSettings | None = None,
+        settings_model: MDAQuasiNewton_Settings | None = None,
         **settings: Any,
     ) -> None:
         """

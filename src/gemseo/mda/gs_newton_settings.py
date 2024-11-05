@@ -19,10 +19,10 @@ from __future__ import annotations
 from collections.abc import Sequence  # Noqa: TCH003
 from typing import ClassVar  # Noqa: TCH003
 
-from gemseo.mda.sequential_mda_settings import MDASequentialSettings
+from gemseo.mda.sequential_mda_settings import MDASequential_Settings
 
 
-class MDAGSNewtonSettings(MDASequentialSettings):
+class MDAGSNewton_Settings(MDASequential_Settings):  # noqa: N801
     """The settings for :class:`.MDAGSNewton`."""
 
     _settings_names_to_be_cascaded: ClassVar[Sequence[str]] = [

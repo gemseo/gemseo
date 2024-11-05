@@ -35,7 +35,7 @@ from numpy import savetxt
 from numpy import stack
 
 from gemseo.post.base_post import BasePost
-from gemseo.post.variable_influence_settings import VariableInfluenceSettings
+from gemseo.post.variable_influence_settings import VariableInfluence_Settings
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class VariableInfluence(BasePost[VariableInfluenceSettings]):
+class VariableInfluence(BasePost[VariableInfluence_Settings]):
     r"""First order variable influence analysis.
 
     This post-processing computes
@@ -67,9 +67,9 @@ class VariableInfluence(BasePost[VariableInfluenceSettings]):
       in a NumPy file.
     """
 
-    Settings: ClassVar[type[VariableInfluenceSettings]] = VariableInfluenceSettings
+    Settings: ClassVar[type[VariableInfluence_Settings]] = VariableInfluence_Settings
 
-    def _plot(self, settings: VariableInfluenceSettings) -> None:
+    def _plot(self, settings: VariableInfluence_Settings) -> None:
         level = settings.level
         absolute_value = settings.absolute_value
         log_scale = settings.log_scale

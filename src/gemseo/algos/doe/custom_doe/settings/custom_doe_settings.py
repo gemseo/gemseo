@@ -39,7 +39,7 @@ SamplesType = Union[
 ]
 
 
-class CustomDOESettings(BaseDOESettings):
+class CustomDOE_Settings(BaseDOESettings):  # noqa: N801
     """The settings for the ``CustomDOE``."""
 
     _TARGET_CLASS_NAME = "CustomDOE"

@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class HessianHistorySettings(BasePostSettings):  # noqa: D101
+class HessianHistory_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "HessianHistory"
     variable_names: Sequence[str] = Field(
         default=(),
@@ -32,4 +32,4 @@ class HessianHistorySettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(HessianHistorySettings, "fig_size", default=(11.0, 6.0))
+update_field(HessianHistory_Settings, "fig_size", default=(11.0, 6.0))

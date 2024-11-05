@@ -26,7 +26,7 @@ from gemseo.mlearning.classification.algos.base_classifier_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class RandomForestClassifierSettings(BaseClassifierSettings):
+class RandomForestClassifier_Settings(BaseClassifierSettings):  # noqa: N801
     """The settings of the random forest classification algorithm."""
 
     n_estimators: PositiveInt = Field(

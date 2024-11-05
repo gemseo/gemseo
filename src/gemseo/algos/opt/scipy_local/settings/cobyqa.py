@@ -27,7 +27,7 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 )
 
 
-class COBYQASettings(BaseScipyLocalSettings):
+class COBYQA_Settings(BaseScipyLocalSettings):  # noqa: N801
     """Settings for the SciPy COBYQA algorithm."""
 
     _TARGET_CLASS_NAME = "COBYQA"

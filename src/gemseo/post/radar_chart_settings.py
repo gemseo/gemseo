@@ -24,7 +24,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class RadarChartSettings(BasePostSettings):  # noqa: D101
+class RadarChart_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "RadarChart"
     iteration: int | None = Field(
         default=None,
@@ -44,4 +44,4 @@ class RadarChartSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(RadarChartSettings, "fig_size", default=(6.4, 4.8))
+update_field(RadarChart_Settings, "fig_size", default=(6.4, 4.8))

@@ -28,7 +28,7 @@ from numpy import full
 
 from gemseo.algos.pareto.utils import generate_pareto_plots
 from gemseo.post.base_post import BasePost
-from gemseo.post.pareto_front_settings import ParetoFrontSettings
+from gemseo.post.pareto_front_settings import ParetoFront_Settings
 
 if TYPE_CHECKING:
     from collections.abc import MutableSequence
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class ParetoFront(BasePost[ParetoFrontSettings]):
+class ParetoFront(BasePost[ParetoFront_Settings]):
     """Compute the Pareto front for a multi-objective problem.
 
     The Pareto front of an optimization problem is the set of ``non-dominated`` points
@@ -53,9 +53,9 @@ class ParetoFront(BasePost[ParetoFrontSettings]):
     The latter are also called ``Pareto optimal points``.
     """
 
-    Settings: ClassVar[type[ParetoFrontSettings]] = ParetoFrontSettings
+    Settings: ClassVar[type[ParetoFront_Settings]] = ParetoFront_Settings
 
-    def _plot(self, settings: ParetoFrontSettings) -> None:
+    def _plot(self, settings: ParetoFront_Settings) -> None:
         """
         Raises:
             ValueError: If the numbers of objectives and objectives

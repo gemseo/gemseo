@@ -28,10 +28,10 @@ from typing import ClassVar
 
 from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
-from gemseo.mda.gs_newton_settings import MDAGSNewtonSettings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.mda.newton_raphson_settings import MDANewtonRaphsonSettings
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.mda.sequential_mda import MDASequential
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.pydantic import create_model
@@ -40,27 +40,27 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.mda.sequential_mda_settings import MDASequentialSettings
+    from gemseo.mda.sequential_mda_settings import MDASequential_Settings
     from gemseo.typing import StrKeyMapping
 
 
 class MDAGSNewton(MDASequential):
     """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
 
-    Settings: ClassVar[type[MDAGSNewtonSettings]] = MDAGSNewtonSettings
+    Settings: ClassVar[type[MDAGSNewton_Settings]] = MDAGSNewton_Settings
     """The pydantic model for the settings."""
 
-    settings: MDAGSNewtonSettings
+    settings: MDAGSNewton_Settings
     """The settings of the MDA"""
 
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        gauss_seidel_settings: MDAGaussSeidelSettings
+        gauss_seidel_settings: MDAGaussSeidel_Settings
         | StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        newton_settings: MDANewtonRaphsonSettings
+        newton_settings: MDANewtonRaphson_Settings
         | StrKeyMapping = READ_ONLY_EMPTY_DICT,
-        settings_model: MDASequentialSettings | None = None,
+        settings_model: MDASequential_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(
@@ -71,11 +71,11 @@ class MDAGSNewton(MDASequential):
         )
 
         gauss_seidel_settings = create_model(
-            MDAGaussSeidelSettings,
+            MDAGaussSeidel_Settings,
             **self.__update_inner_mda_settings(gauss_seidel_settings),
         )
         newton_settings = create_model(
-            MDANewtonRaphsonSettings,
+            MDANewtonRaphson_Settings,
             **self.__update_inner_mda_settings(newton_settings),
         )
 

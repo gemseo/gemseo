@@ -16,9 +16,9 @@
 
 from __future__ import annotations
 
-from gemseo.formulations.bilevel_settings import BiLevelSettings  # noqa: F401
+from gemseo.formulations.bilevel_settings import BiLevel_Settings  # noqa: F401
 from gemseo.formulations.disciplinary_opt_settings import (  # noqa: F401
-    DisciplinaryOptSettings,
+    DisciplinaryOpt_Settings,
 )
-from gemseo.formulations.idf_settings import IDFSettings  # noqa: F401
-from gemseo.formulations.mdf_settings import MDFSettings  # noqa: F401
+from gemseo.formulations.idf_settings import IDF_Settings  # noqa: F401
+from gemseo.formulations.mdf_settings import MDF_Settings  # noqa: F401

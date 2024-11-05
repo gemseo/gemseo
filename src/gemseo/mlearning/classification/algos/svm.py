@@ -39,7 +39,7 @@ from typing import ClassVar
 from sklearn.svm import SVC
 
 from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
-from gemseo.mlearning.classification.algos.svm_settings import SVMClassifierSettings
+from gemseo.mlearning.classification.algos.svm_settings import SVMClassifier_Settings
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -53,7 +53,7 @@ class SVMClassifier(BaseClassifier):
     SHORT_ALGO_NAME: ClassVar[str] = "SVM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[SVMClassifierSettings]] = SVMClassifierSettings
+    Settings: ClassVar[type[SVMClassifier_Settings]] = SVMClassifier_Settings
 
     def _post_init(self):
         super()._post_init()

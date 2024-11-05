@@ -23,7 +23,7 @@ from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 
 
-class OATDOESettings(BaseDOESettings):
+class OATDOE_Settings(BaseDOESettings):  # noqa: N801
     """The settings of the OAT DOE."""
 
     _TARGET_CLASS_NAME = "OATDOE"

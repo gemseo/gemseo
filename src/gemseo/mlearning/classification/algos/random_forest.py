@@ -41,7 +41,7 @@ from sklearn.ensemble import RandomForestClassifier as SKLRandForest
 
 from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
 from gemseo.mlearning.classification.algos.random_forest_settings import (
-    RandomForestClassifierSettings,
+    RandomForestClassifier_Settings,
 )
 
 if TYPE_CHECKING:
@@ -54,8 +54,8 @@ class RandomForestClassifier(BaseClassifier):
     SHORT_ALGO_NAME: ClassVar[str] = "RF"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[RandomForestClassifierSettings]] = (
-        RandomForestClassifierSettings
+    Settings: ClassVar[type[RandomForestClassifier_Settings]] = (
+        RandomForestClassifier_Settings
     )
 
     def _post_init(self):

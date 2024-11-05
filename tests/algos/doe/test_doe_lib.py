@@ -39,10 +39,10 @@ from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
-from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOESettings
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
-from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
@@ -176,7 +176,8 @@ def variables_space():
 
 
 @pytest.mark.parametrize(
-    "settings", [{"n_samples": 4}, {"settings_model": FULLFACTSettings(n_samples=4)}]
+    "settings",
+    [{"n_samples": 4}, {"settings_model": PYDOE_FULLFACT_Settings(n_samples=4)}],
 )
 @pytest.mark.parametrize(
     ("transformation", "expected_points"),
@@ -198,7 +199,7 @@ SAMPLES = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
 
 @pytest.mark.parametrize(
     "settings",
-    [{"samples": SAMPLES}, {"settings_model": CustomDOESettings(samples=SAMPLES)}],
+    [{"samples": SAMPLES}, {"settings_model": CustomDOE_Settings(samples=SAMPLES)}],
 )
 def test_compute_doe_from_dimension(custom_doe, settings):
     """Check BaseDOELibrary.compute_doe from the dimension of the variables space."""

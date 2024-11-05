@@ -30,7 +30,7 @@ from gemseo.mlearning.classification.algos.base_classifier_settings import (
 from gemseo.utils.seeder import SEED
 
 
-class SVMClassifierSettings(BaseClassifierSettings):
+class SVMClassifier_Settings(BaseClassifierSettings):  # noqa: N801
     """The settings of the SV classification algorithm."""
 
     C: PositiveFloat = Field(

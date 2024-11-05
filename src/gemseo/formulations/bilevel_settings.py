@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.formulations.mdf_settings import MDFSettings
+from gemseo.formulations.mdf_settings import MDF_Settings
 
 
-class BiLevelSettings(MDFSettings):
+class BiLevel_Settings(MDF_Settings):  # noqa: N801
     """Settings of the :class:`.BiLevel` formulation."""
 
     _TARGET_CLASS_NAME = "BiLevel"

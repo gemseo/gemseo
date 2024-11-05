@@ -24,7 +24,7 @@ from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import 
 )
 
 
-class HiGHSInteriorPointSettings(BaseSciPyLinProgSettings):
+class INTERIOR_POINT_Settings(BaseSciPyLinProgSettings):  # noqa: N801
     """The HiGHS interior point method setting."""
 
     _TARGET_CLASS_NAME = "INTERIOR_POINT"

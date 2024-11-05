@@ -100,7 +100,7 @@ from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
 
 from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
-from gemseo.mlearning.classification.algos.knn_settings import KNNClassifierSettings
+from gemseo.mlearning.classification.algos.knn_settings import KNNClassifier_Settings
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -112,7 +112,7 @@ class KNNClassifier(BaseClassifier):
     SHORT_ALGO_NAME: ClassVar[str] = "KNN"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[KNNClassifierSettings]] = KNNClassifierSettings
+    Settings: ClassVar[type[KNNClassifier_Settings]] = KNNClassifier_Settings
 
     def _post_init(self):
         super()._post_init()

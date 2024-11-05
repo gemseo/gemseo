@@ -21,7 +21,7 @@ from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_sparsity_settings im
 )
 
 
-class BDFSettings(BaseScipyODESolverJacSparsitySettings):
+class BDF_Settings(BaseScipyODESolverJacSparsitySettings):  # noqa: N801
     """Settings for the BDF ODE solver from Scipy."""
 
     _TARGET_CLASS_NAME = "BDF"

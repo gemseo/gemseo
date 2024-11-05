@@ -27,21 +27,21 @@ from typing import Final
 from PIL import Image
 
 from gemseo.algos.database import Database
-from gemseo.post.animation_settings import AnimationSettings
+from gemseo.post.animation_settings import Animation_Settings
 from gemseo.post.base_post import BasePost
 
 
-class Animation(BasePost[AnimationSettings]):
+class Animation(BasePost[Animation_Settings]):
     """Animated GIF maker from a :class:`.BasePost`."""
 
     __FRAME: Final[str] = "frame"
     """The prefix for frame images."""
 
-    Settings: ClassVar[type[AnimationSettings]] = AnimationSettings
+    Settings: ClassVar[type[Animation_Settings]] = Animation_Settings
 
     def _plot(
         self,
-        settings: AnimationSettings,
+        settings: Animation_Settings,
     ) -> None:
         steps_to_frame_file_paths = self.__generate_frames(settings)
         output_files = self.__generate_gif(
@@ -59,7 +59,7 @@ class Animation(BasePost[AnimationSettings]):
 
     def __generate_frames(
         self,
-        settings: AnimationSettings,
+        settings: Animation_Settings,
     ) -> list[list[Path]]:
         """Generate the frames of the animation.
 
@@ -103,7 +103,7 @@ class Animation(BasePost[AnimationSettings]):
     def __generate_gif(
         self,
         steps_to_frame_file_paths: list[list[Path]],
-        settings: AnimationSettings,
+        settings: Animation_Settings,
     ) -> list[str]:
         """Generate and store the GIF using input frames.
 

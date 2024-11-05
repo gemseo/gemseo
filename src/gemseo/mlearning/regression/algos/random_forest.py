@@ -37,7 +37,7 @@ from sklearn.ensemble import RandomForestRegressor as SKLRandForest
 
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.algos.random_forest_settings import (
-    RandomForestRegressorSettings,
+    RandomForestRegressor_Settings,
 )
 
 if TYPE_CHECKING:
@@ -50,8 +50,8 @@ class RandomForestRegressor(BaseRegressor):
     SHORT_ALGO_NAME: ClassVar[str] = "RF"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[RandomForestRegressorSettings]] = (
-        RandomForestRegressorSettings
+    Settings: ClassVar[type[RandomForestRegressor_Settings]] = (
+        RandomForestRegressor_Settings
     )
 
     def _post_init(self):

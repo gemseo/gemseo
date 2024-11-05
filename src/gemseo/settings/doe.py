@@ -17,55 +17,70 @@
 from __future__ import annotations
 
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import (  # noqa: F401
-    CustomDOESettings,
+    CustomDOE_Settings,
 )
-from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOESettings  # noqa: F401
+from gemseo.algos.doe.diagonal_doe.diagonal_doe import (  # noqa: F401
+    DiagonalDOE_Settings,
+)
 from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import (  # noqa: F401
-    MorrisDOESettings,
+    MorrisDOE_Settings,
 )
 from gemseo.algos.doe.oat_doe.settings.oat_doe_settings import (  # noqa: F401
-    OATDOESettings,
+    OATDOE_Settings,
 )
-from gemseo.algos.doe.openturns.settings.ot_axial import OTAxialSettings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_axial import OT_AXIAL_Settings  # noqa: F401
 from gemseo.algos.doe.openturns.settings.ot_composite import (  # noqa: F401
-    OTCompositeSettings,
+    OT_COMPOSITE_Settings,
 )
 from gemseo.algos.doe.openturns.settings.ot_factorial import (  # noqa: F401
-    OTFactorialSettings,
+    OT_FACTORIAL_Settings,
 )
-from gemseo.algos.doe.openturns.settings.ot_faure import OTFaureSettings  # noqa: F401
-from gemseo.algos.doe.openturns.settings.ot_full_fact import (  # noqa: F401
-    OTFullFactSettings,
+from gemseo.algos.doe.openturns.settings.ot_faure import OT_FAURE_Settings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_fullfact import (  # noqa: F401
+    OT_FULLFACT_Settings,
 )
-from gemseo.algos.doe.openturns.settings.ot_halton import OTHaltonSettings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_halton import (  # noqa: F401
+    OT_HALTON_Settings,
+)
 from gemseo.algos.doe.openturns.settings.ot_haselgrove import (  # noqa: F401
-    OTHaselgroveSettings,
+    OT_HASELGROVE_Settings,
 )
-from gemseo.algos.doe.openturns.settings.ot_lhs import OTLHSSettings  # noqa: F401
-from gemseo.algos.doe.openturns.settings.ot_lhsc import OTLHSCSettings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_lhs import OT_LHS_Settings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_lhsc import OT_LHSC_Settings  # noqa: F401
 from gemseo.algos.doe.openturns.settings.ot_monte_carlo import (  # noqa: F401
-    OTMonteCarloSettings,
+    OT_MONTE_CARLO_Settings,
 )
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import (  # noqa: F401
-    OTOptLHSSettings,
+    OT_OPT_LHS_Settings,
 )
-from gemseo.algos.doe.openturns.settings.ot_random import OTRandomSettings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_random import (  # noqa: F401
+    OT_RANDOM_Settings,
+)
 from gemseo.algos.doe.openturns.settings.ot_reverse_halton import (  # noqa: F401
-    OTReverseHaltonSettings,
+    OT_REVERSE_HALTON_Settings,
 )
-from gemseo.algos.doe.openturns.settings.ot_sobol import OTSobolSettings  # noqa: F401
+from gemseo.algos.doe.openturns.settings.ot_sobol import OT_SOBOL_Settings  # noqa: F401
 from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (  # noqa: F401
-    OTSobolIndicesSettings,
+    OT_SOBOL_INDICES_Settings,
 )
-from gemseo.algos.doe.pydoe.settings.bbdesign import BBDESIGNSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.ccdesign import CCDESIGNSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.ff2n import FF2NSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.fullfact import FULLFACTSettings  # noqa: F401
-from gemseo.algos.doe.pydoe.settings.pbdesign import PBDESIGNSettings  # noqa: F401
-from gemseo.algos.doe.scipy.settings.halton import HaltonSettings  # noqa: F401
-from gemseo.algos.doe.scipy.settings.lhs import LHSSettings  # noqa: F401
-from gemseo.algos.doe.scipy.settings.mc import MCSettings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.pydoe_bbdesign import (  # noqa: F401
+    PYDOE_BBDESIGN_Settings,
+)
+from gemseo.algos.doe.pydoe.settings.pydoe_ccdesign import (  # noqa: F401
+    PYDOE_CCDESIGN_Settings,
+)
+from gemseo.algos.doe.pydoe.settings.pydoe_ff2n import PYDOE_FF2N_Settings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import (  # noqa: F401
+    PYDOE_FULLFACT_Settings,
+)
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings  # noqa: F401
+from gemseo.algos.doe.pydoe.settings.pydoe_pbdesign import (  # noqa: F401
+    PYDOE_PBDESIGN_Settings,
+)
+from gemseo.algos.doe.scipy.settings.halton import Halton_Settings  # noqa: F401
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings  # noqa: F401
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings  # noqa: F401
 from gemseo.algos.doe.scipy.settings.poisson_disk import (  # noqa: F401
-    PoissonDiskSettings,
+    PoissonDisk_Settings,
 )
-from gemseo.algos.doe.scipy.settings.sobol import SobolSettings  # noqa: F401
+from gemseo.algos.doe.scipy.settings.sobol import Sobol_Settings  # noqa: F401

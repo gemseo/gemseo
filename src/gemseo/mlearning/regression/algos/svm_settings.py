@@ -27,7 +27,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 )
 
 
-class SVMRegressorSettings(BaseRegressorSettings):
+class SVMRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the SVM regressor."""
 
     kernel: str | Annotated[Callable, WithJsonSchema({})] = Field(

@@ -25,7 +25,7 @@ from numpy.testing import assert_allclose
 
 from gemseo.formulations.mdf import MDF
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
@@ -146,7 +146,7 @@ def test_mda_settings():
     assert mdf.mda.settings.max_mda_iter == 13
     mdf = create_sellar_mdf(
         main_mda_name="MDAGaussSeidel",
-        main_mda_settings=MDAGaussSeidelSettings(max_mda_iter=13),
+        main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
     )
 
     assert isinstance(mdf.mda, MDAGaussSeidel)
@@ -154,10 +154,10 @@ def test_mda_settings():
 
     msg = (
         "The MDANewtonRaphson settings model has the wrong type: "
-        "expected MDANewtonRaphsonSettings, got MDAGaussSeidel."
+        "expected MDANewtonRaphson_Settings, got MDAGaussSeidel_Settings."
     )
     with pytest.raises(TypeError, match=msg):
         mdf = create_sellar_mdf(
             main_mda_name="MDANewtonRaphson",
-            main_mda_settings=MDAGaussSeidelSettings(max_mda_iter=13),
+            main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
         )

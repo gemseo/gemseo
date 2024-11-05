@@ -48,10 +48,12 @@ from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
 from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
-    DifferentialEvolutionSettings,
+    DIFFERENTIAL_EVOLUTION_Settings,
 )
-from gemseo.algos.opt.scipy_global.settings.dual_annealing import DualAnnealingSettings
-from gemseo.algos.opt.scipy_global.settings.shgo import SHGOSettings
+from gemseo.algos.opt.scipy_global.settings.dual_annealing import (
+    DUAL_ANNEALING_Settings,
+)
+from gemseo.algos.opt.scipy_global.settings.shgo import SHGO_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -96,7 +98,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             description="Dual annealing",
             internal_algorithm_name="dual_annealing",
             website=f"{__DOC}scipy.optimize.dual_annealing.html",
-            Settings=DualAnnealingSettings,
+            Settings=DUAL_ANNEALING_Settings,
         ),
         "SHGO": SciPyGlobalAlgorithmDescription(
             algorithm_name="SHGO",
@@ -106,7 +108,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             internal_algorithm_name="shgo",
             positive_constraints=True,
             website=f"{__DOC}scipy.optimize.shgo.html",
-            Settings=SHGOSettings,
+            Settings=SHGO_Settings,
         ),
         "DIFFERENTIAL_EVOLUTION": SciPyGlobalAlgorithmDescription(
             algorithm_name="Differential evolution",
@@ -115,7 +117,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             handle_inequality_constraints=True,
             internal_algorithm_name="differential_evolution",
             website=f"{__DOC}scipy.optimize.differential_evolution.html",
-            Settings=DifferentialEvolutionSettings,
+            Settings=DIFFERENTIAL_EVOLUTION_Settings,
         ),
     }
 

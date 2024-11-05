@@ -33,7 +33,7 @@ from matplotlib.ticker import SymmetricalLogLocator
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.obj_constr_hist_settings import ObjConstrHistSettings
+from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class ObjConstrHist(BasePost[ObjConstrHistSettings]):
+class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
     """History of the maximum constraint and objective value.
 
     The objective history is plotted with a line
@@ -54,12 +54,12 @@ class ObjConstrHist(BasePost[ObjConstrHistSettings]):
     - red: the inequality constraint is violated.
     """
 
-    Settings: ClassVar[type[ObjConstrHistSettings]] = ObjConstrHistSettings
+    Settings: ClassVar[type[ObjConstrHist_Settings]] = ObjConstrHist_Settings
 
     __Y_MARGIN: Final[float] = 0.05
     """The left and right margin for the y-axis."""
 
-    def _plot(self, settings: ObjConstrHistSettings) -> None:
+    def _plot(self, settings: ObjConstrHist_Settings) -> None:
         constraint_names = settings.constraint_names
 
         # 0. Initialize the figure.

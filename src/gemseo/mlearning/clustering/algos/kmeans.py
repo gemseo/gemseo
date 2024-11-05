@@ -83,7 +83,7 @@ from sklearn.cluster import KMeans as SKLKmeans
 from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
-from gemseo.mlearning.clustering.algos.kmeans_settings import KMeansSettings
+from gemseo.mlearning.clustering.algos.kmeans_settings import KMeans_Settings
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -97,7 +97,7 @@ class KMeans(BasePredictiveClusterer):
 
     EPS = finfo(float).eps
 
-    Settings: ClassVar[type[KMeansSettings]] = KMeansSettings
+    Settings: ClassVar[type[KMeans_Settings]] = KMeans_Settings
 
     def _post_init(self):
         super()._post_init()

@@ -27,7 +27,7 @@ from typing import ClassVar
 from gemseo.core.chains.chain import MDOChain
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOptSettings
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -43,7 +43,7 @@ class DisciplinaryOpt(BaseMDOFormulation):
     from an ordered list of disciplines, an objective function and a design space.
     """
 
-    Settings: ClassVar[type[DisciplinaryOptSettings]] = DisciplinaryOptSettings
+    Settings: ClassVar[type[DisciplinaryOpt_Settings]] = DisciplinaryOpt_Settings
 
     __top_level_disciplines: tuple[Discipline]
     """The top-level disciplines."""
@@ -53,7 +53,7 @@ class DisciplinaryOpt(BaseMDOFormulation):
         disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        settings_model: DisciplinaryOptSettings | None = None,
+        settings_model: DisciplinaryOpt_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(

@@ -59,7 +59,7 @@ from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModel
 from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModelType
 from gemseo.mlearning.regression.algos.ot_gpr_settings import DOEAlgorithmName
 from gemseo.mlearning.regression.algos.ot_gpr_settings import (
-    OTGaussianProcessRegressorSettings,
+    OTGaussianProcessRegressor_Settings,
 )
 from gemseo.mlearning.regression.algos.ot_gpr_settings import Trend
 from gemseo.utils.compatibility.openturns import create_trend_basis
@@ -136,8 +136,8 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     __use_hmat: bool
     """Whether to use HMAT or LAPACK for linear algebra."""
 
-    Settings: ClassVar[type[OTGaussianProcessRegressorSettings]] = (
-        OTGaussianProcessRegressorSettings
+    Settings: ClassVar[type[OTGaussianProcessRegressor_Settings]] = (
+        OTGaussianProcessRegressor_Settings
     )
 
     def _post_init(self):

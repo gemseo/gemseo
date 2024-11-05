@@ -32,14 +32,14 @@ from numpy.random import default_rng
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
-from gemseo.post.robustness_settings import RobustnessSettings
+from gemseo.post.robustness_settings import Robustness_Settings
 from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Robustness(BasePost[RobustnessSettings]):
+class Robustness(BasePost[Robustness_Settings]):
     """Uncertainty quantification at the optimum.
 
     Compute the quadratic approximations of all the output functions, propagate
@@ -49,9 +49,9 @@ class Robustness(BasePost[RobustnessSettings]):
     """
 
     SR1_APPROX: ClassVar[str] = "SR1"
-    Settings: ClassVar[type[RobustnessSettings]] = RobustnessSettings
+    Settings: ClassVar[type[Robustness_Settings]] = Robustness_Settings
 
-    def _plot(self, settings: RobustnessSettings) -> None:
+    def _plot(self, settings: Robustness_Settings) -> None:
         standard_deviation = settings.stddev
         problem = self.optimization_problem
         design_space = problem.design_space

@@ -25,14 +25,14 @@ from pydantic import model_validator
 
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.mda.mda_chain_settings import MDAChainSettings  # noqa: TCH001
+from gemseo.mda.mda_chain_settings import MDAChain_Settings  # noqa: TCH001
 from gemseo.typing import StrKeyMapping  # noqa: TCH001
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class IDFSettings(BaseFormulationSettings):
+class IDF_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the :class:`.IDF` formulation."""
 
     _TARGET_CLASS_NAME = "IDF"
@@ -67,7 +67,7 @@ you shall use multiprocessing.""",
         description="Whether an MDA is used to initialize the coupling variables.",
     )
 
-    mda_chain_settings_for_start_at_equilibrium: StrKeyMapping | MDAChainSettings = (
+    mda_chain_settings_for_start_at_equilibrium: StrKeyMapping | MDAChain_Settings = (
         Field(
             default_factory=dict,
             description="""The settings for the MDA when ``start_at_equilibrium=True``.

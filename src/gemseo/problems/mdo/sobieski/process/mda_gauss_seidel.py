@@ -24,7 +24,7 @@ from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
 
 if TYPE_CHECKING:
-    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidelSettings
+    from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 
 
 class SobieskiMDAGaussSeidel(MDAGaussSeidel):
@@ -33,7 +33,7 @@ class SobieskiMDAGaussSeidel(MDAGaussSeidel):
     def __init__(
         self,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
-        settings_model: MDAGaussSeidelSettings | None = None,
+        settings_model: MDAGaussSeidel_Settings | None = None,
         **settings: Any,
     ) -> None:
         """

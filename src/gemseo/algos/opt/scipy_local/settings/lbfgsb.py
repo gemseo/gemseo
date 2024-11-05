@@ -30,7 +30,7 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 )
 
 
-class LBFGSBSettings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):
+class L_BFGS_B_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy L-BFGS-B algorithm."""
 
     _TARGET_CLASS_NAME = "L-BFGS-B"

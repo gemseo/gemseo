@@ -12,14 +12,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the 2-Level Full-Factorial DOE from the pyDOE library."""
+"""Settings for the full factorial DOE from the PyDOE library."""
 
 from __future__ import annotations
+
+from collections.abc import Sequence  # noqa: TCH003
+
+from pydantic import Field
+from pydantic import NonNegativeInt
+from pydantic import PositiveInt  # noqa: TCH002
 
 from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 
 
-class FF2NSettings(BasePyDOESettings):
-    """The settings for the 2-Level Full-Factorial DOE from the pyDOE library."""
+class PYDOE_FULLFACT_Settings(BasePyDOESettings):  # noqa: N801
+    """The settings for the full factorial DOE from the pyDOE library."""
 
-    _TARGET_CLASS_NAME = "PYDOE_FF2N"
+    _TARGET_CLASS_NAME = "PYDOE_FULLFACT"
+
+    n_samples: NonNegativeInt = Field(
+        default=0,
+        description="""The number of samples.
+
+If 0, set from the settings.""",
+    )
+
+    levels: Sequence[PositiveInt] | PositiveInt = Field(
+        default=(),
+        description="""The levels.
+
+One must either specify ``n_samples`` or ``levels``.  The levels are
+inferred from the number of samples if the former is specified.""",
+    )

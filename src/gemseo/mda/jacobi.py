@@ -28,7 +28,7 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
-from gemseo.mda.jacobi_settings import MDAJacobiSettings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -101,13 +101,13 @@ class MDAJacobi(BaseMDASolver):
         \right.
     """
 
-    Settings: ClassVar[type[MDAJacobiSettings]] = MDAJacobiSettings
+    Settings: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
     """The pydantic model for the settings."""
 
     parallel_execution: DiscParallelExecution | None
     """Either an executor of disciplines in parallel or ``None`` in serial mode."""
 
-    settings: MDAJacobiSettings
+    settings: MDAJacobi_Settings
     """The settings of the MDA"""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
@@ -115,7 +115,7 @@ class MDAJacobi(BaseMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAJacobiSettings | None = None,
+        settings_model: MDAJacobi_Settings | None = None,
         **settings: Any,
     ) -> None:
         super().__init__(disciplines, settings_model=settings_model, **settings)

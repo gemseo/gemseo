@@ -28,8 +28,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPTCOBYLASettings
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPTSLSQPSettings
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -37,7 +37,7 @@ from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
 configure_logger()
 
 # Passed to algo settings
-cobyla_settings = NLOPTCOBYLASettings(
+cobyla_settings = NLOPT_COBYLA_Settings(
     max_iter=7,
     xtol_rel=1e-8,
     xtol_abs=1e-8,
@@ -47,7 +47,7 @@ cobyla_settings = NLOPTCOBYLASettings(
     eq_tolerance=1e-3,
 )
 
-slsqp_settings = NLOPTSLSQPSettings(
+slsqp_settings = NLOPT_SLSQP_Settings(
     max_iter=10,
     xtol_rel=1e-8,
     xtol_abs=1e-8,

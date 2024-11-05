@@ -19,10 +19,10 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import PositiveInt
 
-from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressorSettings
+from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressor_Settings
 
 
-class PolynomialRegressorSettings(LinearRegressorSettings):
+class PolynomialRegressor_Settings(LinearRegressor_Settings):  # noqa: N801
     """The settings of the polynomial regressor."""
 
     degree: PositiveInt = Field(default=True, description="The polynomial degree.")

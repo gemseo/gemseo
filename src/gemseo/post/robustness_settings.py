@@ -22,7 +22,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.utils.pydantic import update_field
 
 
-class RobustnessSettings(BasePostSettings):  # noqa: D101
+class Robustness_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "Robustness"
     stddev: float = Field(
         default=0.01,
@@ -34,4 +34,4 @@ class RobustnessSettings(BasePostSettings):  # noqa: D101
     )
 
 
-update_field(RobustnessSettings, "fig_size", default=(8.0, 5.0))
+update_field(Robustness_Settings, "fig_size", default=(8.0, 5.0))

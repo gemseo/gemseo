@@ -24,7 +24,7 @@ from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
 )
 
 
-class AugmentedLagrangianOrder1Settings(
+class Augmented_Lagrangian_order_1_Settings(  # noqa: N801
     PenaltyHeuristicSettings, BaseGradientBasedAlgorithmSettings
 ):
     """The augmented Lagrangian of order 1 settings."""

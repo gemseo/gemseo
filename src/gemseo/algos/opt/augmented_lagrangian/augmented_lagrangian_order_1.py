@@ -25,7 +25,7 @@ from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
     AugmentedLagrangianPenaltyHeuristic,
 )
 from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings import (  # noqa: E501
-    AugmentedLagrangianOrder1Settings,
+    Augmented_Lagrangian_order_1_Settings,
 )
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
@@ -53,7 +53,7 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             require_gradient=True,
-            Settings=AugmentedLagrangianOrder1Settings,
+            Settings=Augmented_Lagrangian_order_1_Settings,
         ),
     }
 
