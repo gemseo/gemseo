@@ -1,0 +1,6 @@
+API change:
+  - ``DesignSpace.get_indexed_var_name`` is removed. Use ``DesignSpace.get_indexed_variable_names`` instead.
+  - ``DesignSpace.SEP`` is removed.
+
+The ``DesignSpace.get_indexed_variable_names`` method is now based on the function ``gemseo.utils.string_tools.repr_variable``.
+It is now consistent with other Gemseo methods, by naming a variable "x[i]" instead of "x!i".

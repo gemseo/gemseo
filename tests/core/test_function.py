@@ -586,7 +586,7 @@ def test_deactivate_counters() -> None:
 
 def test_get_indexed_name(function) -> None:
     """Check the indexed function name."""
-    assert function.get_indexed_name(3) == "n!3"
+    assert function.get_indexed_name(3) == "n[3]"
 
 
 @pytest.mark.parametrize("fexpr", [None, "x**2"])

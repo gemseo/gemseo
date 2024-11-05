@@ -62,10 +62,7 @@ def test_input_names_generation(coefficients) -> None:
     # No arguments strings passed
     func = MDOLinearFunction(coefficients, "f")
     input_names = [
-        MDOLinearFunction.DEFAULT_BASE_INPUT_NAME
-        + MDOLinearFunction.INDEX_PREFIX
-        + str(i)
-        for i in range(3)
+        f"{MDOLinearFunction.DEFAULT_BASE_INPUT_NAME}[{i}]" for i in range(3)
     ]
     assert func.input_names == input_names
     # Not enough arguments strings passed
@@ -73,7 +70,7 @@ def test_input_names_generation(coefficients) -> None:
     assert func.input_names == input_names
     # Only one argument string passed
     func = MDOLinearFunction(coefficients, "f", input_names=["u"])
-    input_names = ["u" + MDOLinearFunction.INDEX_PREFIX + str(i) for i in range(3)]
+    input_names = [f"u[{i}]" for i in range(3)]
     assert func.input_names == input_names
     # Enough arguments strings passed
     func = MDOLinearFunction(coefficients, "f", input_names=["u1", "u2", "v"])
@@ -92,7 +89,7 @@ def test_linear_function(coefs) -> None:
 
     linear_fun = MDOLinearFunction(coefs, "f")
     coeffs_str = (MDOFunction.COEFF_FORMAT_1D.format(coeff) for coeff in (2, 9))
-    expr = "-x!2 + {}*x!3 + x!4 - {}*x!6".format(*coeffs_str)
+    expr = "-x[2] + {}*x[3] + x[4] - {}*x[6]".format(*coeffs_str)
     assert linear_fun.expr == expr
     assert linear_fun.evaluate(np.ones(max(coefs.shape))) == -7.0
     # Jacobian

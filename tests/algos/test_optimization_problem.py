@@ -272,11 +272,11 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
 
     linear_constraint = MDOLinearFunction(array([1, 2]), "lin1", f_type="ineq")
     problem.add_constraint(linear_constraint)
-    expected.append("lin1(x!0, x!1): x!0 + 2.00e+00*x!1 <= 0.0")
+    expected.append("lin1(x[0], x[1]): x[0] + 2.00e+00*x[1] <= 0.0")
 
     linear_constraint = MDOLinearFunction(array([1, 2]), "lin2", f_type="ineq")
     problem.add_constraint(linear_constraint, positive=True, value=-1.0)
-    expected.append("lin2(x!0, x!1): x!0 + 2.00e+00*x!1 >= -1.0")
+    expected.append("lin2(x[0], x[1]): x[0] + 2.00e+00*x[1] >= -1.0")
 
     msg = str(problem)
     for elem in expected:
@@ -1213,7 +1213,7 @@ def constrained_problem() -> OptimizationProblem:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x.sum(), "f", jac=lambda x: [1, 1])
     problem.add_constraint(
-        MDOFunction(operator.itemgetter(0), "g", jac=lambda _: [1, 0]),
+        MDOFunction(operator.itemgetter(0), "g", jac=lambda _: [1, 0], dim=1),
         constraint_type="ineq",
     )
     problem.add_constraint(
@@ -1267,8 +1267,8 @@ def test_scalar_constraint_names(constrained_problem) -> None:
     scalar_names = constrained_problem.scalar_constraint_names
     assert set(scalar_names) == {
         "g",
-        f"h{DesignSpace.SEP}0",
-        f"h{DesignSpace.SEP}1",
+        "h[0]",
+        "h[1]",
     }
 
 
@@ -1865,12 +1865,12 @@ def test_repr_constraint_linear_lower_ineq() -> None:
     )
     assert str(problem) == (
         """Optimization problem:
-   minimize f(x!0, x!1) = x!0 + 2.00e+00*x!1
+   minimize f(x[0], x[1]) = x[0] + 2.00e+00*x[1]
    with respect to x
    subject to constraints:
-      g(x!0, x!1): [ 0.00e+00  1.00e+00][x!0] + [ 6.00e+00] >= 0.0
-                   [ 2.00e+00  3.00e+00][x!1]   [ 7.00e+00]
-                   [ 4.00e+00  5.00e+00]        [ 8.00e+00]"""
+      g(x[0], x[1]): [ 0.00e+00  1.00e+00][x[0]] + [ 6.00e+00] >= 0.0
+                     [ 2.00e+00  3.00e+00][x[1]]   [ 7.00e+00]
+                     [ 4.00e+00  5.00e+00]         [ 8.00e+00]"""
     )
 
 

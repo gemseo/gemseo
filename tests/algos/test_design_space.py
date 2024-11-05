@@ -468,13 +468,16 @@ def test_active_bounds() -> None:
         design_space.get_active_bounds()
 
 
-@pytest.mark.parametrize(("index", "expected"), [(0, "x"), (1, "z!0"), (2, "z!1")])
-def test_get_indexed_variable_names(index, expected) -> None:
+def test_get_indexed_variable_names() -> None:
     """Check the variables names obtained with get_indexed_variable_names()."""
     design_space = DesignSpace()
     design_space.add_variable("x")
     design_space.add_variable("z", size=2)
-    assert design_space.get_indexed_variable_names()[index] == expected
+    assert design_space.get_indexed_variable_names() == ["x", "z[0]", "z[1]"]
+    assert design_space.get_indexed_variable_names(["x", "z"]) == ["x", "z[0]", "z[1]"]
+    assert design_space.get_indexed_variable_names(["z", "x"]) == ["z[0]", "z[1]", "x"]
+    assert design_space.get_indexed_variable_names("x") == ["x"]
+    assert design_space.get_indexed_variable_names(["z"]) == ["z[0]", "z[1]"]
 
 
 @pytest.mark.parametrize(
@@ -801,8 +804,8 @@ def test_current_x() -> None:
     Design Space: 3 scalar variables
     Variable   Type     Lower  Current  Upper
     x_1        float    0.5    0.5      inf
-    x_2!0      integer  -inf   4        4
-    x_2!1      integer  2      4        5
+    x_2[0]     integer  -inf   4        4
+    x_2[1]     integer  2      4        5
     """
 
     assert design_space.get_type("x_1") == np.array([FLOAT])
@@ -1765,19 +1768,19 @@ def test_add_variable_from():
 def test_to_scalar_variables():
     """Check the splitting of design variables into scalar variables."""
     space = DesignSpace()
-    space.add_variable("x", 1, "float", 1, 2)
+    space.add_variable("foo", 1, "float", 1, 2)
     space.add_variable("y", 2, "integer", [3, 5], [4, 6], [3, 6])
     new_space = space.to_scalar_variables()
-    assert new_space.variable_names == ["x", "y!0", "y!1"]
-    assert new_space.get_type("x") == DesignSpace.DesignVariableType.FLOAT
-    assert new_space.get_size("x") == 1
-    assert new_space.get_size("y!0") == 1
-    assert new_space.get_type("y!0") == DesignSpace.DesignVariableType.INTEGER
-    assert new_space.get_size("y!1") == 1
-    assert new_space.get_type("y!1") == DesignSpace.DesignVariableType.INTEGER
+    assert new_space.variable_names == ["foo", "y[0]", "y[1]"]
+    assert new_space.get_type("foo") == DesignSpace.DesignVariableType.FLOAT
+    assert new_space.get_size("foo") == 1
+    assert new_space.get_size("y[0]") == 1
+    assert new_space.get_type("y[0]") == DesignSpace.DesignVariableType.INTEGER
+    assert new_space.get_size("y[1]") == 1
+    assert new_space.get_type("y[1]") == DesignSpace.DesignVariableType.INTEGER
     assert_array_equal(new_space.get_lower_bounds(), [1, 3, 5])
     assert_array_equal(new_space.get_upper_bounds(), [2, 4, 6])
-    with pytest.raises(KeyError, match="'x'"):
-        new_space.get_current_value(["x"])
+    with pytest.raises(KeyError, match="'foo'"):
+        new_space.get_current_value(["foo"])
 
-    assert_array_equal(new_space.get_current_value(["y!0", "y!1"]), [3, 6])
+    assert_array_equal(new_space.get_current_value(["y[0]", "y[1]"]), [3, 6])
