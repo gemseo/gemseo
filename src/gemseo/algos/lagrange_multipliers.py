@@ -41,8 +41,8 @@ from numpy.linalg import norm
 from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.third_party.prettytable.prettytable import PrettyTable
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -308,10 +308,10 @@ class LagrangeMultipliers:
                     ineq_jac = ineq_jac[act_set, :]
                 jac.append(ineq_jac)
                 if func.dim == 1:
-                    names.append(func.name)
+                    names.append(repr_variable(func.name, 0, func.dim))
                 else:
                     names += [
-                        self._get_component_name(func.name, i)
+                        repr_variable(func.name, i, func.dim)
                         for i, active in enumerate(act_set)
                         if active
                     ]
@@ -364,10 +364,10 @@ class LagrangeMultipliers:
             eq_jac = atleast_2d(eq_function.jac(x_vect))
             jac.append(eq_jac)
             if eq_function.dim == 1:
-                names.append(eq_function.name)
+                names.append(repr_variable(eq_function.name, 0, eq_function.dim))
             else:
                 names += [
-                    self._get_component_name(eq_function.name, i)
+                    repr_variable(eq_function.name, i, eq_function.dim)
                     for i in range(eq_jac.shape[0])
                 ]
         jac = concatenate(jac) if jac else None
@@ -505,14 +505,14 @@ class LagrangeMultipliers:
 
         # Inequality-constraints
         multipliers[self.INEQUALITY] = {
-            func.name if func.dim == 1 else self._get_component_name(func.name, i): 0.0
+            repr_variable(func.name, i, func.dim): 0.0
             for func in problem.constraints.get_inequality_constraints()
             for i in range(func.dim)
         }
 
         # Equality-constraints
         multipliers[self.EQUALITY] = {
-            func.name if func.dim == 1 else self._get_component_name(func.name, i): 0.0
+            repr_variable(func.name, i, func.dim): 0.0
             for func in problem.constraints.get_equality_constraints()
             for i in range(func.dim)
         }
@@ -561,11 +561,7 @@ class LagrangeMultipliers:
         mult_arrays[self.INEQUALITY] = {}
         for func in problem.constraints.get_inequality_constraints():
             func_mult = array([
-                ineq_mult[
-                    func.name
-                    if func.dim == 1
-                    else self._get_component_name(func.name, index)
-                ]
+                ineq_mult[repr_variable(func.name, index, func.dim)]
                 for index in range(func.dim)
             ])
             mult_arrays[self.INEQUALITY][func.name] = func_mult
@@ -574,29 +570,12 @@ class LagrangeMultipliers:
         mult_arrays[self.EQUALITY] = {}
         for func in problem.constraints.get_equality_constraints():
             func_mult = array([
-                eq_mult[
-                    func.name
-                    if func.dim == 1
-                    else self._get_component_name(func.name, index)
-                ]
+                eq_mult[repr_variable(func.name, index, func.dim)]
                 for index in range(func.dim)
             ])
             mult_arrays[self.EQUALITY][func.name] = func_mult
 
         return mult_arrays
-
-    @staticmethod
-    def _get_component_name(name: str, index: int) -> str:
-        """Return the name of a variable component.
-
-        Args:
-            name: The name of the variable.
-            index: The index of the component.
-
-        Returns:
-            The name of the variable component.
-        """
-        return f"{name}{DesignSpace.SEP}{index}"
 
     def _get_pretty_table(self) -> PrettyTable:
         """Display the Lagrange Multipliers."""

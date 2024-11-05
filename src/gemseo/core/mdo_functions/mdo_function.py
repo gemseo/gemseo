@@ -42,7 +42,6 @@ from numpy import where
 from numpy.linalg import norm
 from strenum import StrEnum
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdo_functions._operations import _AdditionFunctionMaker
 from gemseo.core.mdo_functions._operations import _MultiplicationFunctionMaker
 from gemseo.core.mdo_functions._operations import _OperationFunctionMaker
@@ -54,9 +53,11 @@ from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
+    from gemseo.algos.design_space import DesignSpace
 
 LOGGER = logging.getLogger(__name__)
 
@@ -172,9 +173,6 @@ class MDOFunction:
     DEFAULT_BASE_INPUT_NAME: str = "x"
     """The default base name for the inputs."""
 
-    INDEX_PREFIX: str = "!"
-    """The character used to separate a name base and a prefix, e.g. ``"x!1``."""
-
     COEFF_FORMAT_1D: str = "{:.2e}"
     """The format to be applied to a number when represented in a vector."""
     # ensure that coefficients strings have same length
@@ -236,7 +234,7 @@ class MDOFunction:
     """
 
     __INPUT_NAME_PATTERN: Final[str] = "x"
-    """The pattern to define a variable name, as ``"x!1"``."""
+    """The pattern to define a variable name, as ``"x[1]"``."""
 
     def __init__(
         self,
@@ -735,15 +733,18 @@ class MDOFunction:
         Args:
             input_dim: The dimension of the input space of the function.
             input_names: The initial names of the inputs of the function.
-                If there is only one name,
+                If the number of names matches the dimension of the input space,
+                use these names as is.
+                Otherwise,
+                if there is only one name,
                 e.g. ``["var"]``,
+                and if the dimension of the input space is equal to 3,
                 use this name as a base name
                 and generate the names of the inputs,
-                e.g. ``["var!0", "var!1", "var!2"]``
-                if the dimension of the input space is equal to 3.
-                If ``None``,
+                e.g. ``["var[0]", "var[1]", "var[2]"]``.
+                If empty,
                 use ``"x"`` as a base name and generate the names of the inputs,
-                i.e. ``["x!0", "x!1", "x!2"]``.
+                i.e. ``["x[0]", "x[1]", "x[2]"]``.
 
         Returns:
             The names of the inputs of the function.
@@ -752,23 +753,8 @@ class MDOFunction:
         if n_input_names == input_dim:
             return input_names
 
-        return cls._generate_input_names(
-            input_names[0] if n_input_names == 1 else cls.__INPUT_NAME_PATTERN,
-            input_dim,
-        )
-
-    @classmethod
-    def _generate_input_names(cls, base_input_name: str, input_dim: int) -> list[str]:
-        """Generate the names of the inputs from a base input name and their indices.
-
-        Args:
-            base_input_name: The base input name.
-            input_dim: The number of scalar inputs.
-
-        Returns:
-            The names of the inputs.
-        """
-        return [f"{base_input_name}{cls.INDEX_PREFIX}{i}" for i in range(input_dim)]
+        name = input_names[0] if n_input_names == 1 else cls.__INPUT_NAME_PATTERN
+        return [repr_variable(name, i, input_dim) for i in range(input_dim)]
 
     @property
     def expects_normalized_inputs(self) -> bool:
@@ -788,4 +774,4 @@ class MDOFunction:
         Returns:
             The name of the function component.
         """
-        return f"{self.name}{DesignSpace.SEP}{index}"
+        return repr_variable(self.name, index, self.dim)

@@ -91,6 +91,7 @@ from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_str
+from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -154,8 +155,6 @@ class DesignSpace:
     VAR_TYPE_GROUP = "var_type"
     VALUE_GROUP = "value"
     SIZE_GROUP = "size"
-    # separator that denotes a vector's components
-    SEP = "!"
     __INT_DTYPE = dtype("int32")
     __FLOAT_DTYPE = dtype("float64")
     __COMPLEX_DTYPE = dtype("complex128")
@@ -1031,49 +1030,36 @@ class DesignSpace:
 
         return current_x_array
 
-    def get_indexed_var_name(
-        self,
-        variable_name: str,
-    ) -> str | list[str]:
-        """Create the names of the components of a variable.
+    def get_indexed_variable_names(
+        self, variable_names: str | Sequence[str] = ()
+    ) -> list[str]:
+        """Create the names of the components of variables.
 
         If the size of the variable is equal to 1,
-        this method returns the name of the variable.
+        its name remains unaltered.
         Otherwise,
-        it concatenates the name of the variable,
-        the separator :attr:`.DesignSpace.SEP` and the index of the component.
+        it concatenates the name of the variable and the index of the component.
 
         Args:
-            variable_name: The name of the variable.
+            variable_names: The names of the design variables.
+                If ``empty``, use all the design variables.
 
         Returns:
-            The names of the components of the variable.
+            The name of the components of the variables.
         """
-        size = self.get_size(variable_name)
-        if size == 1:
-            return variable_name
+        if not variable_names:
+            variable_names = self.variable_names
 
-        return [variable_name + self.SEP + str(i) for i in range(size)]
+        elif isinstance(variable_names, str):
+            variable_names = [variable_names]
 
-    def get_indexed_variable_names(self) -> list[str]:
-        """Create the names of the components of all the variables.
-
-        If the size of the variable is equal to 1,
-        this method uses its name.
-        Otherwise,
-        it concatenates the name of the variable,
-        the separator :attr:`.DesignSpace.SEP` and the index of the component.
-
-        Returns:
-            The name of the components of all the variables.
-        """
         var_ind_names = []
-        for var in self:
-            vnames = self.get_indexed_var_name(var)
-            if isinstance(vnames, str):
-                var_ind_names.append(vnames)
-            else:
-                var_ind_names += vnames
+        for variable_name in variable_names:
+            size = self.get_size(variable_name)
+            var_ind_names.extend([
+                repr_variable(variable_name, i, size) for i in range(size)
+            ])
+
         return var_ind_names
 
     def get_variables_indexes(
@@ -2350,23 +2336,19 @@ class DesignSpace:
         design_space = self.__class__()
         for name in self:
             size = self.get_size(name)
-            if size == 1:
-                index_name = [(0, name)]
-            else:
-                index_name = enumerate(self.get_indexed_var_name(name))
-
             type_ = self.get_type(name)
-            lower_bounds = self.get_lower_bounds(name)
-            upper_bounds = self.get_upper_bounds(name)
+            lower_bounds = self.get_lower_bound(name)
+            upper_bounds = self.get_upper_bound(name)
+
             try:
                 current_value = self.get_current_value([name])
             except KeyError:
                 # The variable has no current value.
                 current_value = full(size, None)
 
-            for index, name in index_name:
+            for index, indexed_name in enumerate(self.get_indexed_variable_names(name)):
                 design_space.add_variable(
-                    name,
+                    indexed_name,
                     1,
                     type_,
                     lower_bounds[index],
