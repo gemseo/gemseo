@@ -191,7 +191,7 @@ scenario = create_scenario(
     "obj",
     design_space,
     formulation_name="MDF",
-    inner_mda_name="MDAGaussSeidel",
+    main_mda_settings={"inner_mda_name": "MDAGaussSeidel"},
 )
 
 # %%
