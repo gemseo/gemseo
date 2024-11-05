@@ -45,6 +45,8 @@ from gemseo.utils.source_parsing import get_callable_argument_defaults
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 DataType = Union[float, ndarray]
 
 LOGGER = logging.getLogger(__name__)
@@ -242,13 +244,13 @@ class AutoPyDiscipline(Discipline):
 
         return output_names
 
-    def _run(self) -> None:
-        output_values = self.py_func(**self.io.get_input_data(with_namespaces=False))
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        output_values = self.py_func(**input_data)
         if len(self.output_names) == 1:
             output_values = {self.output_names[0]: output_values}
         else:
             output_values = dict(zip(self.output_names, output_values))
-        self.io.update_output_data(output_values)
+        return output_values
 
     def _compute_jacobian(
         self,

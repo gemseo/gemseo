@@ -22,9 +22,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 TEST_PATH = Path(__file__).parent / "data"
 
@@ -37,7 +41,7 @@ class _MyDisciplineA(Discipline):
         self.input_grammar.update_from_names(["A"])
         self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
-    def _run(self):
+    def _run(self, input_data: StrKeyMapping):
         pass
 
 
@@ -49,7 +53,7 @@ class _MyDisciplineB(Discipline):
         self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
         self.output_grammar.update_from_names(["B"])
 
-    def _run(self):
+    def _run(self, input_data: StrKeyMapping):
         pass
 
 

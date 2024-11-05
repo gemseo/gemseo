@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
 
 
 class ArrayBasedFunctionDiscipline(Discipline):
@@ -82,16 +83,12 @@ class ArrayBasedFunctionDiscipline(Discipline):
         self.__variable_names_to_sizes.update(input_names_to_sizes)
         self.__jac_function = jac_function
 
-    def _run(self) -> None:
-        input_data = self.io.get_input_data()
-        input_vector = concatenate_dict_of_arrays_to_array(
-            input_data, self.io.input_grammar.names
-        )
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        input_vector = concatenate_dict_of_arrays_to_array(input_data, input_data)
         output_vector = self.__function(input_vector)
-        output_data = split_array_to_dict_of_arrays(
+        return split_array_to_dict_of_arrays(
             output_vector, self.__output_names_to_sizes, self.io.output_grammar.names
         )
-        self.io.data.update(output_data)
 
     def _compute_jacobian(
         self,

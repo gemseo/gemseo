@@ -30,6 +30,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
+
 
 class MaterialModelInterpolation(Discipline):
     """Material Model Interpolation class for topology optimization problems.
@@ -73,15 +75,18 @@ class MaterialModelInterpolation(Discipline):
         self.output_grammar.update_from_names(["rho", "E"])
         self.default_input_data = {"xPhys": ones(n_x * n_y)}
 
-    def _run(self) -> None:
-        xphys = self.io.data["xPhys"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        xphys = input_data["xPhys"]
         xphys[self.empty_elements] = 0
         xphys[self.full_elements] = 1
         xphys = xphys.flatten()
         rho = xphys[:]
         young_modulus = self.Emin + (self.E0 - self.Emin) * xphys**self.penalty
-        self.io.data["E"] = young_modulus
-        self.io.data["rho"] = rho
+        output_data = {}
+        output_data["E"] = young_modulus
+        output_data["rho"] = rho
+        self.io.update_output_data(output_data)
+
         self._has_jacobian = True
         self._init_jacobian()
         dyoung_modulus_dxphys = (

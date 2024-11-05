@@ -37,6 +37,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
+
 
 class FiniteElementAnalysis(Discipline):
     """Finite Element Analysis for 2D topology optimization problems.
@@ -98,8 +100,8 @@ class FiniteElementAnalysis(Discipline):
         self.output_grammar.update_from_names(["compliance"])
         self.default_input_data = {"E": ones(self.N_elements)}
 
-    def _run(self) -> None:
-        em = self.io.data["E"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        em = input_data["E"]
         sk = ((self.KE.flatten()[newaxis]).T * em).flatten(order="F")
         k_mat = scipy.sparse.coo_matrix(
             (sk, (self.iK, self.jK)), shape=(self.N_DOFs, self.N_DOFs)
@@ -117,7 +119,7 @@ class FiniteElementAnalysis(Discipline):
             (u_vec[self.edofMat].reshape(self.N_elements, 8) @ self.KE)
             * u_vec[self.edofMat].reshape(self.N_elements, 8)
         ).sum(1)
-        self.io.data["compliance"] = array([(em * ce).sum()])
+        self.io.update_output_data({"compliance": array([(em * ce).sum()])})
         self._has_jacobian = True
         self._init_jacobian()
         self.jac["compliance"] = {}

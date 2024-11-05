@@ -27,8 +27,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-# TODO: rename MDOChain to DisciplinesChain
-# TODO: rename to WarmStartedDisciplinesChain
 class MDOWarmStartedChain(MDOChain):
     """Chain capable of warm starting a given list of variables.
 
@@ -41,7 +39,6 @@ class MDOWarmStartedChain(MDOChain):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        # TODO: API: rename to data_names_...?
         variable_names_to_warm_start: Sequence[str],
         name: str = "",
     ) -> None:
@@ -83,10 +80,10 @@ class MDOWarmStartedChain(MDOChain):
         msg = f"{self.__class__.__name__} cannot be linearized."
         raise NotImplementedError(msg)
 
-    def _run(self) -> None:
+    def _execute(self) -> None:
         if self._warm_start_variable_names_to_values:
             self.io.data.update(self._warm_start_variable_names_to_values)
-        super()._run()
+        super()._execute()
         if self._variable_names_to_warm_start:
             self._warm_start_variable_names_to_values = {
                 name: self.io.data[name] for name in self._variable_names_to_warm_start

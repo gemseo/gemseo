@@ -169,8 +169,8 @@ class MDANewtonRaphson(BaseMDARoot):
 
         return newton_step
 
-    def _run(self) -> None:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
 
         while True:
             local_data_before_execution = self.io.data.copy()

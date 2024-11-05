@@ -57,6 +57,8 @@ from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 def create_design_space():
     """"""
@@ -521,7 +523,7 @@ class DisciplineMain(Discipline):
         self.input_grammar.update_from_names(["alpha"])
         self.output_grammar.update_from_names(["beta"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         alpha = self.io.data["alpha"]
         self.io.data["beta"] = 2.0 * alpha
         self._has_jacobian = True
@@ -539,7 +541,7 @@ class DisciplineMainWithJacobian(Discipline):
         self.input_grammar.update_from_names(["alpha"])
         self.output_grammar.update_from_names(["beta"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         alpha = self.io.data["alpha"]
         self.io.data["beta"] = 2.0 * alpha
 
@@ -561,7 +563,7 @@ class DisciplineSub1(Discipline):
         self.input_grammar.update_from_names(["x"])
         self.output_grammar.update_from_names(["f"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
         self.io.data["f"] = 3.0 * x
         self._has_jacobian = True
@@ -577,7 +579,7 @@ class DisciplineSub2(Discipline):
         self.output_grammar.update_from_names(["g"])
         self.default_input_data = {"x": array([0.0]), "beta": array([0.0])}
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
         beta = self.io.data["beta"]
         self.io.data["g"] = x + beta

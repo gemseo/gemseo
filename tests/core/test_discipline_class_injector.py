@@ -15,11 +15,15 @@
 from __future__ import annotations
 
 from importlib import reload
+from typing import TYPE_CHECKING
 
 import pytest
 
 import gemseo.core._discipline_class_injector
 import gemseo.core.discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 # The reload done in the fixture breaks other test where discipline pickles are done.
 # The error
@@ -69,7 +73,7 @@ def test_class_injector_with_nothing():
     from gemseo.core.discipline import Discipline
 
     class Disc(Discipline):
-        def _run(self):
+        def _run(self, input_data: StrKeyMapping):
             pass
 
     assert not hasattr(Disc(), "hi_there")
@@ -81,7 +85,7 @@ def test_class_injector(prepare):
     from gemseo.core.discipline import Discipline
 
     class Disc(Discipline):
-        def _run(self):
+        def _run(self, input_data: StrKeyMapping):
             pass
 
     assert Disc().hi_there is None
@@ -95,5 +99,5 @@ def test_class_injector_error(prepare_error):
     with pytest.raises(ImportError, match=match):
 
         class Disc(Discipline):
-            def _run(self):
+            def _run(self, input_data: StrKeyMapping):
                 pass

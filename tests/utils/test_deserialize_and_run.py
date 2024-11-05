@@ -17,6 +17,7 @@ from __future__ import annotations
 import pickle
 import subprocess
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -28,6 +29,9 @@ from gemseo.utils.deserialize_and_run import _run_discipline_save_outputs
 from gemseo.utils.deserialize_and_run import main
 from gemseo.utils.path_discipline import PathDiscipline
 from gemseo.utils.pickle import to_pickle
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 @pytest.fixture
@@ -133,7 +137,7 @@ def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
     error_message = "I failed"
 
     class SM(SobieskiMission):
-        def _run(self) -> None:
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             raise ValueError(error_message)
 
     (

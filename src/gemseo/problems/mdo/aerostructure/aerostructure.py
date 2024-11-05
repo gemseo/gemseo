@@ -82,6 +82,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 def get_inputs(*names: str):
     """Generate initial solution.
@@ -127,21 +129,20 @@ class Mission(Discipline):
         self.r_val = r_val
         self.lift_val = lift_val
 
-    def _run(self) -> None:
-        local_data = self.io.data
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         obj = array(
             [
                 self.compute_range(
-                    local_data["lift"], local_data["mass"], local_data["drag"]
+                    input_data["lift"], input_data["mass"], input_data["drag"]
                 )
             ],
             dtype=complex128,
         )
         c_lift = array(
-            [self.c_lift(local_data["lift"], self.lift_val)], dtype=complex128
+            [self.c_lift(input_data["lift"], self.lift_val)], dtype=complex128
         )
-        c_rf = array([self.c_rf(local_data["reserve_fact"])], dtype=complex128)
-        self.io.update_output_data({"range": obj, "c_lift": c_lift, "c_rf": c_rf})
+        c_rf = array([self.c_rf(input_data["reserve_fact"])], dtype=complex128)
+        return {"range": obj, "c_lift": c_lift, "c_rf": c_rf}
 
     @staticmethod
     def compute_range(lift, mass, drag) -> float:
@@ -217,19 +218,18 @@ class Aerodynamics(Discipline):
         super().__init__()
         self.default_input_data = get_inputs("sweep", "thick_airfoils", "displ")
 
-    def _run(self) -> None:
-        local_data = self.io.data
-        sweep = local_data["sweep"]
-        thick_airfoils = local_data["thick_airfoils"]
-        displ = local_data["displ"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        sweep = input_data["sweep"]
+        thick_airfoils = input_data["thick_airfoils"]
+        displ = input_data["displ"]
         drag_out = array([self.compute_drag(sweep, thick_airfoils, displ)])
         lift_out = array([self.compute_lift(sweep, thick_airfoils, displ)])
         forces_out = array([self.compute_forces(sweep, thick_airfoils, displ)])
-        self.io.update_output_data({
+        return {
             "drag": drag_out,
             "forces": forces_out,
             "lift": lift_out,
-        })
+        }
 
     @staticmethod
     def compute_drag(sweep, thick_airfoils, displ) -> float:
@@ -321,19 +321,18 @@ class Structure(Discipline):
         super().__init__()
         self.default_input_data = get_inputs("sweep", "forces", "thick_panels")
 
-    def _run(self) -> None:
-        local_data = self.io.data
-        sweep = local_data["sweep"]
-        thick_panels = local_data["thick_panels"]
-        forces = local_data["forces"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        sweep = input_data["sweep"]
+        thick_panels = input_data["thick_panels"]
+        forces = input_data["forces"]
         mass_out = array([self.compute_mass(sweep, thick_panels, forces)])
         rf_out = array([self.compute_rf(sweep, thick_panels, forces)])
         displ_out = array([self.compute_displ(sweep, thick_panels, forces)])
-        self.io.update_output_data({
+        return {
             "mass": mass_out,
             "reserve_fact": rf_out,
             "displ": displ_out,
-        })
+        }
 
     @staticmethod
     def compute_mass(sweep, thick_panels, forces):

@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import pytest
@@ -40,6 +41,9 @@ from gemseo.problems.mdo.sellar.variables import X_2
 from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 GEMSEO_PATH = Path(__file__).parent
 
@@ -96,7 +100,7 @@ class DictSellar1(DictSellarBase):
 
     NAME: str = "DictSellar1"
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x_1 = self.io.data[X_1][X_1]
         x_shared = self.io.data[X_SHARED][X_SHARED]
         y_2 = self.io.data[Y_2][Y_2]
@@ -124,7 +128,7 @@ class DictSellar2(DictSellarBase):
 
     NAME: str = "DictSellar2"
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x_shared = self.io.data[X_SHARED][X_SHARED]
         y_1 = self.io.data[Y_1][Y_1]
 

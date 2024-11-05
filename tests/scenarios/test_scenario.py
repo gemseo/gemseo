@@ -21,6 +21,7 @@ from __future__ import annotations
 import pickle
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
@@ -58,6 +59,9 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 PARENT_PATH = Path(__file__).parent
 SOBIESKI_HDF5_PATH = PARENT_PATH / "mdf_backup.h5"
@@ -461,7 +465,7 @@ def test_clear_history_before_run(mdf_scenario) -> None:
     def run_algorithm_mock() -> None:
         pass
 
-    mdf_scenario._run = run_algorithm_mock
+    mdf_scenario._execute = run_algorithm_mock
     mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     assert len(mdf_scenario.formulation.optimization_problem.database) == 1
 
@@ -556,7 +560,7 @@ def complex_step_scenario() -> MDOScenario:
             self.input_grammar.update_from_names(["x"])
             self.output_grammar.update_from_names(["y"])
 
-        def _run(self) -> None:
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["y"] = self.io.data["x"]
 
     scenario = MDOScenario(
@@ -949,12 +953,12 @@ class MyDisc(Discipline):
         self.output_grammar.update_from_data({"y2": array([0.0, 0.0])})
         self.output_grammar.update_from_data({"name": array(["foo"])})
 
-    def _run(self):
-        self.io.update_output_data({
+    def _run(self, input_data: StrKeyMapping):
+        return {
             "y1": self.io.get_input_data()["x_int"],
             "y2": self.io.get_input_data()["x_float"],
             "name": array(["foo"]),
-        })
+        }
 
 
 def test_scenario_to_dataset(tmp_wd):

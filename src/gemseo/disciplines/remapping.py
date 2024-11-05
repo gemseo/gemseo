@@ -25,15 +25,14 @@ from typing import NoReturn
 from typing import Union
 
 from numpy import empty
-from numpy import ndarray
 
 from gemseo.core.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.typing import StrKeyMapping
 
-Data = dict[str, ndarray]
 Indices = tuple[str, Union[int, Iterable[int]]]
 NameMapping = dict[str, Union[str, Indices]]
 
@@ -162,12 +161,10 @@ class RemappingDiscipline(Discipline):
         """
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
-        self.io.data.update(
-            self.__convert_from_origin(
-                self._discipline.io.get_output_data(), self._output_mapping
-            )
+        return self.__convert_from_origin(
+            self._discipline.io.get_output_data(), self._output_mapping
         )
 
     def _compute_jacobian(
@@ -187,7 +184,10 @@ class RemappingDiscipline(Discipline):
                 self.jac[new_o_name][new_i_name] = jac[o_args, i_args]
 
     @staticmethod
-    def __convert_from_origin(original_data: Data, name_mapping: NameMapping) -> Data:
+    def __convert_from_origin(
+        original_data: StrKeyMapping,
+        name_mapping: NameMapping,
+    ) -> StrKeyMapping:
         """Convert original data to the current format.
 
         Args:
@@ -203,7 +203,7 @@ class RemappingDiscipline(Discipline):
             for new_name, (original_name, args) in name_mapping.items()
         }
 
-    def __convert_to_origin(self, input_data: Data) -> Data:
+    def __convert_to_origin(self, input_data: StrKeyMapping) -> StrKeyMapping:
         """Convert current input data to the original format.
 
         Args:

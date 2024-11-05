@@ -26,6 +26,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 class Splitter(Discipline):
     """A discipline splitting an input variable.
@@ -62,10 +64,12 @@ class Splitter(Discipline):
         self.input_grammar.update_from_names([input_name])
         self.output_grammar.update_from_names(output_names_to_input_indices.keys())
 
-    def _run(self) -> None:
-        input_data = self.io.data[self.__input_name]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        input_data = input_data[self.__input_name]
+        output_data = {}
         for output_name, input_indices in self.__slicing_structure.items():
-            self.io.data[output_name] = input_data[input_indices]
+            output_data[output_name] = input_data[input_indices]
+        return output_data
 
     def _compute_jacobian(
         self,

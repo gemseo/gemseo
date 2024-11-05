@@ -19,6 +19,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import ceil
 from numpy import maximum
 from numpy import minimum
@@ -30,6 +32,9 @@ from scipy.sparse import csr_array
 from scipy.sparse import diags
 
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 class DensityFilter(Discipline):
@@ -65,9 +70,9 @@ class DensityFilter(Discipline):
         self.output_grammar.update_from_names(["xPhys"])
         self.default_input_data = {"x": ones((n_x * n_y,))}
 
-    def _run(self) -> None:
-        x = self.io.data["x"][:, newaxis]
-        self.io.data["xPhys"] = (self.filter_matrix @ x).flatten()
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = input_data["x"][:, newaxis]
+        self.io.update_output_data({"xPhys": (self.filter_matrix @ x).flatten()})
         self._has_jacobian = True
         self._init_jacobian()
         self.jac["xPhys"] = {"x": self.filter_matrix}

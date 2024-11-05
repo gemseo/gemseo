@@ -155,15 +155,15 @@ def test_expected_workflow() -> None:
 
     mda = MDAJacobi(disciplines, n_processes=1)
     expected = (
-        "{MDAJacobi(PENDING), [DummyDiscipline(PENDING), DummyDiscipline(PENDING), "
-        "DummyDiscipline(PENDING)]}"
+        "{MDAJacobi(DONE), [DummyDiscipline(DONE), DummyDiscipline(DONE), "
+        "DummyDiscipline(DONE)]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
     mda = MDAJacobi(disciplines, n_processes=2)
     expected = (
-        "{MDAJacobi(PENDING), (DummyDiscipline(PENDING), DummyDiscipline(PENDING), "
-        "DummyDiscipline(PENDING))}"
+        "{MDAJacobi(DONE), (DummyDiscipline(DONE), DummyDiscipline(DONE), "
+        "DummyDiscipline(DONE))}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
@@ -205,16 +205,16 @@ def test_expected_workflow_with_adapter() -> None:
     mda = create_mda("MDAJacobi", adapters, n_processes=2)
 
     expected = (
-        "{MDAJacobi(PENDING), ("
-        "{PropulsionScenario(PENDING), [SobieskiPropulsion(PENDING), "
-        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
-        "SobieskiMission(PENDING)]}, "
-        "{AeroScenario(PENDING), [SobieskiPropulsion(PENDING), "
-        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
-        "SobieskiMission(PENDING)]}, "
-        "{StructureScenario(PENDING), [SobieskiPropulsion(PENDING), "
-        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
-        "SobieskiMission(PENDING)]})}"
+        "{MDAJacobi(DONE), ("
+        "{PropulsionScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}, "
+        "{AeroScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}, "
+        "{StructureScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]})}"
     )
 
     assert str(mda.get_process_flow().get_execution_flow()) == expected

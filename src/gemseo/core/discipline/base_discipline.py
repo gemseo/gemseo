@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
@@ -375,6 +376,37 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         return self.io.data
 
+    def _execute(self) -> None:
+        if self.input_grammar.to_namespaced:
+            input_data = self.io.get_input_data(with_namespaces=False)
+        else:
+            # No namespaces, avoid useless processing.
+            input_data = self.io.data
+        output_data = self._run(input_data=input_data)
+        if output_data is not None:
+            self.io.update_output_data(output_data)
+
+    @abstractmethod
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        """Compute the outputs from the inputs.
+
+        This method shall be implemented in derived classes.
+        The ``input_data`` are the discipline inputs completed with the default inputs,
+        the keys of those items have the namespace prefixes (if any) removed.
+        This method could return the output data or return ``None``.
+        If the output data are returned, they will be used to update the data of the
+        discipline (:attr:`.local_data`).
+        In that case, the output data may either use the name with namespaces or not.
+        If nothing or ``None`` is returned, then the data of the discipline shall be
+        updated in the implementation of this method.
+
+        Args:
+            input_data: The input data without namespace prefixes.
+
+        Returns:
+            Eventually the output data.
+        """
+
     # The following methods provide easier access to attributes of sub-objects.
 
     @property
@@ -453,15 +485,6 @@ class BaseDiscipline(BaseMonitoredProcess):
         """
         self.io.output_grammar.add_namespace(output_name, namespace)
 
-    @property
-    def local_data(self) -> DisciplineData:
-        """The current input and output data."""
-        return self.io.data
-
-    @local_data.setter
-    def local_data(self, data: MutableStrKeyMapping) -> None:
-        self.io.data = data
-
     def get_output_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the output data of the last execution.
 
@@ -474,12 +497,11 @@ class BaseDiscipline(BaseMonitoredProcess):
         """
         return self.io.get_output_data(with_namespaces)
 
-    def _update_output_data(self, output_data: Any) -> None:
-        """Update the output in ``local_data``, taking care of the namespaces if any.
+    @property
+    def local_data(self) -> DisciplineData:
+        """The current input and output data."""
+        return self.io.data
 
-        See :meth:`.IO.update_output_data` for more information.
-
-        Args:
-            output_data: The output data to update :attr:`.io.data` with.
-        """
-        self.io.update_output_data(output_data)
+    @local_data.setter
+    def local_data(self, data: MutableStrKeyMapping) -> None:
+        self.io.data = data

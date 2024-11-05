@@ -42,10 +42,10 @@ class ExecutionStatus(Serializable):
 
     The possible statuses are defined in :attr:`.Status`.
     The status rules are:
-    - the initial status is ``PENDING``,
+    - the initial status is ``DONE``,
     - the status ``RUNNING`` or ``LINEARIZING`` can only be set when the current one is
-        ``PENDING`` or ``DONE``,
-    - the status ``PENDING`` can only be set when the current one is ``RUNNING``.
+        ``DONE``,
+    - the status ``DONE`` can only be set when the current one is ``RUNNING``.
 
     Helper methods should be used to handle the statuses when running or linearizing
     a process: :meth:`.run` and :meth:`linearize`.
@@ -57,7 +57,6 @@ class ExecutionStatus(Serializable):
     class Status(StrEnum):
         """The statuses."""
 
-        PENDING = "PENDING"
         RUNNING = "RUNNING"
         LINEARIZING = "LINEARIZING"
         FAILED = "FAILED"
@@ -80,7 +79,7 @@ class ExecutionStatus(Serializable):
             process_name: The name of the process.
         """  # noqa: D205, D212
         self.__process_name = process_name
-        self.__status = self.Status.PENDING
+        self.__status = self.Status.DONE
         self._init_shared_memory_attrs_before()
 
     def __check_can_be_running(self, status: Status) -> bool:
@@ -92,10 +91,7 @@ class ExecutionStatus(Serializable):
         Returns:
             Whether the status can be set to ``RUNNING``.
         """
-        return status == self.Status.RUNNING and self.value not in (
-            self.Status.PENDING,
-            self.Status.DONE,
-        )
+        return status == self.Status.RUNNING and self.value != self.Status.DONE
 
     def __check_can_be_linearizing(self, status: Status) -> bool:
         """Return whether the status can be set to ``LINEARIZING``.
@@ -106,21 +102,7 @@ class ExecutionStatus(Serializable):
         Returns:
             Whether the status can be set to ``LINEARIZING``.
         """
-        return status == self.Status.LINEARIZING and self.value not in (
-            self.Status.PENDING,
-            self.Status.DONE,
-        )
-
-    def __check_can_be_pending(self, status: Status) -> bool:
-        """Return whether the status can be set to PENDING.
-
-        Args:
-            status: A status.
-
-        Returns:
-            Whether the status can be set to PENDING.
-        """
-        return status == self.Status.PENDING and self.value == self.Status.RUNNING
+        return status == self.Status.LINEARIZING and self.value != self.Status.DONE
 
     @property
     def value(self) -> Status:
@@ -129,10 +111,8 @@ class ExecutionStatus(Serializable):
 
     @value.setter
     def value(self, status: Status) -> None:
-        if (
-            self.__check_can_be_running(status)
-            or self.__check_can_be_pending(status)
-            or self.__check_can_be_linearizing(status)
+        if self.__check_can_be_running(status) or self.__check_can_be_linearizing(
+            status
         ):
             msg = (
                 f"{self.__process_name} cannot be set to status {status} "

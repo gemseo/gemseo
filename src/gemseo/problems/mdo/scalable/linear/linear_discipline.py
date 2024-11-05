@@ -34,6 +34,8 @@ from gemseo.utils.seeder import SEED
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
+
 
 class LinearDiscipline(Discipline):
     """A discipline that computes random outputs from inputs.
@@ -127,13 +129,11 @@ class LinearDiscipline(Discipline):
 
         self.default_input_data = {k: 0.5 * ones(inputs_size) for k in input_names}
 
-    def _run(self) -> None:
-        input_data = concatenate_dict_of_arrays_to_array(self.io.data, self.input_names)
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
         output_data = self.mat.dot(input_data)
-        self.io.data.update(
-            split_array_to_dict_of_arrays(
-                output_data, self.__sizes_d, self.output_names
-            )
+        return split_array_to_dict_of_arrays(
+            output_data, self.__sizes_d, self.output_names
         )
 
     def _compute_jacobian(

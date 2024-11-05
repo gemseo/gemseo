@@ -37,21 +37,19 @@ def execution_status() -> ExecutionStatus:
 
 def test_initial_status(execution_status: ExecutionStatus):
     """Verify the initial status."""
-    assert execution_status.value == Status.PENDING
+    assert execution_status.value == Status.DONE
 
 
 INITIAL_TO_NEW_STATUSES_WITH_ERRORS = {
     Status.LINEARIZING: {Status.RUNNING, Status.LINEARIZING},
     Status.FAILED: {Status.RUNNING, Status.LINEARIZING},
-    Status.RUNNING: {Status.RUNNING, Status.PENDING, Status.LINEARIZING},
+    Status.RUNNING: {Status.RUNNING, Status.LINEARIZING},
 }
 
 
 @pytest.mark.parametrize(
     ("initial_status", "new_statuses"),
     [
-        # TODO: should be only  RUNNING or LINEARIZING
-        (Status.PENDING, Status),
         # TODO: should be only  RUNNING or LINEARIZING
         (Status.DONE, Status),
         (
@@ -100,7 +98,7 @@ def test_value_setter_error_without_enum(execution_status: ExecutionStatus):
         execution_status.value = "bad"
 
 
-@pytest.mark.parametrize("initial_status", [Status.PENDING, Status.DONE])
+@pytest.mark.parametrize("initial_status", [Status.DONE])
 def test_run_success(execution_status: ExecutionStatus, initial_status: Status):
     """Verify the run method on success."""
     execution_status.value = initial_status
@@ -121,7 +119,7 @@ def test_run_bad_initial_status(
     assert execution_status.value == initial_status
 
 
-@pytest.mark.parametrize("initial_status", [Status.PENDING, Status.DONE])
+@pytest.mark.parametrize("initial_status", [Status.DONE])
 def test_run_failure(execution_status: ExecutionStatus, initial_status: Status):
     """Verify the run method on failure."""
     execution_status.value = initial_status
@@ -131,7 +129,7 @@ def test_run_failure(execution_status: ExecutionStatus, initial_status: Status):
     assert execution_status.value == Status.FAILED
 
 
-@pytest.mark.parametrize("initial_status", [Status.PENDING, Status.DONE])
+@pytest.mark.parametrize("initial_status", [Status.DONE])
 def test_linearize_success(execution_status: ExecutionStatus, initial_status: Status):
     """Verify the linearize method on success."""
     execution_status.value = initial_status
@@ -152,7 +150,7 @@ def test_linearize_bad_initial_status(
     assert execution_status.value == initial_status
 
 
-@pytest.mark.parametrize("initial_status", [Status.PENDING, Status.DONE])
+@pytest.mark.parametrize("initial_status", [Status.DONE])
 def test_linearize_failure(execution_status: ExecutionStatus, initial_status: Status):
     """Verify the linearize method on failure."""
     execution_status.value = initial_status
@@ -194,4 +192,4 @@ def test_pickling(execution_status, tmp_wd):
     """Verify pickling."""
     to_pickle(execution_status, "pickle_path")
     execution_status = from_pickle("pickle_path")
-    assert execution_status.value == Status.PENDING
+    assert execution_status.value == Status.DONE

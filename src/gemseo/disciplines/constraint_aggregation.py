@@ -46,6 +46,8 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
+
 
 class ConstraintAggregation(Discipline):
     """A discipline that aggregates the constraints computed by other disciplines.
@@ -127,10 +129,8 @@ class ConstraintAggregation(Discipline):
         ])
         self.__data_sizes = {}
 
-    def _run(self) -> None:
-        input_data = concatenate_dict_of_arrays_to_array(
-            self.io.data, self.io.input_grammar.names
-        )
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
         evaluation_function = self._EVALUATION_FUNCTION_MAP[self.__method_name]
         output_data = atleast_1d(evaluation_function(input_data, **self.__meth_options))
         output_names = self.io.output_grammar.names

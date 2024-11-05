@@ -34,6 +34,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 configure_logger()
 
 
@@ -52,11 +54,10 @@ class BuggedDiscipline(Discipline):
         self.output_grammar.update_from_names(["f", "g"])
         self.default_input_data = {"x": array([0.0]), "y": array([0.0])}
 
-    def _run(self) -> None:
-        x = self.io.data["x"]
-        y = self.io.data["y"]
-        self.local_data["f"] = exp(-((1 - x) ** 2) - (1 - y) ** 2)
-        self.local_data["g"] = x**2 + y**2 - 1
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = input_data["x"]
+        y = input_data["y"]
+        return {"f": exp(-((1 - x) ** 2) - (1 - y) ** 2), "g": x**2 + y**2 - 1}
 
     def _compute_jacobian(
         self,

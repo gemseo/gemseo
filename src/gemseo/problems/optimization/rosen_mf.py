@@ -33,6 +33,8 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 class RosenMF(Discipline):
     r"""A multi-fidelity Rosenbrock discipline.
@@ -51,10 +53,10 @@ class RosenMF(Discipline):
         super().__init__()
         self.default_input_data = {"x": zeros(dimension), "fidelity": 1.0}
 
-    def _run(self) -> None:
-        fidelity = self.io.data["fidelity"]
-        x_val = self.io.data["x"]
-        self.io.data["rosen"] = fidelity * rosen(x_val)
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        fidelity = input_data["fidelity"]
+        x_val = input_data["x"]
+        return {"rosen": fidelity * rosen(x_val)}
 
     def _compute_jacobian(
         self,

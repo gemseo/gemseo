@@ -189,11 +189,9 @@ class DisciplineAdapter(MDOFunction):
         Returns:
             The output vector or a scalar if the vector has only one component.
         """
-        self.__discipline.execution_status.value = ExecutionStatus.Status.PENDING
-
+        self.__discipline.execution_status.value = ExecutionStatus.Status.DONE
         input_data = self.__create_discipline_input_data(x_vect)
         output_data = self.__discipline.execute(input_data)
-
         return self._convert_output_data_to_array(output_data)
 
     def _convert_output_data_to_array(

@@ -95,6 +95,7 @@ from __future__ import annotations
 
 from cmath import sqrt
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import complex128
@@ -104,6 +105,9 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 def get_design_space(to_complex: bool = True) -> DesignSpace:
@@ -142,12 +146,11 @@ class PropaneReaction(Discipline):
             "y_3": ones(3, dtype=complex128),
         }
 
-    def _run(self) -> None:
-        local_data = self.io.data
-        x_shared = local_data["x_shared"]
-        y_1 = local_data["y_1"]
-        y_2 = local_data["y_2"]
-        y_3 = local_data["y_3"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_shared = input_data["x_shared"]
+        y_1 = input_data["y_1"]
+        y_2 = input_data["y_2"]
+        y_3 = input_data["y_3"]
         f_2 = array([self.f_2(x_shared, y_1, y_2, y_3)], dtype=complex128)
         f_6 = array([self.f_6(x_shared, y_1, y_3)], dtype=complex128)
         f_7 = array([self.f_7(x_shared, y_1, y_3)], dtype=complex128)
@@ -155,13 +158,13 @@ class PropaneReaction(Discipline):
         obj = f_2 + f_7 + f_6 + f_9
         # constraints on f_2, f_6, f_7, f_9 must be nonnegative
         # in original problem don't forget to take the opposite
-        self.io.update_output_data({
+        return {
             "f_2": -f_2,
             "f_6": -f_6,
             "f_7": -f_7,
             "f_9": -f_9,
             "obj": obj,
-        })
+        }
 
     @classmethod
     def f_2(
@@ -252,12 +255,12 @@ class PropaneComb1(Discipline):
         super().__init__()
         self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
 
-    def _run(self) -> None:
-        x_shared = self.io.data["x_shared"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_shared = input_data["x_shared"]
         y_1_out = zeros(2, dtype=complex128)
         y_1_out[0] = self.compute_y0(x_shared)
         y_1_out[1] = self.compute_y1(x_shared)
-        self.io.update_output_data({"y_1": y_1_out})
+        return {"y_1": y_1_out}
 
     @classmethod
     def compute_y0(cls, x_shared: ndarray) -> ndarray:
@@ -296,12 +299,12 @@ class PropaneComb2(Discipline):
         super().__init__()
         self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
 
-    def _run(self) -> None:
-        x_shared = self.io.data["x_shared"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_shared = input_data["x_shared"]
         y_2_out = zeros(2, dtype=complex128)
         y_2_out[0] = self.compute_y2(x_shared)
         y_2_out[1] = self.compute_y3(x_shared)
-        self.io.update_output_data({"y_2": y_2_out})
+        return {"y_2": y_2_out}
 
     @classmethod
     def compute_y2(cls, x_shared: ndarray) -> ndarray:
@@ -343,13 +346,13 @@ class PropaneComb3(Discipline):
         super().__init__()
         self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
 
-    def _run(self) -> None:
-        x_shared = self.io.data["x_shared"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_shared = input_data["x_shared"]
         y_3_out = zeros(3, dtype=complex128)
         y_3_out[0] = self.compute_y4(x_shared)
         y_3_out[1] = self.compute_y5(x_shared)
         y_3_out[2] = self.compute_y6(x_shared)
-        self.io.update_output_data({"y_3": y_3_out})
+        return {"y_3": y_3_out}
 
     @classmethod
     def compute_y4(cls, x_shared) -> float:

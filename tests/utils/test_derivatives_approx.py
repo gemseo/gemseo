@@ -24,6 +24,7 @@ from math import exp
 from math import isinf
 from math import log10
 from math import sin
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
@@ -50,6 +51,9 @@ from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 def test_init_first_order_fd() -> None:
@@ -270,7 +274,7 @@ class ToyDiscipline(Discipline):
         }
         self.dtype = dtype
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["y1"] = self.io.data["x1"] + 2 * self.io.data["x2"][0]
         self.io.data["y2"] = array([
             self.io.data["x1"] + 2 * self.io.data["x2"][0] + 3 * self.io.data["x2"][1],

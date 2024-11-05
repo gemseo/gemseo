@@ -27,11 +27,15 @@ from __future__ import annotations
 
 import os
 import subprocess
+from typing import TYPE_CHECKING
 
 from numpy import array
 
 from gemseo import configure_logger
 from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 configure_logger()
 
@@ -98,14 +102,13 @@ class ShellExecutableDiscipline(Discipline):
         self.output_grammar.update_from_names(["c"])
         self.default_input_data = {"a": array([1.0]), "b": array([2.0])}
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         cwd = os.getcwd()
         inputs_file = os.path.join(cwd, "inputs.txt")
         outputs_file = os.path.join(cwd, "outputs.txt")
-        write_file(self.local_data, inputs_file)
+        write_file(input_data, inputs_file)
         subprocess.run("python run.py".split(), cwd=cwd)
-        outputs = parse_file(outputs_file)
-        self.local_data.update(outputs)
+        return parse_file(outputs_file)
 
 
 # %%

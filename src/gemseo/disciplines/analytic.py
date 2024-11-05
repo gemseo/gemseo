@@ -21,10 +21,8 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
-import numpy
 from numpy import array
 from numpy import expand_dims
 from numpy import float64
@@ -44,8 +42,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.typing import StrKeyMapping
-
-LOGGER = logging.getLogger(__name__)
 
 
 class AnalyticDiscipline(Discipline):
@@ -85,10 +81,8 @@ class AnalyticDiscipline(Discipline):
         """
         Args:
             expressions: The outputs expressed as functions of the inputs.
-            name: The name of the discipline.
-                If empty, use the class name.
         """  # noqa: D205, D212, D415
-        super().__init__(name)
+        super().__init__(name=name)
         self.expressions = expressions
         self.output_names_to_symbols = {}
         self.input_names = []
@@ -97,13 +91,9 @@ class AnalyticDiscipline(Discipline):
         self._sympy_jac_exprs = {}
         self._sympy_jac_funcs = {}
         self._init_expressions()
-        self._init_grammars()
-        self._init_default_inputs()
-
-    def _init_grammars(self) -> None:
-        """Initialize the input an output grammars from the expressions' dictionary."""
         self.input_grammar.update_from_names(self.input_names)
         self.output_grammar.update_from_names(self.expressions.keys())
+        self.default_input_data = {name: zeros(1) for name in self.input_names}
 
     def _init_expressions(self) -> None:
         """Parse the expressions of the functions and their derivatives.
@@ -180,12 +170,6 @@ class AnalyticDiscipline(Discipline):
                 for input_symbol in input_symbols
             }
 
-    def _init_default_inputs(self) -> None:
-        """Initialize the default inputs of the discipline with zeros."""
-        self.default_input_data = {
-            input_name: zeros(1) for input_name in self.io.input_grammar.names
-        }
-
     @staticmethod
     def __cast_expression_to_array(expression: Expr) -> ndarray:
         """Cast a SymPy expression to a NumPy array.
@@ -205,30 +189,19 @@ class AnalyticDiscipline(Discipline):
 
         return array([expression], data_type)
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Run the discipline with fast evaluation."""
         output_data = {}
         # Do not pass useless tokens to the expr, this may
         # fail when tokens contain dots, or slow down the process
-        input_data = self.__get_local_data_without_namespace()
+        input_data = {name: input_data[name].item() for name in input_data}
         for output_name, output_function in self._sympy_funcs.items():
             input_symbols = self.output_names_to_symbols[output_name]
             output_value = output_function(
                 *(input_data[input_symbol] for input_symbol in input_symbols)
             )
             output_data[output_name] = expand_dims(output_value, 0)
-        self.io.update_output_data(output_data)
-
-    def __get_local_data_without_namespace(self) -> dict[str, numpy.number]:
-        """Return the local data without namespace prefixes.
-
-        Returns:
-            The local data without namespace prefixes.
-        """
-        return {
-            input_name: self.io.data[input_name].item()
-            for input_name in self.io.input_grammar.names_without_namespace
-        }
+        return output_data
 
     def _compute_jacobian(
         self,
@@ -238,7 +211,8 @@ class AnalyticDiscipline(Discipline):
         # otherwise there may be missing terms
         # if some formula have no dependency
         input_names, output_names = self._init_jacobian(input_names, output_names)
-        input_values = self.__get_local_data_without_namespace()
+        input_data = self.io.get_input_data(with_namespaces=False)
+        input_values = {name: input_data[name].item() for name in input_data}
         for output_name in output_names:
             gradient_function = self._sympy_jac_funcs[output_name]
             input_data = tuple(

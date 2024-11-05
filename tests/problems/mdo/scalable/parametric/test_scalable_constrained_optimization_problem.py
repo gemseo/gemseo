@@ -33,6 +33,8 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 class ScalableDiscipline(Discipline):
     def __init__(self, p: float) -> None:
@@ -41,7 +43,7 @@ class ScalableDiscipline(Discipline):
         self.input_grammar.update_from_names(["x"])
         self.output_grammar.update_from_names(["f", "g"])
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
         self.io.data["f"] = array([np_mean(x)]) / (len(x) + 1) * 2 * 100
         self.io.data["g"] = ((arange(len(x)) + 1) / x) ** self.p - 1.0

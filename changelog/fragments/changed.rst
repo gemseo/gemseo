@@ -25,7 +25,7 @@ API changes removed:
   - ``BaseGrammar.is_array``: use ``BaseGrammar.data_converter.is_numeric`` instead.
   - ``DependencyGraph.export_initial_graph``: use ``DependencyGraph.write_full_graph`` instead.
   - ``DependencyGraph.export_reduced_graph``: use ``DependencyGraph.write_condensed_graph`` instead.
-  - The ``VIRTUAL`` execution status.
+  - The ``VIRTUAL`` and ``DONE`` execution statuses.
   - The ``RE_EXEC_POLICY`` for rexecuting disciplines.
   - ``create_scenario_result``: use ``BaseScenario.get_results`` instead.
   - ``ExecSequenceFactory``: import and instantiate directly instead.

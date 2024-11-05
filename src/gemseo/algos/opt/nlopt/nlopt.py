@@ -357,7 +357,9 @@ class Nlopt(BaseOptimizationLibrary):
         super()._pre_run(problem, **settings)
 
     def _run(
-        self, problem: OptimizationProblem, **settings: NLoptOptionsType
+        self,
+        problem: OptimizationProblem,
+        **settings: NLoptOptionsType,
     ) -> tuple[str, Any]:
         """
         Raises:

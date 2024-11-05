@@ -33,6 +33,8 @@ from gemseo.utils.pickle import to_pickle
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
+
 
 class NewDiscipline(Discipline):
     """A new discipline."""
@@ -52,7 +54,7 @@ class NewDiscipline(Discipline):
         })
         self.default_input_data = default_input_data
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["out_1"] = self.io.data["in_1"] + 1
         self.io.data["out_2"] = self.io.data["in_2"] - 1
         self.io.data["out_3"] = array([f"{self.io.data['in_3'][0]} plus one"])

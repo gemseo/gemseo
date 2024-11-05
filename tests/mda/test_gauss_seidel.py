@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import allclose as allclose_
 from numpy import array
@@ -43,6 +45,9 @@ from gemseo.utils.testing.helpers import image_comparison
 
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 from .utils import generate_parallel_doe
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 def allclose(a, b):
@@ -123,8 +128,8 @@ def test_expected_workflow() -> None:
 
     mda = MDAGaussSeidel(disciplines)
     expected = (
-        "{MDAGaussSeidel(PENDING), [DummyDiscipline(PENDING), "
-        "DummyDiscipline(PENDING), DummyDiscipline(PENDING)]}"
+        "{MDAGaussSeidel(DONE), [DummyDiscipline(DONE), "
+        "DummyDiscipline(DONE), DummyDiscipline(DONE)]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
@@ -166,16 +171,16 @@ def test_expected_workflow_with_adapter() -> None:
     mda = MDAGaussSeidel(adapters)
 
     expected = (
-        "{MDAGaussSeidel(PENDING), ["
-        "{PropulsionScenario(PENDING), [SobieskiPropulsion(PENDING), "
-        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
-        "SobieskiMission(PENDING)]}, "
-        "{AeroScenario(PENDING), [SobieskiPropulsion(PENDING), "
-        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
-        "SobieskiMission(PENDING)]}, "
-        "{StructureScenario(PENDING), [SobieskiPropulsion(PENDING), "
-        "SobieskiStructure(PENDING), SobieskiAerodynamics(PENDING), "
-        "SobieskiMission(PENDING)]}]}"
+        "{MDAGaussSeidel(DONE), ["
+        "{PropulsionScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}, "
+        "{AeroScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}, "
+        "{StructureScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
@@ -208,7 +213,7 @@ class SelfCoupledDisc(Discipline):
         if not plus_y:
             self.coeff = -1.0
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["y"] = (
             1.0 + self.coeff * 0.5 * self.io.data["y"] + self.io.data["x"]
         )

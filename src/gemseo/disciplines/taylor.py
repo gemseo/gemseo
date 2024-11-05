@@ -27,6 +27,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.typing import StrKeyMapping
+
 
 class TaylorDiscipline(Discipline):
     r"""The first-order polynomial of a discipline.
@@ -80,10 +82,11 @@ class TaylorDiscipline(Discipline):
         self.jac = deepcopy(discipline.jac)
         self._has_jacobian = True
 
-    def _run(self) -> None:
-        input_data = self.io.get_input_data()
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        output_data = {}
         for output_name in self.io.output_grammar.names:
-            self.io.data[output_name] = self.__offset[output_name] + sum(
+            output_data[output_name] = self.__offset[output_name] + sum(
                 self.jac[output_name][input_name] @ input_value
                 for input_name, input_value in input_data.items()
             )
+        return output_data
