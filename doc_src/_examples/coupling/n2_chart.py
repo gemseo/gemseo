@@ -28,7 +28,7 @@ from __future__ import annotations
 from numpy import ones
 
 from gemseo import generate_n2_plot
-from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DummyDiscipline
 
 # %%
 # Create the disciplines
@@ -56,7 +56,7 @@ data = ones(1)
 for discipline_name, (inputs, outputs) in descriptions.items():
     inputs = dict.fromkeys(inputs, data)
     outputs = dict.fromkeys(outputs, data)
-    discipline = Discipline(discipline_name)
+    discipline = DummyDiscipline(discipline_name)
     discipline.input_grammar.update_from_data(dict.fromkeys(inputs, data))
     discipline.output_grammar.update_from_data(dict.fromkeys(outputs, data))
     disciplines.append(discipline)

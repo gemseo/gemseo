@@ -32,7 +32,6 @@ from typing import ClassVar
 
 from numpy import array
 
-from gemseo import READ_ONLY_EMPTY_DICT
 from gemseo.core._process_flow.execution_sequences.sequential import (
     SequentialExecSequence,
 )
@@ -45,6 +44,7 @@ from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.factory import MDAFactory
 from gemseo.mda.mda_chain_settings import MDAChain_Settings
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

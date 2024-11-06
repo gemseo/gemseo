@@ -20,6 +20,9 @@ API changes from old to new:
   - ``initialize_grammars``: ``_initialize_grammars``
   - ``activate_progress_bar``: ``enable_progress_bar``
   - ``exec_time``: ``get_execution_duration``
+  - ``MDODiscipline._run(self)``: ``Discipline._run(self, input_data)``
+  - ``MDODiscipline._run(self)``: ``Discipline._execute(self)`` for process disciplines (MDA and chains)
+  - ``Scenario._run(self)``: ``BaseScenario._execute(self)``
 
 API changes removed:
   - ``BaseGrammar.is_array``: use ``BaseGrammar.data_converter.is_numeric`` instead.
