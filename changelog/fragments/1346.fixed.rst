@@ -1,0 +1,1 @@
+``DesignSpace.normalize`` not longer erroneously flags design variables with equal lower and upper bounds as not to be normalized.
