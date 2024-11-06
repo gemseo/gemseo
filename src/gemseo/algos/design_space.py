@@ -199,7 +199,6 @@ class DesignSpace:
         self.__no_integer = True
         self.__norm_data_is_computed = False
         self.__norm_inds = None
-        self.__to_zero = None
         self.__bound_tol = 100.0 * finfo(float64).eps
         self.__current_value = {}
         self.__has_current_value = False
@@ -486,9 +485,6 @@ class DesignSpace:
             for i in range(variable.size):
                 if variable.lower_bound[i] == -inf or variable.upper_bound[i] == inf:
                     # Unbounded variables are not normalized:
-                    normalize[i] = False
-                elif variable.lower_bound[i] == variable.upper_bound[i]:
-                    # Constant variables are not normalized:
                     normalize[i] = False
                 else:
                     normalize[i] = True
@@ -1108,7 +1104,6 @@ class DesignSpace:
         self.__norm_inds = self.convert_dict_to_array(self.normalize).nonzero()[0]
         # In case lb=ub
         norm_factor_is_zero = self._norm_factor == 0.0
-        self.__to_zero = norm_factor_is_zero.nonzero()[0]
         self._norm_factor_inv = 1 / where(norm_factor_is_zero, 1, self._norm_factor)
         self.__integer_components = concatenate([
             [variable.type == self.DesignVariableType.INTEGER] * variable.size
@@ -1183,11 +1178,6 @@ class DesignSpace:
             out.data[column_mask] *= self._norm_factor_inv[out.indices][column_mask]
         else:
             out[..., norm_inds] *= self._norm_factor_inv[norm_inds]
-
-        # In case lb=ub, put value to 0.
-        to_zero = self.__to_zero
-        if to_zero.size > 0:
-            out[..., to_zero] = 0.0
 
         return out
 
@@ -1341,11 +1331,6 @@ class DesignSpace:
 
         if minus_lb:
             out[..., norm_inds] += lower_bounds[norm_inds]
-
-        # In case lb=ub, put value to lower bound.
-        to_lower_bounds = self.__to_zero
-        if to_lower_bounds.size > 0:
-            out[..., to_lower_bounds] = lower_bounds[to_lower_bounds]
 
         if not self.__no_integer:
             self.round_vect(out, copy=False)

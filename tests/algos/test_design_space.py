@@ -754,9 +754,6 @@ def test_norm_policy() -> None:
     with pytest.raises(ValueError, match="Variable 'foo' is not known."):
         design_space._add_norm_policy("foo")
 
-    design_space.add_variable("x_c", lower_bound=array([0.0]), upper_bound=array([0.0]))
-    assert not design_space.normalize["x_c"]
-
 
 def test_current_x() -> None:
     names = ["x_1", "x_2"]
