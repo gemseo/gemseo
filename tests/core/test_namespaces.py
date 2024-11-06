@@ -100,6 +100,7 @@ def test_analytic_disc_ns(grammar_type, use_defaults) -> None:
 
     disc_ns.add_namespace_to_input("x", "ns")
     assert sorted(disc_ns.io.input_grammar.names) == ["ns:x", "u"]
+    assert sorted(disc_ns.io.input_grammar.names_without_namespace) == ["u", "x"]
 
     outs_ref = disc.execute({"x": array([1.0])})
     if use_defaults:
@@ -128,6 +129,11 @@ def test_chain_disc_ns(grammar_type) -> None:
         "u",
         "x",
     ]
+    assert sorted(chain.io.input_grammar.names_without_namespace) == [
+        "a",
+        "u",
+        "x",
+    ]
     assert sorted(chain.io.output_grammar.names) == ["ns_out:y", "z"]
 
     out = chain.execute({"ns_in:x": array([3.0]), "u": array([4.0])})
@@ -151,6 +157,16 @@ def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
 
     assert sorted(chain.io.input_grammar.names) == sorted(["ns2:x", "ns1:x", "u"])
     assert sorted(chain.io.output_grammar.names) == sorted(["ns2:y", "ns1:y"])
+
+    assert sorted(chain.io.input_grammar.names_without_namespace) == sorted([
+        "x",
+        "x",
+        "u",
+    ])
+    assert sorted(chain.io.output_grammar.names_without_namespace) == sorted([
+        "y",
+        "y",
+    ])
 
     out = chain.execute({
         "ns1:x": array([5.0]),

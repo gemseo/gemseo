@@ -117,7 +117,8 @@ class DataFrameDiscipline(Discipline):
         self.default_input_data = {"df": DataFrame(data={"x": [0.0]})}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        return {"y": 1.0 - 0.2 * input_data["df"]["x"]}
+        df = self.local_data["df"]
+        df["y"] = 1.0 - 0.2 * df["x"]
 
 
 # %%
