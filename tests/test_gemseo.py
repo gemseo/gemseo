@@ -966,7 +966,7 @@ def input_space() -> DesignSpace:
 def test_sample_disciplines(disciplines, input_space, output_names, caplog):
     """Check the sampling of two disciplines."""
     dataset = sample_disciplines(
-        disciplines, input_space, output_names, "PYDOE_FULLFACT", n_samples=2
+        disciplines, input_space, output_names, algo_name="PYDOE_FULLFACT", n_samples=2
     )
     assert dataset.name == "Sampling"
 
@@ -1000,7 +1000,7 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
         disciplines,
         input_space,
         "out1",
-        "PYDOE_FULLFACT",
+        algo_name="PYDOE_FULLFACT",
         n_samples=2,
         name="foo",
         # Use DisciplinaryOpt instead of MDF
@@ -1029,7 +1029,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            "PYDOE_FULLFACT",
+            algo_name="PYDOE_FULLFACT",
             n_samples=2,
         )
 
@@ -1039,7 +1039,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         disciplines,
         input_space,
         ["out1", "out2"],
-        "PYDOE_FULLFACT",
+        algo_name="PYDOE_FULLFACT",
         backup_settings=BackupSettings("database.hdf5"),
         n_samples=2,
     )
@@ -1050,7 +1050,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            "PYDOE_FULLFACT",
+            algo_name="PYDOE_FULLFACT",
             backup_settings=BackupSettings("database.hdf5"),
             n_samples=2,
         )
@@ -1067,7 +1067,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             disciplines,
             input_space,
             ["out1", "out2"],
-            "PYDOE_FULLFACT",
+            algo_name="PYDOE_FULLFACT",
             backup_settings=BackupSettings(
                 "database.hdf5",
                 at_each_iteration=True,
