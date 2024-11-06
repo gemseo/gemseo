@@ -13,8 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-"""
-Sample several disciplines
+"""Sample several disciplines.
 ==========================
 
 The :class:`.DOEScenario` class is used to solve trade-off studies,
@@ -56,7 +55,7 @@ input_space.add_variable("x2", lower_bound=0.0, upper_bound=1.0)
 # sample these disciplines over the input space
 # with the outputs of interest, the number of samples and the name of the DOE algorithm:
 io_dataset = sample_disciplines(
-    disciplines, input_space, ["y0", "y2"], "PYDOE_FULLFACT", n_samples=10
+    disciplines, input_space, ["y0", "y2"], algo_name="PYDOE_FULLFACT", n_samples=10
 )
 io_dataset
 

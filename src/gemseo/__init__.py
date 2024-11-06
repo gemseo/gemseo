@@ -1830,13 +1830,12 @@ def sample_disciplines(
     disciplines: Sequence[Discipline],
     input_space: DesignSpace,
     output_names: str | Iterable[str],
-    algo_name: str,
     formulation_name: str = "MDF",
     formulation_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     name: str = "Sampling",
     backup_settings: BackupSettings | None = None,
-    doe_algo_settings_model: BaseDOESettings | None = None,
-    **doe_algo_settings: Any,
+    algo_settings_model: BaseDOESettings | None = None,
+    **algo_settings: Any,
 ) -> IODataset:
     """Sample a set of disciplines associated with an MDO formulation.
 
@@ -1845,7 +1844,6 @@ def sample_disciplines(
         input_space: The input space on which to sample the discipline.
         output_names: The names of the outputs of interest.
         n_samples: The number of samples.
-        algo_name: The name of the DOE algorithm.
         formulation_name: The name of the MDO formulation.
         formulation_settings: The settings of the MDO formulation.
             If empty, use the default ones.
@@ -1853,9 +1851,9 @@ def sample_disciplines(
             If empty, use the name of the discipline.
         backup_settings: The settings of the backup file to store the evaluations
             if any.
-        doe_algo_settings_model: The DOE settings as a Pydantic model.
+        algo_settings_model: The DOE settings as a Pydantic model.
             If ``None``, use ``**settings``.
-        **doe_algo_settings: The DOE settings.
+        **algo_settings: The DOE settings.
             These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
@@ -1877,12 +1875,12 @@ def sample_disciplines(
     for output_name in output_names_iterator:
         scenario.add_observable(output_name)
 
-    if not doe_algo_settings_model:
-        if "log_problem" not in doe_algo_settings:
-            doe_algo_settings["log_problem"] = False
+    if not algo_settings_model:
+        if "log_problem" not in algo_settings:
+            algo_settings["log_problem"] = False
 
-        if "use_one_line_progress_bar" not in doe_algo_settings:
-            doe_algo_settings["use_one_line_progress_bar"] = True
+        if "use_one_line_progress_bar" not in algo_settings:
+            algo_settings["use_one_line_progress_bar"] = True
 
     if backup_settings is not None and backup_settings.file_path:
         scenario.set_optimization_history_backup(
@@ -1892,11 +1890,7 @@ def sample_disciplines(
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
-    scenario.execute(
-        algo_name=algo_name,
-        algo_settings_model=doe_algo_settings_model,
-        **doe_algo_settings,
-    )
+    scenario.execute(algo_settings_model=algo_settings_model, **algo_settings)
     return scenario.formulation.optimization_problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )

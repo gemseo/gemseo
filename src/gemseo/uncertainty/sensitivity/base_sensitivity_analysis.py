@@ -218,7 +218,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             disciplines,
             parameter_space,
             self._output_names,
-            self._algo_name,
+            algo_name=self._algo_name,
             formulation_name=formulation_name,
             formulation_settings=formulation_settings or {},
             name=f"{self.__class__.__name__}SamplingPhase",
