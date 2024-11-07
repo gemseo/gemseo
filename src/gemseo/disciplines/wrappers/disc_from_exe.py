@@ -37,7 +37,6 @@ from numpy import array
 from numpy import ndarray
 from strenum import StrEnum
 
-from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
 from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
@@ -157,9 +156,6 @@ class DiscFromExe(_BaseDiscFromExe):
 
     write_input_file: InputWriter
     """The function used to write the input template file."""
-
-    data_processor: DataProcessor
-    """A data processor to be used before the execution of the discipline."""
 
     def __init__(
         self,
