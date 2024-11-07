@@ -87,9 +87,6 @@ class AutoPyDiscipline(Discipline):
     py_jac: Callable | None
     """The Python function to compute the Jacobian from the inputs."""
 
-    data_processor: AutoDiscDataProcessor
-    """A data processor forcing input data to float and output data to arrays."""
-
     sizes: dict[str, int]
     """The sizes of the input and output variables."""
 
