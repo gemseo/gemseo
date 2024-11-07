@@ -1074,14 +1074,14 @@ def create_surrogate(
 def create_mda(
     mda_name: str,
     disciplines: Sequence[Discipline],
-    **formulation_settings: Any,
+    **mda_settings: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
     Args:
         mda_name: The name of the MDA.
         disciplines: The disciplines.
-        **formulation_settings: The settings of the MDA.
+        **mda_settings: The settings of the MDA.
 
     Returns:
         The MDA.
@@ -1098,7 +1098,7 @@ def create_mda(
     """
     from gemseo.mda.factory import MDAFactory
 
-    return MDAFactory().create(mda_name, disciplines, **formulation_settings)
+    return MDAFactory().create(mda_name, disciplines, **mda_settings)
 
 
 def execute_post(

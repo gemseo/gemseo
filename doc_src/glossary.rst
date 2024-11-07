@@ -388,5 +388,5 @@ Glossary
     root finding
         A family of numerical resolution methods that solves multivariate problems of the type R(x)=0
 
-    Newton method
+    Newton-Raphson method
         A :term:`root finding` method that uses successive linear approximations of the function of interest
