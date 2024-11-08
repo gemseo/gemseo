@@ -66,6 +66,11 @@ scenario = create_scenario(
 scenario.execute(algo_name="CustomDOE", doe_file="doe.txt")
 
 # %%
+# Note that both the formulation settings passed to :func:`.create_scenario` and the
+# algorithm settings passed to :meth:`~.DriverLibrary.execute` can be provided via a Pydantic model. For
+# more information, see :ref:`formulation_settings` and :ref:`algorithm_settings`.
+
+# %%
 # We can display the content of the database as a :class:`.Dataset`
 # and check the values of the output,
 # which should be the product of :math:`a` and :math:`b`.

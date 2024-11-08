@@ -8,18 +8,19 @@
 
 ..
    Contributors:
-          :author: Matthias De Lozzo
+          :author: Gilberto Ruiz Jimenez
 
 :parenttoc: True
 
-Make |g| easy to use
---------------------
+Define settings models
+----------------------
+
+Learn how to define the settings for formulations, algorithms, MDAs and post-processings.
 
 .. toctree::
    :maxdepth: 2
 
-   discipline_interface_easier
-   mdo_scenario_easier
-   settings_easier
-   cheat_sheets/index
-   extending
+   settings/formulation_settings
+   settings/algorithm_settings
+   settings/mda_settings
+   settings/post_processing_settings

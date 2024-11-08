@@ -93,6 +93,10 @@ scenario = create_scenario(
 )
 
 # %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
+
+# %%
 # Execute the DOE scenario
 # ------------------------
 # Lastly, we solve the :class:`.OptimizationProblem` included in the
@@ -102,6 +106,10 @@ scenario = create_scenario(
 # <https://en.wikipedia.org/wiki/Factorial_experiment>`_ of size :math:`11^2`:
 
 scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
+
+# %%
+# Note that the algorithm settings passed to :meth:`~.BaseDriverLibrary.execute` can be provided
+# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to

@@ -50,3 +50,13 @@ get_available_doe_algorithms()
 # For a given optimization algorithm, e.g. ``"DiagonalDOE"``,
 # we can get the options; e.g.
 get_algorithm_options_schema("DiagonalDOE")
+
+# %%
+# Or import its settings model and pass it directly with the keyword
+# "algo_settings_model".
+from gemseo.settings.doe import DiagonalDOE_Settings  # noqa: E402
+
+settings_model = DiagonalDOE_Settings()
+
+# %%
+# See :ref:`algorithm_settings` for more information on how to use settings models.

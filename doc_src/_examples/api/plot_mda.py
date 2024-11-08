@@ -55,6 +55,16 @@ get_available_mdas()
 get_mda_options_schema("MDAGaussSeidel")
 
 # %%
+# Or import its settings model and pass it directly with the keyword
+# "mda_settings_model".
+from gemseo.settings.mda import MDAGaussSeidel_Settings  # noqa: E402
+
+settings_model = MDAGaussSeidel_Settings()
+
+# %%
+# See :ref:`mda_settings` for more information on how to use settings models.
+
+# %%
 # Create an MDA
 # -------------
 # The high-level function :func:`~gemseo.create_mda` can be used

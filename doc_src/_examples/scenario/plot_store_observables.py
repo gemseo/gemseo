@@ -92,6 +92,10 @@ design_space.add_variable(
 scenario = create_scenario(disciplines, "obj", design_space, formulation_name="MDF")
 
 # %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
+
+# %%
 # Add the constraints
 # ^^^^^^^^^^^^^^^^^^^
 # Then,
@@ -123,6 +127,10 @@ scenario.add_observable("y_2", observable_name="y2")
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
 scenario.execute(algo_name="SLSQP", max_iter=10)
+
+# %%
+# Note that the algorithm settings passed to :meth:`.DriverLibrary.execute` can be provided
+# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
 
 # %%
 # Access the observable variables
@@ -164,9 +172,17 @@ scenario.post_process(
     save=False,
     show=True,
 )
+
+# %%
+# Note that the post-processor settings passed to :func:`.BaseScenario.post_process` can be
+# provided via a Pydantic model. For more information, see
+# :ref:`post_processor_settings`. An example is shown below.
+from gemseo.settings.post import ScatterPlotMatrix_Settings  # noqa: E402
+
 scenario.post_process(
-    post_name="ScatterPlotMatrix",
-    variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
-    save=False,
-    show=True,
+    ScatterPlotMatrix_Settings(
+        variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
+        save=False,
+        show=True,
+    )
 )

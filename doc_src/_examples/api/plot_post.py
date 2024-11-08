@@ -40,8 +40,8 @@ configure_logger()
 
 
 # %%
-# Get available DOE algorithms
-# ----------------------------
+# Get available post-processors
+# -----------------------------
 #
 # The :func:`.get_available_post_processings` function returns the list
 # of post-processing algorithms available in |g| or in external modules
@@ -53,11 +53,28 @@ get_available_post_processings()
 # The API function :func:`.execute_post` can generate visualizations
 # of the optimization or DOE results. For that, it considers the object to
 # post-process ``to_post_proc``, the post-processor ``post_name``
-# with its ``**options``. E.g.
+# with its ``**settings``. E.g.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 design_space = SellarDesignSpace()
 scenario = create_scenario(
     disciplines, "obj", design_space, name="SellarMDFScenario", formulation_name="MDF"
 )
+scenario.add_constraint("c_1", constraint_type="ineq")
+scenario.add_constraint("c_2", constraint_type="ineq")
 scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
-execute_post(scenario, post_name="OptHistoryView", save=False, show=True)
+execute_post(scenario, post_name="OptHistoryView", save=False, show=False)
+
+# %%
+# It is also possible to pass a settings model to :func:`.execute_post` with the keyword
+# ``settings_model``, as shown below. See :ref:`post_processor_settings` for more
+# information.
+from gemseo.settings.post import ConstraintsHistory_Settings  # noqa: E402
+
+execute_post(
+    scenario,
+    settings_model=ConstraintsHistory_Settings(
+        constraint_names=["c_1", "c_2"],
+        save=False,
+        show=True,
+    ),
+)
