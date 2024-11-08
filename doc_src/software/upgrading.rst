@@ -6,6 +6,7 @@
     http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
     Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+.. _bump-gemseo: https://gitlab.com/gemseo/dev/bump-gemseo
 .. _upgrading-gemseo:
 
 Upgrading GEMSEO
@@ -16,6 +17,8 @@ The codes using those shall be updated according to the target |g| version.
 
 6.0.0
 =====
+
+The tool `bump-gemseo`_ can be used to help converting your code to GEMSEO 6.
 
 MDODiscipline
 -------------

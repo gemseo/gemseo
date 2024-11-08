@@ -300,15 +300,15 @@ MDODiscipline
 ^^^^^^^^^^^^^
 
 - The class ``MDODiscipline`` has been renamed to ``Discipline``,
-  some of its many attributes and methods have been gathered in sub objects via the attributes
-  .io, .execution_statistics, .execution_status and the method get_process_flow.
+  some of its many attributes and methods have been gathered in sub objects under the attributes
+  ``io``, ``execution_statistics``, ``execution_status`` and the method ``get_process_flow``.
 - The signature of the method ``__init__`` has the following changes:
 
-  - The arguments use auto_detect_grammar_files is removed, now use the class attribute auto_detect_grammar_files.
-  - The arguments input_grammar_file, output_grammar_file are removed, use auto_detect_grammar_files.
-  - The argument grammar_type is removed, now use the class attribute default_grammar_type.
-  - The argument cache_type is removed, now use the class attribute default_cache_type.
-  - The argument cache_file_path is removed, now use the method set_cache.
+  - The arguments use ``auto_detect_grammar_files`` is removed, now use the class attribute ``auto_detect_grammar_files``.
+  - The arguments ``input_grammar_file,`` ``output_grammar_file`` are removed, use ``auto_detect_grammar_files``.
+  - The argument ``grammar_type`` is removed, now use the class attribute ``default_grammar_type``.
+  - The argument ``cache_type`` is removed, now use the class attribute ``default_cache_type``.
+  - The argument ``cache_file_path`` is removed, now use the method ``set_cache``.
 - The method ``_run`` now takes ``input_data`` as argument and may return the output data,
   this allow a more natural and clearer implementation of the main business logic of a discipline.
   Moreover, using the provided ``input_data`` and also returning the output data will ensure that a
@@ -319,62 +319,62 @@ MDODiscipline
 - The signature of ``_compute_jacobian`` is now ``_compute_jacobian(self, input_names=(), output_names=())``.
 - The attributes have the following changes:
 
-  - .residual_variables: now use .io.state_equations_are_solved
-  - .run_solves_residuals: now use .io.state_equations_are_solved
-  - .exec_for_lin: is removed
-  - .activate_counters: now use .execution_statistics.is_enabled
-  - .activate_input_data_check: now use .validate_input_data
-  - .activate_output_data_check: now use .validate_output_data
-  - .activate_cache: is removed, now call .set_cache
-  - .re_exec_policy: is removed
-  - .N_CPUS: now use gemseo.utils.constants.N_CPUS
-  - .linear_relationships: is removed, call io.have_linear_relationships
-  - .disciplines: is removed and only available for classes that derive from ProcessDiscipline
-  - .time_stamps: now use .execution_statistics.time_stamps
-  - .n_calls: now use .execution_statistics.n_calls
-  - .exec_time: now use .execution_statistics.duration
-  - .n_calls_linearize: now use .execution_statistics.n_calls_linearize
-  - .grammar_type: now use .io.grammar_type
-  - .auto_get_grammar_file: now is a class attribute
-  - .status: now use .execution_status.value
-  - .cache_tol: now use .cache.tolerance
-  - .default_inputs: now use .default_input_data
-  - .default_outputs: now use .default_output_data
-  - .is_scenario: is removed
-  - .data_processor: now use .io.data_processor
-  - .ReExecutionPolicy: is removed
-  - .ExecutionStatus: now use .io.execution_status.Status
-  - .ExecutionStatus.PENDING: is removed
+  - ``residual_variables``: now use ``io.state_equations_are_solved``
+  - ``run_solves_residuals``: now use ``io.state_equations_are_solved``
+  - ``exec_for_lin``: is removed
+  - ``activate_counters``: now use ``execution_statistics.is_enabled``
+  - ``activate_input_data_check``: now use ``validate_input_data``
+  - ``activate_output_data_check``: now use ``validate_output_data``
+  - ``activate_cache``: is removed, now call ``set_cache``
+  - ``re_exec_policy``: is removed
+  - ``N_CPUS``: now use ``gemseo.utils.constants.N_CPUS``
+  - ``linear_relationships``: is removed, call ``io.have_linear_relationships``
+  - ``disciplines``: is removed and only available for classes that derive from ``ProcessDiscipline``
+  - ``time_stamps``: now use ``execution_statistics.time_stamps``
+  - ``n_calls``: now use ``execution_statistics.n_calls``
+  - ``exec_time``: now use ``execution_statistics.duration``
+  - ``n_calls_linearize``: now use ``execution_statistics.n_calls_linearize``
+  - ``grammar_type``: now use ``io.grammar_type``
+  - ``auto_get_grammar_file``: now is a class attribute
+  - ``status``: now use ``execution_status.value``
+  - ``cache_tol``: now use ``cache.tolerance``
+  - ``default_inputs``: now use ``default_input_data``
+  - ``default_outputs``: now use ``default_output_data``
+  - ``is_scenario``: is removed
+  - ``data_processor``: now use ``io.data_processor``
+  - ``ReExecutionPolicy``: is removed
+  - ``ExecutionStatus``: now use ``io.execution_status.Status``
+  - ``ExecutionStatus.PENDING``: is removed
 - The methods have the following changes:
 
-  - .activate_time_stamps: now use .execution_statistics.is_time_stamps_enabled
-  - .deactivate_time_stamps: now use .execution_statistics.is_time_stamps_enabled
-  - .set_linear_relationships: now use io.set_linear_relationships
-  - .set_disciplines_statuses: was removed
-  - .is_output_existing: now use .output_grammar.names
-  - .is_all_outputs_existing: now use .output_grammar.names
-  - .is_all_inputs_existing: now use .input_grammar.names
-  - .is_input_existing: now use .input_grammar.names
-  - .reset_statuses_for_run: is removed
-  - .add_status_observer: now use .execution_status.add_observer
-  - .remove_status_observer: now use .execution_status.remove_observer
-  - .notify_status_observers: is removed
-  - .store_local_data: now use .io.update_output_data
-  - .check_input_data: now use .input_grammar.validate
-  - .check_output_data: now use .output_grammar.validate
-  - .get_outputs_asarray: is removed
-  - .get_inputs_asarray: is removed
-  - .get_inputs_by_name: now use .get_input_data
-  - .get_outputs_by_name: now use .get_output_data
-  - .get_input_data_names: now use .get_input_data
-  - .get_output_data_names: now use .get_output_data
-  - .get_input_output_data_names: now use .local_data
-  - .get_all_inputs: now use .get_input_data
-  - .get_all_outputs: now use .get_output_data
-  - .to_pickle: now use gemseo.to_pickle
-  - .from_pickle: now use gemseo.from_pickle
-  - .get_local_data_by_name: nw use .local_data
-  - .get_data_list_from_dict: is removed
+  - ``activate_time_stamps``: now use ``execution_statistics.is_time_stamps_enabled``
+  - ``deactivate_time_stamps``: now use ``execution_statistics.is_time_stamps_enabled``
+  - ``set_linear_relationships``: now use ``io.et_linear_relationships``
+  - ``set_disciplines_statuses``: was removed
+  - ``is_output_existing``: now use ``output_grammar.names``
+  - ``is_all_outputs_existing``: now use ``output_grammar.names``
+  - ``is_all_inputs_existing``: now use ``input_grammar.names``
+  - ``is_input_existing``: now use ``input_grammar.names``
+  - ``reset_statuses_for_run``: is removed
+  - ``add_status_observer``: now use ``execution_status.add_observer``
+  - ``remove_status_observer``: now use ``execution_status.remove_observer``
+  - ``notify_status_observers``: is removed
+  - ``store_local_data``: now use ``io.update_output_data``
+  - ``check_input_data``: now use ``input_grammar.validate``
+  - ``check_output_data``: now use ``output_grammar.validate``
+  - ``get_outputs_asarray``: is removed
+  - ``get_inputs_asarray``: is removed
+  - ``get_inputs_by_name``: now use ``get_input_data``
+  - ``get_outputs_by_name``: now use ``get_output_data``
+  - ``get_input_data_names``: now use ``get_input_data``
+  - ``get_output_data_names``: now use ``get_output_data``
+  - ``get_input_output_data_names``: now use ``local_data``
+  - ``get_all_inputs``: now use ``get_input_data``
+  - ``get_all_outputs``: now use ``get_output_data``
+  - ``to_pickle``: now use ``gemseo.to_pickle``
+  - ``from_pickle``: now use ``gemseo.from_pickle``
+  - ``get_local_data_by_name``: now use ``local_data``
+  - ``get_data_list_from_dict``: is removed
 
 DesignSpace
 ^^^^^^^^^^^
