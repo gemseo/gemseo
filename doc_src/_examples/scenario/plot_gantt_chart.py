@@ -77,6 +77,10 @@ scenario = create_scenario(
     maximize_objective=True,
 )
 
+# %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
+
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
@@ -88,6 +92,10 @@ for constraint in ["g_1", "g_2", "g_3"]:
 ExecutionStatistics.is_time_stamps_enabled = True
 
 scenario.execute(algo_name="SLSQP", max_iter=10)
+
+# %%
+# Note that the algorithm settings passed to :meth:`.DriverLibrary.execute` can be provided
+# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
 
 # %%
 # Post-process scenario

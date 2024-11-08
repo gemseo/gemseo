@@ -128,8 +128,10 @@ scenario.set_differentiation_method()
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
 
 # %%
-# We define the algorithm options. Here the criterion = center option of pyDOE
+# We define the algorithm settings. Here the criterion "center" of pyDOE
 # centers the points within the sampling intervals.
+# Note that it is also possible to pass the settings one by one, see
+# :ref:`algorithm_settings`.
 
 lhs_settings = PYDOE_LHS_Settings(
     n_samples=30,

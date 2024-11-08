@@ -71,7 +71,7 @@ discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 discipline, discipline.default_input_data
 
 # %%
-# Now, we can to minimize this :class:`.Discipline` over a design space,
+# Now, we can minimize an output of this :class:`.Discipline` over a design space,
 # by means of a quasi-Newton method from the initial point :math:`0.5`.
 #
 # Define the design space

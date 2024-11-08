@@ -27,7 +27,6 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -74,8 +73,10 @@ generate_n2_plot(disciplines, save=False, show=True)
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # During the instantiation of the scenario, we provide some options for the
-# MDF formulations (which are passed through the main mda settings):
-formulation_settings = {
+# MDF formulations. The MDF formulation includes an MDA, and thus one of the settings of
+# the formulation is ``main_mda_settings``, which configures the solver for the strong
+# couplings.
+main_mda_settings = {
     "tolerance": 1e-14,
     "max_mda_iter": 50,
     "warm_start": True,
@@ -86,7 +87,7 @@ formulation_settings = {
 # %%
 #
 # - ``'warm_start``: warm starts MDA,
-# - ``'warm_start``: optimize the adjoints resolution by storing
+# - ``'use_lu_fact``: optimize the adjoint resolution by storing
 #   the Jacobian matrix LU factorization for the multiple RHS
 #   (objective + constraints). This saves CPU time if you can pay for
 #   the memory and have the full Jacobians available, not just matrix vector
@@ -104,7 +105,7 @@ scenario = create_scenario(
     design_space,
     maximize_objective=True,
     formulation_name="MDF",
-    main_mda_settings=formulation_settings,
+    main_mda_settings=main_mda_settings,
 )
 
 # %%
@@ -131,10 +132,11 @@ scenario.xdsmize(save_html=False, pdf_build=False)
 # Use the high-level function :func:`.get_algorithm_options_schema`
 # for more information or read the documentation.
 #
-# Here ftol_rel option is a stop criteria based on the relative difference
+# Here the ``ftol_rel`` setting is a stop criteria based on the relative difference
 # in the objective between two iterates ineq_tolerance the tolerance
 # determination of the optimum; this is specific to the |g| wrapping and not
 # in the solver.
+from gemseo.settings.opt import SLSQP_Settings  # noqa: E402
 
 slsqp_settings = SLSQP_Settings(
     max_iter=10,
@@ -170,8 +172,8 @@ scenario.execute(slsqp_settings)
 # %%
 # Save the optimization history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We can save the whole optimization problem and its history for further post
-# processing:
+# We can save the whole optimization problem and its history for further
+# post-processing:
 scenario.save_optimization_history("mdf_history.h5", file_format="hdf5")
 
 # %%
@@ -192,10 +194,17 @@ scenario.print_execution_metrics()
 scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
+# Note that post-processor settings passed to :class:`.BaseScenario.post_process` can be
+# provided via a Pydantic model (see the example below). For more information,
+# see :ref:`post_processor_settings`.
+
+# %%
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+from gemseo.settings.post import BasicHistory_Settings  # noqa: E402
+
 scenario.post_process(
-    post_name="BasicHistory", variable_names=["x_shared"], save=False, show=True
+    BasicHistory_Settings(variable_names=["x_shared"], save=False, show=True)
 )
 
 # %%

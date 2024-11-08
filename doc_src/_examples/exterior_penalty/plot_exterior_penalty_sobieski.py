@@ -59,6 +59,7 @@ from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -94,8 +95,8 @@ disciplines = create_discipline([
 # The scenario delegates the creation of the optimization problem to the
 # :ref:`MDO formulation <mdo_formulations>`.
 #
-# Therefore, it needs the list of ``disciplines``, the names of the formulation,
-# the name of the objective function and the design space.
+# Therefore, it needs the list of ``disciplines``, the name of the formulation
+# (or its settings model), the name of the objective function and the design space.
 #
 # - The ``design_space`` (shown below for reference)
 #   defines the unknowns of the optimization problem, and their bounds. It contains
@@ -134,7 +135,7 @@ x_0 = design_space.get_current_value(as_dict=True)
 # - The available :ref:`MDO formulations <mdo_formulations>` are located in the
 #   **gemseo.formulations** package, see :ref:`extending-gemseo` for extending
 #   GEMSEO with other formulations.
-# - The ``formulation`` classname (here, ``"MDF"``) shall be passed to
+# - The ``formulation`` name (here, ``"MDF"``) shall be passed to
 #   the scenario to select them.
 # - The list of available formulations can be obtained by using
 #   :func:`.get_available_formulations`.
@@ -157,6 +158,11 @@ scenario = create_scenario(
     maximize_objective=True,
     formulation_name="MDF",
 )
+
+# %%
+# Note that both the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
+
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
 # minimize functions by default. Which is why, when creating the scenario, the argument
@@ -182,7 +188,7 @@ scenario.set_differentiation_method()
 #
 #   scenario.set_differentiation_method("finite_differences",1e-7)
 #
-# It it also possible to differentiate functions by means of the
+# It is also possible to differentiate functions by means of the
 # :term:`complex step` method:
 #
 # .. code::
@@ -212,6 +218,11 @@ scenario.formulation.optimization_problem.apply_exterior_penalty(
 # In this way the L-BFGS-B algorithm can be used to solve the optimization problem.
 # Note that this algorithm is not suited for constrained optimization problems.
 scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+
+# %%
+# Note that the algorithm settings passed to :class:`~.BaseDriverLibrary.execute` can be provided via a
+# Pydantic model. For more information, :ref:`algorithm_settings`.
+
 # %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~
@@ -230,12 +241,18 @@ scenario.post_process(
 # Step 4: Rerun the scenario with increased penalty and objective scaling.
 # ------------------------------------------------------------------------
 design_space.set_current_value(x_0)
+
+# %%
+# Here, we use the :class:`.MDF_Settings` model to define the formulation instead of passing
+# the settings one by one as we did the first time. Both ways of defining the settings
+# are equally valid.
+
 scenario_2 = create_scenario(
     disciplines,
     "y_4",
     design_space,
+    formulation_settings_model=MDF_Settings(),
     maximize_objective=True,
-    formulation_name="MDF",
 )
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario_2.add_constraint(constraint, constraint_type="ineq")
@@ -243,15 +260,30 @@ scenario_2.set_differentiation_method()
 scenario_2.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
-scenario_2.execute(algo_name="L-BFGS-B", max_iter=1000)
+
+# %%
+# Here, we use the :class:`.L_BFGS_B_Settings` model to define the algorithm settings instead of
+# passing them one by one as we did the first time. Both ways of defining the settings
+# are equally valid.
+from gemseo.settings.opt import L_BFGS_B_Settings  # noqa: E402
+
+scenario_2.execute(L_BFGS_B_Settings(max_iter=1000))
 scenario_2.post_process(
     post_name="BasicHistory", variable_names=["-y_4"], save=False, show=True
 )
+
+# %%
+# Here, we use the :class:`.BasicHistory_Settings` model to define the post-processor settings
+# instead of passing them one by one as we did the first time.
+# Both ways of defining the settings are equally valid.
+from gemseo.settings.post import BasicHistory_Settings  # noqa: E402
+
 scenario_2.post_process(
-    post_name="BasicHistory",
-    variable_names=["g_1", "g_2", "g_3"],
-    save=False,
-    show=True,
+    BasicHistory_Settings(
+        variable_names=["g_1", "g_2", "g_3"],
+        save=False,
+        show=True,
+    )
 )
 # %%
 # The solution feasibility was improved but this comes with a much higher number of

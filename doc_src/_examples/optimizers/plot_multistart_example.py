@@ -63,6 +63,10 @@ scenario = create_scenario(
     design_space,
     formulation_name="DisciplinaryOpt",
 )
+# %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
+
 scenario.add_constraint("cstr", constraint_type="ineq")
 
 # %%
