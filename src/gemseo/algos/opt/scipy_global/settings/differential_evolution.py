@@ -25,6 +25,7 @@ from pydantic import PositiveInt
 from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
 from gemseo.utils.seeder import SEED
 
 
@@ -77,9 +78,10 @@ tuple(min, max) dithering is employed.""",
         description="""Whether to polish the best population member at the end.""",
     )
 
-    init: str = Field(
+    init: str | NDArrayPydantic[float] = Field(
         default="latinhypercube",
-        description="""The method to perform the population initialization.""",
+        description="""The method to perform the population initialization as a string
+         or the initial population as an array.""",
     )
 
     atol: NonNegativeFloat = Field(
@@ -95,7 +97,7 @@ tuple(min, max) dithering is employed.""",
     workers: int = Field(
         default=1,
         description=(
-            """The number of parallel workers the population is subdivised in."""
+            """The number of parallel workers the population is subdivided in."""
         ),
     )
 
