@@ -1,1 +1,0 @@
-The ``parallel_execution`` attribute of ``MDAJacobi`` is ``None`` when ``n_processes`` is ``1`` (serial mode).

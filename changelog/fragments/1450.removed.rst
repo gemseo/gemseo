@@ -1,5 +1,0 @@
-- The public method ``real_part_obj_fun`` from ``ScipyGlobalOpt`` has been removed.
-- The ``ctol`` setting for ``Nlopt`` has been removed. Instead, use the (already existing) settings ``eq_tolerance`` and ``ineq_tolerance``.
-- The ``solver_options`` attribute of ``LinearProblem`` has been removed.
-- The ``methods_map`` class variable of ``ScipyLinalgAlgos`` has been removed. It is replaced by the private class variable ``__NAMES_TO_FUNCTIONS``.
-- The QMR linear solver has been removed from ``ScipyLinalgAlgos``.

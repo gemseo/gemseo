@@ -1,3 +1,0 @@
-The maximum dimension of a design space to be logged
-can be passed as the optional argument ``max_design_space_dimension_to_log`` of ``BaseDriverLibrary.execute``.
-Hence it can be passed to any DOE library or optimization library as the option ``max_design_space_dimension_to_log``.

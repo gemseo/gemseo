@@ -47,14 +47,14 @@ Implementation of the discipline
 The construction of an :class:`.Discipline` consists in three steps:
 
 1. Instantiate the :class:`.Discipline` using the super constructor,
-2. Initialize the grammars using the :meth:`.JSONGrammar.update_from_names` method,
+2. Initialize the grammars using the :meth:`.BaseGrammar.update_from_names` method,
 3. Set the default inputs from the initial :file:`inputs.txt`.
 
 The :class:`!Discipline._run` method consists in three steps:
 
-1. Get the input data from :attr:`!Discipline.local_data` and write the :file:`inputs.txt` file,
+1. Write the :file:`inputs.txt` file,
 2. Run the executable using the ``os.system()`` command (https://docs.python.org/3/library/os.html#os.system),
-3. Get the output values and store them to :attr:`!Discipline.local_data`.
+3. Return the outputs.
 
 Now you can implement the discipline in the following way:
 
@@ -66,25 +66,22 @@ Now you can implement the discipline in the following way:
     class ShellExecutableDiscipline(Discipline):
 
         def __init__(self):
-            super(ShellExecutableDiscipline, self).__init__("ShellDisc")
+            super().__init__()
             # Initialize the grammars
             self.input_grammar.update_from_names(['a','b'])
             self.output_grammar.update_from_names(['c'])
             # Initialize the default inputs
             self.default_input_data=parse_file("inputs.txt")
 
-        def _run(self):
+        def _run(self, input_data):
             # Write inputs.txt file
-            write_file(self.local_data, 'inputs.txt')
+            write_file(input_data, 'inputs.txt')
 
             # Run the executable from the inputs
             os.system('./run.ksh')
 
-            # Parse the outputs.txt file
-            outputs = parse_file('outputs.txt')
-
-            # Store the outputs
-            self.local_data.update_from_names(outputs)
+            # Parse and return the outputs.txt file
+            return parse_file('outputs.txt')
 
 where ``parse_file()`` and ``write_file()`` functions are defined by:
 

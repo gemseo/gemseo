@@ -1,1 +1,0 @@
-``OptHistoryView`` no longer plots the history of the diagonal of the Hessian matrix of the objective; use ``HessianHistory`` instead.

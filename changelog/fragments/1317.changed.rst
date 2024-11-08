@@ -1,6 +1,0 @@
-The following legacy algorithms from the SciPy linear programming library are no longer interfaced:
-- Linear interior point method
-- Simplex
-- Revised Simplex
-
-One should now use the HiGHS algorithms: ``INTERIOR_POINT`` or ``DUAL_SIMPLEX``.

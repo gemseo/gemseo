@@ -31,7 +31,6 @@
 .. _profiler: https://docs.python.org/3/library/profile.html
 .. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
 .. _commitizen: https://commitizen-tools.github.io/commitizen
-.. _conventional commits: https://www.conventionalcommits.org
 .. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
 .. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
 .. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs

@@ -1,1 +1,0 @@
-The ``DesignSpace`` attached to the ``MDF`` formulation can be reset.

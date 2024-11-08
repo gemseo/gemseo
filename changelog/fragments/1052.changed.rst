@@ -1,1 +1,0 @@
-API change: ``Database.get_function_history`` raises a ``KeyError`` when the database contains no value of the output, instead of returning an empty array.

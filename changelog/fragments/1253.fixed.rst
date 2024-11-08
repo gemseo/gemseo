@@ -1,1 +1,0 @@
-``CenteredDifferences.f_gradient`` works when ``CenteredDifferences`` is not instantiated from a ``DesignSpace.

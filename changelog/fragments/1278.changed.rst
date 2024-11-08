@@ -1,8 +1,0 @@
-API change:
-
-- ``MDANewtonRaphson`` no longer has a ``parallel`` argument; set the ``n_processes`` argument to ``1`` for serial computation (default: parallel computation using all the CPUs in the system).
-- MDA classes no longer have ``execute_all_disciplines`` and ``linearize_all_disciplines`` methods.
-- ``MDAJacobi.n_processes``: removed.
-- ``BaseMDARoot.use_threading``: removed.
-- ``BaseMDARoot.n_processes``: removed.
-- ``BaseMDARoot.parallel``: removed.

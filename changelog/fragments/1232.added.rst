@@ -1,1 +1,0 @@
-Add the GEMSEO Web study GUI to the documentation.

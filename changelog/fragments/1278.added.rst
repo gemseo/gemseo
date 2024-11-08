@@ -1,1 +1,0 @@
-``BaseMDARoot`` has a new argument ``execute_before_linearizing`` to execute the disciplines before linearizing them.

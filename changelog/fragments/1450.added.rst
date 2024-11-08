@@ -1,9 +1,0 @@
-``AlgorithmDescription`` and its derived classes now include the class attribute ``AlgorithmDescription.settings`` to
-store algorithm-specific settings. This is useful specially for algorithm libraries that wrap different algorithms in a
-single class.
-The following linear solvers have been added to ``ScipyLinalgAlgos``:
-- Conjugate Gradient (CG),
-- Conjugate Gradient Stabilized (CGS),
-- Generalized Conjugate Residual with Optimal Truncation (GCROT),
-- Transpose-Free Quasi-Minimum Residual (TFQMR).
-The ``ScipyLinprog`` library now handles integer variables.

@@ -338,21 +338,15 @@ that will:
 
 #. Add default inputs to the input_data if some inputs are not defined
    in ``input_data`` but exist in :attr:`!Discipline.default_input_data`.
-#. Check if the last execution of the discipline was called with
-   identical inputs,
-   buffered in :attr:`!Discipline._in_buffered`,
-   if yes,
-   directly
-   return :attr:`!Discipline._out_buffered`.
 #. Cache the inputs,
    *i.e.* stores ``input_data`` in :attr:`!Discipline.cache`.
 #. Check the input data against  :attr:`!Discipline.input_grammar`.
-#. If :attr:`!Discipline.data_processor` is not None: run the data pre-processor,
+#. If :attr:`!Discipline.io.data_processor` is not None: run the data pre-processor,
    to eventually convert data from |g| types (typically numpy arrays) to discipline types as needed by the :meth:`!Discipline._run` method.
-#. Update :attr:`!Discipline.status` to RUNNING.
+#. Update :attr:`!Discipline.execution_status` to RUNNING.
 #. Call the :meth:`!Discipline._run` method,
    that shall be defined by subclasses.
-#. If  :attr:`!Discipline.data_processor` is not None: run the post processor,
+#. If  :attr:`!Discipline.io.data_processor` is not None: run the post processor,
    to eventually convert data from discipline types to |g| types (typically numpy arrays).
 #. Check the output data.
 #. Store the outputs,

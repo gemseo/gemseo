@@ -1,1 +1,0 @@
-API change: the arguments ``each_new_iter``, ``each_store``, ``pre_load`` and ``generate_opt_plot`` of ``BaseScenario.set_optimization_history_backup`` are renamed to ``at_each_iteration``, ``at_each_function_call``, ``load`` and ``plot`` respectively.

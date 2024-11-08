@@ -1,2 +1,0 @@
-Use the optional argument ``n_replicates`` of ``SobolAnalysis.compute_indices`` to set the number of replicates to
-estimate the confidence intervals by bootstrap.

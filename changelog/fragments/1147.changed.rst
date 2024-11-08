@@ -1,3 +1,0 @@
-API changes from old to new:
-
-- ``gemseo.uncertainty.use_cases``: ``gemseo.problems.uncertainty``

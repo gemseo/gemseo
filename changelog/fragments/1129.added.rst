@@ -1,3 +1,0 @@
-- ``ClassifierQualityFactory`` is a factory of objects to assess the quality of classication algorithms.
-- ``ClustererQualityFactory`` is a factory of objects to assess the quality of clustering algorithms.
-- ``BaseClassifierQuality`` is the base class to assess the quality of classification algorithms.

@@ -1,1 +1,0 @@
-The ``IDF`` formulation now accepts options at instanciation for the ``MDAChain`` executed at the begining of the process when ``start_at_equilibrium=True``.

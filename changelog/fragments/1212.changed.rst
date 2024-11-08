@@ -1,1 +1,0 @@
-``MorrisAnalysis`` can now be used with outputs of size greater than 1.

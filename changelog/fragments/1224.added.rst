@@ -1,1 +1,0 @@
-``BaseToleranceTester`` is a new base class to check whether a tolerance criterion is met, with specific subclasses: ``DesignToleranceTester``, ``ObjectiveToleranceTester`` and ``KKTConditionsTester``.

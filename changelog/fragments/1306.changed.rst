@@ -1,1 +1,0 @@
-API change: Following the recommendation of matplotlib, the names ``ax`` and pluralized ``axs`` have been preferred over ``axes`` because for the latter it's not clear if it refers to a single ``Axes`` instance or a collection of these.

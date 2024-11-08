@@ -1,1 +1,0 @@
-The ``MNBI`` multi-objective algorithm can be used to refine a specific part of the Pareto front.

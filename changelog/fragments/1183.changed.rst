@@ -1,7 +1,0 @@
-API changes:
-
-- The ``dimension`` argument of ``BaseDistribution`` has been removed as it no longer makes sense for distributions modelling scalar random variables.
-- Any class deriving from ``BaseDistribution`` and ``ScalarDistributionMixin`` models a scalar random variable, e.g. ``OTDistribution`` and ``SPDistribution``, while the ``BaseJointDistribution`` models a random vector.
-- ``BaseJointDistribution.plot`` has been removed; use ``BaseJointDistribution.marginals[i].plot`` instead.
-- ``BaseDistribution.plot_all``: removed; used ``ScalarDistributionMixin.plot`` instead.
-- ``BaseDistribution.marginals``: removed; only ``BaseJointDistribution`` has this attribute.

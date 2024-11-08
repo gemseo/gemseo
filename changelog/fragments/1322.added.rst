@@ -1,5 +1,0 @@
-The MDA settings can now be passed at instanciation as a Pydantic model as well as key/value pairs.
-
-The following properties has been added to ``BaseMDASolver``:
--  ``acceleration_method``,
--  ``over_relaxation_factor``.

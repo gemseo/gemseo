@@ -63,7 +63,7 @@ The disciplines are all subclasses of :class:`.Discipline`, from which they must
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We create a class for each discipline inheriting from :class:`.Discipline`.
-After having called the superconstructor :meth:`!Discipline.__init__`,
+After having called the super constructor :meth:`!Discipline.__init__`,
 we complete the constructor of the new discipline
 by declaring the :ref:`Sellar <sellar_problem>` discipline input data names :attr:`!Discipline.input_grammar`
 and discipline output data names :attr:`!Discipline.output_grammar`
@@ -86,8 +86,8 @@ For example, in the case of Sellar 1, we build:
 
     class Sellar1(Discipline):
 
-        def __init__(self, residual_form=False):
-            super(Sellar1, self).__init__()
+        def __init__(self):
+            super().__init__()
             self.input_grammar.update_from_names(['x_local', 'x_shared', 'y_2'])
             self.output_grammar.update_from_names(['y_1'])
 
@@ -186,21 +186,12 @@ Then, the computed outputs shall be stored in the :attr:`!Discipline.local_data`
 
 .. code::
 
-    def _run(self):
-        x_local = self.local_data["x_local"]
-        x_shared = self.local_data["x_shared"]
-        y_2 = self.local_data["y_2"]
+    def _run(self, input_data):
+        x_local = input_data["x_local"]
+        x_shared = input_data["x_shared"]
+        y_2 = input_data["y_2"]
         y_1 = array([(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])**0.5])
-        self.local_data["y_1"] = y_1
-
-The :meth:`.Discipline.io.update_output_data` method can also be used to this aim:
-
-.. code::
-
-    def _run(self):
-        x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
-        y_1 = array([(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])**0.5])
-        self.io.update_output_data({"y_1": y_1})
+        return {"y_1": y_1}
 
 The other Sellar :class:`.Discipline` are created in a similar way.
 
@@ -234,7 +225,7 @@ which avoids ambiguity.
 
     from numpy import atleast_2d
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
+    def _compute_jacobian(self, input_names=(), output_names=()):
         """
         Computes the jacobian
 
@@ -247,8 +238,10 @@ which avoids ambiguity.
                 on all outputs (Default value = None)
         """
         # Initialize all matrices to zeros
-        self._init_jacobian(with_zeros=True)
-        x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
+        self._init_jacobian(fill_missing_keys=True)
+        x_local = self.local_data['x_local']
+        x_shared = self.local_data['x_shared']
+        y_2 = self.local_data['y_2']
 
         inv_denom = 1. / (self.compute_y_1(x_local, x_shared, y_2))
         self.jac['y_1'] = {}
@@ -266,26 +259,29 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 .. code::
 
     from math import exp, sqrt
-    from gemseo.core.discipline import Discipline
+    from gemseo import Discipline
 
     class Sellar1(Discipline):
 
-        def __init__(self, residual_form=False):
-            super(Sellar1, self).__init__()
+        def __init__(self):
+            super().__init__()
             self.input_grammar.update_from_names(['x_local', 'x_shared', 'y_2'])
             self.output_grammar.update_from_names(['y_1'])
 
-        def _run(self):
-            x_local, x_shared, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_2'])
-            self.local_data['y_1'] = array([compute_y_1(x_shared, x_local, y_2)])
+        def _run(self, input_data):
+            x_local = input_data["x_local"]
+            x_shared = input_data["x_shared"]
+            y_2 = input_data["y_2"]
+            return {'y_1': array([compute_y_1(x_shared, x_local, y_2)])}
 
         def compute_y_1(x_shared, x_local, y_2):
             return sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0])
 
-        def _compute_jacobian(self, inputs=None, outputs=None):
-            self._init_jacobian(inputs, outputs, with_zeros=True)
-            x_local, x_shared, y_2 = self.get_inputs_by_name(
-                ['x_local', 'x_shared', 'y_2'])
+        def _compute_jacobian(self, input_names=(), output_names=()):
+            x_local = self.local_data['x_local']
+            x_shared = self.local_data['x_shared']
+            y_2 = self.local_data['y_2']
+            self._init_jacobian(input_names, output_names, fill_missing_keys=True)
             inv_denom = 1. / (self.compute_y_1(x_local, x_shared, y_2))
             self.jac['y_1'] = {}
             self.jac['y_1']['x_local'] = atleast_2d(array([0.5 * inv_denom]))
@@ -295,18 +291,19 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
 
     class Sellar2(Discipline):
 
-        def __init__(self, residual_form=False):
-            super(Sellar2, self).__init__()
+        def __init__(self):
+            super().__init__()
             self.input_grammar.update_from_names(['x_shared', 'y_1'])
             self.output_grammar.update_from_names(['y_2'])
 
-        def _run(self):
-            x_shared, y_1 = self.get_inputs_by_name(['x_shared', 'y_1'])
-            self.local_data['y_2'] = array([abs(y_1) + x_shared[0] + x_shared[1]])
+        def _run(self, input_data):
+            x_shared = input_data["x_shared"]
+            y_1 = input_data["y_1"]
+            return {'y_2': array([abs(y_1) + x_shared[0] + x_shared[1]])}
 
-        def _compute_jacobian(self, inputs=None, outputs=None):
-            self._init_jacobian(inputs, outputs, with_zeros=True)
-            y_1 = self.get_inputs_by_name('y_1')
+        def _compute_jacobian(self, input_names=(), output_names=()):
+            self._init_jacobian(input_names, output_names, fill_missing_keys=True)
+            y_1 = self.local_data['y_1']
             self.jac['y_2'] = {}
             self.jac['y_2']['x_local'] = zeros((1, 1))
             self.jac['y_2']['x_shared'] = ones((1, 2))
@@ -320,20 +317,26 @@ here is the Python code for the three disciplines of the :ref:`Sellar <sellar_pr
     class SellarSystem(Discipline):
 
         def __init__(self):
-            super(SellarSystem, self).__init__()
+            super().__init__()
             self.input_grammar.update_from_names(['x_local', 'x_shared', 'y_1', 'y_2'])
             self.output_grammar.update_from_names(['obj', 'c_1', 'c_2'])
 
-        def _run(self):
-            x_local, x_shared, y_1, y_2 = self.get_inputs_by_name(['x_local', 'x_shared', 'y_1', 'y_2'])
-            self.local_data['obj'] = array([x_local[0] ** 2 + x_shared[1] + y_1[0] ** 2 + exp(-y_2[0])])
-            self.local_data['c_1'] = array([3.16 - y_1[0]**2])
-            self.local_data['c_2'] = array([y_2[0] - 24.])
+        def _run(self, input_data):
+            x_local = input_data["x_local"]
+            x_shared = input_data["x_shared"]
+            y_1 = input_data["y_1"]
+            y_2 = input_data["y_2"]
+            return {
+                'obj': array([x_local[0] ** 2 + x_shared[1] + y_1[0] ** 2 + exp(-y_2[0])]),
+                'c_1': array([3.16 - y_1[0]**2]),
+                'c_2': array([y_2[0] - 24.]),
+            }
 
-        def _compute_jacobian(self, inputs=None, outputs=None):
-            self._init_jacobian(inputs, outputs, with_zeros=True)
-            x_local, _, y_1, y_2 = self.get_inputs_by_name(
-                ['x_local', 'x_shared', 'y_1', 'y_2'])
+        def _compute_jacobian(self, input_names=(), output_names=()):
+            self._init_jacobian(input_names, output_names, fill_missing_keys=True)
+            x_local = self.local_data['x_local']
+            y_1 = self.local_data['y_1']
+            y_2 = self.local_data['y_2']
             self.jac['c_1']['y_1'] = atleast_2d(array([-2. * y_1]))
             self.jac['c_2']['y_2'] = ones((1, 1))
             self.jac['obj']['x_local'] = atleast_2d(array([2. * x_local[0]]))

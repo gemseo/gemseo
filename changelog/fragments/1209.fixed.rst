@@ -1,1 +1,0 @@
-``MDOParallelChain`` handles disciplines whose inputs are not NumPy arrays.

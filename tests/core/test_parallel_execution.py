@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 from copy import copy
+from copy import deepcopy
 from timeit import default_timer as timer
 
 import pytest
@@ -363,8 +364,8 @@ def test_multiprocessing_context(
     if add_diff:
         sellar.add_differentiated_inputs()
         sellar.add_differentiated_outputs()
-
-    parallel_execution = parallel_class([sellar], use_threading=use_threading)
+    workers = [sellar, deepcopy(sellar)] if use_threading else [sellar]
+    parallel_execution = parallel_class(workers, use_threading=use_threading)
 
     atom_inputs = get_initial_data()
     del atom_inputs[Y_1]
@@ -382,4 +383,6 @@ def test_multiprocessing_context(
             parallel_execution.execute(input_list)
     else:
         parallel_execution.execute(input_list)
+        if use_threading:
+            expected_n_calls /= 2
         assert getattr(sellar.execution_statistics, n_calls_attr) == expected_n_calls

@@ -1,2 +1,0 @@
-The method ``MDA.plot_residual_history()`` no longer crashes when the ``MDA`` has been executed more than once and the
-``n_iterations`` argument is smaller than the total amount of iterations.

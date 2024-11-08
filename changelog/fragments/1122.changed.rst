@@ -1,3 +1,0 @@
-Argument ``observations`` of methods ``plot_residuals_vs_observations``, ``plot_residuals_vs_inputs`` and
-``plot_predictions_vs_observations`` of class ``MLRegressorQualityViewer`` is either a
-``MLRegressorQualityViewer.ReferenceDataset`` or a ``Dataset``.

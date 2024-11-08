@@ -1,1 +1,0 @@
-The ``JobSchedulerDisciplineWrapper`` and the ``deserialize_and_run`` entry point implement ``_compute_jacobian``.

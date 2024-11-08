@@ -1,1 +1,0 @@
-``MDANewtonRaphson.NewtonLinearSolver`` is the enumeration of linear solvers for the Newton method.

@@ -51,7 +51,7 @@ LOGGER = logging.getLogger(__name__)
 _CACHE_FACTORY = CacheFactory()
 
 
-class _CacheType(StrEnum):
+class CacheType(StrEnum):
     """The types of cache."""
 
     SIMPLE = "SimpleCache"
@@ -125,10 +125,10 @@ class BaseDiscipline(BaseMonitoredProcess):
     execution.
     """
 
-    CacheType: ClassVar[type[_CacheType]] = _CacheType
+    CacheType: ClassVar[type[CacheType]] = CacheType
     """The type of cache."""
 
-    default_cache_type: ClassVar[_CacheType] = CacheType.SIMPLE
+    default_cache_type: ClassVar[CacheType] = CacheType.SIMPLE
     """The default type of cache."""
 
     cache: BaseCache | None
@@ -271,7 +271,7 @@ class BaseDiscipline(BaseMonitoredProcess):
 
     def set_cache(
         self,
-        cache_type: _CacheType,
+        cache_type: CacheType,
         tolerance: float = 0.0,
         **kwargs: Any,
     ) -> None:

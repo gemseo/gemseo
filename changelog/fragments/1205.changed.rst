@@ -1,7 +1,0 @@
-API changes from old to new:
-
-- ``gemseo.uncertainty.sensitivity.analysis``: ``gemseo.uncertainty.sensitivity.base_sensitivity_analysis``
-- ``gemseo.uncertainty.sensitivity.correlation.analysis``: ``gemseo.uncertainty.sensitivity.correlation_analysis``
-- ``gemseo.uncertainty.sensitivity.hsic.analysis``: ``gemseo.uncertainty.sensitivity.hsic_analysis``
-- ``gemseo.uncertainty.sensitivity.morris.analysis``: ``gemseo.uncertainty.sensitivity.morris_analysis``
-- ``gemseo.uncertainty.sensitivity.sobol.analysis``: ``gemseo.uncertainty.sensitivity.sobol_analysis``
