@@ -1,1 +1,0 @@
-The ``MDOFunction`` subclasses wrapping ``MDOFunction`` objects use the ``func`` methods of these objects instead of ``evaluate`` for the sake of efficiency.

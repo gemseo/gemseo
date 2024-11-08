@@ -1,4 +1,0 @@
-API changes from old to new:
-
-- ``sub_solver_algorithm`` in ``BaseAugmentedLagragian``: ``sub_algorithm_name``.
-- ``sub_problem_options`` in ``BaseAugmentedLagragian``: ``sub_algorithm_settings``.

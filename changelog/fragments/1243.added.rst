@@ -1,4 +1,0 @@
-- ``gemseo.string_tools.get_name_and_component`` returns a ``(name, component)`` tuple from a ``name`` or ``(name, component)`` object.
-- ``gemseo.string_tools.convert_strings_to_iterable`` returns an iterable of strings from a string or an iterable of strings.
-- ``gemseo.string_tools.filter_names`` filters original names from a selection of names to keep by preserving their order.
-- ``gemseo.string_tools.get_variables_with_components`` returns a collection of ``(name, component)`` objects from a ``name`` or ``(name, component)`` object or a collection of such objects.

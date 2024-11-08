@@ -1,1 +1,0 @@
-The ``sample_disciplines`` function allows to sample a system of disciplines based on an MDO formulation (default: MDF) and DOE settings (formerly in ``gemseo-mlearning``).

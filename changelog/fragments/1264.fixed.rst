@@ -1,1 +1,0 @@
-The ``DependencyGraph`` represents homonymous disciplines with specific nodes.

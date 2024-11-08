@@ -1,2 +1,0 @@
-The ``tolerance`` and ``linear_solver_tolerance`` args are correctly passed to the main
-and sub-MDAs in ``MDAGSNewton``.

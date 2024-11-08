@@ -1,2 +1,0 @@
-The drivers can now take the option ``store_jacobian`` (default: ``True``). When set to ``False``, the Jacobian matrices are not saved in the database.
-This reduces the RAM requirements for large optimization problems.

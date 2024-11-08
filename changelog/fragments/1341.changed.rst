@@ -1,4 +1,0 @@
-API changes from old to new:
-
-- ``DependencyGraph.write_condensed_graph``: ``DependencyGraph.render_condensed_graph``
-- ``DependencyGraph.write_full_graph``: ``DependencyGraph.render_full_graph``

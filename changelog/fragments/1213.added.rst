@@ -1,2 +1,0 @@
-- ``MorrisDOE`` is a DOE algorithm used by ``MorrisAnalysis``; it repeats an oat-at-a-time (OAT) sampling N times, starting from N different points selected from a DOE algorithm.
-- ``OATDOE`` is a DOE algorithm used by ``MorrisDOE``; it applies the oat-at-a-time (OAT) sampling strategy, given an initial point.

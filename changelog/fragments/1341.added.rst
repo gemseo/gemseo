@@ -1,1 +1,0 @@
-``generate_coupling_graph`` does not save the graph when ``file_path`` is empty. This can be useful when we simply want to use the returned ``GraphView``, to display it in a web page or a notebook for example.

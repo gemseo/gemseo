@@ -1,1 +1,0 @@
-The algorithm ``MNBI`` correctly handles the option ``normalize_design_space``.

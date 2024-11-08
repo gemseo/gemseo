@@ -25,7 +25,7 @@ and two inputs,
 where ``f=x*z`` and ``f=x*(z+1)^2``.
 
 Overloading the :class:`.Discipline`'s constructor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First of all, we overload the :class:`.Discipline` constructor.
 For that,
@@ -38,21 +38,21 @@ we call the :class:`.Discipline` superconstructor:
     class NewDiscipline(Discipline):
 
         def __init__(self):
-            super(NewDiscipline, self).__init__()
+            super().__init__()
             # TO BE COMPLETED
 
 Setting the input and output grammars
 -------------------------------------
 
 Then, we define the :attr:`!Discipline.input_grammar`
-and :attr:`!Discipline.output_grammar` created by the superconstructor with ``None`` value.
+and :attr:`!Discipline.output_grammar` created by the base class constructor.
 We have different ways to do that.
 
 Setting the grammars from data names
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When the variables are float arrays without any particular constraint,
-the simplest approach is to apply the :meth:`.JSONGrammar.update_from_names` method to a list of variable names:
+the simplest approach is to apply the :meth:`.BaseGrammar.update_from_names` method to a list of variable names:
 
 .. code::
 
@@ -61,7 +61,7 @@ the simplest approach is to apply the :meth:`.JSONGrammar.update_from_names` met
     class NewDiscipline(Discipline):
 
         def __init__(self):
-            super(NewDiscipline, self).__init__()
+            super().__init__()
             self.input_grammar.update_from_names(['x', 'z'])
             self.output_grammar.update_from_names(['f', 'g'])
             # TO BE COMPLETED
@@ -72,7 +72,7 @@ Setting the grammars from JSON files
 A more complicated approach is to define the grammar into JSON input and output files
 with name ``'NewDiscipline_inputs.json'`` and ``'NewDiscipline_outputs.json'``,
 put these files in the same directory as the module implementing the ``NewDiscipline`` and
-pass an optional argument to the superconstructor:
+set the class attribute ``auto_detect_grammar_files`` to ``True``.
 
 .. code::
 
@@ -80,8 +80,10 @@ pass an optional argument to the superconstructor:
 
     class NewDiscipline(Discipline):
 
+        auto_detect_grammar_files = True
+
         def __init__(self):
-            super(NewDiscipline, self).__init__(auto_detect_grammar_files=True)
+            super().__init__()
             # TO BE COMPLETED
 
 where the ``'NewDiscipline_inputs.json'`` file is defined as follows:
@@ -139,7 +141,7 @@ and where the ``'NewDiscipline_outputs.json'`` file is defined as follows:
 Setting the grammars from a dictionary data example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An intermediate approach is to apply the :meth:`.JSONGrammar.update_from_data` method
+An intermediate approach is to apply the :meth:`.BaseGrammar.update_from_data` method
 with a ``dict`` data example:
 
 .. code::
@@ -149,7 +151,7 @@ with a ``dict`` data example:
     class NewDiscipline(Discipline):
 
         def __init__(self):
-            super(NewDiscipline, self).__init__()
+            super().__init__()
             self.input_grammar.update_from_data({'x': array([0.]), 'z': array([0.])})
             self.output_grammar.update_from_data({'y1': array([0.]), 'y2': array([0.])})
             # TO BE COMPLETED
@@ -198,7 +200,7 @@ We also define the default inputs by means of the :attr:`!Discipline.default_inp
     class NewDiscipline(Discipline):
 
         def __init__(self):
-            super(NewDiscipline, self).__init__()
+            super().__init__()
             self.input_grammar.update_from_names(['x', 'z'])
             self.output_grammar.update_from_names(['f', 'g'])
             self.default_input_data = {'x': array([0.]), 'z': array([0.])}
@@ -210,10 +212,10 @@ We also define the default inputs by means of the :attr:`!Discipline.default_inp
     Otherwise, the execution will fail.
 
 Overloading the :meth:`!Discipline._run` method
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Once the input and output have been declared in the constructor of the discipline,
-the abstract :meth:`!Discipline._run` method of :class:`.Discipline` shall be overloaded by
+the abstract :meth:`!Discipline._run` method of :class:`.Discipline` shall be implemented by
 the discipline to define how outputs are computed from inputs.
 
 .. seealso::
@@ -223,54 +225,21 @@ the discipline to define how outputs are computed from inputs.
    which provides additional services before and after calling :meth:`!Discipline._run`. These services, such as data checks by the grammars,
    are provided by |g| and the integrator of the discipline does not need to implement them.
 
-Getting the input values from :attr:`!Discipline.local_data` of the discipline
----------------------------------------------------------------------------------
-
-First, the data values shall be retrieved.
-For each input declared in the input grammar,
-|g| will pass the values as arrays to the :class:`.Discipline` during the execution of the process.
-Within the :meth:`!Discipline._run` method of the discipline,
-the input data can be retrieved using the :meth:`.Discipline.get_input_data` method
-which returns a dictionary.
-
 Computing the output values from the input ones
 -----------------------------------------------
 
-Then, we compute the output values from these input ones:
+Then, we compute the output values from the input ones passed via the dictionary argument ``input_data``
+and return the output data as a dictionary:
 
 .. code::
 
-        def _run(self):
-            x, z = self.get_inputs_by_name(['x', 'z'])
-            f = array([x[0]*z[0]])
-            g = array([x[0]*(z[0]+1.)^2])
-            # TO BE COMPLETED
-
-
-Storing the output values into :attr:`!Discipline.local_data` of the discipline
-----------------------------------------------------------------------------------
-
-Lastly, the computed outputs shall be stored in the :attr:`!Discipline.local_data`,
-either directly:
-
-.. code::
-
-        def _run(self):
-            x, z = self.get_inputs_by_name(['x', 'z'])
-            f = array([x[0]*z[0]])
-            g = array([x[0]*(z[0]+1.)^2])
-            self.local_data['f'] = f
-            self.local_data['g'] = g
-
-or by means of the :meth:`.Discipline._update_output_data` method:
-
-.. code::
-
-        def _run(self):
-            x, z = self.get_inputs_by_name(['x', 'z'])
-            f = array([x[0]*z[0]])
-            g = array([x[0]*(z[0]+1.)^2])
-            self._update_output_data({"f": f, "g":g})
+        def _run(self, input_data):
+            x = input_data['x']
+            z = input_data['z']
+            return {
+                'f': array([x[0]*z[0]]),
+                'g': array([x[0]*(z[0]+1.)^2]),
+            }
 
 .. _discipline_compute_jacobian:
 
@@ -297,25 +266,20 @@ ambiguity.
 
 .. code::
 
-    def _compute_jacobian(self, inputs=None, outputs=None):
-        """
-        Computes the jacobian
+    def _compute_jacobian(self, input_names=(), output_names=()):
+        # Initialize all matrices to zeros.
+        self._init_jacobian(fill_missing_keys=True)
 
-        :param inputs: linearization should be performed with respect
-            to inputs list. If None, linearization should
-            be performed wrt all inputs (Default value = None)
-        :param outputs: linearization should be performed on outputs list.
-            If None, linearization should be performed
-            on all outputs (Default value = None)
-        """
-        # Initialize all matrices to zeros
-        self._init_jacobian(with_zeros=True)
-        x, z = self.get_inputs_by_name(['x', 'z'])
+        # Get the inputs from the local data.
+        x = self.local_data['x']
+        z = self.local_data['z']
 
-        self.jac['y1'] = {}
-        self.jac['y1']['x'] = atleast_2d(z)
-        self.jac['y1']['z'] = atleast_2d(x)
-
-        self.jac['y2'] = {}
-        self.jac['y2']['x'] = atleast_2d(array([(z[0]+1.)^2]))
-        self.jac['y2']['z'] = atleast_2d(array([2*x[0]*z[0]*(z[0]+1.)]))
+        self.jac = {
+            'f': {
+                'x': atleast_2d(z),
+                'z': atleast_2d(x).
+            },
+            'g': {
+                'x': atleast_2d(array([(z[0]+1.)^2])),
+                'z': atleast_2d(array([2*x[0]*z[0]*(z[0]+1.)])),
+        }

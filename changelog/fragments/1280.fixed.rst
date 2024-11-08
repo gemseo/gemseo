@@ -1,2 +1,0 @@
-When changing the residual scaling method of an ``MDASequential`` or and ``MDAChain``,
-the change is applied to all inner MDAs.

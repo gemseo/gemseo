@@ -455,8 +455,7 @@ class Discipline(BaseDiscipline):
             output_names: The outputs to be differentiated.
                 If empty, use all the outputs.
             init_type: The type used to initialize the Jacobian matrices.
-            fill_missing_keys: If ``True``,
-                just fill the missing items with zeros/empty
+            fill_missing_keys: Whether to just fill the missing items with zeros/empty
                 but do not override the existing data.
 
         Returns:

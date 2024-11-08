@@ -1,8 +1,0 @@
-Sellar problem:
-
-- The local design variables and the coupling variables are vectors of dimension :math:`n` (default: 1), instead of scalars.
-- ``Sellar2`` has a new local design variable :math:`x_2` which intervenes also in the objective expression (default: 0)
-- The disciplines ``Sellar1`` and ``Sellar2`` have a coefficient :math:`k` to control the strength of the coupling (default: 1).
-- The coefficient ``0.2`` in ``Sellar1`` is now an input variable named :math:`\gamma` (default: 0.2).
-- The coefficient ``3.16`` in ``SellarSystem`` is now an input variable named :math:`\alpha` (default: 3.16).
-- The coefficient ``24.0`` in ``SellarSystem`` is now an input variable named :math:`\beta` (default: 24.0).

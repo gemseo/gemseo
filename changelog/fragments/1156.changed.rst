@@ -1,1 +1,0 @@
-API change: All the arguments of ``Resampler`` have default values except ``model``; the arguments ``predict`` and ``output_data_shape`` have been removed.

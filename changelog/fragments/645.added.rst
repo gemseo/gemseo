@@ -1,1 +1,0 @@
-The optimizer ``MultiStart`` enables multi-start optimization, by combining an optimization algorithm and a DOE algorithm.

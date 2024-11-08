@@ -1,1 +1,0 @@
-SciPy's algorithms ``L-BFGS-B``, ``NELDER-MEAD``, ``TNC`` and ``SLSQP`` support the ``stop_crit_n_x`` option.

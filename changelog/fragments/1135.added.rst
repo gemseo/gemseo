@@ -1,1 +1,0 @@
-``OptimizationProblem.evaluation_counter`` is an ``EvaluationCounter`` to count the number of times a new iteration is stored in ``OptimizationProblem.database``.

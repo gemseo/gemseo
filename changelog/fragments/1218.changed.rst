@@ -1,1 +1,0 @@
-API change: ``DesignSpace.filter_dim`` renamed to ``DesignSpace.filter_dimensions``, its first argument ``variable`` renamed to ``name``, and its second argument ``keep_dimensions`` to ``dimensions``.

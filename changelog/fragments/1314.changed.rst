@@ -1,9 +1,0 @@
-The settings of any machine learning algorithm are validated using a Pydantic model, whose class is ``BaseMLAlgo.Settings`` and instance is ``BaseMLAlgo.settings``.
-
-API changes:
-
-- A ``BaseMLAlgo`` is instantiated from a ``Dataset`` and either a ``BaseMLAlgoSettings`` instance defining all settings or a few settings; the signature is ``self, data: Dataset, settings_model: BaseMLAlgoSettings, **settings: Any)``.
-- The dictionary ``BaseMLAlgo.parameters`` has been replaced by the read-only Pydantic model ``BaseMLAlgo.settings``.
-- ``BaseMLAlgo.IDENTITY`` has been removed; use ``gemseo.utils.constants.READ_ONLY_EMPTY_DICT`` instead.
-- A ``BaseFormulation`` is instantiated from a set of disciplines, objective name(s), a ``DesignSpace`` and either a ``BaseFormulation`` instance defining all settings or a few settings; the signature is ``self, disciplines: Iterable[Discipline], objective_name: str | Sequence[str], design_space: DesignSpace data: Dataset, settings_model: BaseFormulationSettings, **settings: Any)``.
-- ``maximize_objective`` is no longer an argument or an option of ``BaseFormulation``; use ``BaseFormulation.optimization_problem.minimize_objective`` to minimize or maximize the objective (default: minimize).

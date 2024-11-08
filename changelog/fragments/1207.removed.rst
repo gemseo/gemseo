@@ -1,1 +1,0 @@
-The ``MDODisciplineAdapter``'s ``linear_candidate`` argument; this is now deduced at instantiation.

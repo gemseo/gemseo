@@ -1,2 +1,0 @@
-The post-processing algorithms use the 10-based logarithm.
-The post-processing algorithms using matplotlib use the ``tight_layout()`` command.

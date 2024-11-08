@@ -83,8 +83,8 @@ This can be checked easily using :meth:`.Discipline.check_jacobian`:
 .. code::
 
     disc.check_jacobian(input_data,
-                             derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,
-                             step=1e-5, threshold=1e-3)
+                        derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,
+                        step=1e-5, threshold=1e-3)
 
 which results in:
 

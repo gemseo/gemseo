@@ -226,7 +226,6 @@ Many :ref:`MDA<mda>` algorithms are implemented in |g| (Gauss-Seidel, Jacobi, Ne
      +disciplines
      +jacobian_assembly
      +coupling_structure
-     +_run()
    }
    class CouplingStructure {
      -_disciplines
@@ -259,17 +258,15 @@ the jacobian matrix must be defined as :attr:`!Discipline.jac`.
 
 .. code::
 
-    def _compute_jacobian(self, inputs=None, outputs=None, mode='auto'):
+    def _compute_jacobian(self, input_names=(), output_names=()):
         """
         Compute the partial derivatives of all outputs wrt all inputs
         """
-        # Initialize all matrices to zeros
-        data_names = ["y_14", "y_24", "y_34", "x_shared"]
-        y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.derive_blackbox_mission(x_shared,
-                                                                 y_14, y_24,
-                                                                 y_34)
-
+        y_14 = self.local_data["y_14"]
+        y_24 = self.local_data["y_24"]
+        y_34 = self.local_data["y_34"]
+        x_shared = self.local_data["x_shared"]
+        self.jac = self.sobieski_problem.derive_blackbox_mission(x_shared, y_14, y_24, y_34)
 
 The differentiation method is set by the method :meth:`~gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method` of :class:`~gemseo.scenarios.base_scenario.BaseScenario`:
 

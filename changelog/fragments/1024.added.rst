@@ -1,8 +1,0 @@
-The package ``gemseo.utils.metrics`` include metrics to compare two quantities:
-
-- The base class is ``BaseMetric`` and its factory is ``MetricFactory``.
-- ``BaseCompositeMetric`` is the base class for metrics relying on another metric.
-- The ``ElementWiseMetric`` is a composite metric to compare two collections using an underlying metric; it returns a collection.
-- ``DatasetMetric`` is a composite metric to compare two ``Dataset`` s row-wisely using an underlying metric; it returns a ``Dataset``.
-- The ``MeanMetric`` is a composite metric to compare two collections using an underlying metric; it returns an array.
-- The ``SquaredErrorMetric`` is a composite metric returning the squared difference between two quantities.

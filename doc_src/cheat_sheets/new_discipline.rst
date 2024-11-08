@@ -15,7 +15,7 @@ New discipline
     from numpy import array
     from numpy import atleast_2d
 
-    from gemseo.core.discipline.discipline import Discipline
+    from gemseo import Discipline
 
 Create a new discipline from scratch:
 
@@ -28,20 +28,20 @@ Create a new discipline from scratch:
             self.output_grammar.update_from_names(["f"])
             self.default_input_data = {"x": array([0.0]), "z": array([0.0])}
 
-        def _run(self):
-            x = self.io.data["x"]
-            z = self.io.data["z"]
+        def _run(self, input_data):
+            x = input_data["x"]
+            z = input_data["z"]
             f = array([x[0] * z[0]])
             g = array([x[0] * (z[0] + 1.0) ** 2])
-            self.io.update_output_data({"f": f, "g": g})
+            return {"f": f, "g": g}
 
         def _compute_jacobian(
             self,
             input_names: Iterable[str] = (),
             output_names: Iterable[str] = (),
         ) -> None:
-            x = self.io.data["x"]
-            z = self.io.data["z"]
+            x = self.local_data["x"]
+            z = self.local_data["z"]
             dfdx = z
             dfdz = x
             dgdx = array([(z[0] + 1.0) ** 2])
