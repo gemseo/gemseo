@@ -103,10 +103,10 @@ def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
 
 # %%
 # These Python functions can be easily converted into |g|
-# :class:`.MDODiscipline` objects by using the :class:`.AutoPyDiscipline`
+# :class:`.Discipline` objects by using the :class:`.AutoPyDiscipline`
 # discipline. It enables the automatic wrapping of a Python function into a
 # |g|
-# :class:`.MDODiscipline` by only passing a reference to the function to be
+# :class:`.Discipline` by only passing a reference to the function to be
 # wrapped. |g| handles the wrapping and the grammar creation under the
 # hood. The :class:`.AutoPyDiscipline` discipline can be instantiated using the
 # :func:`.create_discipline` function from the |g| :term:`API`:
@@ -119,7 +119,7 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 
 # %%
 # Note that it is possible to define the Sellar disciplines by subclassing the
-# :class:`.MDODiscipline` class and implementing the constuctor and the _run
+# :class:`.Discipline` class and implementing the constuctor and the _run
 # method by hand. Although it would take more time, it may also provide more
 # flexibility and more options. This method is illustrated in the :ref:`Sellar
 # from scratch tutorial <sellar_from_scratch>`.
@@ -137,8 +137,8 @@ disc_sellar_1
 # %%
 # Moreover,
 # we can get the default input values of a discipline
-# with the attribute :attr:`.MDODiscipline.default_inputs`:
-disc_sellar_1.default_inputs
+# with the attribute :attr:`.Discipline.default_input_data`:
+disc_sellar_1.default_input_data
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
@@ -164,11 +164,15 @@ generate_n2_plot(disciplines, save=False, show=True)
 # object. The design space definition reads:
 
 design_space = create_design_space()
-design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
-design_space.add_variable("x_shared_1", l_b=-10, u_b=10.0, value=array([4.0]))
-design_space.add_variable("x_shared_2", l_b=0.0, u_b=10.0, value=array([3.0]))
-design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
-design_space.add_variable("y_2", l_b=-100.0, u_b=100.0, value=ones(1))
+design_space.add_variable("x_local", lower_bound=0.0, upper_bound=10.0, value=ones(1))
+design_space.add_variable(
+    "x_shared_1", lower_bound=-10, upper_bound=10.0, value=array([4.0])
+)
+design_space.add_variable(
+    "x_shared_2", lower_bound=0.0, upper_bound=10.0, value=array([3.0])
+)
+design_space.add_variable("y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
+design_space.add_variable("y_2", lower_bound=-100.0, upper_bound=100.0, value=ones(1))
 design_space
 
 # %%
@@ -184,10 +188,10 @@ design_space
 
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "obj",
     design_space,
-    inner_mda_name="MDAGaussSeidel",
+    formulation_name="MDF",
+    main_mda_settings={"inner_mda_name": "MDAGaussSeidel"},
 )
 
 # %%
@@ -228,7 +232,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # the maximum number of iterations to perform.
 # The execution of the scenario reads:
 
-scenario.execute({"max_iter": 10, "algo": "SLSQP"})
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # The scenario converged after 7 iterations.
@@ -243,19 +247,19 @@ scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 # %%
 # Post-processing the results
 # ---------------------------
-# Post-processings such as plots exhibiting the evolutions of the
+# Post-processors such as plots exhibiting the evolutions of the
 # objective function, the design variables or the constraints can be
 # extremely useful. The convergence of the objective function, design
 # variables and of the inequality constraints can be observed in the
-# following plots. Many other post-processings are available in |g| and
+# following plots. Many other post-processors are available in |g| and
 # are described in :ref:`Post-processing <post_processing>`.
 
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # .. note::
 #
-#    Such post-processings can be exported in PDF format,
+#    Such post-processors can be exported in PDF format,
 #    by setting ``save`` to ``True`` and potentially additional
 #    settings (see the :meth:`.Scenario.post_process` options).
 

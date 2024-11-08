@@ -7,107 +7,126 @@ src = ["src"]
 [lint]
 task-tags = ["TODO"]
 ignore = [
-    # Conflicts with ruff format.
-    "E203",
-    # Checks for noqa directives that are no longer applicable.
-    "RUF100",
-    # Checks for long exception messages that are not defined in the exception class itself.
-    "TRY003",
-    # Avoid unexpected behavior with the formatter.
-    "ISC001",
-    # Too many arguments in function definition.
-    "PLR0913",
-    # `subprocess.run` without explicit `check` argument.
-    "PLR2004",
-    # Too many public methods.
-    "PLR0904",
-    # Too many branches.
-    "PLR0912",
-    # Too many statements.
-    "PLR0915",
-    # Too many return statements.
-    "PLR0911",
-    # `for` loop variable `name` overwritten by assignment target.
-    "PLW1510",
-    # Magic value used in comparison.
-    "PLW2901",
-    # Bad or misspelled dunder method name `_repr_html_`.
-    "PLW3201",
-    # Object does not implement `__hash__` method.
-    "PLW1641",
-    # Fixture does not return anything, add leading underscore.
-    "PT004",
-    # Checks for undocumented magic method definitions.
-    "D105",
-    # Missing argument description in the docstring.
-    "D417",
-    # Missing type annotation for `self` in method.
-    "ANN101",
-    # Missing type annotation for `cls` in classmethod.
-    "ANN102",
-    # Dynamically typed expressions (typing.Any) are disallowed.
-    "ANN401",
+  # Shadowing a Python builtin module.
+  "A005",
+  # Missing type annotation for `self` in method.
+  "ANN101",
+  # Missing type annotation for `cls` in classmethod.
+  "ANN102",
+  # Dynamically typed expressions (typing.Any) are disallowed.
+  "ANN401",
+  # Checks for undocumented magic method definitions.
+  "D105",
+  # Missing argument description in the docstring.
+  "D417",
+  # Conflicts with ruff format.
+  "E203",
+  # Avoid unexpected behavior with the formatter.
+  "ISC001",
+  # Too many arguments in function definition.
+  "PLR0913",
+  # `subprocess.run` without explicit `check` argument.
+  "PLR2004",
+  # Too many public methods.
+  "PLR0904",
+  # Too many branches.
+  "PLR0912",
+  # Too many statements.
+  "PLR0915",
+  # Too many return statements.
+  "PLR0911",
+  # `for` loop variable `name` overwritten by assignment target.
+  "PLW1510",
+  # Magic value used in comparison.
+  "PLW2901",
+  # Bad or misspelled dunder method name `_repr_html_`.
+  "PLW3201",
+  # Object does not implement `__hash__` method.
+  "PLW1641",
+  # Fixture does not return anything, add leading underscore.
+  "PT004",
+  # Checks for noqa directives that are no longer applicable.
+  "RUF100",
+  # Checks for long exception messages that are not defined in the exception class itself.
+  "TRY003",
 ]
+
 select = [
-    "A",
-    "B",
-    "C4",
-    "D",
-    "E",
-    "F",
-    "G",
-    "I",
-    "Q",
-    "N",
-    "T",
-    "W",
-    "EM",
-    "UP",
-    "PT",
-#    "ANN",
-    "FLY",
-    "ISC",
-    "LOG",
-    "NPY",
-    "PIE",
-    "PTH",
-    "RET",
-    "RSE",
-    "RUF",
-    "SIM",
-    "T10",
-    "T20",
-    "TCH",
-    "TRY",
-    "YTT",
-    "SLOT",
-    "FURB",
-    "PERF",
-    "TRIO",
-#    "C",
-#    "S",
-#    "PL",
-#    "PD",
-#    "BLE",
-#    "FBT",
+  "A",
+  #    "ANN",
+  "ASYNC",
+  "B",
+  "BLE",
+  #    "C",
+  "C4",
+  "D",
+  #    "DOC",
+  "E",
+  "EM",
+  "F",
+  #    "FA",
+  #    "FBT",
+  "FLY",
+  "FURB",
+  "G",
+  "I",
+  "ISC",
+  "INP",
+  "LOG",
+  "Q",
+  "N",
+  "NPY",
+  #    "PL",
+  #    "PD",
+  "PT",
+  "PIE",
+  "PGH",
+  "PTH",
+  "PYI",
+  "PERF",
+  "RET",
+  "RSE",
+  "RUF",
+  #    "S",
+  "SIM",
+  #    "SLF",
+  "SLOT",
+  "T",
+  "T10",
+  "T20",
+  "TCH",
+  "TRY",
+  "W",
+  "UP",
+  "YTT",
 ]
 
 [lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
-    "pydantic.BaseModel",
-    "gemseo.core.grammars.pydantic_ndarray.BaseModelWithNDArray",
+  "pydantic.BaseModel",
+  "gemseo.post.base_post_settings.BasePostSettings",
 ]
 
 [lint.isort]
 force-single-line = true
-#required-imports = ["from __future__ import annotations"]
+required-imports = ["from __future__ import annotations"]
 
 [lint.pydocstyle]
 convention = "google"
 
 [lint.per-file-ignores]
-"tests/*.py" = ["D", "PT009","PT011", "PT027", "PTH"]
-"doc_src/*.py" = ["T", "D", "B018", "PTH", "E501", "PERF", "A001", "RET504"]
+"tests/*.py" = ["D", "PT009", "PT011", "PT027", "PTH", "B018"]
+"doc_src/*.py" = [
+  "T",
+  "D",
+  "B018",
+  "PTH",
+  "E501",
+  "PERF",
+  "A001",
+  "RET504",
+  "INP001",
+]
 "src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
 "src/gemseo/problems/scalable/data_driven/*" = ["D"]
 "src/gemseo/third_party/*" = ["ALL"]

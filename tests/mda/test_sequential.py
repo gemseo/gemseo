@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -23,13 +25,16 @@ from pathlib import Path
 
 import numpy as np
 
+from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.gs_newton import MDAGSNewton
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.mda.sequential_mda import MDAGSNewton
 from gemseo.mda.sequential_mda import MDASequential
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import get_y_opt
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.utils import get_y_opt
+
+from .utils import generate_parallel_doe
 
 
 def test_sequential_mda_sellar(tmp_wd) -> None:
@@ -53,40 +58,70 @@ def test_sequential_mda_sellar(tmp_wd) -> None:
     assert Path(filename).exists
     assert np.linalg.norm(y_ref - get_y_opt(mda3)) / np.linalg.norm(y_ref) < 1e-4
 
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAGSNewton(disciplines)
-    assert not mda.log_convergence
+    assert not mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert not sub_mda.log_convergence
+        assert not sub_mda.settings.log_convergence
 
     mda = MDAGSNewton(disciplines, log_convergence=True)
-    assert mda.log_convergence
+    assert mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert sub_mda.log_convergence
+        assert sub_mda.settings.log_convergence
 
     mda = MDAGSNewton(disciplines)
-    mda.log_convergence = True
-    assert mda.log_convergence
+    mda.settings.log_convergence = True
+    assert mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert sub_mda.log_convergence
+        assert sub_mda.settings.log_convergence
 
-    mda.log_convergence = False
-    assert not mda.log_convergence
+    mda.settings.log_convergence = False
+    assert not mda.settings.log_convergence
     for sub_mda in mda.mda_sequence:
-        assert not sub_mda.log_convergence
+        assert not sub_mda.settings.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data) -> None:
-    """Test the execution of GaussSeidel in parallel.
-
-    Args:
-        generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_name`.
-    """
-    obj = generate_parallel_doe_data(inner_mda_name="MDAGSNewton")
+def test_parallel_doe() -> None:
+    """Test the execution of GaussSeidel in parallel."""
+    obj = generate_parallel_doe(main_mda_settings={"inner_mda_name": "MDAGSNewton"})
     assert np.isclose(np.array([-obj]), np.array([608.175]), atol=1e-3)
+
+
+def test_sequential_mda_scaling_method() -> None:
+    """Test changing the `scaling` attribute of a sequential MDA.
+
+    Check that the change is propagated to the sub-MDAs.
+    """
+    disciplines = [Sellar1(), Sellar2()]
+    mda1 = MDAJacobi(disciplines, max_mda_iter=1)
+    mda2 = MDANewtonRaphson(disciplines)
+    mda_sequence = [mda1, mda2]
+    mda = MDASequential(disciplines, mda_sequence, max_mda_iter=20)
+
+    mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
+    assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
+    assert mda1.scaling == BaseMDA.ResidualScaling.NO_SCALING
+    assert mda2.scaling == BaseMDA.ResidualScaling.NO_SCALING
+
+
+def test_mda_gs_newton_tolerances() -> None:
+    """Check that the `tolerance` arguments are correctly propagated to the sub-MDAs."""
+    disciplines = [Sellar1(), Sellar2()]
+    tolerance = 1e-10
+    linear_solver_tolerance = 1e-15
+    mda = MDAGSNewton(
+        disciplines,
+        tolerance=tolerance,
+        linear_solver_tolerance=linear_solver_tolerance,
+    )
+    assert mda.settings.tolerance == tolerance
+    assert mda.settings.linear_solver_tolerance == linear_solver_tolerance
+    assert mda.mda_sequence[0].settings.tolerance == tolerance
+    assert mda.mda_sequence[1].settings.tolerance == tolerance
+    mda1_tol = mda.mda_sequence[1].settings.linear_solver_tolerance
+    assert mda1_tol == linear_solver_tolerance

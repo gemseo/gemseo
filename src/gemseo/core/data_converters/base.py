@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.typing import StrKeyMapping
 
     ValueType = Union[int, float, complex, NumberArray]
 
@@ -75,14 +75,14 @@ class BaseDataConverter(ABC, Generic[T]):
 
     .. warning::
 
-        Throughout this class, _NumPy array_ is equivalent to _1D numeric NumPy array_.
+        Throughout this class, *NumPy array* is equivalent to *1D numeric NumPy array*.
     """
 
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    _NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex)
-    """The base types for numeric values."""
+    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, str)
+    """The base types that are not arrays like."""
 
     _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
     """The types used for `is_numeric`."""
@@ -111,7 +111,7 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The NumPy array.
         """
-        if isinstance(value, self._NUMERIC_TYPES):
+        if isinstance(value, self._NON_ARRAY_TYPES):
             return np_array([value])
         return cast(NumberArray, value)
 
@@ -141,14 +141,14 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The size.
         """
-        if isinstance(value, cls._NUMERIC_TYPES):
+        if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
         return cast(NumberArray, value).size
 
     def compute_names_to_slices(
         self,
         names: Iterable[str],
-        data: Data,
+        data: StrKeyMapping,
         names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> tuple[dict[str, slice], int]:
         """Compute a mapping from data names to data value slices.
@@ -185,7 +185,7 @@ class BaseDataConverter(ABC, Generic[T]):
     def compute_names_to_sizes(
         self,
         names: Iterable[str],
-        data: Data,
+        data: StrKeyMapping,
     ) -> dict[str, int]:
         """Compute a mapping from data names to data value sizes.
 
@@ -226,7 +226,7 @@ class BaseDataConverter(ABC, Generic[T]):
     def convert_data_to_array(
         self,
         names: Iterable[str],
-        data: Data,
+        data: StrKeyMapping,
     ) -> NumberArray:
         """Convert a part of a data structure to a NumPy array.
 

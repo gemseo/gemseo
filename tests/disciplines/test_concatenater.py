@@ -43,7 +43,7 @@ def coefficients(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def concatenation_disc(coefficients):
     """Set-up fixture, creating a concatenation discipline."""
     return create_discipline(
@@ -54,7 +54,7 @@ def concatenation_disc(coefficients):
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def input_data():
     """"""
     return {"c_1": array([2.0, 3.0]), "c_2": array([2.0, 3.0, 4.0])}
@@ -69,7 +69,7 @@ def test_concatenation_discipline_execution(
     if coefficients is None:
         coefficients = {"c_1": 1.0, "c_2": 1.0}
     output_data = concatenation_disc.execute(input_data)
-    input_names = concatenation_disc.get_input_data_names()
+    input_names = concatenation_disc.io.input_grammar.names
     expected = concatenate([
         input_data[input_name] * coefficients[input_name] for input_name in input_names
     ])
@@ -85,7 +85,7 @@ def test_concatenation_discipline_linearization(
     if coefficients is None:
         coefficients = {"c_1": 1.0, "c_2": 1.0}
     jac = concatenation_disc.linearize(input_data, compute_all_jacobians=True)
-    var_inputs = list(concatenation_disc.get_input_data_names())
+    var_inputs = list(concatenation_disc.io.input_grammar.names)
 
     # In Python 2, we cannot assume any order in the var_inputs list
     # Then, we have to re-create the reference Jacobian matrix based on this order
@@ -112,5 +112,5 @@ def test_check_gradient(
     concatenation_disc: Concatenater, input_data: dict[str, ndarray]
 ) -> None:
     """Test the Jacobian computation by finite differences."""
-    concatenation_disc.default_inputs = input_data
+    concatenation_disc.default_input_data = input_data
     assert concatenation_disc.check_jacobian(threshold=1e-3, step=1e-4)

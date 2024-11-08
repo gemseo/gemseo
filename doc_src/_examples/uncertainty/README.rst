@@ -10,10 +10,3 @@ Uncertainty
 ===========
 
 How the uncertain inputs of a model impact its outputs.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

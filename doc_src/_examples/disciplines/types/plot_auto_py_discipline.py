@@ -53,7 +53,7 @@ def f(x=0.0, y=0.0):
 # -------------------------------------
 # Then, we can consider the
 # :class:`.AutoPyDiscipline` class
-# to convert it into an :class:`.MDODiscipline`.
+# to convert it into an :class:`.Discipline`.
 # For that, we can use the :func:`.create_discipline` API function
 # with ``'AutoPyDiscipline'`` as first argument:
 disc = create_discipline("AutoPyDiscipline", py_func=f)
@@ -61,7 +61,7 @@ disc = create_discipline("AutoPyDiscipline", py_func=f)
 # %%
 # The original Python function may or may not include default values for input
 # arguments, however, if the resulting :class:`.AutoPyDiscipline` is going to be
-# placed inside an :class:`.MDF`, a :class:`.BiLevel` formulation or an :class:`.MDA`
+# placed inside an :class:`.MDF`, a :class:`.BiLevel` formulation or a :class:`.BaseMDA`
 # with strong couplings, then the Python function **must** assign default values
 # for its input arguments.
 

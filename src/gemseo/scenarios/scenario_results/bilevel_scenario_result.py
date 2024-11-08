@@ -19,13 +19,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Final
 
-from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.core.scenario import Scenario
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 class BiLevelScenarioResult(ScenarioResult):
@@ -40,16 +40,16 @@ class BiLevelScenarioResult(ScenarioResult):
     __n_sub_problems: int
     """The number of sub-optimization problems."""
 
-    def __init__(self, scenario: Scenario | str | Path) -> None:  # noqa: D107
+    def __init__(self, scenario: BaseScenario | str | Path) -> None:  # noqa: D107
         super().__init__(scenario)
         formulation = scenario.formulation
-        main_problem = formulation.opt_problem
+        main_problem = formulation.optimization_problem
         x_shared_opt = main_problem.solution.x_opt
         i_opt = main_problem.database.get_iteration(x_shared_opt) - 1
         scenario_adapters = formulation.scenario_adapters
         self.__n_sub_problems = len(scenario_adapters)
         for index, scenario_adapter in enumerate(scenario_adapters):
-            sub_problem = scenario_adapter.scenario.formulation.opt_problem
+            sub_problem = scenario_adapter.scenario.formulation.optimization_problem
             database = sub_problem.database
             sub_problem.database = scenario_adapter.databases[i_opt]
             result = OptimizationResult.from_optimization_problem(sub_problem)
@@ -57,7 +57,7 @@ class BiLevelScenarioResult(ScenarioResult):
             label = self.__SUB_LABEL_FORMATTER.format(index)
             self.optimization_problems_to_results[label] = result
             self.design_variable_names_to_values.update(
-                sub_problem.design_space.array_to_dict(x_local_opt)
+                sub_problem.design_space.convert_array_to_dict(x_local_opt)
             )
             sub_problem.database = database
 

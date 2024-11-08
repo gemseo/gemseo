@@ -27,11 +27,15 @@ from __future__ import annotations
 
 import os
 import subprocess
+from typing import TYPE_CHECKING
 
 from numpy import array
 
 from gemseo import configure_logger
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 configure_logger()
 
@@ -55,20 +59,20 @@ configure_logger()
 # Implementation of the discipline
 # --------------------------------
 #
-# The construction of :class:`.MDODiscipline` consists in three steps:
+# The construction of :class:`.Discipline` consists in three steps:
 #
-# 1. Instantiate the :class:`.MDODiscipline` using the super constructor,
+# 1. Instantiate the :class:`.Discipline` using the super constructor,
 # 2. Initialize the grammars using the
 #    :meth:`.JSONGrammar.update` method,
 # 3. Set the default inputs from the initial ``'inputs.txt'``
 #
-# The :class:`!MDODiscipline._run` method consists in three steps:
+# The :class:`!Discipline._run` method consists in three steps:
 #
-# 1. Get the input data from :attr:`!MDODiscipline.local_data` and write the
+# 1. Get the input data from :attr:`!Discipline.local_data` and write the
 #    ``'inputs.txt'`` file,
 # 2. Run the executable using the ``subprocess.run()`` command (`see more
 #    <https://docs.python.org/3/library/subprocess.html#subprocess.run>`_),
-# 3. Get the output values and store them to :attr:`!MDODiscipline.local_data`.
+# 3. Get the output values and store them to :attr:`!Discipline.local_data`.
 #
 # Now you can implement the discipline in the following way:
 
@@ -91,21 +95,20 @@ def write_file(data, file_path) -> None:
             outf.write(name + "=" + str(value[0]) + "\n")
 
 
-class ShellExecutableDiscipline(MDODiscipline):
+class ShellExecutableDiscipline(Discipline):
     def __init__(self) -> None:
         super().__init__("ShellDisc")
         self.input_grammar.update_from_names(["a", "b"])
         self.output_grammar.update_from_names(["c"])
-        self.default_inputs = {"a": array([1.0]), "b": array([2.0])}
+        self.default_input_data = {"a": array([1.0]), "b": array([2.0])}
 
-    def _run(self) -> None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         cwd = os.getcwd()
         inputs_file = os.path.join(cwd, "inputs.txt")
         outputs_file = os.path.join(cwd, "outputs.txt")
-        write_file(self.local_data, inputs_file)
+        write_file(input_data, inputs_file)
         subprocess.run("python run.py".split(), cwd=cwd)
-        outputs = parse_file(outputs_file)
-        self.local_data.update(outputs)
+        return parse_file(outputs_file)
 
 
 # %%

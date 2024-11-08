@@ -1,0 +1,53 @@
+
+%%% Preamble Requirements %%%
+% \usepackage{geometry}
+% \usepackage{amsfonts}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{tikz}
+
+% Optional packages such as sfmath set through python interface
+% \usepackage{sfmath}
+
+% \usetikzlibrary{arrows,chains,positioning,scopes,shapes.geometric,shapes.misc,shadows}
+
+%%% End Preamble Requirements %%%
+
+\input{"C:/Users/matthias.delozzo/workspace/GEMSEO/gemseo/.tox/py39/.venv/lib/site-packages/pyxdsm/diagram_styles"}
+\begin{tikzpicture}
+
+\matrix[MatrixSetup]{
+%Row 0
+\node [Optimization] (Opt) {$\text{1,3-2:Caller}$};&
+\node [DataInter] (Opt-Dis1) {$gamma,  x\_1..., (4)$};\\
+%Row 1
+\node [DataInter] (Dis1-Opt) {$y\_1$};&
+\node [Function] (Dis1) {$\text{2:Sellar1}$};\\
+};
+
+% XDSM process chains
+{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Opt);
+\chainin (Dis1) [join=by ProcessHVA];
+\end{pgfonlayer}
+}{ [start chain=process]
+ \begin{pgfonlayer}{process} 
+\chainin (Dis1);
+\chainin (Opt) [join=by ProcessHVA];
+\end{pgfonlayer}
+}
+
+\begin{pgfonlayer}{data}
+\path
+% Horizontal edges
+(Opt) edge [DataLine] (Opt-Dis1)
+(Dis1) edge [DataLine] (Dis1-Opt)
+(Dis1) edge [DataLine] (Dis1-Opt)
+% Vertical edges
+(Opt-Dis1) edge [DataLine] (Dis1)
+(Dis1-Opt) edge [DataLine] (Opt)
+(Dis1-Opt) edge [DataLine] (Opt);
+\end{pgfonlayer}
+
+\end{tikzpicture}

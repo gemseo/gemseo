@@ -37,6 +37,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from types import TracebackType
 
+    from typing_extensions import Self
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -62,9 +64,6 @@ class Timer:
             log_level: The level of the logger.
                 If ``None``, do not log the elapsed time.
         """  # noqa:D205 D212 D415
-        if log_level is not None:
-            log_level = logging.getLevelName(log_level)
-
         self.__log_level = log_level
         self.__elapsed_time = 0.0
 
@@ -73,7 +72,7 @@ class Timer:
         """The time spent within the ``with`` statement."""
         return self.__elapsed_time
 
-    def __enter__(self) -> Timer:
+    def __enter__(self) -> Self:
         self.__elapsed_time = perf_counter()
         return self
 
@@ -88,4 +87,4 @@ class Timer:
             LOGGER.log(self.__log_level, str(self))
 
     def __str__(self) -> str:
-        return f"Elapsed time: {self.elapsed_time} s."
+        return f"Elapsed time: {self.__elapsed_time} s."

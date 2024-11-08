@@ -20,7 +20,7 @@ from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 
-@pytest.fixture()
+@pytest.fixture
 def factory():
     return GrammarFactory()
 
@@ -34,7 +34,3 @@ def test_create(factory) -> None:
     grammar = factory.create("SimpleGrammar", name=grammar_name)
     assert isinstance(grammar, SimpleGrammar)
     assert grammar.name == grammar_name
-
-
-def test_grammars(factory) -> None:
-    assert "SimpleGrammar" in factory.grammars

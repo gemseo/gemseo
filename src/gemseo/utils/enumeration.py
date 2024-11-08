@@ -52,12 +52,23 @@ def merge_enums(
     """
     # We need to determine where the new enum is created from because it cannot be
     # done otherwise and pickling fails.
-    caller_f_locals = inspect.stack()[1][0].f_locals
+    frameinfo = inspect.stack()[1]
+    f_locals = frameinfo.frame.f_locals
+
+    if frameinfo.function == "<module>":
+        # The merged enum is in a module.
+        module = f_locals["__name__"]
+        qualname = name
+    else:
+        # The merged enum is in a class.
+        module = f_locals["__module__"]
+        qualname = f_locals["__qualname__"] + f".{name}"
+
     new_enum = base_enum_class(
         name,
         chain(*(e.__members__.items() for e in enums)),
-        module=caller_f_locals["__module__"],
-        qualname=caller_f_locals["__qualname__"] + f".{name}",
+        module=module,
+        qualname=qualname,
     )
 
     if doc:

@@ -18,7 +18,7 @@ Optimization and DOE framework
 In this section we describe |g|'s optimization and DOE framework.
 
 The standard way to use |g| is through an :class:`.MDOScenario`, which
-automatically creates an :class:`.OptimizationProblem` from a :ref:`MDO formulation <mdo_formulations>` and a set of :class:`~gemseo.core.discipline.MDODiscipline`.
+automatically creates an :class:`.OptimizationProblem` from a :ref:`MDO formulation <mdo_formulations>` and a set of :class:`~gemseo.core.discipline.Discipline`.
 
 However, one may be interested in directly creating an :class:`.OptimizationProblem` using the class :class:`.OptimizationProblem`,
 which can be solved using an :term:`optimization algorithm` or sampled with a :term:`DOE algorithm`.
@@ -39,7 +39,7 @@ The :class:`.OptimizationProblem` class is composed of at least a
     from gemseo. api import create_design_space
     from numpy import ones
     design_space = create_design_space()
-    design_space.add_variable("x", 1, l_b=-2., u_b=2.,
+    design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2.,
                               value=-0.5 * np.ones(1))
 
 and an objective function, of type :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction`. The :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` is callable and requires at least
@@ -77,29 +77,29 @@ Solving the problem by optimization
 -----------------------------------
 
 Once the optimization problem created, it can be solved using one of the available
-optimization algorithms from the :class:`.OptimizersFactory`,
-by means of the function :meth:`!.OptimizersFactory.execute`
+optimization algorithms from the :class:`.OptimizationLibraryFactory`,
+by means of the function :meth:`!.OptimizationLibraryFactory.execute`
 whose mandatory arguments are the :class:`.OptimizationProblem`
 and the optimization algorithm name. For example, in the case of the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 with normalized design space, we have:
 
 .. code::
 
-    from gemseo.algos import OptimizersFactory
-    opt = OptimizersFactory().execute(problem, "L-BFGS-B",
+    from gemseo.algos import OptimizationLibraryFactory
+    opt = OptimizationLibraryFactory().execute(problem, "L-BFGS-B",
                                       normalize_design_space=True)
     print "Optimum = " + str(opt)
 
 Note that the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ is implemented in the external
 library `SciPy <https://scipy.org/>`_
-and interfaced with |g| through the class :class:`~gemseo.algos.opt.lib_scipy.ScipyOpt`.
+and interfaced with |g| through the class :class:`~gemseo.algos.opt.scipy_local.scipy_local.ScipyOpt`.
 
 The list of available algorithms depend on the local setup of |g|, and the installed
 optimization libraries. It can be obtained using :
 
 .. code::
 
-    algo_list = OptimizersFactory().algorithms
+    algo_list = OptimizationLibraryFactory().algorithms
     print(f"Available algorithms: {algo_list}")
 
 The optimization history can be saved to the disk for further analysis,
@@ -118,11 +118,12 @@ value of the objective and constraints
 
 .. code::
 
-    from gemseo.algos import DOEFactory
+    from gemseo.algos import DOELibraryFactory
 
     # And solve it with |g| interface
-    opt = DOEFactory().execute(problem, "lhs", n_samples=10,
-                               normalize_design_space=True)
+    opt = DOELibraryFactory().execute(
+        problem, algo_name="PYDOE_LHS", n_samples=10, normalize_design_space=True
+    )
 
 Results analysis
 ----------------

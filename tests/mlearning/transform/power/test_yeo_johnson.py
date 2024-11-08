@@ -29,7 +29,7 @@ from sklearn.preprocessing import PowerTransformer
 from gemseo.mlearning.transformers.power.yeo_johnson import YeoJohnson
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(1.0, 31.0, 1.0).reshape((10, 3))

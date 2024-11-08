@@ -61,8 +61,8 @@ discipline = create_discipline(
 # -------------------------------
 # We create the input sampling space by adding the variables one by one.
 design_space = create_design_space()
-design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
+design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # Create the learning set
@@ -71,9 +71,13 @@ design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
 # :class:`.DOEScenario` with a full factorial design of
 # experiments. The number of samples can be equal to 9 for example.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
+    [discipline],
+    "y_1",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "fullfact", "n_samples": 9})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
 
 # %%
 # Create the regression model
@@ -81,7 +85,7 @@ scenario.execute({"algo": "fullfact", "n_samples": 9})
 # Then, we build the linear regression model from the database and
 # displays this model.
 dataset = scenario.to_dataset(opt_naming=False)
-model = create_regression_model("LinearRegressor", data=dataset, transformer=None)
+model = create_regression_model("LinearRegressor", dataset, transformer={})
 model.learn()
 model
 

@@ -8,10 +8,3 @@
 
 Multi-objective optimization
 ============================
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

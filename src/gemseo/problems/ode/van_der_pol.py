@@ -15,6 +15,7 @@
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Isabelle Santos
+#        :author: Giulio Gargantini
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The Van der Pol (VDP) problem describing an oscillator with non-linear damping.
 
@@ -32,7 +33,7 @@ The Van der Pol problem is written as follows:
 where :math:`x(t)` is the position coordinate as a function of time, and
 :math:`\mu` is a scalar parameter indicating the stiffness.
 
-This problem can be rewrittent in a 2-dimensional form with only first-order
+This problem can be rewritten in a 2-dimensional form with only first-order
 derivatives. Let :math:`y = \frac{dx}{dt}` and
 :math:`s = \begin{pmatrix}x\\y\end{pmatrix}`. Then the Van der Pol problem is:
 
@@ -71,62 +72,51 @@ from numpy import zeros
 from gemseo.algos.ode.ode_problem import ODEProblem
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from numpy._typing import ArrayLike
+
+    from gemseo.typing import RealArray
 
 
 class VanDerPol(ODEProblem):
     """Representation of an oscillator with non-linear damping."""
 
-    _mu: float
-    r"""Stiffness parameter.
+    __mu: float
+    r"""The stiffness parameter.
 
     Van der Pol is stiffer with larger values of :math:`\mu`.
     """
 
-    state_vect: NDArray[float]
-    r"""State vector :math:`s=(x, \dot{x})` of the system."""
-
     def __init__(
         self,
-        initial_time: float = 0,
-        final_time: float = 0.5,
         mu: float = 1.0e3,
         use_jacobian: bool = True,
-        state_vector: NDArray[float] = None,
+        state: tuple[float, float] = (0.0, 0.0),
+        times: ArrayLike = (0.0, 0.5),
     ) -> None:
         """
         Args:
             mu: The stiffness parameter.
-            initial_time: The start of the integration interval.
-            final_time: The end of the integration interval.
             use_jacobian: Whether to use the analytical expression of the Jacobian.
-                If false, use finite differences to estimate the Jacobian.
-            state_vector: The state vector of the system.
+                If ``False``, use finite differences to estimate the Jacobian.
+            state: The state vector of the system.
+            times: The initial and final times.
         """  # noqa: D205 D212
-        self._mu = mu
-
-        if state_vector is None:
-            state_vector = zeros(2)
-        self.state_vect = state_vector
-
+        self.__mu = mu
         initial_state = array([
-            2 + self.state_vect[0],
+            2 + state[0],
             -2 / 3
-            + 10 / (81 * self._mu)
-            - 292 / (2187 * self._mu * self._mu)
-            + self.state_vect[1],
+            + 10 / (81 * self.__mu)
+            - 292 / (2187 * self.__mu * self.__mu)
+            + state[1],
         ])
-
-        jac = self.__compute_rhs_jacobian if use_jacobian else None
         super().__init__(
-            func=self.__compute_rhs,
-            jac=jac,
+            func=self._func,
+            jac_wrt_state=self._jac_wrt_state if use_jacobian else None,
             initial_state=initial_state,
-            initial_time=initial_time,
-            final_time=final_time,
+            times=times,
         )
 
-    def __compute_rhs(self, time: float, state: NDArray[float]) -> NDArray[float]:  # noqa:U100
+    def _func(self, time: float, state: RealArray) -> RealArray:
         """Compute the right-hand side of the ODE.
 
         Args:
@@ -136,11 +126,9 @@ class VanDerPol(ODEProblem):
         Returns:
              The value of the right-hand side of the ODE.
         """
-        return array([state[1], self._mu * state[1] * (1 - state[0] ** 2) - state[0]])
+        return array([state[1], self.__mu * state[1] * (1 - state[0] ** 2) - state[0]])
 
-    def __compute_rhs_jacobian(
-        self, time: float, state: NDArray[float]
-    ) -> NDArray[float]:  # noqa:U100
+    def _jac_wrt_state(self, time: float, state: RealArray) -> RealArray:
         """Compute the Jacobian of the right-hand side of the ODE.
 
         Args:
@@ -151,7 +139,7 @@ class VanDerPol(ODEProblem):
              The Jacobian of the right-hand side of the ODE.
         """
         jac = zeros((2, 2))
-        jac[1, 0] = -self._mu * 2 * state[1] * state[0] - 1
+        jac[1, 0] = -self.__mu * 2 * state[1] * state[0] - 1
         jac[0, 1] = 1
-        jac[1, 1] = self._mu * (1 - state[0] * state[0])
+        jac[1, 1] = self.__mu * (1 - state[0] * state[0])
         return jac

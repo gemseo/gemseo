@@ -27,13 +27,16 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
+from numpy import hstack
 from numpy import ndarray
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
+from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
@@ -42,20 +45,22 @@ if TYPE_CHECKING:
 LEARNING_SIZE = 9
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-    design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture(params=[None, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
+@pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
 def model(request, dataset) -> GaussianProcessRegressor:
     """A trained GaussianProcessRegressor."""
     gpr = GaussianProcessRegressor(dataset, transformer=request.param)
@@ -133,21 +138,10 @@ def test_predict_std_shape(model, x_1, x_2) -> None:
     assert prediction_std.shape[1] == 2
 
 
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    out1 = model.predict(input_value)
-    out2 = imported_model.predict(input_value)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)
-
-
 @pytest.mark.parametrize(
     ("bounds", "expected"),
     [
-        (None, [(0.01, 100.0), (0.01, 100.0)]),
+        ((), [(0.01, 100.0), (0.01, 100.0)]),
         ((0.1, 10), [(0.1, 10), (0.1, 10)]),
         ({"x_2": (0.1, 10)}, [(0.01, 100), (0.1, 10)]),
     ],
@@ -164,3 +158,104 @@ def test_kernel(dataset) -> None:
     assert id(model.kernel) == id(model.algo.kernel)
     model.learn()
     assert id(model.kernel) == id(model.algo.kernel_)
+
+
+@pytest.mark.parametrize(
+    ("compute_options", "init_options", "expected_samples", "expected_samples_1pt"),
+    [
+        (
+            {},
+            {},
+            array([
+                [
+                    [1.85016387, -2.00702945],
+                    [4.72740681, -4.50629058],
+                    [4.00618543, -3.87720141],
+                ],
+                [
+                    [1.95208716, -1.97554591],
+                    [4.57660313, -4.63186214],
+                    [3.8260905, -4.06281621],
+                ],
+            ]),
+            array([[1.90124246, -2.07677922], [1.9260292, -1.81711579]]),
+        ),
+        (
+            {"seed": 2},
+            {},
+            array([
+                [
+                    [1.94456792, -1.92438423],
+                    [4.63585051, -4.52883111],
+                    [3.86614502, -3.96826468],
+                ],
+                [
+                    [1.88691454, -1.88091603],
+                    [4.77084545, -4.72290722],
+                    [4.00805521, -3.91364315],
+                ],
+            ]),
+            array([[1.90124246, -2.07677922], [1.9260292, -1.81711579]]),
+        ),
+        (
+            {},
+            {"output_names": ["y_1"]},
+            array([
+                [[1.85016387], [4.72740681], [4.00618543]],
+                [[1.95208716], [4.57660313], [3.8260905]],
+            ]),
+            array([[1.90124246], [1.92602921]]),
+        ),
+    ],
+)
+@pytest.mark.parametrize("transformer", [{}, {"inputs": "Scaler", "outputs": "Scaler"}])
+def test_compute_samples(
+    dataset,
+    compute_options,
+    init_options,
+    expected_samples,
+    expected_samples_1pt,
+    transformer,
+):
+    """Test the method compute_samples."""
+    model = GaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model.learn()
+    input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
+    samples = model.compute_samples(input_data, 2, **compute_options)
+    assert_almost_equal(samples, expected_samples)
+
+    samples = model.compute_samples(input_data[0], 2, **compute_options)
+    assert_almost_equal(samples, expected_samples_1pt)
+
+
+def test_std_multiple_output():
+    """Check the standard deviation when the number of outputs is greater than 1."""
+    x = array([[0.0], [0.5], [1.0]])
+    y = hstack((x**2, 10 * x**2))
+    dataset = IODataset()
+    dataset.add_input_group(x, variable_names="x")
+    dataset.add_output_group(y, variable_names="y")
+    gpr = GaussianProcessRegressor(dataset)
+    gpr.learn()
+    std = gpr.predict_std(array([0.25]))[0]
+    assert std[0] != std[1]
+    assert std[0] == pytest.approx(std[1] / 10, rel=1e-9)
+
+
+def test_homonymous_io():
+    """Check that a supervised ML algo can use with homonymous inputs and outputs."""
+    x = array([[0.0], [0.5], [1.0]])
+    y = x**2
+    dataset = IODataset()
+    dataset.add_input_group(x, variable_names="x")
+    dataset.add_output_group(y, variable_names="y")
+    gpr = GaussianProcessRegressor(dataset)
+    gpr.learn()
+    reference = gpr.predict(array([0.25]))
+
+    dataset = IODataset()
+    dataset.add_input_group(x)
+    dataset.add_output_group(y)
+    gpr = GaussianProcessRegressor(dataset)
+    gpr.learn()
+    assert_equal(gpr.predict(array([0.25])), reference)

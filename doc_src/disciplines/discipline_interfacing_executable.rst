@@ -44,47 +44,44 @@ Let's make a discipline out of this from an initial :file:`'inputs.txt'`.
 Implementation of the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The construction of an :class:`.MDODiscipline` consists in three steps:
+The construction of an :class:`.Discipline` consists in three steps:
 
-1. Instantiate the :class:`.MDODiscipline` using the super constructor,
-2. Initialize the grammars using the :meth:`.JSONGrammar.update_from_names` method,
+1. Instantiate the :class:`.Discipline` using the super constructor,
+2. Initialize the grammars using the :meth:`.BaseGrammar.update_from_names` method,
 3. Set the default inputs from the initial :file:`inputs.txt`.
 
-The :class:`!MDODiscipline._run` method consists in three steps:
+The :class:`!Discipline._run` method consists in three steps:
 
-1. Get the input data from :attr:`!MDODiscipline.local_data` and write the :file:`inputs.txt` file,
-2. Run the executable using the ``os.system()`` command (`https://docs.python.org/3/library/os.html#os.system`_),
-3. Get the output values and store them to :attr:`!MDODiscipline.local_data`.
+1. Write the :file:`inputs.txt` file,
+2. Run the executable using the ``os.system()`` command (https://docs.python.org/3/library/os.html#os.system),
+3. Return the outputs.
 
 Now you can implement the discipline in the following way:
 
 .. code:: python
 
     import os
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
-    class ShellExecutableDiscipline(MDODiscipline):
+    class ShellExecutableDiscipline(Discipline):
 
         def __init__(self):
-            super(ShellExecutableDiscipline, self).__init__("ShellDisc")
+            super().__init__()
             # Initialize the grammars
             self.input_grammar.update_from_names(['a','b'])
             self.output_grammar.update_from_names(['c'])
             # Initialize the default inputs
-            self.default_inputs=parse_file("inputs.txt")
+            self.default_input_data=parse_file("inputs.txt")
 
-        def _run(self):
+        def _run(self, input_data):
             # Write inputs.txt file
-            write_file(self.local_data, 'inputs.txt')
+            write_file(input_data, 'inputs.txt')
 
             # Run the executable from the inputs
             os.system('./run.ksh')
 
-            # Parse the outputs.txt file
-            outputs = parse_file('outputs.txt')
-
-            # Store the outputs
-            self.local_data.update_from_names(outputs)
+            # Parse and return the outputs.txt file
+            return parse_file('outputs.txt')
 
 where ``parse_file()`` and ``write_file()`` functions are defined by:
 

@@ -27,8 +27,8 @@ from __future__ import annotations
 
 from gemseo import create_design_space
 from gemseo import execute_algo
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 # %%
 # We consider a minimization problem over the interval :math:`[0,1]`
@@ -37,7 +37,7 @@ from gemseo.core.mdofunctions.mdo_function import MDOFunction
 objective = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
 
 design_space = create_design_space()
-design_space.add_variable("x", l_b=0.0, u_b=1.0)
+design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 optimization_problem = OptimizationProblem(design_space)
 optimization_problem.objective = objective

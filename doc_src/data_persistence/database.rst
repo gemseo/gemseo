@@ -17,3 +17,4 @@ Database
 ========
 
 .. autoclass:: gemseo.algos.database.Database
+   :no-index:

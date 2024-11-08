@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import logging
 import sys
 from ast import literal_eval
 from collections.abc import Iterable
@@ -37,23 +38,34 @@ from typing import Union
 from xml.etree.ElementTree import parse as parse_element
 
 from numpy import array
+from numpy import array_equal
 from numpy import atleast_1d
 from numpy import atleast_2d
+from numpy import dtype
 from numpy import hstack
+from numpy import insert
+from numpy import integer
+from numpy import issubdtype
+from numpy import nan
 from numpy import ndarray
 from numpy.linalg import norm
+from pandas import MultiIndex
 
 from gemseo.algos._hdf_database import HDFDatabase
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.hashable_ndarray import HashableNdarray
+from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
+from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
-    from numbers import Number
     from pathlib import Path
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 DatabaseKeyType = Union[ndarray, HashableNdarray]
 """The type of a :class:`.Database` key."""
@@ -66,6 +78,8 @@ DatabaseValueType = Mapping[str, FunctionOutputValueType]
 
 ListenerType = Callable[[DatabaseKeyType], None]
 """The type of a listener attached to an :class:`.Database`."""
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Database(Mapping):
@@ -84,7 +98,7 @@ class Database(Mapping):
 
     .. seealso:: :class:`.NormDBFunction`
 
-    It can also be post-processed by an :class:`.OptPostProcessor`
+    It can also be post-processed by an :class:`.BasePost`
     to visualize its content,
     e.g. :class:`.OptHistoryView` generating a series of graphs
     to visualize the histories of the objective, constraints and design variables.
@@ -108,6 +122,10 @@ class Database(Mapping):
           if the types of the input variables are different,
           then they are promoted to the unique type that can represent all them,
           for instance integer would be promoted to float;
+          if the user does not provide any input space at instantiation,
+          after the first call to the :meth:`.store` method,
+          the :attr:`.input_space` will include a single variable
+          called :attr:`.DEFAULT_INPUT_NAME`, with the right dimension;
         * ``output_name``: either the name of the function
           that has been evaluated at ``x_vect``,
           the name of its gradient
@@ -121,6 +139,9 @@ class Database(Mapping):
 
     name: str
     """The name of the database."""
+
+    DEFAULT_INPUT_NAME: ClassVar[str] = "input"
+    """The default input name."""
 
     MISSING_VALUE_TAG: ClassVar[str] = "NA"
     """The tag for a missing value."""
@@ -143,20 +164,34 @@ class Database(Mapping):
     __hdf_database: HDFDatabase
     """The handler to export the database to a HDF file."""
 
-    def __init__(
-        self,
-        name: str = "",
-    ) -> None:
+    __input_space: DesignSpace
+    """The input space."""
+
+    def __init__(self, name: str = "", input_space: DesignSpace | None = None) -> None:
         """
         Args:
             name: The name to be given to the database.
                 If empty, use the class name.
+            input_space: The input space associated with this database.
+                If ``None``,
+                create a default ``DesignSpace``.
         """  # noqa: D205, D212, D415
         self.name = name or self.__class__.__name__
         self.__data = {}
         self.__store_listeners = []
         self.__new_iter_listeners = []
         self.__hdf_database = HDFDatabase()
+        self.__input_space = DesignSpace() if input_space is None else input_space
+
+    @property
+    def input_space(self) -> DesignSpace:
+        """The input space."""
+        if self and not self.__input_space:
+            self.__input_space.add_variable(
+                self.DEFAULT_INPUT_NAME, size=self.get_last_n_x_vect(1)[0].size
+            )
+
+        return self.__input_space
 
     @property
     def last_item(self) -> DatabaseValueType:
@@ -307,6 +342,9 @@ class Database(Mapping):
 
         Returns:
             The history of the function output, and possibly the input history.
+
+        Raises:
+            KeyError: When the database contains no output value for this function.
         """
         output_history = []
         input_history = []
@@ -319,6 +357,10 @@ class Database(Mapping):
 
                 if with_x_vect:
                     input_history.append(x.wrapped_array)
+
+        if not output_history:
+            msg = f"The database {self.name!r} contains no value of {function_name!r}."
+            raise KeyError(msg)
 
         try:
             output_history = array(output_history)
@@ -461,7 +503,7 @@ class Database(Mapping):
 
     def store(
         self,
-        x_vect: ndarray,
+        x_vect: DatabaseKeyType,
         outputs: DatabaseValueType,
     ) -> None:
         """Store the output values associated to the input values.
@@ -717,6 +759,7 @@ class Database(Mapping):
         file_path: str | Path = "optimization_history.h5",
         name: str = "",
         hdf_node_path: str = "",
+        log: bool = True,
     ) -> Database:
         """Create a database from an HDF file.
 
@@ -726,11 +769,22 @@ class Database(Mapping):
             hdf_node_path: The path of the HDF node from which
                 the database should be exported.
                 If empty, the root node is considered.
+            log: Whether to log the import of the database.
 
         Returns:
             The database defined in the file.
         """
-        database = cls(name)
+        if log:
+            LOGGER.info(
+                "Importing the database from the file %s at node %s",
+                file_path,
+                hdf_node_path,
+            )
+        try:
+            input_space = DesignSpace.from_file(file_path, hdf_node_path=hdf_node_path)
+        except KeyError:
+            input_space = None
+        database = cls(name, input_space=input_space)
         database.update_from_hdf(file_path, hdf_node_path=hdf_node_path)
         return database
 
@@ -758,7 +812,7 @@ class Database(Mapping):
         missing_tag: str | float = MISSING_VALUE_TAG,
         input_names: str | Iterable[str] = (),
         with_x_vect: bool = True,
-    ) -> tuple[NDArray[Number | str], list[str], Iterable[str]]:
+    ) -> tuple[NumberArray, list[str], Iterable[str]]:
         """Return the database as a 2D array shaped as ``(n_iterations, n_features)``.
 
         The features are the outputs of interest and possibly the input variables.
@@ -799,10 +853,8 @@ class Database(Mapping):
         if with_x_vect:
             if not input_names:
                 x_names = [f"x_{i + 1}" for i in range(len(self))]
-            elif isinstance(input_names, str):
-                x_names = [input_names]
             else:
-                x_names = input_names
+                x_names = convert_strings_to_iterable(input_names)
 
             x_flat_names, x_flat_values = self.__split_history(x_history, x_names)
             variables_flat_names = f_flat_names + x_flat_names
@@ -931,3 +983,189 @@ class Database(Mapping):
             return iteration - 1
 
         return len_self + iteration
+
+    def to_dataset(
+        self,
+        name: str = "",
+        export_gradients: bool = False,
+        input_values: Iterable[RealArray] = (),
+        dataset_class: type[Dataset] = Dataset,
+        input_group: str = Dataset.DEFAULT_GROUP,
+        output_group: str = Dataset.DEFAULT_GROUP,
+        gradient_group: str = Dataset.GRADIENT_GROUP,
+    ) -> Dataset:
+        """Export the database to a :class:`.Dataset`.
+
+        Args:
+            name: The name to be given to the dataset.
+                If empty,
+                use the name of the database.
+            export_gradients: Whether to export the gradients of the functions
+                if the latter are available in the database of the problem.
+            input_values: The input values to be considered.
+                If empty, consider all the input values of the database.
+            dataset_class: The dataset class.
+            input_group: The name of the group to store the input values.
+            output_group: The name of the group to store the output values.
+            gradient_group: The name of the group to store the gradient values.
+
+        Returns:
+            A dataset built from the database.
+        """
+        dataset_name = name or self.name
+
+        # Add database inputs
+        input_history = array(self.get_x_vect_history())
+        input_space = self.input_space
+        names_to_sizes = input_space.variable_sizes
+        names_to_types = {
+            (input_group, name, component): dtype(
+                input_space.VARIABLE_TYPES_TO_DTYPES[type_]
+            )
+            for name, type_ in input_space.variable_types.items()
+            for component in range(input_space.get_size(name))
+        }
+        n_samples = len(input_history)
+        positions = []
+        offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
+        for input_value in input_values:
+            _positions = ((input_history == input_value).all(axis=1)).nonzero()[0]
+            positions.extend((_positions + offset).tolist())
+
+        data = [input_history.real]
+        columns = [
+            (input_group, name, index)
+            for name in input_space
+            for index in range(names_to_sizes[name])
+        ]
+
+        # Add database outputs
+        variable_names = self.get_function_names()
+        output_names = [name for name in variable_names if name not in input_space]
+
+        self.__update_data_and_columns_for_dataset(
+            data,
+            columns,
+            names_to_types,
+            output_names,
+            n_samples,
+            output_group,
+            False,
+        )
+
+        # Add database output gradients
+        if export_gradients:
+            self.__update_data_and_columns_for_dataset(
+                data,
+                columns,
+                names_to_types,
+                output_names,
+                n_samples,
+                gradient_group,
+                True,
+            )
+
+        dataset = dataset_class(
+            hstack(data),
+            dataset_name=dataset_name,
+            columns=MultiIndex.from_tuples(
+                columns,
+                names=dataset_class.COLUMN_LEVEL_NAMES,
+            ),
+        ).get_view(indices=positions)
+
+        names_to_types_without_int = {
+            k: v for k, v in names_to_types.items() if not issubdtype(v, integer)
+        }
+        names_to_types_without_int.update({
+            k: float for k, v in names_to_types.items() if issubdtype(v, integer)
+        })
+        # "0.0" cannot be cast to int directly (try int("0.0")).
+        # So
+        # 1) we cast the str-like int to float
+        # 2) these float-like int to int.
+        return dataset.astype(names_to_types_without_int).astype(names_to_types)
+
+    def __update_data_and_columns_for_dataset(
+        self,
+        data: list[RealArray],
+        columns: list[tuple[str, str, int]],
+        names_to_types: dict[tuple[str, str, int], dtype],
+        output_names: Iterable[str],
+        n_samples: int,
+        group: str,
+        store_gradient: bool,
+    ) -> None:
+        """Update the data and the columns used to create the dataset.
+
+        Args:
+            data: The sequence of data arrays to be augmented with the output data.
+            columns: The multi-index columns to be augmented with the output names.
+            names_to_types: The types of the variables
+                to be augmented with the output names.
+            output_names: The names of the outputs in the database.
+            n_samples: The total number of samples,
+                including possible points where the evaluation failed.
+            group: The dataset group where the variables will be added.
+            store_gradient: Whether the variable of interest
+                is the gradient of the output.
+        """
+        x_vect_history = array(self.get_x_vect_history())
+        for output_name in output_names:
+            if store_gradient:
+                function_name = Database.get_gradient_name(output_name)
+                if self.check_output_history_is_empty(function_name):
+                    continue
+            else:
+                function_name = output_name
+
+            history, input_history = self.get_function_history(
+                function_name=function_name, with_x_vect=True
+            )
+            history = (
+                self.__replace_missing_values(
+                    history,
+                    input_history,
+                    x_vect_history,
+                )
+                .reshape((n_samples, -1))
+                .real
+            )
+            data.append(history)
+            _columns = [(group, function_name, i) for i in range(history.shape[1])]
+            columns.extend(_columns)
+            names_to_types.update(dict.fromkeys(_columns, atleast_1d(history).dtype))
+
+    @staticmethod
+    def __replace_missing_values(
+        output_history: RealArray,
+        input_history: RealArray,
+        full_input_history: RealArray,
+    ) -> RealArray:
+        """Replace the missing output values with NaN.
+
+        Args:
+            output_history: The output data history with possibly missing values.
+            input_history: The input data history with possibly missing values.
+            full_input_history: The complete input data history, with no missing values.
+
+        Returns:
+            The output data history where missing values have been replaced with NaN.
+        """
+        database_size = full_input_history.shape[0]
+
+        if len(input_history) != database_size:
+            # There are fewer entries than in the full input history.
+            # Add NaN values at the missing input data.
+            # N.B. the input data are assumed to be in the same order.
+            index = 0
+            for input_data in input_history:
+                while not array_equal(input_data, full_input_history[index]):
+                    output_history = insert(output_history, index, nan, 0)
+                    index += 1
+
+                index += 1
+
+            return insert(output_history, [index] * (database_size - index), nan, 0)
+
+        return output_history

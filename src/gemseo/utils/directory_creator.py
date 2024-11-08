@@ -24,7 +24,7 @@ from uuid import uuid4
 
 from strenum import StrEnum
 
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.core.serializable import Serializable
 
 
 class DirectoryNamingMethod(StrEnum):
@@ -42,7 +42,7 @@ class DirectoryNamingMethod(StrEnum):
     """
 
 
-class DirectoryCreator(metaclass=ABCGoogleDocstringInheritanceMeta):
+class DirectoryCreator(Serializable):
     """A class to create directories."""
 
     __counter: Value
@@ -73,32 +73,21 @@ class DirectoryCreator(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If empty, use the current working directory.
             directory_naming_method: The method to create the directory names.
         """  # noqa:D205 D212 D415
-        self.__root_directory = (
-            Path.cwd()
-            if root_directory == ""
-            else Path(root_directory).absolute().resolve()
-        )
+        self.__root_directory = Path(root_directory) if root_directory else Path.cwd()
         self.__directory_naming_method = directory_naming_method
-        if directory_naming_method == DirectoryNamingMethod.NUMBERED:
+        self._init_shared_memory_attrs_after()
+        self.__last_directory = None
+
+    def _init_shared_memory_attrs_after(self) -> None:
+        if self.__directory_naming_method == DirectoryNamingMethod.NUMBERED:
             self.__lock = Lock()
             self.__counter = Value("i", self.__get_initial_counter())
         else:
             self.__counter = 1
-        self.__last_directory = None
 
     @property
     def last_directory(self) -> Path | None:
         """The last created directory or ``None`` if none has been created."""
-        return self.__last_directory
-
-    # TODO: API: Make this method either protected or removed in new major version.
-    def get_unique_run_folder_path(self) -> Path:
-        """Generate a directory path.
-
-        Returns:
-            The directory path.
-        """
-        self.__last_directory = self.__root_directory / self.__generate_uid()
         return self.__last_directory
 
     def create(self) -> Path:
@@ -107,7 +96,7 @@ class DirectoryCreator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The directory path.
         """
-        self.get_unique_run_folder_path()
+        self.__last_directory = self.__root_directory / self.__generate_uid()
         self.__last_directory.mkdir(parents=True, exist_ok=True)
         return self.__last_directory
 

@@ -23,18 +23,19 @@ from __future__ import annotations
 
 import itertools
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from matplotlib import pyplot
 from numpy import absolute
 from numpy import argsort
 from numpy import array
-from numpy import atleast_2d
-from numpy import ndarray
 from numpy import savetxt
 from numpy import stack
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.variable_influence_settings import VariableInfluence_Settings
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -43,10 +44,13 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
+    from gemseo.typing import RealArray
+
+
 LOGGER = logging.getLogger(__name__)
 
 
-class VariableInfluence(OptPostProcessor):
+class VariableInfluence(BasePost[VariableInfluence_Settings]):
     r"""First order variable influence analysis.
 
     This post-processing computes
@@ -63,26 +67,16 @@ class VariableInfluence(OptPostProcessor):
       in a NumPy file.
     """
 
-    DEFAULT_FIG_SIZE = (20.0, 5.0)
+    Settings: ClassVar[type[VariableInfluence_Settings]] = VariableInfluence_Settings
 
-    def _plot(
-        self,
-        level: float = 0.99,
-        absolute_value: bool = False,
-        log_scale: bool = False,
-        save_var_files: bool = False,
-    ) -> None:
-        """
-        Args:
-            level: The proportion of the total sensitivity
-                to use as a threshold to filter the variables.
-            absolute_value: Whether to plot the absolute value of the influence.
-            log_scale: Whether to set the y-axis as log scale.
-            save_var_files: Whether to save the influential variables indices
-                to a NumPy file.
-        """  # noqa: D205, D212, D415
-        function_names = self.opt_problem.get_all_function_name()
-        _, x_opt, _, _, _ = self.opt_problem.get_optimum()
+    def _plot(self, settings: VariableInfluence_Settings) -> None:
+        level = settings.level
+        absolute_value = settings.absolute_value
+        log_scale = settings.log_scale
+        save_var_files = settings.save_var_files
+
+        function_names = self.optimization_problem.function_names
+        _, x_opt, _, _, _ = self.optimization_problem.optimum
         x_0 = self.database.get_x_vect(1)
         absolute_value = log_scale or absolute_value
 
@@ -118,15 +112,16 @@ class VariableInfluence(OptPostProcessor):
         self._add_figure(
             self.__generate_subplots(
                 names_to_sensitivities,
-                level=level,
-                log_scale=log_scale,
-                save=save_var_files,
+                level,
+                log_scale,
+                save_var_files,
+                settings.fig_size,
             )
         )
 
     def __get_quantile(
         self,
-        sensitivity: ndarray,
+        sensitivity: RealArray,
         func: str,
         level: float = 0.99,
         save: bool = False,
@@ -162,8 +157,13 @@ class VariableInfluence(OptPostProcessor):
         )
         if save:
             names = [
-                [f"{name}${i}" for i in range(size)]
-                for name, size in self.opt_problem.design_space.variable_sizes.items()
+                [
+                    f"{name}${i}"
+                    for i in range(
+                        self.optimization_problem.design_space.get_size(name)
+                    )
+                ]
+                for name in self.optimization_problem.design_space  # noqa: E501
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"
@@ -174,16 +174,17 @@ class VariableInfluence(OptPostProcessor):
                 delimiter=" ; ",
                 header="name ; index",
             )
-            self.output_files.append(file_name)
+            self._output_file_paths.append(Path(file_name))
 
         return n_variables, absolute_sensitivity[n_variables - 1]
 
     def __generate_subplots(
         self,
-        names_to_sensitivities: Mapping[str, ndarray],
-        level: float = 0.99,
-        log_scale: bool = False,
-        save: bool = False,
+        names_to_sensitivities: Mapping[str, RealArray],
+        level: float,
+        log_scale: bool,
+        save: bool,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
@@ -206,16 +207,11 @@ class VariableInfluence(OptPostProcessor):
             msg = "No gradients to plot at current iteration."
             raise ValueError(msg)
 
-        n_cols = 2
-        n_rows = sum(divmod(n_funcs, n_cols))
-        if n_funcs == 1:
-            n_cols = 1
-
-        fig, axes = pyplot.subplots(
-            nrows=n_rows, ncols=n_cols, sharex=True, figsize=self.DEFAULT_FIG_SIZE
+        n_rows, n_cols = self.__compute_optimal_grid(n_funcs)
+        fig, axs = pyplot.subplots(
+            nrows=n_rows, ncols=n_cols, sharex=True, figsize=fig_size
         )
 
-        axes = atleast_2d(axes)
         x_labels = self._get_design_variable_names()
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
@@ -223,58 +219,85 @@ class VariableInfluence(OptPostProcessor):
         # because the problem dimension is not updated when the history is filtered.
         abscissas = range(len(next(iter(names_to_sensitivities.values()))))
 
-        font_size = 12
-        rotation = 90
-        i = j = 0
         LOGGER.info(
             "Output name; "
             "most influential variables to explain %s%% of the output variation ",
             level,
         )
-        for name, sensitivity in sorted(names_to_sensitivities.items()):
-            axe = axes[i][j]
-            axe.bar(abscissas, sensitivity, color="blue", align="center")
+        for index, (name, sensitivity) in enumerate(
+            sorted(names_to_sensitivities.items())
+        ):
+            i = index // n_cols
+            j = index % n_cols
+            ax = axs[i][j]
             quantile, threshold = self.__get_quantile(
                 sensitivity, name, level=level, save=save
             )
-            axe.set_title(
-                f"{quantile} variables required "
-                f"to explain {round(level * 100)}% of {name} variations"
+            ax.fill_between(
+                [-1, len(sensitivity) + 1],
+                -threshold,
+                threshold,
+                color="gray",
+                facecolor="none",
+                hatch="///",
+                label="Non-influential domain",
             )
-            axe.set_xticks(abscissas)
-            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
-            axe.set_xlim(-1, len(sensitivity) + 1)
-            axe.axhline(threshold, color="r")
-            axe.axhline(-threshold, color="r")
+            ax.axhline(y=0.0, color="black")
+            ax.bar(
+                abscissas,
+                sensitivity,
+                color="blue",
+                align="center",
+                label="Partial derivatives",
+            )
+            ax.set_title(
+                f"{quantile} variables explain {round(level * 100)}% of {name}"
+            )
+            ax.set_xticks(abscissas)
+            ax.set_xticklabels(x_labels, rotation=90)
+            ax.set_xlim(-1, len(sensitivity) + 1)
+            ax.grid()
+            ax.set_axisbelow(True)
             if log_scale:
-                axe.set_yscale("log")
+                ax.set_yscale("log")
 
             # Update y labels spacing
             vis_labels = [
-                label for label in axe.get_yticklabels() if label.get_visible() is True
+                label for label in ax.get_yticklabels() if label.get_visible() is True
             ]
             pyplot.setp(vis_labels, visible=False)
             pyplot.setp(vis_labels[::2], visible=True)
 
             vis_xlabels = [
-                label for label in axe.get_xticklabels() if label.get_visible() is True
+                label for label in ax.get_xticklabels() if label.get_visible() is True
             ]
             if len(vis_xlabels) > 20:
                 pyplot.setp(vis_xlabels, visible=False)
                 pyplot.setp(vis_xlabels[:: int(len(vis_xlabels) / 10.0)], visible=True)
 
-            if j == n_cols - 1:
-                j = 0
-                i += 1
-            else:
-                j += 1
-
-        if len(names_to_sensitivities) < n_rows * n_cols:
-            axe = axes[i][j]
-            axe.set_xticks(abscissas)
-            axe.set_xticklabels(x_labels, fontsize=font_size, rotation=rotation)
-
-        fig.suptitle(
-            "Partial variation of the functions wrt design variables", fontsize=14
-        )
+        axs[0, 0].legend()
+        fig.tight_layout()
         return fig
+
+    @staticmethod
+    def __compute_optimal_grid(n_items: int) -> tuple[int, int]:
+        """Compute the optimal grid given a number of items.
+
+        Args:
+            n_items: The number of items.
+
+        Returns:
+            The optimal number of rows and columns.
+        """
+        optimal_n_rows, optimal_n_cols = 1, 1
+        smallest_difference = float("inf")
+        for n_rows in range(1, n_items + 1):
+            for n_cols in range(1, n_items + 1):
+                d1 = n_rows - n_cols
+                d2 = n_rows * n_cols - n_items
+                difference = (d1 + 1) * (d2 + 1)
+                if d1 > 0 and d2 > 0 and difference < smallest_difference:
+                    smallest_difference = difference
+                    optimal_n_rows, optimal_n_cols = n_rows, n_cols
+
+        return optimal_n_rows, optimal_n_cols

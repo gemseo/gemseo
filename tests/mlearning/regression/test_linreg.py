@@ -32,13 +32,12 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -46,20 +45,22 @@ if TYPE_CHECKING:
 LEARNING_SIZE = 9
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-    design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> LinearRegressor:
     """A trained LinearRegressor."""
     linreg = LinearRegressor(dataset)
@@ -67,7 +68,7 @@ def model(dataset) -> LinearRegressor:
     return linreg
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset) -> LinearRegressor:
     """A trained LinearRegressor with inputs and outputs scaling."""
     linreg = LinearRegressor(
@@ -117,6 +118,43 @@ def test_coefficients(model) -> None:
     assert allclose(coefficients["y_2"][0]["x_2"], array([-3.0]))
 
 
+@pytest.mark.parametrize(
+    (
+        "key",
+        "transformer",
+        "input_dimension",
+        "output_dimension",
+        "reduced_input_dimension",
+        "reduced_output_dimension",
+    ),
+    [
+        ("outputs", PCA(n_components=1), 2, 2, 2, 1),
+        ("y_1", PCA(n_components=1), 2, 2, 2, 2),
+        ("inputs", PCA(n_components=1), 2, 2, 1, 2),
+        ("x_1", PCA(n_components=1), 2, 2, 2, 2),
+        ("outputs", MinMaxScaler(), 2, 2, 2, 2),
+        ("y_1", MinMaxScaler(), 2, 2, 2, 2),
+        ("inputs", MinMaxScaler(), 2, 2, 2, 2),
+        ("x_1", MinMaxScaler(), 2, 2, 2, 2),
+    ],
+)
+def test_reduced_io_dimensions(
+    dataset,
+    key,
+    transformer,
+    input_dimension,
+    output_dimension,
+    reduced_input_dimension,
+    reduced_output_dimension,
+):
+    """Check the reduced input and output dimensions."""
+    regressor = LinearRegressor(dataset, transformer={key: transformer})
+    assert regressor.input_dimension == input_dimension
+    assert regressor.output_dimension == output_dimension
+    assert regressor._reduced_input_dimension == reduced_input_dimension
+    assert regressor._reduced_output_dimension == reduced_output_dimension
+
+
 def test_coefficients_with_transform(dataset, model_with_transform) -> None:
     """Test correct handling of get_coefficients with transformers."""
     model_with_transform.get_coefficients(as_dict=False)
@@ -141,8 +179,8 @@ def test_coefficients_with_transform(dataset, model_with_transform) -> None:
 def test_intercept(model) -> None:
     """Check the value returned by intercept when as_dict is True."""
     intercept = model.get_intercept()
-    assert allclose(intercept["y_1"], array([1.0]))
-    assert allclose(intercept["y_2"], array([-1.0]))
+    assert intercept["y_1"] == pytest.approx([1.0])
+    assert intercept["y_2"] == pytest.approx([-1.0])
 
 
 def test_intercept_false(model) -> None:
@@ -251,14 +289,3 @@ def test_jacobian_transform(model_with_transform) -> None:
     assert allclose(jac["y_1"]["x_2"], array([[3.0]]))
     assert allclose(jac["y_2"]["x_1"], array([[-2.0]]))
     assert allclose(jac["y_2"]["x_2"], array([[-3.0]]))
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
-    out1 = model.predict(input_value)
-    out2 = imported_model.predict(input_value)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)

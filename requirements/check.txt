@@ -2,21 +2,21 @@
 #    uv pip compile requirements/check.in -o requirements/check.txt
 cfgv==3.4.0
     # via pre-commit
-distlib==0.3.8
+distlib==0.3.9
     # via virtualenv
-filelock==3.13.3
+filelock==3.16.1
     # via virtualenv
-identify==2.5.35
+identify==2.6.1
     # via pre-commit
-nodeenv==1.8.0
+nodeenv==1.9.1
     # via pre-commit
-platformdirs==4.2.0
+platformdirs==4.3.6
     # via virtualenv
-pre-commit==3.7.0
-pyyaml==6.0.1
+pre-commit==4.0.1
+    # via -r requirements/check.in
+pyyaml==6.0.2
     # via pre-commit
-ruff==0.3.4
-setuptools==69.2.0
-    # via nodeenv
-virtualenv==20.25.1
+ruff==0.7.2
+    # via -r requirements/check.in
+virtualenv==20.27.1
     # via pre-commit

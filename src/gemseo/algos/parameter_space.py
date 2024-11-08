@@ -72,30 +72,32 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
+from gemseo.third_party.prettytable.prettytable import PrettyTable
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.uncertainty.distributions.composed import ComposedDistribution
+    from gemseo.typing import StrKeyMapping
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 from numpy import array
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.third_party.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
-RandomVariable = collections.namedtuple(
+RandomVariable = collections.namedtuple(  # noqa: PYI024
     "RandomVariable",
     ["distribution", "size", "parameters"],
     defaults=(1, {}),
 )
 
-RandomVector = collections.namedtuple(
+RandomVector = collections.namedtuple(  # noqa: PYI024
     "RandomVector",
     ["distribution", "size", "parameters"],
     defaults=(1, {}),
@@ -110,13 +112,13 @@ class ParameterSpace(DesignSpace):
     uncertain_variables: list[str]
     """The names of the uncertain variables."""
 
-    distributions: dict[str, ComposedDistribution]
+    distributions: dict[str, BaseJointDistribution]
     """The marginal probability distributions of the uncertain variables.
 
     These variables are defined as random vectors with independent components.
     """
 
-    distribution: ComposedDistribution
+    distribution: BaseJointDistribution
     """The joint probability distribution of the uncertain variables."""
 
     _INITIAL_DISTRIBUTION = "Initial distribution"
@@ -128,13 +130,12 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    __uncertain_variables_to_definitions: dict[str, tuple[str, dict[str, Any], bool]]
-    """The uncertain variable names bound to their defining.
+    __uncertain_variables_to_definitions: dict[str, tuple[str, dict[str, Any]]]
+    """The uncertain variable names bound to their definition.
 
-    The definition is a triplet. The first component is the name of the class of the
-    probability distribution, the second component is the dictionary of parameters of
-    the probability distribution and the third one is to indicate if the random variable
-    is one-sized.
+    The definition is a 2-tuple. The first component is the name of the class of the
+    probability distribution and the second one is the dictionary of the keywords
+    arguments of the add_random_vector method.
     """
 
     def __init__(self, name: str = "") -> None:  # noqa:D107
@@ -146,7 +147,7 @@ class ParameterSpace(DesignSpace):
         self.__uncertain_variables_to_definitions = {}
         self.__distribution_family_id = ""
 
-    def build_composed_distribution(self, copula: Any = None) -> None:
+    def build_joint_distribution(self, copula: Any = None) -> None:
         """Build the joint probability distribution.
 
         Args:
@@ -160,7 +161,7 @@ class ParameterSpace(DesignSpace):
                 for name in self.uncertain_variables
                 for marginal in self.distributions[name].marginals
             ]
-            self.distribution = distributions[0].COMPOSED_DISTRIBUTION_CLASS(
+            self.distribution = distributions[0].JOINT_DISTRIBUTION_CLASS(
                 distributions, copula
             )
 
@@ -190,7 +191,7 @@ class ParameterSpace(DesignSpace):
         Returns:
             True is the variable is deterministic.
         """
-        deterministic = set(self.variable_names) - set(self.uncertain_variables)
+        deterministic = self._variables.keys() - set(self.uncertain_variables)
         return variable in deterministic
 
     def add_random_vector(
@@ -207,7 +208,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
+            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
             For instance,
             one cannot mix a random vector
             using a :class:`.OTUniformDistribution` with identifier ``"OT"``
@@ -251,11 +252,6 @@ class ParameterSpace(DesignSpace):
                 are not consistent.
         """
         self._check_variable_name(name)
-        # TODO: API: remove this compatibility layer
-        # TODO: API: use interfaced_distribution_parameters only.
-        interfaced_distribution_parameters = self.__get_distribution_parameters(
-            interfaced_distribution_parameters, parameters
-        )
         distribution_class = DistributionFactory().get_class(distribution)
         parameters_as_tuple = isinstance(interfaced_distribution_parameters, tuple)
 
@@ -282,10 +278,10 @@ class ParameterSpace(DesignSpace):
             for name, value in parameters.items()
         }
         if parameters_as_tuple:
-            interfaced_distribution_parameters = tuple([
+            interfaced_distribution_parameters = tuple(
                 self.__get_random_vector_parameter_value(size, value)
                 for value in interfaced_distribution_parameters
-            ])
+            )
         else:
             interfaced_distribution_parameters = {
                 name: self.__get_random_vector_parameter_value(size, value)
@@ -311,8 +307,12 @@ class ParameterSpace(DesignSpace):
             data["parameters"] = idp_data
         self.__uncertain_variables_to_definitions[name] = (
             distribution,
-            data,
-            is_random_variable,
+            {
+                "size": size,
+                "interfaced_distribution": interfaced_distribution,
+                "interfaced_distribution_parameters": interfaced_distribution_parameters,  # noqa: E501
+                **parameters,
+            },
         )
 
         # Define the marginal distributions
@@ -323,9 +323,9 @@ class ParameterSpace(DesignSpace):
             if interfaced_distribution:
                 kwargs["interfaced_distribution"] = interfaced_distribution
                 if parameters_as_tuple:
-                    kwargs["parameters"] = tuple([
+                    kwargs["parameters"] = tuple(
                         v[i] for v in interfaced_distribution_parameters
-                    ])
+                    )
                 else:
                     kwargs["parameters"] = {
                         k: v[i] for k, v in interfaced_distribution_parameters.items()
@@ -334,33 +334,28 @@ class ParameterSpace(DesignSpace):
             marginals.append(distribution_class(**kwargs))
 
         # Define the distribution of the random vector with a joint distribution.
-        composed_distribution_class = distribution_class.COMPOSED_DISTRIBUTION_CLASS
-        self.distributions[name] = composed_distribution_class(marginals)
+        joint_distribution_class = distribution_class.JOINT_DISTRIBUTION_CLASS
+        self.distributions[name] = joint_distribution_class(marginals)
 
         # Update the uncertain variables.
         self.uncertain_variables.append(name)
 
         # Update the full joint distribution,
         # i.e. the joint distribution of all the uncertain variables.
-        self.build_composed_distribution()
+        self.build_joint_distribution()
 
         # Update the parameter space as subclass of a DesignSpace.
         l_b = self.distributions[name].math_lower_bound
         u_b = self.distributions[name].math_upper_bound
         value = self.distributions[name].mean
-        if name in self.variable_names:
-            self.set_lower_bound(name, l_b)
-            self.set_upper_bound(name, u_b)
-            self.set_current_variable(name, value)
-        else:
-            self.add_variable(
-                name,
-                self.distributions[name].dimension,
-                self.DesignVariableType.FLOAT,
-                l_b,
-                u_b,
-                value,
-            )
+        self.add_variable(
+            name,
+            self.distributions[name].dimension,
+            self.DesignVariableType.FLOAT,
+            l_b,
+            u_b,
+            value,
+        )
 
     @staticmethod
     def __get_random_vector_parameter_value(size: int, value: list[Any]) -> list[Any]:
@@ -448,7 +443,7 @@ class ParameterSpace(DesignSpace):
         distribution: str,
         size: int = 1,
         interfaced_distribution: str = "",
-        interfaced_distribution_parameters: tuple[Any] | Mapping[str, Any] = (),
+        interfaced_distribution_parameters: tuple[Any] | StrKeyMapping = (),
         **parameters: Any,
     ) -> None:
         """Add a random variable from a probability distribution.
@@ -477,26 +472,21 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.Distribution.DISTRIBUTION_FAMILY_ID`.
+            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
             For instance,
             one cannot mix a random variable
             distributed as an :class:`.OTUniformDistribution` with identifier ``"OT"``
             and a random variable
             distributed as a :class:`.SPNormalDistribution` with identifier ``"SP"``.
         """
-        # TODO: API: remove this compatibility layer
-        # TODO: API: use interfaced_distribution_parameters only.
-        interfaced_distribution_parameters = self.__get_distribution_parameters(
-            interfaced_distribution_parameters, parameters
-        )
         kwargs = {k: [v] for k, v in parameters.items()}
         if interfaced_distribution:
             kwargs["interfaced_distribution"] = interfaced_distribution
             if interfaced_distribution_parameters:
                 if isinstance(interfaced_distribution_parameters, tuple):
-                    formatted_parameters = tuple([
+                    formatted_parameters = tuple(
                         [v] for v in interfaced_distribution_parameters
-                    ])
+                    )
                 else:
                     formatted_parameters = {
                         k: [v] for k, v in interfaced_distribution_parameters.items()
@@ -511,39 +501,6 @@ class ParameterSpace(DesignSpace):
             size,
             **kwargs,
         )
-
-    @staticmethod
-    def __get_distribution_parameters(
-        interfaced_distribution_parameters: tuple[Any]
-        | Mapping[str, Any]
-        | list[tuple[Any]]
-        | tuple[Mapping[str, Any]],
-        parameters: Any | list[Any],
-    ) -> tuple[Any] | Mapping[str, Any] | list[tuple[Any]] | tuple[Mapping[str, Any]]:
-        """Return the parameters of the interfaced distribution.
-
-        Args:
-            interfaced_distribution_parameters: The parameters
-                of the interfaced distribution.
-            parameters: The parameters of the distribution.
-
-        Returns:
-            The parameters of the interfaced distribution.
-        """
-        if "parameters" in parameters:
-            if interfaced_distribution_parameters:
-                msg = (
-                    "'interfaced_distribution_parameters' "
-                    "is the new name of 'parameters' "
-                    "which will be removed in the next major release; "
-                    "you cannot use both names at the same time; "
-                    "please use 'interfaced_distribution_parameters'."
-                )
-                raise ValueError(msg)
-
-            return parameters.pop("parameters")
-
-        return interfaced_distribution_parameters
 
     def get_range(
         self,
@@ -586,7 +543,7 @@ class ParameterSpace(DesignSpace):
             del self.distributions[name]
             self.uncertain_variables.remove(name)
             if self.uncertain_variables:
-                self.build_composed_distribution()
+                self.build_joint_distribution()
         super().remove_variable(name)
 
     def compute_samples(
@@ -638,21 +595,18 @@ class ParameterSpace(DesignSpace):
         """
         if inverse:
             self.__check_dict_of_array(value)
+
+        method_name = "compute_inverse_cdf" if inverse else "compute_cdf"
         values = {}
         for name in self.uncertain_variables:
-            val = value[name]
-            distribution = self.distributions[name]
-            if val.ndim == 1:
-                if inverse:
-                    current_v = distribution.compute_inverse_cdf(val)
-                else:
-                    current_v = distribution.compute_cdf(val)
-            elif inverse:
-                current_v = [distribution.compute_inverse_cdf(sample) for sample in val]
+            input_samples = value[name]
+            compute = getattr(self.distributions[name], method_name)
+            if input_samples.ndim == 1:
+                output_samples = compute(input_samples)
             else:
-                current_v = [distribution.compute_cdf(sample) for sample in val]
+                output_samples = list(map(compute, input_samples))
 
-            values[name] = array(current_v)
+            values[name] = array(output_samples)
 
         return values
 
@@ -686,7 +640,7 @@ class ParameterSpace(DesignSpace):
                 if not isinstance(value, ndarray):
                     raise TypeError(error_msg)
 
-                if value.shape[-1] != self.variable_sizes[variable]:
+                if value.shape[-1] != self._variables[variable].size:
                     raise ValueError(error_msg)
 
                 if (value > 1.0).any() or (value < 0.0).any():
@@ -694,36 +648,35 @@ class ParameterSpace(DesignSpace):
 
     def get_pretty_table(  # noqa: D102
         self,
-        fields: Sequence[str] | None = None,
+        fields: Sequence[str] = (),
         with_index: bool = False,
         capitalize: bool = False,
         simplify: bool = False,
     ) -> PrettyTable:
-        if not simplify or self.deterministic_variables or fields is not None:
+        if not simplify or self.deterministic_variables or fields:
             table = super().get_pretty_table(
                 fields=fields, capitalize=capitalize, with_index=with_index
             )
         else:
             table = PrettyTable(["Name" if capitalize else "name"])
             table.float_format = "%.16g"
-            for name in self.variable_names:
-                size = self.variable_sizes[name]
+            for name, variable in self._variables.items():
                 name_template = f"{name}"
-                if with_index and size > 1:
+                if with_index and variable.size > 1:
                     name_template += "[{index}]"
 
-                for i in range(size):
+                for i in range(variable.size):
                     table.add_row([name_template.format(name=name, index=i)])
 
         distributions = []
         transformations = []
-        for variable in self.variable_names:
+        for variable in self:
             if variable in self.uncertain_variables:
                 for marginal in self.distributions[variable].marginals:
                     distributions.append(repr(marginal))
                     transformations.append(marginal.transformation)
             else:
-                empty = [self._BLANK] * self.variable_sizes[variable]
+                empty = [self._BLANK] * self._variables[variable].size
                 distributions.extend(empty)
                 transformations.extend(empty)
 
@@ -735,7 +688,7 @@ class ParameterSpace(DesignSpace):
             )
             add_transformation = False
             for transformation in transformations:
-                if transformation not in [default_variable_name, self._BLANK]:
+                if transformation not in {default_variable_name, self._BLANK}:
                     add_transformation = True
                     break
 
@@ -780,7 +733,7 @@ class ParameterSpace(DesignSpace):
         mean = []
         std = []
         rnge = []
-        for variable in self.variable_names:
+        for variable in self:
             if variable in self.uncertain_variables:
                 dist = self.distributions[variable]
                 tmp_mean = dist.mean
@@ -857,14 +810,14 @@ class ParameterSpace(DesignSpace):
         return self.__unnormalize_vect(x_vect, no_check)
 
     def __unnormalize_vect(self, x_vect, no_check):
-        data_names = self.variable_names
+        data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
         x_u = self.evaluate_cdf(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
         )
         x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
-        missing_names = [name for name in data_names if name not in x_u]
+        missing_names = [name for name in self if name not in x_u]
         for name in missing_names:
             x_u[name] = x_u_geom[name]
 
@@ -926,7 +879,7 @@ class ParameterSpace(DesignSpace):
         return self.__normalize_vect(x_vect)
 
     def __normalize_vect(self, x_vect):
-        data_names = self.variable_names
+        data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
@@ -942,9 +895,7 @@ class ParameterSpace(DesignSpace):
     def deterministic_variables(self) -> list[str]:
         """The deterministic variables."""
         return [
-            variable
-            for variable in self.variable_names
-            if variable not in self.uncertain_variables
+            variable for variable in self if variable not in self.uncertain_variables
         ]
 
     def extract_uncertain_space(
@@ -1034,7 +985,7 @@ class ParameterSpace(DesignSpace):
                 else:
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
 
-        parameter_space.build_composed_distribution(copula)
+        parameter_space.build_joint_distribution(copula)
         return parameter_space
 
     def to_design_space(self) -> DesignSpace:
@@ -1055,68 +1006,12 @@ class ParameterSpace(DesignSpace):
             design_space.add_variable(
                 name,
                 size=self.get_size(name),
-                var_type=self.get_type(name),
-                l_b=self.get_lower_bound(name),
-                u_b=self.get_upper_bound(name),
+                type_=self.get_type(name),
+                lower_bound=self.get_lower_bound(name),
+                upper_bound=self.get_upper_bound(name),
                 value=self.get_current_value([name]),
             )
         return design_space
-
-    def __getitem__(
-        self,
-        name: str,
-    ) -> DesignSpace.DesignVariable | RandomVariable | RandomVector:
-        if name not in self.variable_names:
-            msg = f"Variable '{name}' is not known."
-            raise KeyError(msg)
-
-        if self.is_uncertain(name):
-            if self.__uncertain_variables_to_definitions[name][2]:
-                cls = RandomVariable
-            else:
-                cls = RandomVector
-
-            return cls(
-                distribution=self.__uncertain_variables_to_definitions[name][0],
-                size=self.get_size(name),
-                parameters=self.__uncertain_variables_to_definitions[name][1],
-            )
-
-        try:
-            value = self.get_current_value([name])
-        except KeyError:
-            value = None
-
-        return DesignSpace.DesignVariable(
-            size=self.get_size(name),
-            var_type=self.get_type(name),
-            l_b=self.get_lower_bound(name),
-            u_b=self.get_upper_bound(name),
-            value=value,
-        )
-
-    def __setitem__(
-        self,
-        name: str,
-        item: DesignSpace.DesignVariable | RandomVariable | RandomVector,
-    ) -> None:
-        if isinstance(item, RandomVariable):
-            self.add_random_variable(
-                name, item.distribution, size=item.size, **item.parameters
-            )
-        elif isinstance(item, RandomVector):
-            self.add_random_vector(
-                name, item.distribution, size=item.size, **item.parameters
-            )
-        else:
-            self.add_variable(
-                name,
-                size=item.size,
-                var_type=item.var_type,
-                l_b=item.l_b,
-                u_b=item.u_b,
-                value=item.value,
-            )
 
     def rename_variable(  # noqa:D102
         self,
@@ -1131,3 +1026,16 @@ class ParameterSpace(DesignSpace):
             _dict[new_name] = _dict.pop(current_name)
             _dict = self.distributions
             _dict[new_name] = _dict.pop(current_name)
+
+    def add_variables_from(self, space: DesignSpace, *names: str) -> None:  # noqa: D102
+        if not isinstance(space, ParameterSpace):
+            super().add_variables_from(space, *names)
+            return
+
+        for name in names:
+            if name in space.uncertain_variables:
+                definition = space.__uncertain_variables_to_definitions[name]
+                self.add_random_vector(name, definition[0], **definition[1])
+                self.set_current_variable(name, space._current_value[name])
+            else:
+                self._add_variable_from(space, name)

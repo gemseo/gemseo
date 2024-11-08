@@ -38,25 +38,27 @@ class Lines(DatasetPlot):
     def __init__(
         self,
         dataset: Dataset,
-        variables: Sequence[str] | None = None,
-        abscissa_variable: str | None = None,
+        variables: Sequence[str] = (),
+        abscissa_variable: str = "",
         add_markers: bool = False,
         set_xticks_from_data: bool = False,
+        use_integer_xticks: bool = False,
         plot_abscissa_variable: bool = False,
     ) -> None:
         """
         Args:
             variables: The names of the variables to plot.
-                If ``None``, use all the variables.
+                If empty, use all the variables.
             abscissa_variable: The name of the variable used in abscissa.
                 The observations of the ``variables`` are plotted
                 in function of the observations of this ``abscissa_variable``.
-                If ``None``,
+                If empty,
                 the observations of the ``variables`` are plotted
                 in function of the indices of the observations.
             add_markers: Whether to mark the observations with dots.
             set_xticks_from_data: Whether to use the values of ``abscissa_variable``
                 as locations of abscissa ticks.
+            use_integer_xticks: Whether to use integer xticks.
             plot_abscissa_variable: Whether to plot the abscissa variable.
         """  # noqa: D205, D212, D415
         super().__init__(
@@ -65,6 +67,7 @@ class Lines(DatasetPlot):
             abscissa_variable=abscissa_variable,
             add_markers=add_markers,
             set_xticks_from_data=set_xticks_from_data,
+            use_integer_xticks=use_integer_xticks,
             plot_abscissa_variable=plot_abscissa_variable,
         )
 
@@ -79,26 +82,25 @@ class Lines(DatasetPlot):
             the number of lines.
         """  # noqa: D205 D212 D415
         abscissa_variable = self._specific_settings.abscissa_variable
-        if abscissa_variable is None:
-            x_values = list(range(len(self.dataset)))
-        else:
+        if abscissa_variable:
             x_values = (
                 self.dataset.get_view(variable_names=abscissa_variable)
                 .to_numpy()
                 .ravel()
                 .tolist()
             )
+        else:
+            x_values = list(range(len(self.dataset)))
 
         variable_names = list(
             self._specific_settings.variables or self.dataset.variable_names
         )
-        if abscissa_variable is not None:
+        if abscissa_variable:
             if self._specific_settings.plot_abscissa_variable:
                 if abscissa_variable not in variable_names:
                     variable_names.append(abscissa_variable)
-            else:
-                if abscissa_variable in variable_names:
-                    variable_names.remove(abscissa_variable)
+            elif abscissa_variable in variable_names:
+                variable_names.remove(abscissa_variable)
 
         y_names_to_values = {
             variable_name: self.dataset.get_view(variable_names=variable_name)

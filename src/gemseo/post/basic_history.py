@@ -21,48 +21,39 @@
 from __future__ import annotations
 
 import operator
-from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
-from matplotlib.ticker import MaxNLocator
 from numpy import arange
 from numpy import newaxis
 
+from gemseo.post.base_post import BasePost
+from gemseo.post.basic_history_settings import BasicHistory_Settings
 from gemseo.post.dataset.lines import Lines
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 
-class BasicHistory(OptPostProcessor):
+class BasicHistory(BasePost[BasicHistory_Settings]):
     """Plot the history of selected constraint, objective and observable functions.
 
     This post-processor requires the names of these selected outputs.
     """
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
+
     __ITERATION_NAME: Final[str] = ",;:!"
     """The name for the variable iteration in the dataset.
 
     A name that a user cannot chose for its own variables. Only used in the background.
     """
 
-    def _plot(
-        self,
-        variable_names: Sequence[str],
-        normalize: bool = False,
-    ) -> None:
-        """
-        Args:
-            variable_names: The names of the variables.
-            normalize: Whether to normalize the data.
-        """  # noqa: D205, D212, D415
-        problem = self.opt_problem
+    def _plot(self, settings: BasicHistory_Settings) -> None:  # noqa: D205, D212, D415
+        problem = self.optimization_problem
         dataset = problem.to_dataset(opt_naming=False)
         dataset.add_variable(
             self.__ITERATION_NAME, arange(1, len(dataset) + 1)[:, newaxis]
         )
+
+        variable_names = list(settings.variable_names)
         if self._obj_name in variable_names:
             if problem.use_standardized_objective and not problem.minimize_objective:
                 obj_index = variable_names.index(self._obj_name)
@@ -72,21 +63,18 @@ class BasicHistory(OptPostProcessor):
                 dataset.transform_data(operator.neg, variable_names=self._neg_obj_name)
                 dataset.rename_variable(self._neg_obj_name, self._obj_name)
 
-        if normalize:
+        if settings.normalize:
             dataset = dataset.get_normalized()
 
         plot = Lines(
             dataset,
             abscissa_variable=self.__ITERATION_NAME,
             variables=problem.get_function_names(variable_names),
-            set_xticks_from_data=False,
+            use_integer_xticks=True,
         )
         plot.font_size = 12
         plot.xlabel = "Iterations"
-        plot.fig_size_x = self.DEFAULT_FIG_SIZE[0]
-        plot.fig_size_y = self.DEFAULT_FIG_SIZE[1]
+        plot.fig_size_x = settings.fig_size[0]
+        plot.fig_size_y = settings.fig_size[1]
         plot.title = "History plot"
-        figures = plot.execute(save=False)
-        figures[-1].gca().get_xaxis().set_major_locator(MaxNLocator(integer=True))
-        for figure in figures:
-            self._add_figure(figure)
+        self._add_figure(plot)

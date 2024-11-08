@@ -35,15 +35,15 @@ from typing import Final
 
 from sklearn.cross_decomposition import PLSRegression
 
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.typing import RealArray
 
 
-class PLS(DimensionReduction):
+class PLS(BaseDimensionReduction):
     """Partial Least Square regression."""
 
     CROSSED: Final[bool] = True
@@ -52,7 +52,7 @@ class PLS(DimensionReduction):
         self,
         name: str = "",
         n_components: int | None = None,
-        **parameters: float | int | bool,
+        **parameters: float | bool,
     ) -> None:
         """
         Args:
@@ -61,7 +61,7 @@ class PLS(DimensionReduction):
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)
 
-    def _fit(self, data: ndarray, other_data: ndarray) -> None:
+    def _fit(self, data: RealArray, other_data: RealArray) -> None:
         """Fit the transformer to the data.
 
         Args:
@@ -74,10 +74,10 @@ class PLS(DimensionReduction):
         self.algo.fit(data, other_data)
         self.parameters["n_components"] = self.algo.n_components
 
-    @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseDimensionReduction._use_2d_array
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.transform(data)
 
-    @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseDimensionReduction._use_2d_array
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.algo.inverse_transform(data)

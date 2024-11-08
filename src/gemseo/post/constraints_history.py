@@ -21,9 +21,10 @@
 from __future__ import annotations
 
 from math import ceil
-from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from matplotlib import pyplot
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
@@ -31,23 +32,17 @@ from numpy import arange
 from numpy import atleast_2d
 from numpy import atleast_3d
 from numpy import diff
-from numpy import e
 from numpy import flip
 from numpy import interp
 from numpy import max as np_max
 from numpy import sign
 
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post.base_post import BasePost
+from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
 from gemseo.post.core.colormaps import RG_SEISMIC
-from gemseo.post.opt_post_processor import OptPostProcessor
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.algos.opt_problem import OptimizationProblem
 
 
-class ConstraintsHistory(OptPostProcessor):
+class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
     r"""A matrix of constraint history plots.
 
     A blue line represents the values of a constraint w.r.t. the iterations.
@@ -55,8 +50,8 @@ class ConstraintsHistory(OptPostProcessor):
     A background color indicates whether the constraint is satisfied (green), active
     (white) or violated (red).
 
-    An horizontal black line indicates the value for which an inequality constraint is
-    active or an equality constraint is satisfied, namely :math:`0`. An horizontal black
+    A horizontal black line indicates the value for which an inequality constraint is
+    active or an equality constraint is satisfied, namely :math:`0`. A horizontal black
     dashed line indicates the value below which an inequality constraint is satisfied
     *with a tolerance level*, namely :math:`\varepsilon`.
 
@@ -68,29 +63,19 @@ class ConstraintsHistory(OptPostProcessor):
     constraint is (or should be) active.
     """
 
-    def __init__(self, opt_problem: OptimizationProblem) -> None:  # noqa:D107
-        super().__init__(opt_problem)
-        self.cmap = PARULA
-        self.ineq_cstr_cmap = RG_SEISMIC
-        self.eq_cstr_cmap = "seismic"
+    Settings: ClassVar[type[ConstraintsHistory_Settings]] = ConstraintsHistory_Settings
 
-    def _plot(
-        self,
-        constraint_names: Sequence[str],
-        line_style: str = "--",
-        add_points: bool = True,
-    ) -> None:
+    def _plot(self, settings: ConstraintsHistory_Settings) -> None:
         """
-        Args:
-            constraint_names: The names of the constraints.
-            line_style: The style of the line, e.g. ``"-"`` or ``"--"``.
-                If ``""``, do not plot the line.
-            add_points: Whether to add one point per iteration on the line.
-
         Raises:
             ValueError: When an item of ``constraint_names`` is not a constraint name.
         """  # noqa: D205, D212, D415
-        all_constraint_names = self.opt_problem.constraint_names.keys()
+        constraint_names = settings.constraint_names
+        line_style = settings.line_style
+        add_points = settings.add_points
+        all_constraint_names = (
+            self.optimization_problem.constraints.original_to_current_names.keys()
+        )
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
                 msg = (
@@ -99,7 +84,9 @@ class ConstraintsHistory(OptPostProcessor):
                 )
                 raise ValueError(msg)
 
-        constraint_names = self.opt_problem.get_function_names(constraint_names)
+        constraint_names = self.optimization_problem.get_function_names(
+            constraint_names
+        )
         constraint_histories, constraint_names, _ = self.database.get_history_array(
             function_names=constraint_names, with_x_vect=False
         )
@@ -113,58 +100,62 @@ class ConstraintsHistory(OptPostProcessor):
         ))
 
         # prepare the main window
-        fig, axes = pyplot.subplots(
+        fig, axs = pyplot.subplots(
             nrows=ceil(len(constraint_names) / 2),
             ncols=2,
             sharex=True,
-            figsize=self.DEFAULT_FIG_SIZE,
+            figsize=settings.fig_size,
         )
 
         fig.suptitle("Evolution of the constraints w.r.t. iterations", fontsize=14)
 
         iterations = arange(len(constraint_histories))
         n_iterations = len(iterations)
-        eq_constraint_names = [f.name for f in self.opt_problem.get_eq_constraints()]
+        eq_constraint_names = [
+            f.name
+            for f in self.optimization_problem.constraints.get_equality_constraints()
+        ]
         # for each subplot
-        for constraint_history, constraint_name, axe in zip(
-            constraint_histories.T, constraint_names, axes.ravel()
+        for constraint_history, constraint_name, ax in zip(
+            constraint_histories.T, constraint_names, axs.ravel()
         ):
+            cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]
             is_eq_constraint = f_name in eq_constraint_names
             if is_eq_constraint:
-                cmap = self.eq_cstr_cmap
+                cmap = "seismic"
                 constraint_type = "equality"
-                tolerance = self.opt_problem.eq_tolerance
+                tolerance = self.optimization_problem.tolerances.equality
             else:
-                cmap = self.ineq_cstr_cmap
+                cmap = RG_SEISMIC
                 constraint_type = "inequality"
-                tolerance = self.opt_problem.ineq_tolerance
+                tolerance = self.optimization_problem.tolerances.inequality
 
             # prepare the graph
-            axe.grid(True)
-            axe.set_title(f"{constraint_name} ({constraint_type})")
-            axe.set_xticks(range(n_iterations))
-            axe.set_xticklabels(range(1, n_iterations + 1))
-            axe.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-            axe.axhline(tolerance, color="k", linestyle="--")
-            axe.axhline(0.0, color="k")
+            ax.grid(True)
+            ax.set_title(f"{constraint_name} ({constraint_type})")
+            ax.set_xticks(range(n_iterations))
+            ax.set_xticklabels(range(1, n_iterations + 1))
+            ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
+            ax.axhline(tolerance, color="k", linestyle="--")
+            ax.axhline(0.0, color="k")
             if is_eq_constraint:
-                axe.axhline(-tolerance, color="k", linestyle="--")
+                ax.axhline(-tolerance, color="k", linestyle="--")
 
             # Add line and points
-            axe.plot(iterations, constraint_history, linestyle=line_style)
+            ax.plot(iterations, constraint_history, linestyle=line_style)
             if add_points:
-                axe.scatter(iterations, constraint_history)
+                ax.scatter(iterations, constraint_history)
 
             # Plot color bars
             maximum = np_max(np_abs(constraint_history))
             margin = 2 * maximum * 0.05
-            axe.imshow(
+            ax.imshow(
                 atleast_2d(constraint_history),
                 cmap=cmap,
                 interpolation="nearest",
                 aspect="auto",
-                norm=SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0, base=e),
+                norm=SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0),
                 extent=[-0.5, n_iterations - 0.5, -maximum - margin, maximum + margin],
                 alpha=0.6,
             )
@@ -184,5 +175,7 @@ class ConstraintsHistory(OptPostProcessor):
                     constraint_values = flip(constraint_values)
                     iteration_values = flip(iteration_values)
 
-                axe.axvline(interp(0.0, constraint_values, iteration_values), color="k")
+                ax.axvline(interp(0.0, constraint_values, iteration_values), color="k")
+
+        fig.tight_layout()
         self._add_figure(fig)

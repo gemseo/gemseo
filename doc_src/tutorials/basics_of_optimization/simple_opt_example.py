@@ -35,13 +35,17 @@ def f(x1=0.0, x2=0.0):
 discipline = create_discipline("AutoPyDiscipline", py_func=f)
 
 design_space = create_design_space()
-design_space.add_variable("x1", l_b=-5, u_b=5, var_type="integer")
-design_space.add_variable("x2", l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x1", lower_bound=-5, upper_bound=5, type_="integer")
+design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    discipline,
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "fullfact", "n_samples": 11**2})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
 
 opt_results = scenario.optimization_result
 print(f"The solution of P is (x*, f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
@@ -71,10 +75,14 @@ print(f"The solution of P is (x*, f(x*)) = ({x_opt[0]}, {f_opt[0]})")
 discipline = create_discipline("AutoPyDiscipline", py_func=g, py_jac=dgdx)
 
 design_space = create_design_space()
-design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * np.ones(1))
+design_space.add_variable(
+    "x", lower_bound=-2.0, upper_bound=2.0, value=-0.5 * np.ones(1)
+)
 
-scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
-scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
+scenario = create_scenario(
+    discipline, "y", design_space, formulation_name="DisciplinaryOpt"
+)
+scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 opt_results = scenario.optimization_result
 print(f"The solution of P is (x*,f(x*)) = ({opt_results.x_opt}, {opt_results.f_opt})")
@@ -84,7 +92,7 @@ print("Available algorithms:" + str(algo_list))
 
 # POST TREATMENTS
 
-problem = scenario.formulation.opt_problem
+problem = scenario.formulation.optimization_problem
 problem.to_hdf("my_optim.hdf5")
 execute_post(problem, "OptHistoryView", save=True, file_path="opt_view_with_doe")
 # or execute_post("my_optim.hdf5", "OptHistoryView", save=True,

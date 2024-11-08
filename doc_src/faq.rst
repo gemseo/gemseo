@@ -29,8 +29,8 @@ Even for simple DOEs,
 |g| formulates an optimization problem,
 so requires a :ref:`MDO formulation <mdo_formulations>`.
 The :class:`.DisciplinaryOpt` formulation
-executes the :class:`.MDODiscipline` alone,
-or the list of :class:`.MDODiscipline`
+executes the :class:`.Discipline` alone,
+or the list of :class:`.Discipline`
 in the order passed by the user.
 This means that you must specify an objective function.
 The :term:`DOE` won't try to minimize it
@@ -44,8 +44,8 @@ Create a simple optimization on a single discipline
 Use the :class:`.DisciplinaryOpt` formulation
 and an :class:`.MDOScenario`.
 The :class:`.DisciplinaryOpt` formulation
-executes the :class:`.MDODiscipline` alone,
-or the list of :class:`.MDODiscipline`
+executes the :class:`.Discipline` alone,
+or the list of :class:`.Discipline`
 in the order passed by the user.
 
 .. TODO add a code block showing an example
@@ -58,7 +58,7 @@ See the available :ref:`DOEs <gen_doe_algos>`,
 :ref:`MDO formulations <gen_formulation_algos>`,
 :ref:`MDAs <gen_mda_algos>`,
 :ref:`optimizers <gen_opt_algos>`,
-:ref:`post-processings <gen_post_algos>`
+:ref:`post-processors <gen_post_algos>`
 and :ref:`machine learners <gen_mlearning_algos>`
 (accessible from the main page of the documentation).
 

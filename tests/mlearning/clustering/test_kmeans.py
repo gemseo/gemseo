@@ -31,8 +31,7 @@ from numpy.linalg import eigvals
 from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_clustering_model
-from gemseo.mlearning.clustering.kmeans import KMeans
+from gemseo.mlearning.clustering.algos.kmeans import KMeans
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
@@ -56,7 +55,7 @@ ARRAY_VALUE = array([0, 0])
 VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
 
 
-@pytest.fixture()
+@pytest.fixture
 def samples() -> tuple[ndarray, ndarray, list[int]]:
     """The description of the samples used to generate the learning dataset.
 
@@ -70,7 +69,7 @@ def samples() -> tuple[ndarray, ndarray, list[int]]:
     return LOCS, SCALES, N_SAMPLES
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset(samples) -> IODataset:
     """The dataset used to train the GaussianMixture.
 
@@ -109,7 +108,7 @@ def fit_transformers(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset):
     """A trained KMeans with parameters scaling."""
     kmeans = KMeans(dataset, n_clusters=3)
@@ -117,7 +116,7 @@ def model(dataset):
     return kmeans
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset, transformer_key, fit_transformers):
     """A trained KMeans with parameters scaling."""
     kmeans = KMeans(
@@ -192,12 +191,3 @@ def test_predict_proba(model, hard) -> None:
     assert not allclose(probas[0], probas[1])
     assert not allclose(probas[0], probas[2])
     assert not allclose(probas[1], probas[2])
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_clustering_model(dirname)
-    out1 = model.predict(VALUE)
-    out2 = imported_model.predict(VALUE)
-    assert out1 == out2

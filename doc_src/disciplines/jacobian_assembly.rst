@@ -37,7 +37,7 @@ complex step), or computed analytically. Both options are possible in |g|.
 The analytic computation of the derivatives is usually a better approach,
 since it is cheaper and more precise than the approximations.
 The tuning of the finite difference step is difficult, although some methods
-exist for that (:meth:`~gemseo.core.discipline.MDODiscipline.set_optimal_fd_step`), and
+exist for that (:meth:`~gemseo.core.discipline.Discipline.set_optimal_fd_step`), and
 the complete MDO process has to be evaluated for each
 perturbed point :math:`(\bf{x}+h_j\bf{e}_j))`, which scales badly with
 the number of design variables.
@@ -57,7 +57,7 @@ the derivatives provided by all the disciplines.
 For weakly coupled problems, based on :class:`~gemseo.core.chain.MDOChain`, the generalized
 chain rule in reverse mode (from the outputs to the inputs) is used.
 
-For the coupled problems, when the process is based on a MDA :class:`~gemseo.mda.MDA`,
+For the coupled problems, when the process is based on a MDA :class:`~gemseo.mda.BaseMDA`,
 a coupled adjoint approach is used, with two
 variants (direct or adjoint) depending on the number of design variables
 compared to the number of objectives and constraints.
@@ -153,7 +153,7 @@ Replacing :math:`\frac{d\mathcal{Y}}{d\mathbf{x}}` from the residual derivative 
 Adjoint versus direct methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The cost of evaluating the gradient of :math:`\mathbf{f}` is driven by the matrix invertion
+The cost of evaluating the gradient of :math:`\mathbf{f}` is driven by the matrix inversion
 :math:`\left( \frac{\partial \mathcal{R}}{\partial \mathcal{Y}} \right)^{-1}`.
 Two approaches are possible to compute the previous equation:
 
@@ -209,8 +209,8 @@ Object oriented design
 In |g|, the :class:`~gemseo.core.jacobian_assembly.JacobianAssembly` class computes the derivatives of the :ref:`MDAs<mda>`.
 All :ref:`MDA<mda>` classes delegate the coupled derivatives computations to a
 :class:`~gemseo.core.jacobian_assembly.JacobianAssembly` instance.
-The :class:`~gemseo.core.coupling_structure.MDOCouplingStructure` class is responsible for the analysis of the
-dependencies between the :class:`~gemseo.core.discipline.MDODiscipline`'s inputs and outputs, using a graph.
+The :class:`~gemseo.core.coupling_structure.CouplingStructure` class is responsible for the analysis of the
+dependencies between the :class:`~gemseo.core.discipline.Discipline`'s inputs and outputs, using a graph.
 
 
 Many :ref:`MDA<mda>` algorithms are implemented in |g| (Gauss-Seidel, Jacobi, Newton variants).
@@ -219,14 +219,13 @@ Many :ref:`MDA<mda>` algorithms are implemented in |g| (Gauss-Seidel, Jacobi, Ne
 
    @startuml
 
-   class MDODiscipline {
+   class Discipline {
    +execute()
    }
    class MDA {
      +disciplines
      +jacobian_assembly
      +coupling_structure
-     +_run()
    }
    class CouplingStructure {
      -_disciplines
@@ -240,10 +239,10 @@ Many :ref:`MDA<mda>` algorithms are implemented in |g| (Gauss-Seidel, Jacobi, Ne
      +coupled_derivatives()
    }
 
-   MDODiscipline <|-- MDA
+   Discipline <|-- MDA
    MDA "1" *-- "1" CouplingStructure
    MDA "1" *-- "1" JacobianAssembly
-   MDA "1" -- "1..*" MDODiscipline
+   MDA "1" -- "1..*" Discipline
    JacobianAssembly "1" -- "1" CouplingStructure
 
    @enduml
@@ -253,25 +252,23 @@ Illustration on the Sobieski SSBJ test-case
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In |g|, the jacobian matrix of a discipline is a dictionary of dictionaries.
-When wrapping the execution, a :meth:`!MDODiscipline._compute_jacobian` method must be
-defined (it overloads the generical one defined in :class:`.MDODiscipline` class):
-the jacobian matrix must be defined as :attr:`!MDODiscipline.jac`.
+When wrapping the execution, a :meth:`!Discipline._compute_jacobian` method must be
+defined (it overloads the generical one defined in :class:`.Discipline` class):
+the jacobian matrix must be defined as :attr:`!Discipline.jac`.
 
 .. code::
 
-    def _compute_jacobian(self, inputs=None, outputs=None, mode='auto'):
+    def _compute_jacobian(self, input_names=(), output_names=()):
         """
         Compute the partial derivatives of all outputs wrt all inputs
         """
-        # Initialize all matrices to zeros
-        data_names = ["y_14", "y_24", "y_34", "x_shared"]
-        y_14, y_24, y_34, x_shared = self.get_inputs_by_name(data_names)
-        self.jac = self.sobieski_problem.derive_blackbox_mission(x_shared,
-                                                                 y_14, y_24,
-                                                                 y_34)
+        y_14 = self.local_data["y_14"]
+        y_24 = self.local_data["y_24"]
+        y_34 = self.local_data["y_34"]
+        x_shared = self.local_data["x_shared"]
+        self.jac = self.sobieski_problem.derive_blackbox_mission(x_shared, y_14, y_24, y_34)
 
-
-The differentiation method is set by the method :meth:`~gemseo.core.scenario.Scenario.set_differentiation_method` of :class:`~gemseo.core.scenario.Scenario`:
+The differentiation method is set by the method :meth:`~gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method` of :class:`~gemseo.scenarios.base_scenario.BaseScenario`:
 
 - for :code:`"finite_differences"` (default value):
 
@@ -285,7 +282,7 @@ The differentiation method is set by the method :meth:`~gemseo.core.scenario.Sce
 
     scenario.set_differentiation_method("complex_step")
 
-- for linearized version of the disciplines (:code:`"user"`): switching from direct mode to reverse mode is automatic, depending on the number of inputs and outputs. It can also be set by the user, setting :attr:`~gemseo.core.discipline.MDODiscipline.linearization_mode` at :code:`"direct"` or :code:`"adjoint"`).
+- for linearized version of the disciplines (:code:`"user"`): switching from direct mode to reverse mode is automatic, depending on the number of inputs and outputs. It can also be set by the user, setting :attr:`~gemseo.core.discipline.Discipline.linearization_mode` at :code:`"direct"` or :code:`"adjoint"`).
 
 .. code::
 
@@ -295,12 +292,12 @@ The differentiation method is set by the method :meth:`~gemseo.core.scenario.Sce
 
 
 When deriving a source code, it is very easy to make some errors or to forget to derive some terms: that is why implementation of derivation can be validated
-against finite differences or complex step method, by means of the method :meth:`~gemseo.core.discipline.MDODiscipline.check_jacobian`:
+against finite differences or complex step method, by means of the method :meth:`~gemseo.core.discipline.Discipline.check_jacobian`:
 
 .. code::
 
-    from gemseo.problems.sobieski.disciplines import SobieskiMission
-    from gemseo.problems.sobieski.core import SobieskiProblem
+    from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+    from gemseo.problems.mdo.sobieski.core import SobieskiProblem
 
     problem = SobieskiProblem("complex128")
     sr = SobieskiMission("complex128")

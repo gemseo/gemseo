@@ -32,21 +32,20 @@ from numpy import array
 from numpy import ndarray
 from scipy.optimize import root
 
-from gemseo.core.discipline import MDODiscipline
-from gemseo.mda.root import MDARoot
+from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
+from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
     from typing import Any
 
-    from gemseo.core.coupling_structure import MDOCouplingStructure
-    from gemseo.core.discipline_data import DisciplineData
+    from gemseo.core.discipline import Discipline
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MDAQuasiNewton(MDARoot):
+class MDAQuasiNewton(BaseMDARoot):
     r"""Quasi-Newton solver for MDA.
 
     `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
@@ -69,118 +68,63 @@ class MDAQuasiNewton(MDARoot):
     Jacobian of :math:`f` at :math:`x_k`.
     """
 
-    # Available quasi-Newton methods
-    HYBRID = "hybr"
-    LEVENBERG_MARQUARDT = "lm"
-    BROYDEN1 = "broyden1"
-    BROYDEN2 = "broyden2"
-    ANDERSON = "anderson"
-    LINEAR_MIXING = "linearmixing"
-    DIAG_BROYDEN = "diagbroyden"
-    EXCITING_MIXING = "excitingmixing"
-    KRYLOV = "krylov"
-    DF_SANE = "df-sane"
+    Settings: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
+    """The pydantic model for the settings."""
 
-    # TODO: API: use enums.
-    QUASI_NEWTON_METHODS: ClassVar[list[str]] = [
-        HYBRID,
-        LEVENBERG_MARQUARDT,
-        BROYDEN1,
-        BROYDEN2,
-        ANDERSON,
-        LINEAR_MIXING,
-        DIAG_BROYDEN,
-        EXCITING_MIXING,
-        KRYLOV,
-        DF_SANE,
-    ]
+    _METHODS_SUPPORTING_CALLBACKS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
+        QuasiNewtonMethod.BROYDEN1,
+        QuasiNewtonMethod.BROYDEN2,
+    )
+    """The methods supporting callback functions."""
+
+    disciplines: tuple[Discipline, ...]
+    """The disciplines."""
+
+    settings: MDAQuasiNewton_Settings
+    """The settings of the MDA"""
 
     __current_couplings: ndarray
     """The current values of the coupling variables."""
 
     def __init__(
         self,
-        disciplines: Sequence[MDODiscipline],
-        max_mda_iter: int = 10,
-        name: str | None = None,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        method: str = HYBRID,
-        use_gradient: bool = False,
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        coupling_structure: MDOCouplingStructure | None = None,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
+        disciplines: Sequence[Discipline],
+        settings_model: MDAQuasiNewton_Settings | None = None,
+        **settings: Any,
     ) -> None:
         """
-        Args:
-            method: The name of the method in scipy root finding, among
-                :attr:`.QUASI_NEWTON_METHODS`.
-            use_gradient: Whether to use the analytic gradient of the discipline.
-
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
         """  # noqa:D205 D212 D415
-        super().__init__(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=name,
-            grammar_type=grammar_type,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            coupling_structure=coupling_structure,
-        )
-        if method not in self.QUASI_NEWTON_METHODS:
-            msg = f"Method '{method}' is not a valid quasi-Newton method."
-            raise ValueError(msg)
+        super().__init__(disciplines, settings_model=settings_model, **settings)
 
-        self.method = method
+        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
-        if self.method not in self._methods_with_callback():
-            del self.output_grammar[self.RESIDUALS_NORM]
-
-        self.use_gradient = use_gradient
-
-    # TODO: API: prepend verb.
-    def _solver_options(self) -> dict[str, float | int]:
-        """Determine options for the solver, based on the resolution method."""
+    def __get_options(self) -> dict[str, float | int]:
+        """Get the options adapted to the resolution method."""
         options = {}
-        if self.method in {
-            self.BROYDEN1,
-            self.BROYDEN2,
-            self.ANDERSON,
-            self.LINEAR_MIXING,
-            self.DIAG_BROYDEN,
-            self.EXCITING_MIXING,
-            self.KRYLOV,
+        if self.settings.method in {
+            QuasiNewtonMethod.BROYDEN1,
+            QuasiNewtonMethod.BROYDEN2,
+            QuasiNewtonMethod.ANDERSON,
+            QuasiNewtonMethod.LINEAR_MIXING,
+            QuasiNewtonMethod.DIAG_BROYDEN,
+            QuasiNewtonMethod.EXCITING_MIXING,
+            QuasiNewtonMethod.KRYLOV,
         }:
-            options["ftol"] = self.tolerance
-            options["maxiter"] = self.max_mda_iter
-        elif self.method == self.LEVENBERG_MARQUARDT:
-            options["xtol"] = self.tolerance
-            options["maxiter"] = self.max_mda_iter
-        elif self.method == self.DF_SANE:
-            options["fatol"] = self.tolerance
-            options["maxfev"] = self.max_mda_iter
-        elif self.method == self.HYBRID:
-            options["xtol"] = self.tolerance
-            options["maxfev"] = self.max_mda_iter
+            options["ftol"] = self.settings.tolerance
+            options["maxiter"] = self.settings.max_mda_iter
+        elif self.settings.method == QuasiNewtonMethod.LEVENBERG_MARQUARDT:
+            options["xtol"] = self.settings.tolerance
+            options["maxiter"] = self.settings.max_mda_iter
+        elif self.settings.method == QuasiNewtonMethod.DF_SANE:
+            options["fatol"] = self.settings.tolerance
+            options["maxfev"] = self.settings.max_mda_iter
+        else:  # Necessarily the HYBRID quasi-Newton method
+            options["xtol"] = self.settings.tolerance
+            options["maxfev"] = self.settings.max_mda_iter
         return options
-
-    # TODO: API: prepend verb.
-    def _methods_with_callback(self) -> list[str]:
-        """Determine whether resolution method accepts a callback function.
-
-        Returns:
-            The names of the methods with callback.
-        """
-        return [self.BROYDEN1, self.BROYDEN2]
 
     def __get_jacobian_computer(self) -> Callable[[ndarray], ndarray] | None:
         """Return the function to compute the jacobian.
@@ -188,7 +132,7 @@ class MDAQuasiNewton(MDARoot):
         Returns:
             The callable to compute the jacobian.
         """
-        if not self.use_gradient:
+        if not self.settings.use_gradient:
             return None
 
         self.assembly.set_newton_differentiated_ios(self._resolved_variable_names)
@@ -206,9 +150,8 @@ class MDAQuasiNewton(MDARoot):
             """
             self._update_local_data_from_array(x_vect)
 
-            self.reset_disciplines_statuses()
             for discipline in self.disciplines:
-                discipline.linearize(self._local_data)
+                discipline.linearize(self.io.data)
 
             self.assembly.compute_sizes(
                 self._resolved_variable_names,
@@ -230,7 +173,7 @@ class MDAQuasiNewton(MDARoot):
 
     def __get_residual_history_callback(self) -> Callable[[ndarray, Any], None] | None:
         """Return the callback used to store the residual history."""
-        if self.method not in self._methods_with_callback():
+        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
             return None
 
         def callback(
@@ -262,29 +205,29 @@ class MDAQuasiNewton(MDARoot):
         """
         self.current_iter += 1
         # Work on a temporary copy so _update_local_data can be called.
-        local_data_copy = self._local_data.copy()
+        local_data_copy = self.io.data.copy()
         self._update_local_data_from_array(x_vect)
-        input_data = self._local_data
-        self._local_data = local_data_copy
-        self.reset_disciplines_statuses()
-        self.execute_all_disciplines(input_data)
-        self._compute_residuals(input_data)
-        return self.assembly.residuals(input_data, self._resolved_variable_names).real
+        local_data_before_execution = self.io.data
+        self.io.data = local_data_copy
+        self._execute_disciplines_and_update_local_data(local_data_before_execution)
+        self._compute_residuals(local_data_before_execution)
+        return self.assembly.residuals(
+            local_data_before_execution, self._resolved_variable_names
+        ).real
 
-    def _run(self) -> DisciplineData:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
 
-        self.reset_disciplines_statuses()
-        self.execute_all_disciplines(self._local_data)
+        self._execute_disciplines_and_update_local_data()
 
-        if not self.strong_couplings:
+        if not self.coupling_structure.strong_couplings:
             msg = (
                 "MDAQuasiNewton found no strong couplings. Executed all"
                 "disciplines once."
             )
             LOGGER.warning(msg)
-            self._local_data[self.RESIDUALS_NORM] = array([0.0])
-            return self._local_data
+            self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
+            return self.io.data
 
         self.current_iter = 0
 
@@ -298,18 +241,19 @@ class MDAQuasiNewton(MDARoot):
         y_opt = root(
             self.__compute_residuals,
             x0=self.__current_couplings,
-            method=self.method,
+            method=self.settings.method,
             jac=self.__get_jacobian_computer(),
             callback=self.__get_residual_history_callback(),
-            tol=self.tolerance,
-            options=self._solver_options(),
+            tol=self.settings.tolerance,
+            options=self.__get_options(),
         )
 
         self._warn_convergence_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 
-        if self.method in self._methods_with_callback():
-            self._local_data[self.RESIDUALS_NORM] = array([self.normed_residual])
-
-        return self._local_data
+        if self.settings.method in self._METHODS_SUPPORTING_CALLBACKS:
+            self.io.update_output_data({
+                self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual]),
+            })
+        return None

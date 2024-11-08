@@ -15,7 +15,7 @@
 Tutorial: How to solve an optimization problem
 ==============================================
 
-Although the library **|g|** is dedicated to the :term:`MDO`, it can also be used for mono-disciplinary optimization problems.
+Although the library |g| is dedicated to the :term:`MDO`, it can also be used for mono-disciplinary optimization problems.
 This tutorial presents some examples on analytical test cases.
 
 1. Optimization based on a design of experiments
@@ -34,18 +34,23 @@ Let :math:`(P)` be a simple optimization problem:
    \end{aligned}
    \right.
 
-In this subsection, we will see how to use **|g|** to solve this problem :math:`(P)` by means of a Design Of Experiments (DOE)
+In this subsection, we will see how to use |g| to solve this problem :math:`(P)` by means of a Design Of Experiments (DOE)
 
 1.a. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :func:`.create_discipline` API function,
-we create an :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
-from a python function:
+we create an :class:`.Discipline` of :class:`.AutoPyDiscipline` type
+from a python function.
+We also configure the GEMSEO logger with the :func:`configure_logger` function.
 
-.. code::
 
+.. code:: python
+
+    from gemseo import configure_logger
     from gemseo import create_discipline
+
+    configure_logger()
 
     def f(x1=0., x2=0.):
         y = x1 + x2
@@ -53,7 +58,7 @@ from a python function:
 
     discipline = create_discipline("AutoPyDiscipline", py_func=f)
 
-Now, we want to minimize this :class:`.MDODiscipline` over a design of experiments (DOE).
+Now, we want to minimize this :class:`.Discipline` over a design of experiments (DOE).
 
 1.b. Define the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,22 +67,22 @@ For that, by means of the :func:`.create_design_space` API function,
 we define the :class:`.DesignSpace` :math:`[-5, 5]\times[-5, 5]`
 by using its :meth:`~.DesignSpace.add_variable` method.
 
-.. code::
+.. code:: python
 
    from gemseo import create_design_space
 
    design_space = create_design_space()
-   design_space.add_variable("x1", 1, l_b=-5, u_b=5, var_type="integer")
-   design_space.add_variable("x2", 1, l_b=-5, u_b=5, var_type="integer")
+   design_space.add_variable("x1", 1, lower_bound=-5, upper_bound=5, type_="integer")
+   design_space.add_variable("x2", 1, lower_bound=-5, upper_bound=5, type_="integer")
 
 1.c. Define the DOE scenario
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the :func:`.create_scenario` API function,
-we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
+we define a :class:`.DOEScenario` from the :class:`.Discipline`
 and the :class:`.DesignSpace` defined above:
 
-.. code::
+.. code:: python
 
    from gemseo import create_scenario
 
@@ -92,21 +97,17 @@ Lastly, we solve the :class:`.OptimizationProblem` included in the :class:`.DOES
 defined above by minimizing the objective function over a design of experiments included in the :class:`.DesignSpace`.
 Precisely, we choose a `full factorial design <https://en.wikipedia.org/wiki/Factorial_experiment>`_ of size :math:`11^2`:
 
-.. code::
+.. code:: python
 
-   scenario.execute({"algo": "fullfact", "n_samples": 11**2})
+   scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
 
 The optimum results can be found in the execution log. It is also possible to
-extract them by invoking the :meth:`~.Scenario.get_optimum` method. It
-returns a dictionary containing the optimum results for the
-scenario under consideration:
+extract them from the :attr:`.Scenario.optimization_result`.
 
-.. code::
+.. code:: python
 
-   opt_results = scenario.get_optimum()
-   print("The solution of P is (x*,f(x*)) = ({}, {})".format(
-       opt_results.x_opt, opt_results.f_opt
-   ))
+   optimization_result = scenario.optimization_result
+   print(f"The solution of P is (x*,f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})")
 
 which yields:
 
@@ -115,7 +116,7 @@ which yields:
    The solution of P is (x*,f(x*)) = ([-5, -5], -10.0).
 
 2. Optimization based on a quasi-Newton method by means of the library `scipy <https://scipy.org/>`_
-********************************************************************************************************
+****************************************************************************************************
 
 Let :math:`(P)` be a simple optimization problem:
 
@@ -130,7 +131,7 @@ Let :math:`(P)` be a simple optimization problem:
    \end{aligned}
    \right.
 
-In this subsection, we will see how to use **|g|** to solve this problem :math:`(P)` by means of an optimizer
+In this subsection, we will see how to use |g| to solve this problem :math:`(P)` by means of an optimizer
 directly used from the library `SciPy <https://scipy.org/>`_.
 
 2.a. Define the objective function
@@ -141,7 +142,6 @@ Firstly, we create the objective function and its gradient as standard python fu
 .. code-block:: python
 
     import numpy as np
-    from gemseo import create_discipline
 
     def g(x=0):
         y = np.sin(x) - np.exp(x)
@@ -154,7 +154,7 @@ Firstly, we create the objective function and its gradient as standard python fu
 2.b. Minimize the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now, we can to minimize this :class:`.MDODiscipline` over its design space by means of
+Now, we can minimize this python function over its design space by means of
 the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the function ``scipy.optimize.fmin_l_bfgs_b``.
 
 .. code-block:: python
@@ -169,20 +169,20 @@ Then, we can display the solution of our optimization problem with the following
 
 .. code::
 
-   print("The solution of P is (x*,f(x*)) = ({}, {})".format(x_opt[0], f_opt[0]))
+   print(f"The solution of P is (x*,f(x*)) = ({x_opt[0]}, {f_opt}).")
 
 which gives:
 
 .. code:: bash
 
-   The solution of P is (x*,f(x*)) = (-0.2, -1.01740008).
+   The solution of P is (x*,f(x*)) = (-0.2, -1.017400083873043).
 
 .. seealso::
 
    You can found the scipy implementation of the L-BFGS-B algorithm `by clicking here <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.
 
 3. Optimization based on a quasi-Newton method by means of the |g| optimization interface
-*****************************************************************************************************
+*****************************************************************************************
 
 Let :math:`(P)` be a simple optimization problem:
 
@@ -197,14 +197,14 @@ Let :math:`(P)` be a simple optimization problem:
    \end{aligned}
    \right.
 
-In this subsection, we will see how to use **|g|** to solve this problem :math:`(P)` by means of an optimizer
-from `SciPy <https://scipy.org/>`_ called through the optimization interface of **|g|**.
+In this subsection, we will see how to use |g| to solve this problem :math:`(P)` by means of an optimizer
+from `SciPy <https://scipy.org/>`_ called through the optimization interface of |g|.
 
 3.a. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Firstly, by means of the :func:`.create_discipline` API function,
-we create an :class:`.MDODiscipline` of :class:`.AutoPyDiscipline` type
+we create an :class:`.Discipline` of :class:`.AutoPyDiscipline` type
 from a python function:
 
 .. code-block:: python
@@ -222,7 +222,7 @@ from a python function:
 
     discipline = create_discipline("AutoPyDiscipline", py_func=g, py_jac=dgdx)
 
-Now, we can to minimize this :class:`.MDODiscipline` over a design space,
+Now, we can to minimize this :class:`.Discipline` over a design space,
 by means of a quasi-Newton method from the initial point :math:`0.5`.
 
 3.b. Define the design space
@@ -238,13 +238,13 @@ by using its :meth:`~.DesignSpace.add_variable` method.
    from gemseo import create_design_space
 
    design_space = create_design_space()
-   design_space.add_variable("x", 1, l_b=-2., u_b=2., value=-0.5 * np.ones(1))
+   design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2., value=-0.5 * np.ones(1))
 
 3.c. Define the optimization problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the :func:`.create_scenario` API function,
-we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
+we define an :class:`.MDOScenario` from the :class:`.Discipline`
 and the :class:`.DesignSpace` defined above:
 
 .. code::
@@ -262,21 +262,19 @@ Lastly, we solve the :class:`.OptimizationProblem` included in the :class:`.MDOS
 defined above by minimizing the objective function over the :class:`.DesignSpace`.
 Precisely, we choose the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 implemented in the function ``scipy.optimize.fmin_l_bfgs_b`` and
-indirectly called by means of the class :class:`.OptimizersFactory` and of its function :meth:`~.BaseAlgoFactory.execute`:
+indirectly called by means of the class :class:`.OptimizationLibraryFactory` and of its function :meth:`~.BaseAlgoFactory.execute`:
 
 .. code-block:: python
 
-   scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
+   scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 The optimization results are displayed in the log file. They can also be
 obtained using the following code:
 
 .. code::
 
-   opt_results = scenario.get_optimum()
-   print("The solution of P is (x*,f(x*)) = ({}, {})".format(
-       opt_results.x_opt, opt_results.f_opt
-   ))
+   optimization_result = scenario.optimization_result
+   print(f"The solution of P is (x*,f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt}).")
 
 
 which yields:
@@ -287,7 +285,7 @@ which yields:
 
 .. seealso::
 
-   You can found the `SciPy <https://scipy.org/>`_ implementation of the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ algorithm `by clicking here <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.
+   You can find the `SciPy <https://scipy.org/>`_ implementation of the `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ algorithm `by clicking here <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.
 
 .. tip::
 
@@ -298,9 +296,9 @@ which yields:
       from gemseo import get_available_opt_algorithms
 
       algo_list = get_available_opt_algorithms()
-      print('Available algorithms: {}'.format(algo_list))
+      print(f"Available algorithms: {algo_list}")
 
-   what gives:
+   which gives:
 
    .. code::
 
@@ -310,15 +308,15 @@ which yields:
 4. Saving and post-processing
 *****************************
 
-After the resolution of the :class:`~gemseo.algos.opt_problem.OptimizationProblem`, we can export the results into a :term:`HDF` file:
+After the resolution of the :class:`~gemseo.algos.optimization_problem.OptimizationProblem`, we can export the results into a :term:`HDF` file:
 
 .. code::
 
-   problem = scenario.formulation.opt_problem
+   problem = scenario.formulation.optimization_problem
    problem.to_hdf("my_optim.hdf5")
 
 We can also post-process the optimization history by means of the function :func:`.execute_post`,
-either from the :class:`~gemseo.algos.opt_problem.OptimizationProblem`:
+either from the :class:`~gemseo.algos.optimization_problem.OptimizationProblem`:
 
 .. code::
 

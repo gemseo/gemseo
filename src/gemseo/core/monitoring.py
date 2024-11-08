@@ -21,11 +21,25 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Protocol
 
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 
 if TYPE_CHECKING:
-    from gemseo.core.scenario import Scenario
+    from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
+    from gemseo.core.execution_status import ExecutionStatus
+    from gemseo.scenarios.base_scenario import BaseScenario
+
+    class Observer(Protocol):
+        """API of an observer."""
+
+        def update(self, obj: Any) -> None:
+            """Update an observer.
+
+            Args:
+                obj: The object to update from.
+            """
 
 
 class Monitoring(metaclass=SingleInstancePerAttributeId):
@@ -36,17 +50,26 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
     add_observer and are notified whenever a discipline status change occurs.
     """
 
-    def __init__(self, scenario: Scenario) -> None:
+    _observers: list[Observer]
+    """The observers."""
+
+    workflow: BaseExecutionSequence
+    """The execution sequence."""
+
+    # TODO: API: pass the workflow instead of the scenario since this is only what
+    # matters.
+    # TODO: API: make attr private.
+    def __init__(self, scenario: BaseScenario) -> None:
         """
         Args:
             scenario: The scenario to be monitored.
         """  # noqa: D205, D212, D415
         self._observers = []
-        self.workflow = scenario.get_expected_workflow()
+        self.workflow = scenario.get_process_flow().get_execution_flow()
         self.workflow.set_observer(self)
         self.workflow.enable()
 
-    def add_observer(self, observer) -> None:
+    def add_observer(self, observer: Observer) -> None:
         """Register an observer object interested in observable update events.
 
         Args:
@@ -55,7 +78,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
         if observer not in self._observers:
             self._observers.append(observer)
 
-    def remove_observer(self, observer) -> None:
+    def remove_observer(self, observer: Observer) -> None:
         """Unsubscribe the given observer.
 
         Args:
@@ -66,9 +89,9 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
 
     def remove_all_observers(self) -> None:
         """Unsubscribe all observers."""
-        self._observers = []
+        self._observers.clear()
 
-    def update(self, atom) -> None:
+    def update(self, atom: Any) -> None:
         """Notify the observers that the corresponding observable object is updated.
 
         Observers have to know what to retrieve from the observable object.
@@ -79,7 +102,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
         for obs in self._observers:
             obs.update(atom)
 
-    def get_statuses(self) -> dict[str, str]:
+    def get_statuses(self) -> dict[str, ExecutionStatus.Status]:
         """Get the statuses of all disciplines.
 
         Returns:

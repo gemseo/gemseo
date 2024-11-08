@@ -36,7 +36,7 @@ from gemseo import get_discipline_inputs_schema
 from gemseo import get_discipline_options_defaults
 from gemseo import get_discipline_options_schema
 from gemseo import get_discipline_outputs_schema
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
 
@@ -47,7 +47,7 @@ configure_logger()
 # In this example, we will discover the different functions of the API
 # related to disciplines, which are the |g|' objects
 # dedicated to the representation of an input-output process. All classes
-# implementing disciplines inherit from :class:`.MDODiscipline` which is an
+# implementing disciplines inherit from :class:`.Discipline` which is an
 # abstract class.
 #
 # Get available disciplines
@@ -62,7 +62,7 @@ get_available_disciplines()
 # Create a discipline
 # -------------------
 # The :func:`.create_discipline` function can create a
-# :class:`.MDODiscipline` or a list of :class:`.MDODiscipline`
+# :class:`.Discipline` or a list of :class:`.Discipline`
 # by using its class name. Specific ``**options`` can be provided in
 # argument. E.g.
 disciplines = create_discipline([
@@ -71,9 +71,9 @@ disciplines = create_discipline([
     "SobieskiMission",
     "SobieskiStructure",
 ])
-type(disciplines), type(disciplines[0]), isinstance(disciplines[0], MDODiscipline)
+type(disciplines), type(disciplines[0]), isinstance(disciplines[0], Discipline)
 # %%
-# This function can also be used to create a particular :class:`.MDODiscipline`
+# This function can also be used to create a particular :class:`.Discipline`
 # from scratch, such as :class:`.AnalyticDiscipline`
 # or :class:`.AutoPyDiscipline`. E.g.
 addition = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
@@ -122,7 +122,7 @@ get_discipline_options_defaults("SobieskiMission")
 # Plot coupling structure
 # -----------------------
 # The :func:`.generate_coupling_graph` function plots the
-# coupling graph of a set of :class:`.MDODiscipline`:
+# coupling graph of a set of :class:`.Discipline`:
 generate_coupling_graph(disciplines, file_path="full_coupling_graph.pdf")
 generate_coupling_graph(
     disciplines, file_path="condensed_coupling_graph.pdf", full=False
@@ -130,5 +130,5 @@ generate_coupling_graph(
 
 # %%
 # The :func:`.generate_n2_plot` function plots the N2 diagram of
-# a set of :class:`.MDODiscipline`:
+# a set of :class:`.Discipline`:
 generate_n2_plot(disciplines, save=False, show=True)

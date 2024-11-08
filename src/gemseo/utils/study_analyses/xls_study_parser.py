@@ -29,12 +29,14 @@ from pandas import DataFrame
 from pandas import read_excel
 
 from gemseo import get_available_formulations
-from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from gemseo.core.discipline import Discipline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -128,16 +130,16 @@ class XLSStudyParser:
     worksheets: dict[str, DataFrame]
     """The worksheets of the Excel file."""
 
-    disciplines: dict[str, MDODiscipline]
+    disciplines: dict[str, Discipline]
     """The non-executable disciplines."""
 
     scenarios: dict[str, dict[str, str | list[str]]]
     """The descriptions of the scenarios."""
 
-    inputs: set[str]
+    input_names: set[str]
     """The names of the input variables."""
 
-    outputs: set[str]
+    output_names: set[str]
     """The names of the output variables."""
 
     SCENARIO_PREFIX: Final[str] = "Scenario"
@@ -175,8 +177,8 @@ class XLSStudyParser:
         self.__log_number_objects_detected(True)
         self.disciplines = {}
         self.scenarios = {}
-        self.inputs = set()
-        self.outputs = set()
+        self.input_names = set()
+        self.output_names = set()
 
         self._init_disciplines()
         self.__set_scenario_descriptions()
@@ -205,33 +207,33 @@ class XLSStudyParser:
             # e.g. "Discipline{1}".
             string.add("{}", sheet_name)
             try:
-                inputs = self.__get_series(sheet_value, self.__INPUTS)
-                all_inputs += inputs
+                input_names = self.__get_series(sheet_value, self.__INPUTS)
+                all_inputs += input_names
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(sheet_name, self.__INPUTS)
                 ) from None
 
             try:
-                outputs = self.__get_series(sheet_value, self.__OUTPUTS)
-                all_outputs += outputs
+                output_names = self.__get_series(sheet_value, self.__OUTPUTS)
+                all_outputs += output_names
             except ValueError:
                 raise ValueError(
                     missing_column_msg.format(sheet_name, self.__OUTPUTS)
                 ) from None
 
-            discipline = MDODiscipline(sheet_name)
-            discipline.input_grammar.update_from_names(inputs)
-            discipline.output_grammar.update_from_names(outputs)
+            discipline = DummyDiscipline(sheet_name)
+            discipline.input_grammar.update_from_names(input_names)
+            discipline.output_grammar.update_from_names(output_names)
             string.indent()
-            string.add("{}: {}", self.__INPUTS, pretty_str(inputs))
-            string.add("{}: {}", self.__OUTPUTS, pretty_str(outputs))
+            string.add("{}: {}", self.__INPUTS, pretty_str(input_names))
+            string.add("{}: {}", self.__OUTPUTS, pretty_str(output_names))
             string.dedent()
             self.disciplines[sheet_name] = discipline
 
         LOGGER.info("%s", string)
-        self.inputs = set(all_inputs)
-        self.outputs = set(all_outputs)
+        self.input_names = set(all_inputs)
+        self.output_names = set(all_outputs)
 
     @staticmethod
     def __get_series(
@@ -388,7 +390,7 @@ class XLSStudyParser:
         constraints: Iterable[str],
         disciplines: Iterable[str],
         design_variables: Iterable[str],
-        formulation: str,
+        formulation_name: str,
         scenario_name: str,
     ) -> None:
         """Checks the optimization problem consistency.
@@ -398,7 +400,7 @@ class XLSStudyParser:
             constraints: The names of the constraints.
             disciplines: The names of the disciplines.
             design_variables: The names of the design variables.
-            formulation: The name of the MDO formulation.
+            formulation_name: The name of the MDO formulation.
             scenario_name: The name of the scenario.
 
         Raises:
@@ -419,10 +421,10 @@ class XLSStudyParser:
         string.add("Disciplines: {}", pretty_str(disciplines))
         string.add("Constraints: {}", pretty_str(constraints))
         string.add("Design variables: {}", pretty_str(design_variables))
-        string.add("Formulation: {}", formulation)
+        string.add("Formulation: {}", formulation_name)
         LOGGER.info("%s", string)
 
-        missing = set(design_variables) - self.inputs
+        missing = set(design_variables) - self.input_names
         if missing:
             msg = (
                 f"{scenario_name}: some design variables are not "
@@ -435,7 +437,7 @@ class XLSStudyParser:
             msg = f"{scenario_name}: some disciplines don't exist: {missing}."
             raise ValueError(msg)
 
-        missing = set(constraints) - self.outputs
+        missing = set(constraints) - self.output_names
         if missing:
             msg = (
                 f"{scenario_name}: some constraints are not "
@@ -443,7 +445,7 @@ class XLSStudyParser:
             )
             raise ValueError(msg)
 
-        missing = set(objectives) - self.outputs
+        missing = set(objectives) - self.output_names
         if missing:
             msg = (
                 f"{scenario_name}: some objectives are not "
@@ -454,9 +456,9 @@ class XLSStudyParser:
             msg = f"{scenario_name}: no objectives are defined"
             raise ValueError(msg)
 
-        if formulation not in get_available_formulations():
+        if formulation_name not in get_available_formulations():
             msg = (
-                f"{scenario_name}: unknown formulation '{formulation}'; "
+                f"{scenario_name}: unknown formulation '{formulation_name}'; "
                 f"use one of: {get_available_formulations()}"
             )
             raise ValueError(msg)

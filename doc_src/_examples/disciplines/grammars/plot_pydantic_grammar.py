@@ -16,7 +16,7 @@
 # Contributors:
 # Antoine DECHAUME
 """
-Use a pydantic grammar
+Use a Pydantic grammar
 ======================
 """
 
@@ -28,19 +28,19 @@ from pydantic import Field
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 
 # %%
-# Create the pydantic model
+# Create the Pydantic model
 # -------------------------
 #
-# The pydantic model is a class deriving from ``pydantic.BaseModel``
+# The Pydantic model is a class deriving from ``pydantic.BaseModel``
 # that describes the names and types of the data to be validated.
 # Descriptions are defined with docstrings, default values can be defined naturally.
 # Mind that default values with a mutable object must be defined with the
 # ``default_factory`` of a ``Field``.
 # By default,
-# pydantic does not handle the typing of NumPy arrays.
+# Pydantic does not handle the typing of NumPy arrays.
 # To support it,
 # a special type shall be used, ``NDArrayPydantic``.
 # Like the standard NumPy type for ``ndarray``, ``NDArray``,
@@ -111,14 +111,14 @@ grammar.validate({
 # Grammar defaults
 # ----------------
 # As compared to the other types of grammars, the grammar defaults are be defined
-# in the pydantic model and does not require to be manually defined from the grammar.
+# in the Pydantic model and does not require to be manually defined from the grammar.
 grammar.defaults
 
 # %%
 # Model inheritance
 # -----------------
-# Since pydantic models are classes, one can easily build grammar via inheritance of the
-# pydantic model.
+# Since Pydantic models are classes, one can easily build grammar via inheritance of the
+# Pydantic model.
 # Here we change the type of one element, and we add a new one.
 
 

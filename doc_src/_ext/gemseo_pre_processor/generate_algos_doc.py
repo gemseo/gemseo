@@ -25,33 +25,87 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import NamedTuple
 
 import jinja2
+from pydantic_core import PydanticUndefined
 
 from gemseo import _get_schema
-from gemseo import get_algorithm_features
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
-from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.formulations.formulations_factory import MDOFormulationsFactory
-from gemseo.mda.mda_factory import MDAFactory
-from gemseo.mlearning.classification.factory import ClassificationModelFactory
-from gemseo.mlearning.clustering.factory import ClusteringModelFactory
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
-from gemseo.mlearning.regression.factory import RegressionModelFactory
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.disciplines_factory import DisciplinesFactory
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.algos.ode.factory import ODESolverLibraryFactory
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.disciplines.factory import DisciplineFactory
+from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.mda.factory import MDAFactory
+from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
+    from pydantic.fields import FieldInfo
+
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
-    from gemseo.algos.driver_library import DriverLibrary
+    from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.core.base_factory import BaseFactory
 
 GEN_OPTS_PATH = None
+
+
+class AlgorithmFeatures(NamedTuple):
+    """The features of an algorithm."""
+
+    algorithm_name: str
+    library_name: str
+    root_package_name: str
+    handle_equality_constraints: bool
+    handle_inequality_constraints: bool
+    handle_float_variables: bool
+    handle_integer_variables: bool
+    handle_multiobjective: bool
+    require_gradient: bool
+
+
+def get_algorithm_features(
+    algorithm_name: str,
+) -> AlgorithmFeatures:
+    """Return the features of an optimization algorithm.
+
+    Args:
+        algorithm_name: The name of the optimization algorithm.
+
+    Returns:
+        The features of the optimization algorithm.
+
+    Raises:
+        ValueError: When the optimization algorithm does not exist.
+    """
+    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+
+    factory = OptimizationLibraryFactory()
+    if not factory.is_available(algorithm_name):
+        msg = f"{algorithm_name} is not the name of an optimization algorithm."
+        raise ValueError(msg)
+
+    driver = factory.create(algorithm_name)
+    description = driver.ALGORITHM_INFOS[algorithm_name]
+    return AlgorithmFeatures(
+        algorithm_name=description.algorithm_name,
+        library_name=description.library_name,
+        root_package_name=factory.get_library_name(driver.__class__.__name__),
+        handle_equality_constraints=description.handle_equality_constraints,
+        handle_inequality_constraints=description.handle_inequality_constraints,
+        handle_float_variables=True,
+        handle_integer_variables=description.handle_integer_variables,
+        handle_multiobjective=description.handle_multiobjective,
+        require_gradient=description.require_gradient,
+    )
 
 
 def get_options_schemas(
@@ -73,18 +127,13 @@ def get_options_schemas(
     obj_type = "type"
     all_data = feature_api_opts_pt(feature_name, output_json=False)
     all_options = all_data["properties"]
-    for opt_name, opt_schema in list(all_options.items()):
+    for _opt_name, opt_schema in list(all_options.items()):
         if descr in opt_schema:
             opt_schema[descr] = opt_schema[descr].replace("\n", " ")
         elif "anyOf" in opt_schema:
             if descr in opt_schema["anyOf"][0]:
                 opt_schema[descr] = opt_schema["anyOf"][0][descr].replace("\n", " ")
         else:
-            print(
-                Warning(
-                    f"Missing description for option {opt_name} of algo {feature_name}"
-                )
-            )
             opt_schema[descr] = ""
         if obj_type in opt_schema:
             opt_schema[obj_type] = opt_schema[obj_type].replace("\n", " ")
@@ -95,11 +144,6 @@ def get_options_schemas(
                     var_types.append(sub_opt_schema[obj_type].replace("\n", " "))
             opt_schema[obj_type] = "Union[{}]".format(",".join(var_types))
         else:
-            print(
-                Warning(
-                    f"Missing object type for option {opt_name} of algo {feature_name}"
-                )
-            )
             opt_schema[obj_type] = ""
 
     return all_options
@@ -114,13 +158,10 @@ def update_options_from_rest_docstring(
         algo: The name of the algorithms.
         options: The reST docstring of a function.
     """
-    for option_name, option in options.items():
+    for option in options.values():
         try:
             tmp = re.split(r":type ([*\w]+): (.*?)", option["description"])
         except KeyError:
-            print(
-                f"ERROR: failed to detect description for {option_name} of algorithm {algo}"
-            )
             tmp = [""] * 4
 
         option["description"] = tmp[0]
@@ -155,19 +196,22 @@ class AlgoOptionsDoc:
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
+        pydantic_model_module_path: str = "",
     ) -> None:
-        """
-        Args:
-            algo_type: The name of the algorithm type, e.g. "formulation",
-                to be used internally (e.g. HTML anchors).
-            long_algo_type: The long name of the algorithm type, e.g. "MDO formulation",
-                to be used externally (e.g. HTML rendering).
-            algo_factory: The factory of algorithms.
-            template: The name of the template file located in the same directory
-                as the current file.
-                If None, :attr:`AlgoOptionsDoc.TEMPLATE` will be used.
-            user_guide_anchor: The anchor of the section of the user guide
-                about these algorithms.
+        """Args:
+        algo_type: The name of the algorithm type, e.g. "formulation",
+            to be used internally (e.g. HTML anchors).
+        long_algo_type: The long name of the algorithm type, e.g. "MDO formulation",
+            to be used externally (e.g. HTML rendering).
+        algo_factory: The factory of algorithms.
+        template: The name of the template file located in the same directory
+            as the current file.
+            If None, :attr:`AlgoOptionsDoc.TEMPLATE` will be used.
+        user_guide_anchor: The anchor of the section of the user guide
+            about these algorithms.
+        use_pydantic_model: Whether the classes use Pydantic settings.
+        pydantic_model_module_path: The path to the module including the Pydantic model.
         """
         if template is None:
             self.template = self.TEMPLATE
@@ -197,6 +241,8 @@ class AlgoOptionsDoc:
         self.get_description = None
         self.get_features = None
         self.user_guide_anchor = user_guide_anchor
+        self.use_pydantic_model = use_pydantic_model
+        self.pydantic_model_module_path = pydantic_model_module_path
 
     def get_module(self, algo_name: str) -> str:
         """Return the module path of an algorithm.
@@ -221,6 +267,19 @@ class AlgoOptionsDoc:
     def options(self) -> dict[str, str]:
         """The options of the different algorithms."""
         return {algo: self.get_options_schema(algo) for algo in self.algos_names}
+
+    @property
+    def pydantic_model_imports(self) -> dict[str, str]:
+        """The pydantic model imports for the different algorithms."""
+        if not self.pydantic_model_module_path:
+            return dict.fromkeys(self.algos_names, "")
+
+        pattern = f"from {self.pydantic_model_module_path} import " + "{}"
+        print(self.get_pydantic_model_class_name(self.algos_names[0]))
+        return {
+            algo: pattern.format(self.get_pydantic_model_class_name(algo))
+            for algo in self.algos_names
+        }
 
     @property
     def features(self) -> dict[str, str] | None:
@@ -288,10 +347,42 @@ class AlgoOptionsDoc:
             features=self.features,
             libraries=self.libraries,
             user_guide_anchor=self.user_guide_anchor,
+            use_pydantic_model=self.use_pydantic_model,
+            pydantic_model_imports=self.pydantic_model_imports,
         )
         output_file_path = Path(GEN_OPTS_PATH).parent / output_file_name
-        with open(output_file_path, "w", encoding="utf-8") as outf:
+        with Path(output_file_path).open("w", encoding="utf-8") as outf:
             outf.write(doc)
+
+    @classmethod
+    def get_options_schema_from_pydantic_model(
+        cls,
+        model: BaseModel,
+    ) -> dict[str, dict[str, str]]:
+        return {
+            name: {
+                "ptype": field.annotation,
+                "description": field.description,
+                **(
+                    {}
+                    if field.is_required()
+                    else {"default": cls.__get_pydantic_default(field)}
+                ),
+            }
+            for name, field in model.model_fields.items()
+        }
+
+    @staticmethod
+    def __get_pydantic_default(field: FieldInfo) -> Any:
+        default = field.default
+        if default is PydanticUndefined:
+            default_factory = field.default_factory
+            if default_factory is dict:
+                return {}
+            if default_factory is list:
+                return []
+
+        return default
 
     @staticmethod
     def get_options_schema_from_method(
@@ -311,8 +402,8 @@ class AlgoOptionsDoc:
         return {
             names[name]: {
                 "ptype": type_,
-                "default": defaults.get(name, ""),
                 "description": descriptions.get(name, ""),
+                **({"default": defaults[name]} if name in defaults else {}),
             }
             for name, type_ in types.items()
         }
@@ -328,6 +419,8 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
+        pydantic_model_module_path: str = "",
     ) -> None:
         super().__init__(
             algo_type,
@@ -335,12 +428,29 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             algo_factory,
             template=template,
             user_guide_anchor=user_guide_anchor,
+            use_pydantic_model=use_pydantic_model,
+            pydantic_model_module_path=pydantic_model_module_path,
         )
         self.algos_names = algo_factory.algorithms
         self.get_description = self.__default_description_getter(algo_factory)
         self.get_website = self.__default_website_getter(algo_factory)
         self.get_class = self.__default_class_getter(algo_factory)
-        self.get_options_schema = self.__default_options_schema_getter(algo_factory)
+
+        def f(algo):
+            klass = self.get_class(algo)
+            return klass.ALGORITHM_INFOS[algo].Settings.__name__
+
+        self.get_pydantic_model_class_name = f
+
+        def get_options_schema(algo):
+            klass = self.get_class(algo)
+            schema = self.get_options_schema_from_pydantic_model(
+                klass.ALGORITHM_INFOS[algo].Settings
+            )
+            return schema
+
+        self.get_options_schema = get_options_schema
+
         if algo_type == "opt":
             self.get_features = get_algorithm_features
 
@@ -350,7 +460,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
     ) -> Callable[[str], dict[dict[str, str]]]:
         """Return the default algorithm description getter from a driver factory."""
 
-        def get_options_schema(algo: str) -> dict[dict[str, str]]:
+        def get_options_schema(algo: str) -> dict[str, str]:
             """Return the options schema.
 
             Args:
@@ -359,21 +469,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The options schema.
             """
-            options_schema = self.get_options_schema_from_method(
-                self.get_class(algo)._get_options
-            )
-            algo_lib = algo_factory.create(algo)
-            options_grammar = algo_lib.init_options_grammar(algo)
-            options = {
-                k: v for k, v in options_schema.items() if k in options_grammar.names
-            }
-            for name in options_grammar.required_names:
-                if name not in options:
-                    options[name] = {}
-
-                options[name]["default"] = ""
-
-            return options
+            return self.get_class(algo).ALGORITHM_INFOS[algo].Settings.model_fields
 
         return get_options_schema
 
@@ -392,7 +488,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The description of the algorithm.
             """
-            return algo_factory.create(algo).descriptions[algo].description
+            return algo_factory.create(algo).ALGORITHM_INFOS[algo].description
 
         return get_description
 
@@ -411,17 +507,17 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The website associated with the algorithm.
             """
-            return algo_factory.create(algo).descriptions[algo].website
+            return algo_factory.create(algo).ALGORITHM_INFOS[algo].website
 
         return get_website
 
     @staticmethod
     def __default_class_getter(
         algo_factory: BaseAlgoFactory,
-    ) -> Callable[[str], DriverLibrary]:
+    ) -> Callable[[str], BaseDriverLibrary]:
         """Return the default algorithm class getter from a driver factory."""
 
-        def get_class(algo: str) -> DriverLibrary:
+        def get_class(algo: str) -> BaseDriverLibrary:
             """Return the driver library associated with an algorithm.
 
             Args:
@@ -435,7 +531,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
         return get_class
 
 
-class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
+class BasePostAlgoOptionsDoc(AlgoOptionsDoc):
     """Generator of the reST documentation of a post-processor from a Jinja2
     template."""
 
@@ -446,6 +542,8 @@ class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
+        pydantic_model_module_path: str = "",
     ) -> None:
         super().__init__(
             algo_type,
@@ -453,13 +551,19 @@ class OptPostProcessorAlgoOptionsDoc(AlgoOptionsDoc):
             algo_factory,
             template=template,
             user_guide_anchor=user_guide_anchor,
+            use_pydantic_model=use_pydantic_model,
+            pydantic_model_module_path=pydantic_model_module_path,
         )
+
+        def f(algo):
+            klass = self.get_class(algo)
+            return klass.Settings.__name__
+
+        self.get_pydantic_model_class_name = f
 
         def get_options_schema(algo):
             klass = self.get_class(algo)
-            schema = self.get_options_schema_from_method(klass.execute)
-            schema.update(self.get_options_schema_from_method(klass._run))
-            schema.update(self.get_options_schema_from_method(klass._plot))
+            schema = self.get_options_schema_from_pydantic_model(klass.Settings)
             return schema
 
         self.get_options_schema = get_options_schema
@@ -475,6 +579,8 @@ class InitOptionsDoc(AlgoOptionsDoc):
         algo_factory: Any | BaseFactory,
         template: str | None = None,
         user_guide_anchor: str = "",
+        use_pydantic_model: bool = True,
+        pydantic_model_module_path: str = "",
     ) -> None:
         super().__init__(
             algo_type,
@@ -482,6 +588,8 @@ class InitOptionsDoc(AlgoOptionsDoc):
             algo_factory,
             template=template,
             user_guide_anchor=user_guide_anchor,
+            use_pydantic_model=use_pydantic_model,
+            pydantic_model_module_path=pydantic_model_module_path,
         )
         self.get_options_schema = lambda algo: self.get_options_schema_from_method(
             self.get_class(algo).__init__
@@ -493,43 +601,91 @@ def main(gen_opts_path: str | Path) -> None:
     GEN_OPTS_PATH = gen_opts_path
 
     algos_options_docs = [
-        InitOptionsDoc("clustering", "Clustering algorithms", ClusteringModelFactory()),
-        InitOptionsDoc(
-            "classification", "Classification algorithms", ClassificationModelFactory()
+        BasePostAlgoOptionsDoc(
+            "clustering",
+            "Clustering algorithms",
+            ClustererFactory(),
+            pydantic_model_module_path="gemseo.settings.mlearning",
         ),
-        InitOptionsDoc("ml_quality", "Quality measures", MLQualityMeasureFactory()),
-        InitOptionsDoc("mda", "MDA algorithms", MDAFactory()),
-        InitOptionsDoc("formulation", "MDO formulations", MDOFormulationsFactory()),
-        OptPostProcessorAlgoOptionsDoc(
-            "post", "Post-processing algorithms", PostFactory()
-        ),
-        DriverOptionsDoc(
-            "doe", "DOE algorithms", DOEFactory(), user_guide_anchor="doe"
-        ),
-        DriverOptionsDoc("opt", "Optimization algorithms", OptimizersFactory()),
-        DriverOptionsDoc("linear_solver", "Linear solvers", LinearSolversFactory()),
-        DriverOptionsDoc(
-            "ode", "Ordinary differential equations solvers", ODESolversFactory()
+        BasePostAlgoOptionsDoc(
+            "classification",
+            "Classification algorithms",
+            ClassifierFactory(),
+            pydantic_model_module_path="gemseo.settings.mlearning",
         ),
         InitOptionsDoc(
-            "distribution", "Probability distributions", DistributionFactory()
+            "ml_quality",
+            "Quality measures",
+            MLAlgoQualityFactory(),
+            use_pydantic_model=False,
+        ),
+        BasePostAlgoOptionsDoc(
+            "mda",
+            "MDA algorithms",
+            MDAFactory(),
+            pydantic_model_module_path="gemseo.settings.mda",
+        ),
+        BasePostAlgoOptionsDoc(
+            "formulation",
+            "MDO formulations",
+            MDOFormulationFactory(),
+            pydantic_model_module_path="gemseo.settings.formulations",
+        ),
+        BasePostAlgoOptionsDoc(
+            "post",
+            "Post-processing algorithms",
+            PostFactory(),
+            pydantic_model_module_path="gemseo.settings.post",
+        ),
+        DriverOptionsDoc(
+            "doe",
+            "DOE algorithms",
+            DOELibraryFactory(),
+            user_guide_anchor="doe",
+            pydantic_model_module_path="gemseo.settings.doe",
+        ),
+        DriverOptionsDoc(
+            "opt",
+            "Optimization algorithms",
+            OptimizationLibraryFactory(),
+            pydantic_model_module_path="gemseo.settings.opt",
+        ),
+        DriverOptionsDoc(
+            "linear_solver",
+            "Linear solvers",
+            LinearSolverLibraryFactory(),
+            pydantic_model_module_path="gemseo.settings.linear_solvers",
+        ),
+        DriverOptionsDoc(
+            "ode",
+            "Ordinary differential equations solvers",
+            ODESolverLibraryFactory(),
+            pydantic_model_module_path="gemseo.settings.ode",
+        ),
+        InitOptionsDoc(
+            "distribution",
+            "Probability distributions",
+            DistributionFactory(),
+            use_pydantic_model=False,
         ),
         InitOptionsDoc(
             "sensitivity",
             "Sensitivity analysis algorithms",
             SensitivityAnalysisFactory(),
+            use_pydantic_model=False,
         ),
         InitOptionsDoc(
-            "discipline",
-            "Disciplines",
-            DisciplinesFactory(),
+            "discipline", "Disciplines", DisciplineFactory(), use_pydantic_model=False
         ),
     ]
     for algos_options_doc in algos_options_docs:
         algos_options_doc.to_rst()
 
-    options_doc = InitOptionsDoc(
-        "regression", "Regression algorithms", RegressionModelFactory()
+    options_doc = BasePostAlgoOptionsDoc(
+        "regression",
+        "Regression algorithms",
+        RegressorFactory(),
+        pydantic_model_module_path="gemseo.settings.mlearning",
     )
     options_doc.to_rst()
     options_doc.to_rst("surrogate_algos_template.tmpl", "surrogate_algos.rst")

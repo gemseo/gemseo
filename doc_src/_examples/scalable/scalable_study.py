@@ -33,11 +33,11 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.aerostructure.aerostructure_design_space import (
+from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.problems.scalable.data_driven import create_scalability_study
-from gemseo.problems.scalable.data_driven import plot_scalability_results
+from gemseo.problems.mdo.scalable.data_driven import create_scalability_study
+from gemseo.problems.mdo.scalable.data_driven import plot_scalability_results
 
 configure_logger()
 
@@ -51,18 +51,18 @@ datasets = {}
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 for discipline in disciplines:
     design_space = AerostructureDesignSpace()
-    design_space.filter(discipline.get_input_data_names())
-    output_names = iter(discipline.get_output_data_names())
+    design_space.filter(discipline.io.input_grammar.names)
+    output_names = iter(discipline.io.output_grammar.names)
     scenario = create_scenario(
         discipline,
-        "DisciplinaryOpt",
         next(output_names),
         design_space,
+        formulation_name="DisciplinaryOpt",
         scenario_type="DOE",
     )
     for output_name in output_names:
         scenario.add_observable(output_name)
-    scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
+    scenario.execute(algo_name="DiagonalDOE", n_samples=10)
     datasets[discipline.name] = scenario.to_dataset(
         name=discipline.name, opt_naming=False
     )

@@ -11,13 +11,37 @@ The following people are the contributors to |g|'s development and maintenance:
 .. raw :: html
 
     <style>
-        img.avatar {border-radius: 10px;}
-        div.avatar {text-align:center;}
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .gallery-item {
+            width: 100px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+        .gallery-caption {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
     </style>
-    <div class="sk-authors-container">
-{% for author in authors %}
-        <div class="avatar">
-            <img src="_static/authors/{{ author[2] }}" class="avatar"/><br/>{{ author[0] }}<br/>{{ author[1] }}
-        </div>
+    <div class="container mt-4">
+        <div class="gallery-container">
+{% for (name, surname, file_name) in authors %}
+            <div class="gallery-item col-1">
+                <img src="_static/authors/{{ file_name }}"/>
+                <div class="gallery-caption">{{ name }} {{ surname }}</div>
+            </div>
 {% endfor %}
+        </div>
     </div>

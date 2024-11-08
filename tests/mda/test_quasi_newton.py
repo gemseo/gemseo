@@ -24,35 +24,35 @@ from numpy import array
 from numpy import linalg
 
 from gemseo.mda.quasi_newton import MDAQuasiNewton
-from gemseo.problems.sellar.sellar import X_SHARED
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import get_y_opt
+from gemseo.mda.quasi_newton import QuasiNewtonMethod
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.utils import get_y_opt
+from gemseo.problems.mdo.sellar.variables import X_SHARED
 
 from .test_gauss_seidel import SelfCoupledDisc
 
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
 
 
-def test_quasi_newton_invalid_method() -> None:
-    """Test invalid method names for quasi Newton."""
-    with pytest.raises(
-        ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
-    ):
-        MDAQuasiNewton([Sellar1(), Sellar2()], method="unknown_method")
-
-
-def test_broyden_sellar() -> None:
-    """Test the execution of quasi-Newton on Sellar."""
-    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.BROYDEN1)
+@pytest.mark.parametrize(
+    "method",
+    [
+        QuasiNewtonMethod.BROYDEN1,
+        QuasiNewtonMethod.BROYDEN2,
+    ],
+)
+def test_broyden_sellar(method) -> None:
+    """Test the execution of quasi-Newton on Sellar with a Broyden method."""
+    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=method)
     mda.reset_history_each_run = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-5
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
-    mda.warm_start = True
-    mda.execute({X_SHARED: mda.default_inputs[X_SHARED] + 0.1})
+    mda.settings.warm_start = True
+    mda.execute({X_SHARED: mda.default_input_data[X_SHARED] + 0.1})
 
 
 def test_hybrid_sellar() -> None:
@@ -69,7 +69,9 @@ def test_lm_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDAQuasiNewton(
-        disciplines, method=MDAQuasiNewton.LEVENBERG_MARQUARDT, use_gradient=True
+        disciplines,
+        method=QuasiNewtonMethod.LEVENBERG_MARQUARDT,
+        use_gradient=True,
     )
     mda.execute()
 
@@ -78,24 +80,20 @@ def test_lm_sellar() -> None:
 
 def test_dfsane_sellar() -> None:
     """Test the execution of quasi-Newton on Sellar."""
-    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=MDAQuasiNewton.DF_SANE)
+    mda = MDAQuasiNewton([Sellar1(), Sellar2()], method=QuasiNewtonMethod.DF_SANE)
     mda.execute()
 
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
-    with pytest.raises(
-        ValueError, match="Method 'unknown_method' is not a valid quasi-Newton method."
-    ):
-        MDAQuasiNewton([Sellar1(), Sellar2()], method="unknown_method")
 
 
 def test_broyden_sellar2() -> None:
     """Test the execution of quasi-Newton on Sellar."""
     disciplines = [Sellar1(), SellarSystem()]
-    mda = MDAQuasiNewton(disciplines, method=MDAQuasiNewton.BROYDEN1)
+    mda = MDAQuasiNewton(disciplines, method=QuasiNewtonMethod.BROYDEN1)
     mda.reset_history_each_run = True
     mda.execute()
 
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-6
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_self_coupled() -> None:
@@ -104,3 +102,13 @@ def test_self_coupled() -> None:
     mda = MDAQuasiNewton([sc_disc], tolerance=1e-14, max_mda_iter=40)
     out = mda.execute()
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
+
+
+@pytest.mark.parametrize("method", QuasiNewtonMethod)
+def test_methods_supporting_callbacks(method):
+    """Test MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS."""
+    mda = MDAQuasiNewton([Sellar1(), SellarSystem()], method=method)
+    method_supports_callbacks = method in MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS
+    assert (
+        mda.NORMALIZED_RESIDUAL_NORM in mda.output_grammar
+    ) is method_supports_callbacks

@@ -16,15 +16,16 @@
 from __future__ import annotations
 
 import datetime
+import json
 import os
 import re
 import sys
-from dataclasses import asdict
 from importlib.metadata import version as _version
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import requests
+from packaging.version import parse
 from sphinx_gallery.sorting import ExampleTitleSortKey
 
 os.chdir((Path(__file__).resolve()).parent)
@@ -33,14 +34,15 @@ for directory_name in ("_ext", "templates"):
     sys.path.append(str(Path(directory_name).resolve()))
 
 
-from gemseo_templator.blocks import features  # noqa: E402
-from gemseo_templator.blocks import main_concepts  # noqa: E402
-
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
 extensions = [
+    "add_toctree_functions",
+    "autodocsumm",
+    "default_kwargs_values",
+    "gemseo_pre_processor",
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
     "sphinx.ext.mathjax",
@@ -50,12 +52,10 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
-    "sphinxcontrib.plantuml",
+    "sphinx_design",
+    "sphinxcontrib.autodoc_pydantic",
     "sphinxcontrib.bibtex",
-    "autodocsumm",
-    "add_toctree_functions",
-    "gemseo_pre_processor",
-    "default_kwargs_values",
+    "sphinxcontrib.plantuml",
 ]
 
 ################################################################################
@@ -96,14 +96,21 @@ if not os.environ.get("DOC_WITHOUT_GALLERY"):
         "exclude_implicit_doc": {r"gemseo\.configure_logger"},
     }
 
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ["_templates"]
+
 ################################################################################
 # Settings for autodoc.
 
-autodoc_default_options = {"members": True, "inherited-members": True}
+# generate autosummary even if no references
+autosummary_generate = True
+
+# If False, class ClassName instead of class module_path.ClassName
+add_module_names = False
+
+autodoc_default_options = {"members": True, "inherited-members": False}
 
 autodoc_member_order = "groupwise"
-
-autosummary_generate = True
 
 # Show the typehints in the description instead of the signature.
 autodoc_typehints = "description"
@@ -121,7 +128,6 @@ autodoc_mock_imports = [
     "matlabengine",
     "da",
     "pymoo",
-    "petsc4py",
     "scilab2py",
     "pyfmi",
     "fmpy",
@@ -141,18 +147,14 @@ napoleon_include_special_with_doc = False
 ################################################################################
 # Settings for sphinx.
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["templates"]
+# If True,
+# the Smart Quotes transform will be used
+# to convert quotation marks and dashes to typographically correct entities.
+# This can be very slow.
+smartquotes = False
 
-# The suffix of source filenames.
-source_suffix = ".rst"
-
-nitpick_ignore_regex = []
-
+# If this is True, todo and todolist produce output, else they produce nothing.
 todo_include_todos = True
-
-# The master toctree document.
-master_doc = "contents"
 
 # General information about the project.
 project = "GEMSEO"
@@ -163,22 +165,87 @@ pretty_version = release = version = _version("gemseo")
 if "dev" in pretty_version:
     pretty_version = "develop"
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "scikit-learn-modern"
-
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ["themes"]
-
-# The name of an image file (relative to this directory) to place at the top
-# of the sidebar.
-# html_logo = None
-html_logo = "_static/logo-small.png"
+html_theme = "pydata_sphinx_theme"
+html_theme_options = {
+    # -- General configuration ------------------------------------------------
+    "sidebar_includehidden": True,
+    "use_edit_page_button": True,
+    "external_links": [],
+    "icon_links_label": "Icon Links",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://gitlab.com/gemseo/dev/gemseo",
+            "icon": "fa-brands fa-square-gitlab",
+            "type": "fontawesome",
+        },
+    ],
+    # If "prev-next" is included in article_footer_items, then setting show_prev_next
+    # to True would repeat prev and next links. See
+    # https://github.com/pydata/pydata-sphinx-theme/blob/b731dc230bc26a3d1d1bb039c56c977a9b3d25d8/src/pydata_sphinx_theme/theme/pydata_sphinx_theme/layout.html#L118-L129
+    "show_prev_next": False,
+    "search_bar_text": "Search the docs ...",
+    "navigation_with_keys": False,
+    "collapse_navigation": False,
+    "navigation_depth": 2,
+    "show_nav_level": 1,
+    "show_toc_level": 1,
+    "navbar_align": "left",
+    "header_links_before_dropdown": 5,
+    "header_dropdown_text": "More",
+    "switcher": {
+        "json_url": "https://gemseo.readthedocs.io/en/develop/_static/versions.json",
+        "version_match": release,
+    },
+    # check_switcher may be set to False if docbuild pipeline fails. See
+    # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/version-dropdown.html#configure-switcher-json-url
+    "check_switcher": True,
+    "pygments_light_style": "tango",
+    "pygments_dark_style": "monokai",
+    "logo": {
+        "alt_text": "gemseo homepage",
+        "image_relative": "_static/logo-small.png",
+        "image_light": "_static/logo-small.png",
+        "image_dark": "_static/logo-small.png",
+    },
+    "surface_warnings": True,
+    # -- Template placement in theme layouts ----------------------------------
+    "navbar_start": ["navbar-logo"],
+    # Note that the alignment of navbar_center is controlled by navbar_align
+    "navbar_center": ["navbar-nav"],
+    "navbar_end": ["theme-switcher", "navbar-icon-links", "version-switcher"],
+    # navbar_persistent is persistent right (even when on mobiles)
+    "navbar_persistent": ["search-button"],
+    "article_header_start": ["breadcrumbs"],
+    "article_header_end": [],
+    "article_footer_items": ["prev-next"],
+    "content_footer_items": [],
+    # Use html_sidebars that map page patterns to list of sidebar templates
+    "primary_sidebar_end": [],
+    "footer_start": ["copyright"],
+    "footer_center": [],
+    "footer_end": [],
+    # When specified as a dictionary, the keys should follow glob-style patterns, as in
+    # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-exclude_patterns
+    # In particular, "**" specifies the default for all pages
+    # Use :html_theme.sidebar_secondary.remove: for file-wide removal
+    "secondary_sidebar_items": {
+        "**": [
+            "page-toc",
+            "sourcelink",
+            # Sphinx-Gallery-specific sidebar components
+            # https://sphinx-gallery.github.io/stable/advanced.html#using-sphinx-gallery-sidebar-components
+            "sg_download_links",
+            "sg_launcher_links",
+        ],
+    },
+    "show_version_warning_banner": True,
+    "announcement": None,
+}
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -190,26 +257,32 @@ html_favicon = "_static/favicon.ico"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+# Custom sidebar templates, maps document names to template names.
+# Workaround for removing the left sidebar on pages without TOC
+# A better solution would be to follow the merge of:
+# https://github.com/pydata/pydata-sphinx-theme/pull/1682
+html_sidebars = {
+    "user_guide": [],
+    "api": [],
+    "examples_and_tutorials": [],
+    "faq": [],
+    "support": [],
+    "related_projects": [],
+    "roadmap": [],
+    "governance": [],
+    "about": [],
+}
+
 
 def setup(app) -> None:
-    app.add_css_file("css/gemseo.css")
-    app.add_css_file("css/all.css")
+    app.add_css_file("gemseo.css")
     app.add_css_file("xdsm/fontello.css")
     app.add_css_file("xdsm/xdsmjs.css")
     app.add_js_file("xdsm/xdsmjs.js")
 
 
-# Additional templates that should be rendered to pages, maps page names to
-# template names.
-html_additional_pages = {
-    "index": "index.html",
-    "documentation": "documentation.html",
-}
-
 # Output file base name for HTML help builder.
 htmlhelp_basename = "GEMSEOdoc"
-
-autosummary_generate = True
 
 if "READTHEDOCS" in os.environ:
     plantuml = "java -Djava.awt.headless=true -jar /usr/share/plantuml/plantuml.jar"
@@ -263,11 +336,27 @@ def __filter_versions(
         The active versions with a version number,
         of the form ``(version_name, version_url)``.
     """
+    json_versions = []
     _versions = []
+    stable_index = 0
+    version_index = -1
+    stable_version = parse("0.0.0")
     for rtd_version in rtd_versions:
         slug = rtd_version["slug"]
         if rtd_version["active"] and __VERSION_REGEX.match(slug):
-            _versions.append((slug, rtd_version["urls"]["documentation"]))
+            _versions.append((slug, url := rtd_version["urls"]["documentation"]))
+            json_versions.append({"name": slug, "version": slug, "url": url})
+            version_index += 1
+            if slug != "develop":
+                parsed_slug = parse(slug)
+                if parsed_slug > stable_version:
+                    stable_version = parsed_slug
+                    stable_index = version_index
+
+    json_versions[stable_index]["preferred"] = True
+
+    with open(Path(__file__).parent / "_static" / "versions.json", "w") as fp:
+        json.dump(json_versions, fp)
     return _versions
 
 
@@ -278,8 +367,6 @@ if os.environ.get("READTHEDOCS") == "True":
     ).json()["results"]
     html_context["versions"] = __filter_versions(versions)
 
-html_context["features"] = [asdict(feature) for feature in features]
-html_context["main_concepts"] = [asdict(main_concept) for main_concept in main_concepts]
 html_context["meta_description"] = (
     "GEMSEO: A Generic Engine for Multi-disciplinary Scenarios, "
     "Exploration and Optimization"
@@ -295,31 +382,32 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
     html_context["plugins"] = {
         "gemseo-benchmark": (
             "A GEMSEO-based package to benchmark optimization algorithm.",
-            False,
+            True,
         ),
         "gemseo-calibration": (
             "Capability to calibrate GEMSEO disciplines from data",
-            False,
+            True,
         ),
         "gemseo-fmu": ("GEMSEO plugin for FMU dynamic models", True),
         "gemseo-jax": ("GEMSEO plugin for JAX", True),
-        "gemseo-matlab": ("GEMSEO plugin for MATLAB.", False),
+        "gemseo-matlab": ("GEMSEO plugin for MATLAB.", True),
         "gemseo-mlearning": ("Miscellaneous machine learning capabilities", True),
         "gemseo-mma": (
             "GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.",
-            False,
+            True,
         ),
-        "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", False),
+        "gemseo-pdfo": ("GEMSEO plugin for the PDFO library.", True),
         "gemseo-petsc": (
-            "PETSc wrapper for :class:`.LinearSolver` and :class:`.MDA`",
-            False,
+            "PETSc wrapper for :class:`.LinearSolver` and :class:`.BaseMDA`",
+            True,
         ),
-        "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", False),
-        "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", False),
-        "gemseo-scilab": ("Interfacing Scilab functions", False),
+        "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", True),
+        "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", True),
+        "gemseo-ssh": ("SSH plugin for GEMSEO", True),
+        "gemseo-scilab": ("Interfacing Scilab functions", True),
         "gemseo-template-editor-gui": (
             "A GUI to create input and output file templates for DiscFromExe.",
-            False,
+            True,
         ),
         "gemseo-umdo": ("Capability for MDO under uncertainty", True),
     }
@@ -340,3 +428,24 @@ inheritance_edge_attrs = {
 # bibtex
 
 bibtex_bibfiles = ["references.bib"]
+
+###############################################################################
+# autodoc-pydantic
+
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_model_show_validator_summary = False
+autodoc_pydantic_model_show_validator_members = False
+autodoc_pydantic_model_show_field_summary = False
+autodoc_pydantic_model_hide_paramlist = False
+autodoc_pydantic_model_signature_prefix = "Settings"
+autodoc_pydantic_model_erdantic_figure = False
+autodoc_pydantic_model_erdantic_figure_collapsed = False
+autodoc_pydantic_model_show_json = False
+autodoc_pydantic_settings_show_config_summary = False
+autodoc_pydantic_settings_show_validator_summary = False
+autodoc_pydantic_settings_show_validator_members = False
+autodoc_pydantic_settings_show_field_summary = False
+autodoc_pydantic_settings_signature_prefix = "Settings"
+autodoc_pydantic_settings_show_json = False
+autodoc_pydantic_field_list_validators = False
+autodoc_pydantic_field_signature_prefix = ""

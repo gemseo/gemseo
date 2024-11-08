@@ -29,16 +29,16 @@ from matplotlib.figure import Figure as MatplotlibFigure
 from numpy import array
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset._matplotlib import plot
-from gemseo.post.dataset._matplotlib.plot import MatplotlibPlot
-from gemseo.post.dataset._plotly.lines import Figure as PlotlyFigure
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.lines import Lines
+from gemseo.post.dataset.plots._matplotlib import plot
+from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.plots._plotly.lines import Figure as PlotlyFigure
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def yvsx() -> YvsX:
     """A plot of type YvsX."""
     dataset = Dataset()
@@ -68,7 +68,7 @@ def test_get_label() -> None:
     assert varname == ("parameters", "x", 0)
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """A very simple dataset with a single value: x=[1]."""
     return Dataset.from_array(
@@ -76,7 +76,7 @@ def dataset() -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_plot(dataset):
     """A simple dataset plot from a dataset with a single value: x=[1]."""
     with concretize_classes(DatasetPlot):
@@ -116,35 +116,35 @@ def test_setters(dataset_plot, attribute, value) -> None:
     assert getattr(dataset_plot, attribute) == value
 
 
-def test_get_figure_and_axes_from_existing_fig_and_axes(dataset_plot, dataset) -> None:
+def test_get_figure_and_ax_from_existing_fig_and_ax(dataset_plot, dataset) -> None:
     """Check that get_figure_and_axes using fig and axes returns fig and axes."""
-    fig, axes = plt.subplots()
+    fig, ax = plt.subplots()
     plot = Lines(dataset)
     plot.xlabel = "foo"
-    figures = plot.execute(show=False, save=False, fig=fig, axes=axes)
+    figures = plot.execute(show=False, save=False, fig=fig, ax=ax)
     assert figures == [fig]
-    assert axes.get_figure() == fig
-    assert axes.get_xlabel() == "foo"
+    assert ax.get_figure() == fig
+    assert ax.get_xlabel() == "foo"
 
 
-def test_get_figure_and_axes_from_scratch(dataset, dataset_plot) -> None:
+def test_get_figure_and_ax_from_scratch(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes without fig and axes returns new fig and axes."""
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, None)
-    fig, axes = plot._get_figure_and_axes(None, None)
+    fig, ax = plot._get_figure_and_axes(None, None)
     assert isinstance(fig, MatplotlibFigure)
-    assert isinstance(axes, Axes)
+    assert isinstance(ax, Axes)
 
 
 def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes with axes and without fig raises a ValueError."""
-    _, axes = plt.subplots()
+    _, ax = plt.subplots()
     with concretize_classes(MatplotlibPlot):
-        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, axes)
+        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, ax)
     with pytest.raises(
         ValueError, match="The figure associated with the given axes is missing."
     ):
-        plot._get_figure_and_axes(None, axes)
+        plot._get_figure_and_axes(None, ax)
 
 
 def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot) -> None:

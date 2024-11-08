@@ -24,22 +24,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
+
+from ..core.test_ml_algo import DummyMLAlgo
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
-MODEL.set_cache_policy(MODEL.CacheType.MEMORY_FULL)
+MODEL.set_cache(MODEL.CacheType.MEMORY_FULL)
 
 TOL_DEG_1 = 0.1
 TOL_DEG_2 = 0.001
@@ -47,32 +47,36 @@ TOL_DEG_3 = 0.01
 ATOL = 1e-12
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": 20})
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=20)
     return MODEL.cache.to_dataset()
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": 5})
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=5)
     return MODEL.cache.to_dataset()
 
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLAlgo):
-        algo = MLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        algo = DummyMLAlgo(dataset)
 
     measure = R2Measure(algo)
     assert measure.algo is not None
@@ -166,17 +170,14 @@ def test_compute_bootstrap_measure(dataset) -> None:
 
 @pytest.mark.parametrize("fit", [False, True])
 def test_fit_transformers(algo_for_transformer, fit) -> None:
-    """Check that the transformers are fitted with the sub-datasets.
+    """Check that the user can fit the transformers with the sub-datasets.
 
-    By default, the transformers are fitted with the sub-datasets. If False, use the
-    transformers of the assessed algorithm as they are.
+    Otherwise, use the transformers of the assessed algorithm as they are.
     """
-    m1 = R2Measure(algo_for_transformer)
-    m2 = R2Measure(algo_for_transformer, fit_transformers=fit)
-    assert (
-        allclose(
-            m1.compute_cross_validation_measure(seed=0),
-            m2.compute_cross_validation_measure(seed=0),
-        )
-        is fit
-    )
+    r2 = R2Measure(algo_for_transformer)
+    r2.compute_cross_validation_measure(seed=0, store_resampling_result=True)
+    model = algo_for_transformer.resampling_results["CrossValidation"][1][0]
+    r2 = R2Measure(algo_for_transformer, fit_transformers=fit)
+    r2.compute_cross_validation_measure(seed=0, store_resampling_result=True)
+    new_model = algo_for_transformer.resampling_results["CrossValidation"][1][0]
+    assert (model.algo.y_train_.sum() == new_model.algo.y_train_.sum()) is not fit

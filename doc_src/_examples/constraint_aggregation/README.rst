@@ -48,7 +48,7 @@ The simplest approach to aggregate the constraint functions is to take their max
 
 .. math:: G_{max}(g_j(x,y), p) = \max_{j=1,...,N}{(f_j(x)})
 
-using this formulation keeps the same solution of the original problem but has the major inconvinient of not being differentiable.
+using this formulation keeps the same solution of the original problem but has the major inconvenient of not being differentiable.
 This is not always a problem in practice. However, it is possible that the performance of gradient-based solvers may be degraded.
 
 The KS function
@@ -79,10 +79,3 @@ It can be shown that:
 This means that using IKS function aggregation, the solution to the optimization problem is an approximation of the original problem.
 Since the IKS function is always smaller than the maximum, this approach always leads to infeasible solutions.
 By increasing the value of p, the IKS function will be closer to the maximum and the optimization will increase the number of iterations to converge.
-
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **

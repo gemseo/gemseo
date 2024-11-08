@@ -24,28 +24,28 @@ from __future__ import annotations
 
 from math import ceil
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import numpy as np
 from matplotlib import pyplot
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
+from matplotlib.ticker import SymmetricalLogLocator
 from numpy import arange
-from numpy import array
-from numpy import e
-from numpy import ndarray
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.quad_approx_settings import QuadApprox_Settings
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.typing import NumberArray
 
 
-class QuadApprox(OptPostProcessor):
+class QuadApprox(BasePost[QuadApprox_Settings]):
     """Quadratic approximation of a function.
 
     And cuts of the approximation.
@@ -53,52 +53,41 @@ class QuadApprox(OptPostProcessor):
     The function index can be passed as option.
     """
 
-    DEFAULT_FIG_SIZE = (9.0, 6.0)
+    Settings: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
-    SR1_APPROX = "SR1"
+    def _plot(self, settings: QuadApprox_Settings) -> None:
+        function = settings.function
+        func_index = settings.func_index
 
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.grad_opt = None
-
-    def _plot(
-        self,
-        function: str,
-        func_index: int | None = None,
-    ) -> None:
-        """Build the plot and save it.
-
-        Args:
-            function: The function name to build the quadratic approximation.
-            func_index: The index of the output of interest
-                to be defined if the function has a multidimensional output.
-                If ``None`` and if the output is multidimensional, an error is raised.
-        """  # noqa: D205, D212, D415
-        problem = self.opt_problem
+        problem = self.optimization_problem
         if function == self._obj_name:
-            b_mat = self.__build_approx(self._standardized_obj_name, func_index)
+            b_mat, grad_opt = self.__build_approx(
+                self._standardized_obj_name, func_index
+            )
             if not (problem.minimize_objective or problem.use_standardized_objective):
-                self.grad_opt *= -1
+                grad_opt *= -1
                 b_mat *= -1
                 function = self._standardized_obj_name
         else:
-            if function in problem.constraint_names:
-                function = problem.constraint_names[function][0]
+            if function in problem.constraints.original_to_current_names:
+                function = problem.constraints.original_to_current_names[function][0]
 
-            b_mat = self.__build_approx(function, func_index)
+            b_mat, grad_opt = self.__build_approx(function, func_index)
 
         self.materials_for_plotting["b_mat"] = b_mat
-        self._add_figure(self.__plot_hessian(b_mat, function), "hess_approx")
-        self._add_figure(self.__plot_variations(b_mat), "quad_approx")
+        self._add_figure(
+            self.__plot_hessian(b_mat, function, settings.fig_size), "hess_approx"
+        )
+        self._add_figure(
+            self.__plot_variations(b_mat, settings.fig_size, grad_opt),
+            "quad_approx",
+        )
 
     def __build_approx(
         self,
         function: str,
         func_index: int | None,
-    ) -> ndarray:
+    ) -> tuple[NumberArray, NumberArray]:
         """Build the approximation.
 
         Args:
@@ -111,18 +100,20 @@ class QuadApprox(OptPostProcessor):
              The approximation.
         """
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
-        b_mat, _, _, self.grad_opt = SR1Approx(self.database).build_approximation(
+        b_mat, _, _, grad_opt = SR1Approx(self.database).build_approximation(
             function,
-            at_most_niter=int(1.5 * self.opt_problem.get_dimension()),
+            at_most_niter=int(1.5 * self.optimization_problem.design_space.dimension),
             return_x_grad=True,
             func_index=func_index,
         )
-        return b_mat
+        assert grad_opt is not None
+        return b_mat, grad_opt
 
     def __plot_hessian(
         self,
-        hessian: ndarray,
+        hessian: NumberArray,
         function: str,
+        fig_size: tuple[float, float],
     ) -> Figure:
         """Plot the Hessian of the function.
 
@@ -133,49 +124,39 @@ class QuadApprox(OptPostProcessor):
         Returns:
             The plot of the Hessian of the function.
         """
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
-        grid = self._get_grid_layout()
-        ax1 = fig.add_subplot(grid[0, 0])
+        fig, ax = plt.subplots(1, 1, figsize=fig_size)
         vmax = max(abs(np.max(hessian)), abs(np.min(hessian)))
         linear_threshold = 10 ** (np.log10(vmax) - 5.0)
 
         # SymLog is a symmetric log scale adapted to negative values
-        img = ax1.imshow(
+        img = ax.imshow(
             hessian,
             cmap=PARULA,
             interpolation="nearest",
-            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold, base=e),
+            norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold),
         )
-        ticks = arange(self.opt_problem.dimension)
+        ticks = arange(self.optimization_problem.design_space.dimension)
         design_variable_names = self._get_design_variable_names(simplify=True)
-        ax1.set_xticks(ticks)
-        ax1.set_xticklabels(design_variable_names, rotation=45)
-        ax1.set_yticks(ticks)
-        ax1.set_yticklabels(design_variable_names)
-        thick_min, thick_max = int(np.log10(linear_threshold)), int(np.log10(vmax))
-        positive_levels = np.logspace(
-            thick_min, thick_max, num=thick_max - thick_min + 1
-        )
+        ax.set_xticks(ticks)
+        ax.set_xticklabels(design_variable_names, rotation=45)
+        ax.set_yticks(ticks)
+        ax.set_yticklabels(design_variable_names)
         fig.colorbar(
             img,
-            cax=fig.add_subplot(grid[0, 1]),
-            ticks=np.concatenate((
-                np.sort(-positive_levels),
-                array([0]),
-                positive_levels,
-            )),
+            ticks=SymmetricalLogLocator(linthresh=linear_threshold, base=10),
             format=LogFormatterSciNotation(),
         )
         fig.suptitle(f"Hessian matrix SR1 approximation of {function}")
+        fig.tight_layout()
         return fig
 
     @staticmethod
     def unnormalize_vector(
-        xn_array: ndarray,
+        xn_array: NumberArray,
         ivar: int,
-        lower_bounds: ndarray,
-        upper_bounds: ndarray,
-    ) -> ndarray:
+        lower_bounds: NumberArray,
+        upper_bounds: NumberArray,
+    ) -> NumberArray:
         """Unormalize a variable with respect to bounds.
 
         Args:
@@ -193,7 +174,9 @@ class QuadApprox(OptPostProcessor):
 
     def __plot_variations(
         self,
-        hessian: ndarray,
+        hessian: NumberArray,
+        fig_size: tuple[float, float],
+        grad_opt: NumberArray,
     ) -> Figure:
         """Plot the variation plot of the function w.r.t. all variables.
 
@@ -208,13 +191,13 @@ class QuadApprox(OptPostProcessor):
         nrows = int(ceil(float(ndv) / ncols))
 
         xn_vars = np.arange(-1.0, 1.0, 0.01)
-        lower_bounds = self.opt_problem.design_space.get_lower_bounds()
-        upper_bounds = self.opt_problem.design_space.get_upper_bounds()
-        fig = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        lower_bounds = self.optimization_problem.design_space.get_lower_bounds()
+        upper_bounds = self.optimization_problem.design_space.get_upper_bounds()
+        fig = plt.figure(figsize=fig_size)
 
         for i, design_variable_name in enumerate(self._get_design_variable_names()):
             ax_i = plt.subplot(nrows, ncols, i + 1)
-            f_vals = xn_vars**2 * hessian[i, i] + self.grad_opt[i] * xn_vars
+            f_vals = xn_vars**2 * hessian[i, i] + grad_opt[i] * xn_vars
             self.materials_for_plotting[i] = f_vals
 
             x_vars = self.unnormalize_vector(xn_vars, i, lower_bounds, upper_bounds)
@@ -225,5 +208,6 @@ class QuadApprox(OptPostProcessor):
             start, stop = ax_i.get_ylim()
             ax_i.yaxis.set_ticks(np.arange(start, stop, 0.24999999 * (stop - start)))
             ax_i.set_xlabel(design_variable_name)
+
         pyplot.tight_layout()
         return fig

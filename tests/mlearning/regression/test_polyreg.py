@@ -33,11 +33,10 @@ from numpy import zeros
 from scipy.special import comb
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 LEARNING_SIZE = 50
 DEGREE = 5
@@ -60,7 +59,7 @@ ANOTHER_INPUT_VALUE = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
     root_learning_size = int(sqrt(LEARNING_SIZE))
@@ -88,7 +87,7 @@ def dataset() -> IODataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_from_cache() -> IODataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({
@@ -96,16 +95,18 @@ def dataset_from_cache() -> IODataset:
         "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",
         "y_3": "10*x_1*x_2**2 + 7*x_2**5",
     })
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_2", l_b=-1, u_b=2)
-    design_space.add_variable("x_1", l_b=-1, u_b=2)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    design_space.add_variable("x_2", lower_bound=-1, upper_bound=2)
+    design_space.add_variable("x_1", lower_bound=-1, upper_bound=2)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor."""
     polyreg = PolynomialRegressor(dataset, degree=DEGREE)
@@ -113,7 +114,7 @@ def model(dataset) -> PolynomialRegressor:
     return polyreg
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_without_intercept(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor without intercept fitting."""
     polyreg = PolynomialRegressor(dataset, degree=DEGREE, fit_intercept=False)
@@ -144,8 +145,7 @@ def test_get_coefficients(model) -> None:
     with pytest.raises(
         NotImplementedError,
         match=(
-            "For now the coefficients can only be obtained "
-            "in the form of a NumPy array"
+            "For now the coefficients can only be obtained in the form of a NumPy array"
         ),
     ):
         model.get_coefficients(as_dict=True)
@@ -200,13 +200,3 @@ def test_jacobian_constant(dataset) -> None:
     model_.learn()
     model_.predict_jacobian(INPUT_VALUE)
     model_.predict_jacobian(ANOTHER_INPUT_VALUE)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)

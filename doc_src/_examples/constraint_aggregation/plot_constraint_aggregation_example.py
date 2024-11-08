@@ -25,6 +25,7 @@ from copy import deepcopy
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
 
@@ -50,49 +51,45 @@ concat = Concatenater(constraint_names, "g")
 ds = DesignSpace()
 ds.add_variable(
     "x",
-    l_b=0.0,
-    u_b=1,
+    lower_bound=0.0,
+    upper_bound=1,
     value=1.0 / N / 2.0,
-    var_type=DesignSpace.DesignVariableType.FLOAT,
+    type_=DesignSpace.DesignVariableType.FLOAT,
 )
 ds.add_variable(
-    "y", l_b=0.0, u_b=1, value=1, var_type=DesignSpace.DesignVariableType.FLOAT
+    "y",
+    lower_bound=0.0,
+    upper_bound=1,
+    value=1,
+    type_=DesignSpace.DesignVariableType.FLOAT,
 )
 
 ds_new = deepcopy(ds)
 # %%
-# Build the optimization solver options
-max_iter = 1000
-ineq_tol = 1e-5
-convergence_tol = 1e-8
-normalize = True
-algo_options = {
-    "algo": "NLOPT_MMA",
-    "max_iter": max_iter,
-    "algo_options": {
-        "ineq_tolerance": ineq_tol,
-        "eq_tolerance": ineq_tol,
-        "xtol_rel": convergence_tol,
-        "xtol_abs": convergence_tol,
-        "ftol_rel": convergence_tol,
-        "ftol_abs": convergence_tol,
-        "ctol_abs": convergence_tol,
-        "normalize_design_space": normalize,
-    },
-}
+# Build the optimization solver settings
+mma_settings = NLOPT_MMA_Settings(
+    ineq_tolerance=1e-5,
+    eq_tolerance=1e-5,
+    xtol_rel=1e-8,
+    xtol_abs=1e-8,
+    ftol_rel=1e-8,
+    ftol_abs=1e-8,
+    normalize_design_space=True,
+    max_iter=1000,
+)
 
 # %%
 # Build the optimization scenario
 original_scenario = create_scenario(
     [disc, concat],
-    "DisciplinaryOpt",
     "o",
     ds,
     maximize_objective=False,
+    formulation_name="DisciplinaryOpt",
 )
 original_scenario.add_constraint("g", constraint_type="ineq")
 
-original_scenario.execute(algo_options)
+original_scenario.execute(mma_settings)
 # Without constraint aggregation MMA iterations become more expensive, when a
 # large number of constraints are activated.
 
@@ -100,19 +97,19 @@ original_scenario.execute(algo_options)
 # exploiting constraint aggregation on the same scenario:
 new_scenario = create_scenario(
     [disc, concat],
-    "DisciplinaryOpt",
     "o",
     ds_new,
     maximize_objective=False,
+    formulation_name="DisciplinaryOpt",
 )
 new_scenario.add_constraint("g", constraint_type="ineq")
 
 # %%
 # This method aggregates the constraints using the lower bound KS function
-new_scenario.formulation.opt_problem.aggregate_constraint(
+new_scenario.formulation.optimization_problem.constraints.aggregate(
     0, method="lower_bound_KS", rho=10.0
 )
-new_scenario.execute(algo_options)
+new_scenario.execute(mma_settings)
 
 # %%
 # with constraint aggregation the last iteration is faster.

@@ -22,7 +22,6 @@ from sphinx.ext.autodoc.mock import mock
 
 from . import authors_template
 from . import generate_algos_doc
-from . import module_template
 from . import plugins_template
 
 
@@ -40,24 +39,7 @@ def builder_inited(app) -> None:
     with mock(app.config.autodoc_mock_imports):
         # Mock the dependencies that are optional and the ones from the plugins.
         generate_algos_doc.main(gen_opts_path)
+
     root_path = Path(app.srcdir)
-    _modules_path = root_path / "_modules"
-    (_modules_path / "modules.rst").unlink(missing_ok=True)
-
-    plugins = app.config.html_context["plugins"]
-    names = ["gemseo", *sorted(plugins)]
-
-    with open(_modules_path / "projects.rst", "w") as f:
-        f.write(".. _projects:\n\n")
-        f.write("Packages\n")
-        f.write("--------\n\n")
-        f.write(".. toctree::\n")
-        f.write("   :maxdepth: 2\n\n")
-        for name in names:
-            f.write(f"   {name.replace('-', '_')}\n")
-
-    for name in names:
-        module_template.main(_modules_path, name.replace("-", "_"))
-
-    plugins_template.create_plugins_page(plugins, root_path)
+    plugins_template.create_plugins_page(app.config.html_context["plugins"], root_path)
     authors_template.create_authors_page(root_path)

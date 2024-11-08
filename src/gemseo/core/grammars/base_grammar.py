@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import collections
 import logging
 from abc import abstractmethod
 from copy import copy
@@ -34,24 +33,25 @@ from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.required_names import RequiredNames
-from gemseo.core.namespaces import NamespacesMapping
+from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
+from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import update_namespaces
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Iterator
     from collections.abc import KeysView
     from collections.abc import Mapping
 
     from typing_extensions import Self
 
     from gemseo.core.data_converters.base import BaseDataConverter
-    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
-    from gemseo.typing import DataMapping
 
     SimpleGrammarTypes = Mapping[str, Optional[type[Any]]]
 
@@ -59,7 +59,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BaseGrammar(
-    collections.abc.Mapping[str, Any], metaclass=ABCGoogleDocstringInheritanceMeta
+    StrKeyMapping,
+    metaclass=ABCGoogleDocstringInheritanceMeta,
 ):
     """An abstract base class for grammars with a dictionary-like interface.
 
@@ -71,11 +72,11 @@ class BaseGrammar(
     name: str
     """The name of the grammar."""
 
-    to_namespaced: NamespacesMapping
+    to_namespaced: MutableNamespacesMapping
     """The mapping from element names without namespace prefix to element names with
     namespace prefix."""
 
-    from_namespaced: NamespacesMapping
+    from_namespaced: MutableNamespacesMapping
     """The mapping from element names with namespace prefix to element names without
     namespace prefix."""
 
@@ -208,12 +209,28 @@ class BaseGrammar(
         return self.keys()
 
     @property
+    def names_without_namespace(self) -> Iterator[str]:
+        """The names of the elements without namespace prefixes."""
+        return remove_prefix(self.keys())
+
+    def has_names(self, names: Iterable[str]) -> bool:
+        """Return whether names are all element names.
+
+        Args:
+            names: The names to check.
+
+        Returns:
+            Whether the names are all element names.
+        """
+        return set(self.keys()).issuperset(names)
+
+    @property
     def defaults(self) -> Defaults:
         """The mapping from the names to the default values, if any."""
         return self._defaults
 
     @defaults.setter
-    def defaults(self, data: DataMapping) -> None:
+    def defaults(self, data: StrKeyMapping) -> None:
         self._defaults = Defaults(self, data)
 
     @property
@@ -235,27 +252,30 @@ class BaseGrammar(
     def _clear(self) -> None:
         """Empty specifically the grammar but the common attributes."""
 
-    # TODO: API: rename exclude_names (starts with verb like method) to excluded_names.
     def update(
         self,
         grammar: Self,
-        exclude_names: Iterable[str] = (),
+        excluded_names: Iterable[str] = (),
         merge: bool = False,
     ) -> None:
         """Update the grammar from another grammar.
 
+        If ``grammar`` has namespaces, they will be added to the current grammar.
+
         Args:
             grammar: The grammar to update from.
-            exclude_names: The names of the elements that shall not be updated.
+            excluded_names: The names of the elements that shall not be updated.
             merge: Whether to merge or update the grammar.
         """
         if not grammar:
             return
-        self._update(grammar, exclude_names, merge)
-        self._update_namespaces_from_grammar(grammar)
-        self._defaults.update(grammar._defaults, exclude=exclude_names)
-        self._required_names |= (grammar.keys() - exclude_names).intersection(
-            grammar._required_names - set(exclude_names)
+        self._update(grammar, excluded_names, merge)
+        self.__update_namespaces_from_grammar(grammar)
+        self._defaults.update({
+            k: v for k, v in grammar._defaults.items() if k not in excluded_names
+        })
+        self._required_names |= (grammar.keys() - excluded_names).intersection(
+            grammar._required_names.get_names_difference(excluded_names)
         )
 
     @abstractmethod
@@ -308,7 +328,7 @@ class BaseGrammar(
 
     def update_from_data(
         self,
-        data: Data,
+        data: StrKeyMapping,
         merge: bool = False,
     ) -> None:
         """Update the grammar from name-value pairs.
@@ -327,7 +347,7 @@ class BaseGrammar(
 
     def _update_from_data(
         self,
-        data: Data,
+        data: StrKeyMapping,
         merge: bool,
     ) -> None:
         """Update specifically the grammar from name-value pairs.
@@ -376,7 +396,7 @@ class BaseGrammar(
 
     def validate(
         self,
-        data: Data,
+        data: StrKeyMapping,
         raise_exception: bool = True,
     ) -> None:
         """Validate data against the grammar.
@@ -393,7 +413,7 @@ class BaseGrammar(
         error_message = MultiLineString()
         error_message.add(f"Grammar {self.name}: validation failed.")
 
-        missing_names = self._required_names - set(data)
+        missing_names = self._required_names.get_names_difference(data)
         if missing_names:
             error_message.add(f"Missing required names: {pretty_str(missing_names)}.")
             data_is_valid = False
@@ -408,7 +428,7 @@ class BaseGrammar(
     @abstractmethod
     def _validate(
         self,
-        data: Data,
+        data: StrKeyMapping,
         error_message: MultiLineString,
     ) -> bool:
         """Validate data but for the required names.
@@ -425,26 +445,6 @@ class BaseGrammar(
     def data_converter(self) -> BaseDataConverter[BaseGrammar]:
         """The converter of data values to NumPy arrays and vice versa."""
         return self._data_converter
-
-    # TODO: API: remove in favor of is_numeric?
-    @abstractmethod
-    def is_array(
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        """Check if an element is an array.
-
-        Args:
-            name: The name of the element.
-            numeric_only: Whether to check if the array elements are numbers.
-
-        Returns:
-            Whether the element is an array.
-
-        Raises:
-            KeyError: If the element is not in the grammar.
-        """
 
     def to_simple_grammar(self) -> SimpleGrammar:
         """Convert the grammar to a :class:`.SimpleGrammar`.
@@ -486,7 +486,8 @@ class BaseGrammar(
             KeyError: If a name is not in the grammar.
         """
         self._check_name(*names)
-        self._defaults.restrict(*names)
+        for name in self._defaults.keys() - names:
+            del self._defaults[name]
         self._required_names &= set(names)
         self._restrict_to(names)
 
@@ -513,7 +514,9 @@ class BaseGrammar(
         if current_name in self._required_names:
             self._required_names.remove(current_name)
             self._required_names.add(new_name)
-        self._defaults.rename(current_name, new_name)
+        default_value = self._defaults.pop(current_name, None)
+        if default_value is not None:
+            self._defaults[new_name] = default_value
 
     @abstractmethod
     def _rename_element(self, current_name: str, new_name: str) -> None:
@@ -535,7 +538,7 @@ class BaseGrammar(
             KeyError: If a name is not valid.
         """
 
-    def _update_namespaces_from_grammar(self, grammar: Self) -> None:
+    def __update_namespaces_from_grammar(self, grammar: Self) -> None:
         """Update the namespaces according to another grammar namespaces.
 
         Args:
@@ -562,7 +565,7 @@ class BaseGrammar(
         self._check_name(name)
 
         if namespaces_separator in name:
-            msg = f"Variable {name} has already a namespace."
+            msg = f"The variable {name} already has a namespace."
             raise ValueError(msg)
 
         new_name = namespace + namespaces_separator + name

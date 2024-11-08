@@ -40,11 +40,11 @@ from numpy import ndarray
 
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 def disc_1_expr(
@@ -154,8 +154,8 @@ def disc_3_expr_jac(y1: float = 1.0, y2: float = 2.0, x: float = 2.0) -> ndarray
     return d_obj_d_y1_y2_x  # noqa: RET504
 
 
-@pytest.fixture()
-def res_disciplines() -> list[MDODiscipline]:
+@pytest.fixture
+def res_disciplines() -> list[Discipline]:
     """Create the three disciplines required to make a MDA with residual variables.
 
     Returns:
@@ -164,13 +164,13 @@ def res_disciplines() -> list[MDODiscipline]:
     d1 = create_discipline(
         "AutoPyDiscipline", py_func=disc_1_expr, py_jac=disc_1_expr_jac
     )
-    d1.residual_variables = {"r1": "w1"}
-    d1.run_solves_residuals = True
+    d1.io.residual_to_state_variable = {"r1": "w1"}
+    d1.io.state_equations_are_solved = True
     d2 = create_discipline(
         "AutoPyDiscipline", py_func=disc_2_expr, py_jac=disc_2_expr_jac
     )
-    d2.residual_variables = {"r2": "w2"}
-    d2.run_solves_residuals = True
+    d2.io.residual_to_state_variable = {"r2": "w2"}
+    d2.io.state_equations_are_solved = True
     d3 = create_discipline(
         "AutoPyDiscipline", py_func=disc_3_expr, py_jac=disc_3_expr_jac
     )
@@ -180,7 +180,7 @@ def res_disciplines() -> list[MDODiscipline]:
 
 def test_residuals_mda(res_disciplines) -> None:
     """Test MDA execution with residuals variables in disciplines."""
-    coupling_structure = MDOCouplingStructure(res_disciplines)
+    coupling_structure = CouplingStructure(res_disciplines)
     for disc in res_disciplines:
         assert not coupling_structure.is_self_coupled(disc)
     mda = create_mda("MDAChain", disciplines=res_disciplines)
@@ -191,7 +191,7 @@ def test_residuals_mda(res_disciplines) -> None:
     for disc in res_disciplines:
         disc.linearize(compute_all_jacobians=True)
 
-    assembly = JacobianAssembly(MDOCouplingStructure(res_disciplines))
+    assembly = JacobianAssembly(CouplingStructure(res_disciplines))
     assembly.compute_sizes(
         ["obj"],
         variables=["x"],
@@ -215,4 +215,4 @@ def test_adjoint(res_disciplines, mode, matrix_type) -> None:
     mda = create_mda("MDAChain", disciplines=res_disciplines)
     mda.linearization_mode = mode
     mda.matrix_type = matrix_type
-    assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
+    assert mda.check_jacobian(input_names=["x"], output_names=["obj"])

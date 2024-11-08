@@ -25,7 +25,7 @@ MDA
 In this example, we will discover the different high-level functions
 related to MDAs, which are the |g|' objects dedicated to the
 feasibility of the multidisciplinary coupling. All classes
-implementing MDAs inherit from :class:`.MDA` which is an abstract class.
+implementing MDAs inherit from :class:`.BaseMDA` which is an abstract class.
 """
 
 from __future__ import annotations
@@ -53,6 +53,16 @@ get_available_mdas()
 # For a given MDA algorithm, e.g. ``"MDAGaussSeidel"``,
 # we can get the options; e.g.
 get_mda_options_schema("MDAGaussSeidel")
+
+# %%
+# Or import its settings model and pass it directly with the keyword
+# "mda_settings_model".
+from gemseo.settings.mda import MDAGaussSeidel_Settings  # noqa: E402
+
+settings_model = MDAGaussSeidel_Settings()
+
+# %%
+# See :ref:`mda_settings` for more information on how to use settings models.
 
 # %%
 # Create an MDA

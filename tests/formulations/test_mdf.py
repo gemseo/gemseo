@@ -18,15 +18,19 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from functools import partial
+
+import pytest
 from numpy.testing import assert_allclose
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf import MDF
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.xdsmizer import XDSMizer
 
 from .formulations_basetest import FormulationsBaseTest
@@ -37,7 +41,12 @@ class TestMDFFormulation(FormulationsBaseTest):
 
     # Complex step mdf already tested on propane, lighter
     def build_and_run_mdf_scenario_with_constraints(
-        self, formulation, algo="SLSQP", linearize=False, dtype="complex128", **options
+        self,
+        formulation,
+        algo="SLSQP",
+        linearize=False,
+        dtype="complex128",
+        **options,
     ):
         """
 
@@ -49,7 +58,9 @@ class TestMDFFormulation(FormulationsBaseTest):
         """
         if not linearize:
             dtype = "complex128"
-        scenario = self.build_mdo_scenario(formulation, dtype, **options)
+        scenario = self.build_mdo_scenario(
+            formulation, dtype, main_mda_settings=options
+        )
         if linearize:
             scenario.set_differentiation_method("user")
         else:
@@ -58,11 +69,12 @@ class TestMDFFormulation(FormulationsBaseTest):
         scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
-        scenario.execute({
-            "max_iter": 100,
-            "algo": algo,
-            "algo_options": {"ftol_rel": 1e-10, "ineq_tolerance": 1e-3},
-        })
+        scenario.execute(
+            algo_name=algo,
+            max_iter=100,
+            ftol_rel=1e-10,
+            ineq_tolerance=1e-3,
+        )
         scenario.print_execution_metrics()
         return scenario.optimization_result.f_opt
 
@@ -84,32 +96,68 @@ class TestMDFFormulation(FormulationsBaseTest):
 
         assert_allclose(-obj, 3964.0, atol=1.0, rtol=0)
 
-    def test_expected_workflow(self) -> None:
-        """"""
-        disc1 = SobieskiStructure()
-        disc2 = SobieskiPropulsion()
-        disc3 = SobieskiAerodynamics()
-        disc4 = SobieskiMission()
-        disciplines = [disc1, disc2, disc3, disc4]
-        mdf = MDF(disciplines, "y_4", DesignSpace(), inner_mda_name="MDAGaussSeidel")
-        wkf = mdf.get_expected_workflow()
-        assert (
-            str(wkf) == "[{MDAGaussSeidel(None), [SobieskiStructure(None), "
-            "SobieskiPropulsion(None), SobieskiAerodynamics(None), ], }, "
-            "SobieskiMission(None), ]"
-        )
-        mdf.get_expected_dataflow()
-
     def test_getsuboptions(self) -> None:
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)
         self.assertRaises(ValueError, MDF.get_default_sub_option_values)
 
 
-def test_grammar_type() -> None:
-    """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline({"y1": "x+y2", "y2": "x+2*y1"})
-    design_space = DesignSpace()
-    design_space.add_variable("x")
-    grammar_type = discipline.GrammarType.SIMPLE
-    formulation = MDF([discipline], "y1", design_space, grammar_type=grammar_type)
-    assert formulation.mda.grammar_type == grammar_type
+def test_reset():
+    """Check that the optimization problem can be reset.
+
+    See https://gitlab.com/gemseo/dev/gemseo/-/issues/1179.
+    """
+    design_space = SellarDesignSpace()
+
+    scenario = MDOScenario(
+        [Sellar1(), Sellar2(), SellarSystem()],
+        "obj",
+        design_space,
+        formulation_name="MDF",
+    )
+    initial_current_value = design_space.get_current_value()
+    scenario.add_constraint("c_1", constraint_type="ineq")
+    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.execute(algo_name="SLSQP", max_iter=5)
+    final_current_value = design_space.get_current_value()
+
+    scenario.formulation.optimization_problem.reset(design_space=True)
+    assert_allclose(design_space.get_current_value(), initial_current_value)
+
+    scenario.execute(algo_name="SLSQP", max_iter=5)
+    assert_allclose(design_space.get_current_value(), final_current_value)
+
+
+create_sellar_mdf = partial(
+    MDF,
+    disciplines=[Sellar1(), Sellar2(), SellarSystem()],
+    objective_name="obj",
+    design_space=SellarDesignSpace(),
+)
+
+
+def test_mda_settings():
+    """Test that the MDA settings are properly handled."""
+    mdf = create_sellar_mdf(
+        main_mda_name="MDAGaussSeidel",
+        main_mda_settings={"max_mda_iter": 13},
+    )
+
+    assert isinstance(mdf.mda, MDAGaussSeidel)
+    assert mdf.mda.settings.max_mda_iter == 13
+    mdf = create_sellar_mdf(
+        main_mda_name="MDAGaussSeidel",
+        main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
+    )
+
+    assert isinstance(mdf.mda, MDAGaussSeidel)
+    assert mdf.mda.settings.max_mda_iter == 13
+
+    msg = (
+        "The MDANewtonRaphson settings model has the wrong type: "
+        "expected MDANewtonRaphson_Settings, got MDAGaussSeidel_Settings."
+    )
+    with pytest.raises(TypeError, match=msg):
+        mdf = create_sellar_mdf(
+            main_mda_name="MDANewtonRaphson",
+            main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
+        )

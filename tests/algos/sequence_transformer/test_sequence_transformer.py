@@ -24,9 +24,7 @@ from numpy import sin
 from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
-    SequenceTransformerFactory,
-)
+from gemseo.algos.sequence_transformer.factory import SequenceTransformerFactory
 
 if TYPE_CHECKING:
     from gemseo.algos.sequence_transformer.sequence_transformer import (

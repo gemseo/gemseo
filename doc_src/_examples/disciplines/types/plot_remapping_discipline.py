@@ -29,10 +29,15 @@ including defining a variable as a part of an original one.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.remapping import RemappingDiscipline
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 # %%
 # Let us consider a discipline that sums up the fruits of the market.
@@ -47,19 +52,19 @@ from gemseo.disciplines.remapping import RemappingDiscipline
 # This discipline can be coded as follows:
 
 
-class FruitCounting(MDODiscipline):
+class FruitCounting(Discipline):
     def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["fruits"])
         self.output_grammar.update_from_names(["n_fruits", "n_fruits_per_category"])
-        self.default_inputs = {"fruits": array([1, 2, 3])}
+        self.default_input_data = {"fruits": array([1, 2, 3])}
 
-    def _run(self) -> None:
-        fruits = self.local_data["fruits"]
-        self.store_local_data(
-            n_fruits=array([fruits.sum()]),
-            n_fruits_per_category=array([fruits[0], fruits[1:3].sum()]),
-        )
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        fruits = input_data["fruits"]
+        return {
+            "n_fruits": array([fruits.sum()]),
+            "n_fruits_per_category": array([fruits[0], fruits[1:3].sum()]),
+        }
 
 
 # %%

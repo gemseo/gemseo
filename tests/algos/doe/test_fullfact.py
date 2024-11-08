@@ -21,29 +21,29 @@ from numpy import allclose
 from numpy import array
 from numpy import array_equal
 from numpy import atleast_2d
+from pydantic import ValidationError
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
-from gemseo.algos.doe.lib_openturns import OpenTURNS
-from gemseo.algos.doe.lib_pydoe import PyDOE
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.doe.openturns.openturns import OpenTURNS
+from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def doe_problem_dim_2():
     design_space = DesignSpace()
-    design_space.add_variable("x", size=2, l_b=-2.0, u_b=2.0)
+    design_space.add_variable("x", size=2, lower_bound=-2.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: sum(x), "func")
+    problem.objective = MDOFunction(sum, "func")
     return problem
 
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     "expected",
@@ -60,10 +60,10 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     n_samples, size = atleast_2d(expected).shape
     n_samples = int(n_samples)
     design_space = DesignSpace()
-    design_space.add_variable("x", size=size, l_b=0.0, u_b=2.0)
+    design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: sum(x), "func")
-    doe_library_class().execute(problem, algo_name, n_samples=n_samples)
+    problem.objective = MDOFunction(sum, "func")
+    doe_library_class(algo_name).execute(problem, n_samples=n_samples)
     assert array_equal(
         problem.to_dataset("data").get_view(variable_names="x").to_numpy(),
         expected,
@@ -72,17 +72,17 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize("n_samples", [1, 100])
 @pytest.mark.parametrize("size", [2, 5])
 def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> None:
     """Check fullfactorial DOEs in terms of properties (bounds and dimensions)."""
     design_space = DesignSpace()
-    design_space.add_variable("x", size=size, l_b=0.0, u_b=2.0)
+    design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: sum(x), "func")
-    doe_library_class().execute(problem, algo_name, n_samples=n_samples)
+    problem.objective = MDOFunction(sum, "func")
+    doe_library_class(algo_name).execute(problem, n_samples=n_samples)
     data = problem.to_dataset().get_view(variable_names="x").to_numpy()
     if n_samples < 2**size:
         expected_min = expected_max = 1.0
@@ -101,7 +101,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     ("options", "expected"),
@@ -123,13 +123,13 @@ def test_fullfact_levels(
     """Check that ``levels`` option in full-factorial is correctly taken into
     account."""
 
-    doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
+    doe_library_class(algo_name).execute(doe_problem_dim_2, **options)
     assert allclose(doe_problem_dim_2.database.get_x_vect_history(), expected)
 
 
 @pytest.mark.parametrize(
     ("doe_library_class", "algo_name"),
-    [(PyDOE, "fullfact"), (OpenTURNS, "OT_FULLFACT")],
+    [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
     ("options", "exception", "error_msg"),
@@ -148,7 +148,7 @@ def test_fullfact_levels(
         ),
         (
             {"levels": -1},
-            InvalidDataError,
+            ValidationError,
             None,
         ),  # Raised by grammar, do not check the message
     ],
@@ -163,7 +163,7 @@ def test_fullfact_error(
     """
 
     with pytest.raises(exception, match=error_msg):
-        doe_library_class().execute(doe_problem_dim_2, algo_name, **options)
+        doe_library_class(algo_name).execute(doe_problem_dim_2, **options)
 
 
 def test__compute_fullfact_levels(caplog) -> None:

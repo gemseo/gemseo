@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import pytest
 from matplotlib.figure import Figure
@@ -30,11 +31,8 @@ from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.morris.oat import _OATSensitivity
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
 from gemseo.utils.testing.helpers import image_comparison
 
 FUNCTION = {
@@ -73,29 +71,30 @@ def parameter_space() -> ParameterSpace:
     return space
 
 
-@pytest.fixture()
+@pytest.fixture
 def morris(discipline, parameter_space):
     """Morris analysis for the Ishigami function."""
-    analysis = MorrisAnalysis([discipline], parameter_space, n_samples=None)
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], parameter_space, n_samples=0)
     analysis.compute_indices()
     return analysis
 
 
 def test_morris_main_indices_outputs(morris) -> None:
     """Check that all the outputs have main indices."""
-    assert {"y1", "y2"} == set(morris.main_indices.keys())
+    assert {"y1", "y2"} == morris.main_indices.keys()
 
 
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_main_indices_outputs_content(morris, output) -> None:
     """Check that the main indices are well-formed."""
     assert len(morris.main_indices[output]) == 1
-    assert set(morris.main_indices[output][0].keys()) == set(FUNCTION["variables"])
+    assert list(morris.main_indices[output][0]) == FUNCTION["variables"]
 
 
 def test_morris_main_indices(morris) -> None:
     """Check that the main indices are mu_star."""
-    assert morris.main_indices == morris.indices["MU_STAR"]
+    assert morris.main_indices == morris.indices.mu_star
 
 
 @pytest.mark.parametrize(
@@ -104,7 +103,7 @@ def test_morris_main_indices(morris) -> None:
 )
 def test_morris_indices_outputs(morris, name) -> None:
     """Check that all the outputs have indices."""
-    assert {"y1", "y2"} == set(morris.indices[name].keys())
+    assert list(getattr(morris.indices, name.lower())) == ["y1", "y2"]
 
 
 @pytest.mark.parametrize(
@@ -114,15 +113,16 @@ def test_morris_indices_outputs(morris, name) -> None:
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_indices_outputs_content(morris, name, output) -> None:
     """Check that all the outputs' indices are well-formed."""
-    assert len(morris.indices[name][output]) == 1
-    assert set(morris.indices[name][output][0].keys()) == set(FUNCTION["variables"])
+    output_data = getattr(morris.indices, name.lower())[output]
+    assert len(output_data) == 1
+    assert list(output_data[0]) == FUNCTION["variables"]
 
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_sigma(morris, output, variable) -> None:
     """Check that sigma is positive."""
-    assert morris.indices["SIGMA"][output][0][variable] >= 0
+    assert morris.indices.sigma[output][0][variable] >= 0
 
 
 @pytest.mark.parametrize("variable", FUNCTION["variables"])
@@ -130,8 +130,8 @@ def test_morris_sigma(morris, output, variable) -> None:
 def test_morris_mu(morris, output, variable) -> None:
     """Check that mu_star is greater or equal to mu."""
     assert (
-        morris.indices["MU_STAR"][output][0][variable]
-        >= morris.indices["MU"][output][0][variable]
+        morris.indices.mu_star[output][0][variable]
+        >= morris.indices.mu[output][0][variable]
     )
 
 
@@ -140,8 +140,8 @@ def test_morris_mu(morris, output, variable) -> None:
 def test_morris_min_max(morris, output, variable) -> None:
     """Check that the maximum is greater or equal to the minimum."""
     assert (
-        morris.indices["MAX"][output][0][variable]
-        >= morris.indices["MIN"][output][0][variable]
+        morris.indices.max[output][0][variable]
+        >= morris.indices.min[output][0][variable]
     )
 
 
@@ -149,9 +149,9 @@ def test_morris_min_max(morris, output, variable) -> None:
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_relative_sigma(morris, output, variable) -> None:
     """Check that the relative sigma is equal to sigma divided by mu_star."""
-    relative_sigma = morris.indices["RELATIVE_SIGMA"][output][0][variable]
-    sigma = morris.indices["SIGMA"][output][0][variable]
-    mu_star = morris.indices["MU_STAR"][output][0][variable]
+    relative_sigma = morris.indices.relative_sigma[output][0][variable]
+    sigma = morris.indices.sigma[output][0][variable]
+    mu_star = morris.indices.mu_star[output][0][variable]
     assert relative_sigma == sigma / mu_star
 
 
@@ -160,7 +160,7 @@ def test_morris_relative_sigma(morris, output, variable) -> None:
     [
         ("y1", {}, ["plot_y1"]),
         ("y2", {}, ["plot_y2"]),
-        ("y1", {"inputs": ["x1", "x3"]}, ["plot_inputs"]),
+        ("y1", {"input_names": ["x1", "x3"]}, ["plot_inputs"]),
         ("y1", {"offset": 5}, ["plot_offset"]),
         ("y1", {"lower_mu": 1}, ["plot_lower_mu"]),
         ("y1", {"lower_sigma": 0.1}, ["plot_lower_sigma"]),
@@ -178,22 +178,9 @@ def test_plot(morris, output_name, kwargs, baseline_images) -> None:
 )
 def test_morris_sort_parameters(morris, output, expected) -> None:
     """Verify that the parameters are correctly sorted."""
-    assert isinstance(morris.sort_parameters(output), list)
-    assert set(morris.sort_parameters(output)) == set(FUNCTION["variables"])
-    assert morris.sort_parameters(output) == expected
-
-
-def test_morris_with_bad_input_dimension() -> None:
-    """Check that a ValueError is raised if an input dimension is not equal to 1."""
-    expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
-    space = ParameterSpace()
-    space.add_random_variable(
-        "x1", "OTUniformDistribution", minimum=-pi, maximum=pi, size=2
-    )
-    space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    with pytest.raises(ValueError, match="Each input dimension must be equal to 1."):
-        MorrisAnalysis(discipline, space, n_samples=None, n_replicates=100)
+    assert isinstance(morris.sort_input_variables(output), list)
+    assert set(morris.sort_input_variables(output)) == set(FUNCTION["variables"])
+    assert morris.sort_input_variables(output) == expected
 
 
 def test_morris_with_nsamples() -> None:
@@ -203,98 +190,14 @@ def test_morris_with_nsamples() -> None:
     space = ParameterSpace()
     space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
     space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    morris = MorrisAnalysis([discipline], space, n_samples=7)
+    morris = MorrisAnalysis()
+    morris.compute_samples([discipline], space, n_samples=7)
     assert morris.n_replicates == 2
 
 
 @pytest.mark.parametrize("output", FUNCTION["outputs"])
 def test_morris_outputs_bounds(morris, output) -> None:
     assert morris.outputs_bounds[output][0] < morris.outputs_bounds[output][1]
-
-
-@pytest.fixture()
-def oat():
-    """A One-At-a-Time (OAT) discipline."""
-
-    def py_func(x1, x2):
-        y1 = array([x1 + x2])
-        y2 = array([x1 - x2, x1 - x2])
-        return y1, y2
-
-    discipline = AutoPyDiscipline(py_func)
-    space = ParameterSpace()
-    space.add_variable("x1", l_b=-1.0, u_b=1.0, value=0)
-    space.add_variable("x2", l_b=-1.0, u_b=1.0, value=0)
-    scenario = DOEScenario(
-        [discipline],
-        "MDF",
-        "y1",
-        space,
-    )
-    scenario.add_observable("y2")
-
-    return _OATSensitivity(scenario, space, 0.2)
-
-
-def test_oat_get_io_names(oat) -> None:
-    """Check the input and output names obtained from a finite difference name."""
-    assert oat.get_io_names("FD!output!input") == ["output", "input"]
-
-
-def test_oat_get_fd_name(oat) -> None:
-    """Check the finite difference name obtained from input and output names."""
-    assert oat.get_fd_name("input", "output") == "fd!output!input"
-
-
-@pytest.mark.parametrize(
-    ("x1", "x2", "fd"),
-    [
-        (0.0, 0.0, [0.4, 0.4, 0.4, -0.4]),
-        (0.7, 0.0, [-0.4, 0.4, -0.4, -0.4]),
-        (0.7, 0.7, [-0.4, -0.4, -0.4, 0.4]),
-    ],
-)
-def test_oat_execute(oat, x1, x2, fd) -> None:
-    """Check the execute method."""
-    oat.execute({"x1": array([x1]), "x2": array([x2])})
-    assert_almost_equal(oat.local_data["fd!y1!x1"], fd[0])
-    assert_almost_equal(oat.local_data["fd!y1!x2"], fd[1])
-    assert_almost_equal(oat.local_data["fd!y2!x1"], fd[2])
-    assert_almost_equal(oat.local_data["fd!y2!x2"], fd[3])
-
-
-def test_oat_bounds(oat) -> None:
-    """Check the estimation of the output bounds."""
-    oat.execute({"x1": array([-1.0]), "x2": array([-1.0])})
-    oat.execute({"x1": array([1.0]), "x2": array([1.0])})
-    expected = {"y1": [[-2.0], [2.0]], "y2": [[-0.4, -0.4], [0.4, 0.4]]}
-    assert_almost_equal(oat.output_range["y1"], expected["y1"])
-    assert_almost_equal(oat.output_range["y2"], expected["y2"])
-
-
-@pytest.mark.parametrize("step", [-0.1, 0.0, 0.5, 0.6])
-def test_oat_with_wrong_step(step) -> None:
-    """Check that a ValueError is raised when the step is not in ]0,0.5[."""
-    expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
-    space = ParameterSpace()
-    space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
-
-    scenario = DOEScenario(
-        [discipline],
-        "MDF",
-        "y",
-        space,
-    )
-
-    expected = (
-        "Relative variation step must be "
-        f"strictly comprised between 0 and 0.5; got {step}."
-    )
-
-    with pytest.raises(ValueError, match=expected):
-        _OATSensitivity(scenario, space, step=step)
 
 
 def test_normalize(morris) -> None:
@@ -308,32 +211,33 @@ def test_normalize(morris) -> None:
     for variable in FUNCTION["variables"]:
         space.add_random_variable(**FUNCTION["distributions"][variable])
 
-    analysis = MorrisAnalysis([discipline], space, n_samples=None)
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], space, n_samples=0)
     analysis.compute_indices(normalize=True)
-    for output_name, output_value in morris.mu_.items():
+    for output_name, output_value in morris.indices.mu.items():
         lower = analysis.outputs_bounds[output_name][0]
         upper = analysis.outputs_bounds[output_name][1]
         for input_name in output_value[0]:
             assert allclose(
-                morris.mu_[output_name][0][input_name],
-                analysis.mu_[output_name][0][input_name] * (upper - lower),
+                morris.indices.mu[output_name][0][input_name],
+                analysis.indices.mu[output_name][0][input_name] * (upper - lower),
             )
             assert allclose(
-                morris.mu_star[output_name][0][input_name],
-                analysis.mu_star[output_name][0][input_name]
+                morris.indices.mu_star[output_name][0][input_name],
+                analysis.indices.mu_star[output_name][0][input_name]
                 * max(abs(upper), abs(lower)),
             )
             assert allclose(
-                morris.sigma[output_name][0][input_name],
-                analysis.sigma[output_name][0][input_name] * (upper - lower),
+                morris.indices.sigma[output_name][0][input_name],
+                analysis.indices.sigma[output_name][0][input_name] * (upper - lower),
             )
             assert allclose(
-                morris.min[output_name][0][input_name],
-                analysis.min[output_name][0][input_name] * (upper - lower),
+                morris.indices.min[output_name][0][input_name],
+                analysis.indices.min[output_name][0][input_name] * (upper - lower),
             )
             assert allclose(
-                morris.max[output_name][0][input_name],
-                analysis.max[output_name][0][input_name] * (upper - lower),
+                morris.indices.max[output_name][0][input_name],
+                analysis.indices.max[output_name][0][input_name] * (upper - lower),
             )
 
 
@@ -351,52 +255,34 @@ def test_morris_multiple_disciplines() -> None:
             variable, "OTUniformDistribution", minimum=-10, maximum=10
         )
 
-    morris = MorrisAnalysis([d1, d2, d3], space, 5)
+    morris = MorrisAnalysis()
+    morris.compute_samples([d1, d2, d3], space, 5)
     morris.compute_indices()
 
     assert morris.dataset.get_variable_names("inputs") == ["x1", "x2", "x3"]
-    assert morris.dataset.get_variable_names("outputs") == [
-        "fd!f!x1",
-        "fd!f!x2",
-        "fd!f!x3",
-        "fd!y1!x1",
-        "fd!y1!x2",
-        "fd!y1!x3",
-        "fd!y2!x1",
-        "fd!y2!x2",
-        "fd!y2!x3",
-    ]
-    assert morris.dataset.n_samples == 1
+    assert morris.dataset.get_variable_names("outputs") == ["f", "y1", "y2"]
+    assert morris.dataset.n_samples == 1 + 3
 
 
-@pytest.mark.parametrize(
-    ("n_samples", "expected_n_samples"), [(None, 5), (8, 2), (9, 2)]
-)
+@pytest.mark.parametrize(("n_samples", "expected_n_samples"), [(0, 20), (8, 8), (9, 8)])
 def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples) -> None:
     """Check the effect of n_samples."""
-    n_calls = discipline.n_calls
-    analysis = MorrisAnalysis([discipline], parameter_space, n_samples=n_samples)
+    n_calls = discipline.execution_statistics.n_calls
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], parameter_space, n_samples=n_samples)
     assert len(analysis.dataset) == expected_n_samples
-    assert discipline.n_calls - n_calls == expected_n_samples * 4
-
-
-def test_save_load(morris, tmp_wd) -> None:
-    """Check saving and loading a MorrisAnalysis."""
-    morris.to_pickle("foo.pkl")
-    new_morris = MorrisAnalysis.from_pickle("foo.pkl")
-    assert new_morris.dataset.equals(morris.dataset)
-    assert new_morris.default_output == morris.default_output
-    assert new_morris.n_replicates == morris.n_replicates
-    assert new_morris.outputs_bounds == morris.outputs_bounds
+    assert discipline.execution_statistics.n_calls - n_calls == expected_n_samples
 
 
 def test_compute_indices_output_names(morris) -> None:
     """Check compute_indices with different types for output_names."""
-    assert morris.compute_indices(["y1"]).keys() == morris.compute_indices("y1").keys()
+    assert morris.compute_indices(["y1"]).mu
+    assert morris.compute_indices("y1").mu
 
 
 def test_too_few_samples(discipline, parameter_space) -> None:
     """Check that the MorrisAnalysis raises a ValueError is n_samples is too small."""
+    analysis = MorrisAnalysis()
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -404,7 +290,7 @@ def test_too_few_samples(discipline, parameter_space) -> None:
             "at least equal to the dimension of the input space plus one (3+1=4)."
         ),
     ):
-        MorrisAnalysis([discipline], parameter_space, n_samples=2)
+        analysis.compute_samples([discipline], parameter_space, n_samples=2)
 
 
 def test_output_names() -> None:
@@ -415,34 +301,54 @@ def test_output_names() -> None:
     discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable(name="x", distribution="SPUniformDistribution")
-    sensitivity_analysis = MorrisAnalysis(
+    sensitivity_analysis = MorrisAnalysis()
+    sensitivity_analysis.compute_samples(
         disciplines=[discipline],
         parameter_space=parameter_space,
-        n_samples=None,
+        n_samples=0,
         output_names=["y"],
     )
     sensitivity_analysis.compute_indices()
-    mu_ = sensitivity_analysis.mu_
+    mu_ = sensitivity_analysis.indices.mu
     assert_almost_equal(mu_["y"][0]["x"], array([0.05]))
     assert "z" not in mu_
 
 
 def test_log(caplog, discipline, parameter_space) -> None:
     """Check the log generated by a Morris analysis."""
-    MorrisAnalysis([discipline], parameter_space, None)
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], parameter_space, 4)
     result = "\n".join([line[2] for line in caplog.record_tuples])
     pattern = r"""^No coupling in MDA, switching chain_linearize to True\.
-No coupling in MDA, switching chain_linearize to True\.
 \s
 \*\*\* Start MorrisAnalysisSamplingPhase execution \*\*\*
 MorrisAnalysisSamplingPhase
-   Disciplines: _OATSensitivity
+   Disciplines: my_function
    MDO formulation: MDF
-Running the algorithm lhs:
-    20%\|██        \| 1\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-    40%\|████      \| 2\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-    60%\|██████    \| 3\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-    80%\|████████  \| 4\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
-   100%\|██████████\| 5\/5 \[\d+:\d+<\d+:\d+, \s*\d+\.\d+ it\/sec\]
+Running the algorithm MorrisDOE:
+    25%\|██▌       \| 1\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+    50%\|█████     \| 2\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+    75%\|███████▌  \| 3\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+   100%\|██████████\| 4\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
 \*\*\* End MorrisAnalysisSamplingPhase execution \(time: \d+:\d+:\d+\.\d+\) \*\*\*$"""
     assert re.match(pattern, result)
+
+
+def test_n_replicates_error():
+    """Check that the property n_replicates cannot be used without a dataset."""
+    analysis = MorrisAnalysis()
+    msg = (
+        "There is not dataset attached to the MorrisAnalysis; "
+        "please provide samples at instantiation or use compute_samples."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        analysis.n_replicates
+
+
+def test_from_samples(morris, tmp_wd):
+    """Check the instantiation from samples."""
+    file_path = Path("samples.pkl")
+    morris.dataset.to_pickle(file_path)
+    new_morris = MorrisAnalysis(samples=file_path)
+    new_morris.compute_indices()
+    assert new_morris.indices == morris.indices

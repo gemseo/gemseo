@@ -20,10 +20,10 @@ The package *distributions*
    :noindex:
 
 
-The base class *Distribution*
------------------------------
+The base class *BaseDistribution*
+---------------------------------
 
-.. automodule:: gemseo.uncertainty.distributions.distribution
+.. automodule:: gemseo.uncertainty.distributions.base_distribution
    :noindex:
 
 Examples

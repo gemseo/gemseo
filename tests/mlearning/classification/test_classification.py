@@ -22,21 +22,49 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from numpy import arange
+from numpy import array
+from numpy.testing import assert_allclose
 
-from gemseo.datasets.dataset import Dataset
+from gemseo import from_pickle
+from gemseo import to_pickle
+from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+from gemseo.problems.dataset.iris import create_iris_dataset
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import Dataset
+
+FACTORY = ClassifierFactory()
+INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def dataset() -> Dataset:
-    """A dataset used to train the classification algorithms."""
-    data = arange(60).reshape(10, 6)
-    variables = ["x_1", "x_2", "y_1"]
-    variable_names_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
-    variable_names_to_group_names = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-    io_dataset = Dataset.from_array(
-        data, variables, variable_names_to_n_components, variable_names_to_group_names
-    )
-    io_dataset.name = "dataset_name"
-    return io_dataset
+    """The Iris dataset."""
+    return create_iris_dataset(as_io=True)
+
+
+@pytest.mark.parametrize("class_name", FACTORY.class_names)
+@pytest.mark.parametrize("before_training", [False, True])
+def test_pickle(class_name, dataset, before_training, tmp_wd):
+    """Check that classification models are picklable."""
+    reference_model = FACTORY.create(class_name, dataset)
+
+    if before_training:
+        to_pickle(reference_model, "model.pkl")
+        reference_model.learn()
+    else:
+        reference_model.learn()
+        to_pickle(reference_model, "model.pkl")
+
+    reference_prediction = reference_model.predict(INPUT_VALUE)
+
+    model = from_pickle("model.pkl")
+    if before_training:
+        model.learn()
+
+    output_value = model.predict(INPUT_VALUE)
+
+    assert_allclose(output_value, reference_prediction)

@@ -20,62 +20,90 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import zeros
 from numpy.testing import assert_equal
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.disciplines.remapping import RemappingDiscipline
+from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
 
-class NewDiscipline(MDODiscipline):
+
+class NewDiscipline(Discipline):
     """A new discipline."""
 
     def __init__(self) -> None:
         super().__init__(name="foo")
-        self.input_grammar.update_from_names(["in_1", "in_2"])
-        self.output_grammar.update_from_names(["out_1", "out_2"])
-        self.default_inputs = {"in_1": array([1.0]), "in_2": array([2.0, 3.0])}
+        default_input_data = {
+            "in_1": array([1.0]),
+            "in_2": array([2.0, 3.0]),
+            "in_3": array(["zero"]),
+        }
+        self.input_grammar.update_from_data(default_input_data)
+        self.output_grammar.update_from_data({
+            "out_1": array([2.0]),
+            "out_2": array([1.0, 2.0]),
+            "out_3": array(["zero plus one"]),
+        })
+        self.default_input_data = default_input_data
 
-    def _run(self) -> None:
-        self.local_data["out_1"] = self.local_data["in_1"] + 1
-        self.local_data["out_2"] = self.local_data["in_2"] - 1
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        self.io.data["out_1"] = self.io.data["in_1"] + 1
+        self.io.data["out_2"] = self.io.data["in_2"] - 1
+        self.io.data["out_3"] = array([f"{self.io.data['in_3'][0]} plus one"])
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         self.jac = {
-            "out_1": {"in_1": array([[1.0]]), "in_2": array([[1.0, 1.0]])},
+            "out_1": {
+                "in_1": array([[1.0]]),
+                "in_2": array([[1.0, 1.0]]),
+                "in_3": zeros((1, 1)),
+            },
             "out_2": {
                 "in_1": array([[1.0], [1.0]]),
                 "in_2": array([[1.0, 1.0], [1.0, 1.0]]),
+                "in_3": zeros((2, 1)),
+            },
+            "out_3": {
+                "in_1": zeros((1, 1)),
+                "in_2": zeros((1, 2)),
+                "in_3": zeros((1, 1)),
             },
         }
 
 
+input_mapping = {
+    "new_in_1": "in_1",
+    "new_in_2": ("in_2", 0),
+    "new_in_3": ("in_2", 1),
+    "new_in_4": ("in_3"),
+}
+output_mapping = {"new_out_1": "out_1", "new_out_2": "out_2", "new_out_3": "out_3"}
+
+
 @pytest.fixture(scope="module", params=[False, True])
-def discipline(module_tmp_wd, request) -> MDODiscipline:
+def discipline(module_tmp_wd, request) -> Discipline:
     """A remapping discipline."""
-    discipline = RemappingDiscipline(
-        NewDiscipline(),
-        {
-            "new_in_1": "in_1",
-            "new_in_2": ("in_2", 0),
-            "new_in_3": ("in_2", 1),
-        },
-        {"new_out_1": "out_1", "new_out_2": "out_2"},
-    )
+    discipline = RemappingDiscipline(NewDiscipline(), input_mapping, output_mapping)
     if not request.param:
         # Use the original remapping discipline
         return discipline
 
     # Use the remapping discipline loaded from the disk, after serialization
     file_name = "discipline.pkl"
-    discipline.to_pickle(file_name)
-    return MDODiscipline.from_pickle(file_name)
+    to_pickle(discipline, file_name)
+    return from_pickle(file_name)
 
 
 def test_original_discipline(discipline) -> None:
@@ -88,7 +116,7 @@ def test_with_discipline_wo_default_values() -> None:
     with pytest.raises(
         ValueError, match="The original discipline has no default input values."
     ):
-        RemappingDiscipline(MDODiscipline(), {}, {})
+        RemappingDiscipline(DummyDiscipline(), {}, {})
 
 
 def test_discipline_name(discipline) -> None:
@@ -98,31 +126,32 @@ def test_discipline_name(discipline) -> None:
 
 def test_io_names(discipline) -> None:
     """Check the input and output names."""
-    assert list(discipline.get_input_data_names()) == [
-        "new_in_1",
-        "new_in_2",
-        "new_in_3",
-    ]
-    assert list(discipline.get_output_data_names()) == ["new_out_1", "new_out_2"]
+    assert discipline.io.input_grammar.names == input_mapping.keys()
+    assert discipline.io.output_grammar.names == output_mapping.keys()
 
 
 def test_default_inputs(discipline) -> None:
     """Check the default inputs when missing in original discipline."""
     assert_equal(
-        {"new_in_1": array([1.0]), "new_in_2": array([2.0]), "new_in_3": array([3.0])},
-        discipline.default_inputs,
+        {
+            "new_in_1": array([1.0]),
+            "new_in_2": array([2.0]),
+            "new_in_3": array([3.0]),
+            "new_in_4": array(["zero"]),
+        },
+        discipline.default_input_data,
     )
 
 
 def test_execute(discipline) -> None:
     """Check the execution of the discipline."""
     discipline.execute()
-    assert_equal(discipline.local_data["new_out_1"], array([2.0]))
-    assert_equal(discipline.local_data["new_out_2"], array([1.0, 2.0]))
+    assert_equal(discipline.io.data["new_out_1"], array([2.0]))
+    assert_equal(discipline.io.data["new_out_2"], array([1.0, 2.0]))
 
 
-def test_linearize(discipline) -> None:
-    """Check the linearization of the discipline."""
+def test_linearize_all(discipline) -> None:
+    """Check the linearization of all the inputs/outputs of the discipline."""
     discipline.linearize(compute_all_jacobians=True)
     assert_equal(
         discipline.jac,
@@ -131,14 +160,47 @@ def test_linearize(discipline) -> None:
                 "new_in_1": array([[1.0]]),
                 "new_in_2": array([[1.0]]),
                 "new_in_3": array([[1.0]]),
+                "new_in_4": zeros((1, 1)),
             },
             "new_out_2": {
                 "new_in_1": array([[1.0], [1.0]]),
                 "new_in_2": array([[1.0], [1.0]]),
                 "new_in_3": array([[1.0], [1.0]]),
+                "new_in_4": zeros((2, 1)),
+            },
+            "new_out_3": {
+                "new_in_1": zeros((1, 1)),
+                "new_in_2": zeros((1, 1)),
+                "new_in_3": zeros((1, 1)),
+                "new_in_4": zeros((1, 1)),
             },
         },
     )
+
+
+def test_linearize_partially() -> None:
+    """Check the linearization of part of the inputs/outputs of the discipline."""
+    new_discipline = NewDiscipline()
+    new_discipline.add_differentiated_inputs(["in_2"])
+    new_discipline.add_differentiated_outputs(["out_2"])
+    discipline = RemappingDiscipline(new_discipline, input_mapping, output_mapping)
+    assert discipline.linearization_mode == new_discipline.linearization_mode
+    discipline.linearize()
+    assert_equal(
+        discipline.jac,
+        {
+            "new_out_2": {
+                "new_in_2": array([[1.0], [1.0]]),
+                "new_in_3": array([[1.0], [1.0]]),
+            },
+        },
+    )
+
+
+@pytest.fixture(scope="module")
+def grammar() -> SimpleGrammar:
+    """A simple grammar."""
+    return SimpleGrammar("X", {"x": None})
 
 
 @pytest.mark.parametrize(
@@ -150,9 +212,48 @@ def test_linearize(discipline) -> None:
         ({"new_in_1": ("x", range(2))}, {"new_in_1": ("x", range(2))}),
     ],
 )
-def test_format_mapping(mapping, expected) -> None:
+def test_format_mapping(mapping, expected, grammar) -> None:
     """Check the formatting of a mapping."""
     formatted_mapping = RemappingDiscipline._RemappingDiscipline__format_mapping(
-        mapping
+        mapping, grammar
     )
     assert formatted_mapping == expected
+
+
+def test_input_grammar(discipline):
+    """Check the input grammar of the remapping discipline."""
+    assert discipline.input_grammar._validate(
+        {
+            "new_in_1": array([1.0]),
+            "new_in_2": array([2.0]),
+            "new_in_3": array([3.0]),
+            "new_in_4": array(["zero"]),
+        },
+        "",
+    )
+
+
+def test_output_grammar(discipline):
+    """Check the output grammar of the remapping discipline."""
+    assert discipline.output_grammar._validate(
+        {
+            "new_out_1": array([2.0]),
+            "new_out_2": array([1.0, 2.0]),
+            "new_out_3": array(["zero plus one"]),
+        },
+        "",
+    )
+
+
+def test_no_mapping():
+    """Check the remapping discipline without remapping."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(original_discipline)
+    assert discipline.input_grammar.names == original_discipline.input_grammar.names
+    assert discipline.output_grammar.names == original_discipline.output_grammar.names
+    assert discipline._input_mapping == {
+        f"in_{i}": (f"in_{i}", slice(None)) for i in range(1, 4)
+    }
+    assert discipline._output_mapping == {
+        f"out_{i}": (f"out_{i}", slice(None)) for i in range(1, 4)
+    }

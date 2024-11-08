@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -98,20 +99,18 @@ TEST_PARAMETERS = {
     indirect=["baseline_images"],
     ids=TEST_PARAMETERS.keys(),
 )
-@pytest.mark.parametrize("fig_and_axes", [False, True])
+@pytest.mark.parametrize("fig_and_ax", [False, True])
 @image_comparison(None)
 def test_plot_matplotlib(
-    kwargs, properties, baseline_images, dataset, fig_and_axes
+    kwargs, properties, baseline_images, dataset, fig_and_ax
 ) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
     plot = Lines(dataset, **kwargs)
-    fig, axes = (
-        (None, None) if not fig_and_axes else plt.subplots(figsize=plot.fig_size)
-    )
+    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
     for k, v in properties.items():
         setattr(plot, k, v)
 
-    plot.execute(save=False, fig=fig, axes=axes)
+    plot.execute(save=False, fig=fig, ax=ax)
 
 
 @pytest.mark.parametrize(
@@ -148,3 +147,17 @@ def test_pass_existing_figure(dataset):
         Path(__file__).parent / "plotly" / "test_lines" / "Lines_modified"
     ).read_text()
     assert figure.to_json() == ref.strip()
+
+
+def test_not_implemented(dataset):
+    """Check that the option use_integer_xticks is not implemented with plotly."""
+    lines = Lines(
+        dataset, variables="y", abscissa_variable="x", use_integer_xticks=True
+    )
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(
+            "The use_integer_xticks option of plotly-based Lines is not implemented."
+        ),
+    ):
+        lines.execute(save=False, file_format="html")

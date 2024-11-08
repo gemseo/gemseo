@@ -61,7 +61,7 @@ class N2HTML:
     def from_graph(
         self,
         graph: DependencyGraph,
-        self_coupled_disciplines: Sequence[str] | None = None,
+        self_coupled_disciplines: Sequence[str] = (),
     ) -> None:
         """Create the HTML file from a dependency graph.
 

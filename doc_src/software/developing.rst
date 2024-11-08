@@ -30,11 +30,28 @@
 .. _pyperf: https://pyperf.readthedocs.io
 .. _profiler: https://docs.python.org/3/library/profile.html
 .. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
+.. _commitizen: https://commitizen-tools.github.io/commitizen
+.. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
 .. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
+.. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
+.. _gitflow: https://nvie.com/posts/a-successful-git-branching-model
+.. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _graphviz: https://graphviz.org/download
-.. _PyCharm: https://www.jetbrains.com/pycharm
+.. _mypy: http://mypy-lang.org
+.. _pep8: https://pep8.org
 .. _pre-commit: https://pre-commit.com
-.. _pipx: https://pypa.github.io/pipx
+.. _profiler: https://docs.python.org/3/library/profile.html
+.. _PyCharm: https://www.jetbrains.com/pycharm
+.. _pyperf: https://pyperf.readthedocs.io
+.. _pytest: https://docs.pytest.org
+.. _pytest-cov: https://pytest-cov.readthedocs.io
+.. _ruff: https://docs.astral.sh/ruff
+.. _semantic line feeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
+.. _semantic versioning: https://semver.org
+.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html?highlight=Sequence#standard-duck-types
+.. _sphinx: https://www.sphinx-doc.org
+.. _tox: https://tox.readthedocs.io
+.. _uv: https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
 .. _vscode: https://code.visualstudio.com/
 
 .. _dev:
@@ -80,13 +97,13 @@ First time setup:
 
 .. code-block:: console
 
-  tox -e py39 --develop
+  tox run -e py39
 
 * Run the checks:
 
 .. code-block:: console
 
-  tox -e check
+  tox run -e check
 
 * `configure PyCharm`_
 
@@ -129,21 +146,13 @@ Requirements
 Make sure Python 3 is installed,
 preferably 3.9.
 
-Install `pipx`_ first:
+First install `uv`_,
+then install `tox`_ and `pre-commit`_:
 
 .. code-block:: console
 
-   python -m pip install --user pipx
-   python -m pipx ensurepath
-
-You may need to log out and back in for the system path update to be taken into account.
-
-Then install `tox`_ and `pre-commit`_:
-
-.. code-block:: console
-
-   pipx install tox
-   pipx install pre-commit
+   uv tool install tox --with tox-uv
+   uv tool install pre-commit
 
 Finally,
 make sure that `graphviz`_ is installed
@@ -160,7 +169,7 @@ Create and execute the environment named *env* and run its commands with:
 
 .. code-block:: console
 
-   tox -e env
+   tox run -e env
 
 The first invocation of this command line may take some time to proceed,
 further invocations will be faster because `tox`_ shall not create a new
@@ -172,19 +181,7 @@ You may run (sequentially) more than one environment with:
 
 .. code-block:: console
 
-   tox -e env,env2,env3
-
-Recreate an existing environment with:
-
-.. code-block:: console
-
-   tox -e env -r
-
-This may be necessary
-if an environment is broken
-or if `tox`_ cannot figure out
-that a dependency has been updated
-(for instance with dependencies defined by a git branch).
+   tox run -e env,env2,env3
 
 Activate the `tox`_ environment named *env* with:
 
@@ -220,7 +217,7 @@ for example:
 
 .. code-block:: console
 
-   tox -e env -- ARG1 --opt1
+   tox run -e env -- ARG1 --opt1
 
 Not all the environments allow this feature,
 see the specific topics below for more information.
@@ -235,7 +232,7 @@ Create a development environment:
 
 .. code-block:: console
 
-  tox -e py39 --develop
+  tox run -e py39
 
 This will create an environment based on Python 3.9 with
 |g| installed in `editable mode`_,
@@ -249,7 +246,7 @@ but yet is still editable in the source tree.
 
 .. _coding-style:
 
-Coding Style
+Coding style
 ++++++++++++
 
 We use the `pep8`_ convention.
@@ -259,18 +256,18 @@ A git commit shall have no checkers violations.
 All these tools are used:
 
 * either automatically by the git hooks when creating a commit,
-* or manually by running :command:`tox -e check`.
+* or manually by running :command:`tox run -e check`.
 
 Coding guidelines
 +++++++++++++++++
 
-String formatting
-  Do not format strings with **+**
-  or with the old `printf-style
-  <https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting>`_
-  formatting:
-  format strings with :func:`format` (`documentation
-  <https://docs.python.org/3/library/stdtypes.html#str.format>`_).
+Enumerations
+  Use ``StrEnum`` from the ``strenum`` package for creating collections of constants that are compatible with strings.
+  This allows to easily work with non-Python API like REST.
+
+Error messages
+  Error messages will be read by humans:
+  they shall be explicit and valid sentences.
 
 Logging
   Loggers shall be defined at module level and named after the module with::
@@ -281,13 +278,23 @@ Logging
   and it’s intuitively obvious where events are logged
   just from the logger name.
 
-Error messages
-  Error messages will be read by humans:
-  they shall be explicit and valid sentences.
+Naming convention
+  - A factory of ``Thing``'s instances is named ``ThingFactory`` and put in a module ``path.things.factory``.
+  - The name of an abstract class is ``Base``-prefixed, _e.g._ ``BaseThing`` is an abstract class of things.
+  - A module should not include more than one public class.
+  - A module including a class named ``ClassName`` is named ``class_name``.
+  - In the absence of a better name for a module that does not contain a class, use ``utils``.
+  - Avoid the use of ``__call__``; add a method named as ``compute_quantity`` instead.
 
-Enumerations
-  Use ``StrEnum`` from the ``strenum`` package for creating collections of constants that are compatible with strings.
-  This allows to easily work with non-Python API like REST.
+String formatting
+  Do not format strings with **+**
+  or with the old `printf-style
+  <https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting>`_
+  formatting:
+  format strings with f-strings first
+  (`documentation <https://docs.python.org/3/reference/lexical_analysis.html#formatted-string-literals>`__),
+  or :func:`format` otherwise
+  (`documentation <https://docs.python.org/3/library/stdtypes.html#str.format>`__).
 
 .. _git:
 
@@ -471,19 +478,20 @@ The commit message should be structured as follows:
 
   [optional footer(s)]
 
-Where:
+where:
 
 * *<type>* defines the type of change you are committing
 
-    * feat: A new feature
-    * fix: A bug fix
-    * docs: Documentation only changes
-    * style: Changes that do not affect the meaning of the code
-    * refactor: A code change that neither fixes a bug nor adds a feature
-    * perf: A code change that improves performance
-    * test: Adding missing tests or correcting existing tests
-    * build: Changes that affect the build system or external dependencies
-    * ci: Changes to our CI configuration files and scripts
+  * feat: A new feature
+  * fix: A bug fix
+  * docs: Documentation only changes
+  * style: Changes that do not affect the meaning of the code
+  * refactor: A code change that neither fixes a bug nor adds a feature
+  * perf: A code change that improves performance
+  * test: Adding missing tests or correcting existing tests
+  * build: Changes that affect the build system or external dependencies
+  * ci: Changes to our CI configuration files and scripts
+
 * *(optional scope)* provide additional contextual information and is contained
   within parentheses
 * *<description>* is a concise description of the changes,
@@ -642,7 +650,7 @@ run the tests with:
 
 .. code-block:: console
 
-   tox -e py39
+   tox run -e py39
 
 Replace py39 by py310 for testing with Python 3.10.
 With `tox`_,
@@ -651,13 +659,13 @@ for instance:
 
 .. code-block:: console
 
-   tox -e py39 -- --last-failed --step-wise
+   tox run -e py39 -- --last-failed --step-wise
 
 Run the tests for several Python versions with for instance (on Linux):
 
 .. code-block:: console
 
-   tox -e py39,py310,py311
+   tox run -e py39,py310,py311
 
 Tests coverage
 ++++++++++++++
@@ -667,7 +675,7 @@ get the coverage information with:
 
 .. code-block:: console
 
-   tox -e py39-coverage
+   tox run -e py39-coverage
 
 See `pytest-cov`_ for more information.
 
@@ -685,14 +693,14 @@ On Linux, generate the documentation with:
 
 .. code-block:: console
 
-   tox -e doc
+   tox run -e doc
 
 Pass options to ``sphinx-build`` after ``--``,
 for instance:
 
 .. code-block:: console
 
-   tox -e doc -- -vv -j2
+   tox run -e doc -- -vv -j2
 
 Writing guidelines
 ++++++++++++++++++
@@ -755,7 +763,7 @@ Check that the examples run correctly with:
 
 .. code::
 
-    tox -e py39 -- tests/test_doc_examples.py -m doc_examples
+    tox run -e py39 -- tests/test_doc_examples.py -m doc_examples
 
 Versioning
 ----------

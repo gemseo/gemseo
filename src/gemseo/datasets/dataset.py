@@ -29,9 +29,9 @@ or from a NumPy array (:meth:`~.Dataset.from_array`),
 and can be enriched from a group of variables (:meth:`~.Dataset.add_group`)
 or from a single variable (:meth:`~.Dataset.add_variable`).
 
-An :class:`.AbstractFullCache` or an :class:`.OptimizationProblem`
+An :class:`.BaseFullCache` or an :class:`.OptimizationProblem`
 can also be exported to a :class:`.Dataset`
-using the methods :meth:`.AbstractFullCache.to_dataset`
+using the methods :meth:`.BaseFullCache.to_dataset`
 and :meth:`.OptimizationProblem.to_dataset`.
 """
 
@@ -61,6 +61,7 @@ from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import read_csv
 
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -70,7 +71,6 @@ if TYPE_CHECKING:
 
     from pandas._typing import Axes
     from pandas._typing import Dtype
-
 
 StrColumnType = Union[str, Iterable[str]]
 IndexType = Union[str, int, Iterable[Union[str, int]]]
@@ -244,11 +244,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def variable_names_to_n_components(self) -> dict[str, int]:
         """The names of the variables bound to their number of components."""
         return {
-            variable_name: len(
-                self.get_view(variable_names=variable_name).columns.get_level_values(
-                    self.__COMPONENT_LEVEL
-                )
-            )
+            variable_name: self.get_view(variable_names=variable_name).shape[1]
             for variable_name in self.variable_names
         }
 
@@ -256,11 +252,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def group_names_to_n_components(self) -> dict[str, int]:
         """The names of the groups bound to their number of components."""
         return {
-            group_name: len(
-                self.get_view(group_names=group_name).columns.get_level_values(
-                    self.__COMPONENT_LEVEL
-                )
-            )
+            group_name: self.get_view(group_names=group_name).shape[1]
             for group_name in self.group_names
         }
 
@@ -414,11 +406,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         original_sortorder = self.columns.sortorder
         self.columns.sortorder = 0
         self.loc[
-            self.__to_slice_or_list(indices),
+            self._to_slice_or_list(indices),
             (
-                self.__to_slice_or_list(group_names),
-                self.__to_slice_or_list(variable_names),
-                self.__to_slice_or_list(components),
+                self._to_slice_or_list(group_names),
+                self._to_slice_or_list(variable_names),
+                self._to_slice_or_list(components),
             ),
         ] = data
         self.columns.sortorder = original_sortorder
@@ -636,18 +628,18 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         original_sortorder = self.columns.sortorder
         self.columns.sortorder = 0
         data = self.loc[
-            self.__to_slice_or_list(indices),
+            self._to_slice_or_list(indices),
             (
-                self.__to_slice_or_list(group_names),
-                self.__to_slice_or_list(variable_names),
-                self.__to_slice_or_list(components),
+                self._to_slice_or_list(group_names),
+                self._to_slice_or_list(variable_names),
+                self._to_slice_or_list(components),
             ),
         ]
         self.columns.sortorder = original_sortorder
         return data
 
     @staticmethod
-    def __to_slice_or_list(obj: Any) -> slice | list[Any]:
+    def _to_slice_or_list(obj: Any) -> slice | list[Any]:
         """Convert an object to a ``slice`` or a ``list``.
 
         Args:
@@ -777,8 +769,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         data: DataType,
         variable_names: StrColumnType = (),
-        variable_names_to_n_components: dict[str, int] | None = None,
-        variable_names_to_group_names: dict[str, str] | None = None,
+        variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
         """Create a dataset from a NumPy array.
 
@@ -787,11 +779,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names: The names of the variables.
                 If empty, use default names.
             variable_names_to_n_components: The number of components of the variables.
-                If ``None``,
+                If empty,
                 assume that all the variables have a single component.
+                Ignored if ``variable_names`` is empty.
             variable_names_to_group_names: The groups of the variables.
-                If ``None``,
+                If empty,
                 use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
+                Ignored if ``variable_names`` is empty.
 
         Returns:
             A dataset built from the NumPy array.
@@ -806,7 +800,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 for component in arange(n_total_components)
             ]
 
-            # Do not consider groups nor n_components.
+            # In that case, we ignore groups nor n_components.
             variable_to_group = {}
             variable_to_n_component = {}
 
@@ -828,8 +822,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         file_path: Path | str,
         variable_names: Iterable[str] = (),
-        variable_names_to_n_components: dict[str, int] | None = None,
-        variable_names_to_group_names: dict[str, str] | None = None,
+        variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
         delimiter: str = ",",
         header: bool = True,
     ) -> Dataset:
@@ -845,30 +839,53 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names: The names of the variables.
                 If empty and ``header`` is ``True``,
                 read the names from the first line of the file.
+
                 If empty and ``header`` is ``False``,
                 use default names
                 based on the patterns the :attr:`.DEFAULT_NAMES`
                 associated with the different groups.
             variable_names_to_n_components: The number of components of the variables.
-                If ``None``,
+                If empty,
                 assume that all the variables have a single component.
             variable_names_to_group_names: The groups of the variables.
-                If ``None``,
+                If empty,
                 use :attr:`.DEFAULT_GROUP` for all the variables.
             delimiter: The field delimiter.
             header: Whether to read the names of the variables
                 on the first line of the file.
 
+        Note:
+            When the ``variable_names`` are not provided,
+            and the ``header`` is ``True``, the file is accessed twice:
+            During the first access,
+            only the first line is read to retrieve the variable names.
+            In the second access,
+            reading starts from the second line to the end of the file.
+
         Returns:
             A dataset built from the text file.
         """
-        header = "infer" if header else None
-        return cls.from_array(
-            read_csv(file_path, delimiter=delimiter, header=header).to_numpy(),
+        skiprows = 1 if header else None
+
+        if header and not variable_names:
+            # Reads a first time to get the variable names.
+            # Only focus on the first line.
+            variable_names = read_csv(
+                file_path, delimiter=delimiter, header="infer", nrows=1
+            ).columns.tolist()
+
+        data = read_csv(file_path, delimiter=delimiter, header=None, skiprows=skiprows)
+
+        dataset = cls.from_array(
+            data.to_numpy(),
             variable_names,
             variable_names_to_n_components,
             variable_names_to_group_names,
         )
+
+        return dataset.astype({
+            col: data.dtypes[i] for i, col in enumerate(dataset.columns)
+        })
 
     @classmethod
     def from_csv(

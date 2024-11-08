@@ -19,8 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from gemseo.mda.factory import MDAFactory
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.mda_factory import MDAFactory
 
 
 def test_create(sellar_disciplines) -> None:
@@ -31,7 +31,7 @@ def test_create(sellar_disciplines) -> None:
 
 def test_is_available() -> None:
     factory = MDAFactory()
-    avail = factory.mdas
+    avail = factory.class_names
     assert len(avail) > 2
 
     for mda in avail:

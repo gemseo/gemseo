@@ -23,32 +23,34 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import abs as np_abs
 from numpy import concatenate
 from numpy import ndarray
 from numpy import zeros
 
-from gemseo.core.chain import MDOParallelChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.formulation import MDOFormulation
-from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
-from gemseo.core.mdofunctions.taylor_polynomials import compute_linear_approximation
+from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline import Discipline
+from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
+from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.mda.mda_chain import MDAChain
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
     from typing import Any
 
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.discipline import Discipline
 
 LOGGER = logging.getLogger(__name__)
 
 
-class IDF(MDOFormulation):
+class IDF(BaseMDOFormulation):
     """The Individual Discipline Feasible (IDF) formulation.
 
     This formulation draws an optimization architecture where the coupling variables of
@@ -60,46 +62,26 @@ class IDF(MDOFormulation):
     multidisciplinary analysis is made at the optimum.
     """
 
-    def __init__(
+    Settings: ClassVar[type[IDF_Settings]] = IDF_Settings
+
+    _settings: IDF_Settings
+
+    def __init__(  # noqa: D107
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        maximize_objective: bool = False,
-        normalize_constraints: bool = True,
-        n_processes: int = 1,
-        use_threading: bool = True,
-        start_at_equilibrium: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        **mda_options_for_start_at_equilibrium: Any,
+        settings_model: IDF_Settings | None = None,
+        **settings: Any,
     ) -> None:
-        """
-        Args:
-            normalize_constraints: If ``True``,
-                the outputs of the coupling consistency constraints are scaled.
-            n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
-                used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution;
-                multiprocessing will copy (serialize) all the disciplines,
-                while threading will share all the memory.
-                This is important to note
-                if you want to execute the same discipline multiple times,
-                you shall use multiprocessing.
-            start_at_equilibrium: If ``True``,
-                an MDA is used to initialize the coupling variables.
-            mda_options_for_start_at_equilibrium: The options for the MDA when
-                ``start_at_equilibrium=True``.
-                See detailed options in :class:`.MDAChain`.
-        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
             design_space,
-            maximize_objective=maximize_objective,
-            grammar_type=grammar_type,
+            settings_model=settings_model,
+            **settings,
         )
+        n_processes = self._settings.n_processes
         if n_processes > 1:
             LOGGER.info(
                 "Running IDF formulation in parallel on n_processes = %s",
@@ -107,52 +89,47 @@ class IDF(MDOFormulation):
             )
             self._parallel_exec = MDOParallelChain(
                 self.disciplines,
-                use_threading=use_threading,
-                grammar_type=grammar_type,
+                use_threading=self._settings.use_threading,
                 n_processes=n_processes,
             )
         else:
             self._parallel_exec = None
 
-        self.coupling_structure = MDOCouplingStructure(disciplines)
+        self.coupling_structure = CouplingStructure(disciplines)
         self.all_couplings = self.coupling_structure.all_couplings
         self._update_design_space()
-        self.normalize_constraints = normalize_constraints
+        self.normalize_constraints = self._settings.normalize_constraints
         self._build_constraints()
         self._build_objective_from_disc(objective_name)
 
-        if start_at_equilibrium:
-            self._compute_equilibrium(**mda_options_for_start_at_equilibrium)
+        if self._settings.start_at_equilibrium:
+            self._compute_equilibrium()
 
-    def _compute_equilibrium(self, **mda_options: Any) -> None:
+    def _compute_equilibrium(self) -> None:
         """Run an MDA to compute the initial target couplings at equilibrium.
 
-        The values at equilibrium are set in the initial design space.
-
-        Args:
-            mda_options: The options for the MDA chain.
+        The values at equilibrium are used to set the design space current value.
         """
-        current_x = self.design_space.get_current_value(as_dict=True)
-        # run MDA to initialize target coupling variables
-        mda = MDAChain(self.disciplines, **mda_options)
-        res = mda.execute(current_x)
+        current_x = self.optimization_problem.design_space.get_current_value(
+            as_dict=True
+        )
 
+        output = MDAChain(
+            self.disciplines,
+            settings_model=self._settings.mda_chain_settings_for_start_at_equilibrium,
+        ).execute(current_x)
         for name in self.all_couplings:
-            value = res[name]
-            LOGGER.info(
-                "IDF: changing the initial value of %s from %s to %s (equilibrium)",
-                name,
-                current_x[name],
-                value,
-            )
-            self.design_space.set_current_variable(name, value)
+            value = output[name]
+            msg = "IDF: changing the initial value of %s from %s to %s (equilibrium)."
+            LOGGER.info(msg, name, current_x[name], value)
+            self.optimization_problem.design_space.set_current_variable(name, value)
 
     def _update_design_space(self) -> None:
         """Update the design space with the required variables."""
         strong_couplings = set(self.all_couplings)
-        variable_names = set(self.opt_problem.design_space.variable_names)
+        variable_names = self.optimization_problem.design_space
         if not strong_couplings.issubset(variable_names):
-            missing = strong_couplings - variable_names
+            missing = strong_couplings.difference(variable_names)
             msg = (
                 "IDF formulation needs coupling variables as design variables, "
                 f"missing variables: {missing}."
@@ -160,11 +137,11 @@ class IDF(MDOFormulation):
             raise ValueError(msg)
         self._set_default_input_values_from_design_space()
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
+    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:  # noqa:D102
         # All functions and constraints are built from the top level disc
         # If we are in parallel mode: return the parallel execution
         if self._parallel_exec is not None:
-            return [self._parallel_exec]
+            return (self._parallel_exec,)
         # Otherwise the disciplines are top level
         return self.disciplines
 
@@ -182,8 +159,8 @@ class IDF(MDOFormulation):
         """
         norm_fact = []
         for output in output_couplings:
-            u_b = self.design_space.get_upper_bound(output)
-            l_b = self.design_space.get_lower_bound(output)
+            u_b = self.optimization_problem.design_space.get_upper_bound(output)
+            l_b = self.optimization_problem.design_space.get_lower_bound(output)
             norm_fact.append(np_abs(u_b - l_b))
         return concatenate(norm_fact)
 
@@ -199,19 +176,12 @@ class IDF(MDOFormulation):
                 discipline, strong=False
             )
             if couplings:
-                cstr = ConsistencyCstr(couplings, self)
-                if cstr.linear_candidate:
-                    cstr = compute_linear_approximation(
-                        cstr, zeros(cstr.input_dimension)
+                constraint = ConsistencyConstraint(couplings, self)
+                discipline_adapter = constraint.coupling_function.discipline_adapter
+                if discipline_adapter.is_linear:
+                    constraint = compute_linear_approximation(
+                        constraint,
+                        zeros(discipline_adapter.input_dimension),
+                        f_type=constraint.ConstraintType.EQ,
                     )
-                self.opt_problem.add_eq_constraint(cstr)
-
-    def get_expected_workflow(  # noqa:D102
-        self,
-    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
-        return ExecutionSequenceFactory.parallel(self.disciplines)
-
-    def get_expected_dataflow(  # noqa:D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return []
+                self.optimization_problem.add_constraint(constraint)

@@ -12,7 +12,7 @@
 
 Fully based on the power of object-oriented programming, the :term:`scenario` automatically generates the :term:`process`, with corresponding :term:`work flow` and :term:`data flow`.
 
-**|g|** aims at pushing forward the limits of automation in simulation processes development, with a particular focus made on:
+|g| aims at pushing forward the limits of automation in simulation processes development, with a particular focus made on:
 
 	- the integration of heterogeneous simulation environments in industrial and research contexts
 	- the integration of state of the art algorithms for optimization, design of experiments, and coupled analyses

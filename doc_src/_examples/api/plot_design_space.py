@@ -56,7 +56,11 @@ design_space
 # Once built, we can add variables. E.g.
 
 design_space.add_variable(
-    "x", 2, l_b=array([0.0] * 2), u_b=array([1.0] * 2), value=array([0.5] * 2)
+    "x",
+    2,
+    lower_bound=array([0.0] * 2),
+    upper_bound=array([1.0] * 2),
+    value=array([0.5] * 2),
 )
 design_space
 
@@ -80,6 +84,6 @@ loaded_design_space = read_design_space("saved_design_space.csv")
 #
 # To export an instance of :class:`.DesignSpace` into an HDF or CSV file,
 # the :func:`.write_design_space` API function can be used:
-loaded_design_space.add_variable("y", l_b=-1, u_b=3, value=0.0)
+loaded_design_space.add_variable("y", lower_bound=-1, upper_bound=3, value=0.0)
 write_design_space(loaded_design_space, "saved_design_space.csv")
 read_design_space("saved_design_space.csv")

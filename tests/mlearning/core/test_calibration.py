@@ -31,7 +31,7 @@ from numpy import array_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 if TYPE_CHECKING:
@@ -100,7 +100,7 @@ def calibration_space() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    "algo", [("fullfact", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
+    "algo", [("PYDOE_FULLFACT", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
 )
 def test_calibration(dataset, calibration_space, algo) -> None:
     """Test calibration."""
@@ -117,17 +117,17 @@ def test_calibration(dataset, calibration_space, algo) -> None:
 
     assert calibration.get_history("learning") is None
 
-    calibration.execute({"algo": algo[0], algo[1]: n_samples})
+    calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
     x_opt = calibration.optimal_parameters
     f_opt = calibration.optimal_criterion
     algo_opt = calibration.optimal_algorithm
 
-    assert algo_opt.parameters["penalty_level"] == x_opt["penalty_level"]
+    assert algo_opt._settings.penalty_level == x_opt["penalty_level"]
     assert calibration.get_history("penalty_level").shape == (n_samples, 1)
     assert calibration.get_history("criterion").shape == (n_samples, 1)
     assert calibration.get_history("learning").shape == (n_samples, 1)
     assert len(calibration.algos) == n_samples
 
     calibration.maximize_objective = True
-    calibration.execute({"algo": algo[0], algo[1]: n_samples})
+    calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
     assert -calibration.optimal_criterion > f_opt

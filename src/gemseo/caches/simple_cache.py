@@ -23,25 +23,25 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.cache import DATA_COMPARATOR
-from gemseo.core.cache import AbstractCache
-from gemseo.core.cache import CacheEntry
+from gemseo.caches.base_cache import DATA_COMPARATOR
+from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from gemseo.typing import DataMapping
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
 
 
-class SimpleCache(AbstractCache):
+class SimpleCache(BaseCache):
     """Dictionary-based cache storing a unique entry."""
 
-    __inputs: DataMapping
+    __inputs: StrKeyMapping
     """The input data."""
 
-    __outputs: DataMapping
+    __outputs: StrKeyMapping
     """The output data."""
 
     __jacobian: JacobianData
@@ -50,7 +50,7 @@ class SimpleCache(AbstractCache):
     def __init__(  # noqa:D107
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
     ) -> None:
         super().__init__(tolerance, name)
         self.clear()
@@ -70,7 +70,7 @@ class SimpleCache(AbstractCache):
 
     def __is_cached(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> bool:
         """Check if an input data is cached.
 
@@ -81,13 +81,13 @@ class SimpleCache(AbstractCache):
             Whether the input data is cached.
         """
         return len(self.__inputs) != 0 and DATA_COMPARATOR(
-            input_data, self.__inputs, self.tolerance
+            input_data, self.__inputs, self._tolerance
         )
 
     def cache_outputs(  # noqa:D102
         self,
-        input_data: DataMapping,
-        output_data: DataMapping,
+        input_data: StrKeyMapping,
+        output_data: StrKeyMapping,
     ) -> None:
         if self.__is_cached(input_data):
             if not self.__outputs:
@@ -103,7 +103,7 @@ class SimpleCache(AbstractCache):
 
     def __getitem__(
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
     ) -> CacheEntry:
         if not self.__is_cached(input_data):
             return CacheEntry(input_data, {}, {})
@@ -111,7 +111,7 @@ class SimpleCache(AbstractCache):
 
     def cache_jacobian(  # noqa:D102
         self,
-        input_data: DataMapping,
+        input_data: StrKeyMapping,
         jacobian_data: JacobianData,
     ) -> None:
         if self.__is_cached(input_data):

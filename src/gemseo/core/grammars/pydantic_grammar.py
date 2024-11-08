@@ -12,15 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A grammar based on a pydantic model."""
+"""A grammar based on a Pydantic model."""
 
 from __future__ import annotations
 
 import logging
-from collections.abc import Collection
-from collections.abc import Iterable
-from collections.abc import Iterator
-from collections.abc import Mapping
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
@@ -37,13 +33,17 @@ from typing_extensions import Self
 from typing_extensions import get_origin
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
-from gemseo.core.grammars.pydantic_ndarray import NDArrayPydantic
-from gemseo.core.grammars.pydantic_ndarray import _NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic
+from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 
 if TYPE_CHECKING:
-    from gemseo.core.discipline_data import Data
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Schema
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 
@@ -53,21 +53,21 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PydanticGrammar(BaseGrammar):
-    """A grammar based on a pydantic model.
+    """A grammar based on a Pydantic model.
 
-    The pydantic model passed to the grammar is used to initialize the grammar defaults.
+    The Pydantic model passed to the grammar is used to initialize the grammar defaults.
     Currently, changing the defaults will not update the model.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
 
     __model: ModelType
-    """The pydantic model."""
+    """The Pydantic model."""
 
     __model_needs_rebuild: bool
     """Whether to rebuild the model before validation when it had runtime changes.
 
-    This is necessary because the pydantic schema is built at model creation but it does
+    This is necessary because the Pydantic schema is built at model creation but it does
     not reflect any of the changes done after.
     """
 
@@ -92,7 +92,7 @@ class PydanticGrammar(BaseGrammar):
     ) -> None:
         """
         Args:
-            model: A pydantic model.
+            model: A Pydantic model.
                 If ``None``, the model will be empty.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
@@ -177,7 +177,7 @@ class PydanticGrammar(BaseGrammar):
         fields = self.__model.model_fields
         for name, annotation in names_to_annotations.items():
             if merge and name in fields:
-                # pydantic typing for the argument annotation does not handle Union,
+                # Pydantic typing for the argument annotation does not handle Union,
                 # we cast it.
                 annotation = cast(type[Any], Union[fields[name].annotation, annotation])
             fields[name] = FieldInfo(annotation=annotation)
@@ -189,7 +189,7 @@ class PydanticGrammar(BaseGrammar):
         # The sole purpose of the following attribute is to identify a model created
         # here,
         # and not from an external class deriving from BaseModel,
-        self.__model.__internal__ = None  # type: ignore
+        self.__model.__internal__ = None  # type: ignore[attr-defined]
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
 
@@ -198,35 +198,19 @@ class PydanticGrammar(BaseGrammar):
 
     def _validate(  # noqa: D102
         self,
-        data: Data,
+        data: StrKeyMapping,
         error_message: MultiLineString,
     ) -> bool:
         self.__rebuild_model()
         try:
             # The grammars shall be strict on typing and not coerce the data,
-            # pydantic requires a dict, using a mapping fails.
+            # Pydantic requires a dict, using a mapping fails.
             self.__model.model_validate(dict(data), strict=True)
         except ValidationError as errors:
             for line in str(errors).split("\n"):
                 error_message.add(line)
             return False
         return True
-
-    def is_array(  # noqa:D102
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        self._check_name(name)
-        if numeric_only:
-            return self.data_converter.is_numeric(name)
-        annotation = self.__model.model_fields[name].annotation
-        type_origin = get_origin(annotation)
-        if type_origin is None:
-            # This is a container with no information on the type of its contents.
-            # This is the case of a type just declared as ndarray for instance.
-            return False
-        return issubclass(type_origin, Collection)
 
     def _restrict_to(  # noqa:D102
         self,

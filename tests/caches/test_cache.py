@@ -36,15 +36,15 @@ from scipy.sparse import eye as speye
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.caches.cache_factory import CacheFactory
+from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
+from gemseo.caches.cache_entry import CacheEntry
+from gemseo.caches.factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.caches.hdf5_file_singleton import HDF5FileSingleton
-from gemseo.core.cache import CacheEntry
-from gemseo.core.cache import hash_data_dict
-from gemseo.core.cache import to_real
-from gemseo.core.chain import MDOParallelChain
+from gemseo.caches.utils import hash_data
+from gemseo.caches.utils import to_real
+from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -54,32 +54,40 @@ if TYPE_CHECKING:
 
 DIR_PATH = Path(__file__).parent
 
-
-@pytest.fixture(scope="module")
-def factory():
-    return CacheFactory()
+FACTORY = CacheFactory()
 
 
-@pytest.fixture()
-def simple_cache(factory):
-    return factory.create("SimpleCache", tolerance=0.0)
+@pytest.fixture
+def simple_cache():
+    return FACTORY.create("SimpleCache")
 
 
-@pytest.fixture()
-def memory_full_cache(factory):
-    return factory.create("MemoryFullCache")
+@pytest.fixture
+def memory_full_cache():
+    return FACTORY.create("MemoryFullCache")
 
 
-@pytest.fixture()
-def memory_full_cache_loc(factory):
-    return factory.create("MemoryFullCache", is_memory_shared=False)
+@pytest.fixture
+def memory_full_cache_loc():
+    return FACTORY.create("MemoryFullCache", is_memory_shared=False)
 
 
-@pytest.fixture()
-def hdf5_cache(factory, tmp_wd):
-    return factory.create(
+@pytest.fixture
+def hdf5_cache(tmp_wd):
+    return FACTORY.create(
         "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path="DummyCache"
     )
+
+
+@pytest.mark.parametrize("cache", map(FACTORY.create, FACTORY.class_names))
+def test_tolerance(cache):
+    """Verify tolerance property."""
+    assert cache.tolerance == 0.0
+    cache.tolerance = 1.0
+    assert cache.tolerance == 1.0
+    match = "The tolerance shall be positive: -1.0"
+    with pytest.raises(ValueError, match=match):
+        cache.tolerance = -1.0
 
 
 def test_jac_and_outputs_caching(
@@ -204,7 +212,7 @@ def test_collision(tmp_wd) -> None:
     hash_0 = next(iter(c1._hashes_to_indices.keys()))
     groups = c1._hashes_to_indices.pop(hash_0)
     input_data2 = {"i": 2 * arange(3)}
-    hash_1 = hash_data_dict(input_data2)
+    hash_1 = hash_data(input_data2)
     c1._hashes_to_indices[hash_1] = groups
     output_data2 = {"o": 2.0 * arange(3)}
     c1.cache_outputs(input_data2, output_data2)
@@ -215,14 +223,14 @@ def test_collision(tmp_wd) -> None:
 
 def test_hash_data_dict() -> None:
     input_data = {"i": 10 * arange(3)}
-    hash_0 = hash_data_dict(input_data)
+    hash_0 = hash_data(input_data)
     assert isinstance(hash_0, int)
-    assert hash_0 == hash_data_dict(input_data)
-    assert hash_0 == hash_data_dict({"i": 10 * arange(3), "t": None})
-    assert hash_0 == hash_data_dict({"i": 10 * arange(3), "j": None})
-    hash_data_dict({"i": 10 * arange(3)})
+    assert hash_0 == hash_data(input_data)
+    assert hash_0 == hash_data({"i": 10 * arange(3), "t": None})
+    assert hash_0 == hash_data({"i": 10 * arange(3), "j": None})
+    hash_data({"i": 10 * arange(3)})
     # Discontiguous array
-    hash_data_dict({"i": arange(10)[::3]})
+    hash_data({"i": arange(10)[::3]})
 
 
 @pytest.mark.parametrize(
@@ -242,7 +250,7 @@ def test_hash_discontiguous_array(input_c, input_f) -> None:
         input_c: A C-contiguous array.
         input_f: A Fortran ordered array.
     """
-    assert hash_data_dict({"i": input_c}) == hash_data_dict({"i": input_f})
+    assert hash_data({"i": input_c}) == hash_data({"i": input_f})
 
 
 def func(x):
@@ -269,10 +277,10 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected) -> None:
     # Use a temporary copy of the file in case the test fails.
     shutil.copy(str(DIR_PATH / hdf_name), tmp_wd)
     disc = create_discipline("AutoPyDiscipline", py_func=func)
-    disc.set_cache_policy("HDF5Cache", cache_hdf_file=hdf_name)
+    disc.set_cache("HDF5Cache", hdf_file_path=hdf_name)
     out = disc.execute({"x": inputs})
 
-    assert disc.n_calls == 0
+    assert disc.execution_statistics.n_calls == 0
     assert out["y"].all() == expected.all()
 
 
@@ -406,19 +414,23 @@ def test_multithreading(memory_cache, sellar_disciplines) -> None:
     assert len(memory_cache) == 0
     par = MDOParallelChain([s_1, s_s])
     ds = SellarDesignSpace("float64")
-    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
+    scen = create_scenario(
+        par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
+    )
 
-    options = {"algo": "fullfact", "n_samples": 10, "n_processes": 4}
-    scen.execute(options)
+    options = {"algo_name": "PYDOE_FULLFACT", "n_samples": 10, "n_processes": 4}
+    scen.execute(**options)
 
-    nexec_1 = s_1.n_calls
-    nexec_2 = s_s.n_calls
+    nexec_1 = s_1.execution_statistics.n_calls
+    nexec_2 = s_s.execution_statistics.n_calls
 
-    scen = create_scenario(par, "DisciplinaryOpt", "obj", ds, scenario_type="DOE")
-    scen.execute(options)
+    scen = create_scenario(
+        par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
+    )
+    scen.execute(**options)
 
-    assert nexec_1 == s_1.n_calls
-    assert nexec_2 == s_s.n_calls
+    assert nexec_1 == s_1.execution_statistics.n_calls
+    assert nexec_2 == s_s.execution_statistics.n_calls
 
 
 def test_copy(memory_full_cache) -> None:
@@ -454,18 +466,18 @@ def test_hdf5singleton(tmp_wd) -> None:
 def test_hash_data_dict_keys() -> None:
     """Check that hash considers the keys of the dictionary."""
     data = {"a": array([1]), "b": array([2])}
-    assert hash_data_dict(data) == hash_data_dict({"a": array([1]), "b": array([2])})
-    assert hash_data_dict(data) != hash_data_dict({"a": array([1]), "c": array([2])})
-    assert hash_data_dict(data) != hash_data_dict({"a": array([1]), "b": array([3])})
+    assert hash_data(data) == hash_data({"a": array([1]), "b": array([2])})
+    assert hash_data(data) != hash_data({"a": array([1]), "c": array([2])})
+    assert hash_data(data) != hash_data({"a": array([1]), "b": array([3])})
 
     data = {"a": array([1]), "b": array([1])}
-    assert hash_data_dict(data) != hash_data_dict({"a": array([1]), "c": array([1])})
+    assert hash_data(data) != hash_data({"a": array([1]), "c": array([1])})
 
 
 CACHE_FILE_NAME = "cache.h5"
 
 
-@pytest.fixture()
+@pytest.fixture
 def h5_file(tmp_wd) -> Iterator[h5py.File]:
     """Provide an empty h5 file object and close it afterward."""
     h5_file = h5py.File(CACHE_FILE_NAME, mode="a")

@@ -92,7 +92,7 @@ class IODataset(Dataset):
     def add_input_group(
         self,
         data: DataType,
-        variable_names: StrColumnType = (),
+        variable_names: StrColumnType = "i",
         variable_names_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the input group.
@@ -117,7 +117,7 @@ class IODataset(Dataset):
     def add_output_group(
         self,
         data: DataType,
-        variable_names: StrColumnType = (),
+        variable_names: StrColumnType = "o",
         variable_names_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the output group.

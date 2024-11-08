@@ -35,22 +35,24 @@ from gemseo import create_design_space
 from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo import execute_algo
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.disciplines.auto_py import to_arrays_dict
-from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 X_DIM = 4
 
 
-@pytest.fixture()
+@pytest.fixture
 def design_space():
     design_space = create_design_space()
     design_space.add_variable(
-        "x", X_DIM, l_b=-2 * ones(X_DIM), u_b=2 * ones(X_DIM), value=zeros(X_DIM)
+        "x",
+        X_DIM,
+        lower_bound=-2 * ones(X_DIM),
+        upper_bound=2 * ones(X_DIM),
+        value=zeros(X_DIM),
     )
     return design_space
 
@@ -58,6 +60,12 @@ def design_space():
 def f1(y2=1.0, z=2.0):
     y1 = z + y2
     return y1  # noqa: RET504
+
+
+class F:
+    def f1(self, y2=1.0, z=2.0):
+        y1 = z + y2
+        return y1  # noqa: RET504
 
 
 def f2(y1=2.0, z=2.0):
@@ -96,26 +104,29 @@ def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
 
-    assert list(d1.get_input_data_names()) == ["y2", "z"]
+    assert list(d1.io.input_grammar.names) == ["y2", "z"]
     d1.execute()
 
-    assert d1.local_data["y1"] == f1()
+    assert d1.io.data["y1"] == f1()
 
     d2 = AutoPyDiscipline(f2)
-    assert list(d2.get_input_data_names()) == ["y1", "z"]
-    assert list(d2.get_output_data_names()) == ["y2", "y3"]
+    assert list(d2.io.input_grammar.names) == ["y1", "z"]
+    assert list(d2.io.output_grammar.names) == ["y2", "y3"]
 
     d2.execute()
-    assert d2.local_data["y2"] == f2()[0]
+    assert d2.io.data["y2"] == f2()[0]
+
+    d3 = AutoPyDiscipline(F().f1)
+
+    assert list(d3.io.input_grammar.names) == ["y2", "z"]
+    d3.execute()
+
+    assert d3.io.data["y1"] == F().f1()
 
 
-@pytest.mark.parametrize(
-    "grammar_type",
-    [AutoPyDiscipline.GrammarType.SIMPLE, AutoPyDiscipline.GrammarType.JSON],
-)
-def test_jac(grammar_type) -> None:
+def test_jac() -> None:
     """Test a basic jacobian."""
-    disc = AutoPyDiscipline(py_func=f5, py_jac=df5, grammar_type=grammar_type)
+    disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
     assert disc.check_jacobian()
 
 
@@ -123,9 +134,9 @@ def test_use_arrays() -> None:
     """Test the use of arrays."""
     d1 = AutoPyDiscipline(f1, use_arrays=True)
     d1.execute()
-    assert d1.local_data["y1"] == f1()
+    assert d1.io.data["y1"] == f1()
     d1.execute({"x1": array([1.0]), "z": array([2.0])})
-    assert d1.local_data["y1"] == f1()
+    assert d1.io.data["y1"] == f1()
 
 
 def test_fail_wrongly_formatted_function() -> None:
@@ -134,18 +145,10 @@ def test_fail_wrongly_formatted_function() -> None:
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Two return statements use different variable names; ['y', 'x'] and ["
-            "'y']."
+            "Two return statements use different variable names; ['y', 'x'] and ['y']."
         ),
     ):
         AutoPyDiscipline(f4)
-
-
-def test_fail_not_a_python_function() -> None:
-    """Test the failure if a Python function is not provided."""
-    not_a_function = 2
-    with pytest.raises(TypeError, match="py_func must be callable."):
-        AutoPyDiscipline(not_a_function)
 
 
 def test_jac_pb(design_space) -> None:
@@ -155,16 +158,16 @@ def test_jac_pb(design_space) -> None:
 
     pb = OptimizationProblem(design_space)
     pb.objective = MDOFunction(rosen, "rosen", jac=rosen_der)
-    execute_algo(pb, algo, max_iter=max_iter)
+    execute_algo(pb, algo_name=algo, max_iter=max_iter)
     fopt_ref = pb.solution.f_opt
 
     scn = create_scenario(
         AutoPyDiscipline(rosen, rosen_der),
-        "DisciplinaryOpt",
         "r",
         design_space,
+        formulation_name="DisciplinaryOpt",
     )
-    scn.execute({"algo": algo, "max_iter": max_iter})
+    scn.execute(algo_name=algo, max_iter=max_iter)
 
     assert fopt_ref == scn.optimization_result.f_opt
 
@@ -173,13 +176,6 @@ def test_missing_jacobian() -> None:
     auto_rosen = AutoPyDiscipline(rosen)
     with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
         auto_rosen._compute_jacobian()
-
-
-@pytest.mark.parametrize("input_", [{"a": [1.0]}, {"a": array([1.0])}])
-def test_to_arrays_dict(input_) -> None:
-    """Test the function to_arrays_dict."""
-    output = to_arrays_dict(input_)
-    assert output["a"] == array([1.0])
 
 
 def test_multiprocessing() -> None:
@@ -193,8 +189,8 @@ def test_multiprocessing() -> None:
         {"y1": array([5.0]), "z": array([3.0])},
     ])
 
-    assert d1.local_data["y1"] == f1(2.0, 1.0)
-    assert d2.local_data["y2"] == f2(5.0, 3.0)[0]
+    assert d1.io.data["y1"] == f1(2.0, 1.0)
+    assert d2.io.data["y2"] == f2(5.0, 3.0)[0]
 
 
 @pytest.mark.parametrize(
@@ -369,7 +365,9 @@ def test_type_hints_for_grammars(
     caplog,
 ) -> None:
     """Verify the type hints handling."""
-    d = AutoPyDiscipline(func, grammar_type=MDODiscipline.GrammarType.SIMPLE)
+    AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.SIMPLE
+    d = AutoPyDiscipline(func)
+    AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.JSON
     assert d.input_grammar == input_names_to_types
     assert d.output_grammar == output_names_to_types
     assert caplog.messages == warnings
@@ -378,14 +376,14 @@ def test_type_hints_for_grammars(
 
 
 def compute_y_1(
-    x_local: ndarray,
+    x_1: ndarray,
     x_shared: ndarray,
     y_2: ndarray,
 ) -> float:
     """Evaluate the first coupling equation in functional form.
 
     Args:
-        x_local: The design variables local to first discipline.
+        x_1: The design variables local to first discipline.
         x_shared: The shared design variables.
         y_2: The coupling variable coming from the second discipline.
 
@@ -395,12 +393,12 @@ def compute_y_1(
     if x_shared.ndim != 1:
         # This handles running the test suite for checking data conversion.
         x_shared = x_shared.flatten()
-    y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_local[0] - 0.2 * y_2[0]))
+    y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_1[0] - 0.2 * y_2[0]))
     return y_1  # noqa: RET504
 
 
 def compute_jacobian_1(
-    x_local: ndarray,
+    x_1: ndarray,
     x_shared: ndarray,
     y_2: ndarray,
 ) -> ndarray:
@@ -408,7 +406,7 @@ def compute_jacobian_1(
     if x_shared.ndim != 1:
         # This handles running the test suite for checking data conversion.
         x_shared = x_shared.flatten()
-    inv_denom = 1.0 / compute_y_1(x_local, x_shared, y_2)
+    inv_denom = 1.0 / compute_y_1(x_1, x_shared, y_2)
     jac[0][0] = 0.5 * inv_denom
     jac[0][1] = x_shared[0] * inv_denom
     jac[0][2] = 0.5 * inv_denom
@@ -444,13 +442,13 @@ def compute_jacobian_2(
     return ones((1, 3))
 
 
-@pytest.mark.parametrize("x_local", range(3))
+@pytest.mark.parametrize("x_1", range(3))
 @pytest.mark.parametrize(
     "mda_name", ["MDAGaussSeidel", "MDAJacobi", "MDANewtonRaphson", "MDAQuasiNewton"]
 )
-def test_mda(x_local, mda_name, sellar_disciplines) -> None:
+def test_mda(x_1, mda_name, sellar_disciplines) -> None:
     """Verify MDA."""
-    input_data_ref = get_inputs()
+    input_data_ref = get_initial_data()
     mda_ref = create_mda(mda_name, sellar_disciplines[:-1])
     output_ref = mda_ref.execute(input_data_ref)
 
@@ -472,8 +470,13 @@ def test_mda(x_local, mda_name, sellar_disciplines) -> None:
         return
 
     del input_data["y_1"]
-    mda.default_inputs = input_data
+    del input_data["x_2"]
+    mda.default_input_data = {
+        k: v for k, v in input_data.items() if k in mda.input_grammar
+    }
 
     assert mda.check_jacobian(
-        input_data=input_data, inputs=["x_local", "x_shared"], outputs=["y_1", "y_2"]
+        input_data=input_data,
+        input_names=["x_1", "x_shared"],
+        output_names=["y_1", "y_2"],
     )

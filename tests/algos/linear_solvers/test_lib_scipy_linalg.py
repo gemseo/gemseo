@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import logging
 import pickle
+import re
 from os import remove
 from pathlib import Path
 
@@ -30,48 +31,56 @@ from numpy import zeros
 from numpy.random import default_rng
 from scipy.linalg import norm
 from scipy.sparse.linalg import LinearOperator
-from scipy.sparse.linalg import aslinearoperator
 from scipy.sparse.linalg import spilu
 
-from gemseo.algos.linear_solvers.lib_scipy_linalg import ScipyLinalgAlgos
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
-from gemseo.algos.linear_solvers.linear_solvers_factory import LinearSolversFactory
+from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
+from gemseo.utils.seeder import SEED
 
 RESIDUALS_TOL = 1e-12
 
 
 def test_algo_list() -> None:
     """Tests the algo list detection at lib creation."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     assert len(factory.algorithms) >= 6
     for algo in ("LGMRES", "GMRES", "BICG", "QMR", "BICGSTAB", "DEFAULT"):
         factory.is_available(algo)
 
 
-def test_default() -> None:
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"max_iter": 1000},
+        {"settings_model": LGMRES_Settings(max_iter=1000)},
+    ],
+)
+def test_default(kwargs) -> None:
     """Tests the DEFAULT solver."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     n = 5
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    factory.execute(problem, "DEFAULT", max_iter=1000)
+    factory.execute(problem, algo_name="DEFAULT", **kwargs)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
 @pytest.mark.parametrize("n", [1, 4, 20])
-@pytest.mark.parametrize("algo", ["DEFAULT", "LGMRES", "BICGSTAB"])
+@pytest.mark.parametrize("algo_name", ["DEFAULT", "LGMRES", "BICGSTAB"])
 @pytest.mark.parametrize("use_preconditioner", [True, False])
 @pytest.mark.parametrize("use_ilu_precond", [True, False])
 @pytest.mark.parametrize("use_x0", [True, False])
-def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
+def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
     """Tests the solvers options."""
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     options = {
         "max_iter": 100,
-        "tol": 1e-14,
+        "rtol": 1e-14,
         "atol": 1e-13,
         "x0": None,
         "use_ilu_precond": use_ilu_precond,
@@ -80,7 +89,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
         options["preconditioner"] = LinearOperator(
             problem.lhs.shape, spilu(problem.lhs).solve
         )
-    if algo == "lgmres":
+    if algo_name == "lgmres":
         v = rng.random(n)
         options.update({
             "inner_m": 10,
@@ -89,7 +98,7 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
             "store_outer_av": True,
             "prepend_outer_v": True,
         })
-    factory.execute(problem, algo, **options)
+    factory.execute(problem, algo_name=algo_name, **options)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
@@ -98,41 +107,36 @@ def test_linsolve(algo, n, use_preconditioner, use_x0, use_ilu_precond) -> None:
 
 
 def test_common_dtype_cplx() -> None:
-    factory = LinearSolversFactory()
+    factory = LinearSolverLibraryFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
-    factory.execute(problem, "DEFAULT")
+    factory.execute(problem, algo_name="DEFAULT")
     assert problem.compute_residuals() < RESIDUALS_TOL
 
     problem = LinearProblem(eye(2), ones(2, dtype="complex128"))
-    factory.execute(problem, "DEFAULT")
+    factory.execute(problem, algo_name="DEFAULT")
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
 def test_not_converged(caplog) -> None:
     """Tests the cases when convergence fails and save_when_fail option."""
-    factory = LinearSolversFactory()
-    rng = default_rng(1)
+    factory = LinearSolverLibraryFactory()
+    rng = default_rng(SEED)
     n = 100
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    lib = factory.create("ScipyLinalgAlgos")
+    lib = factory.create("BICGSTAB")
     caplog.set_level(logging.WARNING)
-    lib.solve(
-        problem, "BICGSTAB", max_iter=2, save_when_fail=True, use_ilu_precond=False
-    )
+    lib.execute(problem, max_iter=2, save_when_fail=True, use_ilu_precond=False)
     assert not problem.is_converged
     assert "The linear solver BICGSTAB did not converge." in caplog.text
 
-    with Path(lib.save_fpath).open("rb") as f:
+    with Path(lib.file_path).open("rb") as f:
         problem2 = pickle.load(f)
-    remove(lib.save_fpath)
+    remove(lib.file_path)
     assert (problem2.lhs == problem.lhs).all()
     assert (problem2.rhs == problem.rhs).all()
 
-    lib.solve(
-        problem, "BICGSTAB", max_iter=2, save_when_fail=True, use_ilu_precond=True
-    )
+    lib.execute(problem, max_iter=2, save_when_fail=True, use_ilu_precond=True)
     assert problem.is_converged
-    assert (problem.solution == lib.solution).all()
 
 
 @pytest.mark.parametrize("seed", range(3))
@@ -140,13 +144,13 @@ def test_hard_conv(tmp_wd, seed) -> None:
     rng = default_rng(seed)
     n = 300
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    LinearSolversFactory().execute(
+    LinearSolverLibraryFactory().execute(
         problem,
-        "DEFAULT",
+        algo_name="DEFAULT",
         max_iter=3,
         store_residuals=True,
         use_ilu_precond=True,
-        tol=1e-14,
+        rtol=1e-14,
     )
 
     assert problem.compute_residuals() < 1e-10
@@ -155,68 +159,38 @@ def test_hard_conv(tmp_wd, seed) -> None:
 def test_inconsistent_options() -> None:
     problem = LinearProblem(ones((2, 2)), ones(2))
 
-    with pytest.raises(ValueError, match="Inconsistent Preconditioner shape"):
-        LinearSolversFactory().execute(problem, "DEFAULT", preconditioner=ones((3, 3)))
+    with pytest.raises(
+        ValueError, match=re.escape("matrix and preconditioner have different shapes")
+    ):
+        LinearSolverLibraryFactory().execute(
+            problem, algo_name="DEFAULT", preconditioner=ones((3, 3))
+        )
 
-    with pytest.raises(ValueError, match="Inconsistent initial guess shape"):
-        LinearSolversFactory().execute(problem, "DEFAULT", x0=ones(3))
+    with pytest.raises(
+        ValueError, match=re.escape("shapes of A (2, 2) and x0 (3,) are incompatible")
+    ):
+        LinearSolverLibraryFactory().execute(problem, algo_name="DEFAULT", x0=ones(3))
 
     with pytest.raises(
         ValueError,
-        match="Use either 'use_ilu_precond' or provide 'preconditioner', but not both.",
+        match=re.escape(
+            "Use either 'use_ilu_precond' or provide 'preconditioner', but not both."
+        ),
     ):
-        LinearSolversFactory().execute(
-            problem, "DEFAULT", preconditioner=ones((2, 2)), use_ilu_precond=True
+        LinearSolverLibraryFactory().execute(
+            problem,
+            algo_name="DEFAULT",
+            preconditioner=ones((2, 2)),
+            use_ilu_precond=True,
         )
 
 
-def test_runtime_error() -> None:
-    problem = LinearProblem(zeros((2, 2)), ones(2))
-    with pytest.raises(RuntimeError, match="Factor is exactly singular"):
-        LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False)
-
-
-def test_default_solver() -> None:
-    """Tests the default linear solver sequence.
-
-    Consider the default solver when the matrix A is either a NumPy array or a SciPy
-    LinearOperator. In the latter case, the final step using direct method cannot be
-    used leading to an unconverged problem.
-    """
-    rng = default_rng(123456789)
-
-    lhs, rhs = rng.normal(size=(30, 30)), ones(30)
-    options = {"tol": 1e-12, "max_iter": 1, "inner_m": 1}
-
-    # Linear system eventually solved using direct method and considered converged
-    problem = LinearProblem(lhs, rhs)
-    LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False, **options)
-    assert problem.is_converged
-
-    # Linear system left unsolved since no direct method applied
-    problem = LinearProblem(aslinearoperator(lhs), rhs)
-    LinearSolversFactory().execute(problem, "DEFAULT", use_ilu_precond=False, **options)
-    assert not problem.is_converged
-
-
 def test_check_info() -> None:
-    lib = ScipyLinalgAlgos()
-    lib.problem = LinearProblem(zeros((2, 2)), ones(2))
+    lib = ScipyLinalgAlgos("LGMRES")
+    lib._problem = LinearProblem(zeros((2, 2)), ones(2))
     with pytest.raises(RuntimeError, match="illegal input or breakdown"):
         lib._check_solver_info(-1, {})
 
 
 def test_factory() -> None:
-    assert "ScipyLinalgAlgos" in LinearSolversFactory().linear_solvers
-
-
-def test_algo_none() -> None:
-    lib = ScipyLinalgAlgos()
-    problem = LinearProblem(zeros((2, 2)), ones(2))
-    with pytest.raises(ValueError, match="Algorithm name must be either passed as"):
-        lib.execute(problem)
-
-
-def test_library_name() -> None:
-    """Check the library name."""
-    assert ScipyLinalgAlgos.LIBRARY_NAME == "SciPy"
+    assert "ScipyLinalgAlgos" in LinearSolverLibraryFactory().linear_solvers

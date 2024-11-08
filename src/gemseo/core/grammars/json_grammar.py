@@ -44,12 +44,12 @@ from numpy import ndarray
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from gemseo.core.discipline_data import Data
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Properties
     from gemseo.core.grammars.json_schema import Property
@@ -71,7 +71,7 @@ class JSONGrammar(BaseGrammar):
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "JSONGrammarDataConverter"
 
-    __validator: Callable[[Mapping[str, Any]], None] | None
+    __validator: Callable[[StrKeyMapping], None] | None
     """The schema validator."""
 
     __schema: Schema
@@ -208,7 +208,7 @@ class JSONGrammar(BaseGrammar):
 
     def _update_from_data(
         self,
-        data: Data,
+        data: StrKeyMapping,
         merge: bool,
     ) -> None:
         """
@@ -272,7 +272,7 @@ class JSONGrammar(BaseGrammar):
 
     def _validate(  # noqa:D102
         self,
-        data: Data,
+        data: StrKeyMapping,
         error_message: MultiLineString,
     ) -> bool:
         if self.__validator is None:
@@ -287,16 +287,6 @@ class JSONGrammar(BaseGrammar):
             return False
 
         return True
-
-    def is_array(  # noqa: D102
-        self,
-        name: str,
-        numeric_only: bool = False,
-    ) -> bool:
-        self._check_name(name)
-        if numeric_only:
-            return self.data_converter.is_numeric(name)
-        return self.schema["properties"][name]["type"] == "array"
 
     def _restrict_to(  # noqa: D102
         self,
@@ -406,7 +396,7 @@ class JSONGrammar(BaseGrammar):
         self.__init_dependencies()
 
     @classmethod
-    def __cast_data_mapping(cls, data: Data) -> dict[str, Any]:
+    def __cast_data_mapping(cls, data: StrKeyMapping) -> dict[str, Any]:
         """Cast a data mapping into a JSON-interpretable object.
 
         Args:
@@ -551,4 +541,4 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_schema(
             state[f"_{self.__class__.__name__}__schema"], True
         )
-        self._defaults.update(cast(Mapping[str, Any], state.pop("defaults")))
+        self._defaults.update(cast(StrKeyMapping, state.pop("defaults")))

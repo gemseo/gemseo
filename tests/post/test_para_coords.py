@@ -23,7 +23,7 @@ import re
 import pytest
 from numpy import array
 
-from gemseo.post.para_coord import ParallelCoordinates
+from gemseo.post.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
@@ -56,4 +56,6 @@ def test_shape_error() -> None:
             "The data shape (1, 1) is not equal to the expected one (2, 1)."
         ),
     ):
-        ParallelCoordinates.parallel_coordinates(array([[1]]), ["x"], [0.0, 0.5])
+        ParallelCoordinates._ParallelCoordinates__parallel_coordinates(
+            array([[1]]), ["x"], [0.0, 0.5], (0.0, 0.0)
+        )

@@ -21,9 +21,7 @@ from numpy import ndarray
 from numpy import ones
 from numpy import sin
 
-from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
-    SequenceTransformerFactory,
-)
+from gemseo.algos.sequence_transformer.factory import SequenceTransformerFactory
 
 A_TOL: float = 1e-6
 DIMENSION: int = 100
@@ -72,7 +70,7 @@ def test_overrelaxation(factor) -> None:
 )
 def test_relaxation_factor(factor) -> None:
     """Tests the relaxation factor argument of OverRelaxation."""
-    if factor in [-1, 3]:
+    if factor in {-1, 3}:
         with pytest.raises(ValueError):
             SequenceTransformerFactory().create("OverRelaxation", factor=factor)
     elif factor == "foo":

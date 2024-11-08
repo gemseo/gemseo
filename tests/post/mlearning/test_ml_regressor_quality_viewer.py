@@ -14,6 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
 from unittest import mock
 
@@ -22,26 +23,32 @@ from numpy import hstack
 from numpy import linspace
 from numpy import newaxis
 
+from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
-def viewer() -> MLRegressorQualityViewer:
-    """The quality viewer for a linear regressor."""
+def linear_regressor() -> LinearRegressor:
+    """A linear regressor."""
     x = linspace(0, 1, 10)[:, newaxis]
     y = x**2
 
     dataset = IODataset()
     dataset.add_input_group(x, "x")
-    dataset.add_output_group(hstack((y, y)), "y", {"y": 2})
+    dataset.add_output_group(hstack((y, y, y)), ["y", "z"], {"y": 2, "z": 1})
 
-    model = LinearRegressor(dataset)
-    model.learn()
+    return LinearRegressor(dataset)
 
-    return MLRegressorQualityViewer(model)
+
+@pytest.fixture
+def viewer(linear_regressor) -> MLRegressorQualityViewer:
+    """The quality viewer for a trained linear regressor."""
+    linear_regressor = deepcopy(linear_regressor)
+    linear_regressor.learn()
+    return MLRegressorQualityViewer(linear_regressor)
 
 
 @image_comparison(["residuals"], tol=0.01)
@@ -90,6 +97,14 @@ def test_predictions(
 ) -> None:
     """Check the method plot_predictions_vs_observations."""
     viewer.plot_predictions_vs_observations("y", save=False, show=False)
+
+
+@image_comparison(["predictions_z"], tol=0.01)
+def test_predictions_with_scalar_output(
+    viewer,
+) -> None:
+    """Check the method plot_predictions_vs_observations with a scalar output."""
+    viewer.plot_predictions_vs_observations("z", save=False, show=False)
 
 
 @image_comparison(
@@ -202,7 +217,43 @@ def test_observations(
     observations.add_input_group(x, "x")
     observations.add_output_group(hstack((y, y)), "y", {"y": 2})
     viewer.plot_predictions_vs_observations(
-        "y", save=False, show=False, observations=observations
+        "y",
+        observations=observations,
+        save=False,
+        show=False,
+    )
+
+
+@image_comparison(["cross_validation_predictions_versus_observations"], tol=0.01)
+def test_cross_validation_predictions_versus_observations(viewer) -> None:
+    """Check plot_predictions_vs_observations for a cross validation."""
+    viewer.plot_predictions_vs_observations(
+        "y",
+        observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
+        save=False,
+        show=False,
+    )
+
+
+@image_comparison(["cross_validation_residuals_versus_observations"], tol=0.01)
+def test_cross_validation_residuals_versus_observations(viewer) -> None:
+    """Check plot_residuals_vs_observations for a cross validation."""
+    viewer.plot_residuals_vs_observations(
+        "y",
+        observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
+        save=False,
+        show=False,
+    )
+
+
+@image_comparison(["cross_validation_residuals_versus_inputs"], tol=0.01)
+def test_cross_validation_residuals_versus_inputs(viewer) -> None:
+    """Check plot_residuals_vs_inputs for a cross validation."""
+    viewer.plot_residuals_vs_inputs(
+        "y",
+        observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
+        save=False,
+        show=False,
     )
 
 
@@ -217,10 +268,15 @@ def test_observations(
 def test_signatures(viewer, model_data, method_name, input_names) -> None:
     """Check that the plot methods pass the right values to the core private method."""
     tmp = (input_names,) if input_names else ()
+    observations = (
+        "observations"
+        if method_name != "plot_predictions_vs_observations"
+        else MLRegressorQualityViewer.ReferenceDataset.LEARNING
+    )
     args = (
         "output",
         *tmp,
-        "observations",
+        observations,
         "use_scatter_matrix",
         "filter_scatters",
     )
@@ -242,4 +298,7 @@ def test_signatures(viewer, model_data, method_name, input_names) -> None:
     }
     if input_names:
         kwargs["input_names"] = input_names
+    assert isinstance(method.call_args.kwargs["observations"], Dataset)
+    del method.call_args.kwargs["observations"]
+    del kwargs["observations"]
     assert method.call_args.kwargs == kwargs

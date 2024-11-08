@@ -36,9 +36,9 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -71,23 +71,31 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
+
+# %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
 
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
 # %%
-# Activate time stamps
-# --------------------
-# In order to record all time stamps recording, we have to call this method
-# before the execution of the scenarios
-MDODiscipline.activate_time_stamps()
+# Enable time stamps
+# ------------------
+# Recording all time stamps is done by default;
+# we have to enable it:
+ExecutionStatistics.is_time_stamps_enabled = True
 
-scenario.execute({"algo": "SLSQP", "max_iter": 10})
+scenario.execute(algo_name="SLSQP", max_iter=10)
+
+# %%
+# Note that the algorithm settings passed to :meth:`.DriverLibrary.execute` can be provided
+# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
 
 # %%
 # Post-process scenario
@@ -95,5 +103,5 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 # Lastly, we plot the Gantt chart.
 create_gantt_chart(save=False, show=True)
 
-# Finally, we deactivate the time stamps for other executions
-MDODiscipline.deactivate_time_stamps()
+# Finally, we disable the recording of time stamps for other executions:
+ExecutionStatistics.is_time_stamps_enabled = False

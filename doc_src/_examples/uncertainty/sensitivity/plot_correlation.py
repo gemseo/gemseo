@@ -28,9 +28,9 @@ from __future__ import annotations
 import pprint
 
 from gemseo import configure_logger
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
 
 configure_logger()
 
@@ -42,7 +42,7 @@ configure_logger()
 #
 #    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1x_3^4\sin(x_1)
 #
-# implemented as an :class:`.MDODiscipline` by the :class:`.IshigamiDiscipline`.
+# implemented as an :class:`.Discipline` by the :class:`.IshigamiDiscipline`.
 # It is commonly used
 # with the independent random variables :math:`X_1`, :math:`X_2` and :math:`X_3`
 # uniformly distributed between :math:`-\pi` and :math:`\pi`
@@ -54,7 +54,8 @@ uncertain_space = IshigamiSpace()
 # %%
 # Then,
 # we run sensitivity analysis of type :class:`.CorrelationAnalysis`:
-sensitivity_analysis = CorrelationAnalysis([discipline], uncertain_space, 1000)
+sensitivity_analysis = CorrelationAnalysis()
+sensitivity_analysis.compute_samples([discipline], uncertain_space, 1000)
 sensitivity_analysis.compute_indices()
 
 # %%
@@ -67,7 +68,7 @@ sensitivity_analysis.compute_indices()
 # - the Standard Regression Coefficients (SRC),
 # - the Standard Rank Regression Coefficient (SRRC),
 # - the Signed Standard Rank Regression Coefficient (SSRRC):
-pprint.pprint(sensitivity_analysis.indices)
+sensitivity_analysis.indices
 
 # %%
 # The main indices corresponds to the Spearman correlation indices
@@ -76,7 +77,7 @@ pprint.pprint(sensitivity_analysis.main_indices)
 
 # %%
 # We can also get the input parameters sorted by decreasing order of influence:
-sensitivity_analysis.sort_parameters("y")
+sensitivity_analysis.sort_input_variables("y")
 
 # %%
 # We can use the method :meth:`.CorrelationAnalysis.plot`

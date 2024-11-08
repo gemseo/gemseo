@@ -21,11 +21,11 @@ from numpy import concatenate
 from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.mda import MDA
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
+    from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 
 
 @pytest.fixture(scope="module")
@@ -58,13 +58,13 @@ def disciplines() -> Sequence[LinearDiscipline]:
     disciplines[2].mat *= 100.0
 
     for discipline in disciplines:
-        discipline.set_cache_policy(MDODiscipline.CacheType.MEMORY_FULL)
+        discipline.set_cache(Discipline.CacheType.MEMORY_FULL)
 
     return disciplines
 
 
 def get_jacobi_reference_residuals(
-    disciplines: list[MDODiscipline],
+    disciplines: list[Discipline],
 ) -> tuple[Mapping, Mapping]:
     """Compute the initial and final residual without scaling for MDAJacobi."""
     mda = MDAJacobi(
@@ -79,21 +79,21 @@ def get_jacobi_reference_residuals(
     # Compute the initial residual
     input_, output = {}, {}
     for discipline in disciplines:
-        input_.update(discipline.get_input_data())
-        output.update(discipline.get_output_data())
+        input_.update(discipline.io.get_input_data())
+        output.update(discipline.io.get_output_data())
 
     initial_residual = {}
     for coupling in ["a", "b", "y"]:
         initial_residual[coupling] = output[coupling] - input_[coupling]
 
-    mda.scaling = MDA.ResidualScaling.NO_SCALING
+    mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
     mda.execute()
 
     # Compute the final residual
     input_, output = {}, {}
     for discipline in disciplines:
-        input_.update(discipline.get_input_data())
-        output.update(discipline.get_output_data())
+        input_.update(discipline.io.get_input_data())
+        output.update(discipline.io.get_output_data())
 
     final_residual = {}
     for coupling in ["a", "b", "y"]:
@@ -102,9 +102,9 @@ def get_jacobi_reference_residuals(
     return initial_residual, final_residual
 
 
-@pytest.mark.parametrize("scaling_strategy", MDA.ResidualScaling)
+@pytest.mark.parametrize("scaling_strategy", BaseMDA.ResidualScaling)
 def test_scaling_strategy_jacobi(
-    disciplines: list[MDODiscipline], scaling_strategy
+    disciplines: list[Discipline], scaling_strategy
 ) -> None:
     """Tests the different scaling strategies for MDAJacobi."""
     initial_residual, final_residual = get_jacobi_reference_residuals(disciplines)
@@ -121,28 +121,28 @@ def test_scaling_strategy_jacobi(
     mda.scaling = scaling_strategy
     mda.execute()
 
-    if scaling_strategy == MDA.ResidualScaling.NO_SCALING:
+    if scaling_strategy == BaseMDA.ResidualScaling.NO_SCALING:
         assert mda._scaling_data is None
         assert mda.residual_history[-1] == norm(final_residual_vector)
 
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_NORM:
+    elif scaling_strategy == BaseMDA.ResidualScaling.INITIAL_RESIDUAL_NORM:
         assert mda._scaling_data == norm(initial_residual_vector)
         assert mda.residual_history[-1] == norm(final_residual_vector) / norm(
             initial_residual_vector
         )
 
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
+    elif scaling_strategy == BaseMDA.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
         assert norm(mda._scaling_data - initial_residual_vector) == 0
         assert (
             mda.residual_history[-1]
             == abs(final_residual_vector / initial_residual_vector).max()
         )
 
-    elif scaling_strategy == MDA.ResidualScaling.N_COUPLING_VARIABLES:
+    elif scaling_strategy == BaseMDA.ResidualScaling.N_COUPLING_VARIABLES:
         assert mda._scaling_data == 30**0.5
         assert mda.residual_history[-1] == norm(final_residual_vector) / 30**0.5
 
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
+    elif scaling_strategy == BaseMDA.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
         for i, subres in enumerate(initial_residual.values()):
             subres_norm = mda._scaling_data[i][1]
             assert subres_norm == norm(subres)
@@ -159,7 +159,7 @@ def test_scaling_strategy_jacobi(
         ]
         assert mda.residual_history[-1] == max(subres_norms)
 
-    elif scaling_strategy == MDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
+    elif scaling_strategy == BaseMDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
         assert norm(mda._scaling_data - initial_residual_vector) == 0
         assert (
             abs(
@@ -171,7 +171,7 @@ def test_scaling_strategy_jacobi(
 
 
 def get_gauss_seidel_reference_residuals(
-    disciplines: list[MDODiscipline],
+    disciplines: list[Discipline],
 ) -> tuple[Mapping, Mapping]:
     """Compute the initial and final residual without scaling for MDAGaussSeidel."""
     mda = MDAGaussSeidel(
@@ -179,7 +179,7 @@ def get_gauss_seidel_reference_residuals(
         max_mda_iter=5,
         acceleration_method=AccelerationMethod.NONE,
     )
-    mda.scaling = MDA.ResidualScaling.NO_SCALING
+    mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
     mda.execute()
 
     _b = [value.outputs["b"] for value in disciplines[1].cache.get_all_entries()]
@@ -194,9 +194,9 @@ def get_gauss_seidel_reference_residuals(
     return initial_residual, final_residual
 
 
-@pytest.mark.parametrize("scaling_strategy", MDA.ResidualScaling)
+@pytest.mark.parametrize("scaling_strategy", BaseMDA.ResidualScaling)
 def test_scaling_strategy_gauss_seidel(
-    disciplines: list[MDODiscipline], scaling_strategy
+    disciplines: list[Discipline], scaling_strategy
 ) -> None:
     """Tests the different scaling strategies for MDAGaussSeidel."""
     initial_residual, final_residual = get_gauss_seidel_reference_residuals(disciplines)
@@ -213,28 +213,28 @@ def test_scaling_strategy_gauss_seidel(
     mda.scaling = scaling_strategy
     mda.execute()
 
-    if scaling_strategy == MDA.ResidualScaling.NO_SCALING:
+    if scaling_strategy == BaseMDA.ResidualScaling.NO_SCALING:
         assert mda._scaling_data is None
         assert mda.residual_history[-1] == norm(final_residual_vector)
 
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_NORM:
+    elif scaling_strategy == BaseMDA.ResidualScaling.INITIAL_RESIDUAL_NORM:
         assert mda._scaling_data == norm(initial_residual_vector)
         assert mda.residual_history[-1] == norm(final_residual_vector) / norm(
             initial_residual_vector
         )
 
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
+    elif scaling_strategy == BaseMDA.ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
         assert norm(mda._scaling_data - initial_residual_vector) == 0
         assert (
             mda.residual_history[-1]
             == abs(final_residual_vector / initial_residual_vector).max()
         )
 
-    elif scaling_strategy == MDA.ResidualScaling.N_COUPLING_VARIABLES:
+    elif scaling_strategy == BaseMDA.ResidualScaling.N_COUPLING_VARIABLES:
         assert mda._scaling_data == 20**0.5
         assert mda.residual_history[-1] == norm(final_residual_vector) / 20**0.5
 
-    elif scaling_strategy == MDA.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
+    elif scaling_strategy == BaseMDA.ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
         for i, subres in enumerate(initial_residual.values()):
             subres_norm = mda._scaling_data[i][1]
             assert subres_norm == norm(subres)
@@ -251,7 +251,7 @@ def test_scaling_strategy_gauss_seidel(
         ]
         assert mda.residual_history[-1] == max(subres_norms)
 
-    elif scaling_strategy == MDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
+    elif scaling_strategy == BaseMDA.ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
         assert norm(mda._scaling_data - initial_residual_vector) == 0
         assert (
             mda.residual_history[-1]

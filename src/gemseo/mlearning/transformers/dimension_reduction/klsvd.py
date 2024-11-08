@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 
 import openturns
 from numpy import array
-from numpy import ndarray
 from openturns import Field
 from openturns import KarhunenLoeveSVDAlgorithm
 from openturns import Mesh
@@ -39,26 +38,34 @@ from openturns import ProcessSample
 from openturns import ResourceMap
 from openturns import Sample
 
-from gemseo.mlearning.transformers.dimension_reduction.dimension_reduction import (
-    DimensionReduction,
+from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
+    BaseDimensionReduction,
 )
+from gemseo.utils.compatibility.openturns import OT_1_23
+from gemseo.utils.compatibility.openturns import OT_VERSION
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
+    from gemseo.typing import RealArray
 
 
-class KLSVD(DimensionReduction):
+class KLSVD(BaseDimensionReduction):
     """The Karhunen-Loève SVD algorithm based on OpenTURNS."""
 
-    __HALKO2010 = "halko2010"
-    __HALKO2011 = "halko2011"
+    if OT_VERSION >= OT_1_23:  # pragma: no cover
+        __HALKO2010 = "Halko2010"
+        __HALKO2011 = "Halko2011"
+    else:  # pragma: no cover
+        __HALKO2010 = "halko2010"
+        __HALKO2011 = "halko2011"
+
     __RANDOM_SVD_MAXIMUM_RANK = "KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank"
     __RANDOM_SVD_VARIANT = "KarhunenLoeveSVDAlgorithm-RandomSVDVariant"
     __USE_RANDOM_SVD = "KarhunenLoeveSVDAlgorithm-UseRandomSVD"
 
     def __init__(
         self,
-        mesh: ndarray,
+        mesh: RealArray,
         n_components: int | None = None,
         name: str = "",
         use_random_svd: bool = False,
@@ -76,8 +83,8 @@ class KLSVD(DimensionReduction):
             n_singular_values: The number of singular values to compute
                 when ``use_random_svd`` is ``True``;
                 if ``None``, use the default value implemented by OpenTURNS.
-            use_halko2010: Whether to use the *halko2010* algorithm
-                or the *halko2011* one.
+            use_halko2010: Whether to use the *Halko2010* algorithm
+                or the *Halko2011* one.
         """  # noqa: D205 D212
         super().__init__(
             name,
@@ -91,11 +98,11 @@ class KLSVD(DimensionReduction):
         self.ot_mesh = Mesh(Sample(mesh))
 
     @property
-    def mesh(self) -> ndarray:
+    def mesh(self) -> RealArray:
         """The mesh."""
         return self.parameters["mesh"]
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         self.__update_resource_map()
         klsvd = KarhunenLoeveSVDAlgorithm(
             self._get_process_sample(data),
@@ -124,12 +131,12 @@ class KLSVD(DimensionReduction):
             self.__HALKO2010 if self.parameters["use_halko2010"] else self.__HALKO2011,
         )
 
-    @DimensionReduction._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseDimensionReduction._use_2d_array
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return array(self.algo.project(self._get_process_sample(data)))
 
-    @DimensionReduction._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseDimensionReduction._use_2d_array
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return array([
             list(self.algo.liftAsSample(Point(list(coefficients))))
             for coefficients in data
@@ -141,17 +148,17 @@ class KLSVD(DimensionReduction):
         return len(self.algo.getModes())
 
     @property
-    def components(self) -> ndarray:
+    def components(self) -> RealArray:
         """The principal components."""
         return array(self.algo.getScaledModesAsProcessSample())[:, :, 0].T
 
     @property
-    def eigenvalues(self) -> ndarray:
+    def eigenvalues(self) -> RealArray:
         """The eigen values."""
         return array(self.algo.getEigenvalues())
 
-    def _get_process_sample(self, data: ndarray) -> openturns.ProcessSample:
-        """Convert numpy.ndarray data to an openturns.ProcessSample.
+    def _get_process_sample(self, data: RealArray) -> openturns.ProcessSample:
+        """Convert a ``RealArray`` data to an ``openturns.ProcessSample``.
 
         Args:
             data: The data to be fitted.

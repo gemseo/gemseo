@@ -15,9 +15,11 @@
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 from __future__ import annotations
 
+from pathlib import Path
+
 print("Parsed inputs.txt file")
 a = b = 0.0
-exec(open("inputs.txt").read())  # noqa
+exec(open("inputs.txt").read())  # noqa: SIM115
 
 print("a=", a)
 print("b=", b)
@@ -27,7 +29,7 @@ c = a**2 + b**2
 
 print("Done.")
 print("Computed output: c = a**2+b**2 = ", c)
-with open("outputs.txt", mode="w") as out_file:
+with Path("outputs.txt").open(mode="w") as out_file:
     out_file.write(f"c={c}")
 
 print("Wrote output file 'outputs.txt'")

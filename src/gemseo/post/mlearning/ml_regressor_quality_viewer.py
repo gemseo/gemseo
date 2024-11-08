@@ -20,18 +20,25 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
+from strenum import StrEnum
 
 from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrixOption
+from gemseo.utils.seeder import Seeder
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
 
     from numpy import ndarray
 
-    from gemseo.mlearning.regression.regression import MLRegressionAlgo
+    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.typing import RealArray
 
 DatasetPlotOption = ScatterMatrixOption
 
@@ -39,22 +46,39 @@ DatasetPlotOption = ScatterMatrixOption
 class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
     """Visualization of the quality of a regression model."""
 
-    __algo: MLRegressionAlgo
+    __algo: BaseRegressor
     """The regression algorithm."""
 
-    def __init__(self, algo: MLRegressionAlgo) -> None:
+    __seeder: Seeder
+    """A seed generator."""
+
+    class ReferenceDataset(StrEnum):
+        """The reference dataset."""
+
+        LEARNING = "LEARNING"
+        """The learning dataset."""
+
+        CROSS_VALIDATION = "CROSS_VALIDATION"
+        r"""The cross-validation dataset.
+
+        This is the learning dataset
+        decomposable into :math:`K` learning-validation partitions.
+        """
+
+    def __init__(self, algo: BaseRegressor) -> None:
         """
         Args:
             algo: The regression algorithm.
         """  # noqa: D205 D212 D415
         self.__algo = algo
+        self.__seeder = Seeder()
 
     def __plot_data(
         self,
         output: str | tuple[str, int],
         plot_residuals: bool,
         default_file_name: str,
-        observations: Dataset | None = None,
+        observations: Dataset,
         input_names: Iterable[str] | str | None = None,
         use_scatter_matrix: bool = True,
         filter_scatters: bool = True,
@@ -80,7 +104,6 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if empty, consider all the inputs;
                 if ``None``, plot the outputs.
             observations: The validation dataset.
-                If ``None``, use the learning dataset.
             use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
                 Otherwise, it outputs a list of :class:`.Scatter`.
             filter_scatters: Whether to display only
@@ -98,28 +121,33 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         output_name, output_components = output
         if isinstance(output_components, int):
             formatted_output_name = f"{output_name}[{output_components}]"
+            output_components = (output_components,)
         else:
             formatted_output_name = output_name
 
-        dataset = Dataset()
-        observations, output_observations = self.__get_observations(
-            observations, output
-        )
+        output_observations = observations.get_view(
+            group_names=observations.OUTPUT_GROUP,
+            variable_names=output_name,
+            components=output_components,
+        ).to_numpy()
         qoi_name, qoi_data = self.__compute_predictions(
-            output[1],
+            output_name,
+            output_components,
             observations,
             output_observations,
             plot_residuals,
             formatted_output_name,
         )
+
+        dataset = Dataset()
         dataset.add_variable(qoi_name, qoi_data)
         if input_names is None:
-            dataset.add_variable(formatted_output_name, output_observations.to_numpy())
+            dataset.add_variable(formatted_output_name, output_observations)
         else:
             if not input_names:
                 input_names = self.__algo.input_names
 
-            input_names = [input_names] if isinstance(input_names, str) else input_names
+            input_names = convert_strings_to_iterable(input_names)
             for input_name in input_names:
                 dataset.add_variable(
                     input_name,
@@ -150,15 +178,17 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
 
     def __compute_predictions(
         self,
-        output_components: int | tuple[int],
+        output_name: str,
+        output_components: tuple[int],
         observations: Dataset,
-        output_observations: Dataset,
+        output_observations: RealArray,
         plot_residuals: bool,
         formatted_output_name: str,
     ) -> tuple[str, ndarray]:
         """Get the observations and some associated data.
 
         Args:
+            output_name: The name of the output.
             output_components: The output component(s).
             observations: The dataset of observations.
             output_observations: The output observations.
@@ -175,45 +205,16 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             observations.get_view(
                 group_names=observations.INPUT_GROUP,
                 variable_names=self.__algo.input_names,
-            ).to_numpy()
-        )
+            ).to_dict_of_arrays()[observations.INPUT_GROUP]
+        )[output_name][:, output_components or Ellipsis]
         if plot_residuals:
-            qoi_values = output_predictions - output_observations.to_numpy()
+            qoi_values = output_predictions - output_observations
             prefix = "R"
         else:
             qoi_values = output_predictions
             prefix = "P"
 
-        if isinstance(output_components, int):
-            qoi_values = qoi_values[:, [output_components]]
-
         return f"{prefix}[{formatted_output_name}]", qoi_values
-
-    def __get_observations(
-        self, observations: Dataset, output: tuple[str, int | tuple[int]]
-    ) -> tuple[Dataset, Dataset]:
-        """Return the observations.
-
-        Args:
-            output: The output name and component.
-            observations: The validation dataset.
-                If ``None``, use the learning dataset.
-
-        Returns:
-            The observations.
-        """
-        if observations is None:
-            observations = self.__algo.learning_set
-        else:
-            observations = observations
-
-        output_observations = observations.get_view(
-            group_names=observations.OUTPUT_GROUP,
-            variable_names=output[0],
-            components=output[1],
-        )
-
-        return observations, output_observations
 
     @staticmethod
     def __create_scatters(
@@ -248,10 +249,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if other_variable_name == variable_name:
                     continue
 
-                if filter_scatters and name not in [
+                if filter_scatters and name not in {
                     variable_name[0],
                     other_variable_name[0],
-                ]:
+                }:
                     continue
 
                 scatter = Scatter(dataset, variable_name, other_variable_name, trend)
@@ -301,14 +302,49 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         scatter_matrix.execute(file_name=file_name, save=save, show=show)
         return scatter_matrix
 
+    def __get_observed_dataset(
+        self,
+        observations: ReferenceDataset | Dataset,
+        n_folds: int = 5,
+        samples: Sequence[int] = (),
+        seed: int | None = None,
+    ):
+        """Return the observed dataset.
+
+        Args:
+            observations: The validation dataset.
+            n_folds: The number of folds.
+                Used only in the case of cross-validation.
+            samples: The indices of the learning samples.
+                If empty, use the whole learning dataset.
+                Used only in the case of cross-validation.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                the seed of the ``i``-th execution is ``SEED+i``.
+                Used only in the case of cross-validation.
+
+        Returns:
+            The observed dataset.
+        """
+        if isinstance(observations, Dataset):
+            return observations
+
+        if observations == self.ReferenceDataset.LEARNING:
+            return self.__algo.learning_set
+
+        return self.__create_cv_observed_dataset(samples, n_folds, seed)
+
     def plot_residuals_vs_observations(
         self,
         output: str | tuple[str, int],
-        observations: Dataset | None = None,
+        observations: ReferenceDataset | Dataset = ReferenceDataset.LEARNING,
         use_scatter_matrix: bool = True,
         filter_scatters: bool = True,
         save: bool = True,
         show: bool = False,
+        n_folds: int = 5,
+        samples: Sequence[int] = (),
+        seed: int | None = None,
         **options: Any,
     ) -> list[Scatter] | ScatterMatrix:
         """Plot the residuals of the model versus the observations.
@@ -319,7 +355,6 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if the latter is missing,
                 use all the components of the output.
             observations: The validation dataset.
-                If ``None``, use the learning dataset.
             use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
                 Otherwise, it outputs a list of :class:`.Scatter`.
             filter_scatters: Whether to display only
@@ -328,6 +363,15 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 including input or output in function of another input or output.
             save: Whether to save the plots.
             show: Whether to show the plots.
+            n_folds: The number of folds.
+                Used only in the case of cross-validation.
+            samples: The indices of the learning samples.
+                If empty, use the whole learning dataset.
+                Used only in the case of cross-validation.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                the seed of the ``i``-th execution is ``SEED+i``.
+                Used only in the case of cross-validation.
             **options: The options of the underlying :class:`.DatasetPlot`.
 
         Returns:
@@ -337,7 +381,9 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             output,
             True,
             "residuals_vs_observations",
-            observations=observations,
+            observations=self.__get_observed_dataset(
+                observations, n_folds, samples, seed
+            ),
             use_scatter_matrix=use_scatter_matrix,
             filter_scatters=filter_scatters,
             save=save,
@@ -349,11 +395,14 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         self,
         output: str | tuple[str, int],
         input_names: str | Iterable[str] | () = (),
-        observations: Dataset | None = None,
+        observations: ReferenceDataset | Dataset = ReferenceDataset.LEARNING,
         use_scatter_matrix: bool = True,
         filter_scatters: bool = True,
         save: bool = True,
         show: bool = False,
+        n_folds: int = 5,
+        samples: Sequence[int] = (),
+        seed: int | None = None,
         **options: Any,
     ) -> list[Scatter] | ScatterMatrix:
         """Plot the residuals of the model versus the inputs.
@@ -366,7 +415,6 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             input_names: The names of the inputs to plot in addition to the model data.
                 If empty, use all the inputs.
             observations: The validation dataset.
-                If ``None``, use the learning dataset.
             use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
                 Otherwise, it outputs a list of :class:`.Scatter`.
             filter_scatters: Whether to display only
@@ -375,6 +423,15 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 including input or output in function of another input or output.
             save: Whether to save the plots.
             show: Whether to show the plots.
+            n_folds: The number of folds.
+                Used only in the case of cross-validation.
+            samples: The indices of the learning samples.
+                If empty, use the whole learning dataset.
+                Used only in the case of cross-validation.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                the seed of the i-th execution is SEED+i.
+                Used only in the case of cross-validation.
             **options: The options of the underlying :class:`.DatasetPlot`.
 
         Returns:
@@ -384,7 +441,9 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             output,
             True,
             "residuals_vs_inputs",
-            observations=observations,
+            observations=self.__get_observed_dataset(
+                observations, n_folds, samples, seed
+            ),
             input_names=input_names,
             use_scatter_matrix=use_scatter_matrix,
             filter_scatters=filter_scatters,
@@ -393,14 +452,61 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             **options,
         )
 
+    def __create_cv_observed_dataset(
+        self,
+        samples: Sequence[int],
+        n_folds: int,
+        seed: int | None,
+    ) -> Dataset:
+        """Create a validation dataset based on cross-validation.
+
+        Args:
+            samples: The indices of the learning samples.
+                If empty, use the whole learning dataset.
+            n_folds: The number of folds.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                use the seed of the ``i``-th execution is ``SEED+i``.
+
+        Returns:
+            A validation dataset based on cross-validation.
+        """
+        if not samples:
+            samples = self.__algo.learning_samples_indices
+
+        cross_validation = CrossValidation(
+            samples, n_folds, randomize=True, seed=self.__seeder.get_seed(seed)
+        )
+        result = cross_validation.execute(
+            self.__algo,
+            return_models=True,
+            input_data=self.__algo.input_data,
+            store_sampling_result=True,
+        )
+        observed_dataset = IODataset()
+        observed_dataset.add_input_group(
+            data=self.__algo.input_data,
+            variable_names=self.__algo.input_names,
+            variable_names_to_n_components=self.__algo.sizes,
+        )
+        observed_dataset.add_output_group(
+            data=result[-1],
+            variable_names=self.__algo.output_names,
+            variable_names_to_n_components=self.__algo.sizes,
+        )
+        return observed_dataset
+
     def plot_predictions_vs_observations(
         self,
         output: str | tuple[str, int],
-        observations: Dataset | None = None,
+        observations: ReferenceDataset | Dataset = ReferenceDataset.LEARNING,
         use_scatter_matrix: bool = True,
         filter_scatters: bool = True,
         save: bool = True,
         show: bool = False,
+        n_folds: int = 5,
+        samples: Sequence[int] = (),
+        seed: int | None = None,
         **options: Any,
     ) -> list[Scatter] | ScatterMatrix:
         """Plot the predictions versus the observations.
@@ -411,7 +517,6 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if the latter is missing,
                 use all the components of the output.
             observations: The validation dataset.
-                If ``None``, use the learning dataset.
             use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
                 Otherwise, it outputs a list of :class:`.Scatter`.
             filter_scatters: Whether to display only
@@ -420,6 +525,15 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 including input or output in function of another input or output.
             save: Whether to save the plots.
             show: Whether to show the plots.
+            n_folds: The number of folds.
+                Used only in the case of cross-validation.
+            samples: The indices of the learning samples.
+                If empty, use the whole learning dataset.
+                Used only in the case of cross-validation.
+            seed: The seed of the pseudo-random number generator.
+                If ``None``,
+                the seed of the i-th execution is SEED+i.
+                Used only in the case of cross-validation.
             **options: The options of the underlying :class:`.DatasetPlot`.
 
         Returns:
@@ -429,7 +543,9 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             output,
             False,
             "predictions_vs_observations",
-            observations=observations,
+            observations=self.__get_observed_dataset(
+                observations, n_folds, samples, seed
+            ),
             use_scatter_matrix=use_scatter_matrix,
             filter_scatters=filter_scatters,
             save=save,

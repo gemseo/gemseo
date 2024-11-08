@@ -26,7 +26,7 @@ from enum import auto
 from strenum import PascalCaseStrEnum
 
 
-# TODO: Link the enum entrees to the available SequequenceTransformer classes.
+# TODO: Link the enum entrees to the available SequenceTransformer classes.
 class AccelerationMethod(PascalCaseStrEnum):
     """The acceleration method to be used to improve convergence rate.
 

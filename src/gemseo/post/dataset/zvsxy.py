@@ -30,7 +30,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.dataset_plot import DatasetPlot
-from gemseo.post.dataset.dataset_plot import VariableType
+from gemseo.utils.string_tools import get_name_and_component
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
+    from gemseo.utils.string_tools import VariableType
 
 
 class ZvsXY(DatasetPlot):
@@ -51,8 +52,8 @@ class ZvsXY(DatasetPlot):
         z: VariableType,
         add_points: bool = False,
         fill: bool = True,
-        levels: int | Sequence[int] | None = None,
-        other_datasets: Iterable[Dataset] | None = None,
+        levels: int | Sequence[int] = (),
+        other_datasets: Iterable[Dataset] = (),
     ) -> None:
         """
         Args:
@@ -70,15 +71,15 @@ class ZvsXY(DatasetPlot):
             fill: Whether to generate a filled contour plot.
             levels: Either the number of contour lines
                 or the values of the contour lines in increasing order.
-                If ``None``, select them automatically.
+                If empty, select them automatically.
             other_datasets: Additional datasets to be plotted as points
                 above the surface.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset=dataset,
-            x=self._force_variable_to_tuple(x),
-            y=self._force_variable_to_tuple(y),
-            z=self._force_variable_to_tuple(z),
+            x=get_name_and_component(x),
+            y=get_name_and_component(y),
+            z=get_name_and_component(z),
             add_points=add_points,
             other_datasets=other_datasets,
             fill=fill,
@@ -95,7 +96,7 @@ class ZvsXY(DatasetPlot):
             the values of the points on the z-axis,
             and possibly other datasets.
         """  # noqa: D205, D212, D415
-        other_datasets = self._specific_settings.other_datasets or []
+        other_datasets = self._specific_settings.other_datasets
         self._n_items = 1 + len(other_datasets)
         x, x_comp = self._specific_settings.x
         y, y_comp = self._specific_settings.y
@@ -110,6 +111,7 @@ class ZvsXY(DatasetPlot):
             z, z_comp, self.dataset.variable_names_to_n_components
         )
         self.title = self.title or self.zlabel
+        self.grid = False
         get_view = self.dataset.get_view
         return (
             get_view(variable_names=x, components=x_comp).to_numpy().ravel(),

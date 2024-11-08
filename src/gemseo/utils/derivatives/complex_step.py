@@ -36,13 +36,13 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
+from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class ComplexStep(GradientApproximator):
+class ComplexStep(BaseGradientApproximator):
     r"""Complex step approximator, performing a second-order gradient calculation.
 
     Enable a much lower step than real finite differences,
@@ -63,7 +63,7 @@ class ComplexStep(GradientApproximator):
 
     _DEFAULT_STEP: ClassVar[complex] = 1e-20
 
-    @GradientApproximator.step.setter
+    @BaseGradientApproximator.step.setter
     def step(self, value) -> None:  # noqa:D102
         if value.imag != 0:
             self._step = value.imag
@@ -74,7 +74,7 @@ class ComplexStep(GradientApproximator):
         self,
         x_vect: ndarray,
         step: complex | None = None,
-        x_indices: Sequence[int] | None = None,
+        x_indices: Sequence[int] = (),
         **kwargs: Any,
     ) -> ndarray:
         if norm(x_vect.imag) != 0.0:
@@ -88,11 +88,11 @@ class ComplexStep(GradientApproximator):
     def _compute_parallel_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float,
         **kwargs: Any,
     ) -> list[ndarray]:
+        n_perturbations = input_perturbations.shape[1]
         self._function_kwargs = kwargs
         functions = [self._wrap_function] * n_perturbations
         parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
@@ -112,11 +112,11 @@ class ComplexStep(GradientApproximator):
     def _compute_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         gradient = []
         for perturbation_index in range(n_perturbations):
             perturbated_input = (

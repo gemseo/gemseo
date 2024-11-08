@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Test analytical Jacobian expressions against finite difference approximations.
 
-This is done using the built in check method of MDODiscipline. The regression models are
+This is done using the built in check method of Discipline. The regression models are
 thus converted to surrogate disciplines. The Jacobians are checked over different
 combinations of datasets (scalar and vector inputs and outputs), transformers and
 parameters.
@@ -27,6 +27,7 @@ parameters.
 
 from __future__ import annotations
 
+from operator import itemgetter
 from typing import TYPE_CHECKING
 
 import pytest
@@ -35,14 +36,14 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.rbf import RBFRegressor
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.rbf_settings import Function
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -51,7 +52,7 @@ if TYPE_CHECKING:
 LEARNING_SIZE = 10
 
 
-def dataset_factory(
+def create_dataset(
     dataset_name, expressions, design_space_variables, objective_name
 ) -> IODataset:
     """Return a dataset from a sampled function.
@@ -64,19 +65,19 @@ def dataset_factory(
         objective_name (str): The name of the objective variable.
     """
     discipline = AnalyticDiscipline(expressions)
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=-3.0, u_b=3.0)
+    design_space.add_variable("x_1", lower_bound=-3.0, upper_bound=3.0)
     for name, bounds in design_space_variables.items():
         design_space.add_variable(name, **bounds)
     scenario = DOEScenario(
-        [discipline], "DisciplinaryOpt", objective_name, design_space
+        [discipline], objective_name, design_space, formulation_name="DisciplinaryOpt"
     )
-    scenario.execute({"algo": "lhs", "n_samples": LEARNING_SIZE})
+    scenario.execute(algo_name="LHS", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset(dataset_name)
 
 
-# the following contains the arguments passed to dataset_factory
+# the following contains the arguments passed to create_dataset
 DATASETS_DESCRIPTIONS = (
     # Dataset from a R -> R function sampled over [0,1]^2
     ("scalar_scalar", {"y_1": "1+3*x_1"}, {}, "y_1"),
@@ -91,14 +92,14 @@ DATASETS_DESCRIPTIONS = (
     (
         "vector_scalar",
         {"y_1": "1+2*x_1+3*x_2"},
-        {"x_2": {"l_b": -3.0, "u_b": 3.0}},
+        {"x_2": {"lower_bound": -3.0, "upper_bound": 3.0}},
         "y_1",
     ),
     # Dataset from a R^2 -> R^3 function sampled over [0,1]^2
     (
         "linear",
         {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2", "y_3": "3"},
-        {"x_2": {"l_b": -3.0, "u_b": 3.0}},
+        {"x_2": {"lower_bound": -3.0, "upper_bound": 3.0}},
         "y_1",
     ),
     # Dataset from a R^3 -> R^3 function sampled over [0,1]^2
@@ -109,11 +110,13 @@ DATASETS_DESCRIPTIONS = (
             "y_2": "-1-2*x_1-3*x_2 - 0.5*x_2**4+ 7*x_1**3*x_3**2",
             "y_3": "3-9*x_3**2",
         },
-        {"x_2": {"l_b": -3.0, "u_b": 3.0}, "x_3": {"l_b": -4.0, "u_b": 4.0}},
+        {
+            "x_2": {"lower_bound": -3.0, "upper_bound": 3.0},
+            "x_3": {"lower_bound": -4.0, "upper_bound": 4.0},
+        },
         "y_1",
     ),
 )
-
 
 TRANSFORMERS = (
     {},
@@ -130,31 +133,27 @@ TRANSFORMERS = (
 )
 
 
-def _get_dataset_name(dataset_description):
-    return dataset_description[0]
-
-
 @pytest.fixture(
     scope="module",
     params=DATASETS_DESCRIPTIONS,
-    ids=map(_get_dataset_name, DATASETS_DESCRIPTIONS),
+    ids=map(itemgetter(0), DATASETS_DESCRIPTIONS),
 )
 def dataset(request) -> Dataset:
     """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""
-    return dataset_factory(*request.param)
+    return create_dataset(*request.param)
 
 
 def test_regression_model() -> None:
     """Test that by default the computation of the Jacobian raises an error."""
-    dataset = dataset_factory(*DATASETS_DESCRIPTIONS[0])
+    dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
     with (
         pytest.raises(
             NotImplementedError,
-            match="Derivatives are not available for MLRegressionAlgo.",
+            match="Derivatives are not available for BaseRegressor.",
         ),
-        concretize_classes(MLRegressionAlgo),
+        concretize_classes(BaseRegressor),
     ):
-        MLRegressionAlgo(dataset).predict_jacobian(array([1.0]))
+        BaseRegressor(dataset).predict_jacobian(array([1.0]))
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
@@ -194,7 +193,7 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", [*list(RBFRegressor.Function), _r3])
+@pytest.mark.parametrize("function", [*list(Function), _r3])
 def test_rbf(dataset, transformer, function) -> None:
     """Test polynomial regression Jacobians."""
     der_func = _der_r3 if function is _r3 else None
@@ -217,6 +216,6 @@ def test_pce(dataset) -> None:
         space.add_random_variable(input_name, "OTUniformDistribution")
 
     discipline = SurrogateDiscipline(
-        "PCERegressor", data=dataset, transformer=None, probability_space=space
+        "PCERegressor", data=dataset, transformer={}, probability_space=space
     )
     discipline.check_jacobian()

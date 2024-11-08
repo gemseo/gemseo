@@ -21,9 +21,20 @@ from __future__ import annotations
 
 import unittest
 
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import SerialExecSequence
+from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
+from gemseo.core._process_flow.execution_sequences.sequential import (
+    SequentialExecSequence,
+)
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
+from gemseo.utils.discipline import DummyDiscipline
+
+
+class ProcessWorkflow(BaseProcessFlow):
+    def get_execution_flow(self):
+        wkf = SequentialExecSequence()
+        wkf.extend([self._node.disc1, self._node.disc2])
+        return wkf
 
 
 class FakeScenario:
@@ -31,15 +42,13 @@ class FakeScenario:
         self.disc1 = disc1
         self.disc2 = disc2
 
-    def get_expected_workflow(self):
-        wkf = SerialExecSequence()
-        wkf.extend([self.disc1, self.disc2])
-        return wkf
+    def get_process_flow(self):
+        return ProcessWorkflow(self)
 
 
 class TestMonitoring(unittest.TestCase):
     def setUp(self) -> None:
-        self.sc = FakeScenario(MDODiscipline(), MDODiscipline())
+        self.sc = FakeScenario(DummyDiscipline(), DummyDiscipline())
         self.monitor = Monitoring(self.sc)
         self.monitor.add_observer(self)
         self._statuses = self.monitor.get_statuses()
@@ -50,7 +59,7 @@ class TestMonitoring(unittest.TestCase):
         self._updated_uuid = atom.uuid
 
     def _assert_update_status(self, disc, expected) -> None:
-        disc.status = expected
+        disc.execution_status.value = expected
         assert expected == self._statuses[self._updated_uuid]
 
     def test_singleton(self) -> None:
@@ -67,17 +76,17 @@ class TestMonitoring(unittest.TestCase):
         assert id(monitor2) == id(self.monitor)
 
     def test_status_update(self) -> None:
-        self._assert_update_status(self.sc.disc1, MDODiscipline.ExecutionStatus.RUNNING)
-        self._assert_update_status(self.sc.disc1, MDODiscipline.ExecutionStatus.DONE)
+        self._assert_update_status(self.sc.disc1, ExecutionStatus.Status.RUNNING)
+        self._assert_update_status(self.sc.disc1, ExecutionStatus.Status.DONE)
 
     def test_remove_observer(self) -> None:
         self.monitor.remove_observer(self)
-        self.sc.disc1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.sc.disc1.execution_status.value = ExecutionStatus.Status.RUNNING
         assert None is self._updated_uuid  # no update received
         # check second remove works
         self.monitor.remove_observer(self)
 
     def test_remove_observers(self) -> None:
         self.monitor.remove_all_observers()
-        self.sc.disc1.status = MDODiscipline.ExecutionStatus.RUNNING
+        self.sc.disc1.execution_status.value = ExecutionStatus.Status.RUNNING
         assert None is self._updated_uuid  # no update received

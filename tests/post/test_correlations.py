@@ -25,11 +25,11 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.post.factory import PostFactory
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.helpers import image_comparison
 
 PARENT_PATH = Path(__file__).parent
@@ -50,19 +50,19 @@ def test_correlations(tmp_wd, factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizersFactory().execute(problem, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
 
     post = factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         save=True,
         n_plots_x=4,
         n_plots_y=4,
         coeff_limit=0.95,
         file_path="correlations_1",
     )
-    assert len(post.output_files) == 2
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 2
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -76,15 +76,15 @@ def test_correlations_import(tmp_wd, factory) -> None:
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         save=True,
         n_plots_x=4,
         n_plots_y=4,
         coeff_limit=0.999,
         file_path="correlations_2",
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -95,7 +95,7 @@ def test_correlations_func_name_error(factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizersFactory().execute(problem, "L-BFGS-B")
+    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
 
     with pytest.raises(
         ValueError,
@@ -105,7 +105,11 @@ def test_correlations_func_name_error(factory) -> None:
         ),
     ):
         factory.execute(
-            problem, "Correlations", save=False, show=False, func_names=["toto"]
+            problem,
+            post_name="Correlations",
+            save=False,
+            show=False,
+            func_names=["toto"],
         )
 
 
@@ -127,7 +131,7 @@ def test_correlations_func_names(tmp_wd, factory, baseline_images, func_names) -
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         func_names=func_names,
         save=False,
         file_extension="png",
@@ -154,7 +158,7 @@ def test_func_name_sorting(tmp_wd, factory) -> None:
     problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
     factory.execute(
         problem,
-        "Correlations",
+        post_name="Correlations",
         func_names=["obj", "c_1", "obj_constr"],
         save=False,
         file_extension="png",

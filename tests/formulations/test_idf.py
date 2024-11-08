@@ -21,18 +21,14 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdofunctions.consistency_constraint import ConsistencyCstr
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.formulations.idf import IDF
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
-
-from .formulations_basetest import FakeDiscipline
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 
 def test_build_func_from_disc() -> None:
@@ -51,7 +47,7 @@ def test_build_func_from_disc() -> None:
 
     for c_name in ["g_1", "g_2", "g_3"]:
         idf.add_constraint(c_name, constraint_type="ineq")
-    opt = idf.opt_problem
+    opt = idf.optimization_problem
     opt.objective.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
     for cst in opt.constraints:
         cst.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
@@ -62,7 +58,7 @@ def test_build_func_from_disc() -> None:
             func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
     for coupl in idf.coupling_structure.strong_couplings:
-        func = ConsistencyCstr([coupl], idf)
+        func = ConsistencyConstraint([coupl], idf)
         func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
 
 
@@ -175,25 +171,6 @@ def test_fail_idf_no_coupl(generate_idf_scenario) -> None:
         )
 
 
-def test_expected_workflow() -> None:
-    """"""
-    disc1 = FakeDiscipline("d1")
-    disc2 = FakeDiscipline("d2")
-    disc3 = FakeDiscipline("d3")
-    idf = IDF([disc1, disc2, disc3], "d3_y", DesignSpace())
-    expected = "(d1(None), d2(None), d3(None), )"
-    assert str(idf.get_expected_workflow()) == expected
-
-
-def test_expected_dataflow() -> None:
-    """"""
-    disc1 = FakeDiscipline("d1")
-    disc2 = FakeDiscipline("d2")
-    disc3 = FakeDiscipline("d3")
-    idf = IDF([disc1, disc2, disc3], "d3_y", DesignSpace())
-    assert idf.get_expected_dataflow() == []
-
-
 def test_idf_start_equilibrium() -> None:
     """Initial value of coupling variables set at equilibrium."""
     disciplines = [
@@ -221,15 +198,3 @@ def test_idf_start_equilibrium() -> None:
             current_couplings[coupling_name] - ref_couplings[coupling_name]
         ) / np.linalg.norm(ref_couplings[coupling_name])
         assert residual < 1e-3
-
-
-def test_grammar_type() -> None:
-    """Check that the grammar type is correctly used."""
-    discipline = AnalyticDiscipline({"y": "x"})
-    design_space = DesignSpace()
-    design_space.add_variable("x")
-    grammar_type = discipline.GrammarType.SIMPLE
-    formulation = IDF(
-        [discipline], "y", design_space, grammar_type=grammar_type, n_processes=2
-    )
-    assert formulation._parallel_exec.grammar_type == grammar_type

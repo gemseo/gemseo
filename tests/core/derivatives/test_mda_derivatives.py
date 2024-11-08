@@ -20,14 +20,14 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
 from tests.mda.test_mda import analytic_disciplines_from_desc
@@ -52,39 +52,39 @@ DISC_DESCR_SELF_C = [("A", ["x", "y"], ["y", "o"])]
 def test_traverse_add_diff_io_basic() -> None:
     """Test the differentiated inputs and outputs graph calculations."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
-    coupl = MDOCouplingStructure(disciplines)
+    coupl = CouplingStructure(disciplines)
 
     traverse_add_diff_io_mda(coupl, ["x1"], ["o1"])
 
     # A
-    assert disciplines[0]._differentiated_inputs == ["x1"]
-    assert disciplines[0]._differentiated_outputs == ["a"]
+    assert disciplines[0]._differentiated_input_names == ["x1"]
+    assert disciplines[0]._differentiated_output_names == ["a"]
 
     # B
-    assert not disciplines[1]._differentiated_inputs
-    assert not disciplines[1]._differentiated_outputs
+    assert not disciplines[1]._differentiated_input_names
+    assert not disciplines[1]._differentiated_output_names
 
     # C
-    assert sorted(disciplines[2]._differentiated_inputs) == ["a", "y1"]
-    assert disciplines[2]._differentiated_outputs == ["y2"]
+    assert sorted(disciplines[2]._differentiated_input_names) == ["a", "y1"]
+    assert disciplines[2]._differentiated_output_names == ["y2"]
 
     # D
-    assert sorted(disciplines[3]._differentiated_inputs) == ["y2"]
-    assert sorted(disciplines[3]._differentiated_outputs) == ["o1", "y1"]
+    assert sorted(disciplines[3]._differentiated_input_names) == ["y2"]
+    assert sorted(disciplines[3]._differentiated_output_names) == ["o1", "y1"]
 
     # E
-    assert not disciplines[4]._differentiated_inputs
-    assert not disciplines[4]._differentiated_outputs
+    assert not disciplines[4]._differentiated_input_names
+    assert not disciplines[4]._differentiated_output_names
 
 
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
+    "grammar_type", [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON]
 )
 def test_chain_jac_basic_grammars(grammar_type) -> None:
     """Test the jacobian from the MDOChain on a basic case with different grammars."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1, grammar_type=grammar_type)
-    mda = MDAChain(disciplines, grammar_type=grammar_type)
-    assert mda.check_jacobian(inputs=["x1"], outputs=["o1"])
+    mda = MDAChain(disciplines)
+    assert mda.check_jacobian(input_names=["x1"], output_names=["o1"])
 
 
 @pytest.mark.parametrize("input_", [["x1"], ["x2"], ["x1", "x2"]])
@@ -92,10 +92,10 @@ def test_chain_jac_basic_grammars(grammar_type) -> None:
 def test_chain_jac_basic(input_, output) -> None:
     """Test the jacobian from the MDOChain on a basic case."""
     disciplines = create_disciplines_from_desc(
-        DISC_DESCR_1, grammar_type=MDODiscipline.GrammarType.SIMPLE
+        DISC_DESCR_1, grammar_type=Discipline.GrammarType.SIMPLE
     )
-    mda = MDAChain(disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE)
-    assert mda.check_jacobian(inputs=input_, outputs=output)
+    mda = MDAChain(disciplines)
+    assert mda.check_jacobian(input_names=input_, output_names=output)
 
 
 @pytest.mark.parametrize("descriptions", [DISC_DESCR_SELF_C, DISC_DESCR_SELF_STRONG_C])
@@ -103,7 +103,7 @@ def test_chain_jac_self_coupled(descriptions) -> None:
     """Test the jacobian with self-couplings."""
     disciplines = create_disciplines_from_desc(descriptions)
     mda = MDAChain(disciplines, tolerance=1e-14)
-    assert mda.check_jacobian(inputs=["x"], outputs=["o"])
+    assert mda.check_jacobian(input_names=["x"], output_names=["o"])
 
 
 def test_double_mda() -> None:
@@ -118,7 +118,7 @@ def test_double_mda() -> None:
         {"obj": "obj1+obj2"},
     ))
     mdachain = MDAChain(disciplines)
-    assert mdachain.check_jacobian(inputs=["x"], outputs=["obj"])
+    assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
 
 
 @pytest.mark.parametrize("nb_of_disc", [1, 5, 10, 20])
@@ -138,11 +138,9 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios) -> No
         unique_disc_per_output=True,
         no_strong_couplings=False,
         no_self_coupled=True,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
+        grammar_type=Discipline.GrammarType.SIMPLE,
     )
-    assert MDAChain(
-        disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE
-    ).check_jacobian()
+    assert MDAChain(disciplines).check_jacobian()
 
 
 @pytest.mark.parametrize("inputs_size", [1, 2])
@@ -159,8 +157,6 @@ def test_chain_jac_io_sizes(inputs_size, outputs_size) -> None:
         unique_disc_per_output=True,
         no_strong_couplings=True,
         no_self_coupled=True,
-        grammar_type=MDODiscipline.GrammarType.SIMPLE,
+        grammar_type=Discipline.GrammarType.SIMPLE,
     )
-    assert MDAChain(
-        disciplines, grammar_type=MDODiscipline.GrammarType.SIMPLE
-    ).check_jacobian()
+    assert MDAChain(disciplines).check_jacobian()

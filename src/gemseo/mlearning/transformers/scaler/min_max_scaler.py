@@ -45,13 +45,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from numpy import ndarray
 from numpy import where
 
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
+    from gemseo.typing import RealArray
 
 
 class MinMaxScaler(Scaler):
@@ -71,7 +71,7 @@ class MinMaxScaler(Scaler):
         """  # noqa: D205 D212
         super().__init__(name, offset, coefficient)
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         l_b = data.min(0)
         delta = data.max(0) - l_b
         is_constant = delta == 0

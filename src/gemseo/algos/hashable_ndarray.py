@@ -16,13 +16,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 
 from numpy import array as np_array
 from numpy import array_equal
-from numpy import ndarray
 from numpy import uint8
 from xxhash import xxh3_64_hexdigest
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class HashableNdarray:
@@ -38,7 +41,7 @@ class HashableNdarray:
     requires the user to be careful enough not to modify it).
     """
 
-    __array: ndarray
+    __array: NDArray[Any]
     """The wrapped_array array, either the original one or a copy."""
 
     __copy: bool
@@ -47,17 +50,17 @@ class HashableNdarray:
     __hash: int
     """The hash of the wrapped_array array."""
 
-    def __init__(self, array: ndarray, copy: bool = False) -> None:
+    def __init__(self, array: NDArray[Any], copy: bool = False) -> None:
         """
         Args:
             array: The array that must be array.
             copy: Whether the array is copied.
         """  # noqa: D205, D212, D415
         self.__copy = copy
-        self.__hash = int(xxh3_64_hexdigest(array.view(uint8)), 16)
+        self.__hash = int(xxh3_64_hexdigest(array.view(uint8)), 16)  # type: ignore[arg-type]
         self.__array = np_array(array) if copy else array
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__) or hash(self) != hash(other):
             return False
         return array_equal(self.__array, other.__array)
@@ -69,7 +72,7 @@ class HashableNdarray:
         return str(self.__array)
 
     @property
-    def wrapped_array(self) -> ndarray:
+    def wrapped_array(self) -> NDArray[Any]:
         """The wrapped_array array."""
         return self.__array
 
@@ -84,7 +87,7 @@ class HashableNdarray:
             self.__copy = True
             self.__array = np_array(self.__array)
 
-    def unwrap(self) -> ndarray:
+    def unwrap(self) -> NDArray[Any]:
         """Return the array ndarray.
 
         Returns:

@@ -9,11 +9,4 @@
 Post-process an optimization problem
 ====================================
 
-.. toctree::
-   :glob:
-   :maxdepth: 1
-   :hidden:
-
-   **
-
 .. start-after-label

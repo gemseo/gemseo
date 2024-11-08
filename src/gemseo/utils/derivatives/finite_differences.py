@@ -34,12 +34,12 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.error_estimators import compute_best_step
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
 
 
-class FirstOrderFD(GradientApproximator):
+class FirstOrderFD(BaseGradientApproximator):
     r"""First-order finite differences approximator.
 
     .. math::
@@ -54,11 +54,11 @@ class FirstOrderFD(GradientApproximator):
     def _compute_parallel_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         if step is None:
             step = self.step
 
@@ -90,11 +90,11 @@ class FirstOrderFD(GradientApproximator):
     def _compute_grad(
         self,
         input_values: ndarray,
-        n_perturbations: int,
         input_perturbations: ndarray,
         step: float | ndarray,
         **kwargs: Any,
     ) -> ndarray:
+        n_perturbations = input_perturbations.shape[1]
         if step is None:
             step = self.step
 

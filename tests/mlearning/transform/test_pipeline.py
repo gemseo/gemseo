@@ -34,17 +34,17 @@ from gemseo.mlearning.transformers.pipeline import Pipeline
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import Transformer
+    from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(30).reshape((10, 3))
 
 
-@pytest.fixture()
-def transformers() -> list[Transformer]:
+@pytest.fixture
+def transformers() -> list[BaseTransformer]:
     """Transformers for pipeline."""
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
 
@@ -55,7 +55,7 @@ OFF_3 = array([0, 10, 100])
 C_3 = array([5, 1, 2])
 
 
-@pytest.fixture()
+@pytest.fixture
 def other_transformers():
     """Transformers for pipeline."""
     return [
@@ -69,7 +69,7 @@ def test_constructor(transformers, other_transformers) -> None:
     """Test constructor."""
     pipeline = Pipeline()
     assert pipeline.name == "Pipeline"
-    assert pipeline.transformers == []
+    assert pipeline.transformers == ()
     another_pipeline = Pipeline(transformers=transformers)
     assert another_pipeline.transformers == transformers
     yet_another_pipeline = Pipeline(transformers=other_transformers)

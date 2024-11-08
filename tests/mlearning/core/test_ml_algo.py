@@ -22,16 +22,15 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 import pytest
 from numpy import arange
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.clustering.kmeans import KMeans
-from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import concretize_classes
@@ -39,7 +38,11 @@ from gemseo.utils.testing.helpers import concretize_classes
 from .new_ml_algo.new_ml_algo import NewMLAlgo
 
 
-@pytest.fixture()
+class DummyMLAlgo(BaseMLAlgo):
+    Settings = BaseMLAlgoSettings
+
+
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the machine learning algorithms."""
     data = arange(30).reshape(10, 3)
@@ -52,8 +55,8 @@ def dataset() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLAlgo):
-        ml_algo = MLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        ml_algo = DummyMLAlgo(dataset)
 
     assert ml_algo.algo is None
     assert not ml_algo.is_trained
@@ -93,7 +96,9 @@ def test_repr_str(dataset, samples, trained) -> None:
     ml_algo = NewMLAlgo(dataset)
     ml_algo._learning_samples_indices = samples
     ml_algo._trained = trained
-    expected = "NewMLAlgo()\n   based on the NewLibrary library"
+    expected = (
+        "NewMLAlgo(parameters={}, transformer={})\n   based on the NewLibrary library"
+    )
     if ml_algo.is_trained:
         expected += f"\n   built from {len(samples)} learning samples"
 
@@ -104,7 +109,8 @@ def test_repr_str(dataset, samples, trained) -> None:
 def test_repr_html(dataset) -> None:
     """Check the HTML representation of an ML algorithm."""
     assert NewMLAlgo(dataset)._repr_html_() == REPR_HTML_WRAPPER.format(
-        "NewMLAlgo()<br/><ul><li>based on the NewLibrary library</li></ul>"
+        "NewMLAlgo(parameters={}, transformer={})<br/>"
+        "<ul><li>based on the NewLibrary library</li></ul>"
     )
 
 
@@ -113,8 +119,8 @@ def test_repr_html(dataset) -> None:
 )
 def test_transformer(dataset, transformer) -> None:
     """Check if transformers are correctly passed."""
-    with concretize_classes(MLAlgo):
-        ml_algo = MLAlgo(dataset, transformer={"parameters": transformer})
+    with concretize_classes(DummyMLAlgo):
+        ml_algo = DummyMLAlgo(dataset, transformer={"parameters": transformer})
 
     assert isinstance(ml_algo.transformer["parameters"], Scaler)
     if isinstance(transformer, tuple):
@@ -127,52 +133,28 @@ def test_transformer_wrong_type(dataset) -> None:
         pytest.raises(
             ValueError,
             match=re.escape(
-                "Transformer type must be "
-                "either Transformer, Tuple[str, Mapping[str, Any]] or str."
+                "BaseTransformer type must be "
+                "either BaseTransformer, Tuple[str, StrKeyMapping] or str."
             ),
         ),
-        concretize_classes(MLAlgo),
+        concretize_classes(DummyMLAlgo),
     ):
-        MLAlgo(dataset, transformer={"parameters": 1})
-
-
-def test_save_and_load(dataset, tmp_wd, monkeypatch, reset_factory) -> None:
-    """Test save and load."""
-    # Let the factory find NewMLAlgo
-    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "new_ml_algo")
-
-    model = NewMLAlgo(dataset)
-    model.learn()
-    factory = MLAlgoFactory()
-
-    directory_path = model.to_pickle(save_learning_set=True)
-    imported_model = factory.load(directory_path)
-    assert imported_model.learning_set.get_view(variable_names="x_1").equals(
-        model.learning_set.get_view(variable_names="x_1")
-    )
-    assert imported_model.is_trained
-
-    directory_path = model.to_pickle()
-    imported_model = factory.load(directory_path)
-    assert len(model.learning_set) == 10
-    assert len(imported_model.learning_set) == 10
-    assert imported_model.is_trained
-    assert imported_model.sizes == dataset.variable_names_to_n_components
+        DummyMLAlgo(dataset, transformer={"parameters": 1})
 
 
 def test_transformers_error(dataset) -> None:
-    """Check that MLAlgo cannot use a transformer for both group and variable."""
+    """Check that BaseMLAlgo cannot use a transformer for both group and variable."""
     dataset = IODataset()
     dataset.add_variable("x", array([[1.0]]), group_name="foo")
     with (
         pytest.raises(
             ValueError,
             match=(
-                "An MLAlgo cannot have both a transformer "
+                "An BaseMLAlgo cannot have both a transformer "
                 "for all variables of a group and a transformer "
                 "for one variable of this group."
             ),
         ),
-        concretize_classes(MLAlgo),
+        concretize_classes(DummyMLAlgo),
     ):
-        MLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
+        DummyMLAlgo(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})

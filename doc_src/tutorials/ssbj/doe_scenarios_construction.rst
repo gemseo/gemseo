@@ -17,9 +17,9 @@ Tutorial: How to carry out a trade-off study
 
 This tutorial describes how to carry out a trade-off study by means of |g|. For that, we consider the :ref:`Sobieski problem <sobieski_problem>`.
 
-Trade-off studies are implemented in the class :class:`~gemseo.core.doe_scenario.DOEScenario`.
+Trade-off studies are implemented in the class :class:`~gemseo.scenarios.doe_scenario.DOEScenario`.
 
-All the post-processing tools presented in :ref:`post_processing` for :class:`~gemseo.core.mdo_scenario.MDOScenario`
+All the post-processing tools presented in :ref:`post_processing` for :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`
 remain valid for trade-off studies, as well as the additional tools presented below.
 
 Similarities between trade-off studies and optimization problems
@@ -28,19 +28,19 @@ Similarities between trade-off studies and optimization problems
 Trade-off studies are supported by capabilities of :term:`Design Of Experiments <DOE>`. But,
 when comparing an optimization scenario and a trade-off scenario, similarities appear:
 
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Feature                            | MDO Scenario (implemented in :class:`~gemseo.core.mdo_scenario.MDOScenario`) | Trade-off study (implemented in :class:`~gemseo.core.doe_scenario.DOEScenario`)           |
-+====================================+==============================================================================+===========================================================================================+
-| Sample evaluation                  | The sample :math:`i+1` requires the evaluation of the sample :math:`i`.      | The sequence is defined *a priori* by a :term:`DOE`; an iteration corresponds to a sample |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | They guide the convergence of an optimization problem.                       | They are only monitored evaluated outputs.                                                |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | They are not directly outputs of a :term:`discipline`.                       | They are not directly outputs of a :term:`discipline`.                                    |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | They can be computed by an :ref:`mda` for instance (e.g. MDF)                | They can be computed by an :ref:`mda` for instance.                                       |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
-| Constraint and objective functions | Target values can be used for the :term:`coupling variables` (e.g. IDF).     | Target values can be used for the :term:`coupling variables`.                             |
-+------------------------------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Feature                            | MDO Scenario (implemented in :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`) | Trade-off study (implemented in :class:`~gemseo.scenarios.doe_scenario.DOEScenario`)      |
++====================================+===================================================================================+===========================================================================================+
+| Sample evaluation                  | The sample :math:`i+1` requires the evaluation of the sample :math:`i`.           | The sequence is defined *a priori* by a :term:`DOE`; an iteration corresponds to a sample |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | They guide the convergence of an optimization problem.                            | They are only monitored evaluated outputs.                                                |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | They are not directly outputs of a :term:`discipline`.                            | They are not directly outputs of a :term:`discipline`.                                    |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | They can be computed by an :ref:`mda` for instance (e.g. MDF)                     | They can be computed by an :ref:`mda` for instance.                                       |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
+| Constraint and objective functions | Target values can be used for the :term:`coupling variables` (e.g. IDF).          | Target values can be used for the :term:`coupling variables`.                             |
++------------------------------------+-----------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------+
 
 That is why in |g|,
 
@@ -64,10 +64,10 @@ As mentioned previously, a trade-off script and an optimization script are very 
 For example, a :term:`MDF` trade-off study includes an :ref:`mda` sampling with respect to the :term:`design variables`
 provided by the :term:`DOE algorithm`.
 
-1. Define the :class:`.MDODiscipline`
+1. Define the :class:`.Discipline`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
+We first instantiate the :class:`~gemseo.core.discipline.Discipline`:
 
 .. code::
 
@@ -80,7 +80,7 @@ We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Then, by means of the API function :func:`.read_design_space`,
-we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~gemseo.core.mdo_scenario.MDOScenario`.
+we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 
 .. code::
 
@@ -95,14 +95,14 @@ we load the :class:`~gemseo.algos.design_space.DesignSpace`, like for :class:`~g
 Initialization
 ^^^^^^^^^^^^^^
 
-The :ref:`MDF formulation <mdf_formulation>` is selected to build the :class:`~gemseo.core.doe_scenario.DOEScenario`, like for :class:`~gemseo.core.mdo_scenario.MDOScenario`.
+The :ref:`MDF formulation <mdf_formulation>` is selected to build the :class:`~gemseo.scenarios.doe_scenario.DOEScenario`, like for :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 
 .. code::
 
     from gemseo import create_scenario
 
     scenario = create_scenario(disciplines,
-                               formulation="MDF",
+                               formulation_name="MDF",
                                objective_name="y_4",
                                design_space=design_space,
                                scenario_type="DOE",
@@ -129,17 +129,10 @@ with identical inputs, and directly returns the buffered outputs.
 Optimization options
 ^^^^^^^^^^^^^^^^^^^^
 
-The DOE algorithm options are passed as inputs of the :class:`~gemseo.core.mdo_scenario.MDOScenario`.
+The DOE algorithm options are passed as inputs of the :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`.
 The number of samples is specified, as well as the "criterion" option which is the center option of pyDOE centering the points within the sampling intervals.
 The sensitivity of the outputs with respect to the design variables may be computed,
-thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' option is set to True.
-
-.. code::
-
-    doe_options = {'n_samples': 30,
-                   'algo': 'lhs',
-                   'eval_jac': True,
-                   'algo_options': {"criterion": "center"}}
+thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' setting parameter is set to True.
 
 .. seealso::
 
@@ -162,7 +155,7 @@ thanks to the coupled derivatives capabilities, to this aim the 'eval\_jac' opti
 
   .. code::
 
-     ['ff2n', 'OT_FACTORIAL', 'OT_FAURE', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'ccdesign', 'OT_SOBOL', 'fullfact', 'OT_FULLFACT', 'OT_AXIAL', 'lhs', 'OT_LHSC', 'OT_MONTE_CARLO', 'OT_RANDOM', 'OT_COMPOSITE', 'CustomDOE', 'pbdesign', 'OT_LHS', 'bbdesign']
+     ['PYDOE_FF2N', 'OT_FACTORIAL', 'OT_FAURE', 'OT_HASELGROVE', 'OT_REVERSE_HALTON', 'OT_HALTON', 'PYDOE_CCDESIGN', 'OT_SOBOL', 'PYDOE_FULLFACT', 'OT_FULLFACT', 'OT_AXIAL', 'lhs', 'OT_LHSC', 'OT_MONTE_CARLO', 'OT_RANDOM', 'OT_COMPOSITE', 'CustomDOE', 'PYDOE_PBDESIGN', 'OT_LHS', 'PYDOE_BBDESIGN']
 
 
 4. Execute the trade-off study
@@ -172,7 +165,7 @@ The scenario outputs is executed:
 
 .. code::
 
-    scenario.execute(doe_options)
+    scenario.execute(algo_name='lhs', n_samples=30, eval_jac=True, criterion='center')
 
 5. Visualize the results
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -244,7 +237,7 @@ maximize the range, the disciplines should:
 1. Define the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We first instantiate the :class:`~gemseo.core.discipline.MDODiscipline`:
+We first instantiate the :class:`~gemseo.core.discipline.Discipline`:
 
 .. code::
 
@@ -281,7 +274,7 @@ The propulsion scenario minimizes the fuel specific consumption:
 .. code::
 
     sc_prop = create_scenario(prop,
-                              formulation="DisciplinaryOpt",
+                              formulation_name="DisciplinaryOpt",
                               objective_name="y_34",
                               design_space=design_space_prop,
                               name="PropulsionScenario")
@@ -291,7 +284,7 @@ The aerodynamic scenario maximizes lift over drag:
 .. code::
 
     sc_aero = create_scenario(aero,
-                              formulation="DisciplinaryOpt",
+                              formulation_name="DisciplinaryOpt",
                               objective_name="y_24",
                               design_space=design_space_aero,
                               name="AerodynamicsScenario",
@@ -302,7 +295,7 @@ The structure scenario maximizes :math:`log \frac{aircraft total weight}{aircraf
 .. code::
 
     sc_struct = create_scenario(struct,
-                                formulation="DisciplinaryOpt",
+                                formulation_name="DisciplinaryOpt",
                                 objective_name="y_11",
                                 design_space=design_space_struct,
                                 name="StructureScenario",
@@ -316,7 +309,7 @@ The range computation is added as a fourth discipline of the system scenario, wh
     sub_disciplines.append(mission)
 
     for sub_sc in sub_disciplines[0:3]:
-       sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
+       sub_sc.set_algorithm("LL-BFGS-B", max_iter=20)
 
 Please also note that it is compulsory to set the default inputs of the first three disciplines, which are MDO scenarios. Thus, we have to set the optimization algorithm and the maximum number of iterations for each of them.
 
@@ -330,12 +323,12 @@ process with respect to the :term:`system design variables` (optimization proble
 .. code::
 
    system_scenario = create_scenario(sub_disciplines,
-                                     formulation="BiLevel",
+                                     formulation_name="BiLevel",
                                      objective_name="y_4",
                                      parallel_scenarios=False,
                                      # This is mandatory when doing
                                      # a DOE in parallel if we want
-                                     # reproductible
+                                     # reproducible
                                      # results, dont reuse previous xopt
                                      reset_x0_before_opt=True,
                                      design_space=deepcopy(
@@ -344,7 +337,7 @@ process with respect to the :term:`system design variables` (optimization proble
                                      scenario_type="DOE")
    # This is mandatory when doing
    # a DOE in parallel if we want always exactly the same
-   # results, dont warm start mda1 to have exactely the same
+   # results, dont warm start mda1 to have exactly the same
    # process whatever the execution order and process dispatch
    system_scenario.formulation.mda1.warm_start = False
    system_scenario.formulation.mda2.warm_start = False
@@ -358,8 +351,7 @@ dictionary of options (including all :term:`DOE` settings) for the main scenario
 
 .. code::
 
-    doe_options = {'n_samples': 30, 'algo': "lhs"}
-    system_scenario.execute(doe_options)
+    system_scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 
 
 Comparison of trade-off results: :ref:`bi-level <bilevel_formulation>` versus :ref:`MDF <mdf_formulation>` formulations

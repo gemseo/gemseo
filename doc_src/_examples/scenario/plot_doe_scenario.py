@@ -57,14 +57,14 @@ configure_logger()
 # Define the discipline
 # ---------------------
 # Firstly, by means of the :func:`.create_discipline` API function,
-# we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
+# we create an :class:`.Discipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
 expressions = {"y": "x1+x2"}
 discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 
 # %%
-# Now, we want to minimize this :class:`.MDODiscipline`
+# Now, we want to minimize this :class:`.Discipline`
 # over a design of experiments (DOE).
 #
 # Define the design space
@@ -74,19 +74,27 @@ discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 # by using its :meth:`.DesignSpace.add_variable` method.
 
 design_space = create_design_space()
-design_space.add_variable("x1", l_b=-5, u_b=5, var_type="integer")
-design_space.add_variable("x2", l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x1", lower_bound=-5, upper_bound=5, type_="integer")
+design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 
 # %%
 # Define the DOE scenario
 # -----------------------
 # Then, by means of the :func:`.create_scenario` API function,
-# we define a :class:`.DOEScenario` from the :class:`.MDODiscipline`
+# we define a :class:`.DOEScenario` from the :class:`.Discipline`
 # and the :class:`.DesignSpace` defined above:
 
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    discipline,
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
+
+# %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
 
 # %%
 # Execute the DOE scenario
@@ -97,7 +105,11 @@ scenario = create_scenario(
 # Precisely, we choose a `full factorial design
 # <https://en.wikipedia.org/wiki/Factorial_experiment>`_ of size :math:`11^2`:
 
-scenario.execute({"algo": "fullfact", "n_samples": 11**2})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
+
+# %%
+# Note that the algorithm settings passed to :meth:`~.BaseDriverLibrary.execute` can be provided
+# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to

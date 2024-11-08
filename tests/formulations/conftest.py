@@ -21,12 +21,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.mdo_scenario import MDOScenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.mdo_scenario import MDOScenario
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -80,16 +80,15 @@ def build_and_run_idf_scenario_with_constraints(
 
     scenario = MDOScenario(
         disciplines,
-        "IDF",
         "y_4",
         design_space,
+        formulation_name="IDF",
         normalize_constraints=normalize_cstr,
         n_processes=n_processes,
         use_threading=use_threading,
         maximize_objective=True,
         start_at_equilibrium=True,
-        tolerance=1e-10,
-        over_relaxation_factor=0.95,
+        mda_chain_settings_for_start_at_equilibrium={"tolerance": 1e-8},
     )
     if linearize:
         scenario.set_differentiation_method()
@@ -99,23 +98,19 @@ def build_and_run_idf_scenario_with_constraints(
     for c_name in ["g_1", "g_2", "g_3"]:
         scenario.add_constraint(c_name, constraint_type="ineq")
 
-    run_inputs = {
-        "max_iter": max_iter,
-        "algo": algo,
-        "algo_options": {
-            "eq_tolerance": eq_tolerance,
-            "ineq_tolerance": ineq_tolerance,
-        },
-    }
-
-    scenario.execute(run_inputs)
+    scenario.execute(
+        algo_name=algo,
+        max_iter=max_iter,
+        eq_tolerance=eq_tolerance,
+        ineq_tolerance=ineq_tolerance,
+    )
 
     obj_opt = scenario.optimization_result.f_opt
     is_feasible = scenario.optimization_result.is_feasible
     return -obj_opt, is_feasible
 
 
-@pytest.fixture()
+@pytest.fixture
 def generate_idf_scenario():
     """Wrap an :class:`.MDOScenario` with an IDF formulation.
 

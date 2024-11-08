@@ -18,9 +18,8 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Basic history
-=============
+"""Basic history.
+==============
 
 In this example, we illustrate the use of the :class:`.BasicHistory` plot
 on the Sobieski's SSBJ problem.
@@ -31,7 +30,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -76,15 +75,15 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute({"algo": "SLSQP", "max_iter": 10})
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # Post-process scenario
@@ -103,12 +102,14 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    Or refer to our dedicated page:
 #    :ref:`gen_post_algos`.
 scenario.post_process(
-    "BasicHistory",
+    post_name="BasicHistory",
     variable_names=["g_1", "g_2", "g_3"],
     save=False,
     show=True,
 )
-scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=True)
+scenario.post_process(
+    post_name="BasicHistory", variable_names=["y_4"], save=False, show=True
+)
 # %%
 # .. note::
 #
@@ -116,4 +117,6 @@ scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=T
 #    :attr:`.OptimizationProblem.use_standardized_objective` to ``False``
 #    to plot the objective to maximize as a performance function.
 scenario.use_standardized_objective = False
-scenario.post_process("BasicHistory", variable_names=["y_4"], save=False, show=True)
+scenario.post_process(
+    post_name="BasicHistory", variable_names=["y_4"], save=False, show=True
+)

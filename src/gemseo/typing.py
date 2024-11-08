@@ -14,50 +14,60 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Common typing definitions."""
 
+from __future__ import annotations
+
 from collections.abc import Mapping
+from collections.abc import MutableMapping
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import TypeVar
+from typing import Union
 
+from numpy import bool_
 from numpy import complexfloating
 from numpy import floating
 from numpy import inexact
 from numpy import integer
 from numpy import number
 from numpy.typing import NDArray
-from typing_extensions import Protocol
-from typing_extensions import Self
 
-NumberArray = NDArray[number]
-"""A NumPy array of numbers."""
-
-IntegerArray = NDArray[integer]
-"""A NumPy array of integer numbers."""
-
-RealArray = NDArray[floating]
-"""A NumPy array of real numbers."""
-
-ComplexArray = NDArray[complexfloating]
-"""A NumPy array of complex numbers."""
-
-RealOrComplexArray = NDArray[inexact]
-"""A NumPy array of complex or real numbers."""
-
-JacobianData = dict[str, Mapping[str, RealOrComplexArray]]
-"""A Jacobian data structure of the form ``{output_name: {input_name: jacobian}}."""
-
+from gemseo.utils.compatibility.scipy import SparseArrayType
 
 if TYPE_CHECKING:
+    from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 
-    class DataMapping(Mapping[str, Any], Protocol):
-        """Common typing for dict and DisciplineData."""
 
-        def copy(self) -> Self:
-            """Return a shallow copy."""
+BooleanArray = NDArray[bool_]
+"""A NumPy array of boolean numbers."""
 
-else:
+NumberArray = NDArray[number[Any]]
+"""A NumPy array of integer or real or complex numbers."""
 
-    class DataMapping(Mapping[str, Any]):
-        """Common typing for dict and DisciplineData."""
+IntegerArray = NDArray[integer[Any]]
+"""A NumPy array of integer numbers."""
 
-        def copy(self) -> Self:
-            """Return a shallow copy."""
+RealArray = NDArray[floating[Any]]
+"""A NumPy array of real numbers."""
+
+ComplexArray = NDArray[complexfloating[Any, Any]]
+"""A NumPy array of complex numbers."""
+
+RealOrComplexArray = NDArray[inexact[Any]]
+"""A NumPy array of real or complex numbers."""
+
+RealOrComplexArrayT = TypeVar("RealOrComplexArrayT", RealArray, ComplexArray)
+"""A NumPy array of real or complex numbers generic type."""
+
+SparseOrDenseRealArray = Union[RealArray, SparseArrayType]
+"""A dense NumPy array or a sparse SciPy array."""
+
+JacobianData = MutableMapping[
+    str, MutableMapping[str, Union[SparseOrDenseRealArray, "JacobianOperator"]]
+]
+"""A Jacobian data structure of the form ``{output_name: {input_name: jacobian}}."""
+
+StrKeyMapping = Mapping[str, Any]
+"""A read-only mapping from strings to anything."""
+
+MutableStrKeyMapping = MutableMapping[str, Any]
+"""A mutable mapping from strings to anything."""

@@ -27,14 +27,14 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.rbf import RBFRegressor
-from gemseo.mlearning.regression.regression import MLRegressionAlgo
+from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     data = np.linspace(0, 2 * np.pi, 10)
@@ -61,7 +61,7 @@ def test_init(dataset) -> None:
 
 @pytest.mark.parametrize("measure", ["MSEMeasure", MSEMeasure])
 def test_init_with_measure(dataset, measure) -> None:
-    """Check that the measure can be passed either as a str or a MLQualityMeasure."""
+    """Check that the measure can be passed either as a str or a BaseMLAlgoQuality."""
     selector = MLAlgoSelection(dataset, measure)
     assert selector.measure == MSEMeasure
 
@@ -95,20 +95,20 @@ def test_add_candidate(dataset) -> None:
     cand = selector.candidates[-1]
     assert isinstance(cand[0], PolynomialRegressor)
     assert isinstance(cand[1], float)
-    assert cand[0].parameters["degree"] in degrees
-    assert cand[0].parameters["fit_intercept"] == fit_int
+    assert cand[0]._settings.degree in degrees
+    assert cand[0]._settings.fit_intercept == fit_int
 
     # Add RBF candidate
     space = DesignSpace()
     space.add_variable("smooth", 1, "float", 0.0, 10.0, 0.0)
-    algorithm = {"algo": "fullfact", "n_samples": 11}
+    algorithm = {"algo_name": "PYDOE_FULLFACT", "n_samples": 11}
     selector.add_candidate("RBFRegressor", space, algorithm)
     cand = selector.candidates[-1]
     assert isinstance(cand[0], RBFRegressor)
     assert isinstance(cand[1], float)
-    assert isinstance(cand[0].parameters["smooth"], float)
-    assert cand[0].parameters["smooth"] >= 0
-    assert cand[0].parameters["smooth"] <= 10
+    assert isinstance(cand[0]._settings.smooth, float)
+    assert cand[0]._settings.smooth >= 0
+    assert cand[0]._settings.smooth <= 10
 
 
 @pytest.mark.parametrize("measure_evaluation_method_name", ["KFOLDS", "LEARN"])
@@ -124,7 +124,7 @@ def test_select(dataset, measure_evaluation_method_name) -> None:
     algo = selector.select(True)
     assert isinstance(algo, tuple)
     assert len(algo) == 2
-    assert isinstance(algo[0], MLRegressionAlgo)
+    assert isinstance(algo[0], BaseRegressor)
     assert isinstance(algo[1], float)
     cands = selector.candidates
     for cand in cands:
@@ -133,5 +133,5 @@ def test_select(dataset, measure_evaluation_method_name) -> None:
     assert algo[0].__class__.__name__ == "RBFRegressor"
 
     algo = selector.select()
-    assert isinstance(algo, MLRegressionAlgo)
+    assert isinstance(algo, BaseRegressor)
     assert algo.is_trained

@@ -18,9 +18,8 @@
 #                           documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-Pareto front on Binh and Korn problem
-=====================================
+"""Pareto front on Binh and Korn problem.
+======================================
 
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
 on the Binh and Korn multi-objective problem.
@@ -29,9 +28,9 @@ on the Binh and Korn multi-objective problem.
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.post.post_factory import PostFactory
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.post.factory import PostFactory
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
 # Import
@@ -54,7 +53,7 @@ problem = BinhKorn()
 # Then,
 # we instantiate the design of experiment factory,
 # and we request the execution of a 100-length LHS optimized by simulated annealing.
-doe_factory = DOEFactory()
+doe_factory = DOELibraryFactory()
 doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
 # %%
@@ -69,7 +68,7 @@ doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
 PostFactory().execute(
     problem,
-    "ParetoFront",
+    post_name="ParetoFront",
     show_non_feasible=False,
     objectives=["compute_binhkorn"],
     objectives_labels=["f1", "f2"],
@@ -79,7 +78,7 @@ PostFactory().execute(
 
 PostFactory().execute(
     problem,
-    "ParetoFront",
+    post_name="ParetoFront",
     objectives=["compute_binhkorn"],
     objectives_labels=["f1", "f2"],
     save=False,

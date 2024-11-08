@@ -202,11 +202,11 @@ We can create this design space from scratch by means of the :meth:`~gemseo.crea
     design_space.add_variable('x1')
     design_space.add_variable('x2', var_type='integer')
     design_space.add_variable('x3', size=2)
-    design_space.add_variable('x4', l_b=ones(1))
-    design_space.add_variable('x5', u_b=ones(1))
+    design_space.add_variable('x4', lower_bound=ones(1))
+    design_space.add_variable('x5', upper_bound=ones(1))
     design_space.add_variable('x6', value=ones(1))
     design_space.add_variable(
-        "x7", size=2, var_type="integer", value=array([0, 1]), l_b=-ones(2), u_b=ones(2)
+        "x7", size=2, var_type="integer", value=array([0, 1]), lower_bound=-ones(2), upper_bound=ones(2)
     )
 
 and print it:
@@ -538,12 +538,12 @@ Conversely, we can unnormalize this normalized vector by means of the :meth:`.De
 How to cast a design point from array to dict?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can cast a design point from ``array`` to ``dict`` by means of the :meth:`.DesignSpace.array_to_dict` method:
+We can cast a design point from ``array`` to ``dict`` by means of the :meth:`.DesignSpace.convert_array_to_dict` method:
 
 .. code::
 
     array_point = array([1, 2, 3, 4])
-    dict_point = design_space.array_to_dict(array_point)
+    dict_point = design_space.convert_array_to_dict(array_point)
 
 and ``print(dict_point)`` to see the result:
 
@@ -554,11 +554,11 @@ and ``print(dict_point)`` to see the result:
 How to cast a design point from dict to array?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can cast a design point from ``dict`` to ``array`` by means of the :meth:`.DesignSpace.dict_to_array` method:
+We can cast a design point from ``dict`` to ``array`` by means of the :meth:`.DesignSpace.convert_dict_to_array` method:
 
 .. code::
 
-   new_array_point = design_space.dict_to_array(dict_point)
+   new_array_point = design_space.convert_dict_to_array(dict_point)
 
 and ``print(new_array_point)`` to see the result:
 
@@ -568,7 +568,7 @@ and ``print(new_array_point)`` to see the result:
 
 .. note::
 
-   An optional argument denoted ``'variable_names'``, which is a list of string and set at ``None`` by default, lists all of the variables to consider. If ``None``, all design variables are considerd.
+   An optional argument denoted ``'variable_names'``, which is a list of string and set at ``None`` by default, lists all of the variables to consider. If ``None``, all design variables are considered.
 
 How to cast the current value to complex?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -611,7 +611,7 @@ We can test if the design parameter set has a current ``'value'`` by means of th
 
 .. code::
 
-   print(design_space.has_current_value())
+   print(design_space.has_current_value)
 
 which results in:
 

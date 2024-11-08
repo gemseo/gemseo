@@ -11,7 +11,7 @@
 	class Dataset {
 	}
 
-	abstract class MLAlgo {
+	abstract class BaseMLAlgo {
 	 +SHORT_ALGO_NAME
 	 +LIBRARY
 	 +algo
@@ -27,13 +27,13 @@
 	 #get_objects_to_save()
 	}
 
-	abstract class MLUnsupervisedAlgo {
+	abstract class BaseMLUnsupervisedAlgo {
 	 +var_names
 	 +learn()
 	 #fit()
 	}
 
-	abstract class MLClusteringAlgo {
+	abstract class BaseClusterer {
 	 +n_clusters
 	 +labels
 	 +learn()
@@ -44,7 +44,7 @@
 	 #predict_proba_soft()
 	}
 
-	abstract class MLSupervisedAlgo {
+	abstract class BaseMLSupervisedAlgo {
 	 +input_names
 	 +input_dimension
 	 +output_names
@@ -57,7 +57,7 @@
 	 #get_objects_to_save()
 	}
 
-	abstract class MLClassificationAlgo {
+	abstract class BaseClassifier {
 	 +n_classes
 	 +learn()
 	 +predict_proba()
@@ -67,14 +67,14 @@
 	 #get_objects_to_save()
 	}
 
-	abstract class MLRegressionAlgo {
+	abstract class BaseRegressor {
 	 +DataFormatters
 	 +predict_raw()
 	 +predict_jacobian()
 	 #predict_jacobian()
 	}
 
-	abstract class MLQualityMeasure
+	abstract class BaseMLAlgoQuality
 
 	abstract class SurrogateDiscipline {
 	 +input_grammar
@@ -83,7 +83,7 @@
 	 +linearize()
 	}
 
-	abstract class Transformer {
+	abstract class BaseTransformer {
 	 +duplicate()
 	 +fit()
 	 +transform()
@@ -94,12 +94,12 @@
 	}
 
 
-	MLAlgo *-- Dataset
-	MLAlgo *-- Transformer
-	MLAlgo <|-down- MLUnsupervisedAlgo
-	MLAlgo <|-down- MLSupervisedAlgo
-	MLUnsupervisedAlgo <|-down- MLClusteringAlgo
-	MLSupervisedAlgo <|-- MLRegressionAlgo
-	MLSupervisedAlgo <|-- MLClassificationAlgo
-	MLQualityMeasure *-left- MLAlgo
-	SurrogateDiscipline *-down- MLRegressionAlgo
+	BaseMLAlgo *-- Dataset
+	BaseMLAlgo *-- BaseTransformer
+	BaseMLAlgo <|-down- BaseMLUnsupervisedAlgo
+	BaseMLAlgo <|-down- BaseMLSupervisedAlgo
+	BaseMLUnsupervisedAlgo <|-down- BaseClusterer
+	BaseMLSupervisedAlgo <|-- BaseRegressor
+	BaseMLSupervisedAlgo <|-- BaseClassifier
+	BaseMLAlgoQuality *-left- BaseMLAlgo
+	SurrogateDiscipline *-down- BaseRegressor

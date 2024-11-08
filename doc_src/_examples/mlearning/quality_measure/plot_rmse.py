@@ -18,6 +18,8 @@ RMSE for regression models
 ==========================
 """
 
+from __future__ import annotations
+
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy import linspace
@@ -25,9 +27,9 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.rbf import RBFRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 
 # %%
 # Given a dataset :math:`(x_i,y_i,\hat{y}_i)_{1\leq i \leq N}`
@@ -73,7 +75,7 @@ dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
 # and build a :class:`.PolynomialRegressor` with ``degree=3`` from it:
-polynomial = PolynomialRegressor(dataset_train, 3)
+polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 
 # %%

@@ -36,7 +36,7 @@ N_FEATURES = 8
 RNG = default_rng()
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
     input_data = RNG.random((N_SAMPLES, N_FEATURES))

@@ -20,7 +20,7 @@ from numpy import array
 from gemseo.disciplines.splitter import Splitter
 
 
-@pytest.fixture()
+@pytest.fixture
 def splitting_discipline_for_test():
     """Define a Slicer discipline for test."""
     return Splitter("E", {"Ep": [0, 1], "Es": [2, 3], "Er": 4})
@@ -38,7 +38,7 @@ def test_splitting_discipline_execution(splitting_discipline_for_test) -> None:
 
 def test_check_gradient(splitting_discipline_for_test) -> None:
     """Test Splitter jacobian computation by finite differences."""
-    splitting_discipline_for_test.default_inputs = {
+    splitting_discipline_for_test.default_input_data = {
         "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
     }
     assert splitting_discipline_for_test.check_jacobian(

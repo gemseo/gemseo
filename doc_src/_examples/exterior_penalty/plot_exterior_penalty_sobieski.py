@@ -59,12 +59,13 @@ from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
 # %%
-# Step 1: Creation of :class:`.MDODiscipline`
+# Step 1: Creation of :class:`.Discipline`
 # -------------------------------------------
 #
 # To build the scenario, we first instantiate the disciplines. Here, the
@@ -94,8 +95,8 @@ disciplines = create_discipline([
 # The scenario delegates the creation of the optimization problem to the
 # :ref:`MDO formulation <mdo_formulations>`.
 #
-# Therefore, it needs the list of ``disciplines``, the names of the formulation,
-# the name of the objective function and the design space.
+# Therefore, it needs the list of ``disciplines``, the name of the formulation
+# (or its settings model), the name of the objective function and the design space.
 #
 # - The ``design_space`` (shown below for reference)
 #   defines the unknowns of the optimization problem, and their bounds. It contains
@@ -107,35 +108,34 @@ disciplines = create_discipline([
 design_space = SobieskiDesignSpace()
 x_0 = design_space.get_current_value(as_dict=True)
 # %%
-#     .. code::
+#   .. code::
 #
-#
-#           name      lower_bound      value      upper_bound  type
-#           x_shared      0.01          0.05          0.09     float
-#           x_shared    30000.0       45000.0       60000.0    float
-#           x_shared      1.4           1.6           1.8      float
-#           x_shared      2.5           5.5           8.5      float
-#           x_shared      40.0          55.0          70.0     float
-#           x_shared     500.0         1000.0        1500.0    float
-#           x_1           0.1           0.25          0.4      float
-#           x_1           0.75          1.0           1.25     float
-#           x_2           0.75          1.0           1.25     float
-#           x_3           0.1           0.5           1.0      float
-#           y_14        24850.0    50606.9741711    77100.0    float
-#           y_14        -7700.0    7306.20262124    45000.0    float
-#           y_32         0.235       0.50279625      0.795     float
-#           y_31         2960.0    6354.32430691    10185.0    float
-#           y_24          0.44       4.15006276      11.13     float
-#           y_34          0.44       1.10754577       1.98     float
-#           y_23         3365.0    12194.2671934    26400.0    float
-#           y_21        24850.0    50606.9741711    77250.0    float
-#           y_12        24850.0      50606.9742     77250.0    float
-#           y_12          0.45          0.95          1.5      float
+#      name      lower_bound      value      upper_bound  type
+#      x_shared      0.01          0.05          0.09     float
+#      x_shared    30000.0       45000.0       60000.0    float
+#      x_shared      1.4           1.6           1.8      float
+#      x_shared      2.5           5.5           8.5      float
+#      x_shared      40.0          55.0          70.0     float
+#      x_shared     500.0         1000.0        1500.0    float
+#      x_1           0.1           0.25          0.4      float
+#      x_1           0.75          1.0           1.25     float
+#      x_2           0.75          1.0           1.25     float
+#      x_3           0.1           0.5           1.0      float
+#      y_14        24850.0    50606.9741711    77100.0    float
+#      y_14        -7700.0    7306.20262124    45000.0    float
+#      y_32         0.235       0.50279625      0.795     float
+#      y_31         2960.0    6354.32430691    10185.0    float
+#      y_24          0.44       4.15006276      11.13     float
+#      y_34          0.44       1.10754577       1.98     float
+#      y_23         3365.0    12194.2671934    26400.0    float
+#      y_21        24850.0    50606.9741711    77250.0    float
+#      y_12        24850.0      50606.9742     77250.0    float
+#      y_12          0.45          0.95          1.5      float
 #
 # - The available :ref:`MDO formulations <mdo_formulations>` are located in the
 #   **gemseo.formulations** package, see :ref:`extending-gemseo` for extending
 #   GEMSEO with other formulations.
-# - The ``formulation`` classname (here, ``"MDF"``) shall be passed to
+# - The ``formulation`` name (here, ``"MDF"``) shall be passed to
 #   the scenario to select them.
 # - The list of available formulations can be obtained by using
 #   :func:`.get_available_formulations`.
@@ -148,16 +148,21 @@ get_available_formulations()
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
 # %%
-# From these :class:`~gemseo.core.discipline.MDODiscipline`, design space,
+# From these :class:`~gemseo.core.discipline.Discipline`, design space,
 # :ref:`MDO formulation <mdo_formulations>` name and objective function name,
 # we build the scenario:
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
+    formulation_name="MDF",
 )
+
+# %%
+# Note that both the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
+
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
 # minimize functions by default. Which is why, when creating the scenario, the argument
@@ -183,7 +188,7 @@ scenario.set_differentiation_method()
 #
 #   scenario.set_differentiation_method("finite_differences",1e-7)
 #
-# It it also possible to differentiate functions by means of the
+# It is also possible to differentiate functions by means of the
 # :term:`complex step` method:
 #
 # .. code::
@@ -200,53 +205,85 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # (:math:`g\_1, g\_2, g\_3`) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# :meth:`~gemseo.core.scenario.Scenario.add_constraint`:
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_constraint`:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
 # Step 3: Apply the exterior penalty and execute the scenario
 # -----------------------------------------------------------
-scenario.formulation.opt_problem.apply_exterior_penalty(
+scenario.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=10.0, scale_inequality=10.0
 )
 # %%
 # In this way the L-BFGS-B algorithm can be used to solve the optimization problem.
 # Note that this algorithm is not suited for constrained optimization problems.
-algo_args = {"max_iter": 10, "algo": "L-BFGS-B"}
-scenario.execute(algo_args)
+scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+
+# %%
+# Note that the algorithm settings passed to :class:`~.BaseDriverLibrary.execute` can be provided via a
+# Pydantic model. For more information, :ref:`algorithm_settings`.
+
 # %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # To visualize the optimization history of the constraint violation one can use the
 # :class:`.BasicHistory`:
 scenario.post_process(
-    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=True
+    post_name="BasicHistory",
+    variable_names=["g_1", "g_2", "g_3"],
+    save=False,
+    show=True,
 )
 # %%
 # This solution is almost feasible.
 # The solution can better approximate the original problem solution increasing the value
-#  of `objective_scale` and  `scale_inequality` parameters.
+# of `objective_scale` and  `scale_inequality` parameters.
 # Step 4: Rerun the scenario with increased penalty and objective scaling.
 # ------------------------------------------------------------------------
 design_space.set_current_value(x_0)
+
+# %%
+# Here, we use the :class:`.MDF_Settings` model to define the formulation instead of passing
+# the settings one by one as we did the first time. Both ways of defining the settings
+# are equally valid.
+
 scenario_2 = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_settings_model=MDF_Settings(),
     maximize_objective=True,
 )
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario_2.add_constraint(constraint, constraint_type="ineq")
 scenario_2.set_differentiation_method()
-scenario_2.formulation.opt_problem.apply_exterior_penalty(
+scenario_2.formulation.optimization_problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
-algo_args_2 = {"max_iter": 1000, "algo": "L-BFGS-B"}
-scenario_2.execute(algo_args_2)
-scenario_2.post_process("BasicHistory", variable_names=["-y_4"], save=False, show=True)
+
+# %%
+# Here, we use the :class:`.L_BFGS_B_Settings` model to define the algorithm settings instead of
+# passing them one by one as we did the first time. Both ways of defining the settings
+# are equally valid.
+from gemseo.settings.opt import L_BFGS_B_Settings  # noqa: E402
+
+scenario_2.execute(L_BFGS_B_Settings(max_iter=1000))
 scenario_2.post_process(
-    "BasicHistory", variable_names=["g_1", "g_2", "g_3"], save=False, show=True
+    post_name="BasicHistory", variable_names=["-y_4"], save=False, show=True
+)
+
+# %%
+# Here, we use the :class:`.BasicHistory_Settings` model to define the post-processor settings
+# instead of passing them one by one as we did the first time.
+# Both ways of defining the settings are equally valid.
+from gemseo.settings.post import BasicHistory_Settings  # noqa: E402
+
+scenario_2.post_process(
+    BasicHistory_Settings(
+        variable_names=["g_1", "g_2", "g_3"],
+        save=False,
+        show=True,
+    )
 )
 # %%
 # The solution feasibility was improved but this comes with a much higher number of

@@ -26,7 +26,7 @@ from numpy import setdiff1d
 from numpy import vstack
 from numpy.random import default_rng
 
-from gemseo.mlearning.resampling.resampler import Resampler
+from gemseo.mlearning.resampling.base_resampler import BaseResampler
 from gemseo.mlearning.resampling.split import Split
 from gemseo.mlearning.resampling.splits import Splits
 from gemseo.utils.seeder import SEED
@@ -34,8 +34,10 @@ from gemseo.utils.seeder import SEED
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
+    from gemseo.mlearning import MLAlgo
 
-class CrossValidation(Resampler):
+
+class CrossValidation(BaseResampler):
     """A cross-validation tool for resampling and surrogate modeling."""
 
     __randomize: bool
@@ -63,6 +65,33 @@ class CrossValidation(Resampler):
         super().__init__(sample_indices, n_splits=n_folds, seed=seed)
         if len(sample_indices) == n_folds:
             self.name = "LeaveOneOut"
+
+    def execute(
+        self,
+        model: MLAlgo,
+        return_models: bool = False,
+        input_data: ndarray | None = None,
+        stack_predictions: bool = True,
+        fit_transformers: bool = True,
+        store_sampling_result: bool = False,
+    ) -> tuple[list[MLAlgo], list[ndarray] | ndarray]:
+        """
+        Args:
+            stack_predictions: Whether the sub-predictions are stacked
+                in the order of the ``sample_indices`` passed at instantiation
+                (first the prediction at index ``sample_indices[0]``,
+                then the prediction at index ``sample_indices[1]``,
+                etc.).
+                This argument is ignored when ``input_data`` is ``None``.
+        """  # noqa: D205, D212, D415
+        return super().execute(
+            model,
+            return_models=return_models,
+            input_data=input_data,
+            stack_predictions=stack_predictions,
+            fit_transformers=fit_transformers,
+            store_sampling_result=store_sampling_result,
+        )
 
     def _create_splits(self) -> Splits:
         return Splits(*[
@@ -93,12 +122,18 @@ class CrossValidation(Resampler):
     def _post_process_predictions(
         self,
         predictions: list[ndarray],
-        output_data_shape: tuple[int, ...],
         stack_predictions: bool,
     ) -> ndarray | list[ndarray]:
         if stack_predictions:
-            function = concatenate if len(output_data_shape) == 1 else vstack
-            final_predictions = empty(output_data_shape)
+            n_predictions = sum(len(prediction) for prediction in predictions)
+            predictions_0 = predictions[0]
+            if predictions_0.ndim == 1:
+                final_predictions = empty((n_predictions,))
+                function = concatenate
+            else:
+                final_predictions = empty((n_predictions, predictions_0.shape[1]))
+                function = vstack
+
             final_predictions[self.__shuffled_sample_indices] = function(predictions)
             return final_predictions
         return predictions

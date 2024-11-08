@@ -16,7 +16,7 @@ Interfacing simulation software
 ===============================
 
 To interface a simulation software with |g|,
-and make an :class:`.MDODiscipline` from it,
+and make an :class:`.Discipline` from it,
 several options are available:
 
 - Your program is a Python function,
@@ -31,11 +31,11 @@ several options are available:
   use :ref:`Excel discipline<xls_discipline>`.
 
 - If your program is a MATLAB function, there is a generic interface
-  that allows to connect it to |g| as an :class:`.MDODiscipline`.
+  that allows to connect it to |g| as an :class:`.Discipline`.
   See :ref:`the generic MATLAB wrapper<discipline_matlab>`.
 
 - For Scilab functions, `a plugin is available <https://gitlab.com/gemseo/dev/gemseo-scilab>`_.
-  With it, you can create an :class:`.MDODiscipline` that runs Scilab code directly from |g|.
+  With it, you can create an :class:`.Discipline` that runs Scilab code directly from |g|.
 
 - If your program is an executable,
   you have two options.
@@ -57,7 +57,7 @@ several options are available:
   or if you want
   to chain easily multiple programs with files exchanges.
 
-- Directly inherit from the :class:`.MDODiscipline` class to make a specific wrapper in Python.
+- Directly inherit from the :class:`.Discipline` class to make a specific wrapper in Python.
   This option is possible if you have no :term:`workflow engine`,
   or if you have a light and
   pure in-memory code that does not require a lot of file processing or
@@ -94,7 +94,7 @@ is a piece of software which translates the existing :term:`API` of an existing
 program or a library,
 into a compatible one.
 Each program is encapsulated within using a dedicated :term:`interface`.
-|g| defines the standardized interface in the :class:`~gemseo.core.discipline.MDODiscipline` interface,
+|g| defines the standardized interface in the :class:`~gemseo.core.discipline.Discipline` interface,
 to define input data,
 output data and an execution of the integrated software.
 Thanks to it,
@@ -119,7 +119,7 @@ Principles
 
 The inputs and outputs are represented by :term:`grammars<grammar>`.
 Grammars are a set of rules that
-define whether a set of data is valid or not as inputs or outputs of an :class:`.MDODiscipline`.
+define whether a set of data is valid or not as inputs or outputs of an :class:`.Discipline`.
 There are at least two grammars for a discipline: one for input data and one for output data.
 
 In |g|,
@@ -195,7 +195,7 @@ All inputs are arrays of floats.
 
 JSON Grammars are used to describe and check many inputs of |g|,
 such as algorithms options.
-The :class:`.MDOScenario` class is a subclass of :class:`.MDODiscipline`,
+The :class:`.MDOScenario` class is a subclass of :class:`.Discipline`,
 therefore it has its own input grammar,
 which
 has two mandatory data: the optimization algorithm and the maximum number of iterations.
@@ -237,12 +237,12 @@ which is error-prone.
 
 From the previous JSON grammar of the Sobieski Mission discipline,
 we can illustrate the interest of the data check.
-The :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission` will check any data passed to its  :meth:`.MDODiscipline.execute` method before
-calling :meth:`!MDODiscipline._run`.
+The :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` will check any data passed to its  :meth:`.Discipline.execute` method before
+calling :meth:`!Discipline._run`.
 
 .. code-block:: python
 
-    from gemseo.problems.sobieski.disciplines import SobieskiMission
+    from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
     misssion = SobieskiMission()
     misssion.execute(input_data={"y_14": [1.0, "a"]})
 
@@ -259,14 +259,14 @@ as well as the rules.
     ERROR - 15:15:19 : JSON Grammar schema = {u'name': u'SobieskiMission_input', 'required': [u'x_shared', u'y_14', u'y_24', u'y_34'], u'id': u'#SobieskiMission_input', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'y_24': {'items': {'type': u'number'}, 'type': u'array'}, u'x_shared': {'items': {'type': u'number'}, 'type': u'array'}, u'y_34': {'items': {'type': u'number'}, 'type': u'array'}, u'y_14': {'items': {'type': u'number'}, 'type': u'array'}}}
 
 The existence of required inputs is also checked before running.
-The wrapper :class:`~gemseo.problems.sobieski.disciplines.SobieskiMission` has :attr:`!MDODiscipline.default_inputs` set for all its inputs, so
+The wrapper :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` has :attr:`!Discipline.default_input_data` set for all its inputs, so
 we need first to erase them to show that.
 
 .. code-block:: python
 
-    from gemseo.problems.sobieski.disciplines import SobieskiMission
+    from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
     misssion = SobieskiMission()
-    misssion.default_inputs = {}
+    misssion.default_input_data = {}
     misssion.execute(input_data={"y_14": [2.0, "a"]})
 
 Note that all errors are displayed before raising the exception.
@@ -328,7 +328,7 @@ meshes,
 Wrapping of execution
 ---------------------
 
-The effective execution of the :class:`.MDODiscipline` is defined by the :meth:`!MDODiscipline._run` method.
+The effective execution of the :class:`.Discipline` is defined by the :meth:`!Discipline._run` method.
 It shall implement,
 in the subclasses,
 the calculation of outputs for given inputs.
@@ -337,27 +337,21 @@ it will call the public ``execute`` method,
 that will:
 
 #. Add default inputs to the input_data if some inputs are not defined
-   in ``input_data`` but exist in :attr:`!MDODiscipline.default_inputs`.
-#. Check if the last execution of the discipline was called with
-   identical inputs,
-   buffered in :attr:`!MDODiscipline._in_buffered`,
-   if yes,
-   directly
-   return :attr:`!MDODiscipline._out_buffered`.
+   in ``input_data`` but exist in :attr:`!Discipline.default_input_data`.
 #. Cache the inputs,
-   *i.e.* stores ``input_data`` in :attr:`!MDODiscipline.cache`.
-#. Check the input data against  :attr:`!MDODiscipline.input_grammar`.
-#. If :attr:`!MDODiscipline.data_processor` is not None: run the data pre-processor,
-   to eventually convert data from |g| types (typically numpy arrays) to discipline types as needed by the :meth:`!MDODiscipline._run` method.
-#. Update :attr:`!MDODiscipline.status` to RUNNING.
-#. Call the :meth:`!MDODiscipline._run` method,
+   *i.e.* stores ``input_data`` in :attr:`!Discipline.cache`.
+#. Check the input data against  :attr:`!Discipline.input_grammar`.
+#. If :attr:`!Discipline.io.data_processor` is not None: run the data pre-processor,
+   to eventually convert data from |g| types (typically numpy arrays) to discipline types as needed by the :meth:`!Discipline._run` method.
+#. Update :attr:`!Discipline.execution_status` to RUNNING.
+#. Call the :meth:`!Discipline._run` method,
    that shall be defined by subclasses.
-#. If  :attr:`!MDODiscipline.data_processor` is not None: run the post processor,
+#. If  :attr:`!Discipline.io.data_processor` is not None: run the post processor,
    to eventually convert data from discipline types to |g| types (typically numpy arrays).
 #. Check the output data.
 #. Store the outputs,
-   *i.e.* stores  :meth:`!MDODiscipline.local_data` in :attr:`!MDODiscipline.cache`.
-#. Update the :attr:`!MDODiscipline.status` to DONE or FAILED.
-#. Update accumulated execution time :attr:`!MDODiscipline.exec_time`.
+   *i.e.* stores  :meth:`!Discipline.local_data` in :attr:`!Discipline.cache`.
+#. Update the :attr:`!Discipline.status` to DONE or FAILED.
+#. Update accumulated execution time :attr:`!ExecutionStatistics.execution_time`.
 
 A complete example of discipline integration is given in :ref:`sellar_mdo`.

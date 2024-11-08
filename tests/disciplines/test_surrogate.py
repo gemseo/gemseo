@@ -28,10 +28,12 @@ from numpy.testing import assert_allclose
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 
@@ -73,18 +75,18 @@ def test_linearization_mode_without_gradient(dataset) -> None:
     """Check the attribute linearization_mode for a model without gradient."""
     discipline = SurrogateDiscipline("GaussianProcessRegressor", dataset)
     assert discipline.linearization_mode == "finite_differences"
-    assert {"x_1", "x_2"} == set(discipline.get_input_data_names())
-    assert {"y_1", "y_2"} == set(discipline.get_output_data_names())
+    assert {"x_1", "x_2"} == set(discipline.io.input_grammar.names)
+    assert {"y_1", "y_2"} == set(discipline.io.output_grammar.names)
 
 
 def test_instantiation_from_algo(dataset) -> None:
-    """Check the instantiation from an MLRegressionAlgo."""
+    """Check the instantiation from an BaseRegressor."""
     algo = LinearRegressor(dataset)
     algo.learn()
     discipline = SurrogateDiscipline(algo)
     assert discipline.linearization_mode == "auto"
-    assert {"x_1", "x_2"} == set(discipline.get_input_data_names())
-    assert {"y_1", "y_2"} == set(discipline.get_output_data_names())
+    assert {"x_1", "x_2"} == set(discipline.io.input_grammar.names)
+    assert {"y_1", "y_2"} == set(discipline.io.output_grammar.names)
 
 
 def test_repr_str(linear_discipline) -> None:
@@ -104,7 +106,7 @@ def test_execute(linear_discipline) -> None:
     """Check the execution of a surrogate discipline."""
     linear_discipline.execute()
     assert compare_dict_of_arrays(
-        linear_discipline.get_output_data(),
+        linear_discipline.io.get_output_data(),
         {"y_1": array([3.5]), "y_2": array([-3.5])},
         tolerance=1e-6,
     )
@@ -134,13 +136,16 @@ def test_parallel_execute(linear_discipline, dataset) -> None:
         {"x_1": array([1.0]), "x_2": array([1.0])},
     ])
 
+    local_data = linear_discipline.io.data
     assert_allclose(
-        concatenate(list(linear_discipline.get_outputs_by_name(["y_1", "y_2"]))),
+        concatenate((local_data["y_1"], local_data["y_2"])),
         array([3.5, -3.5]),
         atol=1e-3,
     )
+
+    local_data = other_linear_discipline.io.data
     assert_allclose(
-        concatenate(list(other_linear_discipline.get_outputs_by_name(["y_1", "y_2"]))),
+        concatenate((local_data["y_1"], local_data["y_2"])),
         array([6.0, -6.0]),
         atol=1e-3,
     )
@@ -149,16 +154,16 @@ def test_parallel_execute(linear_discipline, dataset) -> None:
 def test_serialize(linear_discipline, tmp_wd) -> None:
     """Check the serialization of a surrogate discipline."""
     file_path = "discipline.pkl"
-    linear_discipline.to_pickle(file_path)
+    to_pickle(linear_discipline, file_path)
 
-    loaded_discipline = SurrogateDiscipline.from_pickle(file_path)
+    loaded_discipline = from_pickle(file_path)
     loaded_discipline.execute()
 
-    assert linear_discipline.local_data == loaded_discipline.local_data
+    assert linear_discipline.io.data == loaded_discipline.io.data
 
 
 def test_get_error_measure(linear_discipline) -> None:
-    """Check that get_error_measure returns an instance of MLErrorMeasure."""
+    """Check that get_error_measure returns an instance of BaseRegressorQuality."""
     error_measure = linear_discipline.get_error_measure("R2Measure")
     assert isinstance(error_measure, R2Measure)
     assert error_measure.algo == linear_discipline.regression_model

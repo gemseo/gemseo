@@ -49,6 +49,6 @@ class SimpleGrammarDataConverter(BaseDataConverter["SimpleGrammar"]):
         )
 
     def _convert_array_to_value(self, name: str, array: NumberArray) -> Any:  # noqa: D102
-        if self._grammar[name] in self._NUMERIC_TYPES:
+        if self._grammar[name] in self._NON_ARRAY_TYPES:
             return array[0]
         return array

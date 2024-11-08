@@ -26,11 +26,15 @@ from numpy import asarray
 from numpy.linalg import norm
 from scipy.sparse.linalg import norm as spnorm
 
-from gemseo.utils.compatibility.scipy import ArrayType
+from gemseo.typing import SparseOrDenseRealArray
+from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import flatten_nested_dict
 
-DataToCompare = Union[Mapping[str, ArrayType], Mapping[str, Mapping[str, ArrayType]]]
+DataToCompare = Union[
+    Mapping[str, SparseOrDenseRealArray],
+    Mapping[str, Mapping[str, SparseOrDenseRealArray]],
+]
 
 
 def compare_dict_of_arrays(
@@ -66,7 +70,15 @@ def compare_dict_of_arrays(
     # Check the values
     if tolerance:
         for key, value in dict_of_arrays.items():
-            difference = other_dict_of_arrays[key] - value
+            other_value = other_dict_of_arrays[key]
+            if (
+                isinstance(other_value, array_classes)
+                and isinstance(value, array_classes)
+                and other_value.shape not in (value.shape, (1, *value.shape))
+            ):
+                return False
+
+            difference = other_value - value
 
             if isinstance(difference, sparse_classes):
                 norm_diff = spnorm(difference)
@@ -81,7 +93,15 @@ def compare_dict_of_arrays(
                 return False
     else:
         for key, value in dict_of_arrays.items():
-            is_different = other_dict_of_arrays[key] != value
+            other_value = other_dict_of_arrays[key]
+            if (
+                isinstance(other_value, array_classes)
+                and isinstance(value, array_classes)
+                and other_value.shape not in (value.shape, (1, *value.shape))
+            ):
+                return False
+
+            is_different = other_value != value
 
             if isinstance(is_different, sparse_classes):
                 is_different = is_different.data

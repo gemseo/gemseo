@@ -30,23 +30,23 @@ from typing import TYPE_CHECKING
 from numpy import eye
 from numpy import ndarray
 
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class Pipeline(Transformer):
-    """Transformer pipeline."""
+class Pipeline(BaseTransformer):
+    """BaseTransformer pipeline."""
 
-    transformers: Sequence[Transformer]
+    transformers: Sequence[BaseTransformer]
     """The sequence of transformers."""
 
     def __init__(
         self,
         name: str = "",
-        transformers: Sequence[Transformer] | None = None,
+        transformers: Sequence[BaseTransformer] = (),
     ) -> None:
         """
         Args:
@@ -58,7 +58,7 @@ class Pipeline(Transformer):
                 transformer behaves like an identity transformer.
         """  # noqa: D205 D212
         super().__init__(name)
-        self.transformers = transformers or []
+        self.transformers = transformers
 
     def duplicate(self) -> Pipeline:
         """Duplicate the current object.

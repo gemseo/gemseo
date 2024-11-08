@@ -32,15 +32,15 @@ def test_bilevel_scenario_result_after_execution(scenario) -> None:
     # The optimal objective is z*=0 and is achieved in (x*, y*) = (0, 0).
 
     # We can get x* and z* from the main optimization problem:
-    f_opt, x_opt, _, _, _ = scenario.formulation.opt_problem.get_optimum()
+    f_opt, x_opt, _, _, _ = scenario.formulation.optimization_problem.optimum
     assert x_opt == 0.0
     assert f_opt == 0.0
 
     # But we cannot get z* from the sub-optimization problem
     # whose optimum corresponds to the last iteration of the main optimization loop;
     # in other words, this is not the z*(x=0) but z*(x=1) with f*(x=1) equal to 1.
-    sub_problem = scenario.formulation.disciplines[0].formulation.opt_problem
-    f_opt, y_opt, _, _, _ = sub_problem.get_optimum()
+    sub_problem = scenario.formulation.disciplines[0].formulation.optimization_problem
+    f_opt, y_opt, _, _, _ = sub_problem.optimum
     assert y_opt == 0.0
     assert f_opt == 1.0
 
@@ -56,7 +56,7 @@ def test_bilevel_scenario_result_after_execution(scenario) -> None:
 
     # We check that the database of the sub-optimization problem
     # corresponds to the last iteration as optimal_design_values handled it.
-    f_opt, y_opt, _, _, _ = sub_problem.get_optimum()
+    f_opt, y_opt, _, _, _ = sub_problem.optimum
     assert y_opt == 0.0
     assert f_opt == 1.0
 

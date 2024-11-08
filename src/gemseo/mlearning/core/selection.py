@@ -50,21 +50,22 @@ from __future__ import annotations
 from itertools import product
 from typing import TYPE_CHECKING
 
+from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.core.factory import MLAlgoFactory
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasure
-from gemseo.mlearning.quality_measures.quality_measure import MLQualityMeasureFactory
-from gemseo.mlearning.quality_measures.quality_measure import (
+from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_algo_quality import (
     OptionType as MeasureOptionType,
 )
+from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.scenario import ScenarioInputDataType
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.core.ml_algo import MLAlgo
+    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+    from gemseo.scenarios.base_scenario import ScenarioInputDataType
 
 
 class MLAlgoSelection:
@@ -73,7 +74,7 @@ class MLAlgoSelection:
     dataset: Dataset
     """The learning dataset."""
 
-    measure: str
+    measure: type[BaseMLAlgoQuality]
     """The name of a quality measure to measure the quality of the machine learning
     algorithms."""
 
@@ -83,16 +84,16 @@ class MLAlgoSelection:
     factory: MLAlgoFactory
     """The factory used for the instantiation of machine learning algorithms."""
 
-    candidates: list[tuple[MLAlgo, float]]
+    candidates: list[tuple[BaseMLAlgo, float]]
     """The candidate machine learning algorithms, after possible calibration, and their
     quality measures."""
 
     def __init__(
         self,
         dataset: Dataset,
-        measure: str | MLQualityMeasure,
-        measure_evaluation_method_name: MLQualityMeasure.EvaluationMethod = MLQualityMeasure.EvaluationMethod.LEARN,  # noqa: E501
-        samples: Sequence[int] | None = None,
+        measure: str | type[BaseMLAlgoQuality],
+        measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
+        samples: Sequence[int] = (),
         **measure_options: MeasureOptionType,
     ) -> None:
         """
@@ -104,7 +105,7 @@ class MLAlgoSelection:
                 to evaluate the quality measure.
             samples: The indices of the learning samples to consider.
                 Other indices are neither used for training nor for testing.
-                If ``None``, use all the samples.
+                If empty, use all the samples.
             **measure_options: The options for the method
                 to evaluate the quality measure.
                 The option 'multioutput' will be set to False.
@@ -114,7 +115,7 @@ class MLAlgoSelection:
         """  # noqa: D205 D212
         self.dataset = dataset
         if isinstance(measure, str):
-            self.measure = MLQualityMeasureFactory().get_class(measure)
+            self.measure = MLAlgoQualityFactory().get_class(measure)
         else:
             self.measure = measure
 
@@ -136,7 +137,7 @@ class MLAlgoSelection:
         self,
         name: str,
         calib_space: DesignSpace | None = None,
-        calib_algo: ScenarioInputDataType | None = None,
+        calib_algo: ScenarioInputDataType = READ_ONLY_EMPTY_DICT,
         **option_lists,
     ) -> None:
         """Add a machine learning algorithm candidate.
@@ -149,8 +150,8 @@ class MLAlgoSelection:
                 If ``None``, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
-                e.g. {"algo": "fullfact", "n_samples": 10}.
-                If ``None``, do not perform calibration.
+                e.g. {"algo_name": "PYDOE_FULLFACT", "n_samples": 10}.
+                If empty, do not perform calibration.
             **option_lists: The parameters
                 for the machine learning algorithm candidate.
                 Each parameter has to be enclosed within a list.
@@ -177,14 +178,14 @@ class MLAlgoSelection:
                 ml_algo_calibration = MLAlgoCalibration(
                     name,
                     self.dataset,
-                    calib_space.variable_names,
+                    calib_space,
                     calib_space,
                     self.measure,
                     measure_evaluation_method_name=self.__measure_evaluation_method_name,
                     measure_options=self.measure_options,
                     **params,
                 )
-                ml_algo_calibration.execute(calib_algo)
+                ml_algo_calibration.execute(**calib_algo)
                 algo_new = ml_algo_calibration.optimal_algorithm
                 quality_new = ml_algo_calibration.optimal_criterion
             else:
@@ -210,7 +211,7 @@ class MLAlgoSelection:
     def select(
         self,
         return_quality: bool = False,
-    ) -> MLAlgo | tuple[MLAlgo, float]:
+    ) -> BaseMLAlgo | tuple[BaseMLAlgo, float]:
         """Select the best model.
 
         The model is chosen through a grid search

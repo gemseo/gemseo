@@ -26,13 +26,13 @@ import gemseo.utils.xdsm as xdsm_module
 from gemseo.utils.xdsm import XDSM
 
 
-@pytest.fixture()
+@pytest.fixture
 def xdsm() -> XDSM:
     """The view of an XDSM."""
     return XDSM({"foo": "bar"}, Path("xdsm_path"))
 
 
-@pytest.fixture()
+@pytest.fixture
 def xdsm_without_html_file() -> XDSM:
     """The view of an XDSM without an HTML file."""
     return XDSM({"foo": "bar"}, None)
@@ -45,7 +45,7 @@ def test_html_file(xdsm) -> None:
 
 def test_no_html_file(xdsm_without_html_file) -> None:
     """Check HTML file path when missing."""
-    assert xdsm_without_html_file.html_file_path is None
+    assert not xdsm_without_html_file.html_file_path
 
 
 def test_json_schema(xdsm) -> None:

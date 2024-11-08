@@ -40,7 +40,6 @@ from gemseo import create_discipline
 from gemseo import create_parameter_space
 from gemseo import create_scenario
 from gemseo.mlearning import create_regression_model
-from gemseo.mlearning import import_regression_model
 
 configure_logger()
 
@@ -60,8 +59,8 @@ discipline = create_discipline(
 # -------------------------------
 # We create the input sampling space by adding the variables one by one.
 design_space = create_design_space()
-design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
+design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # Create the learning set
@@ -70,9 +69,13 @@ design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
 # :class:`.DOEScenario` with a full factorial design of
 # experiments. The number of samples can be equal to 9 for example.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
+    [discipline],
+    "y_1",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "fullfact", "n_samples": 9})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
 
 # %%
 # Create the regression model
@@ -84,7 +87,7 @@ prob_space.add_random_variable("x_1", "OTUniformDistribution")
 prob_space.add_random_variable("x_2", "OTUniformDistribution")
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model(
-    "PCERegressor", data=dataset, probability_space=prob_space, transformer=None
+    "PCERegressor", dataset, probability_space=prob_space, transformer={}
 )
 model.learn()
 model
@@ -96,22 +99,3 @@ model
 input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
 output_value = model.predict(input_value)
 output_value
-
-# %%
-# Save the regression model
-# -------------------------
-# Lastly, we save the model.
-directory = model.to_pickle()
-
-# %%
-# Load the regression model
-# -------------------------
-# In an other study, we could load this model.
-loaded_model = import_regression_model(directory)
-loaded_model
-
-# %%
-# Use the loaded regression model
-# -------------------------------
-# And use it!
-loaded_model.predict(input_value)

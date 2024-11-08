@@ -14,7 +14,7 @@ Measure the quality of a machine learning algorithm
 Introduction
 ------------
 
-.. automodule:: gemseo.mlearning.quality_measures.quality_measure
+.. automodule:: gemseo.mlearning.core.quality.base_ml_algo_quality
    :noindex:
 
 Measures for supervised models
@@ -23,25 +23,25 @@ Measures for supervised models
 Introduction
 ~~~~~~~~~~~~
 
-.. automodule:: gemseo.mlearning.quality_measures.error_measure
+.. automodule:: gemseo.mlearning.regression.quality.base_regressor_quality
    :noindex:
 
 The MSE
 ~~~~~~~
 
-.. automodule:: gemseo.mlearning.quality_measures.mse_measure
+.. automodule:: gemseo.mlearning.regression.quality.mse_measure
    :noindex:
 
 The R2
 ~~~~~~
 
-.. automodule:: gemseo.mlearning.quality_measures.r2_measure
+.. automodule:: gemseo.mlearning.regression.quality.r2_measure
    :noindex:
 
 The F1 (for classification)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: gemseo.mlearning.quality_measures.f1_measure
+.. automodule:: gemseo.mlearning.classification.quality.f1_measure
    :noindex:
 
 Measures for clustering models
@@ -50,13 +50,13 @@ Measures for clustering models
 Introduction
 ~~~~~~~~~~~~
 
-.. automodule:: gemseo.mlearning.quality_measures.cluster_measure
+.. automodule:: gemseo.mlearning.clustering.quality.base_clusterer_quality
    :noindex:
 
 The silhouette
 ~~~~~~~~~~~~~~
 
-.. automodule:: gemseo.mlearning.quality_measures.silhouette_measure
+.. automodule:: gemseo.mlearning.clustering.quality.silhouette_measure
    :noindex:
 
 

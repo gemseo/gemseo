@@ -16,6 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Script to copy reference files from a source to a destination."""
 
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
 from shutil import copy
@@ -42,22 +44,22 @@ def copy_files(source_rep: Path, dest_rep: Path, extension: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Copy reference files from a source " "to a destination"
+        description="Copy reference files from a source to a destination"
     )
     parser.add_argument(
         "source",
         type=Path,
-        help="The source directory where files " "must be copied (explore the tree)",
+        help="The source directory where files must be copied (explore the tree)",
     )
     parser.add_argument(
         "destination",
         type=Path,
-        help="The destination directory " "where files must be pasted.",
+        help="The destination directory where files must be pasted.",
     )
     parser.add_argument(
         "extension",
         type=str,
-        help="Extension of files to be copied " "(with '.', e.g. '.pdf')",
+        help="Extension of files to be copied (with '.', e.g. '.pdf')",
     )
 
     args = parser.parse_args()

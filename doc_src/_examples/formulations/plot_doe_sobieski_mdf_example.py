@@ -30,7 +30,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -52,10 +53,10 @@ disciplines = create_discipline([
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with Python's ``print()`` function. Moreover, we can get the default
-# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+# input values of a discipline with the attribute :attr:`.Discipline.default_input_data`
 for discipline in disciplines:
     print(discipline)
-    print(f"Default inputs: {discipline.default_inputs}")
+    print(f"Default inputs: {discipline.default_input_data}")
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
@@ -81,11 +82,11 @@ design_space
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
     scenario_type="DOE",
+    formulation_name="MDF",
 )
 
 # %%
@@ -102,7 +103,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # - ``log_workflow_status=True`` will log the status of the workflow in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-scenario.xdsmize(save_html=False)
+scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Execute the scenario
@@ -127,18 +128,22 @@ scenario.set_differentiation_method()
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
 
 # %%
-# We define the algorithm options. Here the criterion = center option of pyDOE
+# We define the algorithm settings. Here the criterion "center" of pyDOE
 # centers the points within the sampling intervals.
-algo_options = {
-    "criterion": "center",
+# Note that it is also possible to pass the settings one by one, see
+# :ref:`algorithm_settings`.
+
+lhs_settings = PYDOE_LHS_Settings(
+    n_samples=30,
+    criterion="center",
     # Evaluate gradient of the MDA
     # with coupled adjoint
-    "eval_jac": True,
+    eval_jac=True,
     # Run in parallel on 1 or 4 processors
-    "n_processes": 1 if os_name == "nt" else 4,
-}
+    n_processes=1 if os_name == "nt" else 4,
+)
 
-scenario.execute({"n_samples": 30, "algo": "lhs", "algo_options": algo_options})
+scenario.execute(lhs_settings)
 
 # %%
 # .. warning::
@@ -159,7 +164,7 @@ dataset = scenario.to_dataset("a_name_for_my_dataset")
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # .. tip::
@@ -174,7 +179,7 @@ scenario.post_process("OptHistoryView", save=False, show=True)
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     save=False,
     show=True,
     variable_names=["y_4", "x_shared"],
@@ -183,4 +188,4 @@ scenario.post_process(
 # %%
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
-scenario.post_process("Correlations", save=False, show=True)
+scenario.post_process(post_name="Correlations", save=False, show=True)

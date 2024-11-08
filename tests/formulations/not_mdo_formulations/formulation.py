@@ -15,17 +15,14 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.base_formulation import BaseFormulation
+from gemseo.formulations.base_formulation import BaseFormulation
 
 
 class NotMDOFormulation(BaseFormulation):
-    def get_expected_workflow(self) -> None:
-        return
-
-    def get_expected_dataflow(self) -> None:
-        return
+    def get_process_flow(self):
+        return None
 
 
 class NotMDOFormulationFactory(BaseFactory):
     _CLASS = NotMDOFormulation
-    _MODULE_NAMES = ("tests.formulations.not_mdo_formulations",)
+    _PACKAGE_NAMES = ("tests.formulations.not_mdo_formulations",)

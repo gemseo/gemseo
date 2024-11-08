@@ -17,12 +17,9 @@
 from __future__ import annotations
 
 import webbrowser
-from typing import TYPE_CHECKING
+from pathlib import Path
 from typing import Any
 from typing import Final
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 class XDSM:
@@ -51,23 +48,21 @@ class XDSM:
     </script>
     """
 
-    def __init__(
-        self, json_schema: dict[str, Any], html_file_path: Path | None
-    ) -> None:
+    def __init__(self, json_schema: dict[str, Any], html_file_path: Path | str) -> None:
         """
         Args:
             json_schema: The JSON schema of the XDSM.
             html_file_path: The path to the HTML representation of the XDSM if any.
         """  # noqa: D205 D212 D415
         self.__json_schema = json_schema
-        self.__html_file_path = html_file_path
-        if html_file_path is not None:
+        self.__html_file_path = Path(html_file_path) if html_file_path else ""
+        if html_file_path:
             self.__html_file_url = f"file://{html_file_path}"
         else:
             self.__html_file_url = ""
 
     @property
-    def html_file_path(self) -> Path | None:
+    def html_file_path(self) -> Path | str:
         """The path to the HTML file if any."""
         return self.__html_file_path
 

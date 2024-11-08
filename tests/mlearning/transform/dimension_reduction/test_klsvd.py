@@ -48,7 +48,7 @@ def func(tau, theta):
     return sin(2 * pi * (tau - theta)) + 1
 
 
-@pytest.fixture()
+@pytest.fixture
 def data():
     """The dataset used to build the transformer, based on a 1D-mesh."""
     return array([
@@ -56,7 +56,7 @@ def data():
     ])
 
 
-@pytest.fixture()
+@pytest.fixture
 def data2d():
     """The dataset used to build the transformer, based on a 2D-mesh."""
     tau = array(MESH2D)
@@ -167,7 +167,10 @@ def test_use_halko2010_default(data) -> None:
     """Check the default value of use_halko2010."""
     algo = KLSVD(MESH)
     algo.fit(data)
-    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant") == "halko2010"
+    assert (
+        ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant").lower()
+        == "halko2010"
+    )
 
 
 @pytest.mark.parametrize("use_halko2010", [False, True])
@@ -175,7 +178,7 @@ def test_use_halko2010(data, use_halko2010) -> None:
     """Check changing the value of use_halko2010."""
     algo = KLSVD(MESH, use_halko2010=use_halko2010)
     algo.fit(data)
-    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant") == (
+    assert ResourceMap.Get("KarhunenLoeveSVDAlgorithm-RandomSVDVariant").lower() == (
         "halko2010" if use_halko2010 else "halko2011"
     )
 

@@ -26,8 +26,8 @@ from numpy import ndarray
 from scipy.sparse import coo_array
 from scipy.sparse import csr_array
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 
 
 def test_inputs() -> None:
@@ -35,7 +35,7 @@ def test_inputs() -> None:
     coeffs_as_list = [1.0, 2.0]
     coeffs_as_vec = array(coeffs_as_list)
     coeffs_as_mat = array([coeffs_as_list])
-    coeffs_as_sparse = coo_array(coeffs_as_vec)
+    coeffs_as_sparse = coo_array(coeffs_as_mat)
     with pytest.raises(ValueError):
         MDOLinearFunction(coeffs_as_list, "f")
     MDOLinearFunction(coeffs_as_mat, "f")
@@ -55,17 +55,14 @@ def test_inputs() -> None:
 
 
 @pytest.mark.parametrize(
-    "coefficients", [array([1.0, 2.0, 3.0]), coo_array(array([1.0, 2.0, 3.0]))]
+    "coefficients", [array([1.0, 2.0, 3.0]), coo_array(array([[1.0, 2.0, 3.0]]))]
 )
 def test_input_names_generation(coefficients) -> None:
     """Tests the generation of arguments strings."""
     # No arguments strings passed
     func = MDOLinearFunction(coefficients, "f")
     input_names = [
-        MDOLinearFunction.DEFAULT_BASE_INPUT_NAME
-        + MDOLinearFunction.INDEX_PREFIX
-        + str(i)
-        for i in range(3)
+        f"{MDOLinearFunction.DEFAULT_BASE_INPUT_NAME}[{i}]" for i in range(3)
     ]
     assert func.input_names == input_names
     # Not enough arguments strings passed
@@ -73,7 +70,7 @@ def test_input_names_generation(coefficients) -> None:
     assert func.input_names == input_names
     # Only one argument string passed
     func = MDOLinearFunction(coefficients, "f", input_names=["u"])
-    input_names = ["u" + MDOLinearFunction.INDEX_PREFIX + str(i) for i in range(3)]
+    input_names = [f"u[{i}]" for i in range(3)]
     assert func.input_names == input_names
     # Enough arguments strings passed
     func = MDOLinearFunction(coefficients, "f", input_names=["u1", "u2", "v"])
@@ -84,7 +81,7 @@ def test_input_names_generation(coefficients) -> None:
     "coefs",
     [
         np.array([0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0]),
-        csr_array(np.array([0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0])),
+        csr_array(np.array([[0.0, 0.0, -1.0, 2.0, 1.0, 0.0, -9.0]])),
     ],
 )
 def test_linear_function(coefs) -> None:
@@ -92,9 +89,9 @@ def test_linear_function(coefs) -> None:
 
     linear_fun = MDOLinearFunction(coefs, "f")
     coeffs_str = (MDOFunction.COEFF_FORMAT_1D.format(coeff) for coeff in (2, 9))
-    expr = "-x!2 + {}*x!3 + x!4 - {}*x!6".format(*coeffs_str)
+    expr = "-x[2] + {}*x[3] + x[4] - {}*x[6]".format(*coeffs_str)
     assert linear_fun.expr == expr
-    assert linear_fun(np.ones(max(coefs.shape))) == -7.0
+    assert linear_fun.evaluate(np.ones(max(coefs.shape))) == -7.0
     # Jacobian
     jac = linear_fun.jac(np.array([]))
     if isinstance(jac, ndarray):
@@ -157,7 +154,7 @@ def test_mult_linear_function() -> None:
 
     prod = sqr * linear_fun
     x_array = np.array([4.0])
-    assert prod(x_array) == 128.0
+    assert prod.evaluate(x_array) == 128.0
 
     numerical_jac = prod.jac(x_array)
     assert numerical_jac[0] == 96.0

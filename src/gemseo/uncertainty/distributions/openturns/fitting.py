@@ -112,30 +112,34 @@ from typing import ClassVar
 from typing import Union
 
 import openturns as ots
+from openturns import DistributionFactory
+from openturns import FittingTest
+from openturns import Sample
 from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 MeasureType = Union[tuple[bool, Mapping[str, float]], float]
 
 
-def _get_distribution_factories() -> dict[str, ots.DistributionFactory]:
+def _get_distribution_factories() -> dict[str, DistributionFactory]:
     """Return the distribution factories.
 
     Returns:
         The mapping from the distributions to their factories.
     """
     dist_to_factory_class = {}
-    for factory in ots.DistributionFactory.GetContinuousUniVariateFactories():
-        factory_class_name = factory.getImplementation().getClassName()
-        dist_name = factory_class_name.split("Factory")[0]
-        dist_to_factory_class[dist_name] = getattr(ots, factory_class_name)
+    for factory in DistributionFactory.GetContinuousUniVariateFactories():
+        if "SmoothedUniformFactory" not in str(factory):
+            factory_class_name = factory.getImplementation().getClassName()
+            dist_name = factory_class_name.split("Factory")[0]
+            dist_to_factory_class[dist_name] = getattr(ots, factory_class_name)
     return dist_to_factory_class
 
 
@@ -145,15 +149,15 @@ class OTDistributionFitter:
     variable: str
     """The name of the variable."""
 
-    data: ndarray
+    data: RealArray
     """The data array."""
 
     _DISTRIBUTIONS_NAME_TO_FACTORY = _get_distribution_factories()
 
-    _FITTINGS_CRITERION_TO_TEST: ClassVar[dict[str, ots.FittingTest]] = {
-        "BIC": ots.FittingTest.BIC,
-        "ChiSquared": ots.FittingTest.ChiSquared,
-        "Kolmogorov": ots.FittingTest.Kolmogorov,
+    _FITTINGS_CRITERION_TO_TEST: ClassVar[dict[str, FittingTest]] = {
+        "BIC": FittingTest.BIC,
+        "ChiSquared": FittingTest.ChiSquared,
+        "Kolmogorov": FittingTest.Kolmogorov,
     }
 
     DistributionName = StrEnum(
@@ -177,7 +181,7 @@ class OTDistributionFitter:
     def __init__(
         self,
         variable: str,
-        data: ndarray,
+        data: RealArray,
     ) -> None:
         """
         Args:
@@ -185,12 +189,12 @@ class OTDistributionFitter:
             data: A data array.
         """  # noqa: D205,D212,D415
         self.variable = variable
-        self.data = ots.Sample(data.reshape((-1, 1)))
+        self.data = Sample(data.reshape((-1, 1)))
 
     def _get_factory(
         self,
         distribution_name: DistributionName,
-    ) -> ots.DistributionFactory:
+    ) -> DistributionFactory:
         """Return the distribution factory.
 
         Args:
@@ -230,7 +234,7 @@ class OTDistributionFitter:
         factory = self._get_factory(distribution)
         fitted_distribution = factory().build(self.data)
         parameters = fitted_distribution.getParameter()
-        return OTDistribution(self.variable, distribution, parameters)
+        return OTDistribution(distribution, parameters)
 
     def compute_measure(
         self,
@@ -253,10 +257,7 @@ class OTDistributionFitter:
         """
         if distribution in self.DistributionName.__members__:
             distribution = self.fit(distribution)
-        if distribution.dimension > 1:
-            msg = "A 1D distribution is required."
-            raise TypeError(msg)
-        distribution = distribution.marginals[0]
+        distribution = distribution.distribution
         fitting_test = self._get_fitting_test(criterion)
         if criterion in self.SignificanceTest.__members__:
             result = fitting_test(self.data, distribution, level)

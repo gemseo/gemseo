@@ -1,2 +1,3 @@
 mypy[reports]
 pandas-stubs
+types-tqdm

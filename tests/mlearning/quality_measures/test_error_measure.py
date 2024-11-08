@@ -27,14 +27,12 @@ from numpy import linspace
 from numpy import newaxis
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.quality_measures.error_measure_factory import (
-    MLErrorMeasureFactory,
-)
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
-from gemseo.mlearning.regression.linreg import LinearRegressor
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
+from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
@@ -64,7 +62,7 @@ def learning_dataset() -> IODataset:
     return dataset
 
 
-@pytest.fixture()
+@pytest.fixture
 def linear_regressor(learning_dataset) -> LinearRegressor:
     """A linear regressor."""
     algo = LinearRegressor(learning_dataset)
@@ -84,8 +82,8 @@ def test_dataset() -> IODataset:
     return dataset
 
 
-@pytest.mark.parametrize("input_names", [None, ["x1"]])
-@pytest.mark.parametrize("output_names", [None, ["y2"]])
+@pytest.mark.parametrize("input_names", [(), ("x1",)])
+@pytest.mark.parametrize("output_names", [(), ("y2",)])
 @pytest.mark.parametrize(
     "method",
     [
@@ -127,7 +125,7 @@ def test_subset_of_inputs_and_outputs(
             tolerance=1e-3,
         )
         result = evaluate(multioutput=False, as_dict=True, **kwargs)
-        if output_names is not None:
+        if output_names:
             assert compare_dict_of_arrays(
                 result,
                 {output_names[0]: array([expected])},
@@ -142,16 +140,16 @@ def test_subset_of_inputs_and_outputs(
 def test_no_resampling_result_storage(linear_regressor) -> None:
     """Check that by default, a quality measure does not store the resampling result."""
     mse = MSEMeasure(linear_regressor)
-    mse.evaluate_kfolds()
+    mse.compute_cross_validation_measure()
     assert linear_regressor.resampling_results == {}
 
 
 @pytest.mark.parametrize(
     ("method", "resampler_name", "class_name", "dimension"),
     [
-        ("evaluate_kfolds", "CrossValidation", "CrossValidation", 5),
-        ("evaluate_loo", "LeaveOneOut", "CrossValidation", 20),
-        ("evaluate_bootstrap", "Bootstrap", "Bootstrap", 15),
+        ("compute_cross_validation_measure", "CrossValidation", "CrossValidation", 5),
+        ("compute_leave_one_out_measure", "LeaveOneOut", "CrossValidation", 20),
+        ("compute_bootstrap_measure", "Bootstrap", "Bootstrap", 15),
     ],
 )
 def test_resampling_result_storage(
@@ -210,6 +208,6 @@ def test_resampling_result_storage(
 
 
 def test_factory() -> None:
-    """Test the MLErrorMeasureFactory."""
-    assert MLErrorMeasureFactory().is_available("R2Measure")
-    assert not MLErrorMeasureFactory().is_available("SilhouetteMeasure")
+    """Test the RegressorQualityFactory."""
+    assert RegressorQualityFactory().is_available("R2Measure")
+    assert not RegressorQualityFactory().is_available("SilhouetteMeasure")

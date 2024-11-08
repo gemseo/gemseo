@@ -18,13 +18,15 @@ Scaling
 =======
 """
 
+from __future__ import annotations
+
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.lib_openturns import OpenTURNS
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.mlearning.quality_measures.r2_measure import R2Measure
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.algos.doe.openturns.openturns import OpenTURNS
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.quality.r2_measure import R2Measure
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 # %%
 # Scaling data around zero is important to avoid numerical issues
@@ -42,16 +44,17 @@ problem = Rosenbrock()
 # %%
 # In order to approximate this function with a regression model,
 # we sample it 30 times with an optimized Latin hypercube sampling (LHS) technique
-openturns = OpenTURNS()
-openturns.execute(problem, openturns.OT_LHSO, n_samples=30)
+opt_lhs = OpenTURNS("OT_OPT_LHS")
+opt_lhs.execute(problem, n_samples=30)
 
 # %%
-# and save the samples in an :class:`IODataset`:
+# and save the samples in an :class:`.IODataset`:
 dataset_train = problem.to_dataset(opt_naming=False)
 
 # %%
 # We do the same with a full-factorial design of experiments (DOE) of size 900:
-openturns.execute(problem, openturns.OT_FULLFACT, n_samples=30 * 30)
+full_fact = OpenTURNS("OT_FULLFACT")
+full_fact.execute(problem, n_samples=30 * 30)
 dataset_test = problem.to_dataset(opt_naming=False)
 
 # %%
@@ -98,8 +101,8 @@ r2.compute_test_measure(dataset_test)
 # we rewrite the Rosenbrock function as :math:`f(x)=(1-x_1)^2+100(0.01x_2-x_1^2)^2`
 # and its domain as :math:`[-2,2]\times[-200,200]`:
 design_space = DesignSpace()
-design_space.add_variable("x1", l_b=-2, u_b=2)
-design_space.add_variable("x2", l_b=-200, u_b=200)
+design_space.add_variable("x1", lower_bound=-2, upper_bound=2)
+design_space.add_variable("x2", lower_bound=-200, upper_bound=200)
 
 # %%
 # in order to have inputs with different orders of magnitude.
@@ -108,9 +111,9 @@ problem = OptimizationProblem(design_space)
 problem.objective = MDOFunction(
     lambda x: (1 - x[0]) ** 2 + 100 * (0.01 * x[1] - x[0] ** 2) ** 2, "f"
 )
-openturns.execute(problem, openturns.OT_LHSO, n_samples=30)
+opt_lhs.execute(problem, n_samples=30)
 dataset_train = problem.to_dataset(opt_naming=False)
-openturns.execute(problem, openturns.OT_FULLFACT, n_samples=30 * 30)
+full_fact.execute(problem, n_samples=30 * 30)
 dataset_test = problem.to_dataset(opt_naming=False)
 
 # %%

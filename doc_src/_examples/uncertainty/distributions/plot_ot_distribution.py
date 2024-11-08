@@ -50,20 +50,17 @@ ot_distributions
 # Create a distribution
 # ---------------------
 # Then,
-# we can create a probability distribution for a two-dimensional random variable
-# with independent components that follow a normal distribution.
+# we can create a probability distribution, e.g. a normal distribution.
 #
 # Case 1: the OpenTURNS distribution has a GEMSEO class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For the standard normal distribution (mean = 0 and standard deviation = 1):
-distribution_0_1 = create_distribution("x", "OTNormalDistribution", 2)
+distribution_0_1 = create_distribution("OTNormalDistribution")
 distribution_0_1
 
 # %%
 # For a normal with mean = 1 and standard deviation = 2:
-distribution_1_2 = create_distribution(
-    "x", "OTNormalDistribution", 2, mu=1.0, sigma=2.0
-)
+distribution_1_2 = create_distribution("OTNormalDistribution", mu=1.0, sigma=2.0)
 distribution_1_2
 
 # %%
@@ -78,24 +75,15 @@ distribution_1_2
 # <https://openturns.github.io/openturns/latest/user_manual/_generated/
 # openturns.Normal.html#openturns.Normal>`__).
 distribution_1_2 = create_distribution(
-    "x", "OTDistribution", 2, interfaced_distribution="Normal", parameters=(1.0, 2.0)
+    "OTDistribution", interfaced_distribution="Normal", parameters=(1.0, 2.0)
 )
 distribution_1_2
 
 # %%
 # Plot the distribution
 # ---------------------
-# We can plot both cumulative and probability density functions
-# for the first marginal:
+# We can plot both cumulative and probability density functions:
 distribution_0_1.plot()
-
-# %%
-# .. note::
-#
-#    We can provide a marginal index
-#    as first argument of the :meth:`.Distribution.plot` method
-#    but in the current version of |g|,
-#    all components have the same distributions and so the plot will be the same.
 
 # %%
 # Get statistics
@@ -128,21 +116,17 @@ distribution_0_1.range
 distribution_0_1.support
 
 # %%
-# Compute CDF
-# -----------
-# We can compute the cumulative density function component per component
-# (here the probability that the first component is lower than 0.
-# and that the second one is lower than 1.):
-distribution_0_1.compute_cdf([0.0, 1.0])
+# Evaluate CDF
+# ------------
+# We can evaluate the cumulative density function:
+distribution_0_1.compute_cdf(0.5)
 
 # %%
-# Compute inverse CDF
-# -------------------
-# We can compute the inverse cumulative density function
-# component per component
-# (here the quantile at 50% for the first component
-# and the quantile at 97.5% for the second one):
-distribution_0_1.compute_inverse_cdf([0.5, 0.975])
+# Evaluate inverse CDF
+# --------------------
+# We can evaluate the inverse cumulative density function,
+# here the quantile at 97.5%:
+distribution_0_1.compute_inverse_cdf(0.975)
 
 # %%
 # Generate samples

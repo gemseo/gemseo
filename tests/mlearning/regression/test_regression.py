@@ -29,14 +29,24 @@ from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import zeros
+from numpy.testing import assert_allclose
 
+from gemseo import from_pickle
+from gemseo import to_pickle
+from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.gpr import GaussianProcessRegressor
-from gemseo.mlearning.regression.linreg import LinearRegressor
+from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+
+FACTORY = RegressorFactory()
+
+INPUT_VALUE = array([0.4, 1.8])
 
 
-@pytest.fixture()
-def io_dataset():
+@pytest.fixture
+def io_dataset() -> IODataset:
     """The dataset used to train the regression algorithms."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
@@ -47,6 +57,20 @@ def io_dataset():
     )
     dataset.name = "dataset_name"
     return dataset
+
+
+@pytest.fixture(scope="module")
+def rosenbrock_dataset() -> IODataset:
+    """The Rosenbrock dataset."""
+    return create_rosenbrock_dataset(opt_naming=False, n_samples=25)
+
+
+@pytest.fixture(scope="module")
+def probability_space() -> ParameterSpace:
+    """The probability space for the Rosenbrock function."""
+    space = ParameterSpace()
+    space.add_random_variable("x", "OTUniformDistribution", 2, minimum=-2, maximum=2)
+    return space
 
 
 def test_predict(io_dataset) -> None:
@@ -95,7 +119,7 @@ def dataset_for_jacobian() -> IODataset:
 )
 def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
     """Test predict Jacobian."""
-    transformer = None if not groups else dict.fromkeys(groups, "MinMaxScaler")
+    transformer = {} if not groups else dict.fromkeys(groups, "MinMaxScaler")
     ml_algo = LinearRegressor(dataset_for_jacobian, transformer=transformer)
     ml_algo.learn()
     jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
@@ -118,3 +142,41 @@ def test_predict_jacobian_failure(dataset_for_jacobian, variable) -> None:
     ml_algo.learn()
     with pytest.raises(NotImplementedError, match=expected):
         ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
+
+
+CLASS_NAMES = FACTORY.class_names
+CLASS_NAMES.remove("OTGaussianProcessRegressor")
+# test_pickle succeeds with OTGaussianProcessRegressor when run separately
+# but fails when run with the other tests. To be investigated.
+
+
+@pytest.mark.parametrize("class_name", CLASS_NAMES)
+@pytest.mark.parametrize("before_training", [False, True])
+def test_pickle(
+    class_name, rosenbrock_dataset, before_training, probability_space, tmp_wd
+):
+    """Check that regression models are picklable."""
+    kwargs = {}
+    if class_name == "PCERegressor":
+        kwargs["probability_space"] = probability_space
+
+    reference_model = FACTORY.create(class_name, rosenbrock_dataset, **kwargs)
+    if class_name == "RegressorChain":
+        reference_model.add_algo("LinearRegressor")
+
+    if before_training:
+        to_pickle(reference_model, "model.pkl")
+        reference_model.learn()
+    else:
+        reference_model.learn()
+        to_pickle(reference_model, "model.pkl")
+
+    reference_prediction = reference_model.predict(INPUT_VALUE)
+
+    model = from_pickle("model.pkl")
+    if before_training:
+        model.learn()
+
+    output_value = model.predict(INPUT_VALUE)
+
+    assert_allclose(output_value, reference_prediction)

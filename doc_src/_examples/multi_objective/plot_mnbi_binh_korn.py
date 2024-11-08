@@ -45,7 +45,8 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 configure_logger()
 
@@ -58,17 +59,15 @@ configure_logger()
 # with a maximum of 200 iterations.
 # The analytic gradients are provided.
 problem = BinhKorn()
-
-result = execute_algo(
-    problem,
-    "MNBI",
+mnbi_settings = MNBI_Settings(
     max_iter=10000,
     sub_optim_max_iter=200,
     n_sub_optim=50,
     sub_optim_algo="NLOPT_SLSQP",
 )
+result = execute_algo(problem, settings_model=mnbi_settings)
 # %%
 # Display the Pareto front
 # ------------------------
 # |g| detects the Pareto optimal points and the dominated ones.
-execute_post(problem, "ParetoFront", save=False, show=True)
+execute_post(problem, post_name="ParetoFront", save=False, show=True)

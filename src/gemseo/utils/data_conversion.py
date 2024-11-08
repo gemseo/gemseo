@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
 
 STRING_SEPARATOR = "#&#"
@@ -71,10 +71,6 @@ def concatenate_dict_of_arrays_to_array(
         return array([])
 
     return concatenate([dict_of_arrays[key] for key in names], axis=-1)
-
-
-# TODO: API: remove?
-dict_to_array = concatenate_dict_of_arrays_to_array
 
 
 def split_array_to_dict_of_arrays(
@@ -154,105 +150,10 @@ def split_array_to_dict_of_arrays(
     return result
 
 
-# TODO: API: remove?
-array_to_dict = split_array_to_dict_of_arrays
-
-
-# TODO: API: no longer used, remove.
-def update_dict_of_arrays_from_array(
-    dict_of_arrays: Mapping[str, ndarray],
-    names: Iterable[str],
-    array: ndarray,
-    copy: bool = True,
-    cast_complex: bool = False,
-) -> Mapping[str, ndarray]:
-    """Update some values of a dictionary of NumPy arrays from a NumPy array.
-
-    The order of the data in ``array`` follows the order of ``names``.
-    The original data type is kept
-    except if `array` is complex and ``cast_complex`` is ``False``.
-
-    Examples:
-        >>> result = update_dict_of_arrays_from_array(
-        ...     {"x": array([0.0, 1.0]), "y": array([2.0]), "z": array([3, 4])},
-        ...     ["y", "z"],
-        ...     array([0.5, 1.0, 2.0]),
-        ... )
-        >>> print(result)
-        {"x": array([0.0, 1.0]), "y": array([0.5]), "z": array([1, 2])}
-
-    Args:
-        dict_of_arrays: The dictionary of NumPy arrays to be updated.
-        names: The keys of the dictionary for which to update the values.
-        array: The NumPy array with which to update the dictionary of NumPy arrays.
-        copy: Whether to update a copy ``reference_input_data``.
-        copy: Whether to update ``dict_of_arrays`` or a copy of ``dict_of_arrays``.
-        cast_complex: Whether to cast ``array`` when its data type is complex.
-
-    Returns:
-        A deep copy of ``dict_of_arrays``
-        whose values of ``names``, if any, have been updated with ``array``.
-
-    Raises:
-        TypeError: If ``array`` is not a NumPy array.
-        ValueError:
-
-            * If a name of ``names`` is not a key of ``dict_of_arrays``.
-            * If the size of ``array`` is inconsistent
-              with the shapes of the values of ``dict_of_arrays``.
-    """
-    if not isinstance(array, ndarray):
-        msg = f"The array must be a NumPy one, got instead: {type(array)}."
-        raise TypeError(msg)
-
-    data = deepcopy(dict_of_arrays) if copy else dict_of_arrays
-
-    if not names:
-        return data
-
-    i_min = 0
-    i_max = 0
-    full_size = array.size
-    try:
-        for data_name in names:
-            data_value = dict_of_arrays[data_name]
-            i_max = i_min + data_value.size
-            new_data_value = array[slice(i_min, i_max)]
-            is_complex = new_data_value.dtype.kind == "c"
-            if not is_complex or (is_complex and cast_complex):
-                new_data_value = new_data_value.astype(data_value.dtype)
-
-            data[data_name] = new_data_value
-            i_min = i_max
-    except IndexError:
-        if full_size < i_max:
-            msg = (
-                f"Inconsistent input array size of values array {array} "
-                f"with reference data shape {data_value.shape} "
-                f"for data named: {data_name}."
-            )
-            raise ValueError(msg) from None
-
-        raise
-
-    if i_max != full_size:
-        shapes = [(data_name, dict_of_arrays[data_name].shape) for data_name in names]
-        msg = (
-            "Inconsistent data shapes: "
-            f"could not use the whole data array of shape {array.shape} "
-            f"(only reached max index = {i_max}), "
-            f"while updating data dictionary names {names} "
-            f"of shapes: {shapes}."
-        )
-        raise ValueError(msg)
-
-    return data
-
-
 def deepcopy_dict_of_arrays(
-    dict_of_arrays: DataMapping,
-    names: Iterable[str] | None = None,
-) -> DataMapping:
+    dict_of_arrays: StrKeyMapping,
+    names: Iterable[str] = (),
+) -> StrKeyMapping:
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially
@@ -268,14 +169,14 @@ def deepcopy_dict_of_arrays(
     Args:
         dict_of_arrays: The dictionary of NumPy arrays to be copied.
         names: The keys of the dictionary for which to deepcopy the items.
-            If ``None``, consider all the dictionary keys.
+            If empty, consider all the dictionary keys.
 
     Returns:
         A deep copy of the dictionary of NumPy arrays.
     """
     deep_copy = {}
     selected_keys = dict_of_arrays.keys()
-    if names is not None:
+    if names:
         selected_keys = [name for name in names if name in selected_keys]
         # TODO: either let the following block raise a KeyError or log a warning
 
@@ -290,9 +191,9 @@ def deepcopy_dict_of_arrays(
 
 
 def nest_flat_bilevel_dict(
-    flat_dict: DataMapping,
+    flat_dict: StrKeyMapping,
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
     Examples:
@@ -321,10 +222,10 @@ def nest_flat_bilevel_dict(
 
 
 def nest_flat_dict(
-    flat_dict: DataMapping,
+    flat_dict: StrKeyMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Nest a flat dictionary.
 
     Examples:
@@ -343,15 +244,14 @@ def nest_flat_dict(
     """
     nested_dict = {}
     for key, value in flat_dict.items():
-        if key.startswith(prefix):
-            key = key[len(prefix) :]
+        key = key.removeprefix(prefix)
         __nest_flat_mapping(nested_dict, key, value, separator)
 
     return nested_dict
 
 
 def __nest_flat_mapping(
-    mapping: DataMapping,
+    mapping: StrKeyMapping,
     key: str,
     value: Any,
     separator: str,
@@ -375,9 +275,9 @@ def __nest_flat_mapping(
 
 
 def flatten_nested_bilevel_dict(
-    nested_dict: DataMapping,
+    nested_dict: StrKeyMapping,
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
     Examples:
@@ -403,10 +303,10 @@ def flatten_nested_bilevel_dict(
 
 
 def flatten_nested_dict(
-    nested_dict: DataMapping,
+    nested_dict: StrKeyMapping,
     prefix: str = "",
     separator: str = STRING_SEPARATOR,
-) -> DataMapping:
+) -> StrKeyMapping:
     """Flatten a nested dictionary.
 
     Examples:
@@ -427,7 +327,7 @@ def flatten_nested_dict(
 
 
 def __flatten_nested_mapping(
-    nested_mapping: DataMapping,
+    nested_mapping: StrKeyMapping,
     parent_key: str,
     separator: str,
 ) -> Generator[tuple[str, Any], None, None]:

@@ -15,8 +15,31 @@
    Some capabilities may require the :ref:`installation <installation>` of |g| with :ref:`all its features <dependencies>`
    and some others may depend on :ref:`plugins <plugins>`.
 
-.. note::
+.. warning::
    All the features of the wrapped libraries may not be exposed through |g|.
+
+{% if use_pydantic_model %}
+.. note::
+   The algorithm settings can be passed to a function of the form
+
+   .. code-block:: python
+
+      function(..., settings_model: Base | None = None, **settings: Any)
+
+   either one by one:
+
+   .. code-block:: python
+
+      function(..., setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+
+   or using the argument name ``"settings"`` and the Pydantic model associated with the algorithm:
+
+   .. code-block:: python
+
+      settings = AlgorithmSettings(setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+      function(..., settings_model=settings)
+
+{% endif %}
 
 {% if user_guide_anchor %}
 .. seealso::
@@ -92,7 +115,7 @@
         <th onclick="sortTable(5)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(6)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(7)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(8)">Handle multiobjective<br/>&#x25B2;&#x25BC;</th>
+        <th onclick="sortTable(8)">Handle multi-objective<br/>&#x25B2;&#x25BC;</th>
         <th onclick="sortTable(9)">Require gradient<br/>&#x25B2;&#x25BC;</th>
       </tr>
 {% for algo in algos %}
@@ -127,22 +150,21 @@
 
 Module: :class:`{{modules[algo]}}`
 
+{% if pydantic_model_imports[algo] %}
+:code:`{{pydantic_model_imports[algo]}}`
+{% endif %}
+
 {% if descriptions[algo] %}
 {{descriptions[algo]}}
 {% endif %}
 
 {% if websites[algo] %}
-More details about the algorithm and its options on {{websites[algo]}}.
+More details about the algorithm and its settings on {{websites[algo]}}.
 {% endif %}
-
-.. raw:: html
-
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
 
 {% set optional_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}
-{% if parameter[1]['default'] != '' or parameter[0].startswith('**') %}
+{% if 'default' in parameter[1] or parameter[0].startswith('**') %}
 {% set tmp = optional_parameters.append(parameter) %}
 {% endif %}
 {% endfor %}
@@ -154,7 +176,7 @@ More details about the algorithm and its options on {{websites[algo]}}.
 
 {% set required_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}
-{% if parameter[1]['default'] == '' and not parameter[0].startswith('**') %}
+{% if 'default' not in parameter[1] and not parameter[0].startswith('**') %}
 {% set tmp = required_parameters.append(parameter) %}
 {% endif %}
 {% endfor %}
@@ -165,13 +187,15 @@ More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
 {% if required_parameters %}
+.. raw:: html
+
     <dl class="field-list simple">
-    <dt class="field-odd">Required parameters</dt>
+    <dt class="field-odd">Required settings</dt>
     <dd class="field-odd"><ul class="simple">
 {% for arg in required_parameters %}
     <li>
 
-**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if arg[1]['default'] != '' %}, optional{% endif %}*
+**{{arg[0]}}** : *{{arg[1]['ptype']}}{% if 'default' in arg[1] %}, optional{% endif %}*
 
 {{arg[1]['description']}}
 
@@ -185,8 +209,10 @@ More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
 {% if optional_parameters %}
+.. raw:: html
+
     <dl class="field-list simple">
-    <dt class="field-odd">Optional parameters</dt>
+    <dt class="field-odd">Optional settings</dt>
     <dd class="field-odd"><ul class="simple">
 
 {% for arg in optional_parameters %}

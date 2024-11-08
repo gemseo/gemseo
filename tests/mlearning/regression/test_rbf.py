@@ -29,10 +29,10 @@ from numpy import array
 from scipy.interpolate.rbf import Rbf
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.rbf import RBFRegressor
+from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.algos.rbf_settings import Function
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -46,7 +46,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({
@@ -54,16 +54,18 @@ def dataset() -> Dataset:
         "y_2": "-1-2*x_1-3*x_2",
         "y_3": "3",
     })
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-    design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> RBFRegressor:
     """A trained RBFRegressor."""
     rbf = RBFRegressor(dataset)
@@ -71,7 +73,7 @@ def model(dataset) -> RBFRegressor:
     return rbf
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_custom_function(dataset) -> RBFRegressor:
     """A trained RBFRegressor  f(r) = r**2 - 1 as kernel function."""
 
@@ -85,7 +87,7 @@ def model_with_custom_function(dataset) -> RBFRegressor:
     return rbf
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_1d_output(dataset) -> RBFRegressor:
     """A trained RBFRegressor with y_1 as output."""
     rbf = RBFRegressor(dataset, output_names=["y_1"])
@@ -95,7 +97,7 @@ def model_with_1d_output(dataset) -> RBFRegressor:
 
 def test_get_available_functions() -> None:
     """Test available RBFs."""
-    for function in RBFRegressor.Function:
+    for function in Function:
         assert hasattr(Rbf, f"_h_{function}")
 
 
@@ -176,7 +178,7 @@ def test_pred_single_out(model_with_1d_output) -> None:
 
 def test_predict_jacobian(dataset) -> None:
     """Test prediction."""
-    for function in RBFRegressor.Function:
+    for function in Function:
         model_ = RBFRegressor(dataset, function=function)
         model_.learn()
         jacobian = model_.predict_jacobian(INPUT_VALUE)
@@ -199,13 +201,3 @@ def test_predict_jacobian_custom(model_with_custom_function) -> None:
     assert allclose(jacobian["y_1"]["x_2"], -jacobian["y_2"]["x_2"])
     assert allclose(jacobians["y_1"]["x_1"], -jacobians["y_2"]["x_1"])
     assert allclose(jacobians["y_1"]["x_2"], -jacobians["y_2"]["x_2"])
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    for name, value in out1.items():
-        assert allclose(value, out2[name])

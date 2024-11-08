@@ -28,7 +28,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -50,10 +51,10 @@ disciplines = create_discipline([
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with Python's ``print()`` function. Moreover, we can get the default
-# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+# input values of a discipline with the attribute :attr:`.Discipline.default_input_data`
 for discipline in disciplines:
     print(discipline)
-    print(f"Default inputs: {discipline.default_inputs}")
+    print(f"Default inputs: {discipline.default_input_data}")
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
@@ -78,10 +79,10 @@ design_space
 # %%
 scenario = create_scenario(
     disciplines,
-    "IDF",
     "y_4",
     design_space,
     maximize_objective=True,
+    formulation_name="IDF",
 )
 
 # %%
@@ -98,25 +99,27 @@ for c_name in ["g_1", "g_2", "g_3"]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-scenario.xdsmize(save_html=False)
+scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Define the algorithm inputs
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We set the maximum number of iterations, the optimizer
-# and the optimizer options
-algo_options = {
-    "ftol_rel": 1e-10,
-    "ineq_tolerance": 1e-3,
-    "eq_tolerance": 1e-3,
-    "normalize_design_space": True,
-}
-scn_inputs = {"max_iter": 20, "algo": "SLSQP", "algo_options": algo_options}
+# and the optimizer settings
+
+slsqp_settings = SLSQP_Settings(
+    max_iter=20,
+    ftol_rel=1e-10,
+    ineq_tolerance=1e-3,
+    eq_tolerance=1e-3,
+    normalize_design_space=True,
+)
+
 
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(scn_inputs)
+scenario.execute(slsqp_settings)
 
 # %%
 # Save the optimization history
@@ -137,9 +140,9 @@ scenario.print_execution_metrics()
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=True, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process(post_name="QuadApprox", function="-y_4", save=False, show=True)

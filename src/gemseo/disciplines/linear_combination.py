@@ -21,13 +21,15 @@ from typing import TYPE_CHECKING
 from numpy import zeros
 from scipy.sparse import eye
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import StrKeyMapping
 
-class LinearCombination(MDODiscipline):
+
+class LinearCombination(Discipline):
     r"""Discipline computing a linear combination of its inputs.
 
     The user can specify the coefficients related to the variables
@@ -54,7 +56,7 @@ class LinearCombination(MDODiscipline):
         >>> input_data = {"alpha": array([1.0]), "beta": array([1.0]),
                 "gamma": array([1.0])}
         >>> discipline.execute(input_data)
-        >>> delta = discipline.local_data["delta"]  # delta = array([6.])
+        >>> delta = discipline.io.data["delta"]  # delta = array([6.])
     """
 
     __offset: float
@@ -89,7 +91,7 @@ class LinearCombination(MDODiscipline):
         self.output_grammar.update_from_names([output_name])
 
         default_size = 1 if input_size is None else input_size
-        self.default_inputs.update({
+        self.default_input_data.update({
             input_name: zeros(default_size) for input_name in input_names
         })
 
@@ -100,21 +102,25 @@ class LinearCombination(MDODiscipline):
         self.__offset = offset
         self.__output_name = output_name
 
-    def _run(self) -> None:
-        self.local_data[self.__output_name] = self.__offset
-        for input_name, input_value in self.get_input_data().items():
-            self.local_data[self.__output_name] += (
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        output_data = {}
+        output_data[self.__output_name] = self.__offset
+        for input_name, input_value in input_data.items():
+            output_data[self.__output_name] += (
                 self.__coefficients[input_name] * input_value
             )
+        return output_data
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._init_jacobian(inputs, outputs, init_type=self.InitJacobianType.SPARSE)
-        identity = eye(self.local_data[self.__output_name].size, format="csr")
+        self._init_jacobian(
+            input_names, output_names, init_type=self.InitJacobianType.SPARSE
+        )
+        identity = eye(self.io.data[self.__output_name].size, format="csr")
 
         jac = self.jac[self.__output_name]
-        for input_name in self.get_input_data_names():
+        for input_name in self.io.input_grammar.names:
             jac[input_name] = self.__coefficients[input_name] * identity

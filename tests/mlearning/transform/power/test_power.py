@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Gilberto Ruiz Jimenez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test the Power Transformer."""
+"""Test the Power BaseTransformer."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ from sklearn.preprocessing import PowerTransformer
 from gemseo.mlearning.transformers.power.power import Power
 
 
-@pytest.fixture()
+@pytest.fixture
 def data() -> ndarray:
     """Test data."""
     return arange(1.0, 31.0, 1.0).reshape((10, 3))

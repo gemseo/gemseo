@@ -21,7 +21,7 @@ using the job scheduler interfaces.
 The method to be used is :func:`.wrap_discipline_in_job_scheduler` to wrap any discipline.
 
 This feature is extensible through plugins using
-:class:`~gemseo.wrappers.job_schedulers.schedulers_factory.SchedulersFactory`.
+:class:`~gemseo.wrappers.job_schedulers.schedulers_factory.JobSchedulerDisciplineWrapperFactory`.
 
 .. currentmodule:: gemseo
 .. autofunction:: wrap_discipline_in_job_scheduler

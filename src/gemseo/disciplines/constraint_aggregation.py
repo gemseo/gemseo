@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #       :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An MDODiscipline to aggregate constraints."""
+"""An Discipline to aggregate constraints."""
 
 from __future__ import annotations
 
@@ -39,15 +39,17 @@ from gemseo.algos.aggregation.core import compute_partial_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_sum_positive_square_agg
 from gemseo.algos.aggregation.core import compute_sum_square_agg
 from gemseo.algos.aggregation.core import compute_upper_bound_ks_agg
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.typing import StrKeyMapping
 
-class ConstraintAggregation(MDODiscipline):
+
+class ConstraintAggregation(Discipline):
     """A discipline that aggregates the constraints computed by other disciplines.
 
     An efficient alternative to constraint aggregation in the optimization problem is to
@@ -103,7 +105,7 @@ class ConstraintAggregation(MDODiscipline):
         self,
         constraint_names: Sequence[str],
         aggregation_function: EvaluationFunction,
-        name: str | None = None,
+        name: str = "",
         **options: Any,
     ) -> None:
         """
@@ -112,13 +114,12 @@ class ConstraintAggregation(MDODiscipline):
                 which must be discipline outputs.
             aggregation_function: The aggregation function or its name,
                 e.g. IKS, lower_bound_KS,upper_bound_KS, POS_SUM and SUM.
-            name: The name of the discipline.
             **options: The options for the aggregation method.
 
         Raises:
             ValueError: If the method is not supported.
         """  # noqa: D205, D212, D415
-        super().__init__(name)
+        super().__init__(name=name)
         self.__method_name = aggregation_function
         self.__meth_options = options
         self.input_grammar.update_from_names(constraint_names)
@@ -128,36 +129,36 @@ class ConstraintAggregation(MDODiscipline):
         ])
         self.__data_sizes = {}
 
-    def _run(self) -> None:
-        input_data = concatenate_dict_of_arrays_to_array(
-            self.local_data, self.get_input_data_names()
-        )
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
         evaluation_function = self._EVALUATION_FUNCTION_MAP[self.__method_name]
         output_data = atleast_1d(evaluation_function(input_data, **self.__meth_options))
-        output_names = self.get_output_data_names()
+        output_names = self.io.output_grammar.names
         output_names_to_output_values = split_array_to_dict_of_arrays(
             output_data,
             dict.fromkeys(output_names, 1),
             output_names,
         )
-        self.store_local_data(**output_names_to_output_values)
+        self.io.update_output_data(output_names_to_output_values)
         if not self.__data_sizes:
             self.__data_sizes = {
                 variable_name: variable_value.size
-                for variable_name, variable_value in self.local_data.items()
+                for variable_name, variable_value in self.io.data.items()
             }
 
     def _compute_jacobian(
-        self, inputs: Sequence[str] | None = None, outputs: Sequence[str] | None = None
+        self,
+        input_names: Sequence[str] = (),
+        output_names: Sequence[str] = (),
     ) -> None:
-        input_names = self.get_input_data_names()
+        input_names = self.io.input_grammar.names
         evaluation_function = self._JACOBIAN_EVALUATION_FUNCTION_MAP[self.__method_name]
         self.jac = split_array_to_dict_of_arrays(
             evaluation_function(
-                concatenate_dict_of_arrays_to_array(self.local_data, input_names),
+                concatenate_dict_of_arrays_to_array(self.io.data, input_names),
                 **self.__meth_options,
             ),
             self.__data_sizes,
-            self.get_output_data_names(),
+            self.io.output_grammar.names,
             input_names,
         )

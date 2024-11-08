@@ -24,15 +24,13 @@ from __future__ import annotations
 import pytest
 from numpy import allclose
 from numpy import array
-from numpy import array_equal
 from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
 from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning import import_classification_model
-from gemseo.mlearning.classification.knn import KNNClassifier
+from gemseo.mlearning.classification.algos.knn import KNNClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 rng = default_rng(12345)
@@ -49,7 +47,7 @@ INPUT_VALUES = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the KNNClassifier."""
     input_data = linspace(0, 1, 20).reshape((10, 2))
@@ -69,7 +67,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_1d(dataset) -> KNNClassifier:
     """A trained KNNClassifier with y_1 as single output."""
     knn = KNNClassifier(dataset, output_names=["y_1"])
@@ -89,7 +87,7 @@ def fit_transformers(request):
     return request.param
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> KNNClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
     knn = KNNClassifier(dataset)
@@ -97,7 +95,7 @@ def model(dataset) -> KNNClassifier:
     return knn
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_with_transform(dataset, transformer_key, fit_transformers) -> KNNClassifier:
     """A trained KNNClassifier using input scaling."""
     knn = KNNClassifier(dataset, transformer={transformer_key: MinMaxScaler()})
@@ -237,13 +235,3 @@ def test_predict_proba_transform(model_with_transform) -> None:
         assert allclose(proba["y_2"].sum(0), 1)
         assert allclose(probas["y_1"].sum(axis=1), 1)
         assert allclose(probas["y_2"].sum(axis=1), 1)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_classification_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    assert array_equal(out1["y_1"], out2["y_1"])
-    assert array_equal(out1["y_2"], out2["y_2"])

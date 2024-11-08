@@ -28,22 +28,34 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.problems.aerostructure.aerostructure_design_space import (
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
 
 configure_logger()
 
+# Passed to algo settings
+cobyla_settings = NLOPT_COBYLA_Settings(
+    max_iter=7,
+    xtol_rel=1e-8,
+    xtol_abs=1e-8,
+    ftol_rel=1e-8,
+    ftol_abs=1e-8,
+    ineq_tolerance=1e-5,
+    eq_tolerance=1e-3,
+)
 
-algo_options = {
-    "xtol_rel": 1e-8,
-    "xtol_abs": 1e-8,
-    "ftol_rel": 1e-8,
-    "ftol_abs": 1e-8,
-    "ineq_tolerance": 1e-5,
-    "eq_tolerance": 1e-3,
-}
-
+slsqp_settings = NLOPT_SLSQP_Settings(
+    max_iter=10,
+    xtol_rel=1e-8,
+    xtol_abs=1e-8,
+    ftol_rel=1e-8,
+    ftol_abs=1e-8,
+    ineq_tolerance=1e-5,
+    eq_tolerance=1e-3,
+)
 # %%
 # Create discipline
 # -----------------
@@ -84,25 +96,20 @@ generate_n2_plot(disciplines, save=False, show=True)
 design_space = AerostructureDesignSpace()
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "range",
     design_space,
     maximize_objective=True,
+    formulation_name="MDF",
 )
 scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 scenario.add_constraint("lift", value=0.5)
-scenario.execute({"algo": "NLOPT_SLSQP", "max_iter": 10, "algo_options": algo_options})
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.execute(slsqp_settings)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Create an MDO scenario with bilevel formulation
 # -----------------------------------------------
 # Then, we create an MDO scenario based on the bilevel formulation
-sub_scenario_options = {
-    "max_iter": 5,
-    "algo": "NLOPT_SLSQP",
-    "algo_options": algo_options,
-}
 design_space_ref = AerostructureDesignSpace()
 
 # %%
@@ -112,12 +119,12 @@ design_space_ref = AerostructureDesignSpace()
 # with respect to the thick airfoils, based on the aerodynamics discipline.
 aero_scenario = create_scenario(
     [aerodynamics, mission],
-    "DisciplinaryOpt",
     "range",
     design_space_ref.filter(["thick_airfoils"], copy=True),
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
-aero_scenario.default_inputs = sub_scenario_options
+aero_scenario.set_algorithm(slsqp_settings)
 
 # %%
 # Create the structure sub-scenario
@@ -126,12 +133,12 @@ aero_scenario.default_inputs = sub_scenario_options
 # with respect to the thick panels, based on the structure discipline.
 struct_scenario = create_scenario(
     [structure, mission],
-    "DisciplinaryOpt",
     "range",
     design_space_ref.filter(["thick_panels"], copy=True),
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
-struct_scenario.default_inputs = sub_scenario_options
+struct_scenario.set_algorithm(slsqp_settings)
 
 # %%
 # Create the system scenario
@@ -141,18 +148,14 @@ struct_scenario.default_inputs = sub_scenario_options
 design_space_system = design_space_ref.filter(["sweep"], copy=True)
 system_scenario = create_scenario(
     [aero_scenario, struct_scenario, mission],
-    "BiLevel",
     "range",
     design_space_system,
+    formulation_name="BiLevel",
     maximize_objective=True,
-    inner_mda_name="MDAJacobi",
-    tolerance=1e-8,
+    main_mda_settings={"inner_mda_name": "MDAJacobi", "tolerance": 1e-8},
 )
 system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 system_scenario.add_constraint("lift", value=0.5)
-system_scenario.execute({
-    "algo": "NLOPT_COBYLA",
-    "max_iter": 7,
-    "algo_options": algo_options,
-})
-system_scenario.post_process("OptHistoryView", save=False, show=True)
+system_scenario.execute(cobyla_settings)
+
+system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)

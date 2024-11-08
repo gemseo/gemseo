@@ -36,5 +36,3 @@
 """
 A pretty table in the shell or in a file
 """
-
-from gemseo.third_party.prettytable.prettytable import PrettyTable

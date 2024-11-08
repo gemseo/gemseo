@@ -21,71 +21,61 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequence
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
-from gemseo.core.formulation import MDOFormulation
+from gemseo.core.chains.chain import MDOChain
 from gemseo.disciplines.utils import get_all_inputs
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.discipline import Discipline
 
 
-class DisciplinaryOpt(MDOFormulation):
+class DisciplinaryOpt(BaseMDOFormulation):
     """The disciplinary optimization.
 
     This formulation draws the architecture of a mono-disciplinary optimization process
     from an ordered list of disciplines, an objective function and a design space.
     """
 
+    Settings: ClassVar[type[DisciplinaryOpt_Settings]] = DisciplinaryOpt_Settings
+
+    __top_level_disciplines: tuple[Discipline]
+    """The top-level disciplines."""
+
     def __init__(  # noqa:D107
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        maximize_objective: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
+        settings_model: DisciplinaryOpt_Settings | None = None,
+        **settings: Any,
     ) -> None:
         super().__init__(
             disciplines,
             objective_name,
             design_space,
-            maximize_objective=maximize_objective,
-            grammar_type=grammar_type,
+            settings_model=settings_model,
+            **settings,
         )
-        self.chain = None
-        if len(disciplines) > 1:
-            self.chain = MDOChain(disciplines, grammar_type=grammar_type)
+        self.__top_level_disciplines = (
+            MDOChain(disciplines) if len(disciplines) > 1 else disciplines[0],
+        )
         self._filter_design_space()
         self._set_default_input_values_from_design_space()
-        # Build the objective from its objective name
         self._build_objective_from_disc(objective_name)
 
-    def get_expected_workflow(  # noqa:D102
-        self,
-    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
-        if self.chain is None:
-            return ExecutionSequenceFactory.serial().extend(
-                self.disciplines[0].get_expected_workflow()
-            )
-        return self.chain.get_expected_workflow()
-
-    def get_expected_dataflow(  # noqa:D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        if self.chain is None:
-            return self.disciplines[0].get_expected_dataflow()
-        return self.chain.get_expected_dataflow()
-
-    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
-        if self.chain is not None:
-            return [self.chain]
-        return self.disciplines
+    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
+        return self.__top_level_disciplines
 
     def _filter_design_space(self) -> None:
         """Filter the design space to keep only available variables."""
-        all_inpts = get_all_inputs(self.get_top_level_disc())
-        kept = set(self.design_space.variable_names) & set(all_inpts)
-        self.design_space.filter(kept)
+        all_input_names = get_all_inputs(self.get_top_level_disciplines())
+        design_space = self.optimization_problem.design_space
+        kept_variable_names = set(all_input_names).intersection(design_space)
+        design_space.filter(kept_variable_names)

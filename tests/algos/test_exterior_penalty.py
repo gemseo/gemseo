@@ -19,8 +19,8 @@ from numpy import vstack
 from numpy.core._multiarray_umath import concatenate
 
 from gemseo import execute_algo
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.problems.optimization.power_2 import Power2
 
 
 def create_problem():
@@ -31,7 +31,7 @@ def create_problem():
     eq = problem.constraints[2]
 
     def cstr(x):
-        return concatenate([ineq1(x), ineq2(x)])
+        return concatenate([ineq1.evaluate(x), ineq2.evaluate(x)])
 
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
@@ -43,9 +43,8 @@ def create_problem():
 
 def test_exterior_penalty() -> None:
     """Tests exterior penalty compared to no aggregation."""
-    algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
-    execute_algo(problem_ref, algo_name="SLSQP", algo_options=algo_options)
+    execute_algo(problem_ref, algo_name="SLSQP", ineq_tolerance=1e-2, eq_tolerance=1e-2)
     ref_sol = problem_ref.solution
 
     problem = create_problem()
@@ -58,6 +57,6 @@ def test_exterior_penalty() -> None:
         max_iter=1000,
     )
     sol2 = problem.solution
-    problem_ref.constraints[0](sol2.x_opt)
+    problem_ref.constraints[0].evaluate(sol2.x_opt)
 
     assert allclose(ref_sol.x_opt, sol2.x_opt, rtol=1e-2)

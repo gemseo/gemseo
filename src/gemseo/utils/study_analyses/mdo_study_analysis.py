@@ -29,7 +29,9 @@ from typing import ClassVar
 
 from gemseo import create_design_space
 from gemseo import create_scenario
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline import Discipline
+from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
@@ -38,8 +40,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    from gemseo.core.discipline import MDODiscipline
-    from gemseo.core.mdo_scenario import MDOScenario
+    from gemseo.scenarios.mdo_scenario import MDOScenario
     from gemseo.utils.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
@@ -65,32 +66,32 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
     - the sheet shall define the input names of the discipline
       as a vertical succession of cells starting with ``"Inputs"``:
 
-        .. table:: Inputs
+      .. table:: Inputs
 
-            +--------------+
-            | Inputs       |
-            +--------------+
-            | input_name_1 |
-            +--------------+
-            | ...          |
-            +--------------+
-            | input_name_N |
-            +--------------+
+         +--------------+
+         | Inputs       |
+         +--------------+
+         | input_name_1 |
+         +--------------+
+         | ...          |
+         +--------------+
+         | input_name_N |
+         +--------------+
 
     - the sheet shall define the output names of the discipline
       as a vertical succession of cells starting with ``"Outputs"``:
 
     .. table:: Outputs
 
-            +---------------+
-            | Outputs       |
-            +---------------+
-            | output_name_1 |
-            +---------------+
-            | ...           |
-            +---------------+
-            | output_name_N |
-            +---------------+
+       +---------------+
+       | Outputs       |
+       +---------------+
+       | output_name_1 |
+       +---------------+
+       | ...           |
+       +---------------+
+       | output_name_N |
+       +---------------+
 
     - the empty lines of the series ``Inputs`` and ``Outputs`` are ignored,
     - the sheet may contain other data, but these will not be taken into account.
@@ -102,13 +103,13 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     .. table:: Scenario1
 
-        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
-        | Design variables | Objective function | Constraints | Disciplines | Formulation |    Options    | Options values |
-        +==================+====================+=============+=============+=============+===============+================+
-        |       in1        |       out1         |    out2     |    Disc1    |    MDF      |   tolerance   |       0.1      |
-        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
-        |                  |                    |             |    Disc2    |             | main_mda_name |   MDAJacobi    |
-        +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+       +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+       | Design variables | Objective function | Constraints | Disciplines | Formulation |    Options    | Options values |
+       +==================+====================+=============+=============+=============+===============+================+
+       |       in1        |       out1         |    out2     |    Disc1    |    MDF      |   tolerance   |       0.1      |
+       +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
+       |                  |                    |             |    Disc2    |             | main_mda_name |   MDAJacobi    |
+       +------------------+--------------------+-------------+-------------+-------------+---------------+----------------+
 
     These columns must satisfy some constraints:
 
@@ -151,7 +152,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     @staticmethod
     def _create_scenario(
-        disciplines: Iterable[MDODiscipline],
+        disciplines: Iterable[Discipline],
         scenario_description: Mapping[str, Iterable[str]],
     ) -> MDOScenario:
         """Create an MDO scenario.
@@ -164,7 +165,10 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             An MDO scenario.
         """
         design_space = create_design_space()
-        coupling_variables = set(MDOCouplingStructure(disciplines).all_couplings)
+        real_disciplines = tuple(
+            disc for disc in disciplines if isinstance(disc, Discipline)
+        )
+        coupling_variables = set(CouplingStructure(real_disciplines).all_couplings)
         design_variables = set(scenario_description[XLSStudyParser.DESIGN_VARIABLES])
         for name in sorted(coupling_variables | design_variables):
             design_space.add_variable(name)
@@ -182,9 +186,9 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
         scenario = create_scenario(
             disciplines,
-            scenario_description[XLSStudyParser.FORMULATION],
             scenario_description[XLSStudyParser.OBJECTIVE_FUNCTION],
             design_space,
+            formulation_name=scenario_description[XLSStudyParser.FORMULATION],
             **options,
         )
         for constraint_name in scenario_description[XLSStudyParser.CONSTRAINTS]:
@@ -194,7 +198,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     def _get_disciplines_instances(
         self, scenario_description: Mapping[str, Iterable[str]]
-    ) -> list[MDODiscipline]:
+    ) -> list[Discipline]:
         """Return the disciplines from a scenario.
 
         Args:
@@ -230,7 +234,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
                 disciplines = self._get_disciplines_instances(scenario_description)
                 if disciplines:  # All dependencies resolved
                     for discipline in disciplines:
-                        if not discipline.is_scenario():
+                        if not isinstance(discipline, BaseScenario):
                             non_scenario_disciplines[discipline.name] = discipline
 
                     scenario = self._create_scenario(disciplines, scenario_description)
@@ -274,7 +278,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         """
         LOGGER.info("Generated the following Scenario:")
         LOGGER.info("%s", self.main_scenario)
-        LOGGER.info("%s", self.main_scenario.formulation.opt_problem)
+        LOGGER.info("%s", self.main_scenario.formulation.optimization_problem)
         return self.main_scenario.xdsmize(
             directory_path=directory_path, save_pdf=save_pdf, show_html=show_html
         )

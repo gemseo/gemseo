@@ -21,23 +21,22 @@
 
 from __future__ import annotations
 
-from abc import abstractmethod
 from multiprocessing.sharedctypes import Synchronized
 from pathlib import Path
-from pathlib import PurePosixPath
-from pathlib import PureWindowsPath
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+
 from gemseo.utils.portable_path import to_os_specific
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from gemseo.typing import StrKeyMapping
 
 
-class Serializable(metaclass=ABCGoogleDocstringInheritanceMeta):
+class Serializable(metaclass=GoogleDocstringInheritanceMeta):
     """Base class to handle serialization of |g| objects.
 
     The methods ``__setstate__`` and ``__getstate__`` used by pickle to serialize and
@@ -77,26 +76,33 @@ class Serializable(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __setstate__(
         self,
-        state: Mapping[str, Any],
+        state: StrKeyMapping,
     ) -> None:
         # Initialize all Synchronized attributes first.
-        self._init_shared_memory_attrs()
+        self._init_shared_memory_attrs_before()
         for attribute_name, attribute_value in state.items():
             if attribute_name not in self.__dict__:
                 self.__dict__[attribute_name] = attribute_value
                 # This is needed to handle the case where serialization and
                 # deserialization are not made on the same platform.
-                if isinstance(attribute_value, (PureWindowsPath, PurePosixPath)):
+                if isinstance(attribute_value, PurePath):
                     self.__dict__[attribute_name] = Path(attribute_value)
             elif isinstance(self.__dict__[attribute_name], Synchronized):
                 # Set the value of Synchronized attributes instead of deserializing the
                 # entire object.
                 self.__dict__[attribute_name].value = attribute_value
+        self._init_shared_memory_attrs_after()
 
-    @abstractmethod
-    def _init_shared_memory_attrs(self) -> None:
-        """Initialize the shared memory attributes in multiprocessing.
+    def _init_shared_memory_attrs_before(self) -> None:
+        """Initialize the shared memory attributes before deserialization.
 
         Subclasses shall overload this method to initialize all their ``Synchronized``
-        attributes.
+        attributes. This is run before any attribute is recovered from deserialization.
+        """
+
+    def _init_shared_memory_attrs_after(self) -> None:
+        """Initialize the shared memory attributes after deserialization.
+
+        Subclasses shall overload this method to initialize all their ``Synchronized``
+        attributes. This is run before any attribute is recovered from deserialization.
         """

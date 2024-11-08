@@ -28,8 +28,8 @@ from numpy import inf
 
 from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 
 
 def test_upper_bounds_matrices() -> None:

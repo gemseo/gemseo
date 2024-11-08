@@ -53,35 +53,33 @@ design_space = create_design_space()
 # define the lower and upper bound of the variable.
 # It is then possible to plot the :class:`.DesignSpace` instance either using a
 # print statement or by using the logger.
-design_space.add_variable("x", l_b=array([-2.0]), u_b=array([2.0]), value=array([0.0]))
+design_space.add_variable(
+    "x", lower_bound=array([-2.0]), upper_bound=array([2.0]), value=array([0.0])
+)
 design_space
 
 # %%
 # The user can also add design variables with dimension greater than one. To do
 # that, the user can use the `size` keyword:
 design_space.add_variable(
-    "y", l_b=array([-2.0, -1.0]), u_b=array([2.0, 1.0]), value=array([0.0, 0.0]), size=2
+    "y",
+    lower_bound=array([-2.0, -1.0]),
+    upper_bound=array([2.0, 1.0]),
+    value=array([0.0, 0.0]),
+    size=2,
 )
 design_space
 
 # %%
 # By default, each variable infers its type from the given values. One may also
-# specify it with the `var_type` keyword
+# specify it with the `type_` keyword
 design_space.add_variable(
     "z",
-    l_b=array([0, -1]),
-    u_b=array([3, 1]),
+    lower_bound=array([0, -1]),
+    upper_bound=array([3, 1]),
     value=array([0, 1]),
     size=2,
-    var_type="integer",
-)
-design_space.add_variable(
-    "w",
-    l_b=array([-2, -5]),
-    u_b=array([3, 1]),
-    value=array([2, -2]),
-    size=2,
-    var_type=["integer", "integer"],
+    type_="integer",
 )
 design_space
 

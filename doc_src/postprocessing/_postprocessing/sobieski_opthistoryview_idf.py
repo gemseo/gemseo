@@ -27,20 +27,19 @@ disciplines = create_discipline([
 
 scenario = create_scenario(
     disciplines,
-    formulation="IDF",
-    objective_name="y_4",
+    "y_4",
+    "design_space.csv",
+    formulation_name="IDF",
     maximize_objective=True,
-    design_space="design_space.csv",
 )
 
 scenario.set_differentiation_method()
 
-algo_options = {"max_iter": 10, "algo": "SLSQP"}
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
-scenario.execute(algo_options)
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 scenario.post_process(
-    "OptHistoryView", save=True, show=False, file_path="idf", extension="png"
+    post_name="OptHistoryView", save=True, show=False, file_path="idf", extension="png"
 )

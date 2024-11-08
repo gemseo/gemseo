@@ -28,10 +28,9 @@ from numpy import allclose
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning import import_regression_model
-from gemseo.mlearning.regression.random_forest import RandomForestRegressor
+from gemseo.mlearning.regression.algos.random_forest import RandomForestRegressor
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -42,20 +41,22 @@ INPUT_VALUE = {"x_1": array([1]), "x_2": array([2])}
 INPUT_VALUES = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-    design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor."""
     random_forest = RandomForestRegressor(dataset)
@@ -63,7 +64,7 @@ def model(dataset) -> RandomForestRegressor:
     return random_forest
 
 
-@pytest.fixture()
+@pytest.fixture
 def model_1d_output(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor with only y_1 as outputs."""
     random_forest = RandomForestRegressor(dataset, output_names=["y_1"])
@@ -116,13 +117,3 @@ def test_model_1d_output(model_1d_output) -> None:
     assert "y_2" not in predictions
     assert prediction["y_1"].shape == (1,)
     assert predictions["y_1"].shape == (3, 1)
-
-
-def test_save_and_load(model, tmp_wd) -> None:
-    """Test save and load."""
-    dirname = model.to_pickle()
-    imported_model = import_regression_model(dirname)
-    out1 = model.predict(INPUT_VALUE)
-    out2 = imported_model.predict(INPUT_VALUE)
-    for name, value in out1.items():
-        assert allclose(value, out2[name], 1e-3)

@@ -25,7 +25,7 @@ from numpy import array
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
-from gemseo.core.discipline_data import DisciplineData
+from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.utils.testing.helpers import do_not_raise
@@ -54,7 +54,7 @@ model2 = pytest.fixture(get_model2)
 model3 = pytest.fixture(get_model3)
 
 
-@pytest.fixture()
+@pytest.fixture
 def model(
     request: SubRequest, model1: ModelType, model2: ModelType
 ) -> ModelType | None:
@@ -189,7 +189,7 @@ name2
             """
 1 validation error for Model
 name2
-  Value error, Input dtype should be <class 'int'>: got the dtype <class 'numpy.float64'>
+  Value error, The expected dtype is <class 'int'>: the actual dtype is <class 'numpy.float64'>
 """,  # noqa:E501
         ),
     ],
@@ -207,46 +207,17 @@ def test_validate_error(
     assert error_msg.strip() in caplog.text.strip()
 
 
-def test_is_array(model3) -> None:
-    """Verify is_array."""
-    grammar = PydanticGrammar("g", model=model3)
-
-    for name in ("an_int", "a_float", "a_bool"):
-        assert not grammar.is_array(name)
-
-    for name in (
-        "an_int_ndarray",
-        "a_float_ndarray",
-        "a_bool_ndarray",
-        "an_int_list",
-        "a_float_list",
-        "a_bool_list",
-    ):
-        assert grammar.is_array(name)
-
-    for name in (
-        "an_int_ndarray",
-        "a_float_ndarray",
-    ):
-        assert grammar.is_array(name, numeric_only=True)
-
-    for name in (
-        "an_int_list",
-        "a_float_list",
-        "a_bool_ndarray",
-        "a_bool_list",
-    ):
-        assert not grammar.is_array(name, numeric_only=True)
-
-
 def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
     """Verify grammar conversion warnings."""
     grammar = PydanticGrammar("g", model=model2)
     grammar.to_simple_grammar()
     assert caplog.records[0].levelname == "WARNING"
-    assert caplog.messages[0] == (
-        "Unsupported type 'typing.Union' in PydanticGrammar 'g' for field 'name2' in "
-        "conversion to SimpleGrammar."
+    assert caplog.messages[0] in (
+        "Unsupported type '<class 'types.UnionType'>' in PydanticGrammar 'g' for "
+        "field 'name2' in conversion to SimpleGrammar.",
+        # For python 3.9.
+        "Unsupported type 'typing.Union' in PydanticGrammar 'g' for "
+        "field 'name2' in conversion to SimpleGrammar.",
     )
 
 

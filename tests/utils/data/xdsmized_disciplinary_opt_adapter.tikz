@@ -24,7 +24,7 @@
 \\
 %Row 1
 \node [DataIO] (left_output_Opt) {$z^*$};&
-\node [Optimization] (Opt) {$\text{1,3-2:Optimizer}$};&
+\node [Optimization] (Opt) {$\text{1,3-2:DOE}$};&
 &
 \\
 %Row 2

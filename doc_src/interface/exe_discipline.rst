@@ -18,10 +18,10 @@ Automatic wrapper for executables with Graphical User Interface
 The DiscFromExe wrapper
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-This section describes how to use :class:`~gemseo.wrappers.disc_from_exe.DiscFromExe`.
+This section describes how to use :class:`~gemseo.disciplines.wrappers.disc_from_exe.DiscFromExe`.
 The input and output template files can be edited using the dedicated GUI, see next section.
 
-.. currentmodule:: gemseo.wrappers.disc_from_exe
+.. currentmodule:: gemseo.disciplines.wrappers.disc_from_exe
 .. autoclass:: DiscFromExe
    :noindex:
    :no-inherited-members:

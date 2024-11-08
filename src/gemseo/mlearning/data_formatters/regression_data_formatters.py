@@ -26,10 +26,9 @@ if TYPE_CHECKING:
     from typing import Any
     from typing import Callable
 
-    from numpy import ndarray
-
-    from gemseo import MLRegressionAlgo
-    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.typing import RealArray
 
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
     SupervisedDataFormatters,
@@ -44,8 +43,8 @@ class RegressionDataFormatters(SupervisedDataFormatters):
     @classmethod
     def format_dict_jacobian(
         cls,
-        func: Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[MLRegressionAlgo, DataType, Any, ...], DataType]:
+        func: Callable[[BaseRegressor, RealArray, Any, ...], RealArray],
+    ) -> Callable[[BaseRegressor, DataType, Any, ...], DataType]:
         """Make an array-based function callable with a dictionary of NumPy arrays.
 
         Args:
@@ -61,7 +60,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: MLRegressionAlgo, input_data: DataType, *args: Any, **kwargs: Any
+            algo: BaseRegressor, input_data: DataType, *args: Any, **kwargs: Any
         ) -> DataType:
             """Evaluate ``func`` with either array or dictionary-based data.
 
@@ -111,8 +110,8 @@ class RegressionDataFormatters(SupervisedDataFormatters):
     @classmethod
     def transform_jacobian(
         cls,
-        func: Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[MLRegressionAlgo, ndarray, Any, ...], ndarray]:
+        func: Callable[[BaseRegressor, RealArray, Any, ...], RealArray],
+    ) -> Callable[[BaseRegressor, RealArray, Any, ...], RealArray]:
         """Apply transformation to inputs and inverse transformation to outputs.
 
         Args:
@@ -126,8 +125,8 @@ class RegressionDataFormatters(SupervisedDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: MLRegressionAlgo, input_data: ndarray, *args: Any, **kwargs: Any
-        ) -> ndarray:
+            algo: BaseRegressor, input_data: RealArray, *args: Any, **kwargs: Any
+        ) -> RealArray:
             """Evaluate ``func`` after or before data transformation.
 
             Firstly,

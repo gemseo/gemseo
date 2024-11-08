@@ -23,7 +23,7 @@ Scalable diagonal discipline
 ============================
 
 Let us consider the
-:class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline.
+:class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` discipline.
 We want to build its :class:`.ScalableDiscipline` counterpart,
 using a :class:`.ScalableDiagonalModel`
 
@@ -38,7 +38,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scalable
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -50,14 +50,14 @@ configure_logger()
 # %%
 # Learning dataset
 # ----------------
-# The first step is to build an :class:`.AbstractFullCache` dataset
+# The first step is to build an :class:`.BaseFullCache` dataset
 # from a :class:`.DiagonalDOE`.
 
 # %%
 # Instantiate the discipline
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For that, we instantiate the
-# :class:`~gemseo.problems.sobieski.disciplines.SobieskiAerodynamics` discipline
+# :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` discipline
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
 
@@ -66,7 +66,7 @@ discipline = create_discipline("SobieskiAerodynamics")
 # ~~~~~~~~~~~~~~~~~~~
 # We also define the input space on which to sample the discipline.
 input_space = SobieskiDesignSpace()
-input_names = [name for name in discipline.get_input_data_names() if name != "c_4"]
+input_names = [name for name in discipline.io.input_grammar.names if name != "c_4"]
 input_space.filter(input_names)
 
 # %%
@@ -77,12 +77,16 @@ input_space.filter(input_names)
 # In order to build a diagonal scalable discipline,
 # a :class:`.DiagonalDOE` must be used.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_2", input_space, scenario_type="DOE"
+    [discipline],
+    "y_2",
+    input_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-for output_name in discipline.get_output_data_names():
+for output_name in discipline.io.output_grammar.names:
     if output_name != "y_2":
         scenario.add_observable(output_name)
-scenario.execute({"algo": "DiagonalDOE", "n_samples": 20})
+scenario.execute(algo_name="DiagonalDOE", n_samples=20)
 
 # %%
 # Scalable diagonal discipline
@@ -138,7 +142,7 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 # Or we can increase the size of each output by a factor of 2.
 sizes = {
     name: discipline.cache.names_to_sizes[name] * 2
-    for name in discipline.get_output_data_names()
+    for name in discipline.io.output_grammar.names
 }
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
@@ -147,7 +151,7 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 # Twice as many variables
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Or we can increase the size of each input and each output by a factor of 2.
-names = input_names + list(discipline.get_output_data_names())
+names = input_names + list(discipline.io.output_grammar.names)
 sizes = {name: dataset.variable_names_to_n_components[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)

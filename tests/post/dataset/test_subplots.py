@@ -49,10 +49,10 @@ def test_plot(dataset) -> None:
     plot_1 = BarPlot(dataset, n_digits=2)
     plot_1.colormap = "PiYG"
     plot_1.title = "Plot 1"
-    plot_1.execute(save=False, fig=fig, axes=ax1)
+    plot_1.execute(save=False, fig=fig, ax=ax1)
     plot_2 = YvsX(dataset, "x2", "x3")
     plot_2.linestyle = "-d"
     plot_2.color = "r"
     plot_2.title = "Plot 2"
-    plot_2.execute(save=False, fig=fig, axes=ax2)
+    plot_2.execute(save=False, fig=fig, ax=ax2)
     fig.suptitle("Plots 1 and 2")

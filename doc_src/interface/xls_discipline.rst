@@ -87,8 +87,8 @@ The scenario requires a :class:`.DesignSpace` defining the design variables ``a`
 .. code-block:: python
 
    design_space = create_design_space()
-   design_space.add_variable("a", 1, l_b=0.0, u_b=10.0, value=array([1]))
-   design_space.add_variable("b", 1, l_b=-10.0, u_b=10.0, value=array([2]))
+   design_space.add_variable("a", 1, lower_bound=0.0, upper_bound=10.0, value=array([1]))
+   design_space.add_variable("b", 1, lower_bound=-10.0, upper_bound=10.0, value=array([2]))
 
 Create the :class:`.DOEScenario` with the :class:`.XLSDiscipline`, the :class:`.DesignSpace` and an :class:`.MDF` formulation:
 
@@ -96,7 +96,7 @@ Create the :class:`.DOEScenario` with the :class:`.XLSDiscipline`, the :class:`.
 
    scenario = create_scenario(
        xls_discipline,
-       formulation="DisciplinaryOpt",
+       formulation_name="DisciplinaryOpt",
        objective_name="c",
        design_space=design_space,
        scenario_type='DOE',
@@ -112,7 +112,7 @@ provide two samples to be evaluated:
    sample_1 = [1, 2]  # a=1, b=2
    sample_2 = [2, 3]  # a=2, b=3
    samples = array([sample_1, sample_2])
-   scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
+   scenario.execute(algo_name="CustomDOE", samples=samples)
    print(scenario.to_dataset().export_to_dataframe())
 
 Which prints the results of the computation as follows:
@@ -143,7 +143,7 @@ For that, we will use the :class:`.MDFFormulation`:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation="MDF",
+       formulation_name="MDF",
        objective_name="f",
        design_space=design_space,
        scenario_type='DOE',
@@ -164,18 +164,13 @@ If we wanted to run the previously defined scenario in parallel, then the discip
 
    xls_discipline = XLSDiscipline('my_book.xlsx', copy_xls_at_setstate=True)
 
-The algo options would change as well to request the number of processes to run:
-
-.. code-block:: python
-
-   input_data = {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
-
-And the execution call shall be protected:
+The algo settings would change as well to request the number of processes to run:
+and the execution call shall be protected:
 
 .. code-block:: python
 
    if __name__ == '__main__':
-       scenario.execute(input_data)
+       scenario.execute(algo_name="CustomDOE", samples=samples, n_processes=2)
 
 
 Multithreading
@@ -202,7 +197,7 @@ The scenario creation would specify the MDA:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation="MDF",
+       formulation_name="MDF",
        main_mda_class="MDAJacobi",
        objective_name="f",
        design_space=design_space,
@@ -213,8 +208,7 @@ The scenario execution remains the same:
 
 .. code-block:: python
 
-   input_data = {"algo": "CustomDOE", "algo_options": {"samples": samples}}
-   scenario.execute(input_data)
+   scenario.execute(algo_name="CustomDOE", samples=samples)
 
 Multiprocessing & Multithreading
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -237,7 +231,7 @@ The scenario would be created as follows:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation="MDF",
+       formulation_name="MDF",
        main_mda_class="MDAJacobi",
        objective_name="f",
        design_space=design_space,
@@ -245,17 +239,12 @@ The scenario would be created as follows:
    )
 
 The algo options would change as well to request the number of processes to run:
-
-.. code-block:: python
-
-   input_data = {"algo": "CustomDOE", "algo_options": {"n_processes": 2, "samples": samples}}
-
-And the execution call shall be protected:
+and the execution call shall be protected:
 
 .. code-block:: python
 
    if __name__ == '__main__':
-       scenario.execute(input_data)
+       scenario.execute(algo_name="CustomDOE", samples=samples, n_processes=2)
 
 
 What about macros?

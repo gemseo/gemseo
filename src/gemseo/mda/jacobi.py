@@ -20,30 +20,50 @@
 
 from __future__ import annotations
 
-from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
-from typing import Final
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.execution_sequence import ExecutionSequenceFactory
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.mda.base_mda import BaseProcessFlow
+from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
-    from typing import Any
-
-    from numpy.typing import NDArray
+    from typing import ClassVar
 
     from gemseo.core.coupling_structure import DependencyGraph
-    from gemseo.core.coupling_structure import MDOCouplingStructure
-    from gemseo.core.execution_sequence import LoopExecSequence
+    from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrKeyMapping
 
 
-N_CPUS: Final[int] = cpu_count()
+class _ProcessFlow(_BaseMDAProcessFlow):
+    """The process data and execution flow."""
+
+    def _get_disciplines_couplings(
+        self, graph: DependencyGraph
+    ) -> list[tuple[str, str, list[str]]]:
+        couplings_results = []
+        for disc in self._node.disciplines:
+            in_data = graph.graph.get_edge_data(self._node, disc)
+            if in_data:
+                couplings_results.append((
+                    self._node,
+                    disc,
+                    sorted(in_data["io"]),
+                ))
+            out_data = graph.graph.get_edge_data(disc, self._node)
+            if out_data:
+                couplings_results.append((
+                    disc,
+                    self._node,
+                    sorted(out_data["io"]),
+                ))
+
+        return couplings_results
 
 
 class MDAJacobi(BaseMDASolver):
@@ -81,111 +101,60 @@ class MDAJacobi(BaseMDASolver):
         \right.
     """
 
-    # TODO: API: Remove the class attributes.
-    SECANT_ACCELERATION: ClassVar[str] = "secant"
-    M2D_ACCELERATION: ClassVar[str] = "m2d"
+    Settings: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
+    """The pydantic model for the settings."""
 
-    # TODO: API: Remove the compatibility mapping.
-    __ACCELERATION_COMPATIBILITY: Final[dict[str, AccelerationMethod | None]] = {
-        M2D_ACCELERATION: AccelerationMethod.ALTERNATE_2_DELTA,
-        SECANT_ACCELERATION: AccelerationMethod.SECANT,
-        "": None,
-    }
+    parallel_execution: DiscParallelExecution | None
+    """Either an executor of disciplines in parallel or ``None`` in serial mode."""
 
-    def __init__(
+    settings: MDAJacobi_Settings
+    """The settings of the MDA"""
+
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
+    def __init__(  # noqa: D107
         self,
-        disciplines: Sequence[MDODiscipline],
-        max_mda_iter: int = 10,
-        name: str | None = None,
-        n_processes: int = N_CPUS,
-        acceleration: str = "",  # TODO: API: Remove this argument.
-        tolerance: float = 1e-6,
-        linear_solver_tolerance: float = 1e-12,
-        use_threading: bool = True,
-        warm_start: bool = False,
-        use_lu_fact: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        coupling_structure: MDOCouplingStructure | None = None,
-        log_convergence: bool = False,
-        linear_solver: str = "DEFAULT",
-        linear_solver_options: Mapping[str, Any] | None = None,
-        acceleration_method: AccelerationMethod = AccelerationMethod.ALTERNATE_2_DELTA,
-        over_relaxation_factor: float = 1.0,
+        disciplines: Sequence[Discipline],
+        settings_model: MDAJacobi_Settings | None = None,
+        **settings: Any,
     ) -> None:
-        """
-        Args:
-            acceleration: Deprecated, please consider using the
-                :attr:`MDA.acceleration_method` instead.
-                The type of acceleration to be used to extrapolate the residuals and
-                save CPU time by reusing the information from the last iterations,
-                either ``None``, ``"m2d"``, or ``"secant"``, ``"m2d"`` is faster but
-                uses the 2 last iterations.
-            n_processes: The maximum simultaneous number of threads if ``use_threading``
-                is set to True, otherwise processes, used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes to parallelize
-                the execution. Processes will copy (serialize) all the disciplines,
-                while threads will share all the memory. If one wants to execute the
-                same discipline multiple times then multiprocessing should be prefered.
-        """  # noqa:D205 D212 D415
-        self.n_processes = n_processes
+        super().__init__(disciplines, settings_model=settings_model, **settings)
 
-        # TODO: API: Remove the old names and attributes for acceleration.
-        if self.__ACCELERATION_COMPATIBILITY[acceleration]:
-            acceleration_method = self.__ACCELERATION_COMPATIBILITY[acceleration]
-
-        super().__init__(
-            disciplines,
-            max_mda_iter=max_mda_iter,
-            name=name,
-            grammar_type=grammar_type,
-            tolerance=tolerance,
-            linear_solver_tolerance=linear_solver_tolerance,
-            warm_start=warm_start,
-            use_lu_fact=use_lu_fact,
-            coupling_structure=coupling_structure,
-            log_convergence=log_convergence,
-            linear_solver=linear_solver,
-            linear_solver_options=linear_solver_options,
-            acceleration_method=acceleration_method,
-            over_relaxation_factor=over_relaxation_factor,
-        )
-
-        self._compute_input_couplings()
+        self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
+        if self.settings.n_processes == 1:
+            self._execute_disciplines = self._execute_disciplines_sequentially
+            self.parallel_execution = None
+        else:
+            self._execute_disciplines = self._execute_disciplines_in_parallel
+            self.parallel_execution = DiscParallelExecution(
+                disciplines,
+                self.settings.n_processes,
+                self.settings.use_threading,
+                exceptions_to_re_raise=(ValueError,),
+            )
 
-        self.parallel_execution = DiscParallelExecution(
-            disciplines,
-            n_processes,
-            use_threading,
-            exceptions_to_re_raise=(ValueError,),
-        )
+    def get_process_flow(self) -> BaseProcessFlow:  # noqa: D102
+        process_flow = super().get_process_flow()
+        process_flow.is_parallel = self.settings.n_processes > 1
+        return process_flow
 
-    # TODO: API: Remove the property and its setter.
-    @property
-    def acceleration(self) -> AccelerationMethod:
-        """The acceleration method."""
-        return self.acceleration_method
-
-    @acceleration.setter
-    def acceleration(self, acceleration: str) -> None:
-        self.acceleration_method = self.__ACCELERATION_COMPATIBILITY[acceleration]
-
-    def _compute_input_couplings(self) -> None:
-        """Compute all the coupling variables that are inputs of the MDA.
+    def _compute_input_coupling_names(self) -> None:
+        """Compute the coupling variables that are inputs of the MDA.
 
         This must be overloaded here because the Jacobi algorithm induces a delay
         between the couplings, the strong couplings may be fully resolved but the weak
-        ones may need one more iteration. The base MDA class uses strong couplings only
-        which is not satisfying here if all disciplines are not strongly coupled.
+        ones may need one more iteration. The base MDA class uses strong couplings only,
+        which is not satisfying here if some disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
             self.disciplines
         ):
-            return super()._compute_input_couplings()
+            return super()._compute_input_coupling_names()
 
         self._input_couplings = sorted(
             set(self.coupling_structure.all_couplings).intersection(
-                self.get_input_data_names()
+                self.io.input_grammar.names
             )
         )
 
@@ -195,56 +164,29 @@ class MDAJacobi(BaseMDASolver):
 
         return None
 
-    def execute_all_disciplines(self, input_local_data: Mapping[str, NDArray]) -> None:
-        """Execute all the disciplines, possibly in parallel.
+    def _execute_disciplines_in_parallel(self) -> None:
+        """Execute the disciplines in parallel."""
+        self.parallel_execution.execute([self.io.data] * len(self.disciplines))
 
-        Args:
-            input_local_data: The input data of the disciplines.
-        """
-        self.reset_disciplines_statuses()
-
-        if self.n_processes > 1:
-            self.parallel_execution.execute([input_local_data] * len(self.disciplines))
-        else:
-            for discipline in self.disciplines:
-                discipline.execute(input_local_data)
-
+    def _execute_disciplines_sequentially(self) -> None:
+        """Execute the disciplines sequentially."""
         for discipline in self.disciplines:
-            self.local_data.update(discipline.get_output_data())
+            discipline.execute(self.io.data)
 
-    def get_expected_workflow(self) -> LoopExecSequence:  # noqa:D102
-        if self.n_processes > 1:
-            sub_workflow = ExecutionSequenceFactory.parallel()
-        else:
-            sub_workflow = ExecutionSequenceFactory.serial()
-
+    def _execute_disciplines_and_update_local_data(
+        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
+    ) -> None:
+        self._execute_disciplines()
         for discipline in self.disciplines:
-            sub_workflow.extend(discipline.get_expected_workflow())
+            self.io.data.update(discipline.io.get_output_data())
 
-        return ExecutionSequenceFactory.loop(self, sub_workflow)
-
-    def _get_disciplines_couplings(
-        self, graph: DependencyGraph
-    ) -> list[tuple[str, str, list[str]]]:
-        couplings_results = []
-        for disc in self.disciplines:
-            in_data = graph.graph.get_edge_data(self, disc)
-            if in_data:
-                couplings_results.append((self, disc, sorted(in_data["io"])))
-            out_data = graph.graph.get_edge_data(disc, self)
-            if out_data:
-                couplings_results.append((disc, self, sorted(out_data["io"])))
-
-        return couplings_results
-
-    def _run(self) -> None:
-        super()._run()
+    def _execute(self) -> None:
+        super()._execute()
 
         while True:
-            input_data = self.local_data.copy()
-
-            self.execute_all_disciplines(self.local_data)
-            self._compute_residuals(input_data)
+            local_data_before_execution = self.io.data.copy()
+            self._execute_disciplines_and_update_local_data()
+            self._compute_residuals(local_data_before_execution)
 
             if self._stop_criterion_is_reached:
                 break

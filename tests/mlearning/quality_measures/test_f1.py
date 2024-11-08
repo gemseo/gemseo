@@ -26,13 +26,14 @@ from numpy import arange
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.knn import KNNClassifier
-from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.quality_measures.f1_measure import F1Measure
+from gemseo.mlearning.classification.algos.knn import KNNClassifier
+from gemseo.mlearning.classification.quality.f1_measure import F1Measure
 from gemseo.utils.testing.helpers import concretize_classes
 
+from ..core.test_ml_algo import DummyMLAlgo
 
-@pytest.fixture()
+
+@pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the classification algorithms."""
     input_data = 1.0 * arange(63).reshape((21, 3))
@@ -43,7 +44,7 @@ def dataset() -> IODataset:
     return dataset_
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_test() -> IODataset:
     """The dataset used to test the performance classification algorithms."""
     input_data = 1.0 * arange(18).reshape((6, 3))
@@ -56,8 +57,8 @@ def dataset_test() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLAlgo):
-        algo = MLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        algo = DummyMLAlgo(dataset)
 
     measure = F1Measure(algo)
     assert measure.algo is not None

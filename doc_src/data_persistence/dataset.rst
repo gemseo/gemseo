@@ -20,17 +20,20 @@ Basics
 ------
 
 .. automodule:: gemseo.datasets.dataset
+   :no-index:
    :exclude-members: Dataset
 
 Visualization
 -------------
 
 .. automodule:: gemseo.post.dataset
+   :no-index:
 
 Problems
 --------
 
 .. automodule:: gemseo.problems.dataset
+   :no-index:
 
 Examples
 --------

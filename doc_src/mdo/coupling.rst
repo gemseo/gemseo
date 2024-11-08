@@ -67,7 +67,7 @@ API
 The API function :func:`.generate_coupling_graph` allows
 to create these visualizations and save them, from:
 
-- the :class:`.MDODiscipline` instances defining the disciplines of interest,
+- the :class:`.Discipline` instances defining the disciplines of interest,
 - a file path
   (by default,
   the default current working directory with *coupling_graph.pdf* as file name),
@@ -128,7 +128,7 @@ API
 The API function :func:`.generate_n2_plot` allows
 to create these visualizations and save them, from:
 
-- the :class:`.MDODiscipline` instances defining the disciplines of interest,
+- the :class:`.Discipline` instances defining the disciplines of interest,
 - a file path
   (by default,
   the default current working directory with *n2.pdf* as file name),

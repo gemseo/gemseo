@@ -25,22 +25,19 @@ from gemseo.uncertainty.distributions.openturns.weibull import OTWeibullDistribu
 def test_default_distribution() -> None:
     """Check the default Weibull distribution."""
     distribution = OTWeibullDistribution()
-    assert distribution.variable_name == distribution.DEFAULT_VARIABLE_NAME
-    marginal = distribution.marginals[0]
-    assert isinstance(marginal, WeibullMin)
-    assert marginal.getParameter() == [1, 1, 0]
+    distribution = distribution.distribution
+    assert isinstance(distribution, WeibullMin)
+    assert distribution.getParameter() == [1, 1, 0]
 
 
 def test_custom() -> None:
     """Check a custom Weibull distribution."""
     distribution = OTWeibullDistribution(
-        "u",
         location=2.0,
         scale=3.0,
         shape=4.0,
         use_weibull_min=False,
     )
-    assert distribution.variable_name == "u"
-    marginal = distribution.marginals[0]
-    assert isinstance(marginal, WeibullMax)
-    assert marginal.getParameter() == [3.0, 4.0, 2.0]
+    distribution = distribution.distribution
+    assert isinstance(distribution, WeibullMax)
+    assert distribution.getParameter() == [3.0, 4.0, 2.0]

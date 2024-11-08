@@ -31,7 +31,7 @@ from numpy.random import default_rng
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 rng = default_rng(54321)
 
@@ -80,7 +80,7 @@ rbf_space.add_variable("epsilon", 1, "float", 0.01, 0.1, 0.05)
 selector.add_candidate(
     "RBFRegressor",
     calib_space=rbf_space,
-    calib_algo={"algo": "fullfact", "n_samples": 16},
+    calib_algo={"algo_name": "PYDOE_FULLFACT", "n_samples": 16},
     smooth=[0, 0.01, 0.1, 1, 10, 100],
 )
 

@@ -58,13 +58,17 @@ discipline = create_discipline(
 )
 
 design_space = create_design_space()
-design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
+design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
 
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
+    [discipline],
+    "y_1",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "fullfact", "n_samples": 9})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
 
 dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", data=dataset)

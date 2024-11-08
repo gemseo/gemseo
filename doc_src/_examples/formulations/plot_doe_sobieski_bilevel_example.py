@@ -30,7 +30,7 @@ from os import name as os_name
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -61,17 +61,7 @@ propu, aero, mission, struct = create_discipline([
 design_space = SobieskiDesignSpace()
 
 # %%
-# Then, we build a sub-scenario for each strongly coupled disciplines,
-# using the following algorithm, maximum number of iterations and
-# algorithm options:
-algo_options = {
-    "xtol_rel": 1e-7,
-    "xtol_abs": 1e-7,
-    "ftol_rel": 1e-7,
-    "ftol_abs": 1e-7,
-    "ineq_tolerance": 1e-4,
-}
-sub_sc_opts = {"max_iter": 30, "algo": "SLSQP", "algo_options": algo_options}
+# Then, we build a sub-scenario for each strongly coupled disciplines.
 
 # %%
 # Build a sub-scenario for Propulsion
@@ -79,10 +69,10 @@ sub_sc_opts = {"max_iter": 30, "algo": "SLSQP", "algo_options": algo_options}
 # This sub-scenario will minimize SFC.
 sc_prop = create_scenario(
     propu,
-    "DisciplinaryOpt",
     "y_34",
     design_space.filter("x_3", copy=True),
     name="PropulsionScenario",
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -91,11 +81,11 @@ sc_prop = create_scenario(
 # This sub-scenario will minimize L/D.
 sc_aero = create_scenario(
     aero,
-    "DisciplinaryOpt",
     "y_24",
     design_space.filter("x_2", copy=True),
     name="AerodynamicsScenario",
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -105,11 +95,11 @@ sc_aero = create_scenario(
 # log(aircraft total weight / (aircraft total weight - fuel weight)).
 sc_str = create_scenario(
     struct,
-    "DisciplinaryOpt",
     "y_11",
     deepcopy(design_space).filter("x_1"),
     name="StructureScenario",
     maximize_objective=True,
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
@@ -120,12 +110,12 @@ sc_str = create_scenario(
 sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 system_scenario = create_scenario(
     sub_disciplines,
-    "BiLevel",
     "y_4",
     design_space.filter("x_shared", copy=True),
     parallel_scenarios=False,
     reset_x0_before_opt=True,
     scenario_type="DOE",
+    formulation_name="BiLevel",
 )
 
 # %%
@@ -145,7 +135,7 @@ system_scenario.formulation.mda2.warm_start = False
 #    process whatever the execution order and process dispatch.
 
 for sub_sc in sub_disciplines[0:3]:
-    sub_sc.default_inputs = {"max_iter": 20, "algo": "L-BFGS-B"}
+    sub_sc.set_algorithm(algo_name="L-BFGS-B", max_iter=20)
 
 # %%
 # Visualize the XDSM
@@ -155,7 +145,7 @@ for sub_sc in sub_disciplines[0:3]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False)
+system_scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Multiprocessing
@@ -172,11 +162,8 @@ system_scenario.xdsmize(save_html=False)
 #    available for multiprocessing on Windows.
 #    As an alternative, we recommend the method
 #    :meth:`.DOEScenario.set_optimization_history_backup`.
-system_scenario.execute({
-    "n_samples": 30,
-    "algo": "lhs",
-    "algo_options": {"n_processes": 1 if os_name == "nt" else 4},
-})
+n_processes = 1 if os_name == "nt" else 4
+system_scenario.execute(algo_name="PYDOE_LHS", n_samples=30, n_processes=n_processes)
 
 system_scenario.print_execution_metrics()
 
@@ -199,13 +186,13 @@ dataset = system_scenario.to_dataset("a_name_for_my_dataset")
 # %%
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("OptHistoryView", save=False, show=True)
+system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the scatter matrix
 # ^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["y_4", "x_shared"],
     save=False,
     show=True,
@@ -214,9 +201,9 @@ system_scenario.post_process(
 # %%
 # Plot parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-system_scenario.post_process("ParallelCoordinates", save=False, show=True)
+system_scenario.post_process(post_name="ParallelCoordinates", save=False, show=True)
 
 # %%
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
-system_scenario.post_process("Correlations", save=False, show=True)
+system_scenario.post_process(post_name="Correlations", save=False, show=True)

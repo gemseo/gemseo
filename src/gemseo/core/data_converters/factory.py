@@ -29,4 +29,4 @@ class DataConverterFactory(BaseFactory[BaseDataConverter["BaseGrammar"]]):
     """Factory for converters of data values to NumPy arrays and vice versa."""
 
     _CLASS = BaseDataConverter
-    _MODULE_NAMES = ("gemseo.core.data_converters",)
+    _PACKAGE_NAMES = ("gemseo.core.data_converters",)

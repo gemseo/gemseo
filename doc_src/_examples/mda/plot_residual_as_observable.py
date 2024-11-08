@@ -52,7 +52,7 @@ configure_logger()
 # Create and execute the MDA
 # --------------------------
 # We do not need to specify the inputs, the default inputs
-# of the :class:`.MDA` will be used and computed from the
+# of the :class:`.BaseMDA` will be used and computed from the
 # default inputs of the disciplines.
 #
 # Here, we could have replaced :class:`.MDAGaussSeidel` by any other MDA.
@@ -76,7 +76,7 @@ output_data = mda.execute()
 #     - The maximal number of iterations is reached.
 #       In that case, the design is not feasible.
 #
-# The normed residual can be seen by the :class:`.MDA` attribute :attr:`~.MDA.normed_residual`.
+# The normed residual can be seen by the :class:`.BaseMDA` attribute :attr:`~.BaseMDA.normed_residual`.
 mda.normed_residual
 
 # %%
@@ -95,10 +95,10 @@ residual_history
 # just like the couplings.
 # To get the normed MDA residual,
 # the key registered by :attr:`~.MDA.RESIDUALS_NORM` (``""MDA residuals norm"``) can be used.
-f"The normed residual key is: {mda.RESIDUALS_NORM}."
+f"The normed residual key is: {mda.NORMALIZED_RESIDUAL_NORM}."
 
 # %%
 # This normed residual can be used as a constraint in an MDO scenario,
 # or can simply be retrieved as a scenario observable.
-normed_residual = output_data[mda.RESIDUALS_NORM]
+normed_residual = output_data[mda.NORMALIZED_RESIDUAL_NORM]
 normed_residual

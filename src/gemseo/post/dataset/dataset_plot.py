@@ -39,12 +39,10 @@ from typing import ClassVar
 from typing import NamedTuple
 from typing import Union
 
-from numpy import linspace
 from strenum import StrEnum
 
-from gemseo.post.dataset.plot_factory_factory import PlotFactoryFactory
 from gemseo.post.dataset.plot_settings import PlotSettings
-from gemseo.utils.compatibility.matplotlib import get_color_map
+from gemseo.post.dataset.plots.factory_factory import PlotFactoryFactory
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
@@ -52,13 +50,12 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset.base_plot import BasePlot
-    from gemseo.post.dataset.plot_factory import PlotFactory
+    from gemseo.post.dataset.plots.base_plot import BasePlot
+    from gemseo.post.dataset.plots.factory import PlotFactory
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
 DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
-VariableType = Union[str, tuple[str, int]]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -124,7 +121,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         annotations = getfullargspec(self.__class__.__init__).annotations
         parameter_names_to_types = [(name, annotations[name]) for name in parameters]
 
-        specific_settings = NamedTuple("specific_settings", parameter_names_to_types)  # type:ignore
+        specific_settings = NamedTuple("specific_settings", parameter_names_to_types)
         self._common_settings = PlotSettings()
         self._specific_settings = specific_settings(**parameters)
         self.__common_dataset = dataset
@@ -491,48 +488,6 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return repr_variable(variable[1], variable[2]), variable
 
-    # TODO: API: remove _set_color, _set_linestyle and _set_marker
-    def _set_color(
-        self,
-        n_items: int,
-    ) -> None:
-        """Set the colors of the items to be plotted.
-
-        Args:
-            n_items: The number of items to be plotted.
-        """
-        color_map = get_color_map(self.colormap)
-        self.color = self.color or [color_map(c) for c in linspace(0, 1, n_items)]
-        if isinstance(self.color, str):
-            self.color = [self.color] * n_items
-
-    def _set_linestyle(self, n_items: int, linestyle: str | Sequence[str]) -> None:
-        """Set the line style of the items to be plotted.
-
-        Args:
-            n_items: The number of items to be plotted.
-            linestyle: The default line style to use
-                when :attr:`.linestyle` is ``None`.
-        """
-        self.linestyle = self.linestyle or linestyle
-        if isinstance(self.linestyle, str):
-            self.linestyle = [self.linestyle] * n_items
-
-    def _set_marker(
-        self,
-        n_items: int,
-        marker: str | Sequence[str],
-    ) -> None:
-        """Set the marker of the items to be plotted.
-
-        Args:
-            n_items: The number of items to be plotted.
-            marker: The default marker to use when :attr:`.marker` is empty.
-        """
-        self.marker = self.marker or marker
-        if isinstance(self.marker, str):
-            self.marker = [self.marker] * n_items
-
     @property
     def labels(self) -> Mapping[str, str]:
         """The labels for the variables."""
@@ -541,21 +496,6 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     @labels.setter
     def labels(self, names_to_labels: Mapping[str, str]) -> None:
         self._common_settings.labels = names_to_labels
-
-    @staticmethod
-    def _force_variable_to_tuple(variable: VariableType) -> tuple[str, int]:
-        """Return a variable as a tuple ``(variable_name, variable_component)``.
-
-        Args:
-            variable: The original variable.
-
-        Returns:
-            The variable as ``(variable_name, variable_component)``.
-        """
-        if isinstance(variable, str):
-            variable = (variable, 0)
-
-        return variable
 
     @property
     def _n_items(self) -> int:

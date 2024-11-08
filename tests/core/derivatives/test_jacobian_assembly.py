@@ -32,17 +32,17 @@ from numpy import ones
 from numpy.random import default_rng
 from scipy.sparse import csr_matrix
 
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives import jacobian_assembly
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 CWD = Path(__file__).parent
 RNG = default_rng()
@@ -55,7 +55,7 @@ def assembly() -> JacobianAssembly:
     for discipline in disciplines:
         discipline.linearize(compute_all_jacobians=True)
 
-    return JacobianAssembly(MDOCouplingStructure(disciplines))
+    return JacobianAssembly(CouplingStructure(disciplines))
 
 
 @pytest.fixture(scope="module")
@@ -162,7 +162,7 @@ def couplings() -> list[str]:
 def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
     """A Gauss-Seidel MDA for the SSBJ use case."""
     gs_mda = SobieskiMDAGaussSeidel("complex128")
-    gs_mda.tolerance = 1e-14
+    gs_mda.settings.tolerance = 1e-14
     gs_mda.max_iter = 100
     gs_mda.add_differentiated_inputs(variables)
     gs_mda.add_differentiated_outputs(functions)
@@ -222,9 +222,9 @@ def test_total_derivatives(mda, variables, couplings) -> None:
 @pytest.mark.parametrize(
     ("save", "file_path", "expected"),
     [
-        (False, None, None),
-        (False, "foo", None),
-        (True, None, "coupled_jacobian.pdf"),
+        (False, "", ""),
+        (False, "foo", ""),
+        (True, "", "coupled_jacobian.pdf"),
         (True, "bar", "coupled_jacobian_bar.pdf"),
     ],
 )
@@ -305,7 +305,7 @@ def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format) -> None:
         matrix_density=0.5,
     )
 
-    mc = MDOCouplingStructure(disciplines)
+    mc = CouplingStructure(disciplines)
     ja = JacobianAssembly(mc)
 
     inputs = {
@@ -333,12 +333,12 @@ def test_compute_newton_step(compute_residuals, size) -> None:
         disc.linearize(inputs, compute_all_jacobians=True)
     if compute_residuals:
         residuals = concatenate([
-            disciplines[0].local_data["a"] - inputs["a"],
-            disciplines[1].local_data["b"] - inputs["b"],
+            disciplines[0].io.data["a"] - inputs["a"],
+            disciplines[1].io.data["b"] - inputs["b"],
         ])
     else:
         residuals = None
-    assembly = JacobianAssembly(MDOCouplingStructure(disciplines))
+    assembly = JacobianAssembly(CouplingStructure(disciplines))
     couplings = ["a", "b"]
     assembly.compute_sizes([], [], couplings)
 
@@ -351,5 +351,5 @@ def test_compute_newton_step(compute_residuals, size) -> None:
         disc.execute(inputs_up)
 
     # 1 iteration is enough to solve the coupling for linear problems.
-    assert allclose(inputs_up["a"], disciplines[0].local_data["a"])
-    assert allclose(inputs_up["b"], disciplines[1].local_data["b"])
+    assert allclose(inputs_up["a"], disciplines[0].io.data["a"])
+    assert allclose(inputs_up["b"], disciplines[1].io.data["b"])

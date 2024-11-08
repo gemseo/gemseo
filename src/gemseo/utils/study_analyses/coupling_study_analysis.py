@@ -31,7 +31,7 @@ from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
@@ -85,7 +85,7 @@ class CouplingStudyAnalysis:
     study: XLSStudyParser
     """The XLSStudyParser instance built from the Excel file."""
 
-    disciplines: dict[str, MDODiscipline]
+    disciplines: dict[str, Discipline]
     """The disciplines."""
 
     def __init__(self, xls_study_path: str) -> None:

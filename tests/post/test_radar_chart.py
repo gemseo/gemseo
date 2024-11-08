@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -37,7 +37,7 @@ def problem():
 
 TEST_PARAMETERS = {
     "default": ({}, ["RadarChart_default"]),
-    "opt": ({"iteration": "opt"}, ["RadarChart_opt"]),
+    "opt": ({"iteration": None}, ["RadarChart_opt"]),
     "negative": ({"iteration": -2}, ["RadarChart_negative"]),
     "positive": ({"iteration": 2}, ["RadarChart_positive"]),
     "names": (
@@ -75,7 +75,7 @@ def test_function_error(problem) -> None:
 
 
 def test_iteration_error(problem) -> None:
-    """Test a ValueError is raised with ill defined iteration."""
+    """Test a ValueError is raised with ill-defined iteration."""
     n_iterations = len(problem.database)
     post = RadarChart(problem)
     with pytest.raises(
@@ -83,11 +83,11 @@ def test_iteration_error(problem) -> None:
         match=re.escape(
             "The requested iteration 1000 is neither "
             f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
-            f"nor equal to the tag {RadarChart.OPTIMUM}."
+            f"nor None."
         ),
     ):
         post.execute(
-            save=False, constraint_names=problem.get_constraint_names(), iteration=1000
+            save=False, constraint_names=problem.constraints.get_names(), iteration=1000
         )
 
 

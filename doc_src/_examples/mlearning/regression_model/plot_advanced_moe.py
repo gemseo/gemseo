@@ -27,9 +27,9 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
-from gemseo.mlearning.quality_measures.f1_measure import F1Measure
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.silhouette_measure import SilhouetteMeasure
+from gemseo.mlearning.classification.quality.f1_measure import F1Measure
+from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 # %%
 # In this example,
@@ -69,7 +69,7 @@ model = create_regression_model("MOERegressor", dataset, hard=False)
 # minimizing this measure.
 model.set_clustering_measure(SilhouetteMeasure)
 model.add_clusterer_candidate("KMeans", n_clusters=[2, 3, 4])
-model.add_clusterer_candidate("GaussianMixture", n_components=[3, 4, 5])
+model.add_clusterer_candidate("GaussianMixture", n_clusters=[3, 4, 5])
 
 # %%
 # Classification
@@ -138,7 +138,7 @@ model
 #    on another sub-part of the input space.
 #
 # Once built,
-# this mixture of experts can be used as any :class:`.MLRegressionAlgo`.
+# this mixture of experts can be used as any :class:`.BaseRegressor`.
 #
 # .. seealso::
 #

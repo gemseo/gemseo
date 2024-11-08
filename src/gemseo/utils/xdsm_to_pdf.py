@@ -39,7 +39,7 @@ class XDSMToPDFConverter:
     def convert(
         self,
         xdsm_data: dict[str, Any],
-        directory_path: str | Path,
+        directory_path: Path,
         file_name: str,
         scenario: str,
         build: bool = True,
@@ -54,8 +54,9 @@ class XDSMToPDFConverter:
             file_name: The name of the output file.
             scenario: The name of the scenario.
             build: Whether the standalone pdf of the XDSM will be built.
-            cleanup: Whether pdflatex built files will be cleaned up
-                after build is complete.
+            cleanup: Whether the intermediate files
+                (``file_name.tex``, ``file_name.tikz`` and built files)
+                will be cleaned up after the PDF is created.
             batchmode: Whether pdflatex is run in `batchmode`.
         """
         workflow = xdsm_data[scenario]["workflow"][1]
@@ -73,6 +74,9 @@ class XDSMToPDFConverter:
             cleanup=cleanup,
             quiet=batchmode,
         )
+        if cleanup and not build:
+            (directory_path / f"{file_name}.tex").unlink()
+            (directory_path / f"{file_name}.tikz").unlink()
 
         if build and (
             not (Path(directory_path) / file_name).with_suffix(".pdf").exists()
@@ -114,9 +118,8 @@ class XDSMToPDFConverter:
                 if isinstance(last_node, list):  # case of previous parallel nodes
                     for node in last_node:
                         self.__xdsm.add_process([node, system])
-                else:
-                    if last_node:
-                        self.__xdsm.add_process([last_node, system])
+                elif last_node:
+                    self.__xdsm.add_process([last_node, system])
                 last_node = system
             elif isinstance(system, list):  # system is a group of nodes (MDA, chain...)
                 self.__add_processes(system, last_node)
@@ -131,12 +134,18 @@ class XDSMToPDFConverter:
                     self.__add_processes(sub_workflow)
 
                     if isinstance(sub_sys, list):
-                        # take the last node when it is a chain (e.g. [d1, d2, d2...]),
-                        # but take the first node when it is an iterative struct
-                        # (e.g. MDA, [d1, [d2, d3]])
-                        last_nodes.append(
-                            sub_sys[0] if isinstance(sub_sys[-1], list) else sub_sys[-1]
-                        )
+                        # If the last node is an iterative structure,
+                        # take the node just before
+                        # e.g. if [d1, d2, d3] -> take d3
+                        # if [d1, d2, [d3]] -> take d2
+                        if len(sub_sys) == 1:
+                            last_nodes.append(sub_sys[0])
+                        else:
+                            last_nodes.append(
+                                sub_sys[-2]
+                                if isinstance(sub_sys[-1], list)
+                                else sub_sys[-1]
+                            )
                     else:
                         last_nodes.append(sub_sys)
                 last_node = last_nodes
@@ -239,7 +248,7 @@ class XDSMToPDFConverter:
             escaped_characters = ["_", "$", "&", "{", "}", "%"]
             for char in escaped_characters:
                 node_replaced = node_replaced.replace(char, rf"\{char}")
-            name = name + node_replaced
+            name += node_replaced
 
             self.__xdsm.add_system(node["id"], node_type, r"\text{" + name + "}")
 
@@ -266,7 +275,7 @@ class XDSMToPDFConverter:
 
 def xdsm_data_to_pdf(
     xdsm_data: dict[str, Any],
-    directory_path: Path | str,
+    directory_path: Path,
     file_name: str = "xdsm",
     scenario: str = "root",
     pdf_build: bool = True,
@@ -280,15 +289,16 @@ def xdsm_data_to_pdf(
         directory_path: The output directory where the pdf is generated.
         file_name: The output file name (without extension).
         scenario: The name of the scenario name.
-        pdf_build: Whether the standalone pdf of the XDSM will be built.
-        pdf_cleanup: Whether pdflatex built files will be cleaned up
-            after build is complete.
+        pdf_build: Whether the standalone PDF of the XDSM will be built.
+        pdf_cleanup: Whether intermediate files
+            (``file_name.tex``, ``file_name.tikz`` and built files)
+            will be cleaned up after build is complete.
         pdf_batchmode: Whether pdflatex is run in `batchmode`.
     """
     converter = XDSMToPDFConverter()
     converter.convert(
         xdsm_data,
-        str(directory_path),
+        directory_path,
         file_name,
         scenario,
         pdf_build,

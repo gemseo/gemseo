@@ -4,6 +4,7 @@
 /htmlcov
 /doc
 /sandbox
+/build
 
 *.pyc
 .project
@@ -19,7 +20,7 @@ tags
 /doc_src/gen_modules
 /doc_src/authors.rst
 /doc_src/plugins.rst
-doc_src/_modules
+doc_src/modules
 doc_src/algorithms/index.rst
 doc_src/algorithms/**/*.*
 !doc_src/algorithms/gen_opts/*.tmpl
@@ -39,3 +40,4 @@ doc_src/_examples/**/*.*
 coverage.xml
 .coverage*
 !.coveragerc
+asv-gemseo

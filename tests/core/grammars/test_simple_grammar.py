@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 import pytest
-from numpy import ndarray
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -103,28 +102,6 @@ def test_validate_error(data, error_msg, raise_exception, caplog) -> None:
 
     assert caplog.records[0].levelname == "ERROR"
     assert caplog.text.strip().endswith(error_msg)
-
-
-def test_is_array(grammar_class) -> None:
-    """Verify is_array."""
-    grammar = grammar_class(
-        "g",
-        names_to_types={
-            "a_none": None,
-            "a_float": float,
-            "a_ndarray": ndarray,
-            "a_list": list,
-        },
-    )
-
-    for name in ("a_none", "a_float"):
-        assert not grammar.is_array(name)
-
-    for name in ("a_ndarray", "a_list"):
-        assert grammar.is_array(name)
-
-    assert grammar.is_array("a_ndarray", numeric_only=True)
-    assert not grammar.is_array("a_list", numeric_only=True)
 
 
 def test_update_with_merge_error(grammar_class):

@@ -46,13 +46,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from numpy import ndarray
 from numpy import where
 
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
+    from gemseo.typing import RealArray
 
 
 class StandardScaler(Scaler):
@@ -72,7 +72,7 @@ class StandardScaler(Scaler):
         """  # noqa: D205 D212
         super().__init__(name, offset, coefficient)
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         _mean = data.mean(0)
         _std = data.std(0)
         is_constant = _std == 0

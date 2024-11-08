@@ -37,17 +37,14 @@ from numpy import array
 
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo.core.chain import MDOChain
-from gemseo.core.chain import MDOParallelChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.namespaces import namespaces_separator
-from gemseo.core.namespaces import remove_prefix_from_list
-from gemseo.core.namespaces import remove_prefix_from_name
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline import Discipline
+from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 
 
 def func_1(x=1.0, u=2.0):
@@ -76,11 +73,8 @@ def dfunc_3(y=2.0):
 
 def test_remove_ns_prefix() -> None:
     """Test the remove_ns_prefix method."""
-    assert remove_prefix_from_name("ab:c") == "c"
-    assert remove_prefix_from_name("ac") == "ac"
-
     data_dict = {"ac": 1, "a:b": 2}
-    assert remove_prefix_from_list(data_dict.keys()) == ["ac", "b"]
+    assert list(remove_prefix(data_dict.keys())) == ["ac", "b"]
 
 
 def test_split_namespace() -> None:
@@ -90,102 +84,86 @@ def test_split_namespace() -> None:
     assert split_namespace(":bar") == ["", "bar"]
 
 
-@pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
-)
+@pytest.fixture(params=[Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON])
+def grammar_type(request):
+    old_grammar_type = AutoPyDiscipline.default_grammar_type
+    AutoPyDiscipline.default_grammar_type = request.param
+    yield
+    AutoPyDiscipline.default_grammar_type = old_grammar_type
+
+
 @pytest.mark.parametrize("use_defaults", [True, False])
 def test_analytic_disc_ns(grammar_type, use_defaults) -> None:
     """Tests basic namespaces features using analytic disciplines."""
-    disc = create_discipline(
-        "AutoPyDiscipline", py_func=func_1, grammar_type=grammar_type
-    )
-    disc_ns = create_discipline(
-        "AutoPyDiscipline", py_func=func_1, grammar_type=grammar_type
-    )
+    disc = create_discipline("AutoPyDiscipline", py_func=func_1)
+    disc_ns = create_discipline("AutoPyDiscipline", py_func=func_1)
 
     disc_ns.add_namespace_to_input("x", "ns")
-    assert sorted(disc_ns.get_input_data_names()) == ["ns:x", "u"]
-    assert sorted(disc_ns.get_input_data_names(with_namespaces=False)) == ["u", "x"]
+    assert sorted(disc_ns.io.input_grammar.names) == ["ns:x", "u"]
+    assert sorted(disc_ns.io.input_grammar.names_without_namespace) == ["u", "x"]
 
     outs_ref = disc.execute({"x": array([1.0])})
     if use_defaults:
-        assert disc_ns.default_inputs["x"] is not None
-        assert "ns:x" in disc_ns.default_inputs
+        assert "ns:x" in disc_ns.default_input_data
         outs_ns = disc_ns.execute()
     else:
         outs_ns = disc_ns.execute({"ns:x": array([1.0])})
 
     assert outs_ref["x"] == outs_ns["ns:x"]
-    assert outs_ref["x"] == outs_ns["x"]
 
 
-@pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
-)
 def test_chain_disc_ns(grammar_type) -> None:
     """Tests MDOChain features with namespaces."""
-    disc_1 = create_discipline(
-        "AutoPyDiscipline", py_func=func_1, grammar_type=grammar_type
-    )
-    disc_2 = create_discipline(
-        "AutoPyDiscipline", py_func=func_2, grammar_type=grammar_type
-    )
+    disc_1 = create_discipline("AutoPyDiscipline", py_func=func_1)
+    disc_2 = create_discipline("AutoPyDiscipline", py_func=func_2)
 
     disc_1.add_namespace_to_input("x", "ns_in")
     disc_1.add_namespace_to_output("y", "ns_out")
     disc_2.add_namespace_to_input("y", "ns_out")
 
-    chain = MDOChain([disc_1, disc_2], grammar_type=grammar_type)
+    chain = MDOChain([disc_1, disc_2])
 
-    assert sorted(chain.get_input_data_names()) == ["a", "ns_in:x", "u"]
-    assert sorted(remove_prefix_from_list(chain.get_input_data_names())) == [
+    assert sorted(chain.io.input_grammar.names) == ["a", "ns_in:x", "u"]
+    assert sorted(remove_prefix(chain.io.input_grammar.names)) == [
         "a",
         "u",
         "x",
     ]
-    assert sorted(chain.get_input_data_names(with_namespaces=False)) == [
+    assert sorted(chain.io.input_grammar.names_without_namespace) == [
         "a",
         "u",
         "x",
     ]
-    assert sorted(chain.get_output_data_names()) == ["ns_out:y", "z"]
+    assert sorted(chain.io.output_grammar.names) == ["ns_out:y", "z"]
 
     out = chain.execute({"ns_in:x": array([3.0]), "u": array([4.0])})
-    assert out["y"] == out["ns_out:y"]
-    assert out["y"] == array([10.0])
+    assert out["ns_out:y"] == array([10.0])
     assert out["z"] == array([20.0])
 
 
-@pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
-)
 @pytest.mark.parametrize("chain_type", [MDOChain, MDOParallelChain])
 def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
     """Tests MDOChain and MDOParallelChain with twice the same disciplines and different
     namespaces."""
-    disc_1 = create_discipline(
-        "AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1, grammar_type=grammar_type
-    )
-    disc_2 = create_discipline(
-        "AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1, grammar_type=grammar_type
-    )
+    disc_1 = create_discipline("AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1)
+    disc_2 = create_discipline("AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1)
 
     disc_1.add_namespace_to_input("x", "ns1")
     disc_1.add_namespace_to_output("y", "ns1")
     disc_2.add_namespace_to_input("x", "ns2")
     disc_2.add_namespace_to_output("y", "ns2")
 
-    chain = chain_type([disc_1, disc_2], grammar_type=grammar_type)
+    chain = chain_type([disc_1, disc_2])
 
-    assert sorted(chain.get_input_data_names()) == sorted(["ns2:x", "ns1:x", "u"])
-    assert sorted(chain.get_output_data_names()) == sorted(["ns2:y", "ns1:y"])
+    assert sorted(chain.io.input_grammar.names) == sorted(["ns2:x", "ns1:x", "u"])
+    assert sorted(chain.io.output_grammar.names) == sorted(["ns2:y", "ns1:y"])
 
-    assert sorted(chain.get_input_data_names(with_namespaces=False)) == sorted([
+    assert sorted(chain.io.input_grammar.names_without_namespace) == sorted([
         "x",
         "x",
         "u",
     ])
-    assert sorted(chain.get_output_data_names(with_namespaces=False)) == sorted([
+    assert sorted(chain.io.output_grammar.names_without_namespace) == sorted([
         "y",
         "y",
     ])
@@ -198,7 +176,10 @@ def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
     assert out["ns1:y"] == array([14.0])
     assert out["ns2:y"] == array([10.0])
 
-    assert sorted(chain.get_input_output_data_names(with_namespaces=False)) == [
+    in_out_data = remove_prefix(
+        chain.io.output_grammar.keys() | chain.io.input_grammar.keys()
+    )
+    assert sorted(in_out_data) == [
         "u",
         "x",
         "x",
@@ -206,91 +187,57 @@ def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
         "y",
     ]
 
-    out_no_ns = chain.get_output_data(with_namespaces=False)
+    out_no_ns = chain.io.get_output_data(with_namespaces=False)
     assert "y" in out_no_ns
 
     assert chain.check_jacobian(
-        inputs=["ns2:x", "ns1:x", "u"], outputs=["ns1:y", "ns2:y"]
+        input_names=["ns2:x", "ns1:x", "u"], output_names=["ns1:y", "ns2:y"]
     )
 
 
-@pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.SIMPLE, MDODiscipline.GrammarType.JSON]
-)
 def test_mda_with_namespaces(grammar_type) -> None:
     """Tests MDAs and namespaces."""
-    disc_1 = create_discipline(
-        "AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1, grammar_type=grammar_type
-    )
-    disc_2 = create_discipline(
-        "AutoPyDiscipline", py_func=func_3, py_jac=dfunc_3, grammar_type=grammar_type
-    )
+    disc_1 = create_discipline("AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1)
+    disc_2 = create_discipline("AutoPyDiscipline", py_func=func_3, py_jac=dfunc_3)
 
     disciplines = [disc_1, disc_2]
     mda = create_mda(
         "MDAGaussSeidel",
         disciplines=disciplines,
-        grammar_type=grammar_type,
         tolerance=1e-10,
     )
-    out_ref = mda.execute()
+    mda.execute()
 
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert len(struct.get_strongly_coupled_disciplines()) == 2
     disc_1.add_namespace_to_output("y", "ns")
 
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert not struct.get_strongly_coupled_disciplines()
 
     disc_2.add_namespace_to_input("y", "ns")
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert len(struct.get_strongly_coupled_disciplines()) == 2
 
     disc_1.add_namespace_to_input("u", "ns")
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert not struct.get_strongly_coupled_disciplines()
 
     disc_2.add_namespace_to_output("u", "ns")
-    struct = MDOCouplingStructure(disciplines)
+    struct = CouplingStructure(disciplines)
     assert len(struct.get_strongly_coupled_disciplines()) == 2
 
     mda_ns = create_mda(
         "MDAGaussSeidel",
         disciplines=disciplines,
-        grammar_type=grammar_type,
         tolerance=1e-10,
     )
-    out_ns = mda_ns.execute()
-    assert abs(out_ns["y"][0] - out_ref["y"][0]) < 1e-14
+    mda_ns.execute()
 
     assert disc_1.check_jacobian()
     assert disc_2.check_jacobian()
 
-    assert mda_ns.check_jacobian(inputs=["x"], outputs=["f"], threshold=1e-5)
-
-
-def test_json_grammar_grammar_add_namespace() -> None:
-    """Tests JSONGrammar namespaces handling."""
-    g = JSONGrammar("g")
-    g.update_from_names(["name1", "name2"])
-    g.required_names.add("name1")
-    g.add_namespace("name1", "ns")
-    assert "ns" + namespaces_separator + "name1" in g
-    assert g.to_namespaced == {"name1": "ns:name1"}
-    assert "ns:name1" in g.required_names
-
-    with pytest.raises(ValueError, match="Variable ns:name1 has already a namespace."):
-        g.add_namespace("ns:name1", "ns2")
-
-
-def test_simple_grammar_add_namespace() -> None:
-    """Tests SimpleGrammar namespaces handling."""
-    g = SimpleGrammar(
-        "g", names_to_types={"name1": int, "name2": str}, required_names=["name1"]
-    )
-    g.add_namespace("name1", "ns")
-    assert "ns" + namespaces_separator + "name1" in g
-    assert g.to_namespaced == {"name1": "ns:name1"}
+    assert mda_ns.check_jacobian(input_names=["x"], output_names=["f"], threshold=1e-5)
 
 
 def a_func(x=1.0):
@@ -317,7 +264,7 @@ def test_namespaces_chain() -> None:
 
     b_disc.linearization_mode = "finite_differences"
     a_disc_ns.linearization_mode = "finite_differences"
-    assert chain_ns.check_jacobian(inputs=["x", "y"], outputs=["z", "ns:y"])
+    assert chain_ns.check_jacobian(input_names=["x", "y"], output_names=["z", "ns:y"])
 
 
 def test_update_namespaces() -> None:

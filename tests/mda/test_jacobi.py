@@ -20,26 +20,33 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 import pytest
 from numpy import allclose as allclose_
 from numpy import array
 from numpy import isclose
+from numpy.testing import assert_equal
 
 from gemseo import create_discipline
+from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.utils.discipline import DummyDiscipline
 
 from .test_gauss_seidel import SelfCoupledDisc
+from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from gemseo.typing import StrKeyMapping
 
 
 def allclose(a, b):
@@ -47,7 +54,7 @@ def allclose(a, b):
 
 
 @pytest.fixture(scope="module")
-def mda_setting() -> Mapping[str, Any]:
+def mda_setting() -> StrKeyMapping:
     """Returns the setting for all subsequent MDAs."""
     return {"tolerance": 1e-12, "max_mda_iter": 50}
 
@@ -104,68 +111,29 @@ def test_jacobi_sobieski() -> None:
     """Test the execution of Jacobi on Sobieski."""
     mda = SobieskiMDAJacobi()
     mda.execute()
-    mda.default_inputs["x_shared"] += 0.02
-    mda.warm_start = True
+    mda.default_input_data["x_shared"] += 0.02
+    mda.settings.warm_start = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
 
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
-
-
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility() -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda_1 = SobieskiMDAJacobi(acceleration="m2d")
-    mda_1.reset_history_each_run = True
-    mda_1.execute()
-
-    mda_2 = SobieskiMDAJacobi(acceleration_method=AccelerationMethod.ALTERNATE_2_DELTA)
-    mda_2.reset_history_each_run = True
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-    mda_1.cache.clear()
-    mda_1.acceleration = "secant"
-    mda_1.execute()
-
-    mda_2.cache.clear()
-    mda_2.acceleration_method = AccelerationMethod.SECANT
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters() -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda = SobieskiMDAJacobi(acceleration="")
-    assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
-    assert mda.acceleration_method == AccelerationMethod.ALTERNATE_2_DELTA
-
-    mda = SobieskiMDAJacobi(acceleration="m2d")
-    assert mda.acceleration == AccelerationMethod.ALTERNATE_2_DELTA
-    assert mda.acceleration_method == AccelerationMethod.ALTERNATE_2_DELTA
-
-    mda = SobieskiMDAJacobi(acceleration="secant")
-    assert mda.acceleration == AccelerationMethod.SECANT
-    assert mda.acceleration_method == AccelerationMethod.SECANT
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
 
 
 def test_mda_jacobi_parallel() -> None:
-    """Comparison of Jacobi on Sobieski problem: 1 and 5 processes."""
-    mda_seq = SobieskiMDAJacobi()
-    sorted_c = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
-    assert mda_seq._input_couplings == sorted_c
+    """Comparison of Jacobi on Sobieski problem: 1 and 4 processes."""
+    sorted_couplings = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
 
-    outdata_seq = mda_seq.execute()
+    mda_seq = SobieskiMDAJacobi(n_processes=1)
+    assert mda_seq._input_couplings == sorted_couplings
+    assert mda_seq.parallel_execution is None
+    mda_seq_local_data = mda_seq.execute()
 
     mda_parallel = SobieskiMDAJacobi(n_processes=4)
-    mda_parallel.reset_statuses_for_run()
-    outdata_parallel = mda_parallel.execute()
+    assert mda_seq._input_couplings == sorted_couplings
+    assert mda_parallel.parallel_execution is not None
+    mda_parallel_local_data = mda_parallel.execute()
 
-    for key, value in outdata_seq.items():
-        assert array(outdata_parallel[key] == value).all()
+    assert_equal(mda_seq_local_data, mda_parallel_local_data)
 
 
 def test_jacobi_sellar(sellar_disciplines) -> None:
@@ -174,30 +142,30 @@ def test_jacobi_sellar(sellar_disciplines) -> None:
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < 1e-4
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
 
 
 def test_expected_workflow() -> None:
-    """Test MDAJacobi workflow should be list of one tuple of disciplines (meaning
+    """Test MDAJacobi process_flow should be list of one tuple of disciplines (meaning
     parallel execution)"""
-    disc1 = MDODiscipline()
-    disc2 = MDODiscipline()
-    disc3 = MDODiscipline()
+    disc1 = DummyDiscipline()
+    disc2 = DummyDiscipline()
+    disc3 = DummyDiscipline()
     disciplines = [disc1, disc2, disc3]
 
     mda = MDAJacobi(disciplines, n_processes=1)
     expected = (
-        "{MDAJacobi(None), [MDODiscipline(None), MDODiscipline(None), "
-        "MDODiscipline(None), ], }"
+        "{MDAJacobi(DONE), [DummyDiscipline(DONE), DummyDiscipline(DONE), "
+        "DummyDiscipline(DONE)]}"
     )
-    assert str(mda.get_expected_workflow()) == expected
+    assert str(mda.get_process_flow().get_execution_flow()) == expected
 
     mda = MDAJacobi(disciplines, n_processes=2)
     expected = (
-        "{MDAJacobi(None), (MDODiscipline(None), MDODiscipline(None), "
-        "MDODiscipline(None), ), }"
+        "{MDAJacobi(DONE), (DummyDiscipline(DONE), DummyDiscipline(DONE), "
+        "DummyDiscipline(DONE))}"
     )
-    assert str(mda.get_expected_workflow()) == expected
+    assert str(mda.get_process_flow().get_execution_flow()) == expected
 
 
 def test_expected_workflow_with_adapter() -> None:
@@ -210,52 +178,51 @@ def test_expected_workflow_with_adapter() -> None:
     design_space = SobieskiDesignSpace()
     scn_propu = create_scenario(
         discs,
-        "DisciplinaryOpt",
         "y_4",
         design_space.filter("x_3", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
     )
     adapter_propu = MDOScenarioAdapter(scn_propu, ["x_1", "x_2"], ["x_3"])
     scn_aero = create_scenario(
         discs,
-        "DisciplinaryOpt",
         "y_4",
         design_space.filter("x_2", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="AeroScenario",
     )
     adapter_aero = MDOScenarioAdapter(scn_aero, ["x_1", "x_3"], ["x_2"])
     scn_struct = create_scenario(
         discs,
-        "DisciplinaryOpt",
         "y_4",
         design_space.filter("x_1", copy=True),
+        formulation_name="DisciplinaryOpt",
         name="StructureScenario",
     )
     adapter_struct = MDOScenarioAdapter(scn_struct, ["x_2", "x_3"], ["x_1"])
     adapters = [adapter_propu, adapter_aero, adapter_struct]
 
-    mda = MDAJacobi(adapters)
+    mda = create_mda("MDAJacobi", adapters, n_processes=2)
 
     expected = (
-        "{MDAJacobi(None), ("
-        "{PropulsionScenario(None), [SobieskiPropulsion(None), "
-        "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        "SobieskiMission(None), ], }, "
-        "{AeroScenario(None), [SobieskiPropulsion(None), "
-        "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        "SobieskiMission(None), ], }, "
-        "{StructureScenario(None), [SobieskiPropulsion(None), "
-        "SobieskiStructure(None), SobieskiAerodynamics(None), "
-        "SobieskiMission(None), ], }, "
-        "), }"
+        "{MDAJacobi(DONE), ("
+        "{PropulsionScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}, "
+        "{AeroScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]}, "
+        "{StructureScenario(DONE), [SobieskiPropulsion(DONE), "
+        "SobieskiStructure(DONE), SobieskiAerodynamics(DONE), "
+        "SobieskiMission(DONE)]})}"
     )
 
-    assert str(mda.get_expected_workflow()) == expected
+    assert str(mda.get_process_flow().get_execution_flow()) == expected
 
 
 def test_self_coupled() -> None:
     sc_disc = SelfCoupledDisc()
-    mda = MDAJacobi([sc_disc], tolerance=1e-14, max_mda_iter=40)
+    mda = create_mda("MDAJacobi", [sc_disc], tolerance=1e-14, max_mda_iter=40)
     out = mda.execute()
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
 
@@ -263,18 +230,46 @@ def test_self_coupled() -> None:
 def test_log_convergence(sellar_disciplines) -> None:
     """Check that the boolean log_convergence is correctly set."""
     mda = MDAJacobi(sellar_disciplines)
-    assert not mda._log_convergence
-    mda = MDAJacobi(sellar_disciplines, log_convergence=True)
-    assert mda._log_convergence
+    assert not mda.settings.log_convergence
+    mda = create_mda("MDAJacobi", sellar_disciplines, log_convergence=True)
+    assert mda.settings.log_convergence
 
 
-def test_parallel_doe(generate_parallel_doe_data) -> None:
-    """Test the execution of Jacobi in parallel.
-
-    Args:
-        generate_parallel_doe_data: Fixture that returns the optimum solution to
-            a parallel DOE scenario for a particular `main_mda_name`
-            and n_samples.
-    """
-    obj = generate_parallel_doe_data("MDAJacobi", 7)
+def test_parallel_doe() -> None:
+    """Test the execution of Jacobi in parallel."""
+    obj = generate_parallel_doe("MDAJacobi", 7)
     assert isclose(array([-obj]), array([608.175]), atol=1e-3)
+
+
+def test_no_coupling():
+    """Check what happens when the disciplines are not coupled."""
+    disciplines = [AnalyticDiscipline({"y": "a"}), AnalyticDiscipline({"z": "2*a"})]
+    mda = MDAJacobi(disciplines)
+    mda.default_input_data["a"] = array([1.0])
+    assert not mda.get_process_flow()._get_disciplines_couplings(
+        DependencyGraph(disciplines)
+    )
+    local_data = mda.execute()
+    assert_equal(
+        local_data,
+        {
+            "a": array([1.0]),
+            "y": array([1.0]),
+            "z": array([2.0]),
+            "MDA residuals norm": array([0.0]),
+        },
+    )
+
+
+def test_settings():
+    disciplines = [Sellar1(), Sellar2()]
+    settings = MDAJacobi_Settings(max_mda_iter=5, tolerance=0)
+
+    mda = create_mda("MDAJacobi", disciplines, settings_model=settings)
+    assert mda.settings.max_mda_iter == 5
+
+    mda = create_mda("MDAJacobi", disciplines, max_mda_iter=10)
+    assert mda.settings.max_mda_iter == 10
+
+    mda = create_mda("MDAJacobi", disciplines, max_mda_iter=10, settings_model=settings)
+    assert mda.settings.max_mda_iter == 5

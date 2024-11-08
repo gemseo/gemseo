@@ -24,11 +24,11 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.algos.opt_result import OptimizationResult
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.optimization_result import OptimizationResult
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 
@@ -65,8 +65,8 @@ def test_from_dict() -> None:
 def optimization_result() -> OptimizationResult:
     """An optimization result."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("z", size=2, l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("z", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5)
     disc = AnalyticDiscipline({
         "y": "x",
         "eq_1": "x",
@@ -76,7 +76,9 @@ def optimization_result() -> OptimizationResult:
         "ineq_n_1": "x",
         "ineq_n_2": "x",
     })
-    scenario = DOEScenario([disc], "DisciplinaryOpt", "y", design_space)
+    scenario = DOEScenario(
+        [disc], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
     scenario.add_constraint("eq_1")
     scenario.add_constraint("eq_2", value=0.25)
     scenario.add_constraint("ineq_p_1", constraint_type="ineq", positive=True)
@@ -85,7 +87,7 @@ def optimization_result() -> OptimizationResult:
         "ineq_p_2", constraint_type="ineq", positive=True, value=0.25
     )
     scenario.add_constraint("ineq_n_2", constraint_type="ineq")
-    scenario.execute({"algo": "fullfact", "n_samples": 1})
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=1)
     return scenario.optimization_result
 
 
@@ -98,7 +100,7 @@ def test_optimization_result(optimization_result) -> None:
         x_opt_as_dict={"x": array([0.5])},
         f_opt=0.5,
         objective_name="y",
-        optimizer_name="fullfact",
+        optimizer_name="PYDOE_FULLFACT",
         n_obj_call=1,
         optimum_index=0,
         constraint_values={
@@ -198,16 +200,18 @@ def test_from_optimization_problem(
 ) -> None:
     """Check from_optimization_problem with empty database."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "f")
     problem.add_constraint(
         MDOFunction(lambda x: x, "g"), value, MDOFunction.ConstraintType.INEQ
     )
     if maximize:
-        problem.change_objective_sign()
+        problem.minimize_objective = False
     problem.use_standardized_objective = use_standardized_objective
-    execute_algo(problem, "CustomDOE", "doe", samples=array([[0.1]]))
+    execute_algo(
+        problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.1]])
+    )
     result = OptimizationResult.from_optimization_problem(problem)
     f_opt = -0.1 if maximize and use_standardized_objective else 0.1
 

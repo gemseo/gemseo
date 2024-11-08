@@ -17,11 +17,11 @@ Monitoring the execution of a scenario
 
 When a scenario is executed (see :ref:`sellar_mdo` for building a scenario), |g| logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
-In a situation like this, the current execution status of the :class:`.MDODiscipline` is useful as well.
+In a situation like this, the current execution status of the :class:`.Discipline` is useful as well.
 
 In this page, the different monitoring modes of a |g| scenario are illustrated on the :ref:`Sobieski <sobieski_problem>` MDF test case.
 
-For that, by means of the API function :func:`.create_discipline`, we build the :class:`.MDODiscipline`:
+For that, by means of the API function :func:`.create_discipline`, we build the :class:`.Discipline`:
 
 .. code::
 
@@ -50,7 +50,7 @@ Basic monitoring using logs
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using |g|'s logger.
 Use :func:`.configure_logger` to configure the logger to log in a file.
 
-The method :meth:`~.Scenario.xdsmize` of the :class:`.Scenario`
+The method :meth:`~.BaseScenario.xdsmize` of the :class:`.BaseScenario`
 can be used to this aim (``monitor=True``).
 If the option ``save_html`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``show_html=True``.
 If ``save_pdf`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
@@ -80,9 +80,9 @@ This generates outputs such as the following, where the process' hierarchy is re
 Graphical monitoring using `XDSMjs <https://github.com/OneraHub/XDSMjs>`_
 -------------------------------------------------------------------------
 
-An :ref:`xdsm` diagram with the status of the :class:`.MDODiscipline` can be generated at each status change
-of the :class:`.MDODiscipline`. See :ref:`xdsm` for setting up the :ref:`XDSM <xdsm>` generation in a web browser.
-To trigger this mode in a scenario, use :meth:`~.Scenario.xdsmize`, with the ``monitor`` argument set to ``True``.
+An :ref:`xdsm` diagram with the status of the :class:`.Discipline` can be generated at each status change
+of the :class:`.Discipline`. See :ref:`xdsm` for setting up the :ref:`XDSM <xdsm>` generation in a web browser.
+To trigger this mode in a scenario, use :meth:`~.BaseScenario.xdsmize`, with the ``monitor`` argument set to ``True``.
 The path to the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ library must be set to the folder containing the `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ :term:`HTML` files.
 
 
@@ -175,8 +175,8 @@ please enable the time stamps before executing the scenario.
 
 .. code::
 
-   from gemseo.core.discipline import MDODiscipline
-   MDODiscipline.activate_time_stamps()
+   from gemseo.core.discipline import Discipline
+   ExecutionStatistics.is_time_stamps_enabled = True
 
 Then, after the scenario execution,
 the Gantt chart can be created easily.

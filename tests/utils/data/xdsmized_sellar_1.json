@@ -1,0 +1,43 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Caller",
+        "type": "optimization"
+      },
+      {
+        "id": "Dis1",
+        "name": "Sellar1",
+        "type": "analysis"
+      }
+    ],
+    "edges": [
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "gamma, x_1, x_shared, y_2"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_1"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_1"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1"
+        ]
+      ]
+    ],
+    "optpb": ""
+  }
+}

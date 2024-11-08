@@ -24,9 +24,7 @@ from numpy import vstack
 from scipy.linalg import lstsq
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.algos.sequence_transformer.sequence_transformer_factory import (
-    SequenceTransformerFactory,
-)
+from gemseo.algos.sequence_transformer.factory import SequenceTransformerFactory
 
 A_TOL: float = 1e-6
 DIMENSION: int = 100
@@ -159,7 +157,7 @@ def test_aitken() -> None:
 )
 def test_minimum_polynomial_parameters(window_size) -> None:
     """Tests the window size argument of MinimumPolynomial."""
-    if window_size in [0, "foo"]:
+    if window_size in {0, "foo"}:
         with pytest.raises(ValueError):
             factory.create(
                 AccelerationMethod.MINIMUM_POLYNOMIAL, window_size=window_size

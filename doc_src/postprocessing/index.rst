@@ -17,21 +17,21 @@ How to deal with post-processing
 ================================
 
 In this section we describe the post processing features of |g|, used to
-analyze :class:`~gemseo.algos.opt_result.OptimizationResult`, called the
+analyze :class:`~gemseo.algos.optimization_result.OptimizationResult`, called the
 :term:`optimization history`.
 
 What data to post-process?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Post-processing features are applicable to any
-:class:`~gemseo.algos.opt_problem.OptimizationProblem` that has been solved,
+:class:`~gemseo.algos.optimization_problem.OptimizationProblem` that has been solved,
 which may have been loaded from the disk.
 
 In practice,
 
-- a :class:`~gemseo.core.scenario.Scenario` instance has an :class:`~gemseo.core.formulation.MDOFormulation` attribute,
-- an :class:`~gemseo.core.formulation.MDOFormulation` instance has an :class:`~gemseo.algos.opt_problem.OptimizationProblem` attribute,
-- an :class:`~gemseo.algos.opt_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.opt_result.OptimizationResult` attribute.
+- a :class:`~gemseo.scenarios.base_scenario.BaseScenario` instance has an :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation` attribute,
+- an :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation` instance has an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` attribute,
+- an :class:`~gemseo.algos.optimization_problem.OptimizationProblem` instance has an :class:`~gemseo.algos.optimization_result.OptimizationResult` attribute.
 
 Illustration on the Sobieski use case
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,20 +61,19 @@ the ``formulation`` value. For a detailed explanation on how to setup the case, 
 
    scenario.set_differentiation_method("user")
 
-   algo_options = {'max_iter': 10, 'algo': "SLSQP"}
    for constraint in ["g_1","g_2","g_3"]:
        scenario.add_constraint(constraint, 'ineq')
 
-   scenario.execute(algo_options)
+   scenario.execute(algo_name="SLSQP", max_iter=10)
 
 How to apply a post-process feature?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-From this ``scenario``, we can apply any kind of post-processing dedicated to :class:`~gemseo.core.scenario.Scenario` instances,
+From this ``scenario``, we can apply any kind of post-processing dedicated to :class:`~gemseo.scenarios.base_scenario.BaseScenario` instances,
 
-- either by means of its :meth:`~gemseo.core.scenario.Scenario.post_process` method:
+- either by means of its :meth:`~gemseo.scenarios.base_scenario.BaseScenario.post_process` method:
 
-    .. automethod:: gemseo.core.scenario.Scenario.post_process
+    .. automethod:: gemseo.scenarios.base_scenario.BaseScenario.post_process
        :noindex:
 
 - or by means of the :func:`.execute_post` API method:
@@ -86,7 +85,7 @@ From this ``scenario``, we can apply any kind of post-processing dedicated to :c
 
     Only design variables and functions (objective function, constraints) are stored for post-processing.
     If you want to be able to plot state variables, you must add them as observables before the problem is executed.
-    Use the :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+    Use the :meth:`~gemseo.scenarios.base_scenario.BaseScenario.add_observable` method.
 
 .. include:: /examples/post_process/index.rst
    :start-after: start-after-label

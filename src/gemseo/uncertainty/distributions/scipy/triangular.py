@@ -25,24 +25,13 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPTriangularDistribution(SPDistribution):
-    """The SciPy-based triangular distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.scipy.triangular import (
-        ...     SPTriangularDistribution,
-        ... )
-        >>> distribution = SPTriangularDistribution("x", -1, 0, 1)
-        >>> print(distribution)
-        triang(lower=-1, mode=0, upper=1)
-    """
+    """The SciPy-based triangular distribution."""
 
     def __init__(
         self,
-        variable: str = SPDistribution.DEFAULT_VARIABLE_NAME,
         minimum: float = 0.0,
         mode: float = 0.5,
         maximum: float = 1.0,
-        dimension: int = 1,
     ) -> None:
         """
         Args:
@@ -51,15 +40,13 @@ class SPTriangularDistribution(SPDistribution):
             maximum: The maximum of the triangular random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "triang",
-            {
+            interfaced_distribution="triang",
+            parameters={
                 "loc": minimum,
                 "scale": maximum - minimum,
                 "c": (mode - minimum) / float(maximum - minimum),
             },
-            dimension,
-            {
+            standard_parameters={
                 self._LOWER: minimum,
                 self._MODE: mode,
                 self._UPPER: maximum,

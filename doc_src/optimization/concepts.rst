@@ -40,7 +40,7 @@ Design space
 Optimization problem
 --------------------
 
-.. autoclass:: gemseo.algos.opt_problem.OptimizationProblem
+.. autoclass:: gemseo.algos.optimization_problem.OptimizationProblem
    :noindex:
 
 .. raw:: html
@@ -52,5 +52,5 @@ Optimization problem
 Driver
 ------
 
-.. autoclass:: gemseo.algos.driver_library.DriverLibrary
+.. autoclass:: gemseo.algos.base_driver_library.BaseDriverLibrary
    :noindex:

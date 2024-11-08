@@ -70,20 +70,22 @@ get_scenario_options_schema("MDO")
 #
 # - The four first arguments are mandatory:
 #
-#   - ``disciplines``: the list of :class:`.MDODiscipline`
-#     (or possibly, a single :class:`.MDODiscipline`),
-#   - ``formulation``: the formulation name,
+#   - ``disciplines``: the list of :class:`.Discipline`
+#     (or possibly, a single :class:`.Discipline`),
 #   - ``objective_name``: the name of the objective function
-#     (one of the discipline outputs)
+#     (one of the discipline outputs),
 #   - ``design_space``: the :class:`.DesignSpace` or
-#     the file path of the design space
+#     the file path of the design space,
+#   - either a ``formulation_name`` followed by its ``formulation_settings```; or
+#   - a ``formulation_settings_model`` (see :ref:`formulation_settings`).
 #
 # - The other arguments are optional:
 #
 #   - ``name``: scenario name,
 #   - ``scenario_type``: type of scenario,
 #     either `"MDO"` (default) or `"DOE"` ,
-#   - ``**options``: options passed to the formulation.
+#   - ``**formulation_settings``: settings passed to the formulation as keyword
+#     arguments when the ``formulation_settings_model`` was not provided.
 #
 # - This function returns an instance of :class:`.MDOScenario` or
 #   :class:`.DOEScenario`.
@@ -94,11 +96,15 @@ design_space.add_variable("x1", 1, "float", 0.0, 1.0)
 design_space.add_variable("x2", 1, "float", 0.0, 1.0)
 
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    discipline,
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "fullfact", "n_samples": 25})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["x1", "x2", "y"],
     save=False,
     show=True,
@@ -124,7 +130,7 @@ get_scenario_differentiation_modes()
 # use :func:`.monitor_scenario`.
 # The first argument is the scenario to monitor, and the second is an
 # observer object, that is notified by its update(atom) method, which takes an
-# :class:`~gemseo.core.execution_sequence.AtomicExecSequence` as argument.
+# :class:`~gemseo.core.execution_sequence.ExecutionSequence` as argument.
 # This method will be called every time a discipline status changes.
 # The atom represents a discipline's position in the process. One discipline
 # can have multiple atoms, since one discipline can be used in multiple
@@ -137,13 +143,17 @@ class Observer:
     def update(self, atom) -> None:
         """Update method.
 
-        :param AtomicExecSequence atom: atomic execution sequence.
+        :param ExecutionSequence atom: atomic execution sequence.
         """
         print(atom)
 
 
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    discipline,
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 monitor_scenario(scenario, Observer())
-scenario.execute({"algo": "fullfact", "n_samples": 25})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)

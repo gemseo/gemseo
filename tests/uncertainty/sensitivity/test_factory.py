@@ -26,17 +26,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
 
-def test_constructor() -> None:
-    SensitivityAnalysisFactory()
-
-
-def test_available() -> None:
-    factory = SensitivityAnalysisFactory()
-    sensitivity_indices = factory.available_sensitivity_analyses
-    assert "MorrisAnalysis" in sensitivity_indices
-
-
-def test_is_available() -> None:
+def test_not_available() -> None:
     factory = SensitivityAnalysisFactory()
     assert factory.is_available("MorrisAnalysis")
     assert not factory.is_available("FooAnalysis")
@@ -53,4 +43,9 @@ def test_create() -> None:
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
     factory = SensitivityAnalysisFactory()
-    assert factory.create("MorrisAnalysis", (discipline,), space, n_replicates=5)
+    analysis = factory.create("MorrisAnalysis")
+    samples = analysis.compute_samples(
+        (discipline,), space, n_replicates=5, n_samples=0
+    )
+    other_analysis = factory.create("MorrisAnalysis", samples=samples)
+    assert id(analysis.dataset) == id(other_analysis.dataset) == id(samples)

@@ -27,52 +27,57 @@ import pytest
 from numpy import allclose
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.core.ml_algo import MLAlgo
-from gemseo.mlearning.quality_measures.mse_measure import MSEMeasure
-from gemseo.mlearning.quality_measures.rmse_measure import RMSEMeasure
-from gemseo.mlearning.regression.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
+
+from ..core.test_ml_algo import DummyMLAlgo
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
-MODEL.set_cache_policy(MODEL.CacheType.MEMORY_FULL)
+MODEL.set_cache(MODEL.CacheType.MEMORY_FULL)
 
 TOL_DEG_1 = 0.03
 TOL_DEG_2 = 0.001
 ATOL = 1e-12
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": 20})
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=20)
     return MODEL.cache.to_dataset()
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset_test() -> Dataset:
     """The dataset used to test the performance of the regression algorithms."""
     MODEL.cache.clear()
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([MODEL], "DisciplinaryOpt", "y", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": 5})
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=5)
     return MODEL.cache.to_dataset()
 
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(MLAlgo):
-        algo = MLAlgo(dataset)
+    with concretize_classes(DummyMLAlgo):
+        algo = DummyMLAlgo(dataset)
 
     measure = MSEMeasure(algo)
     assert measure.algo is not None
@@ -184,20 +189,27 @@ def test_compute_bootstrap_measure(dataset) -> None:
 
 
 @pytest.mark.parametrize(
-    "method", ["compute_bootstrap_measure", "compute_cross_validation_measure"]
+    ("method_name", "class_name"),
+    [
+        ("compute_bootstrap_measure", "Bootstrap"),
+        ("compute_cross_validation_measure", "CrossValidation"),
+    ],
 )
 @pytest.mark.parametrize("fit", [False, True])
-def test_fit_transformers(algo_for_transformer, method, fit) -> None:
-    """Check that the transformers are fitted with the sub-datasets.
+def test_fit_transformers(algo_for_transformer, class_name, method_name, fit) -> None:
+    """Check that the user can fit the transformers with the sub-datasets.
 
-    By default, the transformers are fitted with the sub-datasets. If False, use the
-    transformers of the assessed algorithm as they are.
+    Otherwise, use the transformers of the assessed algorithm as they are.
     """
-    m1 = MSEMeasure(algo_for_transformer)
-    m2 = MSEMeasure(algo_for_transformer, fit_transformers=fit)
-    e1 = getattr(m1, method)
-    e2 = getattr(m2, method)
-    assert allclose(e1(seed=0), e2(seed=0)) is fit
+    mse = MSEMeasure(algo_for_transformer)
+    method = getattr(mse, method_name)
+    method(seed=0, store_resampling_result=True)
+    model = algo_for_transformer.resampling_results[class_name][1][0]
+    mse = MSEMeasure(algo_for_transformer, fit_transformers=fit)
+    method = getattr(mse, method_name)
+    method(seed=0, store_resampling_result=True)
+    new_model = algo_for_transformer.resampling_results[class_name][1][0]
+    assert (model.algo.y_train_.sum() == new_model.algo.y_train_.sum()) is not fit
 
 
 @pytest.mark.parametrize(

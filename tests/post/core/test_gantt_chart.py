@@ -25,20 +25,20 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_discipline
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.utils.testing.helpers import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
 
-@pytest.fixture()
+@pytest.fixture
 def reset_time_stamping():
     """Reset the time stamping before and after a test."""
-    MDODiscipline.deactivate_time_stamps()
-    MDODiscipline.activate_time_stamps()
+    ExecutionStatistics.is_time_stamps_enabled = False
+    ExecutionStatistics.is_time_stamps_enabled = True
     yield
-    MDODiscipline.deactivate_time_stamps()
+    ExecutionStatistics.is_time_stamps_enabled = False
 
 
 @pytest.fixture(scope="module")
@@ -52,9 +52,9 @@ def test_time_stamps(reset_time_stamping) -> None:
     """Tests the time stamps storage."""
     mission = create_discipline("SobieskiMission", enable_delay=True)
     mission.execute()
-    data = {"x_shared": mission.default_inputs["x_shared"] + 1.0}
+    data = {"x_shared": mission.default_input_data["x_shared"] + 1.0}
     mission.linearize(data, compute_all_jacobians=True)
-    stamps = MDODiscipline.time_stamps
+    stamps = ExecutionStatistics.time_stamps
 
     assert "SobieskiMission" in stamps
     assert len(stamps) == 1
@@ -73,15 +73,13 @@ def test_time_stamps(reset_time_stamping) -> None:
 
 def test_stamps_error() -> None:
     """Tests that the error is raised when time stamps are deactivated."""
-    with pytest.raises(
-        ValueError, match="Time stamps are not activated in MDODiscipline"
-    ):
+    with pytest.raises(ValueError, match="Time stamps are not enabled in Discipline"):
         create_gantt_chart()
 
 
 def test_save(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests file saving."""
-    MDODiscipline.time_stamps = time_stamps_data
+    ExecutionStatistics.time_stamps = time_stamps_data
     file_path = Path("gantt_chart.png")
     create_gantt_chart(file_path=file_path, font_size=10)
     assert file_path.exists()
@@ -111,19 +109,19 @@ def test_plot(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     # )
     # for c_name in ["g_1", "g_2", "g_3"]:
     # scenario.add_constraint(c_name, constraint_type="ineq")
-    # scenario.execute({"max_iter": 3, "algo": "SLSQP"})
+    # scenario.execute(algo_name="SLSQP", max_iter=3)
     #
-    # stamps = MDODiscipline.TIME_STAMPS
+    # stamps = Discipline.TIME_STAMPS
     # with open(TIME_STAMPS_PATH, "wb") as outfile:
     # pickle.dump(stamps, outfile)
-    MDODiscipline.time_stamps = time_stamps_data
+    ExecutionStatistics.time_stamps = time_stamps_data
     create_gantt_chart(save=False, font_size=10)
 
 
 @image_comparison(["gantt_chart_filtered"])
 def test_plot_filter(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart plot creation with disciplines filter."""
-    MDODiscipline.time_stamps = time_stamps_data
+    ExecutionStatistics.time_stamps = time_stamps_data
     create_gantt_chart(
         save=False,
         font_size=10,
@@ -133,6 +131,6 @@ def test_plot_filter(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
 
 def test_plot_filter_fail(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     """Tests the Gantt chart disciplines filter failure."""
-    MDODiscipline.time_stamps = time_stamps_data
+    ExecutionStatistics.time_stamps = time_stamps_data
     with pytest.raises(ValueError, match="have no time stamps"):
         create_gantt_chart(save=False, disc_names=["IDONTEXIST"])

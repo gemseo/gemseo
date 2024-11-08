@@ -17,14 +17,14 @@
 #                      initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A discipline interfacing a Python function."""
+"""A discipline interfacing a Python function automatically."""
 
 from __future__ import annotations
 
 import ast
 import logging
-from inspect import getfullargspec
 from inspect import getsource
+from inspect import signature
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Final
@@ -37,21 +37,22 @@ from numpy import ndarray
 from typing_extensions import get_args
 from typing_extensions import get_origin
 
-from gemseo.core.data_processor import DataProcessor
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Sequence
+
+    from gemseo.typing import StrKeyMapping
 
 DataType = Union[float, ndarray]
 
 LOGGER = logging.getLogger(__name__)
 
 
-class AutoPyDiscipline(MDODiscipline):
+class AutoPyDiscipline(Discipline):
     """Wrap a Python function into a discipline.
 
     A simplified and straightforward way of integrating a discipline
@@ -61,7 +62,7 @@ class AutoPyDiscipline(MDODiscipline):
 
     The Python function may or may not include default values for input arguments,
     however, if the resulting :class:`.AutoPyDiscipline` is going to be placed inside
-    an :class:`.MDF`, a :class:`.BiLevel` formulation or an :class:`.MDA`
+    an :class:`.MDF`, a :class:`.BiLevel` formulation or a :class:`.BaseMDA`
     with strong couplings, then the Python function **must** assign default values for
     its input arguments.
 
@@ -86,22 +87,6 @@ class AutoPyDiscipline(MDODiscipline):
     py_jac: Callable | None
     """The Python function to compute the Jacobian from the inputs."""
 
-    # TODO: API: remove since it is not used.
-    use_arrays: bool
-    """Whether the function is expected to take arrays as inputs and give outputs as
-    arrays."""
-
-    # TODO: API: remove since this feature is provided by the base class.
-    input_names: list[str]
-    """The names of the inputs."""
-
-    # TODO: API: remove since this feature is provided by the base class.
-    output_names: list[str]
-    """The names of the outputs."""
-
-    data_processor: AutoDiscDataProcessor
-    """A data processor forcing input data to float and output data to arrays."""
-
     sizes: dict[str, int]
     """The sizes of the input and output variables."""
 
@@ -111,9 +96,8 @@ class AutoPyDiscipline(MDODiscipline):
         self,
         py_func: Callable,
         py_jac: Callable | None = None,
-        name: str | None = None,
+        name: str = "",
         use_arrays: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
     ) -> None:
         """
         Args:
@@ -122,29 +106,21 @@ class AutoPyDiscipline(MDODiscipline):
                 its output value must be a 2D NumPy array
                 with rows corresponding to the outputs and columns to the inputs.
             name: The name of the discipline.
-                If ``None``, use the name of the Python function.
+                If empty, use the name of the Python function.
             use_arrays: Whether the function is expected
                 to take arrays as inputs and give outputs as arrays.
-
-        Raises:
-            TypeError: When ``py_func`` is not callable.
         """  # noqa: D205 D212 D415
-        if not callable(py_func):
-            msg = "py_func must be callable."
-            raise TypeError(msg)
-
-        super().__init__(name=name or py_func.__name__, grammar_type=grammar_type)
+        super().__init__(name=name or py_func.__name__)
         self.py_func = py_func
-        self.use_arrays = use_arrays
         self.py_jac = py_jac
-        self.input_names = getfullargspec(self.py_func).args
+        self.input_names = list(signature(self.py_func).parameters)
         self.output_names = self.__create_output_names()
         have_type_hints = self.__create_grammars()
 
         if not have_type_hints and not use_arrays:
             # When type hints are used, the conversions will be handled automatically
             # by the grammars.
-            self.data_processor = AutoDiscDataProcessor(self.output_names)
+            self.io.data_processor = AutoDiscDataProcessor()
 
         if self.py_jac is None:
             self.set_jacobian_approximation()
@@ -265,18 +241,18 @@ class AutoPyDiscipline(MDODiscipline):
 
         return output_names
 
-    def _run(self) -> None:
-        output_values = self.py_func(**self.get_input_data(with_namespaces=False))
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        output_values = self.py_func(**input_data)
         if len(self.output_names) == 1:
             output_values = {self.output_names[0]: output_values}
         else:
             output_values = dict(zip(self.output_names, output_values))
-        self.store_local_data(**output_values)
+        return output_values
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """
         Raises:
@@ -288,7 +264,7 @@ class AutoPyDiscipline(MDODiscipline):
             raise RuntimeError(msg)
 
         if not self.__sizes:
-            for name, value in self._local_data.items():
+            for name, value in self.io.data.items():
                 if name in self.input_grammar:
                     converter = self.input_grammar.data_converter
                 else:
@@ -315,7 +291,7 @@ class AutoPyDiscipline(MDODiscipline):
                 ),
             )
 
-        func_jac = self.py_jac(**self.get_input_data(with_namespaces=False))
+        func_jac = self.py_jac(**self.io.get_input_data(with_namespaces=False))
         if len(func_jac.shape) < 2:
             func_jac = atleast_2d(func_jac)
         if func_jac.shape != self.__jac_shape:
@@ -344,32 +320,12 @@ class AutoDiscDataProcessor(DataProcessor):
     to NumPy arrays.
     """
 
-    # TODO: API: this is never used, remove?
-    out_names: Sequence[str]
-    """The names of the outputs."""
-
-    # TODO: API: this is never used, remove?
-    one_output: bool
-    """Whether there is a single output."""
-
-    def __init__(
-        self,
-        out_names: Sequence[str],
-    ) -> None:
-        """
-        Args:
-            out_names: The names of the outputs.
-        """  # noqa: D205 D212 D415
-        super().__init__()
-        self.out_names = out_names
-        self.one_output = len(out_names) == 1
-
     def pre_process_data(self, data: dict[str, DataType]) -> dict[str, DataType]:
         """Pre-process the input data.
 
         Execute a pre-processing of input data
-        after they are checked by :meth:`~MDODiscipline.check_input_data`,
-        and before the :meth:`~MDODiscipline._run` method of the discipline is called.
+        after they are checked by :meth:`~Discipline.validate_input_data`,
+        and before the :meth:`~Discipline._run` method of the discipline is called.
 
         Args:
             data: The data to be processed.
@@ -389,8 +345,8 @@ class AutoDiscDataProcessor(DataProcessor):
         """Post-process the output data.
 
         Execute a post-processing of the output data
-        after the :meth:`~MDODiscipline._run` method of the discipline is called,
-        and before they are checked by :meth:`~MDODiscipline.check_output_data`.
+        after the :meth:`~Discipline._run` method of the discipline is called,
+        and before they are checked by :meth:`~Discipline.validate_output_data`.
 
         Args:
             data: The data to be processed.
@@ -404,19 +360,3 @@ class AutoDiscDataProcessor(DataProcessor):
                 processed_data[output_name] = array([output_value])
 
         return processed_data
-
-
-# TODO: API: remove since it is not used.
-def to_arrays_dict(data: dict[str, DataType]) -> dict[str, ndarray]:
-    """Ensure that the values of a dictionary are NumPy arrays.
-
-    Args:
-        data: The dictionary whose values must be NumPy arrays.
-
-    Returns:
-        The dictionary with NumPy arrays as values.
-    """
-    for key, value in data.items():
-        if not isinstance(value, ndarray):
-            data[key] = array([value])
-    return data

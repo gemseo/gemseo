@@ -25,24 +25,13 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTNormalDistribution(OTDistribution):
-    """The OpenTURNS-based normal distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.normal import (
-        ...     OTNormalDistribution
-        >>> )
-        >>> distribution = OTNormalDistribution("x", -1, 2)
-        >>> print(distribution)
-        Normal(mu=-1, sigma=2)
-    """
+    """The OpenTURNS-based normal distribution."""
 
     def __init__(
         self,
-        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         mu: float = 0.0,
         sigma: float = 1.0,
-        dimension: int = 1,
-        transformation: str | None = None,
+        transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
@@ -54,13 +43,11 @@ class OTNormalDistribution(OTDistribution):
                 of the normal random variable.
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "Normal",
-            (mu, sigma),
-            dimension,
-            {self._MU: mu, self._SIGMA: sigma},
-            transformation,
-            lower_bound,
-            upper_bound,
-            threshold,
+            interfaced_distribution="Normal",
+            parameters=(mu, sigma),
+            standard_parameters={self._MU: mu, self._SIGMA: sigma},
+            transformation=transformation,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            threshold=threshold,
         )

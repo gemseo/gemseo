@@ -12,6 +12,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Copyright 2024 Capgemini
 # Contributors:
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                         documentation
@@ -21,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
@@ -35,33 +38,39 @@ from scipy.linalg import solve
 
 from gemseo import create_discipline
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.coupling_structure import MDOCouplingStructure
+from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.mda import MDA
-from gemseo.mda.newton import MDANewtonRaphson
-from gemseo.problems.scalable.linear.disciplines_generator import (
+from gemseo.mda.newton_raphson import MDANewtonRaphson
+from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import get_inputs
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
 
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
+
 DIRNAME = os.path.dirname(__file__)
 
 
-@pytest.fixture()
+@pytest.fixture
 def sellar_mda(sellar_disciplines):
     return MDAGaussSeidel(sellar_disciplines)
 
@@ -69,7 +78,7 @@ def sellar_mda(sellar_disciplines):
 @pytest.fixture(scope="module")
 def sellar_inputs():
     """Build dictionary with initial solution."""
-    return get_inputs()
+    return get_initial_data()
 
 
 def test_reset(sellar_mda, sellar_inputs) -> None:
@@ -77,21 +86,19 @@ def test_reset(sellar_mda, sellar_inputs) -> None:
     disciplines = sellar_mda.disciplines
     for discipline in disciplines:
         discipline.execute(sellar_inputs)
-        assert discipline.status == MDODiscipline.ExecutionStatus.DONE
-
-    sellar_mda.reset_statuses_for_run()
-    for discipline in disciplines:
-        assert discipline.status == MDODiscipline.ExecutionStatus.PENDING
+        assert discipline.execution_status.value == ExecutionStatus.Status.DONE
 
 
 def test_input_couplings() -> None:
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1()])
         mda._set_resolved_variables([])
 
     assert len(mda.get_current_resolved_variables_vector()) == 0
 
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver(
             create_discipline([
                 "SobieskiPropulsion",
@@ -100,7 +107,7 @@ def test_input_couplings() -> None:
                 "SobieskiStructure",
             ])
         )
-        mda._compute_input_couplings()
+        mda._compute_input_coupling_names()
         sorted_c = ["y_12", "y_21", "y_23", "y_31", "y_32"]
         assert mda._input_couplings == sorted_c
 
@@ -119,7 +126,9 @@ def test_resolved_couplings() -> None:
     assert set(mda._resolved_variable_names) == set(mda._input_couplings)
 
     mda = MDAGaussSeidel(disciplines)
-    assert set(mda._resolved_variable_names) == set(mda.strong_couplings)
+    assert set(mda._resolved_variable_names) == set(
+        mda.coupling_structure.strong_couplings
+    )
 
     with pytest.raises(AttributeError):
         mda._resolved_variable_names = "a"
@@ -127,7 +136,7 @@ def test_resolved_couplings() -> None:
 
 def test_jacobian(sellar_mda, sellar_inputs) -> None:
     """Check the Jacobian computation."""
-    sellar_mda.use_lu_fact = True
+    sellar_mda.settings.use_lu_fact = True
     sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     with pytest.raises(
         ValueError, match="Unsupported LU factorization for LinearOperators"
@@ -137,12 +146,12 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
             compute_all_jacobians=True,
         )
 
-    sellar_mda.use_lu_fact = False
+    sellar_mda.settings.use_lu_fact = False
     sellar_mda.linearize(sellar_inputs)
     assert sellar_mda.jac == {}
 
-    sellar_mda._differentiated_inputs = []
-    sellar_mda._differentiated_outputs = []
+    sellar_mda._differentiated_input_names = []
+    sellar_mda._differentiated_output_names = []
 
     sellar_mda.linearize(sellar_inputs)
 
@@ -150,17 +159,16 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
 def test_expected_workflow(sellar_mda) -> None:
     """"""
     expected = (
-        "{MDAGaussSeidel(None), [Sellar1(None), Sellar2(None), "
-        "SellarSystem(None), ], }"
+        "{MDAGaussSeidel(DONE), [Sellar1(DONE), Sellar2(DONE), SellarSystem(DONE)]}"
     )
-    assert str(sellar_mda.get_expected_workflow()) == expected
+    assert str(sellar_mda.get_process_flow().get_execution_flow()) == expected
 
 
 def test_warm_start() -> None:
     """Check that the warm start does not fail even at first execution."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     mda_sellar = MDAGaussSeidel(disciplines)
-    mda_sellar.warm_start = True
+    mda_sellar.settings.warm_start = True
     mda_sellar.execute()
 
 
@@ -174,7 +182,7 @@ def test_weak_strong_coupling_mda_jac() -> None:
     ))
     mda = MDAGaussSeidel(disciplines)
 
-    assert mda.check_jacobian(inputs=["x"], outputs=["obj"])
+    assert mda.check_jacobian(input_names=["x"], output_names=["obj"])
 
 
 def analytic_disciplines_from_desc(descriptions):
@@ -208,14 +216,15 @@ def test_consistency_fail(desc, log_message, caplog) -> None:
         log_message: The expected warning message.
         caplog: Fixture to access and control log capturing.
     """
-    with concretize_classes(MDA):
-        MDA(analytic_disciplines_from_desc(desc))
+    with concretize_classes(BaseMDA):
+        BaseMDA.Settings = BaseMDASettings
+        BaseMDA(analytic_disciplines_from_desc(desc))
     assert log_message in caplog.text
 
 
 @pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel])
 @pytest.mark.parametrize(
-    "grammar_type", [MDODiscipline.GrammarType.JSON, MDODiscipline.GrammarType.SIMPLE]
+    "grammar_type", [Discipline.GrammarType.JSON, Discipline.GrammarType.SIMPLE]
 )
 def test_array_couplings(mda_class, grammar_type) -> None:
     disciplines = create_disciplines_from_desc(
@@ -226,7 +235,6 @@ def test_array_couplings(mda_class, grammar_type) -> None:
     a_disc = disciplines[0]
     del a_disc.input_grammar["y1"]
     a_disc.input_grammar.update_from_data({"y1": 2.0})
-    assert not a_disc.input_grammar.is_array("y1")
 
     with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})
@@ -234,10 +242,11 @@ def test_array_couplings(mda_class, grammar_type) -> None:
 
 def test_convergence_warning(caplog) -> None:
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    mda.tolerance = 1.0
+    mda.settings.tolerance = 1.0
     mda.normed_residual = 2.0
-    mda.max_mda_iter = 1
+    mda.settings.max_mda_iter = 1
     caplog.clear()
 
     residual_is_small, max_iter_is_reached = mda._warn_convergence_criteria()
@@ -246,8 +255,8 @@ def test_convergence_warning(caplog) -> None:
 
     mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
 
-    mda._set_resolved_variables(mda.strong_couplings)
-    mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
+    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
     mda._compute_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
 
     mda._compute_normalized_residual_norm()
@@ -265,7 +274,7 @@ def test_convergence_warning(caplog) -> None:
 
 def test_coupling_structure(sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
-    coupling_structure = MDOCouplingStructure(sellar_disciplines)
+    coupling_structure = CouplingStructure(sellar_disciplines)
     mda_sellar = MDAGaussSeidel(
         sellar_disciplines, coupling_structure=coupling_structure
     )
@@ -275,26 +284,27 @@ def test_coupling_structure(sellar_disciplines) -> None:
 def test_log_convergence(caplog) -> None:
     """Check that the boolean log_convergence is correctly set."""
     with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    assert not mda.log_convergence
+    assert not mda.settings.log_convergence
 
-    mda.log_convergence = True
-    assert mda.log_convergence
+    mda.settings.log_convergence = True
+    assert mda.settings.log_convergence
 
     caplog.set_level(logging.INFO)
 
-    mda._set_resolved_variables(mda.strong_couplings)
-    mda.local_data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
+    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
     mda._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
-    mda._log_convergence = False
+    mda.settings.log_convergence = False
     mda._compute_normalized_residual_norm(store_it=False)
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
         not in caplog.text
     )
 
-    mda._log_convergence = True
+    mda.settings.log_convergence = True
     mda._compute_normalized_residual_norm()
     assert (
         "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
@@ -316,24 +326,11 @@ def test_not_numeric_couplings(caplog) -> None:
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
-    with concretize_classes(MDA):
-        MDA([sellar1, sellar2])
+    with concretize_classes(BaseMDA):
+        BaseMDA.Settings = BaseMDASettings
+        BaseMDA([sellar1, sellar2])
         msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
         assert msg in caplog.text
-
-
-@pytest.mark.parametrize("mda_class", [MDAJacobi, MDAGaussSeidel, MDANewtonRaphson])
-def test_get_sub_disciplines(
-    mda_class,
-) -> None:
-    """Test the get_sub_disciplines method.
-
-    Args:
-        mda_class: The specific MDA to be tested.
-    """
-    disciplines = [Sellar1(), Sellar2()]
-    mda = mda_class(disciplines)
-    assert mda.get_sub_disciplines() == mda.disciplines == disciplines
 
 
 def test_sequence_transformers_setters(sellar_mda) -> None:
@@ -400,7 +397,7 @@ def test_matrix_free_linearization(
     assert allclose(reference_mda_jacobian["y"]["x"], mda.jac["y"]["x"], atol=1e-12)
 
 
-class LinearImplicitDiscipline(MDODiscipline):
+class LinearImplicitDiscipline(Discipline):
     def __init__(self, name, input_names, output_names, size=1) -> None:
         super().__init__(name=name)
         self.size = size
@@ -408,18 +405,18 @@ class LinearImplicitDiscipline(MDODiscipline):
         self.input_grammar.update_from_names(input_names)
         self.output_grammar.update_from_names(output_names)
 
-        self.residual_variables = {"r": "w"}
+        self.io.residual_to_state_variable = {"r": "w"}
 
-        self.run_solves_residuals = False
+        self.io.state_equations_are_solved = False
         self.mat = default_rng(SEED).standard_normal((size, size))
 
-        self.default_inputs = {k: 0.5 * ones(size) for k in input_names}
+        self.default_input_data = {k: 0.5 * ones(size) for k in input_names}
 
-    def _run(self) -> None:
-        if self.run_solves_residuals:
-            self.local_data["w"] = solve(self.mat, self.local_data["a"])
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        if self.io.state_equations_are_solved:
+            self.io.data["w"] = solve(self.mat, self.io.data["a"])
 
-        self.local_data["r"] = self.mat.dot(self.local_data["w"]) - self.local_data["a"]
+        self.io.data["r"] = self.mat.dot(self.io.data["w"]) - self.io.data["a"]
 
     def _compute_jacobian(self, inputs, outputs) -> None:
         self._init_jacobian(inputs, outputs, fill_missing_keys=True)
@@ -439,7 +436,7 @@ def coupled_disciplines():
 
 
 def test_mda_with_residuals(coupled_disciplines) -> None:
-    coupled_disciplines[1].run_solves_residuals = True
+    coupled_disciplines[1].io.state_equations_are_solved = True
     mda = MDANewtonRaphson(
         coupled_disciplines,
         tolerance=1e-14,
@@ -449,7 +446,7 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
     )
     output = mda.execute()
 
-    coupled_disciplines[1].run_solves_residuals = False
+    coupled_disciplines[1].io.state_equations_are_solved = False
     mda = MDANewtonRaphson(
         coupled_disciplines,
         tolerance=1e-14,
@@ -462,7 +459,7 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
     assert compare_dict_of_arrays(output, output_ref, tolerance=1e-12)
 
 
-class DiscWithNonNumericInputs1(MDODiscipline):
+class DiscWithNonNumericInputs1(Discipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_data({"x": zeros(1)})
@@ -473,21 +470,21 @@ class DiscWithNonNumericInputs1(MDODiscipline):
         self.output_grammar.update_from_data({"b": zeros(1)})
         self.output_grammar.update_from_data({"a_file": "my_a_file"})
 
-        self.default_inputs["x"] = array([0.5])
-        self.default_inputs["a"] = array([0.5])
-        self.default_inputs["b_file"] = array(["my_b_file"])
+        self.default_input_data["x"] = array([0.5])
+        self.default_input_data["a"] = array([0.5])
+        self.default_input_data["b_file"] = array(["my_b_file"])
 
-    def _run(self) -> None:
-        x = self.local_data["x"]
-        a = self.local_data["a"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = self.io.data["x"]
+        a = self.io.data["a"]
         y = x
         b = 2 * a
-        self.local_data.update({"y": y, "a_file": "my_a_file", "b": b})
+        self.io.data.update({"y": y, "a_file": "my_a_file", "b": b})
 
     def _compute_jacobian(
         self,
-        inputs,
-        outputs,
+        input_names,
+        output_names,
     ) -> None:
         self.jac = {}
         self.jac["y"] = {}
@@ -498,32 +495,32 @@ class DiscWithNonNumericInputs1(MDODiscipline):
         self.jac["b"]["a"] = array([[2.0]])
 
 
-class DiscWithNonNumericInputs2(MDODiscipline):
+class DiscWithNonNumericInputs2(Discipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_data({"y": zeros(1)})
         self.input_grammar.update_from_data({"a_file": "my_a_file"})
         self.output_grammar.update_from_data({"x": zeros(1)})
         self.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
-        self.default_inputs["y"] = array([0.5])
-        self.default_inputs["a_file"] = "my_a_file"
+        self.default_input_data["y"] = array([0.5])
+        self.default_input_data["a_file"] = "my_a_file"
 
-    def _run(self) -> None:
-        y = self.local_data["y"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        y = self.io.data["y"]
         x = 1.0 - 0.3 * y
-        self.local_data.update({"x": x, "b_file": array(["my_b_file"])})
+        self.io.data.update({"x": x, "b_file": array(["my_b_file"])})
 
     def _compute_jacobian(
         self,
-        inputs,
-        outputs,
+        input_names,
+        output_names,
     ) -> None:
         self.jac = {}
         self.jac["x"] = {}
         self.jac["x"]["y"] = array([[-0.3]])
 
 
-class DiscWithNonNumericInputs3(MDODiscipline):
+class DiscWithNonNumericInputs3(Discipline):
     def __init__(self):
         super().__init__()
         self.input_grammar.update_from_data({"x": zeros(1)})
@@ -533,24 +530,24 @@ class DiscWithNonNumericInputs3(MDODiscipline):
 
         self.output_grammar.update_from_data({"obj": zeros(1)})
         self.output_grammar.update_from_data({"out_file_2": "my_a_file"})
-        self.default_inputs["x"] = array([0.5])
-        self.default_inputs["y"] = array([0.5])
-        self.default_inputs["b"] = array([0.5])
-        self.default_inputs["a_file"] = "my_a_file"
+        self.default_input_data["x"] = array([0.5])
+        self.default_input_data["y"] = array([0.5])
+        self.default_input_data["b"] = array([0.5])
+        self.default_input_data["a_file"] = "my_a_file"
 
-    def _run(self) -> None:
-        x = self.local_data["x"]
-        y = self.local_data["y"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = self.io.data["x"]
+        y = self.io.data["y"]
         obj = x - y
-        self.local_data.update({"obj": obj, "out_file_2": "my_out_file"})
+        self.io.data.update({"obj": obj, "out_file_2": "my_out_file"})
 
     def _compute_jacobian(
         self,
-        inputs,
-        outputs,
+        input_names,
+        output_names,
     ) -> None:
-        x = self.local_data["x"][0]
-        y = self.local_data["y"][0]
+        x = self.io.data["x"][0]
+        y = self.io.data["y"][0]
         self.jac = {}
         self.jac["obj"] = {}
         self.jac["obj"]["x"] = array([[1.0]])
@@ -580,9 +577,7 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
 
     mda = mda_class(disciplines)
     mda.add_differentiated_inputs(["a"])
-    mda.add_differentiated_outputs([
-        "obj"
-    ]) if include_weak_couplings else mda.add_differentiated_outputs(["b"])
+    mda.add_differentiated_outputs(["obj"] if include_weak_couplings else ["b"])
 
     inputs = {
         "a_file": "test",
@@ -597,8 +592,38 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
 
     assert mda.check_jacobian(
         input_data=inputs,
-        inputs=["a"],
-        outputs=["obj"] if include_weak_couplings else ["b"],
+        input_names=["a"],
+        output_names=["obj"] if include_weak_couplings else ["b"],
         linearization_mode="adjoint",
         threshold=1e-3,
     )
+
+
+def test_scaling_method() -> None:
+    """Test changing the `scaling` argument of an MDA."""
+    sellar1 = Sellar1()
+    sellar2 = Sellar2()
+
+    with concretize_classes(BaseMDA):
+        BaseMDA.Settings = BaseMDASettings
+        mda = BaseMDA([sellar1, sellar2])
+        mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
+        assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
+
+
+def test_namespaces(sellar_mda) -> None:
+    """Test the well functionning with namespaces."""
+    sellar_mda.add_namespace_to_output(sellar_mda.NORMALIZED_RESIDUAL_NORM, "foo")
+    sellar_mda.execute()
+
+
+def test_settings_type_error():
+    settings = "toto"
+    msg = (
+        f"The Pydantic model must be a {BaseMDA.Settings.__name__}; "
+        f"got {settings.__class__.__name__}"
+    )
+
+    BaseMDA.Settings = BaseMDASettings
+    with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
+        BaseMDA([], settings_model=settings)

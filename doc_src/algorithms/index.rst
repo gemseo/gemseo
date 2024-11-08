@@ -12,21 +12,26 @@
 
 :parenttoc: True
 
-Algorithms
-----------
+Comprehensive list of tools and their settings
+----------------------------------------------
 
-.. include:: /includes/big_toc_css.rst
-.. include:: /tune_toc.rst
+Given a family of tools or algorithms,
+*e.g.* optimization algorithms or post-processors,
+you may want to get to know the different members of the family and their settings.
+
+If so, the following list is for you
+
 .. toctree::
    :maxdepth: 2
 
-   doe_algos
-   linear_solver_algos
-   mlearning_algos
-   mda_algos
-   formulation_algos
-   ode_algos
-   opt_algos
-   post_algos
-   surrogate_algos
-   uncertainty_algos
+   Disciplines <discipline_algos>
+   DOE (design of experiments) <doe_algos>
+   Linear solvers <linear_solver_algos>
+   Machine learning <mlearning_algos>
+   MDA (multidisciplinary analysis) <mda_algos>
+   MDO formulations <formulation_algos>
+   ODE (ordinary differential equation) solvers <ode_algos>
+   Optimizers <opt_algos>
+   Post-processors <post_algos>
+   Surrogate disciplines <surrogate_algos>
+   Uncertainty <uncertainty_algos>

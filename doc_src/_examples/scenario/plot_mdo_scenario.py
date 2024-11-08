@@ -58,7 +58,7 @@ configure_logger()
 # Define the discipline
 # ---------------------
 # Firstly, by means of the high-level function :func:`.create_discipline`,
-# we create an :class:`.MDODiscipline` of :class:`.AnalyticDiscipline` type
+# we create an :class:`.Discipline` of :class:`.AnalyticDiscipline` type
 # from a Python function:
 
 expressions = {"y": "sin(x)-exp(x)"}
@@ -67,11 +67,11 @@ discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with their string representations. Moreover, we can get the default
-# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
-discipline, discipline.default_inputs
+# input values of a discipline with the attribute :attr:`.Discipline.default_input_data`
+discipline, discipline.default_input_data
 
 # %%
-# Now, we can to minimize this :class:`.MDODiscipline` over a design space,
+# Now, we can minimize an output of this :class:`.Discipline` over a design space,
 # by means of a quasi-Newton method from the initial point :math:`0.5`.
 #
 # Define the design space
@@ -81,16 +81,18 @@ discipline, discipline.default_inputs
 # by using its :meth:`.DesignSpace.add_variable` method.
 
 design_space = create_design_space()
-design_space.add_variable("x", l_b=-2.0, u_b=2.0, value=-0.5 * ones(1))
+design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5 * ones(1))
 
 # %%
 # Define the MDO scenario
 # -----------------------
 # Then, by means of the :func:`.create_scenario` API function,
-# we define an :class:`.MDOScenario` from the :class:`.MDODiscipline`
+# we define an :class:`.MDOScenario` from the :class:`.Discipline`
 # and the :class:`.DesignSpace` defined above:
 
-scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
+scenario = create_scenario(
+    discipline, "y", design_space, formulation_name="DisciplinaryOpt"
+)
 
 # %%
 # What about the differentiation method?
@@ -115,7 +117,7 @@ scenario = create_scenario(discipline, "DisciplinaryOpt", "y", design_space)
 # <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_ implemented in the
 # function ``scipy.optimize.fmin_l_bfgs_b``.
 
-scenario.execute({"algo": "L-BFGS-B", "max_iter": 100})
+scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
@@ -130,7 +132,7 @@ f"The solution of P is (x*, f(x*)) = ({optimization_result.x_opt}, {optimization
 #    You can find the `SciPy <https://scipy.org/>`_ implementation of the
 #    `L-BFGS-B algorithm <https://en.wikipedia.org/wiki/Limited-memory_BFGS>`_
 #    algorithm `by clicking here
-#    <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.  # noqa
+#    <https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.optimize.fmin_l_bfgs_b.html>`_.
 #
 # Available algorithms
 # --------------------

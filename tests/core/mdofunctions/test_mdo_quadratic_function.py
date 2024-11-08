@@ -20,8 +20,8 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.core.mdofunctions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
 
 
 @pytest.fixture(scope="module")
@@ -50,8 +50,7 @@ def test_init(coefficients) -> None:
     with pytest.raises(
         ValueError,
         match=(
-            "Quadratic coefficients must be passed "
-            "as a 2-dimensional square ndarray."
+            "Quadratic coefficients must be passed as a 2-dimensional square ndarray."
         ),
     ):
         MDOQuadraticFunction(coefficients, "f")
@@ -67,7 +66,7 @@ def test_init(coefficients) -> None:
 def test_values(function, value, gradient, request) -> None:
     """Check the value of a quadratic function."""
     x_vect = array([1.0, 2.0])
-    assert request.getfixturevalue(function)(x_vect) == value
+    assert request.getfixturevalue(function).evaluate(x_vect) == value
     assert_equal(request.getfixturevalue(function).jac(x_vect), gradient)
 
 
@@ -76,7 +75,7 @@ def test_values(function, value, gradient, request) -> None:
     [
         (
             "quadratic_function",
-            "[x]'[{} {}][x] + [{}]'[x] + {}\n" "[y] [{} {}][y]   [{}] [y]".format(
+            "[x]'[{} {}][x] + [{}]'[x] + {}\n[y] [{} {}][y]   [{}] [y]".format(
                 *(
                     MDOFunction.COEFF_FORMAT_ND.format(coefficient)
                     for coefficient in (1, 2, 5, 7, 3, 4, 6)
@@ -85,7 +84,7 @@ def test_values(function, value, gradient, request) -> None:
         ),
         (
             "quadratic_without_linear_term",
-            "[x]'[{} {}][x] + {}\n" "[y] [{} {}][y]".format(
+            "[x]'[{} {}][x] + {}\n[y] [{} {}][y]".format(
                 *(
                     MDOFunction.COEFF_FORMAT_ND.format(coefficient)
                     for coefficient in (1, 2, 7, 3, 4)

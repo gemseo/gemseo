@@ -25,9 +25,11 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Template
 
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+
 if TYPE_CHECKING:
     from gemseo.core.coupling_structure import DependencyGraph
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
 
 
 class N2JSON:
@@ -40,7 +42,7 @@ class N2JSON:
     def __init__(
         self,
         graph: DependencyGraph,
-        self_coupled_disciplines: Sequence[str] | None = None,
+        self_coupled_disciplines: Sequence[str] = (),
     ) -> None:
         """
         Args:
@@ -82,7 +84,7 @@ class N2JSON:
             self.__discipline_names, data["children"], data["groups"]
         )
 
-        data["self_coupled_disciplines"] = self_coupled_disciplines or []
+        data["self_coupled_disciplines"] = self_coupled_disciplines
         self.__json = json.dumps(data, sort_keys=True)
 
     def __str__(self) -> str:
@@ -91,14 +93,14 @@ class N2JSON:
     @staticmethod
     def _create_variables_html(
         names: Iterable[str],
-        variable_sizes: Mapping[str, int] | None = None,
+        variable_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> str:
         """Generate the HTML representation of variables from their names and sizes.
 
         Args:
             names: The names of the variables.
             variable_sizes: The sizes of the variables.
-                If ``None``, display only the names.
+                If empty, display only the names.
 
         Return:
             The HTML representation of the sorted variables.
@@ -106,7 +108,7 @@ class N2JSON:
         variables = [
             {
                 "name": name,
-                "size": None if variable_sizes is None else variable_sizes.get(name, 1),
+                "size": variable_sizes.get(name, 1) if variable_sizes else None,
             }
             for name in sorted(names)
         ]
@@ -161,7 +163,7 @@ class N2JSON:
     @classmethod
     def _create_discipline_html(
         cls,
-        discipline: MDODiscipline,
+        discipline: Discipline,
         variable_sizes: Mapping[str, int],
     ) -> str:
         """Generate the HTML representation of a discipline.
@@ -174,20 +176,20 @@ class N2JSON:
             The HTML block describing the discipline.
         """
         html_input_names = cls._create_variables_html(
-            discipline.get_input_data_names(), variable_sizes
+            discipline.io.input_grammar.names, variable_sizes
         )
         html_output_names = cls._create_variables_html(
-            discipline.get_output_data_names(), variable_sizes
+            discipline.io.output_grammar.names, variable_sizes
         )
         return Template(
             "The inputs of <b>{{ discipline }}</b>:"
-            "{{ inputs }}"
+            "{{ input_names }}"
             "The outputs of <b>{{ discipline }}</b>:"
-            "{{ outputs }}"
+            "{{ output_names }}"
         ).render(
             discipline=discipline.name,
-            inputs=html_input_names,
-            outputs=html_output_names,
+            input_names=html_input_names,
+            output_names=html_output_names,
         )
 
     @classmethod
@@ -287,7 +289,7 @@ class N2JSON:
 
     def _create_links(
         self,
-        couplings: Iterable[tuple[MDODiscipline, MDODiscipline, Sequence[str]]],
+        couplings: Iterable[tuple[Discipline, Discipline, Sequence[str]]],
         n_nodes: int,
         variable_sizes: Mapping[str, int],
         disciplines: Sequence[str],
@@ -446,9 +448,9 @@ class N2JSON:
         """
         variable_sizes = {}
         for discipline in self.__disciplines:
-            for name in discipline.get_input_data_names():
+            for name in discipline.io.input_grammar.names:
                 if name not in variable_sizes or variable_sizes[name] == self.__NA:
-                    default_value = discipline.default_inputs.get(name)
+                    default_value = discipline.default_input_data.get(name)
                     if hasattr(default_value, "size"):
                         size = default_value.size
                     elif isinstance(default_value, Sized):

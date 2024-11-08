@@ -24,8 +24,9 @@ import logging
 from math import floor
 from math import sqrt
 from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Final
 
-import matplotlib
 from matplotlib import pyplot as plt
 from numpy import array
 from numpy import bincount
@@ -42,40 +43,38 @@ from numpy import nonzero
 from numpy import unique
 from numpy import zeros
 
+from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.som_settings import SOM_Settings
 from gemseo.third_party import sompy
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from matplotlib.axes import Axes
+    from numpy.typing import ArrayLike
+
+    from gemseo.typing import IntegerArray
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SOM(OptPostProcessor):
+class SOM(BasePost[SOM_Settings]):
     """Self organizing map clustering optimization history.
 
     Options of the plot method are the x- and y- numbers of cells in the SOM.
     """
 
-    DEFAULT_FIG_SIZE = (12.0, 18.0)
-
-    def __init__(  # noqa:D107
-        self,
-        opt_problem: OptimizationProblem,
-    ) -> None:
-        super().__init__(opt_problem)
-        self.som = None
-        self.cmap = PARULA
+    Settings: ClassVar[type[SOM_Settings]] = SOM_Settings
+    __CMAP: Final[tuple[str, tuple[tuple[float, float, float], ...]]] = PARULA
 
     @staticmethod
     def __build_som_from_vars(
-        x_vars: ndarray,
+        x_vars: RealArray,
         som_grid_nx: int = 5,
         som_grid_ny: int = 5,
         initmethod: str = "pca",
         verbose: str = "off",
-    ) -> SOM:
+    ) -> sompy.SOM:
         """Builds the SOM from the design variables history.
 
         Args:
@@ -101,28 +100,21 @@ class SOM(OptPostProcessor):
         var_som.train(verbose=verbose)
         return var_som
 
-    def _plot(
-        self,
-        n_x: int = 4,
-        n_y: int = 4,
-        annotate: bool = False,
-    ) -> None:
-        """
-        Args:
-            n_x: The number of grids in x.
-            n_y: The number of grids in y.
-            annotate: If ``True``, add label of neuron value to SOM plot.
-        """  # noqa: D205, D212, D415
+    def _plot(self, settings: SOM_Settings) -> None:
+        n_x = settings.n_x
+        n_y = settings.n_y
+        annotate = settings.annotate
+
         criteria = [
-            self.opt_problem.get_objective_name(),
-            *self.opt_problem.get_constraint_names(),
+            self.optimization_problem.standardized_objective_name,
+            *self.optimization_problem.constraints.get_names(),
         ]
         all_data = self.database.get_function_names()
         # Ensure that the data is available in the database
-        for criterion in criteria:
+        for criterion in tuple(criteria):
             if criterion not in all_data:
                 criteria.remove(criterion)
-        figure = plt.figure(figsize=self.DEFAULT_FIG_SIZE)
+        figure = plt.figure(figsize=settings.fig_size)
         figure.suptitle("Self Organizing Maps of the design space", fontsize=14)
         subplot_number = 0
         self.__compute(n_x, n_y)
@@ -177,17 +169,18 @@ class SOM(OptPostProcessor):
                 )
                 index += 1
 
+        figure.tight_layout()
         self._add_figure(figure)
 
     def __plot_som_from_scalar_data(
         self,
-        f_hist_scalar: ndarray,
+        f_hist_scalar: ArrayLike,
         criteria: str,
         fig_indx: int,
         grid_size_x: int = 3,
         grid_size_y: int = 20,
         annotate: bool = False,
-    ):
+    ) -> Axes:
         """Builds the SOM plot after computation for a given criteria.
 
         Args:
@@ -214,15 +207,15 @@ class SOM(OptPostProcessor):
             mat_ij[int(i) - 1, int(j) - 1] = average[somindx]
         empty = isnan(mat_ij)
         non_empty = logical_not(empty)
-        axe = plt.subplot(grid_size_y, grid_size_x, fig_indx)
+        ax = plt.subplot(grid_size_y, grid_size_x, fig_indx)
         minv = np_min(mat_ij[non_empty])
         maxv = np_max(mat_ij[non_empty])
         self.materials_for_plotting[fig_indx] = mat_ij
-        im1 = axe.imshow(
+        im1 = ax.imshow(
             mat_ij,
             vmin=minv - 0.01 * abs(minv),
             vmax=maxv + 0.01 * abs(maxv),
-            cmap=self.cmap,
+            cmap=self.__CMAP,
             interpolation="nearest",
             aspect="auto",
         )  # "spectral" "hot" "RdBu_r"
@@ -231,7 +224,7 @@ class SOM(OptPostProcessor):
             crit_format = "%1.2g"
             for i in range(mat_ij.shape[0]):
                 for j in range(mat_ij.shape[0]):
-                    _ = axe.text(
+                    _ = ax.text(
                         j,
                         i,
                         crit_format % mat_ij[i, j],
@@ -241,12 +234,11 @@ class SOM(OptPostProcessor):
                         fontsize=7,
                     )
 
-        axe.set_title(criteria, fontsize=12)
-        cax, kwa = matplotlib.colorbar.make_axes([axe])
-        plt.colorbar(im1, cax=cax, **kwa)
+        ax.set_title(criteria, fontsize=12)
+        plt.colorbar(im1)
         im1.axes.get_xaxis().set_visible(False)
         im1.axes.get_yaxis().set_visible(False)
-        return axe
+        return ax
 
     def __compute(
         self,
@@ -261,9 +253,10 @@ class SOM(OptPostProcessor):
         """
         x_history = self.database.get_x_vect_history()
         x_vars = array(x_history).real
-        self.som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
-        som_cluster_index = self.som.project_data(x_vars)
-        som_coord = array(self.som.ind_to_xy(som_cluster_index), dtype=int32)
+        som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
+        som_cluster_index = som.project_data(x_vars)
+        som_cluster_xy = som.ind_to_xy(som_cluster_index)
+        som_coord = array(som_cluster_xy, dtype=int32)
         coord_2d_offset = self.__coord2d_to_coords_offsets(som_coord)
         self.materials_for_plotting["SOM"] = coord_2d_offset
         for i, x_vars in enumerate(x_history):
@@ -280,9 +273,9 @@ class SOM(OptPostProcessor):
 
     @staticmethod
     def __coord2d_to_coords_offsets(
-        som_coord: ndarray,
-        max_ofset: float = 0.6,
-    ) -> ndarray:
+        som_coord: IntegerArray,
+        max_offset: float = 0.6,
+    ) -> RealArray:
         """Take a coord array from SOM and adds an offset.
 
         The offset is added to the coordinates of the
@@ -290,7 +283,7 @@ class SOM(OptPostProcessor):
 
         Args:
             som_coord: The SOM coordinates.
-            max_ofset: The maximum offset of the grid.
+            max_offset: The maximum offset of the grid.
 
         Returns:
             The coordinates.
@@ -304,7 +297,7 @@ class SOM(OptPostProcessor):
         unique_indx = uniques_occ[:, 0]
         max_occ = np_max(uniques_occ[:, 1])
         max_subarr_size = floor(sqrt(max_occ)) + 1
-        dxdy_max = max_ofset / (max_subarr_size - 1)
+        dxdy_max = max_offset / (max_subarr_size - 1)
         for grp in unique_indx:
             inds_of_grp = (coord_indx == grp).nonzero()[0]
             subarr_size = sqrt(len(inds_of_grp))

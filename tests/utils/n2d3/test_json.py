@@ -23,11 +23,11 @@ from numpy import array
 from numpy import ones
 
 from gemseo.core.coupling_structure import DependencyGraph
-from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.n2d3.n2_json import N2JSON
 
 
-@pytest.fixture()
+@pytest.fixture
 def n2_json() -> N2JSON:
     """The N2JSON related to two strongly coupled disciplines and a weakly one."""
     description_list = [
@@ -46,15 +46,15 @@ def n2_json() -> N2JSON:
         name = desc[0]
         input_d = dict.fromkeys(desc[1], data)
         output_d = dict.fromkeys(desc[2], data)
-        disc = MDODiscipline(name)
+        disc = DummyDiscipline(name)
         disc.input_grammar.update_from_data(input_d)
         disc.output_grammar.update_from_data(output_d)
-        disc.default_inputs.update(desc[3])
+        disc.default_input_data.update(desc[3])
         disciplines.append(disc)
     return N2JSON(DependencyGraph(disciplines))
 
 
-@pytest.fixture()
+@pytest.fixture
 def expected_links(n2_json):
     """The expected links computed by the N2JSON.
 
@@ -104,7 +104,7 @@ def expected_links(n2_json):
     ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def expected_nodes(n2_json):
     """The expected nodes computed by the N2JSON.
 

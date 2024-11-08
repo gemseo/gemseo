@@ -25,33 +25,36 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.core.chain import MDOChain
-from gemseo.core.chain import MDOParallelChain
-from gemseo.core.chain import MDOWarmStartedChain
-from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
-from gemseo.core.formulation import MDOFormulation
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
+from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.mda.mda_factory import MDAFactory
+from gemseo.disciplines.utils import get_sub_disciplines
+from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
+    from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.execution_sequence import ExecutionSequence
+    from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.core.scenario import Scenario
-    from gemseo.mda.mda import MDA
+    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
 
-class BiLevel(MDOFormulation):
+class BiLevel(BaseMDOFormulation):
     """A bi-level formulation.
 
     This formulation draws an optimization architecture
@@ -73,79 +76,36 @@ class BiLevel(MDOFormulation):
     SUBSCENARIOS_LEVEL = "sub-scenarios"
     LEVELS = (SYSTEM_LEVEL, SUBSCENARIOS_LEVEL)
 
-    __sub_scenarios_log_level: int | None
-    """The level of the root logger during the sub-scenarios executions.
+    Settings: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
 
-    If ``None``, do not change the level of the root logger.
-    """
+    _settings: BiLevel_Settings
 
-    def __init__(
+    __mda_factory: ClassVar[MDAFactory] = MDAFactory()
+    """The MDA factory."""
+
+    def __init__(  # noqa: D107
         self,
-        disciplines: list[MDODiscipline],
+        disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        maximize_objective: bool = False,
-        main_mda_name: str = "MDAChain",
-        inner_mda_name: str = "MDAJacobi",
-        parallel_scenarios: bool = False,
-        multithread_scenarios: bool = True,
-        apply_cstr_tosub_scenarios: bool = True,
-        apply_cstr_to_system: bool = True,
-        reset_x0_before_opt: bool = False,
-        grammar_type: MDODiscipline.GrammarType = MDODiscipline.GrammarType.JSON,
-        sub_scenarios_log_level: int | None = None,
-        **main_mda_options: Any,
+        settings_model: BiLevel_Settings | None = None,
+        **settings: Any,
     ) -> None:
-        """
-        Args:
-            main_mda_name: The name of the class used for the main MDA,
-                typically the :class:`.MDAChain`,
-                but one can force to use :class:`.MDAGaussSeidel` for instance.
-            inner_mda_name: The name of the class used for the inner-MDA of the main
-                MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
-            parallel_scenarios: Whether to run the sub-scenarios in parallel.
-            multithread_scenarios: If ``True`` and parallel_scenarios=True,
-                the sub-scenarios are run in parallel using multi-threading;
-                if False and parallel_scenarios=True, multiprocessing is used.
-            apply_cstr_tosub_scenarios: Whether the :meth:`.add_constraint` method
-                adds the constraint to the optimization problem of the sub-scenario
-                capable of computing the constraint.
-            apply_cstr_to_system: Whether the :meth:`.add_constraint` method adds
-                the constraint to the optimization problem of the system scenario.
-            reset_x0_before_opt: Whether to restart the sub optimizations
-                from the initial guesses, otherwise warm start them.
-            sub_scenarios_log_level: The level of the root logger
-                during the sub-scenarios executions.
-                If ``None``, do not change the level of the root logger.
-            **main_mda_options: The options of the main MDA, which may include those
-                of the inner-MDA.
-        """  # noqa: D205, D212, D415
         super().__init__(
             disciplines,
             objective_name,
             design_space,
-            maximize_objective=maximize_objective,
-            grammar_type=grammar_type,
+            settings_model=settings_model,
+            **settings,
         )
-        self._shared_dv = list(design_space.variable_names)
-        self._mda1 = None
-        self._mda2 = None
-        self.reset_x0_before_opt = reset_x0_before_opt
+        self._shared_dv = design_space.variable_names
         self.scenario_adapters = []
-        self.chain = None
-        self._mda_factory = MDAFactory()
-        self._apply_cstr_to_system = apply_cstr_to_system
-        self._apply_cstr_tosub_scenarios = apply_cstr_tosub_scenarios
-        self.__parallel_scenarios = parallel_scenarios
-        self._multithread_scenarios = multithread_scenarios
-        self.couplstr = MDOCouplingStructure(self.get_sub_disciplines())
-
-        # Create MDA
-        self.__sub_scenarios_log_level = sub_scenarios_log_level
-        self._build_mdas(main_mda_name, inner_mda_name, **main_mda_options)
-
-        # Create MDOChain : MDA1 -> sub scenarios -> MDA2
-        self._build_chain()
+        self.coupling_structure = CouplingStructure(
+            get_sub_disciplines(self.disciplines)
+        )
+        self._mda1, self._mda2 = self._create_mdas()
+        # Create the multidisciplinary chain: MDA1 -> sub scenarios -> MDA2
+        self.chain = self._create_multidisciplinary_chain()
 
         # Cleanup design space
         self._update_design_space()
@@ -154,12 +114,12 @@ class BiLevel(MDOFormulation):
         self._build_objective_from_disc(self._objective_name)
 
     @property
-    def mda1(self) -> MDODiscipline:
+    def mda1(self) -> BaseMDA | None:
         """The MDA1 instance."""
         return self._mda1
 
     @property
-    def mda2(self) -> MDODiscipline:
+    def mda2(self) -> BaseMDA:
         """The MDA2 instance."""
         return self._mda2
 
@@ -187,7 +147,7 @@ class BiLevel(MDOFormulation):
         """
         adapters = []
         scenario_log_level = adapter_options.pop(
-            "scenario_log_level", self.__sub_scenarios_log_level
+            "scenario_log_level", self._settings.sub_scenarios_log_level
         )
         for scenario in self.get_sub_scenarios():
             adapter_inputs = self._compute_adapter_inputs(scenario, use_non_shared_vars)
@@ -196,7 +156,6 @@ class BiLevel(MDOFormulation):
                 scenario,
                 adapter_inputs,
                 adapter_outputs,
-                grammar_type=self._grammar_type,
                 scenario_log_level=scenario_log_level,
                 **adapter_options,
             )
@@ -205,7 +164,7 @@ class BiLevel(MDOFormulation):
 
     def _compute_adapter_outputs(
         self,
-        scenario: Scenario,
+        scenario: BaseScenario,
         output_functions: bool,
     ) -> list[str]:
         """Compute the scenario adapter outputs.
@@ -218,28 +177,28 @@ class BiLevel(MDOFormulation):
         Returns:
             The output variables of the adapter.
         """
-        couplings = self.couplstr.all_couplings
+        couplings = self.coupling_structure.all_couplings
         mda2_inputs = self._get_mda2_inputs()
-        top_disc = scenario.formulation.get_top_level_disc()
+        top_disc = scenario.formulation.get_top_level_disciplines()
         top_outputs = [
-            outpt for disc in top_disc for outpt in disc.get_output_data_names()
+            outpt for disc in top_disc for outpt in disc.io.output_grammar.names
         ]
 
         # Output couplings of scenario are given to MDA for speedup
         if output_functions:
-            opt_problem = scenario.formulation.opt_problem
+            opt_problem = scenario.formulation.optimization_problem
             sc_output_names = opt_problem.objective.output_names
-            sc_constraints = opt_problem.get_constraint_names()
+            sc_constraints = opt_problem.constraints.get_names()
             sc_out_coupl = sc_output_names + sc_constraints
         else:
             sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
 
         # Add private variables from disciplinary scenario design space
-        return sc_out_coupl + scenario.design_space.variable_names
+        return sc_out_coupl + scenario.formulation.design_space.variable_names
 
     def _compute_adapter_inputs(
         self,
-        scenario: Scenario,
+        scenario: BaseScenario,
         use_non_shared_vars: bool,
     ) -> list[str]:
         """Compute the scenario adapter inputs.
@@ -253,10 +212,10 @@ class BiLevel(MDOFormulation):
             The input variables of the adapter.
         """
         shared_dv = set(self._shared_dv)
-        couplings = self.couplstr.all_couplings
+        couplings = self.coupling_structure.all_couplings
         mda1_outputs = self._get_mda1_outputs()
-        top_disc = scenario.formulation.get_top_level_disc()
-        top_inputs = [inpt for disc in top_disc for inpt in disc.get_input_data_names()]
+        top_disc = scenario.formulation.get_top_level_disciplines()
+        top_inputs = [inpt for disc in top_disc for inpt in disc.io.input_grammar.names]
 
         # All couplings of the scenarios are taken from the MDA
         adapter_inputs = list(
@@ -264,9 +223,9 @@ class BiLevel(MDOFormulation):
             set(top_inputs) & (set(couplings) | shared_dv | set(mda1_outputs))
         )
         if use_non_shared_vars:
-            nonshared_var = scenario.design_space.variable_names
             adapter_inputs = list(
-                set(adapter_inputs) | set(top_inputs) & set(nonshared_var)
+                set(adapter_inputs)
+                | set(top_inputs).intersection(scenario.formulation.design_space)
             )
         return adapter_inputs
 
@@ -276,7 +235,7 @@ class BiLevel(MDOFormulation):
         Returns:
              The MDA1 outputs.
         """
-        return list(self._mda1.get_output_data_names()) if self._mda1 else []
+        return list(self._mda1.io.output_grammar.names) if self._mda1 else []
 
     def _get_mda2_inputs(self) -> list[str]:
         """Return the MDA2 inputs.
@@ -284,7 +243,7 @@ class BiLevel(MDOFormulation):
         Returns:
              The MDA2 inputs.
         """
-        return list(self._mda2.get_input_data_names()) if self._mda2 else []
+        return list(self._mda2.io.input_grammar.names) if self._mda2 else []
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
@@ -306,12 +265,10 @@ class BiLevel(MDOFormulation):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return MDAFactory().get_options_grammar(main_mda_name)
+        return cls.__mda_factory.get_options_grammar(main_mda_name)
 
     @classmethod
-    def get_default_sub_option_values(
-        cls, **options: str
-    ) -> Mapping[str, str | int | float | bool | None] | None:
+    def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:
         """
         Raises:
             ValueError: When the MDA name is not provided.
@@ -323,84 +280,73 @@ class BiLevel(MDOFormulation):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return MDAFactory().get_default_option_values(main_mda_name)
+        return cls.__mda_factory.get_default_option_values(main_mda_name)
 
-    def _build_mdas(
-        self,
-        main_mda_name: str,
-        inner_mda_name: str,
-        **main_mda_options: str | int | float | bool | None,
-    ) -> None:
+    def _create_mdas(self) -> tuple[BaseMDA | None, BaseMDA]:
         """Build the chain on top of which all functions are built.
 
-        This chain is as follows: MDA1 -> MDOScenarios -> MDA2.
+        This chain is as follows: (MDA1 ->) MDOScenarios -> MDA2.
 
-        Args:
-            main_mda_name: The class name of the main MDA.
-            inner_mda_name: The name of the class used for the inner-MDA of the main
-                MDA, if any; typically when the main MDA is an :class:`.MDAChain`.
-            **main_mda_options: The options of the main MDA, which may include those
-                of the inner-MDA.
+        Returns:
+            The first MDA, in presence of strongly coupled discipline,
+            and the second MDA.
         """
-        if main_mda_name == "MDAChain":
-            main_mda_options["inner_mda_name"] = inner_mda_name
-
-        disc_mda1 = self.couplstr.strongly_coupled_disciplines
-        if len(disc_mda1) > 0:
-            self._mda1 = self._mda_factory.create(
-                main_mda_name,
-                disc_mda1,
-                grammar_type=self._grammar_type,
-                **main_mda_options,
+        mda1 = None
+        strongly_coupled_disciplines = (
+            self.coupling_structure.strongly_coupled_disciplines
+        )
+        if len(strongly_coupled_disciplines) > 0:
+            mda1 = self.__mda_factory.create(
+                self._settings.main_mda_name,
+                strongly_coupled_disciplines,
+                settings_model=self._settings.main_mda_settings,
             )
-            self._mda1.warm_start = True
+            mda1.settings.warm_start = True
         else:
             LOGGER.warning(
                 "No strongly coupled disciplines detected, "
-                " MDA1 is deactivated in the BiLevel formulation"
+                "MDA1 is disabled in the BiLevel formulation"
             )
 
-        disc_mda2 = self.get_sub_disciplines()
-        self._mda2 = self._mda_factory.create(
-            main_mda_name,
-            disc_mda2,
-            grammar_type=self._grammar_type,
-            **main_mda_options,
+        mda2 = self.__mda_factory.create(
+            self._settings.main_mda_name,
+            get_sub_disciplines(self.disciplines),
+            settings_model=self._settings.main_mda_settings,
         )
-
-        self._mda2.warm_start = False
+        mda2.settings.warm_start = False
+        return mda1, mda2
 
     def _build_chain_dis_sub_opts(
         self,
-    ) -> tuple[list | MDA, list[MDOScenarioAdapter]]:
+    ) -> tuple[list | BaseMDA, list[MDOScenarioAdapter]]:
         """Initialize the chain of disciplines and the sub-scenarios.
 
         Returns:
             The first MDA (if exists) and the sub-scenarios.
         """
-        chain_dis = []
-        if self._mda1 is not None:
-            chain_dis = [self._mda1]
-        sub_opts = self.scenario_adapters
-        return chain_dis, sub_opts
+        return [] if self._mda1 is None else [self._mda1], self.scenario_adapters
 
-    def _build_chain(self) -> None:
-        """Build the chain on top of which all functions are built.
+    def _create_multidisciplinary_chain(self) -> MDOChain:
+        """Create the multidisciplinary chain.
 
         This chain is: MDA -> MDOScenarios -> MDA.
+
+        Returns:
+            The multidisciplinary chain.
         """
         # Build the scenario adapters to be chained with MDAs
         self.scenario_adapters = self._build_scenario_adapters(
-            reset_x0_before_opt=self.reset_x0_before_opt, keep_opt_history=True
+            reset_x0_before_opt=self._settings.reset_x0_before_opt,
+            keep_opt_history=True,
         )
         chain_dis, sub_opts = self._build_chain_dis_sub_opts()
 
-        if self.__parallel_scenarios:
-            use_threading = self._multithread_scenarios
-            par_chain = MDOParallelChain(
-                sub_opts, use_threading=use_threading, grammar_type=self._grammar_type
+        if self._settings.parallel_scenarios:
+            chain_dis.append(
+                MDOParallelChain(
+                    sub_opts, use_threading=self._settings.multithread_scenarios
+                )
             )
-            chain_dis += [par_chain]
         else:
             # Chain MDA -> scenarios exec -> MDA
             chain_dis += sub_opts
@@ -409,17 +355,14 @@ class BiLevel(MDOFormulation):
         if self._mda2:
             chain_dis += [self._mda2]
 
-        if not self.reset_x0_before_opt:
-            self.chain = MDOWarmStartedChain(
-                chain_dis,
-                name="bilevel_chain",
-                grammar_type=self._grammar_type,
-                variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
-            )
-        else:
-            self.chain = MDOChain(
-                chain_dis, name="bilevel_chain", grammar_type=self._grammar_type
-            )
+        if self._settings.reset_x0_before_opt:
+            return MDOChain(chain_dis, name="bilevel_chain")
+
+        return MDOWarmStartedChain(
+            chain_dis,
+            name="bilevel_chain",
+            variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
+        )
 
     def _get_variable_names_to_warm_start(self) -> list[str]:
         """Retrieve the names of the variables to warm start.
@@ -429,11 +372,21 @@ class BiLevel(MDOFormulation):
         Returns:
             The names of the variables to warm start.
         """
-        return [
+        variable_names = [
             name
             for adapter in self.scenario_adapters
-            for name in adapter.get_output_data_names()
+            for name in adapter.io.output_grammar.names
         ]
+        if self._mda1:
+            for variable_name in self._mda1.io.output_grammar.names:
+                if variable_name not in variable_names:
+                    variable_names.append(variable_name)
+        if self._mda2:
+            for variable_name in self._mda2.io.output_grammar.names:
+                if variable_name not in variable_names:
+                    variable_names.append(variable_name)
+
+        return variable_names
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
@@ -444,42 +397,32 @@ class BiLevel(MDOFormulation):
 
     def _remove_couplings_from_ds(self) -> None:
         """Removes the coupling variables from the design space."""
-        if hasattr(self._mda2, "strong_couplings"):
+        if hasattr(self._mda2.settings, "coupling_structure"):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
-            couplings = self.mda2.strong_couplings
-            design_space = self.opt_problem.design_space
+            couplings = self.mda2.coupling_structure.strong_couplings
+            design_space = self.optimization_problem.design_space
             for coupling in couplings:
-                if coupling in design_space.variable_names:
+                if coupling in design_space:
                     design_space.remove_variable(coupling)
 
-    def get_top_level_disc(self) -> list[MDODiscipline]:  # noqa:D102
-        return [self.chain]
-
-    def get_expected_workflow(  # noqa:D102
-        self,
-    ) -> list[ExecutionSequence, tuple[ExecutionSequence]]:
-        return self.chain.get_expected_workflow()
-
-    def get_expected_dataflow(  # noqa:D102
-        self,
-    ) -> list[tuple[MDODiscipline, MDODiscipline, list[str]]]:
-        return self.chain.get_expected_dataflow()
+    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
+        return (self.chain,)
 
     def add_constraint(
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
-        value: float | None = None,
+        constraint_name: str = "",
+        value: float = 0,
         positive: bool = False,
-        levels: list[str] | None = None,
+        levels: list[str] = (),
     ) -> None:
         """Add a constraint to the formulation.
 
         Args:
             levels: The levels at which the constraint is to be added
-                (sublist of Bilevel.LEVELS).
+                (sublist of :attr:`.LEVELS`).
                 By default, the policy set at the initialization
                 of the formulation is enforced.
 
@@ -487,14 +430,22 @@ class BiLevel(MDOFormulation):
             ValueError: When the constraint levels are not a sublist of BiLevel.LEVELS.
         """
         # If the constraint levels are not specified the initial policy is enforced.
-        if levels is None:
-            if self._apply_cstr_to_system:
+        if not levels:
+            if self._settings.apply_cstr_to_system:
                 self._add_system_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
-            if self._apply_cstr_tosub_scenarios:
+            if self._settings.apply_cstr_tosub_scenarios:
                 self._add_sub_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
         # Otherwise the constraint is applied at the specified levels.
         elif not isinstance(levels, list) or not set(levels) <= set(BiLevel.LEVELS):
@@ -505,19 +456,27 @@ class BiLevel(MDOFormulation):
         else:
             if BiLevel.SYSTEM_LEVEL in levels:
                 self._add_system_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
             if BiLevel.SUBSCENARIOS_LEVEL in levels:
                 self._add_sub_level_constraint(
-                    output_name, constraint_type, constraint_name, value, positive
+                    output_name,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
 
     def _add_system_level_constraint(
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
-        value: float | None = None,
+        constraint_name: str = "",
+        value: float = 0,
         positive: bool = False,
     ) -> None:
         """Add a constraint at the system level.
@@ -529,21 +488,24 @@ class BiLevel(MDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If ``None``, the name is generated from the output name.
+                If empty, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
         """
         super().add_constraint(
-            output_name, constraint_type, constraint_name, value, positive
+            output_name,
+            constraint_type=constraint_type,
+            constraint_name=constraint_name,
+            value=value,
+            positive=positive,
         )
 
     def _add_sub_level_constraint(
         self,
         output_name: str,
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str | None = None,
-        value: float | None = None,
+        constraint_name: str = "",
+        value: float = 0,
         positive: bool = False,
     ) -> None:
         """Add a constraint at the sub-scenarios level.
@@ -555,9 +517,8 @@ class BiLevel(MDOFormulation):
             constraint_type: The type of constraint,
                 either "eq" for equality constraint or "ineq" for inequality constraint.
             constraint_name: The name of the constraint to be stored,
-                If ``None``, the name is generated from the output name.
+                If empty, the name is generated from the output name.
             value: The value of activation of the constraint.
-                If ``None``, the value is equal to 0.
             positive: Whether the inequality constraint is positive.
 
         Raises:
@@ -565,11 +526,15 @@ class BiLevel(MDOFormulation):
                 top-level disciplines outputs.
         """
         added = False
-        output_names = self._check_add_cstr_input(output_name, constraint_type)
+        output_names = convert_strings_to_iterable(output_name)
         for sub_scenario in self.get_sub_scenarios():
             if self._scenario_computes_outputs(sub_scenario, output_names):
                 sub_scenario.add_constraint(
-                    output_names, constraint_type, constraint_name, value, positive
+                    output_names,
+                    constraint_type=constraint_type,
+                    constraint_name=constraint_name,
+                    value=value,
+                    positive=positive,
                 )
                 added = True
         if not added:
@@ -581,7 +546,7 @@ class BiLevel(MDOFormulation):
 
     @staticmethod
     def _scenario_computes_outputs(
-        scenario: Scenario,
+        scenario: BaseScenario,
         output_names: Iterable[str],
     ) -> bool:
         """Check if the top level disciplines compute the given outputs.
@@ -593,7 +558,7 @@ class BiLevel(MDOFormulation):
         Returns:
             True if the top level disciplines compute the given outputs.
         """
-        for disc in scenario.formulation.get_top_level_disc():
-            if disc.is_all_outputs_existing(output_names):
+        for disc in scenario.formulation.get_top_level_disciplines():
+            if disc.io.output_grammar.has_names(output_names):
                 return True
         return False

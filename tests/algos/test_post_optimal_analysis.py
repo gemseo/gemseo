@@ -26,10 +26,10 @@ from numpy import dot
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 class TestPostOptimalAnalysis(unittest.TestCase):
@@ -74,8 +74,8 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         # Create the design space
         design_space = DesignSpace()
         sol = self.get_solution(p)[0]
-        design_space.add_variable("x", l_b=0.0, u_b=1.0, value=sol[0])
-        design_space.add_variable("y", l_b=0.0, u_b=1.0, value=sol[1])
+        design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=sol[0])
+        design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=sol[1])
 
         # Create the optimization problem
         opt_problem = OptimizationProblem(design_space)
@@ -107,8 +107,9 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             expr="p-x-y",
             input_names=["x", "y"],
             dim=1,
+            f_type=MDOFunction.ConstraintType.INEQ,
         )
-        opt_problem.add_ineq_constraint(ineq_func)
+        opt_problem.add_constraint(ineq_func)
         eq_func = MDOFunction(
             lambda x: array([x[1] - p * x[0]]),
             "h",
@@ -116,14 +117,15 @@ class TestPostOptimalAnalysis(unittest.TestCase):
             expr="p*x-y",
             input_names=["x", "y"],
             dim=1,
+            f_type=MDOFunction.ConstraintType.EQ,
         )
-        opt_problem.add_eq_constraint(eq_func)
+        opt_problem.add_constraint(eq_func)
 
         # Solve the problem
         if solve:
             if not minimize:
-                opt_problem.change_objective_sign()
-            OptimizersFactory().execute(opt_problem, algo_name="SLSQP")
+                opt_problem.minimize_objective = False
+            OptimizationLibraryFactory().execute(opt_problem, algo_name="SLSQP")
 
         return opt_problem
 

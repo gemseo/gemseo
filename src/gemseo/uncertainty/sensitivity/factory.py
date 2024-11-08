@@ -17,120 +17,18 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Module with a factory to create an instance of :class:`.SensitivityAnalysis`."""
+"""A factory of sensitivity analyses."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Any
-
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-
-if TYPE_CHECKING:
-    from collections.abc import Collection
-    from collections.abc import Iterable
-    from collections.abc import Mapping
-
-    from gemseo.algos.doe.doe_library import DOELibraryOptionType
-    from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.discipline import MDODiscipline
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
 
 
 class SensitivityAnalysisFactory(BaseFactory):
-    """Factory to build instances of :class:`.SensitivityAnalysis`.
+    """A factory of sensitivity analyses."""
 
-    At initialization, this factory scans the following modules
-    to search for subclasses of this class:
-
-    - the modules located in ``gemseo.uncertainty.sensitivity`` and its sub-packages,
-    - the modules referenced in the ``GEMSEO_PATH,``
-    - the modules referenced in the ``PYTHONPATH`` and starting with ``gemseo_``.
-
-    Then, it can check if a class is present or return the list of available classes.
-
-    Lastly, it can create an instance of a class.
-
-    Examples:
-        >>> from numpy import pi
-        >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.factory import (
-        ...     SensitivityAnalysisFactory,
-        ... )
-        >>>
-        >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>>
-        >>> factory = SensitivityAnalysisFactory()
-        >>> analysis = factory.create(
-        ...     "MorrisIndices", discipline, parameter_space, n_replicates=5
-        ... )
-        >>> indices = analysis.compute_indices()
-    """
-
-    _CLASS = SensitivityAnalysis
-    _MODULE_NAMES = ("gemseo.uncertainty.sensitivity",)
-
-    def create(
-        self,
-        sensitivity_analysis: str,
-        disciplines: Collection[MDODiscipline],
-        parameter_space: ParameterSpace,
-        n_samples: int | None = None,
-        output_names: Iterable[str] = (),
-        algo: str = "",
-        algo_options: Mapping[str, DOELibraryOptionType] = READ_ONLY_EMPTY_DICT,
-        formulation: str = "MDF",
-        **formulation_options: Any,
-    ) -> SensitivityAnalysis:
-        """Create the sensitivity analysis.
-
-        Args:
-            sensitivity_analysis: The name of a class
-                defining a sensitivity analysis.
-            disciplines: The discipline or disciplines to use for the analysis.
-            parameter_space: A parameter space.
-            n_samples: A number of samples.
-                If ``None``, the number of samples is computed by the algorithm.
-            output_names: The disciplines' outputs to be considered for the analysis.
-                If empty, use all the outputs.
-            algo: The name of the DOE algorithm.
-                If empty, use the :attr:`.SensitivityAnalysis.DEFAULT_DRIVER`.
-            algo_options: The options of the DOE algorithm.
-            formulation: The name of the :class:`.MDOFormulation` to sample the
-                disciplines.
-            **formulation_options: The options of the :class:`.MDOFormulation`.
-
-        Returns:
-            A sensitivity analysis.
-        """
-        return super().create(
-            sensitivity_analysis,
-            disciplines=disciplines,
-            parameter_space=parameter_space,
-            n_samples=n_samples,
-            output_names=output_names,
-            algo=algo,
-            algo_options=algo_options,
-            formulation=formulation,
-            **formulation_options,
-        )
-
-    @property
-    def available_sensitivity_analyses(self) -> list[str]:
-        """The available classes for sensitivity analysis."""
-        return self.class_names
+    _CLASS = BaseSensitivityAnalysis
+    _PACKAGE_NAMES = ("gemseo.uncertainty.sensitivity",)

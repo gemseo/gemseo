@@ -20,26 +20,15 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 
 
 class OTWeibullDistribution(OTDistribution):
-    """The OpenTURNS-based Weibull distribution.
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.weibull import (
-        ...     OTWeibullDistribution
-        >>> )
-        >>> distribution = OTWeibullDistribution("u", 0.5, 1.0, 2.0)
-        >>> print(distribution)
-        WeibullMin(location=0.5, scale=1, shape=2)
-    """
+    """The OpenTURNS-based Weibull distribution."""
 
     def __init__(
         self,
-        variable: str = OTDistribution.DEFAULT_VARIABLE_NAME,
         location: float = 0.0,
         scale: float = 1.0,
         shape: float = 1.0,
         use_weibull_min: bool = True,
-        dimension: int = 1,
-        transformation: str | None = None,
+        transformation: str = "",
         lower_bound: float | None = None,
         upper_bound: float | None = None,
         threshold: float = 0.5,
@@ -56,17 +45,15 @@ class OTWeibullDistribution(OTDistribution):
                 (the support of the random variable is :math:`]-\infty[,\gamma]`).
         """  # noqa: D205,D212,D415
         super().__init__(
-            variable,
-            "WeibullMin" if use_weibull_min else "WeibullMax",
-            (scale, shape, location),
-            dimension,
-            {
+            interfaced_distribution="WeibullMin" if use_weibull_min else "WeibullMax",
+            parameters=(scale, shape, location),
+            standard_parameters={
                 self._LOCATION: location,
                 self._SCALE: scale,
                 self._SHAPE: shape,
             },
-            transformation,
-            lower_bound,
-            upper_bound,
-            threshold,
+            transformation=transformation,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            threshold=threshold,
         )

@@ -34,11 +34,13 @@ from __future__ import annotations
 from numpy import sum as np_sum
 
 from gemseo import configure_logger
+from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo import get_available_doe_algorithms
+from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.doe_factory import DOEFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 LOGGER = configure_logger()
 
@@ -55,7 +57,7 @@ objective = MDOFunction(np_sum, name="f", expr="sum(x)")
 # -----------------------
 # Then, we define the :class:`.DesignSpace` with |g|.
 design_space = DesignSpace()
-design_space.add_variable("x", 2, l_b=-5, u_b=5, var_type="integer")
+design_space.add_variable("x", 2, lower_bound=-5, upper_bound=5, type_="integer")
 
 # %%
 # Define the optimization problem
@@ -70,14 +72,14 @@ problem.objective = objective
 # We can see this optimization problem as a trade-off
 # and solve it by means of a design of experiments (DOE),
 # e.g. full factorial design
-DOEFactory().execute(problem, "fullfact", n_samples=11**2)
+execute_algo(problem, algo_name="PYDOE_FULLFACT", n_samples=11**2, algo_type="doe")
 
 # %%
 # Post-process the results
 # ------------------------
 execute_post(
     problem,
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["x", "f"],
     save=False,
     show=True,
@@ -85,4 +87,7 @@ execute_post(
 
 # %%
 # Note that you can get all the optimization algorithms names:
-DOEFactory().algorithms
+get_available_opt_algorithms()
+# %%
+# and all the DOE algorithms names:
+get_available_doe_algorithms()

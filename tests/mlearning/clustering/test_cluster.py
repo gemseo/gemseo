@@ -22,33 +22,73 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import arange
+from numpy import array
+from numpy.testing import assert_allclose
 
+from gemseo import from_pickle
+from gemseo import to_pickle
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
+from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
+from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+from gemseo.problems.dataset.iris import create_iris_dataset
+
+FACTORY = ClustererFactory()
+INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
 
-@pytest.fixture()
-def dataset() -> Dataset:
-    """The dataset used to train the clustering algorithms."""
-    data = arange(30).reshape(10, 3)
-    variables = ["x_1", "x_2"]
-    sizes = {"x_1": 1, "x_2": 2}
-    dataset_ = Dataset(dataset_name="dataset_name")
-    dataset_.from_array(data, variables, sizes)
-    return dataset_
-
-
-class NewAlgo(MLClusteringAlgo):
+class NewAlgo(BaseClusterer):
     """New machine learning algorithm class."""
 
     def _fit(self, data) -> None:
         pass
 
 
-def test_labels(dataset) -> None:
+def test_labels() -> None:
     """Test clustering labels."""
+    dataset = Dataset.from_array(
+        arange(30).reshape(10, 3), ["x_1", "x_2"], {"x_1": 1, "x_2": 2}
+    )
     algo = NewAlgo(dataset)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape("NewAlgo._fit() did not set the labels attribute."),
+    ):
         algo.learn()
+
+
+@pytest.fixture(scope="module")
+def dataset() -> Dataset:
+    """The Iris dataset."""
+    return create_iris_dataset()
+
+
+@pytest.mark.parametrize("class_name", FACTORY.class_names)
+@pytest.mark.parametrize("before_training", [False, True])
+def test_pickle(class_name, dataset, before_training, tmp_wd):
+    """Check that clustering models are picklable."""
+    reference_model = FACTORY.create(
+        class_name,
+        dataset,
+        var_names=("sepal_length", "sepal_width", "petal_length", "petal_width"),
+    )
+
+    if before_training:
+        to_pickle(reference_model, "model.pkl")
+        reference_model.learn()
+    else:
+        reference_model.learn()
+        to_pickle(reference_model, "model.pkl")
+
+    reference_prediction = reference_model.predict(INPUT_VALUE)
+
+    model = from_pickle("model.pkl")
+    if before_training:
+        model.learn()
+
+    output_value = model.predict(INPUT_VALUE)
+
+    assert_allclose(output_value, reference_prediction)

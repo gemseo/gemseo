@@ -16,10 +16,9 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.doe.doe_library import DOELibrary
+from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.utils.seeder import SEED
 from gemseo.utils.seeder import Seeder
-from gemseo.utils.testing.helpers import concretize_classes
 
 
 @pytest.mark.parametrize(
@@ -42,7 +41,6 @@ def test_setter():
     seeder = Seeder()
     seeder.default_seed = default_seed
     assert seeder.default_seed == default_seed
-    with concretize_classes(DOELibrary):
-        doe_library = DOELibrary()
+    doe_library = PyDOELibrary("PYDOE_LHS")
     doe_library.seed = default_seed
     assert doe_library._seeder.default_seed == default_seed

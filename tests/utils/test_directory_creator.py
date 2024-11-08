@@ -30,7 +30,7 @@ from gemseo.utils.directory_creator import DirectoryNamingMethod
 BASE_DIR = Path("resource_dir")
 
 
-@pytest.fixture()
+@pytest.fixture
 def directories(tmp_wd) -> None:
     """Generate three directories and a file to test the ``NUMBERED``
     directory_naming_method.
@@ -48,7 +48,7 @@ def directories(tmp_wd) -> None:
         f.write("foo")
 
 
-@pytest.fixture()
+@pytest.fixture
 def empty_directory(tmp_wd) -> None:
     """Generate an empty directory."""
     Path("empty_resource_dir").mkdir()
@@ -57,27 +57,23 @@ def empty_directory(tmp_wd) -> None:
 def test_get_unique_run_folder_path(directories) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
     dir_creator = DirectoryCreator("resource_dir")
-    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/4").absolute()
-    assert dir_creator.get_unique_run_folder_path() == Path("resource_dir/5").absolute()
+    assert dir_creator.create() == Path("resource_dir/4")
+    assert dir_creator.create() == Path("resource_dir/5")
 
     # a director that does not exist
     dir_creator = DirectoryCreator("resource_dir/foo/bar")
-    assert (
-        dir_creator.get_unique_run_folder_path()
-        == Path("resource_dir/foo/bar/1").absolute()
-    )
+    assert dir_creator.create() == Path("resource_dir/foo/bar/1")
 
 
 def test_get_unique_run_folder_path_empty(empty_directory) -> None:
     """Test the method: ``create`` on empty directory."""
     dir_creator = DirectoryCreator("empty_resource_dir")
-    assert dir_creator.create() == Path("empty_resource_dir/1").absolute()
+    assert dir_creator.create() == Path("empty_resource_dir/1")
 
 
 def test_uuid_folder(tmp_wd, directories) -> None:
     """Test that unique folder based on ``UUID`` can be written in a non empty
     directory."""
-
     dir_creator = DirectoryCreator(
         root_directory=BASE_DIR, directory_naming_method=DirectoryNamingMethod.UUID
     )
@@ -89,7 +85,6 @@ def test_uuid_folder(tmp_wd, directories) -> None:
 def test_run_dir_creator_serialization(tmp_wd) -> None:
     """Test that a :class:`~.DirectoryCreator` can be serialized and deserialized in
     ``UUID`` mode."""
-
     unique_dir_generator = DirectoryCreator(
         root_directory=BASE_DIR, directory_naming_method=DirectoryNamingMethod.UUID
     )
@@ -105,7 +100,7 @@ def test_last_directory(tmp_wd) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
     dir_creator = DirectoryCreator(".")
     assert dir_creator.last_directory is None
-    path = dir_creator.get_unique_run_folder_path()
+    path = dir_creator.create()
     assert path == dir_creator.last_directory
 
 

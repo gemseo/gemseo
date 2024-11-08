@@ -38,7 +38,7 @@ configure_logger()
 # ----------------------------------------------
 #
 # In an :class:`.MDAChain`,
-# there may be an opportunity to parallelize the execution of :class:`.MDA`
+# there may be an opportunity to parallelize the execution of :class:`.BaseMDA`
 # that can be executed independently.
 # As an example,
 # let us consider the following expressions,
@@ -59,7 +59,7 @@ disciplines_expressions = [
 # We can easily observe in these disciplines,
 # that the :math:`x_1` and :math:`y_1` variables are strongly coupled.
 # It follows that the second and third disciplines are strongly coupled and
-# constitute an :class:`.MDA`.
+# constitute a :class:`.BaseMDA`.
 #
 #
 # The same statement can be done for the disciplines that provide the output variables
@@ -73,9 +73,9 @@ disciplines_expressions = [
 # they can be run in parallel,
 # hence reducing the overall :class:`.MDAChain` execution provided that enough
 # resources are available on the computing node (in our case, at least two CPUs).
-# By default, the parallel execution of the independent :class:`.MDA` are deactivated,
-# meaning that the execution of the two independent :class:`.MDA` will remain sequential.
-# Yet, a parallel execution of the two :class:`.MDA` can be  activated using the
+# By default, the parallel execution of the independent :class:`.BaseMDA` are deactivated,
+# meaning that the execution of the two independent :class:`.BaseMDA` will remain sequential.
+# Yet, a parallel execution of the two :class:`.BaseMDA` can be  activated using the
 # `mdachain_parallelize_task` boolean option.
 #
 #
@@ -93,7 +93,7 @@ disciplines_expressions = [
 #
 # We are here using the disciplines previously defined by their analytical expressions,
 # and we are going to explicitly ask for a parallelization of the execution of the
-# two independent :class:`.MDA`.
+# two independent :class:`.BaseMDA`.
 
 disciplines = []
 for expr in disciplines_expressions:
@@ -104,6 +104,7 @@ mdachain = MDAChain(
     disciplines,
     name="mdachain_lower",
     mdachain_parallelize_tasks=True,
-    mdachain_parallel_options=mdo_parallel_chain_options,
+    use_threading=True,
+    n_processes=2,
 )
 res = mdachain.execute()

@@ -51,3 +51,13 @@ get_available_opt_algorithms()
 # For a given optimization algorithm, e.g. ``"NLOPT_SLSQP"``,
 # we can get the options; e.g.
 get_algorithm_options_schema("NLOPT_SLSQP")
+
+# %%
+# Or import its settings model and pass it directly with the keyword
+# "algo_settings_model".
+from gemseo.settings.opt import NLOPT_SLSQP_Settings  # noqa: E402, I001
+
+settings_model = NLOPT_SLSQP_Settings()
+
+# %%
+# See :ref:`algorithm_settings` for more information on how to use settings models.

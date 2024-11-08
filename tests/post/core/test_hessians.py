@@ -21,7 +21,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 
 import numpy as np
 import pytest
@@ -33,16 +32,15 @@ from numpy.linalg import LinAlgError
 from numpy.linalg import norm
 from scipy.optimize import rosen_hess
 
-from gemseo.algos.opt_problem import OptimizationProblem
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import HessianApproximation
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from gemseo.algos.opt_result import OptimizationResult
+    from gemseo.algos.optimization_result import OptimizationResult
+    from gemseo.typing import StrKeyMapping
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"
 ROSENBROCK_2_PATH = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"
@@ -73,7 +71,7 @@ def compare_approximations(
     approx_class: HessianApproximation,
     problem: OptimizationProblem,
     ermax: float = 0.7,
-    **kwargs: Mapping[str, Any],
+    **kwargs: StrKeyMapping,
 ) -> None:
     """Check that the approximated hessian is close enough to the reference one.
 
@@ -84,7 +82,7 @@ def compare_approximations(
         **kwargs: The approximation options.
     """
     database = problem.database
-    n = problem.dimension
+    n = problem.design_space.dimension
     approx = approx_class(database)
     h_approx, _, _, _ = approx.build_approximation(
         funcname=problem.objective.name, **kwargs
@@ -183,16 +181,6 @@ def test_baseclass_methods() -> None:
         ),
     ):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=1)
-    database.clear()
-
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Cannot build approximation for function: "
-            "rosen because its gradient history is too small: 0."
-        ),
-    ):
-        apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
     with pytest.raises(
         ValueError,
@@ -205,6 +193,23 @@ def test_baseclass_methods() -> None:
             at_most_niter=at_most_niter,
             normalize_design_space=True,
         )
+
+    database.clear_from_iteration(2)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot build approximation for function: "
+            "rosen because its gradient history is too small: 1."
+        ),
+    ):
+        apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
+
+    database.clear()
+    with pytest.raises(
+        KeyError,
+        match=re.escape("The database 'Database' contains no value of '@rosen'."),
+    ):
+        apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
 
 def test_get_x_grad_history_on_sobieski() -> None:

@@ -20,33 +20,38 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.clustering import MLClusteringAlgo
-from gemseo.mlearning.clustering.clustering import MLPredictiveClusteringAlgo
-from gemseo.mlearning.quality_measures.cluster_measure import MLClusteringMeasure
-from gemseo.mlearning.quality_measures.cluster_measure import (
-    MLPredictiveClusteringMeasure,
+from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
+from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
+    BasePredictiveClusterer,
 )
+from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
+    BaseClustererQuality,
+)
+from gemseo.mlearning.clustering.quality.base_predictive_clusterer_quality import (
+    BasePredictiveClustererQuality,
+)
+from gemseo.mlearning.clustering.quality.factory import ClustererQualityFactory
 from gemseo.utils.testing.helpers import concretize_classes
 
 
-@pytest.fixture()
+@pytest.fixture
 def learning_data() -> Dataset:
     """The dataset used to train the clustering algorithms."""
     return Dataset.from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
 
 
-@pytest.fixture()
+@pytest.fixture
 def test_data() -> Dataset:
     """The dataset used to test the performance clustering algorithms."""
     return Dataset.from_array(array([[1, 0.5]]), ["x", "y"])
 
 
-class NewAlgo(MLClusteringAlgo):
+class NewAlgo(BaseClusterer):
     def _fit(self, data) -> None:
         self.labels = data[:, 1]
 
 
-class NewPredictiveAlgo(MLPredictiveClusteringAlgo):
+class NewPredictiveAlgo(BasePredictiveClusterer):
     def _fit(self, data) -> None:
         self.labels = data[:, 1]
 
@@ -57,33 +62,33 @@ class NewPredictiveAlgo(MLPredictiveClusteringAlgo):
         return array([[0.2, 0.6, 0.2] for _ in data])
 
 
-class NewMLClusteringMeasure(MLClusteringMeasure):
+class NewClustererQuality(BaseClustererQuality):
     def _compute_measure(self, data, labels, multioutput=True) -> float:
         return 1.0
 
 
-class NewMLPredictiveClusteringMeasure(MLPredictiveClusteringMeasure):
+class NewPredictiveClustererQuality(BasePredictiveClustererQuality):
     def _compute_measure(self, data, labels, multioutput=True) -> float:
         return 1.0
 
 
 @pytest.mark.parametrize("train", [False, True])
-@pytest.mark.parametrize("samples", [None, [1, 2, 3]])
+@pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_learning_measure(learning_data, train, samples, multioutput) -> None:
     algo = NewAlgo(learning_data)
     if train:
         algo.learn()
 
-    with concretize_classes(NewMLClusteringMeasure):
+    with concretize_classes(NewClustererQuality):
         assert (
-            NewMLClusteringMeasure(algo).compute_learning_measure(samples, multioutput)
+            NewClustererQuality(algo).compute_learning_measure(samples, multioutput)
             == 1.0
         )
 
 
 @pytest.mark.parametrize("train", [False, True])
-@pytest.mark.parametrize("samples", [None, [1, 2, 3]])
+@pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_test_measure(
     learning_data, test_data, train, samples, multioutput
@@ -92,7 +97,7 @@ def test_compute_test_measure(
     if train:
         algo.learn()
     assert (
-        NewMLPredictiveClusteringMeasure(algo).compute_test_measure(
+        NewPredictiveClustererQuality(algo).compute_test_measure(
             test_data, samples, multioutput
         )
         == 1.0
@@ -100,14 +105,14 @@ def test_compute_test_measure(
 
 
 @pytest.mark.parametrize("n_replicates", [1, 2])
-@pytest.mark.parametrize("samples", [None, [1, 2, 3]])
+@pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_bootstrap_measure(
     learning_data, n_replicates, samples, multioutput
 ) -> None:
     algo = NewPredictiveAlgo(learning_data)
     assert (
-        NewMLPredictiveClusteringMeasure(algo).compute_bootstrap_measure(
+        NewPredictiveClustererQuality(algo).compute_bootstrap_measure(
             n_replicates, samples, multioutput
         )
         == 1.0
@@ -115,15 +120,20 @@ def test_compute_bootstrap_measure(
 
 
 @pytest.mark.parametrize("n_folds", [2, 3])
-@pytest.mark.parametrize("samples", [None, [0, 1, 2]])
+@pytest.mark.parametrize("samples", [(), [0, 1, 2]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_cross_validation_measure(
     learning_data, n_folds, samples, multioutput
 ) -> None:
     algo = NewPredictiveAlgo(learning_data)
     assert (
-        NewMLPredictiveClusteringMeasure(algo).compute_cross_validation_measure(
+        NewPredictiveClustererQuality(algo).compute_cross_validation_measure(
             n_folds, samples, multioutput
         )
         == 1.0
     )
+
+
+def test_factory():
+    """Check ClustererQualityFactory."""
+    assert ClustererQualityFactory().is_available("SilhouetteMeasure")

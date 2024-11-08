@@ -21,13 +21,13 @@ from __future__ import annotations
 
 import pickle
 from typing import TYPE_CHECKING
-from typing import Any
 from unittest import mock
 
 import pytest
 from numpy import allclose as allclose_
 from numpy import array
 from numpy import linalg
+from numpy.testing import assert_equal
 
 from gemseo import create_mda
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
@@ -35,21 +35,24 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sellar.sellar import get_y_opt
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
-
-from ..core.test_dataframe_disciplines import assert_disc_data_equal
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.utils import get_y_opt
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.core.discipline import MDODiscipline
+    from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrKeyMapping
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.core.discipline import Discipline
 
 TRESHOLD_MDA_TOL = 1e-6
 SELLAR_Y_REF = array([0.80004953, 1.79981434])
@@ -60,13 +63,13 @@ def allclose(a, b):
 
 
 @pytest.fixture(scope="module")
-def mda_setting() -> Mapping[str, Any]:
+def mda_setting() -> StrKeyMapping:
     """Returns the setting for all subsequent MDAs."""
     return {"tolerance": 1e-12, "max_mda_iter": 50}
 
 
 @pytest.fixture(scope="module")
-def sobieski_disciplines() -> Sequence[MDODiscipline]:
+def sobieski_disciplines() -> Sequence[Discipline]:
     """Returns the Sobieski's disciplines."""
     return [SobieskiAerodynamics(), SobieskiStructure(), SobieskiPropulsion()]
 
@@ -126,50 +129,6 @@ def test_acceleration_methods(
     )
 
 
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility(sobieski_disciplines) -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda_1 = MDANewtonRaphson(
-        sobieski_disciplines,
-        tolerance=1e-12,
-        relax_factor=0.95,
-    )
-    mda_1.reset_history_each_run = True
-    mda_1.execute()
-
-    mda_2 = MDANewtonRaphson(
-        sobieski_disciplines,
-        tolerance=1e-12,
-        over_relaxation_factor=0.95,
-    )
-    mda_2.reset_history_each_run = True
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-    mda_1.cache.clear()
-    mda_1.relax_factor = 0.9
-    mda_1.execute()
-
-    mda_2.cache.clear()
-    mda_2.over_relaxation_factor = 0.9
-    mda_2.execute()
-
-    assert mda_1.residual_history == mda_2.residual_history
-
-
-# TODO: Remove tests once the old attributes are removed
-def test_compatibility_setters_getters(sobieski_disciplines) -> None:
-    """Tests that the compatibility with previous behavior is ensured."""
-    mda = MDANewtonRaphson(
-        sobieski_disciplines,
-        tolerance=1e-12,
-        relax_factor=0.95,
-    )
-    assert mda.relax_factor == 0.95
-    assert mda.over_relaxation_factor == 0.95
-
-
 @pytest.mark.parametrize("coupl_scaling", ["n_coupling_variables", "no_scaling"])
 def test_raphson_sobieski(coupl_scaling) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
@@ -181,8 +140,8 @@ def test_raphson_sobieski(coupl_scaling) -> None:
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
-    mda.warm_start = True
-    mda.execute({"x_1": mda.default_inputs["x_1"] + 1.0e-2})
+    mda.settings.warm_start = True
+    mda.execute({"x_1": mda.default_input_data["x_1"] + 1.0e-2})
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
@@ -224,17 +183,19 @@ def test_raphson_sellar_without_cache(use_cache) -> None:
 
     residual_length = len(mda.residual_history)
     assert mda.residual_history[-1] < tolerance
-    assert disciplines[0].n_calls == residual_length
-    assert disciplines[0].n_calls_linearize == residual_length - 1
+    assert disciplines[0].execution_statistics.n_calls == residual_length
+    assert disciplines[0].execution_statistics.n_calls_linearize == residual_length - 1
 
 
 @pytest.mark.parametrize("parallel", [False, True])
 def test_raphson_sellar(parallel) -> None:
     """Test the execution of Newton on Sobieski."""
     disciplines = [Sellar1(), Sellar2()]
-    mda = MDANewtonRaphson(disciplines, parallel=parallel)
+    kwargs = {"n_processes": 2} if parallel else {"n_processes": 1}
+    mda = MDANewtonRaphson(disciplines, **kwargs)
     mda.execute()
 
+    assert (mda.settings.n_processes == 1) is not parallel
     assert mda.residual_history[-1] < 1e-6
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
 
@@ -252,9 +213,9 @@ def test_log_convergence() -> None:
     """Check that the boolean log_convergence is correctly set."""
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
-    assert not mda.log_convergence
+    assert not mda.settings.log_convergence
     mda = MDANewtonRaphson(disciplines, log_convergence=True)
-    assert mda.log_convergence
+    assert mda.settings.log_convergence
 
 
 def test_weak_and_strong_couplings() -> None:
@@ -273,8 +234,8 @@ def test_weak_and_strong_couplings() -> None:
         "x": array([0.0]),
     })
     assert mda.inner_mdas[0].residual_history[-1] < TRESHOLD_MDA_TOL
-    assert mda.local_data[mda.RESIDUALS_NORM][0] < TRESHOLD_MDA_TOL
-    assert mda.local_data["obj"] == pytest.approx(array([2.0 / 1.3]))
+    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < TRESHOLD_MDA_TOL
+    assert mda.io.data["obj"] == pytest.approx(array([2.0 / 1.3]))
 
 
 def test_weak_and_strong_couplings_two_cycles() -> None:
@@ -291,7 +252,7 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
     disc7 = AnalyticDiscipline({"obj": "l+m"}, name=7)
     disciplines = [disc1, disc2, disc3, disc4, disc5, disc6, disc7]
     mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson", tolerance=1e-13)
-    mda.warm_start = True
+    mda.settings.warm_start = True
     mda.linearization_mode = "adjoint"
     mda_input = {
         "z": array([1.0]),
@@ -308,15 +269,15 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
     mda_ref = MDAChain(disciplines)
     out_ref = mda_ref.execute(mda_input)
 
-    for output_name in mda.get_output_data_names():
-        if output_name == mda.RESIDUALS_NORM:
+    for output_name in mda.io.output_grammar.names:
+        if output_name == mda.NORMALIZED_RESIDUAL_NORM:
             continue
         assert out[output_name] == pytest.approx(out_ref[output_name], rel=1e-5)
 
     assert mda.check_jacobian(
         input_data=mda_input,
-        inputs=["x"],
-        outputs=["obj"],
+        input_names=["x"],
+        output_names=["obj"],
         linearization_mode="adjoint",
         threshold=1e-3,
         step=1e-4,
@@ -326,23 +287,23 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
 @pytest.mark.parametrize(
     (
         "mda_linear_solver",
-        "mda_linear_solver_options",
+        "mda_linear_solver_settings",
         "newton_linear_solver_name",
-        "newton_linear_solver_options",
+        "newton_linear_solver_settings",
     ),
     [
-        ("DEFAULT", None, "DEFAULT", None),
-        ("DEFAULT", {"atol": 1e-6}, "DEFAULT", None),
-        ("DEFAULT", None, "DEFAULT", {"atol": 1e-3}),
-        ("BICG", None, "DEFAULT", None),
-        ("DEFAULT", None, "BICG", None),
+        ("DEFAULT", {}, "DEFAULT", {}),
+        ("DEFAULT", {"atol": 1e-6}, "DEFAULT", {}),
+        ("DEFAULT", {}, "DEFAULT", {"atol": 1e-3}),
+        ("BICG", {}, "DEFAULT", {}),
+        ("DEFAULT", {}, "BICG", {}),
     ],
 )
 def test_pass_dedicated_newton_options(
     mda_linear_solver,
-    mda_linear_solver_options,
+    mda_linear_solver_settings,
     newton_linear_solver_name,
-    newton_linear_solver_options,
+    newton_linear_solver_settings,
 ) -> None:
     """Test that the linear solver type and options for the Adjoint method and the
     newton method can be controlled independently in a newton based MDA. A mock is used
@@ -350,56 +311,56 @@ def test_pass_dedicated_newton_options(
 
     Args:
         mda_linear_solver: The linear solver name to solve the MDA Adjoint matrix.
-        mda_linear_solver_options: The options for MDA matrix linear solver.
+        mda_linear_solver_settings: The options for MDA matrix linear solver.
         newton_linear_solver_name: The linear solver name to solve the Newton method.
-        newton_linear_solver_options: The options for Newton linear solver.
+        newton_linear_solver_settings: The options for Newton linear solver.
 
     Returns:
     """
-    newton_linear_solver_options = {"atol": 1e-6}
+    # newton_linear_solver_settings = {"atol": 1e-6}
     mda = create_mda(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
         linear_solver=mda_linear_solver,
-        linear_solver_options=mda_linear_solver_options,
+        linear_solver_settings=mda_linear_solver_settings,
         newton_linear_solver_name=newton_linear_solver_name,
-        newton_linear_solver_options=newton_linear_solver_options,
+        newton_linear_solver_settings=newton_linear_solver_settings,
     )
     mda.assembly.compute_newton_step = mock.Mock(
         return_value=(array([-0.1935616 + 0.0j, 0.7964384 + 0.0j]), True)
     )
     mda.execute()
     newton_step_args = mda.assembly.compute_newton_step.call_args
-    assert mda.linear_solver == mda_linear_solver
-    if mda_linear_solver_options is None:
-        assert mda.linear_solver_options == {}
+    assert mda.settings.linear_solver == mda_linear_solver
+    if mda_linear_solver_settings is None:
+        assert mda.settings.linear_solver_settings == {}
     else:
-        assert mda.linear_solver_options == mda_linear_solver_options
+        assert mda.settings.linear_solver_settings == mda_linear_solver_settings
     assert newton_step_args.args[2] == newton_linear_solver_name
     del newton_step_args.kwargs["matrix_type"]
-    if newton_linear_solver_options is not None:
-        assert newton_step_args.kwargs["atol"] == newton_linear_solver_options["atol"]
+    if "atol" in newton_linear_solver_settings:
+        assert newton_step_args.kwargs["atol"] == newton_linear_solver_settings["atol"]
 
 
 @pytest.mark.parametrize(
-    ("newton_linear_solver_name", "newton_linear_solver_options"),
+    ("newton_linear_solver_name", "newton_linear_solver_settings"),
     [
         ("DEFAULT", {"atol": 1e-7}),
-        ("DEFAULT", None),
-        ("BICGSTAB", None),
-        ("GMRES", None),
+        ("DEFAULT", {}),
+        ("BICGSTAB", {}),
+        ("GMRES", {}),
     ],
 )
 def test_mda_newton_convergence_passing_dedicated_newton_options(
     newton_linear_solver_name,
-    newton_linear_solver_options,
+    newton_linear_solver_settings,
 ) -> None:
     """Test that Newton MDA converges toward expected value for various linear solver
     algorithms for the Newton method.
 
     Args:
         newton_linear_solver_name: The linear solver name to solve the Newton method.
-        newton_linear_solver_options: The options for Newton linear solver.
+        newton_linear_solver_settings: The options for Newton linear solver.
 
     Returns:
     """
@@ -407,7 +368,7 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
         newton_linear_solver_name=newton_linear_solver_name,
-        newton_linear_solver_options=newton_linear_solver_options,
+        newton_linear_solver_settings=newton_linear_solver_settings,
     )
     mda.execute()
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
@@ -420,7 +381,7 @@ def test_mda_newton_serialization(tmp_wd) -> None:
     mda = create_mda(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
-        newton_linear_solver_options=options,
+        newton_linear_solver_settings=options,
     )
     out = mda.execute()
     out_file = "mda_newton.pkl"
@@ -430,7 +391,7 @@ def test_mda_newton_serialization(tmp_wd) -> None:
     with open(out_file, "rb") as file:
         mda_d = pickle.load(file)
 
-    assert_disc_data_equal(mda_d.local_data, out)
+    assert_equal(mda_d.io.data, out)
 
 
 def test_mda_newton_weak_couplings() -> None:
@@ -458,7 +419,7 @@ def test_linear_solver_not_converged(caplog) -> None:
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
         newton_linear_solver_name=solver,
-        newton_linear_solver_options={"max_iter": 1},
+        newton_linear_solver_settings={"max_iter": 1},
         max_mda_iter=2,
     )
     expected_log = (

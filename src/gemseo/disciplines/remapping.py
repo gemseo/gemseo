@@ -20,19 +20,24 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from functools import singledispatchmethod
+from typing import TYPE_CHECKING
+from typing import NoReturn
 from typing import Union
 
 from numpy import empty
-from numpy import ndarray
 
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
-Data = dict[str, ndarray]
+if TYPE_CHECKING:
+    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.typing import StrKeyMapping
+
 Indices = tuple[str, Union[int, Iterable[int]]]
 NameMapping = dict[str, Union[str, Indices]]
 
 
-class RemappingDiscipline(MDODiscipline):
+class RemappingDiscipline(Discipline):
     """A discipline whose inputs and outputs map to those of another.
 
     An input or output name mapping looks like
@@ -47,11 +52,13 @@ class RemappingDiscipline(MDODiscipline):
     (from the ``i``-th to the ``j``-th components of ``y``).
     """
 
+    default_grammar_type = Discipline.GrammarType.SIMPLER
+
     def __init__(
         self,
-        discipline: MDODiscipline,
-        input_mapping: NameMapping,
-        output_mapping: NameMapping,
+        discipline: Discipline,
+        input_mapping: NameMapping = READ_ONLY_EMPTY_DICT,
+        output_mapping: NameMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:
@@ -62,32 +69,51 @@ class RemappingDiscipline(MDODiscipline):
         Raises:
             ValueError: When the original discipline has no default input values.
         """  # noqa: D205, D212, D415
-        if not discipline.default_inputs:
+        if not discipline.default_input_data:
             msg = "The original discipline has no default input values."
             raise ValueError(msg)
 
         self._discipline = discipline
         self._empty_original_input_data = {
             k: empty(v.shape, dtype=v.dtype)
-            for k, v in discipline.default_inputs.items()
+            for k, v in discipline.default_input_data.items()
         }
-        self._input_mapping = self.__format_mapping(input_mapping)
-        self._output_mapping = self.__format_mapping(output_mapping)
-        super().__init__(name=self._discipline.name)
-        self.input_grammar.update_from_names(self._input_mapping.keys())
-        self.output_grammar.update_from_names(self._output_mapping.keys())
-        self.default_inputs = self.__convert_from_origin(
-            discipline.default_inputs, self._input_mapping
+        original_input_grammar = discipline.input_grammar
+        original_output_grammar = discipline.output_grammar
+        input_mapping = input_mapping or {n: n for n in original_input_grammar}
+        output_mapping = output_mapping or {n: n for n in original_output_grammar}
+        self._input_mapping = self.__format_mapping(
+            input_mapping, discipline.input_grammar
         )
+        self._output_mapping = self.__format_mapping(
+            output_mapping, discipline.output_grammar
+        )
+        super().__init__(name=self._discipline.name)
+        self.input_grammar.update_from_names(input_mapping.keys())
+        self.output_grammar.update_from_names(output_mapping.keys())
+        self.default_input_data = self.__convert_from_origin(
+            discipline.default_input_data, self._input_mapping
+        )
+        self.add_differentiated_inputs(
+            self.__get_new_data_names(
+                discipline._differentiated_input_names, self._input_mapping
+            )
+        )
+        self.add_differentiated_outputs(
+            self.__get_new_data_names(
+                discipline._differentiated_output_names, self._output_mapping
+            )
+        )
+        self.linearization_mode = discipline.linearization_mode
 
     @property
-    def original_discipline(self) -> MDODiscipline:
+    def original_discipline(self) -> Discipline:
         """The original discipline."""
         return self._discipline
 
     @singledispatchmethod
     @staticmethod
-    def __cast_mapping_value(value) -> slice | Iterable[int]:
+    def __cast_mapping_value(value) -> NoReturn:
         """Cast a value of a mapping.
 
         Args:
@@ -121,31 +147,34 @@ class RemappingDiscipline(MDODiscipline):
         return value
 
     @classmethod
-    def __format_mapping(cls, mapping: NameMapping) -> dict[str, slice | Iterable[int]]:
+    def __format_mapping(
+        cls, mapping: NameMapping, grammar: BaseGrammar
+    ) -> dict[str, tuple[str, slice | Iterable[int]]]:
         """Format a mapping as ``{"current_name": ("original_name", components)}``.
 
         Args:
             mapping: The user mapping.
+            grammar: The grammar.
 
         Returns:
             The formatted mapping.
         """
         return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
 
-    def _run(self) -> None:
-        self._discipline.execute(self.__convert_to_origin(self.get_input_data()))
-        self.local_data.update(
-            self.__convert_from_origin(
-                self._discipline.get_output_data(), self._output_mapping
-            )
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
+        return self.__convert_from_origin(
+            self._discipline.io.get_output_data(), self._output_mapping
         )
 
     def _compute_jacobian(
         self,
-        inputs: Iterable[str] | None = None,
-        outputs: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
-        self._discipline._compute_jacobian(inputs=inputs, outputs=outputs)
+        self._discipline._compute_jacobian(
+            input_names=input_names, output_names=output_names
+        )
         original_jac = self._discipline.jac
         self.jac = {}
         for new_o_name, (o_name, o_args) in self._output_mapping.items():
@@ -155,7 +184,10 @@ class RemappingDiscipline(MDODiscipline):
                 self.jac[new_o_name][new_i_name] = jac[o_args, i_args]
 
     @staticmethod
-    def __convert_from_origin(original_data: Data, name_mapping: NameMapping) -> Data:
+    def __convert_from_origin(
+        original_data: StrKeyMapping,
+        name_mapping: NameMapping,
+    ) -> StrKeyMapping:
         """Convert original data to the current format.
 
         Args:
@@ -171,7 +203,7 @@ class RemappingDiscipline(MDODiscipline):
             for new_name, (original_name, args) in name_mapping.items()
         }
 
-    def __convert_to_origin(self, input_data: Data) -> Data:
+    def __convert_to_origin(self, input_data: StrKeyMapping) -> StrKeyMapping:
         """Convert current input data to the original format.
 
         Args:
@@ -187,3 +219,22 @@ class RemappingDiscipline(MDODiscipline):
             original_name, args = self._input_mapping[new_name]
             original_input_data[original_name][args] = value
         return original_input_data
+
+    @staticmethod
+    def __get_new_data_names(
+        data_names: Iterable[str], name_mapping: NameMapping
+    ) -> list[str]:
+        """Return new data names from data names based on a name mapping.
+
+        Args:
+            data_names: The data names.
+            name_mapping: The name mapping.
+
+        Returns:
+            The new data names.
+        """
+        return [
+            new_name
+            for new_name, (name, _) in name_mapping.items()
+            if name in data_names
+        ]

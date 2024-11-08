@@ -37,8 +37,8 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.problems.optimization.power_2 import Power2
 
 
 def create_problem():
@@ -49,7 +49,7 @@ def create_problem():
     eq = problem.constraints[2]
 
     def cstr(x):
-        return concatenate([ineq1(x), ineq2(x)])
+        return concatenate([ineq1.evaluate(x), ineq2.evaluate(x)])
 
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
@@ -59,7 +59,7 @@ def create_problem():
     return problem
 
 
-@pytest.fixture()
+@pytest.fixture
 def sellar_problem():
     """Sellar problem fixture."""
     return create_problem()
@@ -68,10 +68,10 @@ def sellar_problem():
 def create_pb_alleq():
     """Creates a basic sellar problem with vectorized equality constraints only."""
     problem = Power2()
-    constraints = problem.constraints
+    constraints = list(problem.constraints)
 
     def cstr(x):
-        return concatenate([cstr(x) for cstr in constraints])
+        return concatenate([cstr.evaluate(x) for cstr in constraints])
 
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])
@@ -92,21 +92,21 @@ def create_pb_alleq():
 )
 def test_ks_constraint_aggregation_consistency(x):
     problem_ref = create_problem()
-    out = problem_ref.evaluate_functions(x_vect=x)
+    out = problem_ref.evaluate_functions(design_vector=x)
     rho = 10
     offset = log(len(out[0]["cstr"])) / rho
     g_max = max(out[0]["cstr"])
     problem_upper_bound_ks = create_problem()
-    problem_upper_bound_ks.aggregate_constraint(
+    problem_upper_bound_ks.constraints.aggregate(
         0, method="upper_bound_KS", rho=rho, scale=1.0
     )
-    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(x_vect=x)
+    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(design_vector=x)
     upper_bound_ks = out_upper_bound_ks[0]["upper_bound_KS(cstr)"]
     problem_lower_bound_ks = create_problem()
-    problem_lower_bound_ks.aggregate_constraint(
+    problem_lower_bound_ks.constraints.aggregate(
         0, method="lower_bound_KS", rho=rho, scale=1.0
     )
-    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(x_vect=x)
+    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(design_vector=x)
     lower_bound_ks = out_lower_bound_ks[0]["lower_bound_KS(cstr)"]
     assert g_max - lower_bound_ks <= offset
     assert pytest.approx(upper_bound_ks - lower_bound_ks) == offset
@@ -118,21 +118,16 @@ def test_ks_constraint_aggregation_consistency(x):
 )
 def test_ks_aggreg(method) -> None:
     """Tests KS and IKS aggregation methods compared to no aggregation."""
-    algo_options = {"ineq_tolerance": 1e-2, "eq_tolerance": 1e-2}
     problem_ref = create_problem()
-    execute_algo(problem_ref, algo_name="SLSQP", algo_options=algo_options)
+    execute_algo(problem_ref, algo_name="SLSQP", ineq_tolerance=1e-2, eq_tolerance=1e-2)
     ref_sol = problem_ref.solution
 
     problem = create_problem()
-    if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
-        problem.aggregate_constraint(0, method=method, rho=300.0, scale=1.0)
+    if method in {"upper_bound_KS", "lower_bound_KS", "IKS"}:
+        problem.constraints.aggregate(0, method=method, rho=300.0, scale=1.0)
     else:
-        problem.aggregate_constraint(0, method=method, scale=1.0)
-    execute_algo(
-        problem,
-        algo_name="SLSQP",
-        algo_options=algo_options,
-    )
+        problem.constraints.aggregate(0, method=method, scale=1.0)
+    execute_algo(problem, algo_name="SLSQP", ineq_tolerance=1e-2, eq_tolerance=1e-2)
     sol2 = problem.solution
 
     assert allclose(ref_sol.x_opt, sol2.x_opt, rtol=1e-2)
@@ -148,7 +143,7 @@ def test_wrong_constraint_index() -> None:
             "the number of constraints (1)."
         ),
     ):
-        problem.aggregate_constraint(10)
+        problem.constraints.aggregate(10)
 
 
 @pytest.mark.parametrize(
@@ -156,19 +151,19 @@ def test_wrong_constraint_index() -> None:
 )
 def test_groups(sellar_problem, method) -> None:
     """Test groups aggregation."""
-    if method in ["upper_bound_KS", "lower_bound_KS", "IKS"]:
-        sellar_problem.aggregate_constraint(
+    if method in {"upper_bound_KS", "lower_bound_KS", "IKS"}:
+        sellar_problem.constraints.aggregate(
             0, method=method, rho=300.0, scale=1.0, groups=(0, 1)
         )
     else:
-        sellar_problem.aggregate_constraint(0, method=method, scale=1.0, groups=(0, 1))
+        sellar_problem.constraints.aggregate(0, method=method, scale=1.0, groups=(0, 1))
     assert len(sellar_problem.constraints) == 3
 
 
 def test_max_aggreg(sellar_problem) -> None:
     """Tests max inequality aggregation method compared to no aggregation."""
     xopt_ref = array([0.79370053, 0.79370053, 0.96548938])
-    sellar_problem.aggregate_constraint(0, method=aggregate_max, scale=2.0)
+    sellar_problem.constraints.aggregate(0, method=aggregate_max, scale=2.0)
     execute_algo(sellar_problem, algo_name="SLSQP")
     sol2 = sellar_problem.solution
 
@@ -222,7 +217,7 @@ def jacobian_function(x):
 def complex_real_mdo_func_aggregation(
     request,
 ) -> tuple[MDOFunction, MDOFunction, callable]:
-    """Returns two MDOFunctions and a consistent aggregation callable for tests."""
+    """Returns two mdo_functions and a consistent aggregation callable for tests."""
     return (
         MDOFunction(
             lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))], complex128),
@@ -252,6 +247,6 @@ def test_real_complex(complex_real_mdo_func_aggregation, indices) -> None:
     real_mdo_func_agg = aggregation_function(real_mdo_function, indices=indices)
     input_data = array([0.5, 0.6, 0.2])
     complex_mdo_func_agg.check_grad(x_vect=input_data, approximation_mode="ComplexStep")
-    assert pytest.approx(complex_mdo_func_agg(input_data)) == real_mdo_func_agg(
-        input_data
-    )
+    assert pytest.approx(
+        complex_mdo_func_agg.evaluate(input_data)
+    ) == real_mdo_func_agg.evaluate(input_data)

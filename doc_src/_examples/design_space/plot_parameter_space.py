@@ -47,7 +47,7 @@ parameter_space = ParameterSpace()
 # Then, we can add either deterministic variables
 # from their lower and upper bounds
 # (use :meth:`.ParameterSpace.add_variable`):
-parameter_space.add_variable("x", l_b=-2.0, u_b=2.0)
+parameter_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0)
 
 # %%
 # or uncertain variables from their distribution names and parameters
@@ -134,9 +134,13 @@ discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 #    :class:`.DOEScenario` will consider all variables. In particular, the
 #    deterministic variables will be considered as uniformly distributed.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
+    [discipline],
+    "z",
+    parameter_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "lhs", "n_samples": 100})
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
 # We can visualize the result by encapsulating the database in
@@ -162,9 +166,13 @@ parameter_space.filter(parameter_space.uncertain_variables)
 # Then, we create a new scenario from this parameter space
 # containing only the uncertain variables and execute it.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "z", parameter_space, scenario_type="DOE"
+    [discipline],
+    "z",
+    parameter_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "lhs", "n_samples": 100})
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
 # Finally, we build a dataset from the disciplinary cache and visualize it.

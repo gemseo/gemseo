@@ -65,12 +65,12 @@ from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.utils import get_all_inputs
 from gemseo.disciplines.utils import get_all_outputs
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
 # %%
-# Step 1: Creation of :class:`.MDODiscipline`
+# Step 1: Creation of :class:`.Discipline`
 # -------------------------------------------
 #
 # To build the scenario, we first instantiate the disciplines. Here, the
@@ -154,14 +154,14 @@ get_available_formulations()
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
 # %%
-# From these :class:`~gemseo.core.discipline.MDODiscipline`, design space filename,
+# From these :class:`~gemseo.core.discipline.Discipline`, design space filename,
 # :ref:`MDO formulation <mdo_formulations>` name and objective function name,
 # we build the scenario:
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 # %%
@@ -206,28 +206,25 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # (:math:`g\_1, g\_2, g\_3`) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# :meth:`~gemseo.core.scenario.Scenario.add_constraint`:
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_constraint`:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
 # Step 3: Execution and visualization of the results
 # --------------------------------------------------
 #
-# The algorithm arguments are provided as a dictionary to the execution
-# method of the scenario:
-algo_args = {"max_iter": 10, "algo": "SLSQP"}
-# %%
-# .. warning::
-#
-#    The mandatory arguments are the maximum number of iterations and the algorithm name.
-#    Any other options of the optimization algorithm can be prescribed through
-#    the argument ``algo_options`` with a dictionary, e.g.
-#    :code:`algo_args =
-#    {"max_iter": 10, "algo": "SLSQP": "algo_options": {"ftol_rel": 1e-6}}`.
-#    This list of available algorithm options are detailed here: :ref:`gen_opt_algos`.
-#
-# The scenario is executed by means of the line:
-scenario.execute(algo_args)
+# The scenario is executed from
+# an optimization algorithm name (see :ref:`gen_opt_algos`),
+# a maximum number of iterations
+# and possibly a few options.
+# The maximum number of iterations and the options can be passed
+# either as keyword arguments
+# e.g. ``scenario.execute(algo_name="SLSQP", max_iter=10, ftol_rel=1e-6)``
+# or as a Pydantic model of settings,
+# e.g. ``scenario.execute(NLOPTSLSQPSettings(max_iter=10, ftol_rel=1e-6))``
+# where the Pydantic model ``NLOPTSLSQPSettings`` is imported from ``gemseo.settings.opt``.
+# In this example, we do not use any option:
+scenario.execute(algo_name="SLSQP", max_iter=10)
 # %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~
@@ -236,7 +233,7 @@ scenario.execute(algo_args)
 # :ref:`post_processing`.
 #
 # To visualize the optimization history:
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Influence of gradient computation method on performance
@@ -258,7 +255,7 @@ scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPER
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
 scenario.formulation.mda.use_lu_fact = True
 # %%
-# Altenatively, |g| can implicitly create a matrix-vector product operator,
+# Alternatively, |g| can implicitly create a matrix-vector product operator,
 # which is sufficient for GMRES-like solvers. It avoids to create an additional
 # data structure. This can also be mandatory if the disciplines do not provide
 # full Jacobian matrices but only matrix-vector product operators.

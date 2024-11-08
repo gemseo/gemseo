@@ -70,7 +70,7 @@ def _create_radial_basis_function(
     Returns:
         The radial basis function.
     """
-    return Rbf(x, y)  # type: ignore
+    return Rbf(x, y)  # type: ignore[no-any-return]
 
 
 class Trend(StrEnum):

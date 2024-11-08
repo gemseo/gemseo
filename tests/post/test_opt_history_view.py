@@ -27,8 +27,8 @@ from numpy import array
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -42,8 +42,7 @@ def test_get_constraints() -> None:
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     view = OptHistoryView(problem)
 
-    _, cstr = view._get_constraints(["toto", "ineq1"])
-    assert len(cstr) == 1
+    assert len(view._OptHistoryView__get_constraint_history(["toto", "ineq1"])) == 1
 
 
 @pytest.mark.parametrize(
@@ -55,7 +54,6 @@ def test_get_constraints() -> None:
                 "power2_2_variables",
                 "power2_2_objective",
                 "power2_2_x_xstar",
-                "power2_2_hessian_approximation",
                 "power2_2_ineq_constraints",
                 "power2_2_eq_constraints",
             ],
@@ -66,7 +64,6 @@ def test_get_constraints() -> None:
                 "power2_2_variables",
                 "power2_2_objective_relative",
                 "power2_2_x_xstar",
-                "power2_2_hessian_approximation",
                 "power2_2_ineq_constraints",
                 "power2_2_eq_constraints",
             ],
@@ -79,7 +76,7 @@ def test_opt_hist_const(baseline_images, obj_relative) -> None:
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     execute_post(
         problem,
-        "OptHistoryView",
+        post_name="OptHistoryView",
         show=False,
         save=False,
         variable_names=["x"],
@@ -109,7 +106,6 @@ def test_opt_hist_const(baseline_images, obj_relative) -> None:
                 "power2view_variables",
                 "power2view_objective",
                 "power2view_x_xstar",
-                "power2view_hessian_approximation",
                 "power2view_ineq_constraints",
                 "power2view_eq_constraints",
             ],
@@ -130,23 +126,9 @@ def test_opt_hist_from_database(
     problem = OptimizationProblem.from_hdf(problem_path)
     # The use of the default value is deliberate;
     # to check that the JSON grammar works properly.
-    execute_post(problem, "OptHistoryView", variable_names=None, show=False, save=False)
-
-
-def test_diag_with_nan(caplog) -> None:
-    """Check that the Hessian plot creation is skipped if its diagonal contains NaN."""
-    design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(
-        lambda x: 2 * x, "obj", jac=lambda x: array([[2.0]])
+    execute_post(
+        problem, post_name="OptHistoryView", variable_names=(), show=False, save=False
     )
-    execute_algo(problem, "fullfact", n_samples=3, eval_jac=True, algo_type="doe")
-
-    execute_post(problem, "OptHistoryView", save=False, show=False)
-    log = caplog.text
-    assert "Failed to create Hessian approximation." in log
-    assert "The approximated Hessian diagonal contains NaN." in log
 
 
 TEST_PARAMETERS = {
@@ -156,7 +138,6 @@ TEST_PARAMETERS = {
             "opt_history_view_variables_standardized",
             "opt_history_view_objective_standardized",
             "opt_history_view_x_xstar_standardized",
-            "opt_history_view_hessian_approximation_standardized",
             "opt_history_view_ineq_constraints_standardized",
             "opt_history_view_eq_constraints_standardized",
         ],
@@ -167,7 +148,6 @@ TEST_PARAMETERS = {
             "opt_history_view_variables_unstandardized",
             "opt_history_view_objective_unstandardized",
             "opt_history_view_x_xstar_unstandardized",
-            "opt_history_view_hessian_approximation_unstandardized",
             "opt_history_view_ineq_constraints_unstandardized",
             "opt_history_view_eq_constraints_unstandardized",
         ],
@@ -202,7 +182,6 @@ def test_common_scenario(
                 "461_1_opt_history_view_variables",
                 "461_1_opt_history_view_objective",
                 "461_1_opt_history_view_x_xstar",
-                "461_1_opt_history_view_hessian",
             ],
         ),
         (
@@ -211,7 +190,6 @@ def test_common_scenario(
                 "461_2_opt_history_view_variables",
                 "461_2_opt_history_view_objective",
                 "461_2_opt_history_view_x_xstar",
-                "461_2_opt_history_view_hessian",
             ],
         ),
     ],
@@ -224,9 +202,9 @@ def test_461(case, baseline_images) -> None:
     2. Design space of dimension > 1 and vector output.
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=-2, u_b=2.0, value=-2.0)
+    design_space.add_variable("x", lower_bound=-2, upper_bound=2.0, value=-2.0)
     if case == 2:
-        design_space.add_variable("y", l_b=-2, u_b=2.0, value=-2.0)
+        design_space.add_variable("y", lower_bound=-2, upper_bound=2.0, value=-2.0)
 
     problem = OptimizationProblem(design_space)
     if case == 1:
@@ -237,8 +215,8 @@ def test_461(case, baseline_images) -> None:
         )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
-    execute_algo(problem, "NLOPT_SLSQP", max_iter=5)
-    execute_post(problem, "OptHistoryView", save=False, show=False)
+    execute_algo(problem, algo_name="NLOPT_SLSQP", max_iter=5)
+    execute_post(problem, post_name="OptHistoryView", save=False, show=False)
 
 
 @image_comparison(
@@ -246,14 +224,13 @@ def test_461(case, baseline_images) -> None:
         "opt_history_view_variables_variable_names",
         "opt_history_view_objective_variable_names",
         "opt_history_view_x_xstar_variable_names",
-        "opt_history_view_hessian_variable_names",
         "opt_history_view_ineq_constraints_variable_names",
     ]
 )
 def test_variable_names() -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
-        "OptHistoryView",
+        post_name="OptHistoryView",
         variable_names=["x_2", "x_1"],
         save=False,
         show=False,
@@ -263,13 +240,14 @@ def test_variable_names() -> None:
 def test_no_gradient_history(caplog) -> None:
     """Check that OptHistoryView works without gradient history."""
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=-1, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x**2, "f")
     problem.database.store(array([-1]), {"f": array([1])})
     problem.database.store(array([0]), {"f": array([0])})
     problem.database.store(array([1]), {"f": array([1])})
-    post_processor = execute_post(problem, "OptHistoryView", save=False, show=False)
+    post_processor = execute_post(
+        problem, post_name="OptHistoryView", save=False, show=False
+    )
     assert set(post_processor.figures.keys()) == {"variables", "objective", "x_xstar"}
-    assert "Failed to create Hessian approximation." not in caplog.text

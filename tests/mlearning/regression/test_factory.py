@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Unit test for RegressionModelFactory class in gemseo.mlearning.regression.factory."""
+"""Unit test for RegressorFactory class in gemseo.mlearning.regression.factory."""
 
 from __future__ import annotations
 
@@ -26,9 +26,10 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.factory import RegressionModelFactory
+from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -36,16 +37,18 @@ if TYPE_CHECKING:
 LEARNING_SIZE = 9
 
 
-@pytest.fixture()
+@pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression algorithms."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache_policy(discipline.CacheType.MEMORY_FULL)
+    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
-    design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-    design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
-    scenario = DOEScenario([discipline], "DisciplinaryOpt", "y_1", design_space)
-    scenario.execute({"algo": "fullfact", "n_samples": LEARNING_SIZE})
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    scenario = DOEScenario(
+        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    )
+    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 
 
@@ -59,34 +62,17 @@ def test_constructor() -> None:
         "PolynomialRegressor",
         "RBFRegressor",
         "RandomForestRegressor",
-    } <= set(RegressionModelFactory().models)
+    } <= set(RegressorFactory().class_names)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = RegressionModelFactory()
-    linreg = factory.create("LinearRegressor", data=dataset)
-    assert hasattr(linreg, "parameters")
-
-
-def test_load(dataset, tmp_wd) -> None:
-    """Test the loading of a model from data."""
-    factory = RegressionModelFactory()
-    linreg = factory.create("LinearRegressor", data=dataset)
-    linreg.learn()
-    dirname = linreg.to_pickle()
-    loaded_linreg = factory.load(dirname)
-    assert hasattr(loaded_linreg, "parameters")
-
-
-def test_available_models() -> None:
-    """Test the getter of available regression models."""
-    factory = RegressionModelFactory()
-    assert "LinearRegressor" in factory.models
+    factory = RegressorFactory()
+    assert isinstance(factory.create("LinearRegressor", data=dataset), LinearRegressor)
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    factory = RegressionModelFactory()
+    factory = RegressorFactory()
     assert factory.is_available("LinearRegressor")
     assert not factory.is_available("Dummy")

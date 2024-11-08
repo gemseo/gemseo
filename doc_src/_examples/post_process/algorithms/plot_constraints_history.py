@@ -31,7 +31,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # Import
@@ -80,16 +80,16 @@ design_space = SobieskiDesignSpace()
 # and a maximum number of iterations equal to 100.
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
+    formulation_name="MDF",
     maximize_objective=True,
 )
 scenario.set_differentiation_method()
 all_constraints = ["g_1", "g_2", "g_3"]
 for constraint in all_constraints:
     scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute({"algo": "SLSQP", "max_iter": 10})
+scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
 # Post-process scenario
@@ -112,7 +112,7 @@ scenario.execute({"algo": "SLSQP", "max_iter": 10})
 #    :ref:`gen_post_algos`.
 
 scenario.post_process(
-    "ConstraintsHistory",
+    post_name="ConstraintsHistory",
     constraint_names=all_constraints,
     save=False,
     show=True,

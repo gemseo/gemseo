@@ -49,17 +49,26 @@ samples = np.array([sample_1, sample_2])
 
 # %%
 # For that, we can create a scenario and execute it with a :class:`.CustomDOE`
-# with the option "samples":
+# with the setting "samples":
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    [discipline],
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "CustomDOE", "algo_options": {"samples": samples}})
+scenario.execute(algo_name="CustomDOE", samples=samples)
+
+# %%
+# Note that both the formulation settings passed to :func:`.create_scenario` and the
+# algorithm settings passed to :meth:`~.BaseDriverLibrary.execute` can be provided via a Pydantic model. For
+# more information, see :ref:`formulation_settings` and :ref:`algorithm_settings`.
 
 # %%
 # Then,
 # we can display the content of the database as a :class:`.Dataset`
 # and check the values of the output,
 # which should be the product of :math:`a` and :math:`b`:
-opt_problem = scenario.formulation.opt_problem
+opt_problem = scenario.formulation.optimization_problem
 dataset = opt_problem.to_dataset(name="custom_sampling", opt_naming=False)
 dataset

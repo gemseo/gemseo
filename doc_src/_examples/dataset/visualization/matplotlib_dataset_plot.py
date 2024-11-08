@@ -39,7 +39,7 @@ dataset.add_variable("b", [[1], [0], [1]])
 
 # %%
 # Then,
-# we define a :class:`YvsX` chart, which is a particular :class:`.DatasetPlot`:
+# we define a :class:`.YvsX` chart, which is a particular :class:`.DatasetPlot`:
 yvsx = YvsX(dataset, "a", "b")
 
 # %%

@@ -15,7 +15,7 @@
 How to build an analytic discipline?
 ====================================
 
-A simple :class:`.MDODiscipline` can be created using analytic formulas,
+A simple :class:`.Discipline` can be created using analytic formulas,
 e.g. :math:`y_1=2x^2` and :math:`y_2=5+3x^2z^3`,
 thanks to the class  :class:`.AnalyticDiscipline` which is a quick alternative to model a simple analytic MDO problem!
 
@@ -31,7 +31,7 @@ First of all, we have to define the output expressions in a dictionary where key
 Create and instantiate the discipline
 *************************************
 
-Then, we create and instantiate the corresponding :class:`.AnalyticDiscipline` inheriting from :class:`.MDODiscipline`
+Then, we create and instantiate the corresponding :class:`.AnalyticDiscipline` inheriting from :class:`.Discipline`
 by means of the API function :func:`.create_discipline` with:
 
 - ``discipline_name="AnalyticDiscipline"``,
@@ -48,8 +48,8 @@ In practice, we write:
 
 .. note::
 
-   |g| takes care of the grammars and :meth:`!MDODiscipline._run` method generation from the ``expressions`` argument.
-   In the background, |g| considers that ``x`` is a monodimensional float input parameter and ``y_1`` and ``y_2`` are monodimensional float output parameters.
+   |g| takes care of the grammars and :meth:`!Discipline._run` method generation from the ``expressions`` argument.
+   In the background, |g| considers that ``x`` is a mono-dimensional float input parameter and ``y_1`` and ``y_2`` are mono-dimensional float output parameters.
 
 Execute the discipline
 **********************
@@ -78,13 +78,13 @@ About the analytic jacobian
 The discipline will provide analytic derivatives (Jacobian) automatically using the `sympy library <https://www.sympy.org/fr/>`_,
 by means of the :meth:`!AnalyticDiscipline._compute_jacobian` method.
 
-This can be checked easily using :meth:`.MDODiscipline.check_jacobian`:
+This can be checked easily using :meth:`.Discipline.check_jacobian`:
 
 .. code::
 
     disc.check_jacobian(input_data,
-                             derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,
-                             step=1e-5, threshold=1e-3)
+                        derr_approx=disc.ApproximationMode.FINITE_DIFFERENCES,
+                        step=1e-5, threshold=1e-3)
 
 which results in:
 
@@ -94,5 +94,5 @@ which results in:
       INFO - 10:34:33 : Jacobian:  dp y_2/dp z succeeded!
       INFO - 10:34:33 : Jacobian:  dp y_1/dp x succeeded!
       INFO - 10:34:33 : Jacobian:  dp y_1/dp z succeeded!
-      INFO - 10:34:33 : Linearization of MDODiscipline: AnalyticDiscipline is correct !
+      INFO - 10:34:33 : Linearization of Discipline: AnalyticDiscipline is correct !
    True

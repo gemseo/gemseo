@@ -21,6 +21,7 @@ from __future__ import annotations
 import unittest
 from os.path import exists
 from random import shuffle
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -28,25 +29,29 @@ from numpy import array
 
 from gemseo import create_discipline
 from gemseo.core import coupling_structure
-from gemseo.core.coupling_structure import MDOCouplingStructure
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.sellar.sellar import C_1
-from gemseo.problems.sellar.sellar import C_2
-from gemseo.problems.sellar.sellar import OBJ
-from gemseo.problems.sellar.sellar import Y_1
-from gemseo.problems.sellar.sellar import Y_2
-from gemseo.problems.sellar.sellar import Sellar1
-from gemseo.problems.sellar.sellar import Sellar2
-from gemseo.problems.sellar.sellar import SellarSystem
-from gemseo.problems.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.sobieski.disciplines import SobieskiMission
-from gemseo.problems.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problems.mdo.sellar.variables import C_1
+from gemseo.problems.mdo.sellar.variables import C_2
+from gemseo.problems.mdo.sellar.variables import OBJ
+from gemseo.problems.mdo.sellar.variables import Y_1
+from gemseo.problems.mdo.sellar.variables import Y_2
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
 from .test_dependency_graph import create_disciplines_from_desc
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -56,7 +61,7 @@ class TestCouplingStructure(unittest.TestCase):
     def test_couplings_sellar(self) -> None:
         """Verify the strong/weak/total couplings of Sellar pb."""
         disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        coupling_structure = MDOCouplingStructure(disciplines)
+        coupling_structure = CouplingStructure(disciplines)
 
         strong_couplings = coupling_structure.strong_couplings
         weak_couplings = coupling_structure.weak_couplings
@@ -72,7 +77,7 @@ class TestCouplingStructure(unittest.TestCase):
 
     def test_strong_weak_coupling(self) -> None:
         disciplines = [SobieskiStructure(), SobieskiMission()]
-        coupling_structure = MDOCouplingStructure(disciplines)
+        coupling_structure = CouplingStructure(disciplines)
         s1_o_strong = coupling_structure.get_output_couplings(disciplines[0])
         assert len(s1_o_strong) == 0
         s1_o_weak = coupling_structure.get_output_couplings(
@@ -88,7 +93,7 @@ class TestCouplingStructure(unittest.TestCase):
             SobieskiPropulsion(),
             SobieskiMission(),
         ]
-        coupling_structure = MDOCouplingStructure(disciplines)
+        coupling_structure = CouplingStructure(disciplines)
 
         coupling_structure.plot_n2_chart("n2_1.png", False)
         assert exists("n2_1.png")
@@ -99,34 +104,34 @@ class TestCouplingStructure(unittest.TestCase):
         shuffle(disc_shuff)
         disc_shuff = dict(disc_shuff)
         disciplines = create_disciplines_from_desc(disc_shuff)
-        coupling_structure = MDOCouplingStructure(disciplines)
+        coupling_structure = CouplingStructure(disciplines)
 
         fname = "n2_16d.png"
         coupling_structure.plot_n2_chart(fname, False)
         assert exists(fname)
 
-        coupling_structure = MDOCouplingStructure([disciplines[0]])
+        coupling_structure = CouplingStructure([disciplines[0]])
         with pytest.raises(
             ValueError, match="N2 diagrams need at least two disciplines."
         ):
             coupling_structure.plot_n2_chart("n2_3.png", False)
 
     def test_n2_many_io(self) -> None:
-        a = MDODiscipline("a")
-        b = MDODiscipline("b")
+        a = DummyDiscipline("a")
+        b = DummyDiscipline("b")
         a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
         a.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
         b.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
         b.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
 
-        cpl = MDOCouplingStructure([a, b])
+        cpl = CouplingStructure([a, b])
         cpl.plot_n2_chart()
 
     def test_self_coupled(self) -> None:
         sc_disc = SelfCoupledDisc()
         sc_disc.execute()
 
-        coupl = MDOCouplingStructure([sc_disc])
+        coupl = CouplingStructure([sc_disc])
         assert coupl.all_couplings == ["y"]
         assert coupl.strongly_coupled_disciplines == [sc_disc]
         assert coupl.weakly_coupled_disciplines == []
@@ -134,15 +139,15 @@ class TestCouplingStructure(unittest.TestCase):
         assert coupl.strong_couplings == ["y"]
 
 
-class SelfCoupledDisc(MDODiscipline):
+class SelfCoupledDisc(Discipline):
     def __init__(self) -> None:
-        MDODiscipline.__init__(self)
+        Discipline.__init__(self)
         self.input_grammar.update_from_names(["y"])
         self.output_grammar.update_from_names(["y"])
-        self.default_inputs["y"] = array([0.2])
+        self.default_input_data["y"] = array([0.2])
 
-    def _run(self) -> None:
-        self.local_data["y"] = 1.0 - self.local_data["y"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        self.io.data["y"] = 1.0 - self.io.data["y"]
 
 
 def get_strong_couplings(analytic_expressions):
@@ -156,7 +161,7 @@ def get_strong_couplings(analytic_expressions):
         The strong couplings.
     """
     disciplines = [AnalyticDiscipline(desc) for desc in analytic_expressions]
-    return MDOCouplingStructure(disciplines).strong_couplings
+    return CouplingStructure(disciplines).strong_couplings
 
 
 def test_strong_couplings_basic() -> None:
@@ -231,7 +236,7 @@ def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) 
         for desc in descriptions
     ]
 
-    MDOCouplingStructure(disciplines).plot_n2_chart(
+    CouplingStructure(disciplines).plot_n2_chart(
         f"{baseline_images[0]}.png", show_data_names
     )
 
@@ -239,7 +244,7 @@ def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) 
 def test_coupl_properties() -> None:
     """Test the weak_couplings and get_input_couplings on the Sellar problem."""
     disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
-    coupl = MDOCouplingStructure(disciplines)
+    coupl = CouplingStructure(disciplines)
     scd = coupl.strongly_coupled_disciplines
     assert id(scd) == id(coupl.strongly_coupled_disciplines)
 
@@ -258,15 +263,15 @@ def test_coupl_properties() -> None:
     ]
 
     disciplines = create_discipline(["Sellar1", "SellarSystem"])
-    coupl = MDOCouplingStructure(disciplines)
+    coupl = CouplingStructure(disciplines)
     assert coupl.get_input_couplings(disciplines[1], strong=False) == ["y_1"]
     assert coupl.get_input_couplings(disciplines[1]) == []
 
 
 def test_check_disciplines_consistency() -> None:
-    """Test that MDOCouplingStructure checks the consistency of the disciplines."""
+    """Test that CouplingStructure checks the consistency of the disciplines."""
     disciplines = create_discipline(["Sellar1", "Sellar2"])
     with mock.patch.object(coupling_structure, "check_disciplines_consistency") as func:
-        MDOCouplingStructure(disciplines)
+        CouplingStructure(disciplines)
 
     assert func.call_args.args == (disciplines, True, False)

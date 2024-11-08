@@ -25,7 +25,7 @@ import pytest
 from numpy import array
 from numpy import ones
 
-from gemseo.caches.cache_factory import CacheFactory
+from gemseo.caches.factory import CacheFactory
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:

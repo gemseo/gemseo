@@ -92,7 +92,7 @@ Then the user can configure the overall :term:`process`, before execution, by ac
 
 #. At this stage, the scenario instantiates the :term:`MDO formulation` according to the user's choice.
 #. Then, the formulation possibly creates :term:`generic processes<generic process>` such as :term:`MDAs<MDA>` (for :term:`MDF`),
-   or MDO subscenarios, for :term:`bi-level` formulations.
+   or MDO sub-scenarios, for :term:`bi-level` formulations.
 #. Once this is performed, the :term:`MDO formulation` creates an :term:`optimization problem`.
 #. This :term:`optimization problem` is defined by the :term:`objective function`
    and :term:`constraints`, that eventually points to the :term:`generic processes<generic process>` or directly to the disciplines (for :term:`IDF` for instance).
@@ -114,7 +114,7 @@ During the process execution :
 #. The driver solves the optimization problem that was created by the MDO formulation at the building step.
 #. To this aim, the driver calls the objective function and constraints.
 #. These functions point to the generic processes (that aim at solving a coupling problem for an MDA)
-   or MDO subscenarios (for :term:`bi-level` scenarios), in order to find an optimum.
+   or MDO sub-scenarios (for :term:`bi-level` scenarios), in order to find an optimum.
 #. These calls trigger the :term:`generic process` execution, which themselves execute the :term:`disciplines<discipline>`.
 
 .. figure:: /_images/architecture/components_execute_process.png
@@ -189,59 +189,59 @@ Main classes
 
 The high level classes that are key in the architecture are:
 
--  :class:`~gemseo.core.mdo_scenario.MDOScenario` builds the process from a set of inputs, several
+-  :class:`~gemseo.scenarios.mdo_scenario.MDOScenario` builds the process from a set of inputs, several
    disciplines and a formulation. It is one of the main interface class
-   for the :term:`MDO user`. The :class:`~gemseo.core.mdo_scenario.MDOScenario` triggers the overall optimization
+   for the :term:`MDO user`. The :class:`~gemseo.scenarios.mdo_scenario.MDOScenario` triggers the overall optimization
    process when its ``execute()`` method is called. Through this class, the
    user provides an initial solution, user constraints, and bounds on
    the :term:`design variables`. The user may also generate visualization of the scenario
    execution, such as convergence plots of the algorithm (see :ref:`sellar_mdo`).
 
--  :class:`~gemseo.core.doe_scenario.DOEScenario` builds the process from a set of inputs, several
+-  :class:`~gemseo.scenarios.doe_scenario.DOEScenario` builds the process from a set of inputs, several
    disciplines and a formulation. It is the second main interface class
-   for the :term:`MDO user`. The :class:`~gemseo.core.doe_scenario.DOEScenario` triggers the overall trade-off process
+   for the :term:`MDO user`. The :class:`~gemseo.scenarios.doe_scenario.DOEScenario` triggers the overall trade-off process
    when its ``execute()`` method is called. Through this class, the user
    provides a design space, some outputs to monitor (objective and
    constraints) and a number of samples. The user may also generate
    visualization of the scenario execution, such as convergence plots of
-   the algorithm . As the :class:`~gemseo.core.mdo_scenario.MDOScenario`, the
-   :class:`~gemseo.core.doe_scenario.DOEScenario` makes the link between all the following classes. It
-   is mainly handled by the :term:`MDO integrator`. Both :class:`~gemseo.core.mdo_scenario.MDOScenario` and :class:`~gemseo.core.doe_scenario.DOEScenario`
-   inherit from the :class:`~gemseo.core.scenario.Scenario` class that defines common features
+   the algorithm . As the :class:`~gemseo.scenarios.mdo_scenario.MDOScenario`, the
+   :class:`~gemseo.scenarios.doe_scenario.DOEScenario` makes the link between all the following classes. It
+   is mainly handled by the :term:`MDO integrator`. Both :class:`~gemseo.scenarios.mdo_scenario.MDOScenario` and :class:`~gemseo.scenarios.doe_scenario.DOEScenario`
+   inherit from the :class:`~gemseo.scenarios.base_scenario.BaseScenario` class that defines common features
    (bounds, constraints, …).
 
--  :class:`~gemseo.core.discipline.MDODiscipline` represents a wrapped :term:`simulation software` program or a chain of wrapped
+-  :class:`~gemseo.core.discipline.Discipline` represents a wrapped :term:`simulation software` program or a chain of wrapped
    software. It can either be a link to a :term:`discipline` integrated within a :term:`workflow engine`, or can
    be inherited to integrate a :term:`simulation software` directly. Its inputs and outputs are
    represented in a **Grammar** (see :class:`~gemseo.core.grammars.simple_grammar.SimpleGrammar` or :class:`~gemseo.core.grammars.json_grammar.JSONGrammar`).
 
--  :class:`~gemseo.core.formulation.MDOFormulation` describes the :term:`MDO formulation` (*e.g.* :term:`MDF` and :term:`IDF`)
-   used by the  :class:`~gemseo.core.scenario.Scenario` to generate the  :class:`~gemseo.algos.opt_problem.OptimizationProblem`.
+-  :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation` describes the :term:`MDO formulation` (*e.g.* :term:`MDF` and :term:`IDF`)
+   used by the  :class:`~gemseo.scenarios.base_scenario.BaseScenario` to generate the  :class:`~gemseo.algos.optimization_problem.OptimizationProblem`.
    The :term:`MDO user` or the :term:`MDO integrator` may either provide the name of the
-   formulation, or a class, or an instance, to the :class:`~gemseo.core.scenario.Scenario`
-   (:class:`~gemseo.core.mdo_scenario.MDOScenario` or\ :class:`~gemseo.core.doe_scenario.DOEScenario`) . The :term:`MDO formulations designer` may create, implement,
+   formulation, or a class, or an instance, to the :class:`~gemseo.scenarios.base_scenario.BaseScenario`
+   (:class:`~gemseo.scenarios.mdo_scenario.MDOScenario` or\ :class:`~gemseo.scenarios.doe_scenario.DOEScenario`) . The :term:`MDO formulations designer` may create, implement,
    test or maintain :term:`MDO formulations <MDO formulation>` with this class.
 
--  :class:`~gemseo.algos.opt_problem.OptimizationProblem` describes the mathematical functions of the
+-  :class:`~gemseo.algos.optimization_problem.OptimizationProblem` describes the mathematical functions of the
    optimization problem (:term:`objective function` and :term:`constraints<constraint>`, along with the :term:`design variables`. It is
-   generated by the :class:`~gemseo.core.formulation.MDOFormulation`, and solved by the :term:`optimization algorithm`. It has an
+   generated by the :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation`, and solved by the :term:`optimization algorithm`. It has an
    internal database that stores the calls to its functions by the  :term:`optimization algorithm` to
    avoid duplicate computations. It can be stored on disk and analyzed *a
    posteriori* by post-processing available in |g|.
 
--  :class:`~gemseo.algos.design_space.DesignSpace` is an attribute of the :class:`~gemseo.algos.opt_problem.OptimizationProblem` that describes the :term:`design variables`,
+-  :class:`~gemseo.algos.design_space.DesignSpace` is an attribute of the :class:`~gemseo.algos.optimization_problem.OptimizationProblem` that describes the :term:`design variables`,
    their bounds, their type (float or integer), and current value. This object can be read from a file.
 
 
 Two low-level classes at the core of |g| are crucial for the understanding of its basic principles:
 
 -  :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` instances (for the :term:`objective function` and the possible constraints) are
-   generated by the :class:`~gemseo.core.formulation.MDOFormulation`. Depending on the formulation,
+   generated by the :class:`~gemseo.formulations.base_mdo_formulation.BaseMDOFormulation`. Depending on the formulation,
    constraints may be generated as well (*e.g.* consistency constraints in
    :term:`IDF`).
 
--  :class:`~gemseo.core.mdofunctions.mdo_discipline_adapter_generator.MDODisciplineAdapterGenerator` is a utility class that handles the
-   :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` generation for a given :class:`~gemseo.core.discipline.MDODiscipline`.
+-  :class:`~gemseo.core.mdofunctions.mdo_discipline_adapter_generator.DisciplineAdapterGenerator` is a utility class that handles the
+   :class:`~gemseo.core.mdofunctions.mdo_function.MDOFunction` generation for a given :class:`~gemseo.core.discipline.Discipline`.
    It is a key class for the :term:`MDO formulations designer`.
 
 
@@ -253,40 +253,40 @@ contains the full classes description in the different sections as well as the f
 .. uml::
 
    @startuml
-   class Scenario {
+   class BaseScenario {
    }
-   class MDODiscipline {
+   class Discipline {
    }
-   class MDOFormulation {
+   class BaseMDOFormulation {
    }
    class OptimizationProblem {
    }
    class DesignSpace {
    }
-   class MDODisciplineAdapterGenerator {
+   class DisciplineAdapterGenerator {
    }
    class MDOFunction {
    }
-   class DriverLibrary {
+   class BaseDriverLibrary {
    }
 
-   MDODiscipline <|- Scenario
-   Scenario "1" *-> "n" MDODiscipline
-   Scenario "1" *-> "1" MDOFormulation
-   MDOFormulation "1" --> "n" OptimizationProblem
-   MDODisciplineAdapterGenerator "1" --> "n" MDOFunction
-   MDODisciplineAdapterGenerator "1" *-> "1" MDODiscipline
-   Scenario "1" *-> "1" DriverLibrary
+   Discipline <|- BaseScenario
+   BaseScenario "1" *-> "n" Discipline
+   BaseScenario "1" *-> "1" BaseMDOFormulation
+   BaseMDOFormulation "1" --> "n" OptimizationProblem
+   DisciplineAdapterGenerator "1" --> "n" MDOFunction
+   DisciplineAdapterGenerator "1" *-> "1" Discipline
+   BaseScenario "1" *-> "1" BaseDriverLibrary
    OptimizationProblem "1" *-> "1" DesignSpace
    OptimizationProblem "1" *-> "n" MDOFunction
-   MDOFormulation "1" *-> "n" MDODisciplineAdapterGenerator
+   BaseMDOFormulation "1" *-> "n" DisciplineAdapterGenerator
    @end uml
 
 
 .. uml::
 
    @startuml
-   class MDODiscipline {
+   class Discipline {
    }
    class MDA {
    }
@@ -299,15 +299,15 @@ contains the full classes description in the different sections as well as the f
    class MDAChain {
    }
 
-   MDODiscipline <|- MDA
-   MDA "1" *-> "1" MDODiscipline
+   Discipline <|- MDA
+   MDA "1" *-> "1" Discipline
    MDA <|- MDAJacobi
    MDA <|- MDAGaussSeidel
-   MDODiscipline <|- MDOChain
+   Discipline <|- MDOChain
    MDA <|- MDAChain
    MDOChain "1" <-- "1" MDAChain
    MDAChain "1" *-> "n" MDA
-   MDOChain "1" *-> "1" MDODiscipline
+   MDOChain "1" *-> "1" Discipline
 
 
    @end uml
@@ -315,26 +315,26 @@ contains the full classes description in the different sections as well as the f
 .. uml::
 
    @startuml
-   class Scenario {
+   class BaseScenario {
    }
-   class DriverLibrary {
+   class BaseDriverLibrary {
    }
-   class DOELibrary {
+   class BaseDOELibrary {
    }
-   class OptimizationLibrary {
+   class BaseOptimizationLibrary {
    }
    class MDOScenario {
    }
    class DOEScenario {
    }
 
-   DOELibrary -up|> DriverLibrary
-   OptimizationLibrary -up|> DriverLibrary
-   Scenario "1" *-up> "1" DriverLibrary
-   DOEScenario "1" *-> "1" DOELibrary
-   MDOScenario "1" *-> "1" OptimizationLibrary
-   MDOScenario -up|> Scenario
-   DOEScenario -up|> Scenario
+   BaseDOELibrary -up|> BaseDriverLibrary
+   BaseOptimizationLibrary -up|> BaseDriverLibrary
+   BaseScenario "1" *-up> "1" BaseDriverLibrary
+   DOEScenario "1" *-> "1" BaseDOELibrary
+   MDOScenario "1" *-> "1" BaseOptimizationLibrary
+   MDOScenario -up|> BaseScenario
+   DOEScenario -up|> BaseScenario
    @end uml
 
 
@@ -349,10 +349,10 @@ contains the full classes description in the different sections as well as the f
    }
    class Database {
    }
-   class MDOFormulation {
+   class BaseMDOFormulation {
    }
 
-   MDOFormulation "1" --up> "1" OptimizationProblem
+   BaseMDOFormulation "1" --up> "1" OptimizationProblem
    OptimizationProblem "1" *-up> "1" DesignSpace
    OptimizationProblem "1" *-up> "n" MDOFunction
    OptimizationProblem "1" *-> "1" Database

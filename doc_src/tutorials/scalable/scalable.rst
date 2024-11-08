@@ -17,10 +17,10 @@ Tutorial: Build a scalable model
 
 In this tutorial,
 we are going to build a scalable version
-of the :class:`.Sellar1` :class:`.MDODiscipline`.
+of the :class:`.Sellar1` :class:`.Discipline`.
 As a reminder, its expression reads:
 
-:math:`y_1(x_{shared},x_{local},y_2)=\sqrt{x_{shared,1}^2+x_{shared,2}+x_{local}-0.2y_2`}.
+:math:`y_1(x_{shared},x_{local},y_2)=\sqrt{x_{shared,1}^2+x_{shared,2}+x_{local}-0.2y_2}`.
 
 .. seealso::
 
@@ -36,7 +36,7 @@ Here, we take 5 for the dimension of all outputs (here "y\_1", which is of dimen
 2. Creation of the discipline
 -----------------------------
 
-First of all, we create the reference :class:`.MDODiscipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument ``"Sellar1"``. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplinesFactory`.
+First of all, we create the reference :class:`.Discipline`: with the help of the :class:`~gemseo.create_discipline` API function and the argument ``"Sellar1"``. As a reminder, this argument refers to the class :class:`.Sellar1`, which is internally known by |g| by means of the :class:`.DisciplineFactory`.
 
 .. code::
 
@@ -47,25 +47,25 @@ First of all, we create the reference :class:`.MDODiscipline`: with the help of 
 .. tip::
 
    It is possible to implement a new discipline in a directory outside of the |g| directory (see :ref:`extending-gemseo`).
-   Then, the user has to create a new class :class:`!NewMDODiscipline` inheriting from :class:`.MDODiscipline`.
+   Then, the user has to create a new class :class:`!NewDiscipline` inheriting from :class:`.Discipline`.
    Then, the code reads:
 
    .. code::
 
       from gemseo import create_discipline
 
-      newmdodiscipline = create_discipline("NewMDODiscipline")
+      newdiscipline = create_discipline("NewDiscipline")
 
 Then, the scalable discipline can be created.
 
 2. Creation of the scalable discipline
 --------------------------------------
 
-In |g|, scalable disciplines are defined by the class :class:`.ScalableDiscipline` that inherits from :class:`.MDODiscipline`.
+In |g|, scalable disciplines are defined by the class :class:`.ScalableDiscipline` that inherits from :class:`.Discipline`.
 
 Such a scalable discipline takes as mandatory arguments:
 
-- a ``hdf_file_path`` with its ``hdf_node_path`` storing the evaluations of the :class:`.MDODiscipline`, here ``sellar``, over a :class:`.DiagonalDOE`,
+- a ``hdf_file_path`` with its ``hdf_node_path`` storing the evaluations of the :class:`.Discipline`, here ``sellar``, over a :class:`.DiagonalDOE`,
 - a ``sizes`` dictionary describing the required sizes of inputs and outputs,
 - a ``fill_factor`` describing the probability of connection between an input and an output in the :class:`.ScalableDiscipline`,
 
@@ -80,12 +80,12 @@ and optional ones :
 2.1. Sample the discipline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``hdf_file_path`` file is built from the :func:`.create_scenario` API function applied to the :class:`.MDODiscipline` instance, ``sellar``,
+The ``hdf_file_path`` file is built from the :func:`.create_scenario` API function applied to the :class:`.Discipline` instance, ``sellar``,
 with ``DOE`` scenario type and the following :class:`.DesignSpace`:
 
 .. code::
 
-   from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+   from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
    design_space = SellarDesignSpace()
 
@@ -95,11 +95,11 @@ The DOE algorithm is ``'DiagonalDOE'`` and use a sampling of size ``n_samples=30
 
    from gemseo import create_scenario
 
-   sellar.set_cache_policy(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
+   sellar.set_cache(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
    output = sellar.get_output_data_names()[0]
    scenario = create_scenario([sellar], 'DisciplinaryOpt', output,
                               design_space, scenario_type='DOE')
-   scenario.execute({'algo': 'DiagonalDOE', 'n_samples': 30})
+   scenario.execute(algo_name='DiagonalDOE', n_samples=30)
 
 A :class:`.DiagonalDOE` consists of equispaced points located on the diagonal of the design space.
 
@@ -143,7 +143,7 @@ From this, we can create the :class:`.ScalableDiscipline` by means of the API fu
 
 After its creation,
 the scalable discipline can be executed
-by means of the :meth:`.MDODiscipline.execute` method.
+by means of the :meth:`.Discipline.execute` method.
 For this,
 we build an input dictionary.
 Remember that the inputs and outputs shall all be in :math:`(0,1)` (see :ref:`scalable`).

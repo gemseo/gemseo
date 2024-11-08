@@ -27,19 +27,20 @@ from numpy import arange
 from numpy import array
 from numpy import array_equal
 from numpy import concatenate
+from numpy import inf
 from numpy import ndarray
 from numpy.testing import assert_array_equal
+from numpy.testing import assert_equal
 from openturns import NormalCopula
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.algos.parameter_space import RandomVariable
-from gemseo.algos.parameter_space import RandomVector
 from gemseo.datasets.io_dataset import IODataset
+from tests.algos.test_design_space import DesignVariableType
 
 
 def test_constructor() -> None:
-    """Check that a ParameterSpace is empty after initialization."""
+    """Check that a ParameterSpace is empty after initialization.."""
     space = ParameterSpace()
     assert not space.is_deterministic("x")
     assert not space.is_uncertain("x")
@@ -67,12 +68,12 @@ def test_add_random_variable() -> None:
     assert "y" in space.distributions
 
 
-@pytest.fixture()
+@pytest.fixture
 def mixed_space():
     """A parameter space containing both deterministic and uncertain variables."""
     space = ParameterSpace()
     space.add_variable("x1")
-    space.add_variable("x2", value=0.0, l_b=0.0, u_b=1.0)
+    space.add_variable("x2", value=0.0, lower_bound=0.0, upper_bound=1.0)
     space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
     return space
 
@@ -307,7 +308,7 @@ def test_evaluate_cdf_raising_errors() -> None:
         space.evaluate_cdf({"x": array([1.5])}, inverse=True)
 
 
-@pytest.fixture()
+@pytest.fixture
 def io_dataset() -> IODataset:
     """An input-output dataset."""
     inputs = arange(50).reshape(10, 5)
@@ -334,20 +335,20 @@ def test_init_from_dataset_default(io_dataset) -> None:
     parameter_space = ParameterSpace.init_from_dataset(io_dataset)
     for name in ["in_1", "in_2", "out_1"]:
         assert name in parameter_space
-        assert (parameter_space[name].var_type == "float").all()
+        assert parameter_space.get_type(name) == "float"
         assert name in parameter_space.deterministic_variables
-    assert parameter_space["in_1"].size == 2
+    assert parameter_space.get_size("in_1") == 2
     ref = io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
-    assert (parameter_space["in_1"].l_b == ref).all()
+    assert (parameter_space.get_lower_bound("in_1") == ref).all()
     ref = io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
-    assert (parameter_space["in_1"].u_b == ref).all()
+    assert (parameter_space.get_upper_bound("in_1") == ref).all()
     ref = (
         io_dataset.get_view(variable_names="in_1").to_numpy().max(0)
         + io_dataset.get_view(variable_names="in_1").to_numpy().min(0)
     ) / 2.0
-    assert (parameter_space["in_1"].value == ref).all()
-    assert parameter_space["in_2"].size == 3
-    assert parameter_space["out_1"].size == 2
+    assert (parameter_space.get_current_value(["in_1"]) == ref).all()
+    assert parameter_space.get_size("in_2") == 3
+    assert parameter_space.get_size("out_1") == 2
 
 
 def test_init_from_dataset_uncertain(io_dataset) -> None:
@@ -387,7 +388,7 @@ def test_init_from_dataset_group(io_dataset) -> None:
 
 def test_gradient_normalization() -> None:
     parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=-1.0, u_b=2.0)
+    parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
     parameter_space.add_random_variable(
         "y", "OTUniformDistribution", minimum=1.0, maximum=3
     )
@@ -400,8 +401,8 @@ def test_gradient_normalization() -> None:
 
 def test_gradient_unnormalization() -> None:
     parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=-1.0, u_b=2.0)
-    parameter_space.add_variable("y", l_b=1.0, u_b=3.0)
+    parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
+    parameter_space.add_variable("y", lower_bound=1.0, upper_bound=3.0)
     x_vect = array([0.5, 1.5])
     assert array_equal(
         parameter_space.normalize_vect(x_vect, minus_lb=False, use_dist=True),
@@ -413,38 +414,6 @@ def test_parameter_space_name() -> None:
     """Check the naming of a parameter space."""
     assert ParameterSpace().name == ""
     assert ParameterSpace(name="my_name").name == "my_name"
-
-
-def test_getitem_keyerror() -> None:
-    """Check that getting an unknown item raises a KeyError."""
-    parameter_space = ParameterSpace()
-    with pytest.raises(KeyError, match="Variable 'x' is not known."):
-        parameter_space["x"]
-
-
-def test_getitem() -> None:
-    """Check that an item can be correctly get from a ParameterSpace."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=0, u_b=1)
-    parameter_space.add_random_variable("u", "SPNormalDistribution", mu=1.0, sigma=2.0)
-    assert parameter_space["x"].l_b[0] == 0.0
-    assert parameter_space["u"].parameters["mu"] == 1.0
-
-
-def test_setitem() -> None:
-    """Check that an item can be correctly passed to a ParameterSpace."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", l_b=0, u_b=1)
-    parameter_space.add_random_variable("u", "SPNormalDistribution", mu=1.0, sigma=2.0)
-
-    new_parameter_space = ParameterSpace()
-    new_parameter_space["x"] = parameter_space["x"]
-    new_parameter_space["u"] = parameter_space["u"]
-
-    assert new_parameter_space["x"].l_b[0] == 0.0
-    assert new_parameter_space["u"].parameters["mu"] == 1.0
-
-    assert new_parameter_space == parameter_space
 
 
 def test_transform() -> None:
@@ -460,27 +429,25 @@ def test_transform() -> None:
 
 def test_rename_variable() -> None:
     """Check the renaming of a variable."""
-    design_variable = DesignSpace.DesignVariable(
-        2, "integer", 0.0, 2.0, array([1.0, 2.0])
-    )
-    random_variable = RandomVariable(
-        "SPNormalDistribution", 2, {"mu": 0.5, "sigma": 2.0}
-    )
-    random_vector = RandomVector(
-        "SPNormalDistribution", 2, {"mu": [0.5, 1], "sigma": [2.0]}
-    )
-
     parameter_space = ParameterSpace()
-    parameter_space["x"] = design_variable
-    parameter_space["u"] = random_variable
-    parameter_space["z"] = random_vector
+    parameter_space.add_variable("x", 2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    parameter_space.add_random_variable(
+        "u", "SPNormalDistribution", 2, mu=0.5, sigma=2.0
+    )
+    parameter_space.add_random_vector(
+        "z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0]
+    )
     parameter_space.rename_variable("x", "y")
     parameter_space.rename_variable("u", "v")
 
     expected_space = ParameterSpace()
-    expected_space["y"] = design_variable
-    expected_space["v"] = random_variable
-    expected_space["z"] = random_vector
+    expected_space.add_variable("y", 2, "integer", 0.0, 2.0, array([1.0, 2.0]))
+    expected_space.add_random_variable(
+        "v", "SPNormalDistribution", 2, mu=0.5, sigma=2.0
+    )
+    expected_space.add_random_vector(
+        "z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0]
+    )
 
     assert parameter_space == expected_space
     assert "u" not in parameter_space.distributions
@@ -502,11 +469,11 @@ def test_mix_different_distribution_families(first, second) -> None:
 
 
 def test_copula() -> None:
-    """Check build_composed_distribution."""
+    """Check build_joint_distribution."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", "OTNormalDistribution")
     parameter_space.add_random_variable("y", "OTNormalDistribution", 2)
-    parameter_space.build_composed_distribution(NormalCopula(3))
+    parameter_space.build_joint_distribution(NormalCopula(3))
     assert (
         parameter_space.distribution.distribution.getCopula().getName()
         == "NormalCopula"
@@ -584,16 +551,11 @@ def test_sp_random_vector(kwargs, upper_bound) -> None:
         ),
     ],
 )
-@pytest.mark.parametrize("use_parameters", [False, True])
-def test_ot_random_vector_interfaced_distribution(
-    kwargs, samples, use_parameters
-) -> None:
+def test_ot_random_vector_interfaced_distribution(kwargs, samples) -> None:
     """Check add_random_vector with interfaced_distribution and different settings.
 
     Use OpenTURNS.
     """
-    if use_parameters:
-        kwargs["parameters"] = kwargs.pop("interfaced_distribution_parameters")
     parameter_space = ParameterSpace()
     parameter_space.add_random_vector(
         "x", "OTDistribution", interfaced_distribution="Dirac", **kwargs
@@ -619,16 +581,11 @@ def test_ot_random_vector_interfaced_distribution(
         ),
     ],
 )
-@pytest.mark.parametrize("use_parameters", [False, True])
-def test_sp_random_vector_interfaced_distribution(
-    kwargs, upper_bound, use_parameters
-) -> None:
+def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound) -> None:
     """Check add_random_vector with interfaced_distribution.
 
     Use SciPy.
     """
-    if use_parameters:
-        kwargs["parameters"] = kwargs.pop("interfaced_distribution_parameters")
     parameter_space = ParameterSpace()
     parameter_space.add_random_vector(
         "x", "SPDistribution", interfaced_distribution="uniform", **kwargs
@@ -638,72 +595,39 @@ def test_sp_random_vector_interfaced_distribution(
     )
 
 
-@pytest.mark.parametrize("method", ["add_random_vector", "add_random_variable"])
-def test_parameters_and_interfaced_distribution_parameters(method) -> None:
-    """Check that parameters and interfaced_distribution_parameters cannot be used at
-    the same time."""
-    parameter_space = ParameterSpace()
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "'interfaced_distribution_parameters' is the new name of 'parameters' "
-            "which will be removed in the next major release; "
-            "you cannot use both names at the same time; "
-            "please use 'interfaced_distribution_parameters'."
-        ),
-    ):
-        getattr(parameter_space, method)(
-            "x",
+@pytest.mark.parametrize(
+    (
+        "distribution",
+        "interfaced_distribution",
+        "interfaced_distribution_parameters",
+        "string_representation",
+    ),
+    [
+        ("OTDistribution", "Uniform", (), "Uniform()"),
+        ("OTDistribution", "Uniform", (2, 4), "Uniform(2, 4)"),
+        ("SPDistribution", "uniform", {}, "uniform()"),
+        (
             "SPDistribution",
-            interfaced_distribution="uniform",
-            interfaced_distribution_parameters={"scale": [1], "loc": [2]},
-            parameters={"scale": [1], "loc": [2]},
-        )
-
-
-@pytest.mark.parametrize(
-    ("obj", "args", "expected"),
-    [
-        ("variable", (2,), RandomVector),
-        ("variable", (), RandomVariable),
-        ("vector", (2,), RandomVector),
-        ("vector", (), RandomVariable),
+            "uniform",
+            {"scale": 2, "loc": 2},
+            "uniform(scale=2, loc=2)",
+        ),
     ],
 )
-def test_random_vector_getitem(obj, args, expected) -> None:
-    """Check the type object returned by __getitem__ depending on the size."""
-    parameter_space = ParameterSpace()
-    add_random_obj = getattr(parameter_space, f"add_random_{obj}")
-    add_random_obj("x", "SPUniformDistribution", *args)
-    assert isinstance(parameter_space["x"], expected)
-
-
-@pytest.mark.parametrize(
-    ("distribution", "interfaced_distribution", "interfaced_distribution_parameters"),
-    [
-        ("OTDistribution", "Uniform", ()),
-        ("OTDistribution", "Uniform", (2, 4)),
-        ("SPDistribution", "uniform", {}),
-        ("SPDistribution", "uniform", {"scale": 2, "loc": 2}),
-    ],
-)
-@pytest.mark.parametrize("use_parameters", [False, True])
 def test_random_variable_interfaced_distribution(
     distribution,
     interfaced_distribution,
     interfaced_distribution_parameters,
-    use_parameters,
+    string_representation,
 ) -> None:
     """Test adding a random variable from an interfaced distribution."""
     parameter = ParameterSpace()
-    keyword = "parameters" if use_parameters else "interfaced_distribution_parameters"
-    kwargs = {keyword: interfaced_distribution_parameters}
+    kwargs = {"interfaced_distribution_parameters": interfaced_distribution_parameters}
     parameter.add_random_variable(
         "x", distribution, interfaced_distribution=interfaced_distribution, **kwargs
     )
     marginal = parameter.distributions["x"].marginals[0]
-    assert marginal.distribution_name == interfaced_distribution
-    assert marginal.parameters == interfaced_distribution_parameters
+    assert str(marginal) == string_representation
 
 
 def test_string_representation() -> None:
@@ -794,3 +718,46 @@ def test_existing_variable() -> None:
     parameter_space.add_random_variable("a", "OTUniformDistribution")
     with pytest.raises(ValueError, match=re.escape("The variable 'a' already exists.")):
         parameter_space.add_random_variable("a", "OTUniformDistribution")
+
+
+def test_add_variable_from():
+    """Check add_variable_from can add variables from different parameter spaces."""
+    ds1 = DesignSpace()
+    ds1.add_variable(
+        "x", 2, type_=DesignVariableType.INTEGER, lower_bound=1, upper_bound=3, value=2
+    )
+    ds2 = ParameterSpace()
+    ds2.add_variable(
+        "y", 3, type_=DesignVariableType.INTEGER, lower_bound=3, upper_bound=5, value=4
+    )
+    ds2.add_random_vector("z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0])
+
+    ps = ParameterSpace()
+    ps.add_variables_from(ds2, "z", "y")
+    ps.add_variables_from(ds1, "x")
+
+    assert ps.variable_names == ["z", "y", "x"]
+
+    assert "x" in ps.deterministic_variables
+    assert "y" in ps.deterministic_variables
+    assert "z" in ps.uncertain_variables
+
+    assert ps.get_size("x") == 2
+    assert ps.get_size("y") == 3
+    assert ps.get_size("z") == 2
+
+    assert ps.get_type("x") == DesignVariableType.INTEGER
+    assert ps.get_type("y") == DesignVariableType.INTEGER
+    assert ps.get_type("z") == DesignVariableType.FLOAT
+
+    assert_equal(ps.get_lower_bound("x"), array([1, 1]))
+    assert_equal(ps.get_lower_bound("y"), array([3, 3, 3]))
+    assert_equal(ps.get_lower_bound("z"), array([-inf, -inf]))
+
+    assert_equal(ps.get_upper_bound("x"), array([3, 3]))
+    assert_equal(ps.get_upper_bound("y"), array([5, 5, 5]))
+    assert_equal(ps.get_upper_bound("z"), array([inf, inf]))
+
+    assert_equal(ps.get_current_value(["x"]), array([2, 2]))
+    assert_equal(ps.get_current_value(["y"]), array([4, 4, 4]))
+    assert_equal(ps.get_current_value(["z"]), array([0.5, 1.0]))

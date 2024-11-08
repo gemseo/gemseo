@@ -28,9 +28,9 @@ from __future__ import annotations
 import pprint
 
 from gemseo import configure_logger
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
 
 configure_logger()
 
@@ -42,7 +42,7 @@ configure_logger()
 #
 #    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1x_3^4\sin(x_1)
 #
-# implemented as an :class:`.MDODiscipline` by the :class:`.IshigamiDiscipline`.
+# implemented as an :class:`.Discipline` by the :class:`.IshigamiDiscipline`.
 # It is commonly used
 # with the independent random variables :math:`X_1`, :math:`X_2` and :math:`X_3`
 # uniformly distributed between :math:`-\pi` and :math:`\pi`
@@ -54,13 +54,14 @@ uncertain_space = IshigamiSpace()
 # %%
 # Then,
 # we run sensitivity analysis of type :class:`.MorrisAnalysis`:
-sensitivity_analysis = MorrisAnalysis([discipline], uncertain_space, n_samples=None)
+sensitivity_analysis = MorrisAnalysis()
+sensitivity_analysis.compute_samples([discipline], uncertain_space, n_samples=0)
 sensitivity_analysis.compute_indices()
 
 # %%
 # The resulting indices are the empirical means and the standard deviations
 # of the absolute output variations due to input changes.
-pprint.pprint(sensitivity_analysis.indices)
+sensitivity_analysis.indices
 
 # %%
 # The main indices corresponds to these empirical means
@@ -73,7 +74,7 @@ pprint.pprint(sensitivity_analysis.outputs_bounds)
 
 # %%
 # We can also get the input parameters sorted by decreasing order of influence:
-sensitivity_analysis.sort_parameters("y")
+sensitivity_analysis.sort_input_variables("y")
 
 # %%
 # We can use the method :meth:`.MorrisAnalysis.plot`

@@ -18,17 +18,22 @@
 """
 Solve an ODE: the Van der Pol problem
 =====================================
-"""
+"""  # noqa: 205, 212, 415
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy import zeros
 
+from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.algos.ode.ode_solvers_factory import ODESolversFactory
 from gemseo.problems.ode.van_der_pol import VanDerPol
+
+if TYPE_CHECKING:
+    from gemseo.typing import NumberArray
 
 # %%
 # This tutorial describes how to solve an ordinary differential equation (ODE)
@@ -86,14 +91,23 @@ from gemseo.problems.ode.van_der_pol import VanDerPol
 mu = 5
 
 
-def evaluate_f(time, state):
+def evaluate_f(time: float, state: NumberArray):
+    """Evaluate the right-hand side function :math:`f` of the equation.
+
+    Args:
+        time: Time at which :math:`f` should be evaluated.
+        state: State for which the :math:`f` should be evaluated.
+
+    Returns:
+        The value of :math:`f` at `time` and `state`.
+    """
     return state[1], mu * state[1] * (1 - state[0] ** 2) - state[0]
 
 
 initial_state = array([2, -2 / 3])
 initial_time = 0.0
 final_time = 50.0
-ode_problem = ODEProblem(evaluate_f, initial_state, initial_time, final_time)
+ode_problem = ODEProblem(evaluate_f, initial_state, (initial_time, final_time))
 
 
 # %%
@@ -103,7 +117,16 @@ ode_problem = ODEProblem(evaluate_f, initial_state, initial_time, final_time)
 # problem, this would be:
 
 
-def evaluate_jac(time, state):
+def evaluate_jac(time: float, state: NumberArray):
+    """Evaluate the Jacobian of the function :math:`f`.
+
+    Args:
+        time: Time at which the Jacobian should be evaluated.
+        state: State for which the Jacobian should be evaluated.
+
+    Returns:
+        The value of the Jacobian at `time` and `state`.
+    """
     jac = zeros((2, 2))
     jac[1, 0] = -mu * 2 * state[1] * state[0] - 1
     jac[0, 1] = 1
@@ -111,8 +134,8 @@ def evaluate_jac(time, state):
     return jac
 
 
-ode_problem = ODEProblem(
-    evaluate_f, initial_state, initial_time, final_time, jac=evaluate_jac
+ode_problem_with_jacobian = ODEProblem(
+    evaluate_f, initial_state, (initial_time, final_time), jac_wrt_state=evaluate_jac
 )
 
 # %%
@@ -121,12 +144,13 @@ ode_problem = ODEProblem(
 #
 # Whether the Jacobian is specified or not, once the problem is defined, the ODE
 # solver is called on the :class:`.ODEProblem` by using the :class:`.ODESolversFactory`:
-ODESolversFactory().execute(ode_problem)
+ODESolverLibraryFactory().execute(ode_problem, algo_name="RK45")
+ODESolverLibraryFactory().execute(ode_problem_with_jacobian, algo_name="RK45")
 
 # %%
 # By default, the Runge-Kutta method of order 4(5) (``"RK45"``) is used, but other
 # algorithms can be applied by specifying the option ``algo_name`` in
-# :meth:`ODESolversFactory().execute`.
+# :meth:`.ODESolverLibraryFactory().execute`.
 # See more information on available algorithms in
 # `the SciPy documentation
 # <https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html>`_.
@@ -136,14 +160,16 @@ ODESolversFactory().execute(ode_problem)
 # .............................
 #
 # The convergence of the algorithm can be known by examining
-# :attr:`.ODEProblem.is_converged` and :attr:`.ODEProblem.solver_message`.
+# :attr:`.ODEProblem.algorithm_has_converged` and :attr:`.ODEProblem.solver_message`.
 #
 # The solution of the :class:`.ODEProblem` on the user-specified time interval
 # can be accessed through the vectors :attr:`.ODEProblem.states` and
 # :attr:`.ODEProblem.times`.
 
-plt.plot(ode_problem.result.time_vector, ode_problem.result.state_vector[0])
-plt.plot(ode_problem.result.time_vector, ode_problem.result.state_vector[1])
+plt.plot(ode_problem.result.times, ode_problem.result.state_trajectories[0], label="x")
+plt.plot(ode_problem.result.times, ode_problem.result.state_trajectories[1], label="y")
+plt.legend()
+plt.xlabel("time")
 plt.show()
 
 # %%
@@ -153,4 +179,4 @@ plt.show()
 # The class :class:`.VanDerPol` is available in the package
 # :mod:`gemseo.problems.ode`, so it just needs to be imported to be used.
 ode_problem = VanDerPol()
-ODESolversFactory().execute(ode_problem)
+ODESolverLibraryFactory().execute(ode_problem, algo_name="RK45")

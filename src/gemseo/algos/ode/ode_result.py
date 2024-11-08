@@ -15,6 +15,7 @@
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Isabelle Santos
+#        :author: Giulio Gargantini
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Result of an ODE problem."""
 
@@ -25,37 +26,66 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 @dataclass
 class ODEResult:
-    """The result of an ODE problem."""
+    r"""The result of the resolution of an ODE problem.
 
-    time_vector: NDArray[float]
-    """The vector of times for the solution."""
+    In the ODE
+    :math:`\frac{d\mathbf{s}(t)}{dt}=f(t,\mathbf{s}(t))`,
+    the right-hand side (RHS) function is noted :math:`f`
+    and the state variable at time :math:`t` is noted
+    :math:`\mathbf{s}(t)\in\mathbb{R}^d`.
+    """
 
-    state_vector: NDArray[float]
-    """The vector of states for the solution.
+    times: RealArray
+    r"""The times :math:`t_1,\ldots,t_N`."""
 
-    This array contains one state for each time. As such, it has one line per dimension
-    to the state of the problem, and one column per time contained in the time vector.
+    state_trajectories: RealArray
+    r"""The states at times :math:`t_1,\ldots,t_N`.
+
+    Shaped as ``(d,N)``
+    where ``d`` is the state dimension.
     """
 
     n_func_evaluations: int
-    """The number of evaluations of the right-hand side."""
+    """The number of evaluations of the RHS function :math:`f`."""
 
     n_jac_evaluations: int
-    """The number of evaluations of the Jacobian of the right-hand side."""
+    """The number of differentiations of the RHS function :math:`f`."""
 
-    solver_message: str
-    """The solver's termination message."""
-
-    is_converged: bool
+    algorithm_has_converged: bool
     """Whether the algorithm has converged."""
 
-    solver_options: dict[str, Any]
-    """The options passed to the solver."""
+    algorithm_name: str
+    """The name of the ODE solver."""
 
-    solver_name: str
-    """The name of the solver."""
+    algorithm_settings: dict[str, Any]
+    """The settings of the ODE solver."""
+
+    algorithm_termination_message: str
+    """The termination message of the ODE solver."""
+
+    terminal_event_index: int | None
+    """The index of the event function responsible for the termination of the
+    integration.
+
+    If ``None``,
+    the integration has been performed on the entire time interval without interruption.
+    """
+
+    terminal_event_state: RealArray
+    """The state at the instant of interruption of the integration in time.
+
+    If a terminal event occurs, it is the state during such occurrence. Otherwise, it is
+    the state at the final time of integration.
+    """
+
+    terminal_event_time: float
+    """The time of interruption of the integration in time.
+
+    If a terminal event occurs, it is the time of such occurrence. Otherwise, it is the
+    final time of integration.
+    """

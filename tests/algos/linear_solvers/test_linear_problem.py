@@ -18,6 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import diag
 from numpy import eye
@@ -52,11 +54,18 @@ def test_init() -> None:
 def test_residuals_checks() -> None:
     """Tests the basic checks for residuals computation."""
     pb1 = LinearProblem(diag([1, 1]))
-    with pytest.raises(ValueError, match="Missing RHS"):
+    with pytest.raises(
+        ValueError, match=re.escape("No right-hand side available to compute residual.")
+    ):
         pb1.compute_residuals(current_x=ones(2))
 
     pb1.rhs = ones(2)
-    with pytest.raises(ValueError, match="Missing solution"):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Neither solution or current iterate available to compute residual."
+        ),
+    ):
         pb1.compute_residuals()
 
 

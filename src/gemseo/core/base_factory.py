@@ -27,7 +27,6 @@ import os
 import pkgutil
 import sys
 from abc import abstractmethod
-from importlib import metadata
 from inspect import isabstract
 from typing import TYPE_CHECKING
 from typing import Any
@@ -37,8 +36,9 @@ from typing import TypeVar
 
 from typing_extensions import NamedTuple
 
-from gemseo.third_party.prettytable import PrettyTable
+from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
+from gemseo.utils.compatibility.python import entry_points
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         class AFactory(BaseFactory):
             _CLASS = ABaseClass
-            _MODULE_NAMES = (
+            _PACKAGE_NAMES = (
                 "first.module.fully.qualified.name",
                 "second.module.fully.qualified.name",
             )
@@ -138,8 +139,8 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
     @property
     @abstractmethod
-    def _MODULE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
-        """The fully qualified names of the modules to search."""
+    def _PACKAGE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
+        """The fully qualified names of the packages to search."""
 
     def update(self) -> None:
         """Search for the classes that can be instantiated.
@@ -149,7 +150,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             2. The plugin packages
             3. The packages from the environment variables
         """
-        module_names = list(self._MODULE_NAMES)
+        module_names = list(self._PACKAGE_NAMES)
 
         # Import the fully qualified modules names.
         for module_name in module_names:
@@ -163,7 +164,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         sys_path.pop(0)
 
         # Import from the setuptools entry points.
-        for entry_point in metadata.entry_points().get(self.PLUGIN_ENTRY_POINT, []):
+        for entry_point in entry_points(group=self.PLUGIN_ENTRY_POINT):
             module_name = entry_point.value
             self.__import_modules_from(module_name)
             module_names += [module_name]
@@ -215,7 +216,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         """
         try:
             pkg = importlib.import_module(pkg_name)
-        except BaseException as error:
+        except BaseException as error:  # noqa: BLE001
             self.__record_import_failure(pkg_name, error)
             return
 
@@ -228,7 +229,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         ):
             try:
                 importlib.import_module(mod_name)
-            except BaseException as error:  # noqa: PERF203
+            except BaseException as error:  # noqa: PERF203, BLE001
                 self.__record_import_failure(mod_name, error)
 
     def __record_import_failure(
@@ -360,7 +361,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             raise
 
     def get_options_doc(self, name: str) -> dict[str, str]:
-        """Return the constructor documentation of a class.
+        """Return the documentation for the arguments of a class.
 
         Args:
             name: The name of the class.
@@ -370,16 +371,14 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         """
         return get_options_doc(self.get_class(name).__init__)
 
-    def get_default_option_values(
-        self, name: str
-    ) -> dict[str, str | int | float | bool]:
-        """Return the constructor kwargs default values of a class.
+    def get_default_option_values(self, name: str) -> StrKeyMapping:
+        """Return the default values for the keyword arguments of a class.
 
         Args:
             name: The name of the class.
 
         Returns:
-            The mapping from the argument names to their default values.
+            The mapping from the keyword argument names to their default values.
         """
         return get_callable_argument_defaults(self.get_class(name).__init__)
 
@@ -420,7 +419,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
         grammar.set_descriptions(option_descriptions)
-        grammar.defaults = default_option_values
+        grammar.defaults = default_option_values  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         for name in default_option_values:
             grammar.required_names.remove(name)
 
@@ -428,40 +427,6 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             grammar.to_file(schema_path)
 
         return grammar
-
-    def get_sub_options_grammar(
-        self,
-        name: str,
-        **options: str,
-    ) -> JSONGrammar:
-        """Return the JSONGrammar of the sub options of a class.
-
-        Args:
-            name: The name of the class.
-            **options: The options to be passed to the class required to deduce
-                the sub options.
-
-        Returns:
-            The JSON grammar.
-        """
-        return self.get_class(name).get_sub_options_grammar(**options)
-
-    def get_default_sub_option_values(
-        self,
-        name: str,
-        **options: str,
-    ) -> JSONGrammar:
-        """Return the default values of the sub options of a class.
-
-        Args:
-            name: The name of the class.
-            **options: The options to be passed to the class required to deduce
-                the sub options.
-
-        Returns:
-            The JSON grammar.
-        """
-        return self.get_class(name).get_default_sub_option_values(**options)
 
     def __str__(self) -> str:
         return f"Factory of {self._CLASS.__name__} objects"

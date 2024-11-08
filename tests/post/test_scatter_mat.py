@@ -28,11 +28,11 @@ from numpy import power
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.post.post_factory import PostFactory
-from gemseo.post.scatter_mat import ScatterPlotMatrix
-from gemseo.problems.analytical.power_2 import Power2
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.post.factory import PostFactory
+from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
 
 CURRENT_DIR = Path(__file__).parent
@@ -52,15 +52,15 @@ def test_scatter(tmp_wd) -> None:
     """
     factory = PostFactory()
     problem = Power2()
-    OptimizersFactory().execute(problem, "SLSQP")
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
     post = factory.execute(
         problem,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         file_path="scatter1",
-        variable_names=problem.get_all_function_name(),
+        variable_names=problem.function_names,
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -74,16 +74,16 @@ def test_scatter_load(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         file_path="scatter2",
-        variable_names=problem.get_all_function_name(),
+        variable_names=problem.function_names,
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
-    post = factory.execute(problem, "ScatterPlotMatrix", variable_names=[])
-    for outf in post.output_files:
+    post = factory.execute(problem, post_name="ScatterPlotMatrix", variable_names=[])
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 
@@ -101,7 +101,7 @@ def test_non_existent_var(tmp_wd) -> None:
         r"among optimization problem functions: .* "
         r"nor design variables: .*",
     ):
-        factory.execute(problem, "ScatterPlotMatrix", variable_names=["foo"])
+        factory.execute(problem, post_name="ScatterPlotMatrix", variable_names=["foo"])
 
 
 @pytest.mark.parametrize(
@@ -122,11 +122,10 @@ def test_scatter_plot(baseline_images, variables) -> None:
         variables: The list of variables to be plotted
             in each test case.
     """
-
     infile = CURRENT_DIR / (baseline_images[0] + ".h5")
     execute_post(
         infile,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         save=False,
         file_path="scatter_sellar",
         file_extension="png",
@@ -141,34 +140,42 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     design_space = create_design_space()
-    design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
     design_space.add_variable(
-        "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
+        "x_shared",
+        2,
+        lower_bound=(-10, 0.0),
+        upper_bound=(10.0, 10.0),
+        value=array([4.0, 3.0]),
     )
-    design_space.add_variable("y_0", l_b=-100.0, u_b=100.0, value=ones(1))
-    design_space.add_variable("y_1", l_b=-100.0, u_b=100.0, value=ones(1))
+    design_space.add_variable(
+        "y_0", lower_bound=-100.0, upper_bound=100.0, value=ones(1)
+    )
+    design_space.add_variable(
+        "y_1", lower_bound=-100.0, upper_bound=100.0, value=ones(1)
+    )
     scenario = create_scenario(
         sellar_disciplines,
-        "MDF",
         "obj",
         design_space,
+        formulation_name="MDF",
         maximize_objective=True,
     )
     scenario.add_constraint("c_1", constraint_type="ineq")
     scenario.add_constraint("c_2", constraint_type="ineq")
     scenario.set_differentiation_method("finite_differences")
-    scenario.default_inputs = {"max_iter": 10, "algo": "SLSQP"}
+    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     scenario.execute()
     post = scenario.post_process(
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         save=True,
         file_path="scatter_sellar",
         file_extension="png",
-        variable_names=["obj", "x_local", "x_shared"],
+        variable_names=["obj", "x_1", "x_shared"],
     )
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
-        assert Path(outf).exists()
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
+        assert outf.exists()
 
 
 @pytest.mark.parametrize(
@@ -205,7 +212,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
     )
     factory.execute(
         problem,
-        "ScatterPlotMatrix",
+        post_name="ScatterPlotMatrix",
         file_extension="png",
         save=False,
         filter_non_feasible=filter_non_feasible,
@@ -229,7 +236,10 @@ def test_filter_non_feasible_exception() -> None:
 
     with pytest.raises(ValueError, match="No feasible points were found."):
         factory.execute(
-            problem, "ScatterPlotMatrix", filter_non_feasible=True, variable_names=["x"]
+            problem,
+            post_name="ScatterPlotMatrix",
+            filter_non_feasible=True,
+            variable_names=["x"],
         )
 
 

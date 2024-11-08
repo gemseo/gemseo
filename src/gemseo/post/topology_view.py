@@ -16,50 +16,45 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import cast
 
 from matplotlib import colors
 from matplotlib import pyplot as plt
 
-from gemseo.post.opt_post_processor import OptPostProcessor
+from gemseo.post.base_post import BasePost
+from gemseo.post.topology_view_settings import TopologyView_Settings
+from gemseo.typing import RealArray
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable
 
-
-class TopologyView(OptPostProcessor):
+class TopologyView(BasePost[TopologyView_Settings]):
     """Visualization of the solution of a 2D topology optimization problem."""
 
-    DEFAULT_FIG_SIZE = (11.0, 6.0)
+    Settings: ClassVar[type[TopologyView_Settings]] = TopologyView_Settings
 
     def _plot(
         self,
-        n_x: int,
-        n_y: int,
-        observable: str | None = None,
-        iterations: int | Iterable[int] | None = None,
+        settings: TopologyView_Settings,
     ) -> None:
-        """Plot the design variable or an observable field patch plot.
+        iterations = settings.iterations
+        observable = settings.observable
+        n_x = settings.n_x
+        n_y = settings.n_y
 
-        Args:
-            n_x: The number of elements in the horizontal direction.
-            n_y: The number of elements in the vertical direction.
-            observable: The name of the observable to be plotted.
-                It should be of size ``n_x*n_y``.
-            iterations: The iterations of the optimization history.
-                If ``None``, the last iteration is taken.
-        """
-        if iterations is None:
-            iterations = [len(self.database)]
-        elif isinstance(iterations, int):
+        if isinstance(iterations, int):
             iterations = [iterations]
+        elif not iterations:
+            iterations = [len(self.database)]
+
         for iteration in iterations:
             plt.ion()  # Ensure that redrawing is possible
             design = self.database.get_x_vect(iteration)
             fig, ax = plt.subplots()
             if observable:
                 data = (
-                    -self.database.get_function_value(observable, design)
+                    -cast(
+                        RealArray, self.database.get_function_value(observable, design)
+                    )
                     .reshape((n_x, n_y))
                     .T
                 )
@@ -74,4 +69,5 @@ class TopologyView(OptPostProcessor):
             )
             im.set_array(data)
             plt.axis("off")
+            fig.tight_layout()
             self._add_figure(fig, f"configuration_{iteration}")

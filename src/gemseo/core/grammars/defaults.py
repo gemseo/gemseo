@@ -16,25 +16,38 @@
 
 from __future__ import annotations
 
+from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 
-from pandas import DataFrame
-
-from gemseo.core.discipline_data import DisciplineData
-from gemseo.utils.string_tools import pretty_str
+from gemseo.core.serializable import Serializable
+from gemseo.typing import MutableStrKeyMapping
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from typing_extensions import Self
+
     from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
 
-class Defaults(DisciplineData):
+# This class cannot derive from dict because dict unpickling is specific,
+# it calls __setitem__ before the attribute __grammar exists.
+class Defaults(
+    Serializable,
+    MutableStrKeyMapping,
+    metaclass=ABCGoogleDocstringInheritanceMeta,
+):
     """A class for handling grammar default values.
 
     A dictionary-like interface to bind grammar names to default values. The namespace
     settings of the grammar are taken into account.
     """
+
+    __data: MutableStrKeyMapping
+    """The internal dict-like object."""
 
     __grammar: BaseGrammar
     """The grammar bound to the defaults."""
@@ -42,41 +55,44 @@ class Defaults(DisciplineData):
     def __init__(
         self,
         grammar: BaseGrammar,
-        data: DataMapping,
+        data: StrKeyMapping,
     ) -> None:
         """
         Args:
             grammar: The grammar bound to the defaults.
         """  # noqa: D205, D212, D415
-        super().__init__(input_to_namespaced=grammar.to_namespaced)
+        self.__data = {}
         self.__grammar = grammar
         # Explicitly set the items such that they are checked.
-        self.update(data)
+        if data:
+            self.update(data)
 
     def __setitem__(self, name: str, value: Any) -> None:
         if name not in self.__grammar:
-            if isinstance(value, DataFrame):
-                alien_names = {
-                    f"{name}{self.SEPARATOR}{column}" for column in value.columns
-                }.difference(self.__grammar.keys())
-                if alien_names:
-                    msg = (
-                        f"The names {pretty_str(alien_names)} "
-                        "are not in the grammar."
-                    )
-                    raise KeyError(msg)
-            else:
-                msg = f"The name {name} is not in the grammar."
-                raise KeyError(msg)
-        super().__setitem__(name, value)
+            msg = f"The name {name} is not in the grammar."
+            raise KeyError(msg)
+        self.__data[name] = value
 
-    def rename(self, name: str, new_name: str) -> None:
-        """Rename a name.
+    def __getitem__(self, key: str) -> Any:
+        return self.__data[key]
 
-        Args:
-            name: The current name.
-            new_name: The new name.
-        """
-        default_value = self.pop(name, None)
-        if default_value is not None:
-            self[new_name] = default_value
+    def __delitem__(self, key: str) -> None:
+        del self.__data[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.__data)
+
+    def __len__(self) -> int:
+        return len(self.__data)
+
+    def __repr__(self) -> str:
+        return repr(self.__data)
+
+    def __copy__(self) -> Self:
+        # Bypass the checking done in update since it has already been done.
+        obj = self.__class__(self.__grammar, {})
+        obj.__data = copy(self.__data)
+        return obj
+
+    def copy(self) -> Self:  # noqa: D102
+        return self.__copy__()

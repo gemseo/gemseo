@@ -27,7 +27,7 @@ Store observables
 # ------------
 # In this example,
 # we will learn how to store the history of state variables using the
-# :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_observable` method.
 # This is useful in situations where we wish to access, post-process,
 # or save the values of discipline outputs that are not design variables,
 # constraints or objective functions.
@@ -74,9 +74,13 @@ disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 # In this section,
 # we define the design space which will be used for the creation of the MDOScenario.
 design_space = DesignSpace()
-design_space.add_variable("x_local", l_b=0.0, u_b=10.0, value=ones(1))
+design_space.add_variable("x_local", lower_bound=0.0, upper_bound=10.0, value=ones(1))
 design_space.add_variable(
-    "x_shared", 2, l_b=(-10, 0.0), u_b=(10.0, 10.0), value=array([4.0, 3.0])
+    "x_shared",
+    2,
+    lower_bound=(-10, 0.0),
+    upper_bound=(10.0, 10.0),
+    value=array([4.0, 3.0]),
 )
 
 # %%
@@ -85,7 +89,11 @@ design_space.add_variable(
 # In this section,
 # we build the MDO scenario which links the disciplines with the formulation,
 # the design space and the objective function.
-scenario = create_scenario(disciplines, "MDF", "obj", design_space)
+scenario = create_scenario(disciplines, "obj", design_space, formulation_name="MDF")
+
+# %%
+# Note that the formulation settings passed to :func:`.create_scenario` can be provided
+# via a Pydantic model. For more information, see :ref:`formulation_settings`.
 
 # %%
 # Add the constraints
@@ -102,7 +110,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # default. In order to be able to recover the data from the state variables,
 # y1 and y2, we have to add them as observables. All we have to do is enter
 # the variable name as a string to the
-# :meth:`~gemseo.core.scenario.Scenario.add_observable` method.
+# :meth:`~gemseo.scenarios.scenario.Scenario.add_observable` method.
 # If more than one output name is provided (as a list of strings),
 # the observable function returns a concatenated array of the output values.
 scenario.add_observable("y_1")
@@ -118,7 +126,11 @@ scenario.add_observable("y_2", observable_name="y2")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute({"max_iter": 10, "algo": "SLSQP"})
+scenario.execute(algo_name="SLSQP", max_iter=10)
+
+# %%
+# Note that the algorithm settings passed to :meth:`.DriverLibrary.execute` can be provided
+# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
 
 # %%
 # Access the observable variables
@@ -127,7 +139,7 @@ scenario.execute({"max_iter": 10, "algo": "SLSQP"})
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # In order to create a dataset, we use the
 # corresponding :class:`.OptimizationProblem`:
-opt_problem = scenario.formulation.opt_problem
+opt_problem = scenario.formulation.optimization_problem
 # %%
 # We can easily build an :class:`.OptimizationDataset` from this :class:`.OptimizationProblem`:
 # either by separating the design parameters from the functions
@@ -155,14 +167,22 @@ dataset.get_view(variable_names=["y_1", "y2"])
 # we can generate plots with the observable variables. Have a look at the
 # Basic History plot and the Scatter Plot Matrix:
 scenario.post_process(
-    "BasicHistory",
+    post_name="BasicHistory",
     variable_names=["obj", "y_1", "y2"],
     save=False,
     show=True,
 )
+
+# %%
+# Note that the post-processor settings passed to :func:`.BaseScenario.post_process` can be
+# provided via a Pydantic model. For more information, see
+# :ref:`post_processor_settings`. An example is shown below.
+from gemseo.settings.post import ScatterPlotMatrix_Settings  # noqa: E402
+
 scenario.post_process(
-    "ScatterPlotMatrix",
-    variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
-    save=False,
-    show=True,
+    ScatterPlotMatrix_Settings(
+        variable_names=["obj", "c_1", "c_2", "y2", "y_1"],
+        save=False,
+        show=True,
+    )
 )

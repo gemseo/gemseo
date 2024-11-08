@@ -19,8 +19,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Multidisciplinary coupling graph
-================================
+N2 chart
+========
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from __future__ import annotations
 from numpy import ones
 
 from gemseo import generate_n2_plot
-from gemseo.core.discipline import MDODiscipline
+from gemseo.utils.discipline import DummyDiscipline
 
 # %%
 # Create the disciplines
@@ -56,7 +56,7 @@ data = ones(1)
 for discipline_name, (inputs, outputs) in descriptions.items():
     inputs = dict.fromkeys(inputs, data)
     outputs = dict.fromkeys(outputs, data)
-    discipline = MDODiscipline(discipline_name)
+    discipline = DummyDiscipline(discipline_name)
     discipline.input_grammar.update_from_data(dict.fromkeys(inputs, data))
     discipline.output_grammar.update_from_data(dict.fromkeys(outputs, data))
     disciplines.append(discipline)
@@ -64,8 +64,20 @@ for discipline_name, (inputs, outputs) in descriptions.items():
 # %%
 # Generate the N2 chart
 # ---------------------
-# We do not want to save the N2 chart as a PNG or a PDF file,
-# but open a browser, display it and handle it.
+# The N2 chart is a tabular way to visualize multidisciplinary coupling variables.
+# The disciplines are located on the diagonal of the chart
+# while the coupling variables are situated on the other blocks of the matrix view.
+# A coupling variable is outputted by a discipline horizontally
+# and enters another vertically.
+#
+# In the classical representation,
+# a blue diagonal block represents a self-coupled discipline,
+# *i.e.* a discipline having some of its outputs as inputs.
+#
+# Because of its tabular structure,
+# the N2 chart is hard to analyze when the number of disciplines increases.
+# This is the reason why in this example,
+# we propose to use an interactive representation in a web browser:
 generate_n2_plot(disciplines, save=False, show_html=True)
 
 # %%

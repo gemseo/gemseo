@@ -17,9 +17,8 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-MDF-based MDO on the Sobieski SSBJ test case
-============================================
+"""MDF-based MDO on the Sobieski SSBJ test case.
+=============================================
 """
 
 from __future__ import annotations
@@ -28,7 +27,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -50,10 +49,11 @@ disciplines = create_discipline([
 # %%
 # We can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with Python's ``print()`` function. Moreover, we can get the default
-# input values of a discipline with the attribute :attr:`.MDODiscipline.default_inputs`
+# input values of a discipline with the attribute :attr:`.Discipline.default_input_data`
 for discipline in disciplines:
-    print(discipline)
-    print(f"Default inputs: {discipline.default_inputs}")
+    print(discipline)  # noqa: T201
+    print(f"Default inputs: {discipline.default_input_data}")  # noqa: T201
+
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.
@@ -73,8 +73,10 @@ generate_n2_plot(disciplines, save=False, show=True)
 # Instantiate the scenario
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # During the instantiation of the scenario, we provide some options for the
-# MDF formulations:
-formulation_options = {
+# MDF formulations. The MDF formulation includes an MDA, and thus one of the settings of
+# the formulation is ``main_mda_settings``, which configures the solver for the strong
+# couplings.
+main_mda_settings = {
     "tolerance": 1e-14,
     "max_mda_iter": 50,
     "warm_start": True,
@@ -85,7 +87,7 @@ formulation_options = {
 # %%
 #
 # - ``'warm_start``: warm starts MDA,
-# - ``'warm_start``: optimize the adjoints resolution by storing
+# - ``'use_lu_fact``: optimize the adjoint resolution by storing
 #   the Jacobian matrix LU factorization for the multiple RHS
 #   (objective + constraints). This saves CPU time if you can pay for
 #   the memory and have the full Jacobians available, not just matrix vector
@@ -99,11 +101,11 @@ design_space
 # %%
 scenario = create_scenario(
     disciplines,
-    "MDF",
     "y_4",
     design_space,
     maximize_objective=True,
-    **formulation_options,
+    formulation_name="MDF",
+    main_mda_settings=main_mda_settings,
 )
 
 # %%
@@ -120,7 +122,7 @@ for c_name in ["g_1", "g_2", "g_3"]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-scenario.xdsmize(save_html=False)
+scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Define the algorithm inputs
@@ -130,43 +132,48 @@ scenario.xdsmize(save_html=False)
 # Use the high-level function :func:`.get_algorithm_options_schema`
 # for more information or read the documentation.
 #
-# Here ftol_rel option is a stop criteria based on the relative difference
+# Here the ``ftol_rel`` setting is a stop criteria based on the relative difference
 # in the objective between two iterates ineq_tolerance the tolerance
 # determination of the optimum; this is specific to the |g| wrapping and not
 # in the solver.
-algo_options = {
-    "ftol_rel": 1e-10,
-    "ineq_tolerance": 2e-3,
-    "normalize_design_space": True,
-}
-scn_inputs = {"max_iter": 15, "algo": "SLSQP", "algo_options": algo_options}
+from gemseo.settings.opt import SLSQP_Settings  # noqa: E402
+
+slsqp_settings = SLSQP_Settings(
+    max_iter=10,
+    ftol_rel=1e-10,
+    ineq_tolerance=2e-3,
+    normalize_design_space=True,
+)
 
 # %%
 # .. seealso::
 #
 #    We can also generate a backup file for the optimization,
 #    as well as plots on the fly of the optimization history if option
-#    ``generate_opt_plot`` is ``True``.
+#    ``plot`` is ``True``.
 #    This slows down a lot the process, here since SSBJ is very light
 #
 #    .. code::
 #
-#     scenario.set_optimization_history_backup(file_path="mdf_backup.h5",
-#                                              each_new_iter=True,
-#                                              each_store=False, erase=True,
-#                                              pre_load=False,
-#                                              generate_opt_plot=True)
+#     scenario.set_optimization_history_backup(
+#         file_path="mdf_backup.h5",
+#         at_each_iteration=True,
+#         at_each_function_call=False,
+#         erase=True,
+#         load=False,
+#         plot=True
+#     )
 
 # %%
 # Execute the scenario
 # ^^^^^^^^^^^^^^^^^^^^
-scenario.execute(scn_inputs)
+scenario.execute(slsqp_settings)
 
 # %%
 # Save the optimization history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We can save the whole optimization problem and its history for further post
-# processing:
+# We can save the whole optimization problem and its history for further
+# post-processing:
 scenario.save_optimization_history("mdf_history.h5", file_format="hdf5")
 
 # %%
@@ -184,25 +191,32 @@ scenario.print_execution_metrics()
 #
 # Plot the optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+
+# %%
+# Note that post-processor settings passed to :class:`.BaseScenario.post_process` can be
+# provided via a Pydantic model (see the example below). For more information,
+# see :ref:`post_processor_settings`.
 
 # %%
 # Plot the basic history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+from gemseo.settings.post import BasicHistory_Settings  # noqa: E402
+
 scenario.post_process(
-    "BasicHistory", variable_names=["x_shared"], save=False, show=True
+    BasicHistory_Settings(variable_names=["x_shared"], save=False, show=True)
 )
 
 # %%
 # Plot the constraints and objective history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ObjConstrHist", save=False, show=True)
+scenario.post_process(post_name="ObjConstrHist", save=False, show=True)
 
 # %%
 # Plot the constraints history
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ConstraintsHistory",
+    post_name="ConstraintsHistory",
     constraint_names=["g_1", "g_2", "g_3"],
     save=False,
     show=True,
@@ -212,7 +226,7 @@ scenario.post_process(
 # Plot the constraints history using a radar chart
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "RadarChart",
+    post_name="RadarChart",
     constraint_names=["g_1", "g_2", "g_3"],
     save=False,
     show=True,
@@ -221,18 +235,18 @@ scenario.post_process(
 # %%
 # Plot the quadratic approximation of the objective
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("QuadApprox", function="-y_4", save=False, show=True)
+scenario.post_process(post_name="QuadApprox", function="-y_4", save=False, show=True)
 
 # %%
 # Plot the functions using a SOM
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("SOM", save=False, show=True)
+scenario.post_process(post_name="SOM", save=False, show=True)
 
 # %%
 # Plot the scatter matrix of variables of interest
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 scenario.post_process(
-    "ScatterPlotMatrix",
+    post_name="ScatterPlotMatrix",
     variable_names=["-y_4", "g_1"],
     save=False,
     show=True,
@@ -242,14 +256,16 @@ scenario.post_process(
 # %%
 # Plot the variables using the parallel coordinates
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("ParallelCoordinates", save=False, show=True)
+scenario.post_process(post_name="ParallelCoordinates", save=False, show=True)
 
 # %%
 # Plot the robustness of the solution
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("Robustness", save=True, show=True)
+scenario.post_process(post_name="Robustness", save=False, show=True)
 
 # %%
 # Plot the influence of the design variables
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-scenario.post_process("VariableInfluence", fig_size=(14, 14), save=False, show=True)
+scenario.post_process(
+    post_name="VariableInfluence", fig_size=(14, 14), save=False, show=True
+)

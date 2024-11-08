@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_scenario
-from gemseo.problems.topo_opt.topopt_initialize import (
+from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
 
@@ -33,7 +33,7 @@ configure_logger()
 # %%
 # Setup the topology optimization problem
 # ---------------------------------------
-# Define the target volume fractio:
+# Define the target volume fraction:
 volume_fraction = 0.3
 
 # %%
@@ -77,9 +77,9 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # Generate an :class:`.MDOScenario`:
 scenario = create_scenario(
     disciplines,
-    "DisciplinaryOpt",
     "compliance",
     design_space,
+    formulation_name="DisciplinaryOpt",
 )
 # %%
 # Add the volume fraction constraint to the scenario:
@@ -89,20 +89,20 @@ scenario.add_constraint(
 
 # %%
 # Generate the XDSM
-scenario.xdsmize()
+scenario.xdsmize(save_html=False, pdf_build=False)
 
 # %%
 # Execute the scenario
-scenario.execute({"max_iter": 200, "algo": "NLOPT_MMA"})
+scenario.execute(algo_name="NLOPT_MMA", max_iter=200)
 
 # %%
 # Results
 # -------
 # Post-process the optimization history:
 scenario.post_process(
-    "BasicHistory", variable_names=["compliance"], show=True, save=False
+    post_name="BasicHistory", variable_names=["compliance"], show=True, save=False
 )
 
 # %%
 # Plot the solution
-scenario.post_process("TopologyView", n_x=n_x, n_y=n_y, show=True, save=False)
+scenario.post_process(post_name="TopologyView", n_x=n_x, n_y=n_y, show=True, save=False)

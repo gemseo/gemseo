@@ -17,10 +17,11 @@
 #                      initial documentation
 #        :author:  Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Tests for the class SensitivityAnalysis."""
+"""Tests for the class BaseSensitivityAnalysis."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import pytest
@@ -32,27 +33,33 @@ from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.discipline import MDODiscipline
+from gemseo.core.discipline import Discipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.uncertainty.sensitivity.analysis import SensitivityAnalysis
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.sobol.analysis import SobolAnalysis
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    BaseSensitivityAnalysis,
+)
+from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+    FirstOrderIndicesType,
+)
+from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
     from gemseo.disciplines.analytic import AnalyticDiscipline
+    from gemseo.typing import StrKeyMapping
 
 
-@pytest.fixture()
+@pytest.fixture
 def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
     return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
-@pytest.fixture()
+@pytest.fixture
 def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()
@@ -61,7 +68,7 @@ def parameter_space() -> ParameterSpace:
     return space
 
 
-class Ishigami1D(MDODiscipline):
+class Ishigami1D(Discipline):
     """A version of the Ishigami function indexed by a 1D variable."""
 
     def __init__(self) -> None:
@@ -69,19 +76,27 @@ class Ishigami1D(MDODiscipline):
         self.input_grammar.update_from_names(["x1", "x2", "x3"])
         self.output_grammar.update_from_names(["out"])
 
-    def _run(self) -> None:
-        x_1, x_2, x_3 = self.get_local_data_by_name(["x1", "x2", "x3"])
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        local_data = self.io.data
+        x_1 = local_data["x1"]
+        x_2 = local_data["x2"]
+        x_3 = local_data["x3"]
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
-        self.store_local_data(out=output)
+        return {"out": output}
 
 
-class MockSensitivityAnalysis(SensitivityAnalysis):
+class MockSensitivityAnalysis(BaseSensitivityAnalysis):
     """This sensitivity analysis returns dummy indices with dummy methods m1 and m2.
 
     It relies on a dummy dataset with inputs x1 and x2 and outputs y1 and y2. xi and yi
     of dimension i.
     """
+
+    @dataclass
+    class SensitivityIndices:
+        m1: FirstOrderIndicesType
+        m2: FirstOrderIndicesType
 
     def __init__(self) -> None:
         self.dataset = IODataset()
@@ -97,26 +112,26 @@ class MockSensitivityAnalysis(SensitivityAnalysis):
 
     @property
     def indices(self):
-        return {
-            "m1": {
+        return self.SensitivityIndices(
+            m1={
                 "y1": [{"x1": array([1.25]), "x2": array([1.5, 1.75])}],
                 "y2": [
                     {"x1": array([2.25]), "x2": array([2.5, 2.75])},
                     {"x1": array([3.25]), "x2": array([3.5, 3.75])},
                 ],
             },
-            "m2": {
+            m2={
                 "y1": [{"x1": array([1]), "x2": array([1, 1])}],
                 "y2": [
                     {"x1": array([2]), "x2": array([2, 2])},
                     {"x1": array([3]), "x2": array([3, 3])},
                 ],
             },
-        }
+        )
 
     @property
     def main_indices(self):
-        return self.indices["m1"]
+        return self.indices.m1
 
 
 class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
@@ -124,7 +139,7 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
 
     @property
     def main_indices(self):
-        return self.indices["m2"]
+        return self.indices.m2
 
 
 class MockMorrisAnalysisIndices(MorrisAnalysis):
@@ -143,60 +158,60 @@ class MockMorrisAnalysisIndices(MorrisAnalysis):
 
     @property
     def indices(self):
-        return {
-            "mu": {
+        return self.SensitivityIndices(
+            mu={
                 "y": [
                     {
                         "x1": array([-0.36000398]),
                     }
                 ]
             },
-            "mu_star": {
+            mu_star={
                 "y": [
                     {
                         "x1": array([0.67947346]),
                     }
                 ]
             },
-            "sigma": {
+            sigma={
                 "y": [
                     {
                         "x1": array([0.98724949]),
                     }
                 ]
             },
-            "relative_sigma": {
+            relative_sigma={
                 "y": [
                     {
                         "x1": array([1.45296254]),
                     }
                 ]
             },
-            "min": {
+            min={
                 "y": [
                     {
                         "x1": array([0.0338188]),
                     }
                 ]
             },
-            "max": {
+            max={
                 "y": [
                     {
                         "x1": array([2.2360336]),
                     }
                 ]
             },
-        }
+        )
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_sensitivity_analysis() -> MockSensitivityAnalysis:
     """Return an instance of MockSensitivityAnalysis."""
     with concretize_classes(MockSensitivityAnalysis):
         return MockSensitivityAnalysis()
 
 
-@pytest.fixture()
+@pytest.fixture
 def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
     """Return an instance of SecondMockSensitivityAnalysis."""
     with concretize_classes(SecondMockSensitivityAnalysis):
@@ -206,9 +221,9 @@ def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
 BARPLOT_TEST_PARAMETERS = {
     "without_option": ({}, ["bar_plot"]),
     "standardize": ({"outputs": "y2", "standardize": True}, ["bar_plot_standardize"]),
-    "inputs": ({"outputs": "y2", "inputs": ["x1"]}, ["bar_plot_inputs"]),
+    "inputs": ({"outputs": "y2", "input_names": ["x1"]}, ["bar_plot_inputs"]),
     "inputs_standardize": (
-        {"standardize": True, "inputs": ["x1"], "outputs": "y2"},
+        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
         ["bar_plot_inputs_standardize"],
     ),
     "outputs": ({"outputs": [("y2", 0)]}, ["bar_plot_outputs"]),
@@ -240,9 +255,9 @@ def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
 RADAR_TEST_PARAMETERS = {
     "without_option": ({}, ["radar_plot"]),
     "standardize": ({"outputs": "y2", "standardize": True}, ["radar_plot_standardize"]),
-    "inputs": ({"outputs": "y2", "inputs": ["x1"]}, ["radar_plot_inputs"]),
+    "inputs": ({"outputs": "y2", "input_names": ["x1"]}, ["radar_plot_inputs"]),
     "inputs_standardize": (
-        {"standardize": True, "inputs": ["x1"], "outputs": "y2"},
+        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
         ["radar_plot_inputs_standardize"],
     ),
     "outputs": ({"outputs": [("y2", 0)]}, ["radar_plot_outputs"]),
@@ -278,9 +293,11 @@ def test_plot_comparison(
     use_bar_plot, baseline_images, discipline, parameter_space
 ) -> None:
     """Check if the comparison of sensitivity indices works."""
-    spearman = CorrelationAnalysis([discipline], parameter_space, 10)
+    spearman = CorrelationAnalysis()
+    spearman.compute_samples([discipline], parameter_space, 10)
     spearman.compute_indices()
-    pearson = CorrelationAnalysis([discipline], parameter_space, 10)
+    pearson = CorrelationAnalysis()
+    pearson.compute_samples([discipline], parameter_space, 10)
     pearson.main_method = pearson.Method.PEARSON
     pearson.compute_indices()
     plot = pearson.plot_comparison(
@@ -306,7 +323,7 @@ def test_sort_parameters(mock_sensitivity_analysis, output) -> None:
         mock_sensitivity_analysis: The sensitivity analysis.
         output: The value used to sort the parameters.
     """
-    parameters = mock_sensitivity_analysis.sort_parameters(output)
+    parameters = mock_sensitivity_analysis.sort_input_variables(output)
     assert parameters == ["x2", "x1"]
 
 
@@ -340,7 +357,8 @@ def ishigami() -> SobolAnalysis:
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    sobol_analysis = SobolAnalysis(
+    sobol_analysis = SobolAnalysis()
+    sobol_analysis.compute_samples(
         [Ishigami1D()], space, 100, compute_second_order=False
     )
     sobol_analysis.main_method = "total"
@@ -352,9 +370,9 @@ ONE_D_FIELD_TEST_PARAMETERS = {
     "without_option": ({}, ["1d_field"], "out"),
     "without_option_with_tuple": ({}, ["1d_field"], ("out", 0)),
     "standardize": ({"standardize": True}, ["1d_field_standardize"], "out"),
-    "inputs": ({"inputs": ["x1", "x3"]}, ["1d_field_inputs"], "out"),
+    "inputs": ({"input_names": ["x1", "x3"]}, ["1d_field_inputs"], "out"),
     "inputs_standardize": (
-        {"standardize": True, "inputs": ["x1", "x3"]},
+        {"standardize": True, "input_names": ["x1", "x3"]},
         ["1d_field_inputs_standardize"],
         "out",
     ),
@@ -386,11 +404,11 @@ TWO_D_FIELD_TEST_PARAMETERS = {
         [f"2d_field_standardize_{i}" for i in range(3)],
     ),
     "inputs": (
-        {"inputs": ["x1", "x3"]},
+        {"input_names": ["x1", "x3"]},
         [f"2d_field_inputs_{i}" for i in range(2)],
     ),
     "inputs_standardize": (
-        {"standardize": True, "inputs": ["x1", "x3"]},
+        {"standardize": True, "input_names": ["x1", "x3"]},
         [f"2d_field_inputs_standardize_{i}" for i in range(2)],
     ),
 }
@@ -419,7 +437,7 @@ def test_standardize_indices() -> None:
             {"x1": array([0.0]), "x2": array([0.5]), "x3": array([2.0])},
         ],
     }
-    standardized_indices = SensitivityAnalysis.standardize_indices(indices)
+    standardized_indices = BaseSensitivityAnalysis.standardize_indices(indices)
     expected_standardized_indices = {
         "y1": [{"x1": array([1.0]), "x2": array([0.25]), "x3": array([0.5])}],
         "y2": [
@@ -431,7 +449,7 @@ def test_standardize_indices() -> None:
 
 
 def test_multiple_disciplines(parameter_space) -> None:
-    """Test a SensitivityAnalysis with multiple disciplines.
+    """Test a BaseSensitivityAnalysis with multiple disciplines.
 
     Args:
         parameter_space: A parameter space for the analysis.
@@ -441,8 +459,11 @@ def test_multiple_disciplines(parameter_space) -> None:
     d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
     d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
 
-    with concretize_classes(SensitivityAnalysis):
-        sensitivity_analysis = SensitivityAnalysis([d1, d2, d3], parameter_space, 5)
+    with concretize_classes(BaseSensitivityAnalysis):
+        sensitivity_analysis = BaseSensitivityAnalysis()
+        sensitivity_analysis.compute_samples(
+            [d1, d2, d3], parameter_space, 5, algo="OT_MONTE_CARLO"
+        )
 
     assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
         "x1",

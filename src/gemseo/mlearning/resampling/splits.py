@@ -16,18 +16,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Collection
 from collections.abc import Iterator
+from collections.abc import Set as AbstractSet
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.mlearning.resampling.split import Split
 
 
-class Splits(Collection):
+class Splits(AbstractSet):
     """A collection of train-test splits."""
 
-    __splits: tuple[Split]
+    __splits: tuple[Split, ...]
     """The train-test splits."""
 
     def __init__(self, *splits: Split) -> None:
@@ -45,6 +45,3 @@ class Splits(Collection):
 
     def __len__(self) -> int:
         return len(self.__splits)
-
-    def __eq__(self, other: Splits) -> bool:
-        return self.__splits == other.__splits

@@ -22,12 +22,12 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.doe_scenario import DOEScenario
-from gemseo.post.post_factory import PostFactory
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.post.factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
@@ -42,9 +42,9 @@ def test_variable_influence(tmp_wd) -> None:
     """
     factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = factory.execute(problem, "VariableInfluence", file_path="var_infl")
-    assert len(post.output_files) == 1
-    for outf in post.output_files:
+    post = factory.execute(problem, post_name="VariableInfluence", file_path="var_infl")
+    assert len(post.output_file_paths) == 1
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
     # THIS CODE SEEMS WRONG: THE SENSITIVITIES ARE NOT COMPUTED WRT DESIGN VARIABLES.
@@ -57,8 +57,8 @@ def test_variable_influence(tmp_wd) -> None:
     #     database[repeat(k.wrapped, 60)] = v
     #
     # post = factory.execute(problem, "VariableInfluence", file_path="var_infl2")
-    # assert len(post.output_files) == 1
-    # for outf in post.output_files:
+    # assert len(post.output_file_paths) == 1
+    # for outf in post.output_file_paths:
     #     assert Path(outf).exists()
 
 
@@ -70,17 +70,15 @@ def test_variable_influence_doe(tmp_wd) -> None:
     """
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
-    inputs = [name for name in disc.get_input_data_names() if not name.startswith("c_")]
+    inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
     design_space.filter(inputs)
-    doe_scenario = DOEScenario([disc], "DisciplinaryOpt", "y_12", design_space)
-    doe_scenario.execute({
-        "algo": "DiagonalDOE",
-        "n_samples": 10,
-        "algo_options": {"eval_jac": False},
-    })
+    doe_scenario = DOEScenario(
+        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    )
+    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
     with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
         doe_scenario.post_process(
-            "VariableInfluence",
+            post_name="VariableInfluence",
             file_path="doe",
             save=True,
         )
@@ -96,15 +94,15 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
     post = factory.execute(
         problem,
-        "VariableInfluence",
+        post_name="VariableInfluence",
         file_path="ssbj",
         log_scale=True,
         absolute_value=False,
         level=0.98,
         save_var_files=True,
     )
-    assert len(post.output_files) == 14
-    for outf in post.output_files:
+    assert len(post.output_file_paths) == 14
+    for outf in post.output_file_paths:
         assert Path(outf).exists()
 
 

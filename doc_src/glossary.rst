@@ -281,7 +281,7 @@ Glossary
         A process that can be applied to any discipline or set of disciplines, such as :ref:`mda` methods that solves the coupling variables of a set of disciplines
 
     optimization problem
-        A mathematical problem consisting in finding a set of variables which minimizes or maximizes a mathematical function (possibly a set-valued map), while satisfying constraints on these variables or on artrary functions
+        A mathematical problem consisting in finding a set of variables which minimizes or maximizes a mathematical function (possibly a set-valued map), while satisfying constraints on these variables or on arbitrary functions
 
     optimization history
         The database of values of the objective function, constraints and design variables obtained during an optimization
@@ -388,5 +388,5 @@ Glossary
     root finding
         A family of numerical resolution methods that solves multivariate problems of the type R(x)=0
 
-    Newton method
+    Newton-Raphson method
         A :term:`root finding` method that uses successive linear approximations of the function of interest

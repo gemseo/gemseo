@@ -30,8 +30,9 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning.core.ml_algo import DataType
+    from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.mlearning.regression.moe import MOERegressor
+    from gemseo.typing import RealArray
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 
@@ -41,7 +42,7 @@ class MOEDataFormatters(RegressionDataFormatters):
     @classmethod
     def format_predict_class_dict(
         cls,
-        func: Callable[[MOERegressor, ndarray, Any, ...], ndarray],
+        func: Callable[[MOERegressor, RealArray, Any, ...], ndarray],
     ) -> Callable[[MOERegressor, DataType, Any, ...], DataType]:
         """Make an array-based function be called with a dictionary of NumPy arrays.
 

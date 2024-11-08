@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import unittest
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import complex128
@@ -27,11 +28,14 @@ from numpy import float64
 from numpy import ndarray
 from scipy import linalg
 
-from gemseo.core.data_processor import ComplexDataProcessor
-from gemseo.core.data_processor import FloatDataProcessor
-from gemseo.core.data_processor import NameMapping
-from gemseo.core.discipline import MDODiscipline
-from gemseo.problems.sobieski.disciplines import SobieskiMission
+from gemseo.core.discipline import Discipline
+from gemseo.core.discipline.data_processor import ComplexDataProcessor
+from gemseo.core.discipline.data_processor import FloatDataProcessor
+from gemseo.core.discipline.data_processor import NameMapping
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrKeyMapping
 
 
 class TestDataProcessor(unittest.TestCase):
@@ -76,25 +80,25 @@ class TestDataProcessor(unittest.TestCase):
             assert v.dtype == complex128
 
         sm = SobieskiMission("float64")
-        sm.data_processor = dp
+        sm.io.data_processor = dp
         sm.execute({
-            "x_shared": array(sm.default_inputs["x_shared"], dtype="complex128")
+            "x_shared": array(sm.default_input_data["x_shared"], dtype="complex128")
         })
 
-        assert sm.local_data["y_4"].dtype == complex128
+        assert sm.io.data["y_4"].dtype == complex128
 
     def test_name_mapping(self) -> None:
         disc = LocalDisc()
-        disc.data_processor = NameMapping({"A": "a", "B": "b", "O": "o"})
+        disc.io.data_processor = NameMapping({"A": "a", "B": "b", "O": "o"})
         out = disc.execute({"A": array([1]), "B": array([2])})
         assert out["O"] == array([3.0])
 
 
-class LocalDisc(MDODiscipline):
+class LocalDisc(Discipline):
     def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["A", "B"])
         self.output_grammar.update_from_names(["O"])
 
-    def _run(self) -> None:
-        self.local_data["o"] = self.local_data["a"] + self.local_data["b"]
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        self.io.data["o"] = self.io.data["a"] + self.io.data["b"]

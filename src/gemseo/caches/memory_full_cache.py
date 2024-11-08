@@ -21,37 +21,38 @@
 
 from __future__ import annotations
 
+from copy import copy
 from multiprocessing import RLock
 from typing import TYPE_CHECKING
 from typing import Literal
 from typing import cast
 from typing import overload
 
-from gemseo.core.cache import AbstractFullCache
+from gemseo.caches.base_full_cache import BaseFullCache
 from gemseo.typing import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
-from gemseo.utils.multiprocessing import get_multi_processing_manager
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import RLock as RLockType
 
-    from gemseo.typing import DataMapping
+    from gemseo.typing import StrKeyMapping
 
 
-class MemoryFullCache(AbstractFullCache):
+class MemoryFullCache(BaseFullCache):
     """Cache using memory to cache all the data."""
 
     __data: (
-        DictProxy[int, dict[AbstractFullCache.Group, DataMapping | JacobianData]]
-        | dict[int, dict[AbstractFullCache.Group, DataMapping | JacobianData]]
+        DictProxy[int, dict[BaseFullCache.Group, StrKeyMapping | JacobianData]]
+        | dict[int, dict[BaseFullCache.Group, StrKeyMapping | JacobianData]]
     )
 
     def __init__(
         self,
         tolerance: float = 0.0,
-        name: str | None = None,
+        name: str = "",
         is_memory_shared: bool = True,
     ) -> None:
         """
@@ -78,7 +79,7 @@ class MemoryFullCache(AbstractFullCache):
             self.__data = {}
 
     def _copy_empty_cache(self) -> MemoryFullCache:
-        return MemoryFullCache(self.tolerance, self.name, self.__is_memory_shared)
+        return MemoryFullCache(self._tolerance, self.name, self.__is_memory_shared)
 
     def _initialize_entry(
         self,
@@ -92,7 +93,7 @@ class MemoryFullCache(AbstractFullCache):
     def _has_group(
         self,
         index: int,
-        group: AbstractFullCache.Group,
+        group: BaseFullCache.Group,
     ) -> bool:
         return group in self.__data[index]
 
@@ -105,21 +106,21 @@ class MemoryFullCache(AbstractFullCache):
     def _read_data(
         self,
         index: int,
-        group: Literal[AbstractFullCache.Group.INPUTS, AbstractFullCache.Group.OUTPUTS],
-    ) -> DataMapping: ...
+        group: Literal[BaseFullCache.Group.INPUTS, BaseFullCache.Group.OUTPUTS],
+    ) -> StrKeyMapping: ...
 
     @overload
     def _read_data(
         self,
         index: int,
-        group: Literal[AbstractFullCache.Group.JACOBIAN],
+        group: Literal[BaseFullCache.Group.JACOBIAN],
     ) -> JacobianData: ...
 
     def _read_data(
         self,
         index: int,
-        group: AbstractFullCache.Group,
-    ) -> DataMapping | JacobianData:
+        group: BaseFullCache.Group,
+    ) -> StrKeyMapping | JacobianData:
         data = self.__data[index].get(group, {})
         if group == self.Group.JACOBIAN and data:
             return nest_flat_bilevel_dict(
@@ -129,12 +130,12 @@ class MemoryFullCache(AbstractFullCache):
 
     def _write_data(
         self,
-        values: DataMapping,
-        group: AbstractFullCache.Group,
+        values: StrKeyMapping,
+        group: BaseFullCache.Group,
         index: int,
     ) -> None:
         data = self.__data[index]
-        data[group] = values.copy()
+        data[group] = copy(values)
         self.__data[index] = data
 
     @property

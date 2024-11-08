@@ -22,29 +22,41 @@
 
 from __future__ import annotations
 
-from collections import abc
-from collections import namedtuple
+from collections.abc import Iterable
+from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from html import escape
+from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
+from typing import ClassVar
+from typing import NamedTuple
+from typing import Union
 
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
     from collections.abc import Iterator
 
-# to store the raw ingredients of a string to be formatted later
-MessageLine = namedtuple("MessageLine", "str_format level args kwargs")
+
+class MessageLine(NamedTuple):
+    """Store the raw ingredient of a string to be formatted later."""
+
+    str_format: str
+    level: int
+    args: Any
+    kwargs: Any
+
 
 DEFAULT_DELIMITER = ", "
 """A string to separate string fields."""
 
 DEFAULT_KEY_VALUE_SEPARATOR = "="
 """A string to separate key and value in a key-value pair of a mapping."""
+
+VariableType = Union[str, tuple[str, int]]
 
 
 def __stringify(
@@ -69,10 +81,10 @@ def __stringify(
     Returns:
         A string representing the object.
     """
-    if not isinstance(obj, abc.Iterable):
+    if not isinstance(obj, Iterable):
         return function(obj)
 
-    if isinstance(obj, abc.Mapping):
+    if isinstance(obj, Mapping):
         obj = [
             f"{key!s}{key_value_separator}{function(val)}" for key, val in obj.items()
         ]
@@ -153,6 +165,82 @@ def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) 
     return f"{name}[{index}]"
 
 
+def get_name_and_component(variable: VariableType) -> tuple[str, int]:
+    """Return the name and the component of a variable.
+
+    Args:
+        variable: Either a variable name or a variable name with its variable component.
+
+    Returns:
+        The name and the component of a variable.
+    """
+    return (variable, 0) if isinstance(variable, str) else variable
+
+
+def convert_strings_to_iterable(str_or_strs: str | Iterable[str]) -> Iterable[str]:
+    """Return strings as an iterable.
+
+    Args:
+        str_or_strs: A string or several strings.
+
+    Returns:
+        Names.
+    """
+    return [str_or_strs] if isinstance(str_or_strs, str) else str_or_strs
+
+
+def filter_names(
+    names: Iterable[str],
+    names_to_keep: Iterable[str],
+) -> Iterable[str]:
+    """Filter names from a collection of other names.
+
+    Args:
+        names: The original names.
+        names_to_keep: The names to keep. If ``None``, keep all.
+
+    Returns:
+        The filtered names.
+    """
+    if names_to_keep:
+        return [name for name in names if name in set(names_to_keep)]
+
+    return names
+
+
+def get_variables_with_components(
+    variables: VariableType | Iterable[VariableType], names_to_sizes: Mapping[str, int]
+) -> Iterator[tuple[str, int]]:
+    """Convert a set of variables to ``tuple(str, int)`` objects.
+
+    Args:
+        variables: One or several variable defined as ``name`` or ``(name, component)``.
+            When ``name``, all the components of the variable are considered.
+        names_to_sizes: The sizes of the variables.
+
+    Returns:
+        The variables defined as ``(name, component)``.
+    """
+    return chain.from_iterable(
+        (variable,)
+        if isinstance(variable, tuple)
+        else ((variable, index) for index in range(names_to_sizes[variable]))
+        for variable in (
+            (variables,)
+            if (
+                isinstance(variables, str)
+                or (
+                    isinstance(variables, tuple)
+                    and len(variables) == 2
+                    and isinstance(variables[0], str)
+                    and isinstance(variables[1], int)
+                )
+            )
+            else variables
+        )
+    )
+
+
 class MultiLineString:
     """Multi-line string lazy evaluator.
 
@@ -167,23 +255,24 @@ class MultiLineString:
     added as a new line in the result.
     """
 
-    INDENTATION = " " * 3
-    DEFAULT_LEVEL = 0
+    INDENTATION: ClassVar[str] = " " * 3
+    """The indentation increment of each indentation level."""
+
+    DEFAULT_LEVEL: ClassVar[int] = 0
+    """The default indentation level."""
+
     __level: int
     """The indentation level."""
 
     def __init__(
         self,
-        lines: Iterable[MessageLine] | None = None,
+        lines: Iterable[MessageLine] = (),
     ) -> None:
         """
         Args:
             lines: The lines from which to create the multi-line string.
         """  # noqa:D205 D212 D415
-        if lines is None:
-            self.__lines = []
-        else:
-            self.__lines = list(lines)
+        self.__lines = list(lines)
         self.reset()
 
     def add(

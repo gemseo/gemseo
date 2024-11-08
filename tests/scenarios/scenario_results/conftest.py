@@ -18,11 +18,11 @@ import pytest
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.doe_scenario import DOEScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.scenarios.doe_scenario import DOEScenario
 
 
-@pytest.fixture()
+@pytest.fixture
 def scenario() -> DOEScenario:
     """A bi-level DOE Scenario.
 
@@ -36,20 +36,18 @@ def scenario() -> DOEScenario:
       - y = 1 => z = 2
     """
     design_space = DesignSpace()
-    design_space.add_variable("x", l_b=0.0, u_b=1.0, value=0.5)
-    design_space.add_variable("y", l_b=0.0, u_b=1.0, value=0.5)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = DOEScenario(
         [AnalyticDiscipline({"z": "x+y"})],
-        "DisciplinaryOpt",
         "z",
         design_space.filter(["y"], copy=True),
+        formulation_name="DisciplinaryOpt",
         name="FooScenario",
     )
-    input_data = {
-        "algo": "CustomDOE",
-        "algo_options": {"samples": array([[0.0], [1.0]])},
-    }
-    sub_scenario.default_inputs = input_data
-    scenario = DOEScenario([sub_scenario], "BiLevel", "z", design_space.filter(["x"]))
-    scenario.default_inputs = input_data
+    sub_scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
+    scenario = DOEScenario(
+        [sub_scenario], "z", design_space.filter(["x"]), formulation_name="BiLevel"
+    )
+    scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
     return scenario

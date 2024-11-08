@@ -33,20 +33,28 @@ from numpy.testing import assert_array_equal
 from pandas import DataFrame
 from pandas import MultiIndex
 
-from gemseo.algos.opt.opt_factory import OptimizersFactory
-from gemseo.algos.pareto import ParetoFront
-from gemseo.problems.analytical.binh_korn import BinhKorn
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.pareto.pareto_front import ParetoFront
+from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 if TYPE_CHECKING:
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 
-@pytest.fixture()
+@pytest.fixture
 def problem_2obj() -> OptimizationProblem:
     """The Binh-Korn optimization problem ready to be post-processed."""
     problem = BinhKorn()
-    OptimizersFactory().execute(
-        problem, algo_name="MNBI", max_iter=100, n_sub_optim=5, sub_optim_algo="SLSQP"
+    OptimizationLibraryFactory().execute(
+        problem,
+        algo_name="MNBI",
+        max_iter=100,
+        n_sub_optim=5,
+        sub_optim_algo="SLSQP",
+        sub_optim_algo_settings={
+            "normalize_design_space": False,
+        },
+        normalize_design_space=False,
     )
     return problem
 

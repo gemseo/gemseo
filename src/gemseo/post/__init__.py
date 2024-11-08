@@ -15,3 +15,31 @@
 """Optimization and DOE history post-processing and analysis."""
 
 from __future__ import annotations
+
+from gemseo.post.animation_settings import Animation_Settings  # noqa:F401
+from gemseo.post.basic_history_settings import BasicHistory_Settings  # noqa:F401
+from gemseo.post.constraints_history_settings import (
+    ConstraintsHistory_Settings,  # noqa:F401
+)
+from gemseo.post.correlations_settings import Correlations_Settings  # noqa:F401
+from gemseo.post.gradient_sensitivity_settings import (
+    GradientSensitivity_Settings,  # noqa:F401
+)
+from gemseo.post.hessian_history_settings import HessianHistory_Settings  # noqa:F401
+from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings  # noqa:F401
+from gemseo.post.opt_history_view_settings import OptHistoryView_Settings  # noqa:F401
+from gemseo.post.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,  # noqa:F401
+)
+from gemseo.post.pareto_front_settings import ParetoFront_Settings  # noqa:F401
+from gemseo.post.quad_approx_settings import QuadApprox_Settings  # noqa:F401
+from gemseo.post.radar_chart_settings import RadarChart_Settings  # noqa:F401
+from gemseo.post.robustness_settings import Robustness_Settings  # noqa:F401
+from gemseo.post.scatter_plot_matrix_settings import (
+    ScatterPlotMatrix_Settings,  # noqa:F401
+)
+from gemseo.post.som_settings import SOM_Settings  # noqa:F401
+from gemseo.post.topology_view_settings import TopologyView_Settings  # noqa:F401
+from gemseo.post.variable_influence_settings import (
+    VariableInfluence_Settings,  # noqa:F401
+)

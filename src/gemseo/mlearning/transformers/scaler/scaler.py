@@ -45,21 +45,24 @@ This method has to be overloaded.
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import atleast_1d
 from numpy import diag
 from numpy import full
-from numpy import ndarray
 from numpy import tile
 
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Scaler(Transformer):
+class Scaler(BaseTransformer):
     """Data scaler."""
 
     __OFFSET: Final[str] = "offset"
@@ -68,8 +71,8 @@ class Scaler(Transformer):
     def __init__(
         self,
         name: str = "",
-        offset: float | ndarray = 0.0,
-        coefficient: float | ndarray = 1.0,
+        offset: float | RealArray = 0.0,
+        coefficient: float | RealArray = 1.0,
     ) -> None:
         """
         Args:
@@ -82,24 +85,24 @@ class Scaler(Transformer):
         self.coefficient = coefficient
 
     @property
-    def offset(self) -> ndarray:
+    def offset(self) -> RealArray:
         """The scaling offset."""
         return self.parameters[self.__OFFSET]
 
     @property
-    def coefficient(self) -> ndarray:
+    def coefficient(self) -> RealArray:
         """The scaling coefficient."""
         return self.parameters[self.__COEFFICIENT]
 
     @offset.setter
-    def offset(self, value: float | ndarray) -> None:
+    def offset(self, value: float | RealArray) -> None:
         self.parameters[self.__OFFSET] = atleast_1d(value)
 
     @coefficient.setter
-    def coefficient(self, value: float | ndarray) -> None:
+    def coefficient(self, value: float | RealArray) -> None:
         self.parameters[self.__COEFFICIENT] = atleast_1d(value)
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         if self.parameters[self.__COEFFICIENT].size == 1:
             self.parameters[self.__COEFFICIENT] = full(
                 data.shape[-1], self.parameters[self.__COEFFICIENT][0]
@@ -119,18 +122,18 @@ class Scaler(Transformer):
             self.__class__.__name__,
         )
 
-    @Transformer._use_2d_array
-    def transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseTransformer._use_2d_array
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return data @ diag(self.coefficient) + self.offset
 
-    @Transformer._use_2d_array
-    def inverse_transform(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseTransformer._use_2d_array
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return (data - self.offset) @ diag(1 / self.coefficient)
 
-    @Transformer._use_2d_array
-    def compute_jacobian(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseTransformer._use_2d_array
+    def compute_jacobian(self, data: RealArray) -> RealArray:  # noqa: D102
         return tile(diag(self.coefficient), (len(data), 1, 1))
 
-    @Transformer._use_2d_array
-    def compute_jacobian_inverse(self, data: ndarray) -> ndarray:  # noqa: D102
+    @BaseTransformer._use_2d_array
+    def compute_jacobian_inverse(self, data: RealArray) -> RealArray:  # noqa: D102
         return tile(diag(1 / self.coefficient), (len(data), 1, 1))

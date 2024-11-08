@@ -57,14 +57,23 @@ print(Path("doe.txt").read_text())
 # with the option "doe_file".
 # We could also change the delimiter (default: ',')  or skip the first rows in the file.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y", design_space, scenario_type="DOE"
+    [discipline],
+    "y",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "CustomDOE", "algo_options": {"doe_file": "doe.txt"}})
+scenario.execute(algo_name="CustomDOE", doe_file="doe.txt")
+
+# %%
+# Note that both the formulation settings passed to :func:`.create_scenario` and the
+# algorithm settings passed to :meth:`~.DriverLibrary.execute` can be provided via a Pydantic model. For
+# more information, see :ref:`formulation_settings` and :ref:`algorithm_settings`.
 
 # %%
 # We can display the content of the database as a :class:`.Dataset`
 # and check the values of the output,
 # which should be the product of :math:`a` and :math:`b`.
-opt_problem = scenario.formulation.opt_problem
+opt_problem = scenario.formulation.optimization_problem
 dataset = opt_problem.to_dataset(name="custom_sampling", opt_naming=False)
 dataset

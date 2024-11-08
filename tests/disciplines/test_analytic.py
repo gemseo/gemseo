@@ -17,24 +17,23 @@
 #                   initial documentation
 #        :author:  Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Tests for analytic MDODiscipline based on symbolic expressions."""
+"""Tests for analytic Discipline based on symbolic expressions."""
 
 from __future__ import annotations
-
-from importlib.metadata import version
 
 import pytest
 import sympy
 from numpy import array
 from numpy.testing import assert_equal
-from packaging.version import parse as parse_version
 
-from gemseo.core.mdo_scenario import MDOScenario
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 
-@pytest.fixture()
+@pytest.fixture
 def expressions():
     # string expressions
     expr_dict = {"y_1": "2*x**2", "y_2": "3*x**2+5+z**3"}
@@ -56,18 +55,12 @@ def test_independent_default_inputs() -> None:
     expr = {"obj": "x1 + x2 + x3"}
     disc = AnalyticDiscipline(expr)
     disc.execute()
-    disc.local_data["x1"] += 1.0
-    assert disc.local_data["x2"] == pytest.approx(0.0)
+    disc.io.data["x1"] += 1.0
+    assert disc.io.data["x2"] == pytest.approx(0.0)
 
 
 def test_fast_expression_evaluation(expressions) -> None:
     disc = AnalyticDiscipline(expressions)
-    input_data = {"x": array([1.0]), "z": array([1.0])}
-    disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
-
-
-def test_standard_expression_evaluation(expressions) -> None:
-    disc = AnalyticDiscipline(expressions, fast_evaluation=False)
     input_data = {"x": array([1.0]), "z": array([1.0])}
     disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
@@ -79,24 +72,9 @@ def test_failure_with_malformed_expressions() -> None:
         AnalyticDiscipline({"y": MDOScenario})
 
 
-@pytest.mark.skipif(
-    parse_version(version("sympy")) > parse_version("1.8.0"),
-    reason="requires sympy 1.7.0 or lower",
-)
-def test_failure_for_log_zero_without_fast_evaluation() -> None:
-    # For sympy 1.8.0 and higher,
-    # sympy.parsing.sympy_parser.parse_expr("log(x)").evalf(subs={"x":0.0})
-    # returns -oo which is converted into the float -inf."""
-    disc = AnalyticDiscipline({"y": "log(x)"}, fast_evaluation=False)
-    input_data = {"x": array([0.0])}
-    with pytest.raises(TypeError):
-        disc.execute(input_data)
-
-
-@pytest.mark.parametrize("fast_evaluation", [False, True])
-def test_absolute_value(fast_evaluation) -> None:
+def test_absolute_value() -> None:
     """Check that AnalyticDiscipline handles absolute value."""
-    discipline = AnalyticDiscipline({"y": "Abs(x)"}, fast_evaluation=fast_evaluation)
+    discipline = AnalyticDiscipline({"y": "Abs(x)"})
     assert (
         discipline.linearize({"x": array([2])}, compute_all_jacobians=True)["y"]["x"]
         == 1
@@ -114,37 +92,32 @@ def test_absolute_value(fast_evaluation) -> None:
     )
 
 
-@pytest.mark.parametrize("fast_evaluation", [False, True])
-def test_serialize(tmp_wd, fast_evaluation) -> None:
+def test_serialize(tmp_wd) -> None:
     """Check the serialization of an AnalyticDiscipline."""
     input_data = {"x": array([2.0])}
     file_path = "discipline.h5"
 
-    discipline = AnalyticDiscipline({"y": "2*x"}, fast_evaluation=fast_evaluation)
-    discipline.to_pickle(file_path)
+    discipline = AnalyticDiscipline({"y": "2*x"})
+    to_pickle(discipline, file_path)
     discipline.execute(input_data)
 
-    saved_discipline = AnalyticDiscipline.from_pickle(file_path)
+    saved_discipline = from_pickle(file_path)
     saved_discipline.execute(input_data)
 
-    assert_equal(saved_discipline.get_output_data(), discipline.get_output_data())
+    assert_equal(saved_discipline.io.get_output_data(), discipline.io.get_output_data())
 
 
-@pytest.mark.parametrize("fast_evaluation", [False, True])
 @pytest.mark.parametrize("add_differentiated_inputs", [False, True])
 @pytest.mark.parametrize("add_differentiated_outputs", [False, True])
 @pytest.mark.parametrize("compute_all_jacobians", [False, True])
 def test_linearize(
-    fast_evaluation,
     add_differentiated_inputs,
     add_differentiated_outputs,
     compute_all_jacobians,
     caplog,
 ) -> None:
     """Check AnalyticDiscipline.linearize()."""
-    discipline = AnalyticDiscipline(
-        {"y": "2*a+3*b", "z": "-2*a-3*b"}, fast_evaluation=fast_evaluation
-    )
+    discipline = AnalyticDiscipline({"y": "2*a+3*b", "z": "-2*a-3*b"})
     if add_differentiated_inputs:
         discipline.add_differentiated_inputs(["a"])
     if add_differentiated_outputs:
@@ -165,19 +138,17 @@ def test_linearize(
         assert discipline.jac == {}
 
 
-@pytest.mark.parametrize("fast_evaluation", [False, True])
-def test_complex_outputs(fast_evaluation) -> None:
+def test_complex_outputs() -> None:
     """Check that complex outputs are supported."""
-    discipline = AnalyticDiscipline({"y": "x*I"}, fast_evaluation=fast_evaluation)
+    discipline = AnalyticDiscipline({"y": "x*I"})
     discipline.execute({"x": array([1.0])})
-    assert discipline.local_data["y"] == 1j
+    assert discipline.io.data["y"] == 1j
 
 
-@pytest.mark.parametrize("fast_evaluation", [False, True])
 @pytest.mark.parametrize("linearization_mode", ApproximationMode)
-def test_jacobian_approximation(fast_evaluation, linearization_mode) -> None:
+def test_jacobian_approximation(linearization_mode) -> None:
     """Check that Jacobian approximation is supported."""
-    discipline = AnalyticDiscipline({"y": "exp(x)"}, fast_evaluation=fast_evaluation)
+    discipline = AnalyticDiscipline({"y": "exp(x)"})
     discipline.linearization_mode = linearization_mode
     discipline.linearize({"x": array([0.0])}, True)
     assert discipline.jac["y"]["x"] == pytest.approx(1)

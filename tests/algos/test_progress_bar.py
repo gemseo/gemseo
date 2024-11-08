@@ -22,7 +22,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from time import sleep
-from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
@@ -34,17 +33,14 @@ from tqdm import tqdm
 
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.opt.optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.optimization_library import OptimizationLibrary
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
-
-if TYPE_CHECKING:
-    from gemseo.algos.opt_result import OptimizationResult
+from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
+from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
-@pytest.fixture()
+@pytest.fixture
 def offsets():
     return [0.0, 0.3, 0.4, 0.5, 0.1, 0.2, -0.3, -0.1, -0.2, -0.4]
 
@@ -61,44 +57,44 @@ class TestDesc(OptimizationAlgorithmDescription):
     library_name: str = "Test"
 
 
-class ProgressOpt(OptimizationLibrary):
-    OPTIONS_MAP: ClassVar[dict[Any, str]] = {}
-    LIBRARY_NAME = "Test"
+class ProgressOpt(BaseOptimizationLibrary):
+    _OPTIONS_MAP: ClassVar[dict[Any, str]] = {}
 
-    def __init__(self, offsets, constraints_before_obj) -> None:
-        super().__init__()
-        self.descriptions = {
-            "TestDriver": TestDesc(
-                algorithm_name="TestDriver",
-                description="d ",
-                internal_algorithm_name="test",
-                handle_equality_constraints=True,
-                handle_inequality_constraints=True,
-            ),
-        }
+    ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
+        "TestDriver": TestDesc(
+            algorithm_name="TestDriver",
+            description="d ",
+            internal_algorithm_name="test",
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+        ),
+    }
+
+    def __init__(self, offsets, constraints_before_obj, algo_name) -> None:
+        super().__init__(algo_name)
         self.offsets = offsets
         self.constraints_before_obj = constraints_before_obj
 
     def _get_options(self, **options: Any) -> dict[str, Any]:
         return options
 
-    def _run(self, **options: Any) -> OptimizationResult:
-        """"""
-        x_0, _, _ = self.get_x0_and_bounds_vects(True)
+    def _run(self, problem: OptimizationProblem, **options: Any) -> None:
+        x_0 = problem.design_space.get_current_value(
+            complex_to_real=True, normalize=True
+        )
         for off in self.offsets:
             if self.constraints_before_obj:
-                self.problem.constraints[0].func(x_0 + off)
-            self.problem.objective.func(x_0 + off)
-        return self.get_optimum_from_database()
+                problem.constraints[0].evaluate(x_0 + off)
+            problem.objective.evaluate(x_0 + off)
 
 
 def test_progress_bar(
     caplog, offsets, constraints_before_obj, objective_and_problem_for_tests
 ) -> None:
     with caplog.at_level(logging.INFO):
-        lib = ProgressOpt(offsets, constraints_before_obj)
+        lib = ProgressOpt(offsets, constraints_before_obj, "TestDriver")
         f, problem = objective_and_problem_for_tests
-        lib.execute(problem, "TestDriver", max_iter=10)
+        lib.execute(problem, max_iter=10)
         for k in range(len(offsets) + 1):
             assert f"{k * 10}%" in caplog.text
         count = zeros(len(offsets))
@@ -106,7 +102,7 @@ def test_progress_bar(
             for k in range(len(offsets)):
                 if f"{(k + 1) * 10}%" in record.message:
                     count[k] += 1
-                    assert str(int(f(5.0 + offsets[k] * 10))) in record.message
+                    assert str(int(f.evaluate(5.0 + offsets[k] * 10))) in record.message
                     if not constraints_before_obj and k >= 1:
                         assert tqdm.format_interval(0.1 * (k + 1)) in record.message
                         assert (
@@ -116,7 +112,7 @@ def test_progress_bar(
         assert max(count) == 1
 
 
-@pytest.fixture()
+@pytest.fixture
 def objective_and_problem_for_tests(constraints_before_obj):
     f = MDOFunction(
         func=dummy_sleep_function,
@@ -133,16 +129,16 @@ def objective_and_problem_for_tests(constraints_before_obj):
     design_space = DesignSpace()
     design_space.add_variable(
         "x",
-        l_b=0.0,
-        u_b=10.0,
+        lower_bound=0.0,
+        upper_bound=10.0,
         value=5.0,
         size=1,
-        var_type=DesignSpace.DesignVariableType.FLOAT,
+        type_=DesignSpace.DesignVariableType.FLOAT,
     )
     problem = OptimizationProblem(design_space)
     problem.objective = f
     if constraints_before_obj:
-        problem.add_constraint(g, value=0.0, cstr_type="ineq")
+        problem.add_constraint(g, value=0.0, constraint_type="ineq")
     return f, problem
 
 

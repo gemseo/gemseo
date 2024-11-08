@@ -20,13 +20,13 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
 from numpy import argmax
 from numpy import concatenate
 from numpy import full
-from numpy import ndarray
 from numpy import tile
 from numpy import where
 from numpy import zeros
@@ -36,12 +36,15 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.error_estimators import compute_best_step
-from gemseo.utils.derivatives.gradient_approximator import GradientApproximator
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
-class CenteredDifferences(GradientApproximator):
+class CenteredDifferences(BaseGradientApproximator):
     r"""Centered differences approximator.
 
     .. math::
@@ -55,69 +58,58 @@ class CenteredDifferences(GradientApproximator):
 
     def _compute_parallel_grad(
         self,
-        input_values: ndarray,
-        n_perturbations: int,
-        input_perturbations: ndarray,
-        step: float | ndarray,
+        input_values: RealArray,
+        input_perturbations: RealArray,
+        step: float | RealArray,
         **kwargs: Any,
-    ) -> ndarray:
+    ) -> list[RealArray]:
+        input_perturbations = input_perturbations.T
+        n_perturbations = len(input_perturbations)
         self._function_kwargs = kwargs
-        functions = [self._wrap_function] * (n_perturbations)
-        parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
+        parallel_execution = CallableParallelExecution(
+            [self._wrap_function] * n_perturbations, **self._parallel_args
+        )
+        output_perturbations = parallel_execution.execute(input_perturbations)
 
-        perturbated_inputs = [
-            input_perturbations[:, perturbation_index]
-            for perturbation_index in range(n_perturbations)
-        ]
-        initial_and_perturbated_outputs = parallel_execution.execute(perturbated_inputs)
-
-        gradient = []
-        for perturbation_index in range(int(n_perturbations / 2)):
-            perturbated_output_plus = initial_and_perturbated_outputs[
-                perturbation_index
-            ]
-            perturbated_output_minus = initial_and_perturbated_outputs[
-                int(n_perturbations / 2) + perturbation_index
-            ]
-            g_approx = (perturbated_output_plus - perturbated_output_minus) / norm(
-                perturbated_inputs[perturbation_index]
-                - perturbated_inputs[int(n_perturbations / 2) + perturbation_index]
+        n_perturbations_ = int(n_perturbations / 2)
+        return [
+            ((output_plus - output_minus) / norm(input_plus - input_minus)).real
+            for input_plus, output_plus, input_minus, output_minus in zip(
+                input_perturbations[:n_perturbations_],
+                output_perturbations[:n_perturbations_],
+                input_perturbations[n_perturbations_ : 2 * n_perturbations_],
+                output_perturbations[n_perturbations_ : 2 * n_perturbations_],
             )
-            gradient.append(g_approx.real)
-
-        return gradient
+        ]
 
     def _compute_grad(
         self,
-        input_values: ndarray,
-        n_perturbations: int,
-        input_perturbations: ndarray,
-        step: float | ndarray,
+        input_values: RealArray,
+        input_perturbations: RealArray,
+        step: float | RealArray,
         **kwargs: Any,
-    ) -> ndarray:
-        gradient = []
-        for perturbation_index in range(int(n_perturbations / 2)):
-            perturbated_output_plus = self.f_pointer(
-                input_perturbations[:, perturbation_index], **kwargs
+    ) -> list[RealArray]:
+        input_perturbations = input_perturbations.T
+        n_perturbations_ = int(len(input_perturbations) / 2)
+        f = self.f_pointer
+        return [
+            (
+                (f(input_plus, **kwargs) - f(input_minus, **kwargs))
+                / norm(input_plus - input_minus)
+            ).real
+            for input_plus, input_minus in zip(
+                input_perturbations[:n_perturbations_],
+                input_perturbations[n_perturbations_ : 2 * n_perturbations_],
             )
-            perturbated_output_minus = self.f_pointer(
-                input_perturbations[:, int(n_perturbations / 2) + perturbation_index],
-                **kwargs,
-            )
-            g_approx = (perturbated_output_plus - perturbated_output_minus) / norm(
-                input_perturbations[:, perturbation_index]
-                - input_perturbations[:, int(n_perturbations / 2) + perturbation_index]
-            )
-            gradient.append(g_approx.real)
-        return gradient
+        ]
 
     def _get_opt_step(
         self,
-        f_p: ndarray,
-        f_0: ndarray,
-        f_m: ndarray,
+        f_p: RealArray,
+        f_0: RealArray,
+        f_m: RealArray,
         numerical_error: float = EPSILON,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> tuple[RealArray | float, RealArray]:
         r"""Compute the optimal step of a function.
 
         This function may be a vector function.
@@ -145,30 +137,25 @@ class CenteredDifferences(GradientApproximator):
             t_e, c_e, opt_step = compute_best_step(
                 f_p, f_0, f_m, self.step, epsilon_mach=numerical_error
             )
-            error = 0.0 if t_e is None else t_e + c_e
-        else:
-            errors = zeros(n_out)
-            opt_steps = zeros(n_out)
-            for i in range(n_out):
-                t_e, c_e, opt_steps[i] = compute_best_step(
-                    f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
-                )
-                if t_e is None:
-                    errors[i] = 0.0
-                else:
-                    errors[i] = t_e + c_e
-            max_i = argmax(errors)
-            error = errors[max_i]
-            opt_step = opt_steps[max_i]
+            return 0.0 if t_e is None else t_e + c_e, opt_step
 
-        return error, opt_step
+        errors = zeros(n_out)
+        opt_steps = zeros(n_out)
+        for i in range(n_out):
+            t_e, c_e, opt_steps[i] = compute_best_step(
+                f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
+            )
+            errors[i] = 0.0 if t_e is None else t_e + c_e
+
+        max_i = argmax(errors)
+        return errors[max_i], opt_steps[max_i]
 
     def compute_optimal_step(
         self,
-        x_vect: ndarray,
+        x_vect: RealArray,
         numerical_error: float = EPSILON,
         **kwargs: Any,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> tuple[RealArray, RealArray]:
         r"""Compute the gradient by real step.
 
         Args:
@@ -185,50 +172,51 @@ class CenteredDifferences(GradientApproximator):
             The errors.
         """
         n_dim = len(x_vect)
-        x_p_arr, _ = self.generate_perturbations(n_dim, x_vect)
-        x_m_arr, _ = self.generate_perturbations(n_dim, x_vect, step=-self.step)
+        x_p_arr = self.generate_perturbations(n_dim, x_vect)[0]
+        x_m_arr = self.generate_perturbations(n_dim, x_vect, step=-self.step)[0]
         opt_steps = full(n_dim, self.step)
         errors = zeros(n_dim)
         comp_step = self._get_opt_step
         if self._parallel:
             self._function_kwargs = kwargs
-            functions = [self._wrap_function] * (n_dim * 2 + 1)
-            parallel_execution = CallableParallelExecution(
-                functions, **self._parallel_args
-            )
-
-            all_x = [x_vect] + [x_p_arr[:, i] for i in range(n_dim)]
-            all_x += [x_m_arr[:, i] for i in range(n_dim)]
-            outputs = parallel_execution.execute(all_x)
+            workers = [self._wrap_function] * (n_dim * 2 + 1)
+            execution = CallableParallelExecution(workers, **self._parallel_args)
+            outputs = execution.execute([
+                x_vect,
+                *[x_p_arr[:, i] for i in range(n_dim)],
+                *[x_m_arr[:, i] for i in range(n_dim)],
+            ])
 
             f_0 = outputs[0]
             for i in range(n_dim):
-                f_p = outputs[i + 1]
-                f_m = outputs[n_dim + i + 1]
                 errs, opt_step = comp_step(
-                    f_p, f_0, f_m, numerical_error=numerical_error
+                    outputs[i + 1],
+                    f_0,
+                    outputs[n_dim + i + 1],
+                    numerical_error=numerical_error,
                 )
                 errors[i] = errs
                 opt_steps[i] = opt_step
         else:
-            f_0 = self.f_pointer(x_vect, **kwargs)
+            compute_output = self.f_pointer
+            f_0 = compute_output(x_vect, **kwargs)
             for i in range(n_dim):
-                f_p = self.f_pointer(x_p_arr[:, i], **kwargs)
-                f_m = self.f_pointer(x_m_arr[:, i], **kwargs)
-                errs, opt_step = comp_step(
-                    f_p, f_0, f_m, numerical_error=numerical_error
+                errors[i], opt_steps[i] = comp_step(
+                    compute_output(x_p_arr[:, i], **kwargs),
+                    f_0,
+                    compute_output(x_m_arr[:, i], **kwargs),
+                    numerical_error=numerical_error,
                 )
-                errors[i] = errs
-                opt_steps[i] = opt_step
+
         self.step = opt_steps
         return opt_steps, errors
 
     def _generate_perturbations(
         self,
-        input_values: ndarray,
+        input_values: RealArray,
         input_indices: list[int],
         step: float,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> tuple[RealArray, RealArray | float]:
         input_dimension = len(input_values)
         n_indices = len(input_indices)
         input_perturbations = (
@@ -238,36 +226,30 @@ class CenteredDifferences(GradientApproximator):
         )
         if self._design_space is None:
             input_perturbations[input_indices, range(n_indices)] += step
-            input_perturbations[
-                input_indices, [i + n_indices for i in range(n_indices)]
-            ] -= step
+            input_perturbations[input_indices, range(n_indices, 2 * n_indices)] -= step
             return input_perturbations, step
 
+        lower_bounds = self._design_space.get_lower_bounds()
+        upper_bounds = self._design_space.get_upper_bounds()
         if self._normalize:
-            upper_bounds = self._design_space.normalize_vect(
-                self._design_space.get_upper_bounds()
-            )
-            lower_bounds = self._design_space.normalize_vect(
-                self._design_space.get_lower_bounds()
-            )
-        else:
-            upper_bounds = self._design_space.get_upper_bounds()
-            lower_bounds = self._design_space.get_lower_bounds()
+            normalize_vect = self._design_space.normalize_vect
+            lower_bounds = normalize_vect(lower_bounds)
+            upper_bounds = normalize_vect(upper_bounds)
 
         steps_plus = where(
             input_perturbations[input_indices, range(n_indices)] >= upper_bounds,
             0,
             step,
         )
+        input_perturbations[input_indices, range(n_indices)] += steps_plus
         steps_minus = where(
-            input_perturbations[
-                input_indices, [i + n_indices for i in range(n_indices)]
-            ]
+            input_perturbations[input_indices, range(n_indices, 2 * n_indices)]
             <= lower_bounds,
             0,
             -step,
         )
         steps = concatenate([steps_plus, steps_minus], axis=-1)
-        input_perturbations[input_indices, range(2 * n_indices)] += steps
-
+        input_perturbations[input_indices, range(n_indices, 2 * n_indices)] += (
+            steps_minus
+        )
         return input_perturbations, steps

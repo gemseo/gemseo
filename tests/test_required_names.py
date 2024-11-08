@@ -12,12 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.grammars.required_names import RequiredNames
+
+if TYPE_CHECKING:
+    from gemseo.core.grammars.base_grammar import BaseGrammar
 
 FACTORY = GrammarFactory()
 
@@ -94,3 +99,11 @@ def test_from_iterable(grammar):
     match = r"The name bad is not in the grammar\."
     with pytest.raises(KeyError, match=match):
         rn | {"bad"}
+
+
+def test_get_names_difference(grammar):
+    """Verify get_names_difference."""
+    rn = RequiredNames(grammar, names=["name"])
+    assert rn.get_names_difference(()) == {"name"}
+    assert rn.get_names_difference(["dummy"]) == {"name"}
+    assert rn.get_names_difference(["name"]) == set()

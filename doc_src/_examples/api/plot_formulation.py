@@ -69,3 +69,13 @@ get_formulation_sub_options_schema("MDF", main_mda_name="MDAGaussSeidel")
 # - get the sub-option values using the
 #   :func:`.get_formulations_sub_options_defaults` function; e.g.
 get_formulations_sub_options_defaults("MDF", main_mda_name="MDAGaussSeidel")
+
+# %%
+# Or import its settings model and pass it directly with the keyword
+# "formulation_settings_model".
+from gemseo.settings.formulations import MDF_Settings  # noqa: E402
+
+settings_model = MDF_Settings()
+
+# %%
+# See :ref:`formulation_settings` for more information on how to use settings models.

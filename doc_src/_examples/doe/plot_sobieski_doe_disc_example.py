@@ -27,7 +27,7 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
@@ -50,30 +50,41 @@ design_space.filter(["y_24", "y_34"])
 # The DOE algorithm.
 scenario = create_scenario(
     [discipline],
-    "DisciplinaryOpt",
     "y_4",
     design_space,
     maximize_objective=True,
     scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
 
 # %%
 # Execute the scenario
 # -----------------------
 # Here we use a latin hypercube sampling algorithm with 30 samples.
-scenario.execute({"n_samples": 30, "algo": "lhs"})
+scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 
 # %%
+# Note that both the formulation settings passed to func:`.create_scenario` and the
+# algorithm settings passed to :meth:`~.DriverLibrary.execute` can be provided via a Pydantic model. For
+# more information, see :ref:`formulation_settings` and :ref:`algorithm_settings`.
+#
 # Plot optimization history view
 # ------------------------------
-scenario.post_process("OptHistoryView", save=False, show=True)
+scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
-# Plot parallel coordinates
-# -------------------------
-scenario.post_process(
-    "ScatterPlotMatrix",
+# Note that post-processor settings passed to :meth:`.BaseScenario.post_process` can be
+# provided via a Pydantic model (see the example below). For more information,
+# see :ref:`post_processor_settings`.
+#
+# Plot scatter plot matrix
+# ------------------------
+from gemseo.settings.post import ScatterPlotMatrix_Settings  # noqa: E402
+
+settings_model = ScatterPlotMatrix_Settings(
     variable_names=["y_4", "y_24", "y_34"],
     save=False,
     show=True,
 )
+
+scenario.post_process(settings_model)

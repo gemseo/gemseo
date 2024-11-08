@@ -57,8 +57,8 @@ discipline = create_discipline(
 # Then, we create a :class:`.DesignSpace`
 # where :math:`x` and :math:`y` vary between 0 and 1.
 design_space = create_design_space()
-design_space.add_variable("x", l_b=0.0, u_b=1.0)
-design_space.add_variable("y", l_b=0.0, u_b=1.0)
+design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # Sample with the default mode
@@ -70,9 +70,13 @@ design_space.add_variable("y", l_b=0.0, u_b=1.0)
 # all the disciplinary inputs vary proportionally
 # from their lower bounds to their upper bounds.
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "z", design_space, scenario_type="DOE"
+    discipline,
+    "z",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "DiagonalDOE", "n_samples": 10})
+scenario.execute(algo_name="DiagonalDOE", n_samples=10)
 dataset = scenario.to_dataset(opt_naming=False)
 ScatterMatrix(dataset).execute(save=False, show=True)
 
@@ -87,12 +91,12 @@ ScatterMatrix(dataset).execute(save=False, show=True)
 # while  the :math:`(x,y)` points follow the :math:`t\mapsto t` line
 # with the default configuration.
 scenario = create_scenario(
-    discipline, "DisciplinaryOpt", "z", design_space, scenario_type="DOE"
+    discipline,
+    "z",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({
-    "algo": "DiagonalDOE",
-    "n_samples": 10,
-    "algo_options": {"reverse": ["y"]},
-})
+scenario.execute(algo_name="DiagonalDOE", n_samples=10, reverse=["y"])
 dataset = scenario.to_dataset(opt_naming=False)
 ScatterMatrix(dataset).execute(save=False, show=True)

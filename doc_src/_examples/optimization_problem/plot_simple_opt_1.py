@@ -37,7 +37,7 @@ from numpy import sin
 from scipy import optimize
 
 from gemseo import configure_logger
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 configure_logger()
 
@@ -73,5 +73,7 @@ objective
 #
 
 x_0 = -ones(1)
-opt = optimize.fmin_l_bfgs_b(objective, x_0, fprime=objective.jac, bounds=[(-0.2, 2.0)])
+opt = optimize.fmin_l_bfgs_b(
+    objective.evaluate, x_0, fprime=objective.jac, bounds=[(-0.2, 2.0)]
+)
 opt

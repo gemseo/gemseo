@@ -31,17 +31,17 @@ A scenario is an interface that:
 1.b. How does a scenario is implemented in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Programmatically speaking, scenarios are implemented in |g| through the :class:`.Scenario` abstract class
-inheriting from the :class:`.MDODiscipline` class and derived classes:
+Programmatically speaking, scenarios are implemented in |g| through the :class:`.BaseScenario` abstract class
+inheriting from the :class:`.Discipline` class and derived classes:
 
-- The :class:`.MDOScenario` class inheriting from :class:`.Scenario`
+- The :class:`.MDOScenario` class inheriting from :class:`.BaseScenario`
   is dedicated to optimization processes.
-- The :class:`.DOEScenario` class inheriting from :class:`.Scenario`
+- The :class:`.DOEScenario` class inheriting from :class:`.BaseScenario`
   is dedicated to trade-off studies and sampling processes.
 
-A :class:`.Scenario` is defined by four main elements:
+A :class:`.BaseScenario` is defined by four main elements:
 
-- the ``disciplines`` attribute: the list of :class:`.MDODiscipline`,
+- the ``disciplines`` attribute: the list of :class:`.Discipline`,
 - the ``formulation`` attribute: the multidisciplinary formulation based on :class:`~gemseo.algos.design_space.DesignSpace`,
 - the ``optimization_result`` attribute: the optimization results,
 - the ``post_factory`` attribute: the post-processing set of methods.
@@ -49,10 +49,10 @@ A :class:`.Scenario` is defined by four main elements:
 1.c. What are the API functions in |g|?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After the instantiation of the different :class:`.MDODiscipline`,
+After the instantiation of the different :class:`.Discipline`,
 an instance of this scenario can be created from the :meth:`~gemseo.create_scenario` API function whose arguments are:
 
-- ``disciplines``: the ``list`` of instantiated :class:`.MDODiscipline`,
+- ``disciplines``: the ``list`` of instantiated :class:`.Discipline`,
 - ``formulation``: the multidisciplinary formulation name (``str``)
 - ``objective_name``: the objective name (``str``)
 - ``design_space``: the instantiated :class:`~gemseo.algos.design_space.DesignSpace`,
@@ -85,7 +85,7 @@ from the :meth:`~gemseo.create_scenario` API function.
 2.a. Instantiate the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For that, we first instantiate the different :class:`.MDODiscipline`, e.g.
+For that, we first instantiate the different :class:`.Discipline`, e.g.
 
 .. code::
 
@@ -101,7 +101,7 @@ either by instantiating a :class:`~gemseo.algos.design_space.DesignSpace`,
 
 .. code::
 
-    from gemseo.problems.sellar.sellar_design_space import SellarDesignSpace
+    from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
     design_space = SellarDesignSpace()
 
@@ -114,7 +114,7 @@ or by means of the file path of the design space:
 2.c. Define the objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The objective function should be an output taken among the output list of the different :class:`.MDODiscipline`, e.g.
+The objective function should be an output taken among the output list of the different :class:`.Discipline`, e.g.
 
 .. code::
 
@@ -124,7 +124,7 @@ The objective function should be an output taken among the output list of the di
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From the design space and the objective name,
-the :class:`.Scenario` automatically builds an multidisciplinary formulation
+the :class:`.BaseScenario` automatically builds an multidisciplinary formulation
 corresponding to a multidisciplinary formulation name specified by the user, e.g.
 
 .. code::
@@ -153,7 +153,7 @@ which yields:
 2.e. Choose the type of scenario
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Just before the :class:`.Scenario` instantiation,
+Just before the :class:`.BaseScenario` instantiation,
 the type of scenario must be chosen, e.g.
 
 .. code::
@@ -177,7 +177,7 @@ which yields:
 2.f. Instantiate the scenario
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-From these different elements, we can instantiate the :class:`.Scenario`
+From these different elements, we can instantiate the :class:`.BaseScenario`
 by means of the :meth:`~gemseo.create_scenario` API function:
 
 .. code::
@@ -195,7 +195,7 @@ by means of the :meth:`~gemseo.create_scenario` API function:
 2.g. Get the names of design variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We can use the :meth:`.Scenario.get_optim_variable_names` method of the :class:`.Scenario`
+We can use the :meth:`.BaseScenario.get_optim_variable_names` method of the :class:`.BaseScenario`
 to access formulation design variables names in a convenient way:
 
 .. code::
@@ -211,7 +211,7 @@ which yields:
 2.g. Get the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The design space can be accessed using the :attr:`.Scenario.design_space` property of the :class:`.Scenario`:
+The design space can be accessed using the :attr:`.BaseScenario.design_space` property of the :class:`.BaseScenario`:
 
 .. code::
 
@@ -232,10 +232,10 @@ which yields:
 2.h. Visualize the scenario before execute it (XDSM graph)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The simplest way to visualize how the :class:`.Scenario` manages the workflow and dataflow before to execute it
+The simplest way to visualize how the :class:`.BaseScenario` manages the workflow and dataflow before to execute it
 is to log them in the console or in a file using |g|'s logger.
 
-The method :meth:`.Scenario.xdsmize` of the :class:`.Scenario`
+The method :meth:`.BaseScenario.xdsmize` of the :class:`.BaseScenario`
 can be used to this aim (``monitor=True``).
 
 If ``save_html`` (default True), will generate a self contained HTML file, that can be automatically open using the option ``show_html=True``.
@@ -267,7 +267,7 @@ and
 
 Moreover, you can export a static version of the XDSM in both TIKZ, LaTeX and PDF files
 by means of the ``save_pdf`` boolean argument of the
-:meth:`.Scenario.xdsmize` method:
+:meth:`.BaseScenario.xdsmize` method:
 
 .. code::
 
@@ -278,11 +278,11 @@ eventually specifying the output directory ``directory_path='SOME_PATH'``.
 3. How to execute a scenario?
 *****************************
 
-When the :class:`.Scenario` is created, we can execute it to solve the optimization problem, e.g.
+When the :class:`.BaseScenario` is created, we can execute it to solve the optimization problem, e.g.
 
 .. code::
 
-   scenario.execute({'algo': 'SLSQP', 'max_iter': 100}) # MDO case
+   scenario.execute(algo_name="SLSQP", max_iter=100) # MDO case
 
 or sampling the problem, e.g.
 
@@ -295,22 +295,17 @@ or sampling the problem, e.g.
        design_space=design_space,
        scenario_type="DOE",
    )
-   doe_scenario.execute({'algo': 'lhs', 'n_samples': 100}) # DOE case
+   doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100) # DOE case
 
 .. note::
 
-   :meth:`.MDOScenario.execute` and :meth:`.DOEScenario.execute` use input data defined as a dictionary
-   with at least an algorithm name ``algo`` (see :meth:`.Scenario.get_available_driver_names` for a complete list).
-   an :class:`.MDOScenario` also requires the mandatory parameter ``max_iter``
-   corresponding to the maximum number of iterations of the optimization algorithm;
-   the other parameters can be passed as a dictionary of options (see :ref:`gen_opt_algos`),
-   e.g. ``{"algo": "SLSQP", "max_iter": 100, "algo_options": dict_of_options}``.
-   On the other hand,
-   depending on the DOE algorithm,
-   :class:`.DOEScenario` can require either ``n_samples``
-   or other arguments to be mandatory.
-   The other optional parameters can be passed as a dictionary (see :ref:`gen_doe_algos`),
-   e.g. ``{"algo": "lhs", "n_samples": 10, "algo_options": dict_of_options}``.
+   :meth:`.MDOScenario.execute` and :meth:`.DOEScenario.execute` use an algorithm name (``algo_name``)
+   as well as settings, passed either as a Pydantic model (``settings_model``) or as keyword arguments
+   (see :meth:`.BaseScenario.get_available_driver_names` for a complete list of algorithm names).
+   In particular,
+   :class:`.MDOScenario` requires the mandatory setting parameter ``max_iter``
+   corresponding to the maximum number of iterations of the optimization algorithm
+   and :class:`.MDOScenario` the mandatory setting parameter ``n_samples`` or other setting parameters to deduce it.
 
 .. seealso::
 
@@ -333,9 +328,9 @@ or sampling the problem, e.g.
 4. How to get the optimum solution?
 ***********************************
 
-Once the :class:`.Scenario` is executed, the optimum results can be found in the execution log.
+Once the :class:`.BaseScenario` is executed, the optimum results can be found in the execution log.
 
-It is also possible to extract them by invoking the :meth:`.Scenario.get_optimum` method of the :class:`.Scenario` class.
+It is also possible to extract them by invoking the :meth:`.BaseScenario.get_optimum` method of the :class:`.BaseScenario` class.
 It returns a dictionary containing the optimum results for the scenario under consideration:
 
 .. code::
@@ -354,7 +349,7 @@ which yields:
 5. How to log disciplinary and total execution metrics?
 *******************************************************
 
-The :meth:`.Scenario.print_execution_metrics` method of the :class:`.Scenario` class
+The :meth:`.BaseScenario.print_execution_metrics` method of the :class:`.BaseScenario` class
 adds disciplinary and total execution metrics in the logs:
 
 .. code::
@@ -365,7 +360,7 @@ which yields:
 
 .. code::
 
-    INFO - 12:50:53 : * Scenario Executions statistics *
+    INFO - 12:50:53 : * BaseScenario Executions statistics *
     INFO - 12:50:53 : * Discipline: Sellar1
     INFO - 12:50:53 : Executions number: 128
     INFO - 12:50:53 : Execution time:  0.00471186637878 s
@@ -386,8 +381,8 @@ which yields:
 *******************************************************
 
 |g| provides many post-processing tools which can be called
-either by means of the :meth:`.Scenario.post_process` method of the :class:`.Scenario` class
+either by means of the :meth:`.BaseScenario.post_process` method of the :class:`.BaseScenario` class
 or by means of the :meth:`~gemseo.execute_post` API function.
-:meth:`.Scenario.post_process` method of the :class:`.Scenario` class
+:meth:`.BaseScenario.post_process` method of the :class:`.BaseScenario` class
 returns the list of available post-processing methods.
 Find more information about post-processing and visualization here: :ref:`post_processing`.

@@ -26,10 +26,10 @@ Comparing sensitivity indices
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo.uncertainty.sensitivity.correlation.analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris.analysis import MorrisAnalysis
-from gemseo.uncertainty.use_cases.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.uncertainty.use_cases.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
 
 configure_logger()
 
@@ -41,7 +41,7 @@ configure_logger()
 #
 #    f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1x_3^4\sin(x_1)
 #
-# implemented as an :class:`.MDODiscipline` by the :class:`.IshigamiDiscipline`.
+# implemented as an :class:`.Discipline` by the :class:`.IshigamiDiscipline`.
 # It is commonly used
 # with the independent random variables :math:`X_1`, :math:`X_2` and :math:`X_3`
 # uniformly distributed between :math:`-\pi` and :math:`\pi`
@@ -57,19 +57,21 @@ uncertain_space = IshigamiSpace()
 #
 # Firstly,
 # we create a :class:`.CorrelationAnalysis` and compute the sensitivity indices:
-correlation = CorrelationAnalysis([discipline], uncertain_space, 10)
+correlation = CorrelationAnalysis()
+correlation.compute_samples([discipline], uncertain_space, 10)
 correlation.compute_indices()
 
 # %%
 # Then,
 # we create an :class:`.MorrisAnalysis` and compute the sensitivity indices:
-morris = MorrisAnalysis([discipline], uncertain_space, 10)
+morris = MorrisAnalysis()
+morris.compute_samples([discipline], uncertain_space, 10)
 morris.compute_indices()
 
 # %%
 # Lastly,
 # we compare these analyses
-# with the graphical method :meth:`.SensitivityAnalysis.plot_comparison`,
+# with the graphical method :meth:`.BaseSensitivityAnalysis.plot_comparison`,
 # either using a bar chart:
 morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=True)
 

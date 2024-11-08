@@ -21,15 +21,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import abs as np_abs
 from numpy import amax
-from numpy import ndarray
 
-from gemseo.mlearning.transformers.transformer import Transformer
-from gemseo.mlearning.transformers.transformer import TransformerFitOptionType
+from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
-class JamesonSensor(Transformer):
+class JamesonSensor(BaseTransformer):
     """A 1D Jameson Sensor."""
 
     def __init__(
@@ -53,14 +57,14 @@ class JamesonSensor(Transformer):
         self.removing_part = removing_part
         self.dimension = dimension
 
-    def _fit(self, data: ndarray, *args: TransformerFitOptionType) -> None:
+    def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
         self.threshold *= amax(data)
 
-    @Transformer._use_2d_array
+    @BaseTransformer._use_2d_array
     def transform(  # noqa: D102
         self,
-        data: ndarray,
-    ) -> ndarray:
+        data: RealArray,
+    ) -> RealArray:
         mesh_size = data.shape[1] - 2
         min_mesh_size = int(mesh_size * self.removing_part)
         max_mesh_size = int(mesh_size * (1 - self.removing_part))

@@ -85,8 +85,12 @@ discipline_cstr_obj1 = create_discipline(
 # ------------------------------------------
 
 design_space = create_design_space()
-design_space.add_variable("x1", l_b=array([0.0]), u_b=array([5.0]), value=array([2.0]))
-design_space.add_variable("x2", l_b=array([-5.0]), u_b=array([3.0]), value=array([2.0]))
+design_space.add_variable(
+    "x1", lower_bound=array([0.0]), upper_bound=array([5.0]), value=array([2.0])
+)
+design_space.add_variable(
+    "x2", lower_bound=array([-5.0]), upper_bound=array([3.0]), value=array([2.0])
+)
 
 disciplines = [
     discipline_binh_korn,
@@ -100,12 +104,12 @@ disciplines = [
 
 sub_scenario = create_scenario(
     disciplines,
-    "DisciplinaryOpt",
     "obj2",
     design_space,
+    formulation_name="DisciplinaryOpt",
 )
 
-sub_scenario.default_inputs = {"algo": "NLOPT_SLSQP", "max_iter": 100}
+sub_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=100)
 
 # %%
 # We add the Binh and Korn problem constraints.
@@ -119,7 +123,10 @@ sub_scenario.add_constraint("cstr2", constraint_type="ineq")
 # the lower-level scenario.
 system_design_space = create_design_space()
 system_design_space.add_variable(
-    "obj1_target", l_b=array([0.1]), u_b=array([100.0]), value=array([1.0])
+    "obj1_target",
+    lower_bound=array([0.1]),
+    upper_bound=array([100.0]),
+    value=array([1.0]),
 )
 
 # %%
@@ -133,10 +140,10 @@ system_design_space.add_variable(
 
 system_scenario = create_scenario(
     sub_scenario,
-    "BiLevel",
     "obj1",
     system_design_space,
     scenario_type="DOE",
+    formulation_name="BiLevel",
     sub_scenarios_log_level=WARNING,
 )
 
@@ -152,13 +159,12 @@ system_scenario = create_scenario(
 # otherwise it cannot be used by the ParetoFront post-processing.
 system_scenario.add_constraint("cstr3")
 system_scenario.add_observable("obj2")
-system_scenario.xdsmize()
+system_scenario.xdsmize(save_html=False, pdf_build=False)
 # %%
 # Run the scenario
 # ----------------
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
-run_inputs = {"n_samples": 50, "algo": "fullfact"}
-system_scenario.execute(run_inputs)
+system_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=50)
 system_scenario.post_process(
-    "ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
+    post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )

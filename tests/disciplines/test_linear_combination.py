@@ -20,10 +20,10 @@ from numpy import array
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.lib_custom import CustomDOE
-from gemseo.algos.opt_problem import OptimizationProblem
-from gemseo.core.mdofunctions.mdo_discipline_adapter_generator import (
-    MDODisciplineAdapterGenerator,
+from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.discipline_adapter_generator import (
+    DisciplineAdapterGenerator,
 )
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
@@ -48,7 +48,7 @@ def test_linear_combination_execution2points(linear_combination) -> None:
 
 def test_check_gradient(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
-    linear_combination.default_inputs = {
+    linear_combination.default_input_data = {
         "alpha": array([1.0]),
         "beta": array([1.0]),
     }
@@ -57,7 +57,7 @@ def test_check_gradient(linear_combination) -> None:
 
 def test_check_gradient2points(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
-    linear_combination.default_inputs = {
+    linear_combination.default_input_data = {
         "alpha": array([1.0, 0.0]),
         "beta": array([1.0, -1.0]),
     }
@@ -68,15 +68,13 @@ def test_parallel_doe_execution(linear_combination) -> None:
     """Test parallel execution."""
     custom_doe = CustomDOE()
     design_space = DesignSpace()
-    design_space.add_variable("alpha", l_b=-1.0, u_b=1.0, value=0.0)
-    design_space.add_variable("beta", l_b=-1.0, u_b=1.0, value=0.0)
+    design_space.add_variable("alpha", lower_bound=-1.0, upper_bound=1.0, value=0.0)
+    design_space.add_variable("beta", lower_bound=-1.0, upper_bound=1.0, value=0.0)
     opt_problem = OptimizationProblem(design_space)
-    opt_problem.objective = MDODisciplineAdapterGenerator(
-        linear_combination
-    ).get_function(
+    opt_problem.objective = DisciplineAdapterGenerator(linear_combination).get_function(
         input_names=["alpha", "beta"],
         output_names=["delta"],
-        default_inputs={
+        default_input_data={
             "alpha": array([1.0]),
             "beta": array([1.0]),
         },
@@ -94,13 +92,13 @@ def test_parallel_doe_execution(linear_combination) -> None:
 def test_default_values(linear_combination) -> None:
     """Check that all the input variables have zero as default value."""
     assert compare_dict_of_arrays(
-        linear_combination.default_inputs,
+        linear_combination.default_input_data,
         {"alpha": zeros(1), "beta": zeros(1)},
     )
 
 
 def test_linearization_after_execution_cache_none(linear_combination):
-    linear_combination.set_cache_policy(cache_type=linear_combination.CacheType.NONE)
+    linear_combination.set_cache(linear_combination.CacheType.NONE)
     input_data = {"alpha": array([1.0]), "beta": array([1.0])}
     linear_combination.execute(input_data)
     assert not linear_combination.linearize(input_data)

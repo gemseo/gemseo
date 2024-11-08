@@ -25,7 +25,7 @@ from numpy import ones
 from gemseo import execute_algo
 from gemseo.algos.stop_criteria import is_f_tol_reached
 from gemseo.algos.stop_criteria import is_x_tol_reached
-from gemseo.problems.analytical.rosenbrock import Rosenbrock
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 from .opt.problems.constant import Constant
 
@@ -33,11 +33,11 @@ from .opt.problems.constant import Constant
 def test_is_x_tol_reached() -> None:
     pb = Rosenbrock(l_b=0, u_b=1.0)
     pb.preprocess_functions()
-    pb.objective(0 * ones(2))
-    pb.objective(ones(2))
+    pb.objective.evaluate(0 * ones(2))
+    pb.objective.evaluate(ones(2))
 
     assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1)
-    pb.objective(1.01 * ones(2))
+    pb.objective.evaluate(1.01 * ones(2))
     assert is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.1 + 1e-13)
     assert not is_x_tol_reached(pb, x_tol_rel=0, x_tol_abs=0.001)
 
@@ -49,22 +49,22 @@ def test_is_f_tol_reached() -> None:
     pb = Rosenbrock(l_b=0, u_b=1.0)
     pb.preprocess_functions()
 
-    pb.objective(0 * ones(2))
-    pb.objective(ones(2))
+    pb.objective.evaluate(0 * ones(2))
+    pb.objective.evaluate(ones(2))
 
     # rosen(0,0)=1
     # rosen(1,1)=0
     #     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.4, n_x=2)
     # abs(1-0.5)<=1.*0.5
     assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5)
-    pb.objective(1.05 * ones(2))  # 0.278
+    pb.objective.evaluate(1.05 * ones(2))  # 0.278
 
     assert is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2)
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.001)
 
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.2, n_x=3)
     pb.objective.jac(0.5 * ones(2))
-    pb.objective(ones(2))
+    pb.objective.evaluate(ones(2))
     assert not is_f_tol_reached(pb, f_tol_rel=0, f_tol_abs=0.5)
 
 
@@ -78,6 +78,9 @@ def test_n_stop_crit_x(n_stop_crit_x) -> None:
     pb = Constant()
     pb.preprocess_functions()
     res = execute_algo(
-        pb, algo_name="NLOPT_COBYLA", max_iter=100, stop_crit_n_x=n_stop_crit_x
+        pb,
+        algo_name="NLOPT_COBYLA",
+        max_iter=100,
+        stop_crit_n_x=n_stop_crit_x,
     )
     assert res.n_obj_call == n_stop_crit_x + 1

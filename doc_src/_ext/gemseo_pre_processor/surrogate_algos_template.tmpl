@@ -12,7 +12,7 @@ Surrogate disciplines
 =====================
 
 A :class:`.SurrogateDiscipline` is built
-from the name of an :class:`.MLRegressionAlgo` and its options.
+from the name of an :class:`.BaseRegressor` and its options.
 These names and options are listed below.
 
 .. warning::
@@ -23,7 +23,7 @@ These names and options are listed below.
    All the features of the wrapped algorithm libraries may not be exposed through |g|.
 
 {% for algo in algos %}
-.. _{{algo}}_options:
+.. _{{algo}}_surrogate_options:
 
 {{algo}}
 {{ (algo|length)*'-' }}
@@ -37,11 +37,6 @@ Module: :class:`{{modules[algo]}}`
 {% if websites is not none %}
 More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
-
-.. raw:: html
-
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/css/gemseo.css" type="text/css" />
 
 {% set optional_parameters = [] %}
 {% for parameter in options[algo]|dictsort %}
@@ -68,6 +63,8 @@ More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
 {% if required_parameters %}
+.. raw:: html
+
     <dl class="field-list simple">
     <dt class="field-odd">Required parameters</dt>
     <dd class="field-odd"><ul class="simple">
@@ -88,8 +85,10 @@ More details about the algorithm and its options on {{websites[algo]}}.
 {% endif %}
 
 {% if optional_parameters %}
+.. raw:: html
+
     <dl class="field-list simple">
-    <dt class="field-odd">Optional parameters</dt>
+    <dt class="field-odd">Optional settings</dt>
     <dd class="field-odd"><ul class="simple">
 
 {% for arg in optional_parameters %}

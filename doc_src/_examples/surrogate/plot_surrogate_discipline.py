@@ -22,7 +22,7 @@
 Create a surrogate discipline
 =============================
 
-We want to build an :class:`.MDODiscipline`
+We want to build an :class:`.Discipline`
 based on a regression model approximating the following discipline
 with two inputs and two outputs:
 
@@ -30,7 +30,8 @@ with two inputs and two outputs:
 - :math:`y_2=-1-2x_1-3x_2`
 
 over the unit hypercube :math:`[0,1]\\times[0,1]`.
-For that, we use a :class:`.SurrogateDiscipline` relying on an :class:`.MLRegressionAlgo`
+For that,
+we use a :class:`.SurrogateDiscipline` relying on an :class:`.BaseRegressor`.
 """
 
 from __future__ import annotations
@@ -65,19 +66,23 @@ discipline = create_discipline(
 # -------------------------------
 # We create the input sampling space by adding the variables one by one.
 design_space = create_design_space()
-design_space.add_variable("x_1", l_b=0.0, u_b=1.0)
-design_space.add_variable("x_2", l_b=0.0, u_b=1.0)
+design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
+design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # Create the learning set
 # -----------------------
 # We can build a learning set by means of a
-# :class:`~gemseo.core.doe_scenario.DOEScenario` with a full factorial design of
+# :class:`~gemseo.scenarios.doe_scenario.DOEScenario` with a full factorial design of
 # experiments. The number of samples can be equal to 9 for example.
 scenario = create_scenario(
-    [discipline], "DisciplinaryOpt", "y_1", design_space, scenario_type="DOE"
+    [discipline],
+    "y_1",
+    design_space,
+    scenario_type="DOE",
+    formulation_name="DisciplinaryOpt",
 )
-scenario.execute({"algo": "fullfact", "n_samples": 9})
+scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
 
 # %%
 # Create the surrogate discipline

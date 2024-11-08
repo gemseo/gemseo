@@ -26,7 +26,7 @@ from math import log
 import pytest
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    ToleranceInterval,
+    BaseToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.weibull import (
     WeibullToleranceInterval,
@@ -49,7 +49,7 @@ def test_weibull_quantile_lower() -> None:
         1000000, shape=1.0, scale=1.0, location=0.0
     )
     lower, _ = tolerance_interval.compute(
-        0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.LOWER
+        0.975, 0.9, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
     )
     assert pytest.approx(lower, 0.01) == 1.0 * (-log(1 - 0.025)) ** (1.0 / 1.0)
 
@@ -60,6 +60,6 @@ def test_weibull_quantile_upper() -> None:
         1000000, shape=1.0, scale=1.0, location=0.0
     )
     _, upper = tolerance_interval.compute(
-        0.975, 0.9, side=ToleranceInterval.ToleranceIntervalSide.UPPER
+        0.975, 0.9, side=BaseToleranceInterval.ToleranceIntervalSide.UPPER
     )
     assert pytest.approx(upper, 0.01) == 1.0 * (-log(1 - 0.975)) ** (1.0 / 1.0)

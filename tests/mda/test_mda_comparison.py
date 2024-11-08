@@ -24,8 +24,8 @@ import os
 import numpy as np
 
 from gemseo.mda.mda_chain import MDAChain
-from gemseo.problems.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.problems.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -39,7 +39,7 @@ def test_compare_mda_jacobi_gs() -> None:
     out2 = mda2.execute()
 
     for key, value1 in out1.items():
-        if key == mda.RESIDUALS_NORM:
+        if key == mda.NORMALIZED_RESIDUAL_NORM:
             continue
         assert (
             np.linalg.norm(np.array(out2[key] - value1)) / np.linalg.norm(value1) < 1e-2
@@ -58,7 +58,7 @@ def test_mda_jacobi_newton_hybrid(sellar_disciplines) -> None:
     out3 = mda_hybrid.execute()
 
     for key, value1 in out1.items():
-        if key == mda_j.RESIDUALS_NORM:
+        if key == mda_j.NORMALIZED_RESIDUAL_NORM:
             continue
         nv1 = np.linalg.norm(value1)
         if nv1 > 1e-14:

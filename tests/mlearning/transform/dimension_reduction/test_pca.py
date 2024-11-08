@@ -30,7 +30,7 @@ from numpy import diag
 from numpy import ndarray
 from numpy import tile
 
-from gemseo.core.mdofunctions.mdo_function import MDOFunction
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 
 N_SAMPLES = 10
@@ -105,7 +105,7 @@ def test_compute_jacobian(data, pca) -> None:
     expectation = tile(pca.algo.components_, shape)
     if pca.data_is_scaled:
         coefficient = 1 / data.std(0)
-        expectation = expectation @ tile(diag(coefficient), shape)
+        expectation @= tile(diag(coefficient), shape)
     assert allclose(jac, expectation)
 
 

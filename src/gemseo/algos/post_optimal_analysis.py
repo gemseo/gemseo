@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.algos.opt_problem import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -111,18 +111,18 @@ class PostOptimalAnalysis:
             raise ValueError(msg)
         self.lagrange_computer = LagrangeMultipliers(opt_problem)
         # N.B. at creation LagrangeMultipliers checks the optimization problem
-        self.opt_problem = opt_problem
+        self.optimization_problem = opt_problem
         # Get the optimal solution
-        self.x_opt = self.opt_problem.design_space.get_current_value()
+        self.x_opt = self.optimization_problem.design_space.get_current_value()
         # Get the objective name
-        output_names = self.opt_problem.objective.output_names
+        output_names = self.optimization_problem.objective.output_names
         if len(output_names) != 1:
             msg = "The objective must be single-valued."
             raise ValueError(msg)
         self.output_names = output_names
         # Set the tolerance on inequality constraints
         if ineq_tol is None:
-            self.ineq_tol = self.opt_problem.ineq_tolerance
+            self.ineq_tol = self.optimization_problem.tolerances.inequality
         else:
             self.ineq_tol = ineq_tol
 
@@ -142,7 +142,7 @@ class PostOptimalAnalysis:
             threshold: The tolerance on the validity assumption.
         """
         # Check the Jacobians
-        func_names = self.opt_problem.get_constraint_names()
+        func_names = self.optimization_problem.constraints.get_names()
         self._check_jacobians(total_jac, func_names, parameters)
         self._check_jacobians(partial_jac, func_names, parameters)
 
@@ -210,7 +210,7 @@ class PostOptimalAnalysis:
                 total_prod_blocks.append(multipliers @ total_jac_block)
                 partial_prod_blocks.append(multipliers @ partial_jac_block)
                 corrections[input_name] = -total_prod_blocks[-1]
-                if not self.opt_problem.minimize_objective:
+                if not self.optimization_problem.minimize_objective:
                     corrections[input_name] *= -1.0
 
         total_prod = hstack(total_prod_blocks) if total_prod_blocks else None
@@ -219,15 +219,15 @@ class PostOptimalAnalysis:
 
     def execute(
         self,
-        outputs: Iterable[str],
-        inputs: Iterable[str],
+        output_names: Iterable[str],
+        input_names: Iterable[str],
         functions_jac: dict[str, dict[str, ndarray]],
     ) -> dict[str, dict[str, ndarray]]:
         """Perform the post-optimal analysis.
 
         Args:
-            outputs: The names of the outputs to differentiate.
-            inputs: The names of the inputs w.r.t. which to differentiate.
+            output_names: The names of the outputs to differentiate.
+            input_names: The names of the inputs w.r.t. which to differentiate.
             functions_jac: The Jacobians of the optimization functions
                 w.r.t. the differentiation inputs.
 
@@ -235,7 +235,7 @@ class PostOptimalAnalysis:
             The Jacobian of the Lagrangian.
         """
         # Check the outputs
-        nondifferentiable_outputs = set(outputs) - set(self.output_names)
+        nondifferentiable_outputs = set(output_names) - set(self.output_names)
         if nondifferentiable_outputs:
             nondifferentiable_outputs = ", ".join(nondifferentiable_outputs)
             msg = (
@@ -247,22 +247,22 @@ class PostOptimalAnalysis:
         # Check the inputs and Jacobians consistency
         func_names = self.output_names + [
             output_name
-            for constraint in self.opt_problem.constraints
+            for constraint in self.optimization_problem.constraints
             for output_name in constraint.output_names
         ]
-        PostOptimalAnalysis._check_jacobians(functions_jac, func_names, inputs)
+        PostOptimalAnalysis._check_jacobians(functions_jac, func_names, input_names)
 
         # Compute the Lagrange multipliers
         self._compute_lagrange_multipliers()
 
         # Compute the Jacobian of the Lagrangian
-        return self.compute_lagrangian_jac(functions_jac, inputs)
+        return self.compute_lagrangian_jac(functions_jac, input_names)
 
     @staticmethod
     def _check_jacobians(
         functions_jac: dict[str, dict[str, ndarray]],
         func_names: Iterable[str],
-        inputs: Iterable[str],
+        input_names: Iterable[str],
     ) -> None:
         """Check the consistency of the Jacobians with the required inputs.
 
@@ -270,7 +270,7 @@ class PostOptimalAnalysis:
             functions_jac: The Jacobians of the optimization function
                 w.r.t. the differentiation inputs.
             func_names: The naemes of the function to differentiate.
-            inputs: The names of the inputs w.r.t. which to differentiate.
+            input_names: The names of the inputs w.r.t. which to differentiate.
 
         Raises:
             ValueError: When the Jacobian is totally or partially missing or malformed.
@@ -281,7 +281,7 @@ class PostOptimalAnalysis:
             if jac_out is None:
                 msg = f"Jacobian of {output_name} is missing."
                 raise ValueError(msg)
-            for input_name in inputs:
+            for input_name in input_names:
                 jac_block = jac_out.get(input_name)
                 if jac_block is None:
                     msg = (
@@ -307,14 +307,14 @@ class PostOptimalAnalysis:
         self.lagrange_computer.compute(self.x_opt, self.ineq_tol)
 
     def compute_lagrangian_jac(
-        self, functions_jac: dict[str, dict[str, ndarray]], inputs: Iterable[str]
+        self, functions_jac: dict[str, dict[str, ndarray]], input_names: Iterable[str]
     ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobian of the Lagrangian.
 
         Args:
             functions_jac: The Jacobians of the optimization function
                 w.r.t. the differentiation inputs.
-            inputs: The names of the inputs w.r.t. which to differentiate.
+            input_names: The names of the inputs w.r.t. which to differentiate.
 
         Returns:
             The Jacobian of the Lagrangian.
@@ -328,11 +328,11 @@ class PostOptimalAnalysis:
         _, mul_eq = multipliers.get(LagrangeMultipliers.EQUALITY, ([], []))
 
         # Build the Jacobians of the active constraints
-        act_ineq_jac = self._get_act_ineq_jac(functions_jac, inputs)
-        eq_jac = self._get_eq_jac(functions_jac, inputs)
+        act_ineq_jac = self._get_act_ineq_jac(functions_jac, input_names)
+        eq_jac = self._get_eq_jac(functions_jac, input_names)
 
         jac = {self.output_names[0]: {}, self.MULT_DOT_CONSTR_JAC: {}}
-        for input_name in inputs:
+        for input_name in input_names:
             # Contribution of the objective
             jac_obj_arr = functions_jac[self.output_names[0]][input_name]
             jac_cstr_arr = zeros(jac_obj_arr.shape)
@@ -348,7 +348,7 @@ class PostOptimalAnalysis:
                 jac_cstr_arr += mul_eq.T @ jac_eq_arr
 
             # Assemble the Jacobian of the Lagrangian
-            if not self.opt_problem.minimize_objective:
+            if not self.optimization_problem.minimize_objective:
                 jac_cstr_arr *= -1.0
             jac[self.MULT_DOT_CONSTR_JAC][input_name] = jac_cstr_arr
             jac[self.output_names[0]][input_name] = jac_obj_arr + jac_cstr_arr
@@ -367,7 +367,7 @@ class PostOptimalAnalysis:
         Returns:
             The Jacobian of the active inequality constraints for each input name.
         """
-        active_ineq_constraints = self.opt_problem.get_active_ineq_constraints(
+        active_ineq_constraints = self.optimization_problem.constraints.get_active(
             self.x_opt, self.ineq_tol
         )
         input_names_to_jacobians = {}
@@ -388,24 +388,25 @@ class PostOptimalAnalysis:
         return input_names_to_jacobians
 
     def _get_eq_jac(
-        self, jacobians: dict[str, dict[str, ndarray]], inputs: Iterable[str]
+        self, jacobians: dict[str, dict[str, ndarray]], input_names: Iterable[str]
     ) -> dict[str, ndarray]:
         """Build the Jacobian of the equality constraints.
 
         Args:
             jacobians: The Jacobians of the equality constraints
                 w.r.t. the differentiation inputs.
-            inputs: The names of the differentiation inputs.
+            input_names: The names of the differentiation inputs.
 
         Returns:
             The jacobian of the equality constraints.
         """
-        eq_constraints = self.opt_problem.get_eq_constraints()
+        jacs = [
+            jacobians[func.name]
+            for func in self.optimization_problem.constraints.get_equality_constraints()
+        ]
         jacobian = {}
-        if eq_constraints:
-            for input_name in inputs:
-                jacobian[input_name] = vstack([
-                    jacobians[func.name][input_name] for func in eq_constraints
-                ])
+        if jacs:
+            for input_name in input_names:
+                jacobian[input_name] = vstack([jac[input_name] for jac in jacs])
 
         return jacobian

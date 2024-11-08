@@ -14,15 +14,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.mlearning.core.ml_algo import MLAlgo
+from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 
 
-class NewMLAlgo(MLAlgo):
+class NewMLAlgo(BaseMLAlgo):
     """New machine learning algorithm class."""
 
     LIBRARY = "NewLibrary"
+    Settings = BaseMLAlgoSettings
 
-    def learn(self, samples=None) -> None:
+    def learn(self, samples=()) -> None:
         super().learn(samples=samples)
         self._trained = True
 

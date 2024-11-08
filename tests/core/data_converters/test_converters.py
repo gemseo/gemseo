@@ -38,6 +38,7 @@ def create_converters() -> list[BaseDataConverter]:
         "a_int": int,
         "a_complex": complex,
         "a_ndarray": ndarray,
+        "a_str": str,
     }
 
     converters = []
@@ -75,6 +76,7 @@ def test_can_differentiate(converter) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
+        ("a_str", "0", array(["0"])),
         ("a_float", 0.0, array([0.0])),
         ("a_int", 0, array([0])),
         ("a_complex", 1j, array([1j])),
@@ -103,6 +105,7 @@ def test_convert_array_to_value(converter, name, value, expected) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
+        ("a_str", "0", 1),
         ("a_float", 0.0, 1),
         ("a_int", 0, 1),
         ("a_complex", 1j, 1),
@@ -119,14 +122,16 @@ DATA = {
     "a_int": 0,
     "a_complex": 1j,
     "a_ndarray": array([0.0] * 2),
+    "a_str": "0",
 }
 NAMES_TO_SLICES = {
     "a_float": slice(0, 1, None),
     "a_int": slice(1, 2, None),
     "a_complex": slice(2, 3, None),
     "a_ndarray": slice(3, 5, None),
+    "a_str": slice(5, 6, None),
 }
-ARRAY = array([0.0, 0.0, 1.0j, 0.0, 0.0])
+ARRAY = array([0.0, 0, 1.0j, 0.0, 0.0, "0"], dtype=object)
 
 
 def test_compute_name_to_slices(converter) -> None:
@@ -135,7 +140,7 @@ def test_compute_name_to_slices(converter) -> None:
     names_to_slices, end = converter.compute_names_to_slices(DATA.keys(), DATA)
 
     assert names_to_slices == NAMES_TO_SLICES
-    assert end == 5
+    assert end == 6
 
     # Without names_to_sizes.
     names_to_sizes = {
@@ -147,7 +152,7 @@ def test_compute_name_to_slices(converter) -> None:
     )
 
     assert names_to_slices == NAMES_TO_SLICES
-    assert end == 5
+    assert end == 6
 
 
 def test_compute_name_to_sizes(converter) -> None:
@@ -157,6 +162,7 @@ def test_compute_name_to_sizes(converter) -> None:
         "a_int": 1,
         "a_complex": 1,
         "a_ndarray": 2,
+        "a_str": 1,
     }
 
     names_to_sizes = converter.compute_names_to_sizes(DATA.keys(), DATA)
@@ -174,7 +180,10 @@ def test_convert_data_to_array(converter) -> None:
     """Verify convert_data_to_array."""
     # Full data.
     array_ = converter.convert_data_to_array(DATA.keys(), DATA)
-    assert_array_equal(array_, ARRAY)
+    # Cast the reference to the same dtype because numpy.concatenate
+    # does too to the dtype that can represent all the data.
+    ref_array = ARRAY.astype(array_.dtype)
+    assert_array_equal(array_, ref_array)
     # Non full data.
     array_ = converter.convert_data_to_array(("a_int", "a_ndarray"), DATA)
     assert_array_equal(array_, array([0.0] * 3))
