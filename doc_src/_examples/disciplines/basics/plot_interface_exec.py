@@ -107,7 +107,7 @@ class ShellExecutableDiscipline(Discipline):
         inputs_file = os.path.join(cwd, "inputs.txt")
         outputs_file = os.path.join(cwd, "outputs.txt")
         write_file(input_data, inputs_file)
-        subprocess.run("python run.py".split(), cwd=cwd)
+        subprocess.run(["python", "run.py"], cwd=cwd)
         return parse_file(outputs_file)
 
 
