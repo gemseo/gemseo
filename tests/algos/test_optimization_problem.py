@@ -39,6 +39,7 @@ from numpy import ones
 from numpy import sin
 from numpy import zeros
 from numpy.testing import assert_equal
+from pandas import MultiIndex
 from pandas.testing import assert_frame_equal
 from scipy.linalg import norm
 from scipy.optimize import rosen
@@ -1614,7 +1615,8 @@ def test_jabobian_in_database(
     problem_for_eval_obs_jac, options, eval_obs_jac, store_jacobian
 ) -> None:
     """Check Jacobian matrices in database in function of eval_obs_jac and
-    store_jacobian options."""
+    store_jacobian options.
+    """
     problem_for_eval_obs_jac.reset()
     execute_algo(
         problem_for_eval_obs_jac,
@@ -1632,7 +1634,8 @@ def test_jabobian_in_database(
 
 def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     """Check if the observables can be retrieved in an HDF file after export and
-    import."""
+    import.
+    """
     # Add observables to the optimization problem.
     obs1 = MDOFunction(norm, "design norm")
     pow2_problem.add_observable(obs1)
@@ -2169,12 +2172,13 @@ def test_observables_setters():
     assert problem.new_iter_observables._functions == functions
 
 
-def test_evaluation_problem_to_dataset():
+@pytest.mark.parametrize("output_name", ["x", "f"])
+def test_evaluation_problem_to_dataset(output_name):
     """Check EvaluationProblem.to_dataset."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(lambda x: 2 * x, "f"))
+    problem.add_observable(MDOFunction(lambda x: 2 * x, output_name))
     problem.preprocess_functions()
     output_functions = problem.get_functions(observable_names=())[0]
     problem.evaluate_functions(
@@ -2190,12 +2194,19 @@ def test_evaluation_problem_to_dataset():
 
     dataset = IODataset()
     dataset.add_input_variable("x", array([[1.0], [2.0]]))
-    dataset.add_output_variable("f", array([[2.0], [4.0]]))
+    dataset.add_output_variable(output_name, array([[2.0], [4.0]]))
     assert_frame_equal(problem.to_dataset(), dataset)
 
     dataset = Dataset()
-    dataset.add_variable("x", array([[1.0], [2.0]]))
-    dataset.add_variable("f", array([[2.0], [4.0]]))
+    if output_name == "f":
+        dataset.add_variable("x", array([[1.0], [2.0]]))
+        dataset.add_variable(output_name, array([[2.0], [4.0]]))
+    else:
+        dataset.add_variable("x", array([[1.0, 2.0], [2.0, 4.0]]))
+        dataset.columns = MultiIndex.from_tuples(
+            [("parameters", "x", 0), ("parameters", "x", 0)],
+            names=["GROUP", "VARIABLE", "COMPONENT"],
+        )
     assert_frame_equal(problem.to_dataset(categorize=False), dataset)
 
 

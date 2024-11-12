@@ -1040,9 +1040,7 @@ class Database(Mapping):
         ]
 
         # Add database outputs
-        variable_names = self.get_function_names()
-        output_names = [name for name in variable_names if name not in input_space]
-
+        output_names = self.get_function_names()
         self.__update_data_and_columns_for_dataset(
             data,
             columns,

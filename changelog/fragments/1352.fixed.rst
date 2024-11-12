@@ -1,0 +1,1 @@
+``BaseScenario.to_dataset`` can export the ``Database`` to a ``Dataset`` in presence of homonymous inputs and outputs.
