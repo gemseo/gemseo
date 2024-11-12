@@ -179,7 +179,7 @@ scipy==1.13.1
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-setuptools==75.3.0
+setuptools==75.4.0
     # via gemseo (pyproject.toml)
 six==1.16.0
     # via
@@ -233,7 +233,7 @@ tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
-tomli==2.0.2
+tomli==2.1.0
     # via sphinx
 tqdm==4.66.5
     # via gemseo (pyproject.toml)
