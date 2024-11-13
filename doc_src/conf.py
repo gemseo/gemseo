@@ -123,18 +123,19 @@ autodoc_kwargs_defaults = True
 
 # Mock missing dependencies.
 autodoc_mock_imports = [
-    "optimize",
+    "da",
+    "fmpy",
+    "jnius",
     "matlab",
     "matlabengine",
-    "da",
-    "pymoo",
-    "scilab2py",
-    "pyfmi",
-    "fmpy",
+    "optimize",
     "pdfo",
-    "jnius",
+    "pyfmi",
+    "pymoo",
     "PySide6",
     "pytest",
+    "scilab2py",
+    "smt",
 ]
 
 ################################################################################
@@ -198,7 +199,7 @@ html_theme_options = {
     "header_links_before_dropdown": 5,
     "header_dropdown_text": "More",
     "switcher": {
-        "json_url": "https://gemseo.readthedocs.io/en/develop/_static/versions.json",
+        "json_url": "https://gemseo.readthedocs.io/en/stable/_static/versions.json",
         "version_match": release,
     },
     # check_switcher may be set to False if docbuild pipeline fails. See
@@ -403,6 +404,7 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
         ),
         "gemseo-pseven": ("GEMSEO plugin for the pSeven library.", True),
         "gemseo-pymoo": ("Pymoo wrapper for optimization algorithms", True),
+        "gemseo-pyoptsparse": ("GEMSEO interface to pyoptsparse algorithms.", True),
         "gemseo-ssh": ("SSH plugin for GEMSEO", True),
         "gemseo-scilab": ("Interfacing Scilab functions", True),
         "gemseo-template-editor-gui": (
