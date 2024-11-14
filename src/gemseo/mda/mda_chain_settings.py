@@ -70,7 +70,7 @@ execution.""",
     )
 
     sub_coupling_structures: Sequence[CouplingStructure] = Field(
-        default_factory=list,
+        default=(),
         description="""The coupling structures to be used by the inner MDAs.
 
 If empty, they are created from ``disciplines``.""",

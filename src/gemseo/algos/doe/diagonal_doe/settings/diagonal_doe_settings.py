@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence  # noqa: TCH003
+
 from pydantic import Field
 
 from gemseo.algos.doe.base_n_samples_based_doe_settings import (
@@ -36,8 +38,8 @@ class DiagonalDOE_Settings(BaseNSamplesBasedDOESettings):  # noqa: N801
 The number of samples must be greater than or equal than 2.""",
     )
 
-    reverse: list[str] = Field(
-        default_factory=list,
+    reverse: Sequence[str] = Field(
+        default=(),
         description="""The dimensions or variables to sample from upper to lower bounds.
 
 If empty, every dimension will be sampled from lower to upper bounds.""",
