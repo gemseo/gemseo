@@ -51,14 +51,14 @@ def test_prepare_input_data_from(io: IO):
     prepared_data = io.prepare_input_data({})
     assert prepared_data == data_with_default
     prepared_data["input"] += [0]
-    assert data["input"] == []
+    assert data["input"] == [0]
 
     # For non-empty argument: a shallow copy of the defaults are returned,
     # the alien items are removed.
     prepared_data = io.prepare_input_data({"dummy": 0, "input-no-default": 0})
     assert prepared_data == data
     prepared_data["input"] += [0]
-    assert data["input"] == [0]
+    assert data["input"] == [0, 0]
 
     # Items with defaults are passed.
     prepared_data = io.prepare_input_data({"input": [0]})
@@ -165,16 +165,10 @@ def test_finalize(io: IO):
     io.input_grammar.update_from_data({"input": 0})
     io.output_grammar.update_from_data({"output": 0})
 
-    validate = False
     io.data = {"dummy": 0, "input": 0, "output": 0}
-    io.finalize(validate)
-    assert io.data == {"input": 0, "output": 0}
-
-    validate = True
-    io.data = {"dummy": 0, "input": 0, "output": 0}
-    io.finalize(validate)
-    # dummy is removed before the validation: no error.
-    assert io.data == {"input": 0, "output": 0}
+    io.finalize(False)
+    io.finalize(True)
+    assert io.data == {"dummy": 0, "input": 0, "output": 0}
 
     # Check validation.
     io.data = {"dummy": 0, "input": "0", "output": "0"}
@@ -183,15 +177,13 @@ def test_finalize(io: IO):
         "<class 'str'> instead of <class 'int'>."
     )
     with pytest.raises(InvalidDataError, match=match):
-        io.finalize(validate)
-    # dummy is removed before validation, the input types are not checked,
-    # only the output types are.
-    assert io.data == {"input": "0", "output": "0"}
+        io.finalize(True)
+    assert io.data == {"dummy": 0, "input": "0", "output": "0"}
 
     # With data processor.
     io.data_processor = Processor()
     io.data = {"output": 1}
-    io.finalize(validate)
+    io.finalize(True)
     assert io.data == {"output": 0}
 
 

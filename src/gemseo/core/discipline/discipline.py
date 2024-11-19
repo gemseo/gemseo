@@ -117,6 +117,12 @@ class Discipline(BaseDiscipline):
     _linearization_mode: LinearizationMode
     """The linearization mode."""
 
+    __input_names: Iterable[str]
+    """The input names used for handling execution status and statistics."""
+
+    __output_names: Iterable[str]
+    """The output names used for handling execution status and statistics."""
+
     def __init__(  # noqa: D107
         self,
         name: str = "",
@@ -214,16 +220,13 @@ class Discipline(BaseDiscipline):
             else:
                 return self.jac
 
-        with (
-            self.execution_statistics.record(linearize=True),
-            self.execution_status.linearize(),
-        ):
-            if self._linearization_mode in set(self.ApproximationMode):
-                self.jac = self._jac_approx.compute_approx_jac(
-                    output_names, input_names
-                )
-            else:
-                self._compute_jacobian(input_names, output_names)
+        self.__input_names = input_names
+        self.__output_names = output_names
+        self.execution_status.handle(
+            self.execution_status.Status.LINEARIZING,
+            self.execution_statistics.record_linearization,
+            self.__compute_jacobian,
+        )
 
         if not compute_all_jacobians:
             for output_name in tuple(self.jac.keys()):
@@ -244,6 +247,15 @@ class Discipline(BaseDiscipline):
             self.cache.cache_jacobian(input_data, self.jac)
 
         return self.jac
+
+    def __compute_jacobian(self):
+        """Callable used for handling execution status and statistics."""
+        if self._linearization_mode in set(self.ApproximationMode):
+            self.jac = self._jac_approx.compute_approx_jac(
+                self.__output_names, self.__input_names
+            )
+        else:
+            self._compute_jacobian(self.__input_names, self.__output_names)
 
     def set_jacobian_approximation(
         self,

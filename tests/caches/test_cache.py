@@ -280,7 +280,7 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected) -> None:
     disc.set_cache("HDF5Cache", hdf_file_path=hdf_name)
     out = disc.execute({"x": inputs})
 
-    assert disc.execution_statistics.n_calls == 0
+    assert disc.execution_statistics.n_executions == 0
     assert out["y"].all() == expected.all()
 
 
@@ -421,16 +421,16 @@ def test_multithreading(memory_cache, sellar_disciplines) -> None:
     options = {"algo_name": "PYDOE_FULLFACT", "n_samples": 10, "n_processes": 4}
     scen.execute(**options)
 
-    nexec_1 = s_1.execution_statistics.n_calls
-    nexec_2 = s_s.execution_statistics.n_calls
+    nexec_1 = s_1.execution_statistics.n_executions
+    nexec_2 = s_s.execution_statistics.n_executions
 
     scen = create_scenario(
         par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
     )
     scen.execute(**options)
 
-    assert nexec_1 == s_1.execution_statistics.n_calls
-    assert nexec_2 == s_s.execution_statistics.n_calls
+    assert nexec_1 == s_1.execution_statistics.n_executions
+    assert nexec_2 == s_s.execution_statistics.n_executions
 
 
 def test_copy(memory_full_cache) -> None:

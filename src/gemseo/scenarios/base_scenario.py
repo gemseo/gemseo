@@ -664,15 +664,15 @@ class BaseScenario(BaseMonitoredProcess):
         for disc in self.__disciplines:
             msg.add("Discipline: {}", disc.name)
             msg.indent()
-            msg.add("Executions number: {}", disc.execution_statistics.n_calls)
+            msg.add("Executions number: {}", disc.execution_statistics.n_executions)
             msg.add("Execution time: {} s", disc.execution_statistics.duration)
             msg.add(
-                "Linearizations number: {}", disc.execution_statistics.n_calls_linearize
+                "Linearizations number: {}", disc.execution_statistics.n_linearizations
             )
             msg.dedent()
 
-            n_calls += disc.execution_statistics.n_calls
-            n_lin += disc.execution_statistics.n_calls_linearize
+            n_calls += disc.execution_statistics.n_executions
+            n_lin += disc.execution_statistics.n_linearizations
 
         msg.add("Total number of executions calls: {}", n_calls)
         msg.add("Total number of linearizations: {}", n_lin)

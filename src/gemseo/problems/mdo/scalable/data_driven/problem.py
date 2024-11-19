@@ -489,7 +489,7 @@ class ScalableProblem:
         """The number of top-level disciplinary calls per discipline."""
         disciplines = self.scenario.formulation.get_top_level_disciplines()
         return {
-            discipline.name: discipline.execution_statistics.n_calls
+            discipline.name: discipline.execution_statistics.n_executions
             for discipline in disciplines
         }
 
@@ -498,7 +498,7 @@ class ScalableProblem:
         """The number of top-level disciplinary linearizations per discipline."""
         disciplines = self.scenario.formulation.get_top_level_disciplines()
         return {
-            discipline.name: discipline.execution_statistics.n_calls_linearize
+            discipline.name: discipline.execution_statistics.n_linearizations
             for discipline in disciplines
         }
 
@@ -506,7 +506,7 @@ class ScalableProblem:
     def n_calls(self) -> dict[str, int]:
         """The number of disciplinary calls per discipline."""
         return {
-            discipline.name: discipline.execution_statistics.n_calls
+            discipline.name: discipline.execution_statistics.n_executions
             for discipline in self.scenario.disciplines
         }
 
@@ -514,7 +514,7 @@ class ScalableProblem:
     def n_calls_linearize(self) -> dict[str, int]:
         """The number of disciplinary linearizations per discipline."""
         return {
-            discipline.name: discipline.execution_statistics.n_calls_linearize
+            discipline.name: discipline.execution_statistics.n_linearizations
             for discipline in self.scenario.disciplines
         }
 

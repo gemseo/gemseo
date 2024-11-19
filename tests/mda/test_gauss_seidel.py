@@ -291,7 +291,7 @@ def test_max_mda_iter_0():
     mda.execute()
 
     for discipline in mda.disciplines:
-        assert discipline.execution_statistics.n_calls == 1
+        assert discipline.execution_statistics.n_executions == 1
 
     output_data = mda.io.get_output_data()
 

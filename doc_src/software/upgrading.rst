@@ -55,9 +55,9 @@ MDODiscipline
   - .linear_relationships: is removed, call io.have_linear_relationships
   - .disciplines: is removed and only available for classes that derive from ProcessDiscipline
   - .time_stamps: now use .execution_statistics.time_stamps
-  - .n_calls: now use .execution_statistics.n_calls
+  - .n_calls: now use .execution_statistics.n_executions
   - .exec_time: now use .execution_statistics.duration
-  - .n_calls_linearize: now use .execution_statistics.n_calls_linearize
+  - .n_calls_linearize: now use .execution_statistics.n_linearizations
   - .grammar_type: now use .io.grammar_type
   - .auto_get_grammar_file: now is a class attribute
   - .status: now use .execution_status.value

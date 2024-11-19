@@ -189,4 +189,4 @@ for database in struct_databases[:2]:
     execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
 
 for disc in [propu, aero, mission, struct]:
-    print(f"{disc.name}: {disc.execution_statistics.n_calls} calls.")
+    print(f"{disc.name}: {disc.execution_statistics.n_executions} calls.")

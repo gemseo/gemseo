@@ -267,11 +267,11 @@ def test_morris_multiple_disciplines() -> None:
 @pytest.mark.parametrize(("n_samples", "expected_n_samples"), [(0, 20), (8, 8), (9, 8)])
 def test_n_samples(discipline, parameter_space, n_samples, expected_n_samples) -> None:
     """Check the effect of n_samples."""
-    n_calls = discipline.execution_statistics.n_calls
+    n_calls = discipline.execution_statistics.n_executions
     analysis = MorrisAnalysis()
     analysis.compute_samples([discipline], parameter_space, n_samples=n_samples)
     assert len(analysis.dataset) == expected_n_samples
-    assert discipline.execution_statistics.n_calls - n_calls == expected_n_samples
+    assert discipline.execution_statistics.n_executions - n_calls == expected_n_samples
 
 
 def test_compute_indices_output_names(morris) -> None:

@@ -90,12 +90,11 @@ class BaseMonitoredProcess(
         the execution status and statistics.
         It shall be called by :meth:`.execute`.
         """
-        # TODO: why not handling over the full execute() instead of _execute?
-        with (
-            self.execution_statistics.record(),
-            self.execution_status.run(),
-        ):
-            self._execute()
+        self.execution_status.handle(
+            self.execution_status.Status.RUNNING,
+            self.execution_statistics.record_execution,
+            self._execute,
+        )
 
     @abstractmethod
     def _execute(self) -> None:
