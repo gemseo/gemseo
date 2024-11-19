@@ -224,7 +224,7 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
     )
     scenario.execute(algo_name="CustomDOE", samples=array([[0.0, 0.0, -10.0, 0.0]]))
 
-    assert sellar_disciplines[2].execution_statistics.n_calls == 0
+    assert sellar_disciplines[2].execution_statistics.n_executions == 0
     assert "Undefined" in caplog.text
 
 

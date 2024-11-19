@@ -142,8 +142,8 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
                     and output_0.io_data
                 ):
                     # Only increase the number of calls if the Jacobian was computed.
-                    disc_0.execution_statistics.n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
-                    disc_0.execution_statistics.n_calls_linearize += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                    disc_0.execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                    disc_0.execution_statistics.n_linearizations += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
             for disc, output in zip(self._disciplines, ordered_outputs):
                 # When the discipline in the worker failed, output is None.

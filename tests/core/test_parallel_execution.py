@@ -178,7 +178,7 @@ def test_disc_parallel_doe(sellar_disciplines) -> None:
     elapsed_time = t_f - t_0
     assert elapsed_time > 0.1 * (n - 1)
 
-    assert s_1.execution_statistics.n_calls == n
+    assert s_1.execution_statistics.n_executions == n
 
     func_gen = DisciplineAdapterGenerator(s_1)
     y_0_func = func_gen.get_function([X_SHARED], [Y_1])
@@ -327,9 +327,9 @@ def reset_default_multiproc_method():
 @pytest.mark.parametrize(
     ("parallel_class", "n_calls_attr", "add_diff", "expected_n_calls"),
     [
-        (DiscParallelExecution, "n_calls", False, 2),
-        (DiscParallelLinearization, "n_calls_linearize", False, 0),
-        (DiscParallelLinearization, "n_calls_linearize", True, 2),
+        (DiscParallelExecution, "n_executions", False, 2),
+        (DiscParallelLinearization, "n_linearizations", False, 0),
+        (DiscParallelLinearization, "n_linearizations", True, 2),
     ],
 )
 @pytest.mark.parametrize(

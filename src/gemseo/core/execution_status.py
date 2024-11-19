@@ -16,8 +16,9 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import Callable
 from typing import ClassVar
 
 from strenum import StrEnum
@@ -25,12 +26,9 @@ from strenum import StrEnum
 from gemseo.core.serializable import Serializable
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
 
 # TODO: use BaseExecutionStatusObserver.
-
 # TODO: API: add more precise status rules?
 
 
@@ -125,33 +123,24 @@ class ExecutionStatus(Serializable):
         self.__status = status
         self.__notify_observers()
 
-    @contextmanager
-    def run(self) -> Iterator[None]:
-        """Set the status to ``RUNNING`` while executing code.
-
-        On exception, the status is set to ``FAILED``, otherwise is set to ``DONE``.
-        """
-        yield from self.__handle(self.Status.RUNNING)
-
-    @contextmanager
-    def linearize(self) -> Iterator[None]:
-        """Set the status to ``LINEARIZING`` while executing code.
-
-        On exception, the status is set to ``FAILED``, otherwise is set to ``DONE``.
-        """
-        yield from self.__handle(self.Status.LINEARIZING)
-
-    def __handle(self, status: Status) -> Iterator[None]:
-        """Handle a status while executing code within the context manager.
+    def handle(
+        self,
+        status: Status,
+        function: Callable[[Any], None],
+        *args: Any,
+    ) -> None:
+        """Handle a status while executing a function.
 
         On exception, the status is set to ``FAILED``, otherwise is set to ``DONE``.
 
         Args:
             status: The status to be set before execution.
+            function: The function to be called.
+            *args: The argument to be passed for calling the function.
         """
         self.value = status
         try:
-            yield
+            function(*args)
         except Exception:
             self.value = self.Status.FAILED
             raise

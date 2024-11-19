@@ -46,12 +46,12 @@ def test_str(process):
 def test_execute_monitored(process, monkeypatch):
     """Verify _execute_monitored."""
     monkeypatch.setattr(timer, "perf_counter", SleepingCounter(0.1))
-    assert process.execution_statistics.n_calls == 0
-    assert process.execution_statistics.n_calls_linearize == 0
+    assert process.execution_statistics.n_executions == 0
+    assert process.execution_statistics.n_linearizations == 0
     assert process.execution_statistics.duration == 0.0
     assert process.execution_status.value == ExecutionStatus.Status.DONE
     process._execute_monitored()
     assert process.execution_status.value == ExecutionStatus.Status.DONE
-    assert process.execution_statistics.n_calls == 1
-    assert process.execution_statistics.n_calls_linearize == 0
+    assert process.execution_statistics.n_executions == 1
+    assert process.execution_statistics.n_linearizations == 0
     assert process.execution_statistics.duration == 0.1

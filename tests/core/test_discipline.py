@@ -645,7 +645,7 @@ def test_cache_run_and_linearize() -> None:
 
     sm.linearize()
     # Cache must be loaded
-    assert sm.execution_statistics.n_calls_linearize == 0
+    assert sm.execution_statistics.n_linearizations == 0
 
 
 def test_jac_approx_mix_fd() -> None:
@@ -713,8 +713,8 @@ def test_has_jacobian() -> None:
     aero = SobieskiAerodynamics()
     aero.execute()
     aero.linearize(compute_all_jacobians=True)
-    assert aero.execution_statistics.n_calls == 1
-    assert aero.execution_statistics.n_calls_linearize == 1
+    assert aero.execution_statistics.n_executions == 1
+    assert aero.execution_statistics.n_linearizations == 1
     del aero
 
     class Aero2(SobieskiAerodynamics):
@@ -729,8 +729,8 @@ def test_has_jacobian() -> None:
     aero2 = Aero2()
     aero2.execute()
     aero2.linearize(compute_all_jacobians=True)
-    assert aero2.execution_statistics.n_calls == 1
-    assert aero2.execution_statistics.n_calls_linearize == 0
+    assert aero2.execution_statistics.n_executions == 1
+    assert aero2.execution_statistics.n_linearizations == 0
 
 
 def test_init_jacobian_with_incorrect_type() -> None:
@@ -794,13 +794,13 @@ def test_activate_counters() -> None:
     """Check that the discipline counters are active by default."""
 
     discipline = DummyDiscipline()
-    assert discipline.execution_statistics.n_calls == 0
-    assert discipline.execution_statistics.n_calls_linearize == 0
+    assert discipline.execution_statistics.n_executions == 0
+    assert discipline.execution_statistics.n_linearizations == 0
     assert discipline.execution_statistics.duration == 0
 
     discipline.execute()
-    assert discipline.execution_statistics.n_calls == 1
-    assert discipline.execution_statistics.n_calls_linearize == 0
+    assert discipline.execution_statistics.n_executions == 1
+    assert discipline.execution_statistics.n_linearizations == 0
     assert discipline.execution_statistics.duration > 0
 
 
@@ -811,21 +811,21 @@ def test_deactivate_counters() -> None:
     ExecutionStatistics.is_enabled = False
 
     discipline = DummyDiscipline()
-    assert discipline.execution_statistics.n_calls is None
-    assert discipline.execution_statistics.n_calls_linearize is None
+    assert discipline.execution_statistics.n_executions is None
+    assert discipline.execution_statistics.n_linearizations is None
     assert discipline.execution_statistics.duration is None
 
     discipline.execute()
-    assert discipline.execution_statistics.n_calls is None
-    assert discipline.execution_statistics.n_calls_linearize is None
+    assert discipline.execution_statistics.n_executions is None
+    assert discipline.execution_statistics.n_linearizations is None
     assert discipline.execution_statistics.duration is None
 
     match = "The execution statistics of the object named DummyDiscipline are disabled."
     with pytest.raises(RuntimeError, match=match):
-        discipline.execution_statistics.n_calls = 1
+        discipline.execution_statistics.n_executions = 1
 
     with pytest.raises(RuntimeError, match=match):
-        discipline.execution_statistics.n_calls_linearize = 1
+        discipline.execution_statistics.n_linearizations = 1
 
     with pytest.raises(RuntimeError, match=match):
         discipline.execution_statistics.duration = 1
@@ -908,13 +908,13 @@ def test_no_cache() -> None:
     disc = SobieskiMission()
     disc.execute()
     disc.execute()
-    assert disc.execution_statistics.n_calls == 1
+    assert disc.execution_statistics.n_executions == 1
 
     disc = DummyDiscipline()
     disc.cache = None
     disc.execute()
     disc.execute()
-    assert disc.execution_statistics.n_calls == 2
+    assert disc.execution_statistics.n_executions == 2
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,5 @@
+- ``ExecutionStatistics.record``: now use ``ExecutionStatistics.record_execution`` and ``ExecutionStatistics.record_linearization``.
+- ``ExecutionStatistics.n_calls``:  now use ``ExecutionStatistics.n_executions``.
+- ``ExecutionStatistics.n_calls_linearize``: now use ``ExecutionStatistics.n_linearizations``.
+- ``ExecutionStatus.run``: now use  ``ExecutionStatistics.handle``.
+- ``ExecutionStatus.linearize``: now use ``ExecutionStatistics.handle``.

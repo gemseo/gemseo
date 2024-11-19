@@ -147,8 +147,8 @@ def test_scalabilitystudy1(sellar_use_case) -> None:
 
     post = PostScalabilityStudy("study_1")
     post.labelize_exec_time("exec_time")
-    post.labelize_n_calls("n_calls")
-    post.labelize_n_calls_linearize("n_calls_linearize")
+    post.labelize_n_calls("n_executions")
+    post.labelize_n_calls_linearize("n_linearizations")
     post.labelize_status("status")
     post.labelize_is_feasible("is_feasible")
     post.labelize_scaling_strategy("scaling_strategy")

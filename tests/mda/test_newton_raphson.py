@@ -183,8 +183,8 @@ def test_raphson_sellar_without_cache(use_cache) -> None:
 
     residual_length = len(mda.residual_history)
     assert mda.residual_history[-1] < tolerance
-    assert disciplines[0].execution_statistics.n_calls == residual_length
-    assert disciplines[0].execution_statistics.n_calls_linearize == residual_length - 1
+    assert disciplines[0].execution_statistics.n_executions == residual_length
+    assert disciplines[0].execution_statistics.n_linearizations == residual_length - 1
 
 
 @pytest.mark.parametrize("parallel", [False, True])

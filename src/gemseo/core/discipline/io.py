@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -132,17 +131,16 @@ class IO:
             The input data.
         """
         if not data:
-            # TODO: use copy instead? otherwise why don't we deepcopy the values when
-            # the defaults are set in the loop below?
-            return deepcopy(self.input_grammar.defaults)
+            return self.input_grammar.defaults.copy()
 
         input_data = {}
-        for input_name in self.input_grammar:
+        defaults = self.input_grammar.defaults
+        for input_name in self.input_grammar.names:
             input_value = data.get(input_name)
             if input_value is not None:
                 input_data[input_name] = input_value
             else:
-                input_value = self.input_grammar.defaults.get(input_name)
+                input_value = defaults.get(input_name)
                 if input_value is not None:
                     input_data[input_name] = input_value
 
@@ -159,16 +157,6 @@ class IO:
     @data.setter
     def data(self, data: MutableStrKeyMapping) -> None:
         self.__data = DisciplineData(data)
-
-    def __clean(self) -> None:
-        """Clean the data.
-
-        This method removes data that are neither inputs nor outputs.
-        """
-        # TODO: cache all_data_names since it shall not change after __init__?
-        all_data_names = (*self.input_grammar.keys(), *self.output_grammar.keys())
-        for key in self.__data.keys() - all_data_names:
-            del self.__data[key]
 
     def __get_data(self, with_namespaces: bool, grammar: BaseGrammar) -> dict[str, Any]:
         """Return the local data restricted to the items in a grammar.
@@ -230,11 +218,12 @@ class IO:
         """
         out_ns = self.output_grammar.to_namespaced
         out_names = self.output_grammar.keys()
+        data = self.__data
         for key, value in output_data.items():
             if key in out_names:
-                self.__data[key] = value
+                data[key] = value
             elif key_with_ns := out_ns.get(key):
-                self.__data[key_with_ns] = value
+                data[key_with_ns] = value
 
     def initialize(self, input_data: StrKeyMapping, validate: bool) -> None:
         """Initialize the data from input data.
@@ -264,8 +253,6 @@ class IO:
         """
         if self.data_processor is not None:
             self.data = self.data_processor.post_process_data(self.data)
-
-        self.__clean()
 
         if validate:
             self.output_grammar.validate(self.data)

@@ -162,9 +162,9 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
     # Without leveraging the cache mechanism,
     # the discipline shall be called 8 times.
     if platform == "win32":
-        assert disc.execution_statistics.n_calls == 0
+        assert disc.execution_statistics.n_executions == 0
     else:
-        assert disc.execution_statistics.n_calls == 8
+        assert disc.execution_statistics.n_executions == 8
 
 
 @pytest.fixture(scope="module")
