@@ -67,7 +67,7 @@ CallableType = Callable[[ArgT], ReturnT]
 
 _QueueOutItem2 = Union[BaseException, ReturnT]
 
-_QueueInType = queue.Queue[Union[None, tuple[int, ArgT]]]
+_QueueInType = queue.Queue[Union[tuple[int, ArgT], None]]
 _QueueOutType = queue.Queue[tuple[int, _QueueOutItem2[ReturnT]]]
 
 

@@ -116,7 +116,7 @@ class SPDistribution(
     def compute_samples(  # noqa: D102
         self,
         n_samples: int = 1,
-        random_state: None | int | Generator | RandomState = None,
+        random_state: int | Generator | RandomState | None = None,
     ) -> RealArray:
         """
         Args:
