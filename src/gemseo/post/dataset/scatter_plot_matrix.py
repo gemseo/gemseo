@@ -63,7 +63,7 @@ from gemseo.post.dataset._trend import Trend as _Trend
 from gemseo.post.dataset._trend import TrendFunctionCreator
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-ScatterMatrixOption = Union[bool, int, str, None, Sequence[str]]
+ScatterMatrixOption = Union[bool, int, str, Sequence[str], None]
 
 
 class ScatterMatrix(DatasetPlot):

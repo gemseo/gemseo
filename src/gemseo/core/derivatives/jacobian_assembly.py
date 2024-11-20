@@ -503,7 +503,7 @@ class JacobianAssembly:
         function_sizes = [self.sizes[function_name] for function_name in functions]
 
         # Initialize the block Jacobian with the appropriate structure
-        total_jacobian: list[list[None | csr_matrix]] = [
+        total_jacobian: list[list[csr_matrix | None]] = [
             [None for _ in variables] for _ in functions
         ]
 
