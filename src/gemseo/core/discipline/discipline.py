@@ -169,7 +169,7 @@ class Discipline(BaseDiscipline):
                 Otherwise,
                 set the output variables to differentiate
                 with :meth:`.add_differentiated_outputs`
-                and the input variables against which to differentiate them
+                and the input variables with respect to which to differentiate them
                 with :meth:`.add_differentiated_inputs`.
             execute: Whether to start by executing the discipline
                 to ensure that the discipline was executed
@@ -340,7 +340,8 @@ class Discipline(BaseDiscipline):
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
-                set the input variables against which to differentiate the output ones
+                set the input variables
+                with respect to which to differentiate the output ones
                 with :meth:`.add_differentiated_inputs`
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
@@ -462,7 +463,7 @@ class Discipline(BaseDiscipline):
         """Initialize the Jacobian dictionary :attr:`.jac`.
 
         Args:
-            input_names: The inputs against which to differentiate the outputs.
+            input_names: The inputs with respect to which to differentiate the outputs.
                 If empty, use all the inputs.
             output_names: The outputs to be differentiated.
                 If empty, use all the outputs.
@@ -472,7 +473,7 @@ class Discipline(BaseDiscipline):
 
         Returns:
             The names of the input variables
-            against which to differentiate the output ones,
+            with respect to which to differentiate the output ones,
             and these output variables.
         """
         if init_type == self.InitJacobianType.EMPTY:
@@ -677,7 +678,8 @@ class Discipline(BaseDiscipline):
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
-                set the input variables against which to differentiate the output ones
+                set the input variables
+                with respect to which to differentiate the output ones
                 with :meth:`.add_differentiated_inputs`
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
@@ -696,12 +698,13 @@ class Discipline(BaseDiscipline):
         self,
         input_names: Iterable[str] = (),
     ) -> None:
-        """Add the inputs against which to differentiate the outputs.
+        """Add the inputs with respect to which to differentiate the outputs.
 
         The inputs that do not represent continuous numbers are filtered out.
 
         Args:
-            input_names: The input variables against which to differentiate the outputs.
+            input_names: The input variables
+                with respect to which to differentiate the outputs.
                 If empty, use all the inputs.
 
         Raises:
@@ -796,8 +799,9 @@ class Discipline(BaseDiscipline):
         as a dictionary ``{output_name: {input_name: jacobian_matrix}}``.
 
         Args:
-            input_names: The names of the inputs against which to differentiate the
-                outputs. If empty, use all the inputs.
+            input_names: The names of the inputs
+                with respect to which to differentiate the outputs.
+                If empty, use all the inputs.
             output_names: The names of the outputs to be differentiated.
                 If empty, use all the outputs.
         """

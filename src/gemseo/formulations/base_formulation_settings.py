@@ -35,7 +35,7 @@ class BaseFormulationSettings(BaseModel):
     differentiated_input_names_substitute: Sequence[str] = Field(
         default=(),
         description=r"""The names of the discipline inputs
-against which to differentiate the discipline outputs
+with respect to which to differentiate the discipline outputs
 used as objective, constraints and observables.
 If empty, consider the inputs of these functions.
 More precisely,

@@ -54,7 +54,7 @@ class DisciplineAdapter(MDOFunction):
     """The input variable dimension, needed for linear candidates."""
 
     differentiated_input_names_substitute: Sequence[str]
-    """The names of the inputs against which to differentiate the functions.
+    """The names of the inputs with respect to which to differentiate the functions.
 
     If empty, consider the variables of their input space.
     """
@@ -82,7 +82,7 @@ class DisciplineAdapter(MDOFunction):
                 If empty, determine them from the default inputs and local data
                 of the discipline :class:`.Discipline`.
             differentiated_input_names_substitute: The names of the inputs
-                against which to differentiate the functions.
+                with respect to which to differentiate the functions.
                 If empty, consider the variables of their input space.
         """  # noqa: D205, D212, D415
         super().__init__(
