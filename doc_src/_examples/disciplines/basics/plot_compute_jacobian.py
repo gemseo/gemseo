@@ -57,7 +57,7 @@ jacobian_data
 # %%
 # There is no Jacobian data
 # because we need to set the input variables
-# against which to compute the Jacobian of the output ones.
+# with respect to which to compute the Jacobian of the output ones.
 # For that,
 # we use the method :meth:`~.Discipline.add_differentiated_inputs`.
 # We also need to set these output variables:

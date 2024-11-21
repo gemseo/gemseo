@@ -88,7 +88,7 @@ class DisciplineAdapterGenerator:
                 use the default input values of the discipline.
             is_differentiable: Whether the function is differentiable.
             differentiated_input_names_substitute: The names of the inputs
-                against which to differentiate the functions.
+                with respect to which to differentiate the functions.
                 If empty,
                 use ``input_names``.
                 This argument is not used when ``is_differentiable`` is ``False``.

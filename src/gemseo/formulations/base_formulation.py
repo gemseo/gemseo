@@ -139,7 +139,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def differentiated_input_names_substitute(self) -> Sequence[str]:
-        """The names of the inputs against which to differentiate the functions.
+        """The names of the inputs with respect to which to differentiate the functions.
 
         If empty, consider the variables of their input space.
         """
