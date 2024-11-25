@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # Noqa: TCH003
-from typing import ClassVar  # Noqa: TCH003
+from collections.abc import Sequence  # Noqa: TC003
+from typing import ClassVar  # Noqa: TC003
 
 from gemseo.mda.sequential_mda_settings import MDASequential_Settings
 

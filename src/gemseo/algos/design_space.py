@@ -162,7 +162,7 @@ class DesignSpace:
     __DEFAULT_COMMON_DTYPE = __FLOAT_DTYPE
     """The default NumPy data type of the variables."""
 
-    __CAMEL_CASE_REGEX: Final[re.Pattern] = re.compile("[A-Z][^A-Z]*")
+    __CAMEL_CASE_REGEX: Final[re.Pattern] = re.compile(r"[A-Z][^A-Z]*")
     """A regular expression to decompose a CamelCase string."""
 
     __current_value_array: ndarray

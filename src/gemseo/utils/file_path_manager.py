@@ -167,9 +167,9 @@ class FilePathManager:
         """
         message = message.replace("-", "_").replace(" ", "_")
         message = "_".join(
-            [elem.lower() for elem in findall("[A-Z][^A-Z]*", message)] or [message]
+            [elem.lower() for elem in findall(r"[A-Z][^A-Z]*", message)] or [message]
         )
-        return re.sub("_+", "_", message)
+        return re.sub(r"_+", "_", message)
 
     @classmethod
     def add_suffix(

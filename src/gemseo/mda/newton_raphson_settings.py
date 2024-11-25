@@ -19,12 +19,12 @@ from __future__ import annotations
 from pydantic import Field
 from strenum import StrEnum
 
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TCH001
+from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TC001
     BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.mda.base_mda_root_settings import BaseMDARootSettings
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 from gemseo.utils.pydantic import copy_field
 
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)

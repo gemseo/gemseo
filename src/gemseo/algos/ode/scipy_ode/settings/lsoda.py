@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import NonNegativeInt  # noqa: TCH002
+from pydantic import NonNegativeInt  # noqa: TC002
 
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
     BaseScipyODESolverJacSettings,

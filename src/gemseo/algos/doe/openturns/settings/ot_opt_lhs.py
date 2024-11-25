@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import PositiveInt  # noqa: TCH002
+from pydantic import PositiveInt  # noqa: TC002
 
 from gemseo.algos.doe.openturns._algos.ot_optimal_lhs import OTOptimalLHS
 from gemseo.algos.doe.openturns.settings.base_openturns_settings import (

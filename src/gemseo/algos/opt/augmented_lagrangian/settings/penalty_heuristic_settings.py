@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import PositiveFloat  # noqa: TCH002
+from pydantic import PositiveFloat  # noqa: TC002
 
 from gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings import (  # noqa: E501
     BaseAugmentedLagragianSettings,

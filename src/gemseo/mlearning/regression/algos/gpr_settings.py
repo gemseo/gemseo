@@ -16,19 +16,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping  # noqa: TCH003
+from collections.abc import Mapping  # noqa: TC003
 from typing import Annotated
 from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import WithJsonSchema
-from sklearn.gaussian_process.kernels import Kernel  # noqa: TCH002
+from sklearn.gaussian_process.kernels import Kernel  # noqa: TC002
 
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
     BaseRegressorSettings,
 )
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.utils.seeder import SEED
 
 

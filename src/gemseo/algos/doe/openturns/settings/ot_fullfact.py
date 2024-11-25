@@ -16,11 +16,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # noqa: TCH003
+from collections.abc import Sequence  # noqa: TC003
 
 from pydantic import Field
 from pydantic import NonNegativeInt
-from pydantic import PositiveInt  # noqa: TCH002
+from pydantic import PositiveInt  # noqa: TC002
 
 from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
     BaseOpenTURNSSettings,

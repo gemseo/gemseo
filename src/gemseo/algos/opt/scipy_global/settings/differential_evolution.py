@@ -25,7 +25,7 @@ from pydantic import PositiveInt
 from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.utils.seeder import SEED
 
 

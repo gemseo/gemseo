@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic.types import NonNegativeFloat  # noqa: TCH002
+from pydantic.types import NonNegativeFloat  # noqa: TC002
 
 from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 

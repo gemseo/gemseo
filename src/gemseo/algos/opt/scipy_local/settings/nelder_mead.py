@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # noqa: TCH003
+from collections.abc import Sequence  # noqa: TC003
 from typing import Any
 from typing import ClassVar
 
@@ -27,7 +27,7 @@ from pydantic import model_validator
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
 class NELDER_MEAD_Settings(BaseScipyLocalSettings):  # noqa: N801

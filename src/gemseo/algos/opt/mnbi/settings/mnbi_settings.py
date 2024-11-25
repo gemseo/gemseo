@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # noqa: TCH003
-from pathlib import Path  # noqa: TCH003
+from collections.abc import Sequence  # noqa: TC003
+from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -27,8 +27,8 @@ from pydantic import field_validator
 from pydantic import model_validator
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 if TYPE_CHECKING:
     from typing_extensions import Self

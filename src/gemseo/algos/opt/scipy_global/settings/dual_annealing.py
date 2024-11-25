@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import ClassVar
 
 from pydantic import Field
-from pydantic import PositiveFloat  # noqa:TCH002
+from pydantic import PositiveFloat  # noqa:TC002
 
 from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,

@@ -8,7 +8,7 @@ cached-property==2.0.1
     # via h5py
 covdefaults==0.1.0
     # via gemseo (pyproject.toml)
-coverage==7.6.7
+coverage==7.6.8
     # via
     #   covdefaults
     #   pytest-cov
@@ -153,7 +153,7 @@ typing-extensions==4.6.1
     #   gemseo (pyproject.toml)
     #   pydantic
     #   pydantic-core
-wrapt==1.16.0
+wrapt==1.17.0
     # via pandera
 xdsmjs==1.0.0
     # via gemseo (pyproject.toml)
