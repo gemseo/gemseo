@@ -705,11 +705,11 @@ def test_normalization() -> None:
     assert not design_space.normalize["x_1"][0]
     assert not design_space.normalize["x_1"][1]
     assert design_space.normalize["x_2"]
-    assert design_space.normalize["x_3"]
+    assert not design_space.normalize["x_3"]
     # Test the normalization:
     design_space.set_current_value(array([-10.0, 10.0, 5.0, 5]))
     current_x_norm = design_space.get_current_value(normalize=True)
-    ref_current_x_norm = array([-10.0, 10.0, 0.5, 0.5])
+    ref_current_x_norm = array([-10.0, 10.0, 0.5, 5])
     assert norm(current_x_norm - ref_current_x_norm) == pytest.approx(0.0)
 
     unnorm_curent_x = design_space.unnormalize_vect(current_x_norm)
@@ -718,16 +718,16 @@ def test_normalization() -> None:
 
     x_2d = ones((5, 4))
     x_u = design_space.unnormalize_vect(x_2d)
-    assert (x_u == array([1.0, 1.0, 10.0, 10.0] * 5).reshape((5, 4))).all()
+    assert (x_u == array([1.0, 1.0, 10.0, 1] * 5).reshape((5, 4))).all()
 
     x_n = design_space.normalize_vect(x_2d)
-    assert (x_n == array([1.0, 1.0, 0.1, 0.1] * 5).reshape((5, 4))).all()
+    assert (x_n == array([1.0, 1.0, 0.1, 1] * 5).reshape((5, 4))).all()
 
 
 def test_normalize_vect_with_integer(design_space) -> None:
     """Check that an integer vector is correctly normalized."""
     design_space.filter("x8")
-    assert design_space.normalize_vect(ones(1))[0] == 0.0
+    assert design_space.normalize_vect(ones(1))[0] == 1
 
 
 @pytest.mark.parametrize(
@@ -741,7 +741,7 @@ def test_normalize_vect_with_integer(design_space) -> None:
 def test_unnormalize_vect_with_integer(design_space, vect, get_item) -> None:
     """Check that an integer vector is correctly unnormalized."""
     design_space.filter("x8")
-    assert get_item(design_space.unnormalize_vect(vect)) == 1.0
+    assert get_item(design_space.unnormalize_vect(vect)) == 0
 
 
 def test_norm_policy() -> None:
@@ -1066,6 +1066,22 @@ def test_get_pretty_table(
     )
 
 
+def test_get_pretty_table_with_selected_fields(design_space_2) -> None:
+    """Check the rendering of a design as a pretty table with selected fields."""
+    assert (
+        """
++------+
+| name |
++------+
+| x    |
+| y    |
+| y    |
++------+
+""".strip()
+        == design_space_2.get_pretty_table(fields=["name"]).get_string()
+    )
+
+
 @pytest.mark.parametrize("name", ["", "foo"])
 def test_str(table_template, design_space_2, name) -> None:
     """Check that a design space is correctly rendered."""
@@ -1231,8 +1247,8 @@ def design_space_for_normalize_vect() -> DesignSpace:
 @pytest.mark.parametrize(
     ("input_vec", "ref"),
     [
-        (np.array([-10, -20, 5, 5]), np.array([-10, -20, 0.5, 0.5])),
-        (np.array([-10.0, -20, 5.0, 5]), np.array([-10, -20, 0.5, 0.5])),
+        (np.array([-10, -20, 5, 5]), np.array([-10, -20, 0.5, 5])),
+        (np.array([-10.0, -20, 5.0, 5]), np.array([-10, -20, 0.5, 5])),
     ],
 )
 def test_normalize_vect(
@@ -1249,14 +1265,15 @@ def test_normalize_vect(
     assert (id(result) == id(out)) is use_out
 
 
+@pytest.mark.parametrize("out", [zeros(4), None])
 @pytest.mark.parametrize(
     ("input_vec", "ref"),
     [
-        (np.array([-10, -20, 0, 1]), np.array([-10, -20, 0, 10])),
-        (np.array([-10.0, -20, 0.5, 1]), np.array([-10, -20, 5, 10])),
+        (np.array([-10, -20, 0, 1]), np.array([-10, -20, 0, 1])),
+        (np.array([-10.0, -20, 0.5, 1]), np.array([-10, -20, 5, 1])),
     ],
 )
-def test_unnormalize_vect(input_vec, ref) -> None:
+def test_unnormalize_vect(input_vec, ref, out) -> None:
     """Test that the unnormalization is correctly computed whether the input values are
     floats or integers."""
     design_space = DesignSpace()
@@ -1270,7 +1287,12 @@ def test_unnormalize_vect(input_vec, ref) -> None:
     design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
     design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
 
-    assert design_space.unnormalize_vect(input_vec) == pytest.approx(ref)
+    assert design_space.unnormalize_vect(
+        # Pass a copy of the array because the fact that DesignSpace.unnormalize_vect
+        # overwrites the input array conflicts with pytest.mark.parametrize.
+        array(input_vec),
+        out=out,
+    ) == pytest.approx(ref)
 
 
 def test_unnormalize_vect_logging(caplog) -> None:
@@ -1469,6 +1491,15 @@ def design_space_to_check_membership() -> DesignSpace:
         (zeros(4), None, ValueError, "The array should be of size 3; got 4."),
         (array([-1, 1, 1]), ["x", "y"], None, None),
         (array([1, 1, -1]), ["y", "x"], None, None),
+        (
+            array([-3, 1, 1]),
+            None,
+            ValueError,
+            (
+                "The components [0] of the given array ([-3]) are lower "
+                "than the lower bound ([-2.]) by [1.]."
+            ),
+        ),
         (
             array([1, 1, 1]),
             None,
@@ -1781,3 +1812,49 @@ def test_to_scalar_variables():
         new_space.get_current_value(["foo"])
 
     assert_array_equal(new_space.get_current_value(["y[0]", "y[1]"]), [3, 6])
+
+
+def test_normalize_integer_variables() -> None:
+    """Check the normalization of the integer variables."""
+    space = DesignSpace()
+    space.add_variable("x", type_="integer", lower_bound=-1, upper_bound=3)
+    space.enable_integer_variables_normalization = False
+    assert space.normalize_vect(array([1])) == pytest.approx(1)
+    assert space.unnormalize_vect(array([1])) == pytest.approx(1)
+    space.enable_integer_variables_normalization = True
+    assert space.normalize_vect(array([1])) == pytest.approx(0.5)
+    assert space.unnormalize_vect(array([1])) == pytest.approx(3)
+
+
+@pytest.mark.parametrize(
+    ("type_", "rounded"), [("float", array([0.9])), ("integer", array([1]))]
+)
+def test_round_vect(type_, rounded) -> None:
+    """Check the rounding of a design vector."""
+    space = DesignSpace()
+    space.add_variable("x", type_=type_)
+    assert space.round_vect(array([0.9])) == rounded
+
+
+def test_eq() -> None:
+    """Check equality of design spaces."""
+    space = DesignSpace()
+    space.add_variable("x", value=1)
+    # Design space with different length
+    other = DesignSpace()
+    assert space != other
+    # Design space with different variable name
+    other.add_variable("y")
+    assert space != other
+    # Design space with different variable specification
+    other = DesignSpace()
+    other.add_variable("x", 2)
+    assert space != other
+    # Design space with missing current value
+    other = DesignSpace()
+    other.add_variable("x")
+    assert space != other
+    # Design space with different current value
+    other = DesignSpace()
+    other.add_variable("x", value=2)
+    assert space != other

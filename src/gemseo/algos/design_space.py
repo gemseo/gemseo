@@ -59,7 +59,6 @@ from numpy import bytes_
 from numpy import complex128
 from numpy import concatenate
 from numpy import dtype
-from numpy import empty
 from numpy import equal
 from numpy import finfo
 from numpy import float64
@@ -71,6 +70,7 @@ from numpy import int32
 from numpy import isin
 from numpy import isinf
 from numpy import isnan
+from numpy import logical_and
 from numpy import logical_or
 from numpy import mod
 from numpy import ndarray
@@ -173,6 +173,11 @@ class DesignSpace:
 
     __norm_current_value_array: ndarray
     """The norm of the current value stored as a concatenated array."""
+
+    __normalize_integer_variables: bool = False
+    """Whether to normalize integer variables.
+    This can be used when forcing the execution of an optimization library
+    restricted to float variables on a problem containing integer variables."""
 
     __names_to_indices: dict[str, range]
     """The names bound to the indices in a design vector."""
@@ -468,28 +473,22 @@ class DesignSpace:
 
         Args:
             name: The name of a variable.
-
-        Raises:
-            ValueError: Either if the variable is not in the design space
-                or if there is no implemented normalization policy
-                for the type of this variable.
         """
         # Check that the variable is in the design space:
         self.__check_known_variable(name)
-
-        # Set the normalization policy:
         variable = self._variables[name]
-        normalize = empty(variable.size)
-        if variable.type in self.VARIABLE_TYPES_TO_DTYPES:
-            for i in range(variable.size):
-                if variable.lower_bound[i] == -inf or variable.upper_bound[i] == inf:
-                    # Unbounded variables are not normalized:
-                    normalize[i] = False
-                else:
-                    normalize[i] = True
+        # Set the normalization policy:
+        if (
+            variable.type == self.DesignVariableType.FLOAT
+            or self.enable_integer_variables_normalization
+        ):
+            # Only bounded float variables are normalized.
+            normalize = logical_and(
+                variable.lower_bound != -inf, variable.upper_bound != inf
+            )
         else:
-            msg = "The normalization policy for type {0} is not implemented."
-            raise ValueError(msg.format(variable.type))
+            # Integer variables are not normalized (unless treated as float).
+            normalize = full(variable.size, False)
 
         self.normalize[name] = normalize
 
@@ -1431,8 +1430,6 @@ class DesignSpace:
         for name, value in self.__current_value.items():
             if value is not None:
                 variable_type = self.get_type(name)
-                if isinstance(variable_type, ndarray):
-                    variable_type = variable_type[0]
                 if variable_type == self.DesignVariableType.INTEGER:
                     value = value.astype(self.VARIABLE_TYPES_TO_DTYPES[variable_type])
                 self.__current_value[name] = value
@@ -2342,3 +2339,25 @@ class DesignSpace:
                 )
 
         return design_space
+
+    @property
+    def enable_integer_variables_normalization(self) -> bool:
+        """Whether to enable the normalization of integer variables.
+
+        Note:
+            Switching the normalization of integer variables shall trigger
+            the (re-)computation of the normalization data
+            at the next normalization (or unnormalization).
+        """
+        return self.__normalize_integer_variables
+
+    @enable_integer_variables_normalization.setter
+    def enable_integer_variables_normalization(self, value: bool) -> None:
+        if value != self.__normalize_integer_variables:
+            self.__normalize_integer_variables = value
+            # Update the normalization policies of the integer variables
+            for name, variable in self._variables.items():
+                if variable.type == self.DesignVariableType.INTEGER:
+                    self._add_norm_policy(name)
+
+            self.__norm_data_is_computed = False

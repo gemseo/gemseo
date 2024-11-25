@@ -163,6 +163,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         problem.stop_if_nan = False
 
         design_space = problem.design_space
+        integer_normalization_enabled = self.__enable_integer_variables_normalization(
+            design_space
+        )
         self.__check_unnormalization_capability(design_space)
 
         # Filter settings to get only the ones of the global optimizer
@@ -179,6 +182,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             *self.unit_samples.shape,
         )
         self.samples = self.__convert_unit_samples_to_samples(problem)
+        self.__reset_integer_variables_normalization(
+            design_space, integer_normalization_enabled
+        )
         self._init_iter_observer(problem, len(self.unit_samples))
 
     def __convert_unit_samples_to_samples(
@@ -406,6 +412,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         """
         design_space = self.__get_design_space(variables_space)
         if not unit_sampling:
+            if isinstance(design_space, DesignSpace):
+                integer_normalization_enabled = (
+                    self.__enable_integer_variables_normalization(design_space)
+                )
+
             self.__check_unnormalization_capability(design_space)
 
         # Validate and filter the settings
@@ -418,7 +429,13 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         if unit_sampling:
             return unit_samples
 
-        return design_space.untransform_vect(unit_samples, no_check=True)
+        samples = design_space.untransform_vect(unit_samples, no_check=True)
+        if isinstance(design_space, DesignSpace):
+            self.__reset_integer_variables_normalization(
+                design_space, integer_normalization_enabled
+            )
+
+        return samples
 
     @singledispatchmethod
     def __get_design_space(self, design_space):
@@ -462,3 +479,34 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             "x", size=design_space, lower_bound=0.0, upper_bound=1.0
         )
         return design_space_
+
+    @staticmethod
+    def __enable_integer_variables_normalization(design_space: DesignSpace) -> bool:
+        """Enable the normalization of the integer variables, if disabled.
+
+        Args:
+            design_space: The design space.
+
+        Returns:
+            Whether the normalization of the integer variables had to be enabled.
+
+        """
+        enabled = not design_space.enable_integer_variables_normalization
+        if enabled:
+            design_space.enable_integer_variables_normalization = True
+
+        return enabled
+
+    @staticmethod
+    def __reset_integer_variables_normalization(
+        design_space: DesignSpace, enabled: bool
+    ) -> None:
+        """Reset the normalization of the integer variables to its initial state.
+
+        Args:
+            design_space: The design space.
+            enabled: Whether the normalization of the integer variables
+                had to be enabled.
+        """
+        if enabled:
+            design_space.enable_integer_variables_normalization = False
