@@ -17,10 +17,10 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic.types import PositiveFloat  # noqa: TCH002
+from pydantic.types import PositiveFloat  # noqa: TC002
 
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
 class OATDOE_Settings(BaseDOESettings):  # noqa: N801

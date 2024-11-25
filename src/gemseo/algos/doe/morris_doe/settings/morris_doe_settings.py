@@ -21,7 +21,7 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 
 class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801

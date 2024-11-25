@@ -28,8 +28,8 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
-from gemseo.algos.parameter_space import ParameterSpace  # noqa: TCH001
-from gemseo.core.discipline.discipline import Discipline  # noqa: TCH001
+from gemseo.algos.parameter_space import ParameterSpace  # noqa: TC001
+from gemseo.core.discipline.discipline import Discipline  # noqa: TC001
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
     BaseRegressorSettings,
 )

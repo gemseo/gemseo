@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from numpy import inf
 from pydantic import BaseModel
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TCH002
+from pydantic import NonNegativeFloat  # noqa: TC002
 from pydantic import model_validator
 
 if TYPE_CHECKING:

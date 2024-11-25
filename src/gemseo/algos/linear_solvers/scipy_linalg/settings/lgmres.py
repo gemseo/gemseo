@@ -17,12 +17,12 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import PositiveInt  # noqa: TCH002
+from pydantic import PositiveInt  # noqa: TC002
 
 from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_settings import (  # noqa: E501
     BaseSciPyLinalgSettingsBase,
 )
-from gemseo.typing import NumberArray  # noqa: TCH001
+from gemseo.typing import NumberArray  # noqa: TC001
 
 
 class LGMRES_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801

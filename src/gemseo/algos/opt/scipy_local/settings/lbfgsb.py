@@ -19,8 +19,8 @@ from __future__ import annotations
 from typing import ClassVar
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TCH002
-from pydantic import PositiveInt  # noqa: TCH002
+from pydantic import NonNegativeFloat  # noqa: TC002
+from pydantic import PositiveInt  # noqa: TC002
 
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,

@@ -16,18 +16,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable  # noqa:TCH003
-from collections.abc import Sequence  # noqa:TCH003
+from collections.abc import Callable  # noqa:TC003
+from collections.abc import Sequence  # noqa:TC003
 from typing import Annotated
-from typing import Any  # noqa:TCH003
+from typing import Any  # noqa:TC003
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa:TCH002
-from pydantic import PositiveInt  # noqa:TCH002
+from pydantic import NonNegativeFloat  # noqa:TC002
+from pydantic import PositiveInt  # noqa:TC002
 from pydantic import WithJsonSchema
 
 from gemseo.algos.base_driver_settings import BaseDriverSettings
-from gemseo.algos.evaluation_problem import EvaluationType  # noqa:TCH001
+from gemseo.algos.evaluation_problem import EvaluationType  # noqa:TC001
 
 
 class BaseDOESettings(BaseDriverSettings):

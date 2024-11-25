@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
-from pydantic import Field  # noqa: TCH002
-from pydantic import NonNegativeInt  # noqa: TCH002
+from pydantic import Field  # noqa: TC002
+from pydantic import NonNegativeInt  # noqa: TC002
 
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,

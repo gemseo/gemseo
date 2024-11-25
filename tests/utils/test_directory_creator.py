@@ -79,7 +79,7 @@ def test_uuid_folder(tmp_wd, directories) -> None:
     )
     for _ in range(2):
         folder_name = dir_creator.create()
-        assert match("[0-9a-fA-F]{12}$", str(folder_name.name)) is not None
+        assert match(r"[0-9a-fA-F]{12}$", str(folder_name.name)) is not None
 
 
 def test_run_dir_creator_serialization(tmp_wd) -> None:

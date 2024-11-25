@@ -16,9 +16,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # Noqa: TCH003
-from typing import TYPE_CHECKING  # Noqa: TCH003
-from typing import ClassVar  # Noqa: TCH003
+from collections.abc import Sequence  # Noqa: TC003
+from typing import TYPE_CHECKING  # Noqa: TC003
+from typing import ClassVar  # Noqa: TC003
 
 from pydantic import model_validator
 

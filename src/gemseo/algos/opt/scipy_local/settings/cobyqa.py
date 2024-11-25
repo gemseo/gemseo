@@ -20,7 +20,7 @@ from typing import ClassVar
 
 from numpy import inf
 from pydantic import Field
-from pydantic import PositiveFloat  # noqa:TCH002
+from pydantic import PositiveFloat  # noqa:TC002
 
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,

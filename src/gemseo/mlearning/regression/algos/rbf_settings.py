@@ -26,7 +26,7 @@ from strenum import StrEnum
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
     BaseRegressorSettings,
 )
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
 class Function(StrEnum):

@@ -91,7 +91,7 @@ def modify_field_list(
 
     for field in fields:
         field_name = field[0].astext()
-        parts = re.split(" +", field_name)
+        parts = re.split(r" +", field_name)
         if parts[0] != "param":
             continue
 

@@ -19,8 +19,8 @@ from __future__ import annotations
 from functools import partial
 from sys import maxsize
 
-from pydantic import NonNegativeFloat  # noqa:TCH002
-from pydantic import PositiveInt  # noqa:TCH002
+from pydantic import NonNegativeFloat  # noqa:TC002
+from pydantic import PositiveInt  # noqa:TC002
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.utils.pydantic import copy_field

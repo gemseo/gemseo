@@ -16,18 +16,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable  # noqa:TCH003
+from collections.abc import Iterable  # noqa:TC003
 from functools import partial
 from typing import Annotated
 from typing import Any
 from typing import Callable
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa:TCH002
+from pydantic import NonNegativeFloat  # noqa:TC002
 from pydantic import WithJsonSchema
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
-from gemseo.typing import StrKeyMapping  # noqa:TCH001
+from gemseo.typing import StrKeyMapping  # noqa:TC001
 from gemseo.utils.pydantic import copy_field
 
 copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)

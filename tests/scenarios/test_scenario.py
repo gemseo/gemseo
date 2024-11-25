@@ -492,28 +492,28 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
 
 
 def test_get_execution_metrics(mdf_scenario) -> None:
-    """Check the string returned byecution_metrics."""
+    """Check the string returned execution_metrics."""
     mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     expected = re.compile(
-        "Scenario Execution Statistics\n"
-        "   Discipline: SobieskiPropulsion\n"
-        "      Executions number: 9\n"
-        "      Execution time: .* s\n"
-        "      Linearizations number: 1\n"
-        "   Discipline: SobieskiAerodynamics\n"
-        "      Executions number: 10\n"
-        "      Execution time: .* s\n"
-        "      Linearizations number: 1\n"
-        "   Discipline: SobieskiMission\n"
-        "      Executions number: 1\n"
-        "      Execution time: .* s\n"
-        "      Linearizations number: 1\n"
-        "   Discipline: SobieskiStructure\n"
-        "      Executions number: 10\n"
-        "      Execution time: .* s\n"
-        "      Linearizations number: 1\n"
-        "   Total number of executions calls: 30\n"
-        "   Total number of linearizations: 4"
+        r"""Scenario Execution Statistics
+   Discipline: SobieskiPropulsion
+      Executions number: 9
+      Execution time: .* s
+      Linearizations number: 1
+   Discipline: SobieskiAerodynamics
+      Executions number: 10
+      Execution time: .* s
+      Linearizations number: 1
+   Discipline: SobieskiMission
+      Executions number: 1
+      Execution time: .* s
+      Linearizations number: 1
+   Discipline: SobieskiStructure
+      Executions number: 10
+      Execution time: .* s
+      Linearizations number: 1
+   Total number of executions calls: 30
+   Total number of linearizations: 4"""
     )
 
     assert expected.match(str(mdf_scenario._BaseScenario__get_execution_metrics()))
