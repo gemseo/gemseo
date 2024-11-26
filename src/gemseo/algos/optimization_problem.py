@@ -658,11 +658,12 @@ class OptimizationProblem(EvaluationProblem):
                 in which the optimization problem should be exported.
                 If empty, the root node is considered.
         """
-        LOGGER.info(
-            "Exporting the optimization problem to the file %s at node %s",
-            file_path,
-            hdf_node_path,
-        )
+        msg = "Exporting the optimization problem to the file %s"
+        if hdf_node_path:
+            msg += " at node %s"
+            LOGGER.info(msg, file_path, hdf_node_path)
+        else:
+            LOGGER.info(msg, file_path)
 
         with h5py.File(file_path, "a" if append else "w") as h5file:
             if hdf_node_path:
@@ -722,11 +723,12 @@ class OptimizationProblem(EvaluationProblem):
         Returns:
             The read optimization problem.
         """
-        LOGGER.info(
-            "Importing the optimization problem from the file %s at node %s",
-            file_path,
-            hdf_node_path,
-        )
+        msg = "Importing the optimization problem from the file %s"
+        if hdf_node_path:
+            msg += " at node %s"
+            LOGGER.info(msg, file_path, hdf_node_path)
+        else:
+            LOGGER.info(msg, file_path)
 
         database = Database.from_hdf(file_path, hdf_node_path=hdf_node_path, log=False)
         design_space = database.input_space
