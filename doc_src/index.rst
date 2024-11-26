@@ -12,7 +12,15 @@
 GEMSEO documentation
 ####################
 
-**Version**: |version|
+.. raw:: html
+
+   <p>
+       <a href="https://www.gnu.org/licenses/lgpl-3.0.en.html"><img alt="PyPI - License" src="https://img.shields.io/pypi/l/gemseo" /></a>
+       <a href="https://pypi.org/project/gemseo/"><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/gemseo" /></a>
+       <a href="https://pypi.org/project/gemseo/"><img alt="PyPI" src="https://img.shields.io/pypi/v/gemseo" /></a>
+       <a href="https://app.codecov.io/gl/gemseo:dev/gemseo"><img alt="Codecov branch" src="https://img.shields.io/codecov/c/gitlab/gemseo:dev/gemseo/develop" /></a>
+       <a href="https://arc.aiaa.org/doi/10.2514/6.2018-0657"><img alt="DOI" src="https://img.shields.io/badge/DOI-10.2514%2F6.2018--0657-blue" /></a>
+   </p>
 
 .. image:: _static/gemseo_schema.png
    :align: left
