@@ -34,9 +34,9 @@ from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
 
+from prettytable import PrettyTable
 from typing_extensions import NamedTuple
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
 from gemseo.utils.compatibility.python import entry_points
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER

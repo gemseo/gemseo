@@ -1712,34 +1712,38 @@ def test_repr_html(design_space_2) -> None:
     """Check the HTML representation of a design space."""
     assert design_space_2._repr_html_() == REPR_HTML_WRAPPER.format(
         """Design space:<br/><table>
-    <tr>
-        <th style='text-align: left;'>Name</th>
-        <th style='text-align: left;'>Lower bound</th>
-        <th style='text-align: left;'>Value</th>
-        <th style='text-align: left;'>Upper bound</th>
-        <th style='text-align: left;'>Type</th>
-    </tr>
-    <tr>
-        <td>x</td>
-        <td>-inf</td>
-        <td>None</td>
-        <td>inf</td>
-        <td>float</td>
-    </tr>
-    <tr>
-        <td>y[0]</td>
-        <td>-inf</td>
-        <td>None</td>
-        <td>inf</td>
-        <td>float</td>
-    </tr>
-    <tr>
-        <td>y[1]</td>
-        <td>-inf</td>
-        <td>None</td>
-        <td>inf</td>
-        <td>float</td>
-    </tr>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Lower bound</th>
+            <th>Value</th>
+            <th>Upper bound</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>x</td>
+            <td>-inf</td>
+            <td>None</td>
+            <td>inf</td>
+            <td>float</td>
+        </tr>
+        <tr>
+            <td>y[0]</td>
+            <td>-inf</td>
+            <td>None</td>
+            <td>inf</td>
+            <td>float</td>
+        </tr>
+        <tr>
+            <td>y[1]</td>
+            <td>-inf</td>
+            <td>None</td>
+            <td>inf</td>
+            <td>float</td>
+        </tr>
+    </tbody>
 </table>""",
     )
 

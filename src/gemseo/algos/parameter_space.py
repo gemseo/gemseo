@@ -72,7 +72,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
+from prettytable import PrettyTable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -90,6 +90,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.string_tools import _format_value_in_pretty_table_16
 
 RandomVariable = collections.namedtuple(  # noqa: PYI024
     "RandomVariable",
@@ -659,7 +660,7 @@ class ParameterSpace(DesignSpace):
             )
         else:
             table = PrettyTable(["Name" if capitalize else "name"])
-            table.float_format = "%.16g"
+            table.custom_format = _format_value_in_pretty_table_16
             for name, variable in self._variables.items():
                 name_template = f"{name}"
                 if with_index and variable.size > 1:

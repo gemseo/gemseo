@@ -38,10 +38,10 @@ from numpy import ndarray
 from numpy import zeros
 from numpy.linalg import LinAlgError
 from numpy.linalg import norm
+from prettytable import PrettyTable
 from scipy.optimize import lsq_linear
 from scipy.optimize import nnls
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:

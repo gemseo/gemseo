@@ -26,6 +26,7 @@ from collections.abc import Iterable
 from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import deepcopy
+from functools import partial
 from html import escape
 from itertools import chain
 from typing import TYPE_CHECKING
@@ -391,3 +392,24 @@ class MultiLineString:
             yield
         finally:
             cls.DEFAULT_LEVEL -= 1
+
+
+def _format_value_in_pretty_table(n_decimals: int, field_name: str, value: Any) -> str:
+    """Format a value as a string in a pretty table.
+
+    Args:
+        n_decimals: The number of decimals.
+        field_name: The name of the field.
+        value: The value to be formatted.
+
+    Returns:
+        The formatted string.
+    """
+    if isinstance(value, float):
+        return f"{value:.{n_decimals}g}"
+
+    return str(value)
+
+
+_format_value_in_pretty_table_6 = partial(_format_value_in_pretty_table, 6)
+_format_value_in_pretty_table_16 = partial(_format_value_in_pretty_table, 16)
