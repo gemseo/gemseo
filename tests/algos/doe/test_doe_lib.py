@@ -30,6 +30,7 @@ import pytest
 from numpy import array
 from numpy import inf
 from numpy import ndarray
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 
@@ -239,7 +240,14 @@ def test_transformation(doe_database, var) -> None:
     For the uncertain variables, the transformation is probabilistic, based on inverse
     transformation sampling.
     """
-    assert doe_database[array([var])]["func"] == array([var])
+    # We test with a certain tolerance
+    # due to the sensitivity of probabilistic normalization
+    # in the case var=-2 when updating openturns to v1.24
+    assert_almost_equal(
+        doe_database.get_function_value("func", array([var]), tolerance=1e-15),
+        array([var]),
+        decimal=15,
+    )
 
 
 def test_pre_run_debug(lhs, caplog) -> None:
