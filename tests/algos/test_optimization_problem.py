@@ -2001,6 +2001,26 @@ def test_optimization_result_save_nested_dict(tmp_wd) -> None:
     assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
 
 
+@pytest.mark.parametrize(
+    ("hdf_node_path", "expected"), [("", ""), ("node_name", " at node node_name")]
+)
+def test_to_from_hdf_log(pow2_problem, caplog, tmp_wd, hdf_node_path, expected):
+    """Check log when using to_hdf and from_hdf."""
+    file_path = "problem.hdf5"
+    pow2_problem.to_hdf(file_path, hdf_node_path=hdf_node_path)
+    pow2_problem.from_hdf(file_path, hdf_node_path=hdf_node_path)
+    assert caplog.record_tuples[0] == (
+        "gemseo.algos.optimization_problem",
+        20,
+        "Exporting the optimization problem to the file problem.hdf5" + expected,
+    )
+    assert caplog.record_tuples[1] == (
+        "gemseo.algos.optimization_problem",
+        20,
+        "Importing the optimization problem from the file problem.hdf5" + expected,
+    )
+
+
 def test_hdf_node_path(pow2_problem, tmp_wd):
     """Check the importation/exportation in a specific node."""
     file_name = "test_hdf_node.hdf5"
