@@ -62,10 +62,19 @@ if not IS_OT_LOWER_THAN_1_20:
     def compute_prcc(x: ndarray, y: ndarray) -> openturns.Point:  # noqa: D103
         return openturns.CorrelationAnalysis(x, y).computePRCC()
 
-    def compute_pearson_correlation(  # noqa: D103
-        x: ndarray, y: ndarray
-    ) -> openturns.Point:
-        return openturns.CorrelationAnalysis(x, y).computePearsonCorrelation()
+    if OT_VERSION > OT_1_23:
+
+        def compute_pearson_correlation(  # noqa: D103
+            x: ndarray, y: ndarray
+        ) -> openturns.Point:
+            return openturns.CorrelationAnalysis(x, y).computeLinearCorrelation()
+
+    else:
+
+        def compute_pearson_correlation(  # noqa: D103
+            x: ndarray, y: ndarray
+        ) -> openturns.Point:
+            return openturns.CorrelationAnalysis(x, y).computePearsonCorrelation()
 
     def compute_spearman_correlation(  # noqa: D103
         x: ndarray, y: ndarray

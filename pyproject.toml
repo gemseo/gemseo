@@ -53,7 +53,7 @@ all = [
   "nlopt >=2.7.0,<=2.7.1",
   # For pandas excel reader.
   "openpyxl >=3,<=3.1.5",
-  "openturns >=1.19,<=1.23",
+  "openturns >=1.19,<=1.24",
   "pyDOE3 >=1.0.1,<=1.0.4",
   "scikit-learn >=1,<=1.5.2",
   "sympy >=1.5,<=1.13.2",
