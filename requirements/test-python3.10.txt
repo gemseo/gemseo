@@ -98,6 +98,8 @@ plotly==5.24.0
     # via gemseo (pyproject.toml)
 pluggy==1.5.0
     # via pytest
+prettytable==3.12.0
+    # via gemseo (pyproject.toml)
 psutil==6.1.0
     # via openturns
 pydantic==2.9.1
@@ -167,6 +169,8 @@ tzdata==2024.2
     # via pandas
 urllib3==2.2.3
     # via requests
+wcwidth==0.2.13
+    # via prettytable
 wrapt==1.17.0
     # via pandera
 xdsmjs==2.0.0

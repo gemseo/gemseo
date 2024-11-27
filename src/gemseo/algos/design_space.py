@@ -43,6 +43,7 @@ import logging
 import re
 from copy import deepcopy
 from numbers import Complex
+from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -80,15 +81,16 @@ from numpy import round as np_round
 from numpy import vectorize
 from numpy import where
 from numpy import zeros_like
+from prettytable import PrettyTable
 
 from gemseo.algos._variable import DataType
 from gemseo.algos._variable import Variable
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.string_tools import _format_value_in_pretty_table_16
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -98,7 +100,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from numbers import Number
 
     from gemseo.typing import IntegerArray
     from gemseo.typing import RealOrComplexArrayT
@@ -1799,7 +1800,7 @@ class DesignSpace:
             field_names = fields
 
         table = PrettyTable(field_names)
-        table.float_format = "%.16g"
+        table.custom_format = _format_value_in_pretty_table_16
         for name, variable in self._variables.items():
             curr = self.__current_value.get(name)
             name_template = f"{name}"

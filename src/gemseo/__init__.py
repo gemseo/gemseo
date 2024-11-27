@@ -736,7 +736,7 @@ def _pretty_print_schema(schema: dict[str, Any]):
     Args:
         schema: The json schema to pretty print.
     """
-    from gemseo.third_party.prettytable.prettytable import PrettyTable
+    from prettytable import PrettyTable
 
     title = schema["name"].replace("_", " ") if "name" in schema else None
     table = PrettyTable(title=title, max_table_width=150)

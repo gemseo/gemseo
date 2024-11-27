@@ -100,8 +100,8 @@ from typing import Union
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy import linspace
+from prettytable import PrettyTable
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
 from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
