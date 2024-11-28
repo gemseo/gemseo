@@ -99,7 +99,7 @@ numpy==1.26.4
     #   scipy
 openpyxl==3.1.5
     # via gemseo (pyproject.toml)
-openturns==1.23
+openturns==1.24
     # via gemseo (pyproject.toml)
 packaging==24.1
     # via
@@ -122,6 +122,8 @@ pillow==10.4.0
     #   matplotlib
     #   sphinx-gallery
 plotly==5.24.0
+    # via gemseo (pyproject.toml)
+prettytable==3.12.0
     # via gemseo (pyproject.toml)
 psutil==6.1.0
     # via openturns
@@ -233,7 +235,7 @@ tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
-tomli==2.1.0
+tomli==2.2.1
     # via sphinx
 tqdm==4.66.5
     # via gemseo (pyproject.toml)
@@ -253,6 +255,8 @@ tzdata==2024.2
     # via pandas
 urllib3==2.2.3
     # via requests
+wcwidth==0.2.13
+    # via prettytable
 wrapt==1.17.0
     # via pandera
 xdsmjs==2.0.0
