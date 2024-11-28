@@ -3,3 +3,4 @@
 - ``ExecutionStatistics.n_calls_linearize``: now use ``ExecutionStatistics.n_linearizations``.
 - ``ExecutionStatus.run``: now use  ``ExecutionStatistics.handle``.
 - ``ExecutionStatus.linearize``: now use ``ExecutionStatistics.handle``.
+- ``base_cache.DATA_COMPARATOR``: now use ``BaseCache.compare_dict_of_arrays``.

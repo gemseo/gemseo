@@ -31,7 +31,6 @@ from numpy import array
 from numpy import concatenate
 from numpy import vstack
 
-from gemseo.caches.base_cache import DATA_COMPARATOR
 from gemseo.caches.base_cache import BaseCache
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.utils import hash_data
@@ -141,7 +140,9 @@ class BaseFullCache(BaseCache):
 
         # If yes, look if there is a corresponding input data equal to ``input_data``.
         for index in indices:
-            if DATA_COMPARATOR(input_data, self._read_data(index, self.Group.INPUTS)):
+            if self.compare_dict_of_arrays(
+                input_data, self._read_data(index, self.Group.INPUTS)
+            ):
                 # The input data is already cached => we don't store it again.
                 self._last_accessed_index.value = index
                 return False
@@ -339,7 +340,9 @@ class BaseFullCache(BaseCache):
             The output and Jacobian data if they exist, ``None`` otherwise.
         """
         for index in indices:
-            if DATA_COMPARATOR(input_data, self._read_data(index, self.Group.INPUTS)):
+            if self.compare_dict_of_arrays(
+                input_data, self._read_data(index, self.Group.INPUTS)
+            ):
                 output_data = self._read_data(index, self.Group.OUTPUTS)
                 jacobian_data = self._read_data(index, self.Group.JACOBIAN)
                 return CacheEntry(input_data, output_data, jacobian_data)
@@ -362,7 +365,9 @@ class BaseFullCache(BaseCache):
         for indices in self._hashes_to_indices.values():
             for index in indices:
                 cached_input_data = self._read_data(index, self.Group.INPUTS)
-                if DATA_COMPARATOR(input_data, cached_input_data, self._tolerance):
+                if self.compare_dict_of_arrays(
+                    input_data, cached_input_data, self._tolerance
+                ):
                     output_data = self._read_data(index, self.Group.OUTPUTS)
                     jacobian_data = self._read_data(index, self.Group.JACOBIAN)
                     return CacheEntry(input_data, output_data, jacobian_data)
