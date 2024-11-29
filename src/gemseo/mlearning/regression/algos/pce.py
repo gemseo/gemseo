@@ -462,8 +462,9 @@ class PCERegressor(BaseRegressor):
                 array(basis_function(transformation(input_sample)))
                 for basis_function in basis_functions
             ])
+            jacobian_data = self._jacobian_data[self._learning_samples_indices]
             coefficients = (
-                self._jacobian_data.T
+                jacobian_data.T
                 @ solve(
                     phi.T @ phi,
                     phi.T,
@@ -497,7 +498,7 @@ class PCERegressor(BaseRegressor):
                     overwrite_b=True,
                     assume_a="sym",
                 )
-                @ self._jacobian_data
+                @ jacobian_data
             )
             self._mean_jacobian_wrt_special_variables = coefficients.sum(0).reshape(
                 self._reduced_output_dimension, -1

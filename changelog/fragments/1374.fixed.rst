@@ -1,0 +1,1 @@
+``PCERegressor.learn`` works properly when its argument ``samples`` is not empty and the learning dataset includes gradient information.
