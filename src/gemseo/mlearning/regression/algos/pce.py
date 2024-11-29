@@ -99,6 +99,7 @@ from numpy import array
 from numpy import atleast_1d
 from numpy import concatenate
 from numpy import hstack
+from numpy import newaxis
 from numpy import vstack
 from numpy import zeros
 from openturns import LARS
@@ -482,10 +483,12 @@ class PCERegressor(BaseRegressor):
                     array(pce_result.getCoefficients()).T[..., 1:],
                 )
             ])
+            # _variance_jacobian_wrt_special_variables: (n_out, n_in)
+            # _standard_deviation: (n_out,)
             self._standard_deviation_jacobian_wrt_special_variables = (
                 self._variance_jacobian_wrt_special_variables
                 / 2
-                / self._standard_deviation
+                / self._standard_deviation[:, newaxis]
             )
 
             first_basis_function = basis_functions[0]
