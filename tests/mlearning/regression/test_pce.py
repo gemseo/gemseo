@@ -763,3 +763,16 @@ def test_differentiation_wrt_special_variables_error_not_implement_error(dataset
         ),
     ):
         model.predict_jacobian_wrt_special_variables(array([1.0, 1.0]))
+
+
+def test_differentiation_wrt_special_variable_sub_samples(dataset, probability_space):
+    """Check differentiation wrt special variables when learning specific samples.
+
+    In the issue #1374,
+    this test fails
+    because PCERegressor.learn uses the whole PCERegressor._jacobian_data matrix
+    instead of the sub-matrix corresponding to the samples [0, 2, 3, 4, 7].
+    """
+    pce = PCERegressor(dataset, probability_space=probability_space)
+    pce.learn(samples=[0, 2, 3, 4, 7])
+    assert pce.standard_deviation_jacobian_wrt_special_variables.shape == (2, 2)
