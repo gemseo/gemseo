@@ -135,7 +135,7 @@ class DependencyGraph:
             parallel_tasks = [
                 tuple(
                     cast(
-                        list[Discipline],
+                        "list[Discipline]",
                         condensed_graph.nodes[node_id]["members"],
                     )
                 )

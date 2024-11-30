@@ -390,7 +390,12 @@ def test_update_data_errors(dataset) -> None:
 
 
 from_array_parameters = pytest.mark.parametrize(
-    "variable_names,variable_names_to_n_components,variable_names_to_group_names,expected_column_multi_index",
+    (
+        "variable_names",
+        "variable_names_to_n_components",
+        "variable_names_to_group_names",
+        "expected_column_multi_index",
+    ),
     [
         (
             ["y", "x"],

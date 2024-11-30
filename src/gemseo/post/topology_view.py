@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import cast
 
@@ -24,7 +25,9 @@ from matplotlib import pyplot as plt
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.topology_view_settings import TopologyView_Settings
-from gemseo.typing import RealArray
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
 class TopologyView(BasePost[TopologyView_Settings]):
@@ -53,7 +56,8 @@ class TopologyView(BasePost[TopologyView_Settings]):
             if observable:
                 data = (
                     -cast(
-                        RealArray, self.database.get_function_value(observable, design)
+                        "RealArray",
+                        self.database.get_function_value(observable, design),
                     )
                     .reshape((n_x, n_y))
                     .T

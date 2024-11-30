@@ -44,7 +44,6 @@ from numpy import ndarray
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
-from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -54,6 +53,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_schema import Properties
     from gemseo.core.grammars.json_schema import Property
     from gemseo.core.grammars.json_schema import Schema
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -349,7 +349,7 @@ class JSONGrammar(BaseGrammar):
             The JSON representation of the schema.
         """
         with self.__sync_required_names():
-            return cast(str, self.__schema_builder.to_json(*args, **kwargs))
+            return cast("str", self.__schema_builder.to_json(*args, **kwargs))
 
     @contextmanager
     def __sync_required_names(self) -> Iterator[None]:
@@ -541,4 +541,4 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_schema(
             state[f"_{self.__class__.__name__}__schema"], True
         )
-        self._defaults.update(cast(StrKeyMapping, state.pop("defaults")))
+        self._defaults.update(cast("StrKeyMapping", state.pop("defaults")))
