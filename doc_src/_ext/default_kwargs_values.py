@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import cast
@@ -11,6 +10,8 @@ from sphinx import addnodes
 from sphinx.util import inspect
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from docutils.nodes import Element
     from sphinx.application import Sphinx
 
@@ -46,7 +47,7 @@ def merge_defaults(
         return
 
     try:
-        signature = cast(addnodes.desc_signature, contentnode.parent[0])
+        signature = cast("addnodes.desc_signature", contentnode.parent[0])
         if signature["module"]:
             fullname = ".".join([signature["module"], signature["fullname"]])
         else:
@@ -87,7 +88,7 @@ def insert_field_list(node: Element) -> nodes.field_list:
 def modify_field_list(
     node: nodes.field_list, defaults: dict[str, Any], pattern: str
 ) -> None:
-    fields = cast(Iterable[nodes.field], node)
+    fields = cast("Iterable[nodes.field]", node)
 
     for field in fields:
         field_name = field[0].astext()

@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import cast
 
 from numpy import array
@@ -28,10 +29,12 @@ from numpy import ndarray
 from numpy import uint8
 from xxhash import xxh3_64_hexdigest
 
-from gemseo.typing import RealArray
-from gemseo.typing import RealOrComplexArray
-from gemseo.typing import StrKeyMapping
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
+    from gemseo.typing import RealOrComplexArray
+    from gemseo.typing import StrKeyMapping
 
 
 def hash_data(
@@ -95,4 +98,4 @@ def to_real(
     if data.dtype == complex128:
         return array(array(data, copy=False).real, dtype=float64)
 
-    return cast(RealArray, data)
+    return cast("RealArray", data)

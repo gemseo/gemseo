@@ -465,7 +465,7 @@ def prepare_grammar(grammar: BaseGrammar) -> None:
     grammar.defaults["optional_name2"] = 0
 
 
-parametrized_merge = pytest.mark.parametrize("merge", (True, False))
+parametrized_merge = pytest.mark.parametrize("merge", [True, False])
 
 
 def check_update_raise(grammar: BaseGrammar, merge: bool):

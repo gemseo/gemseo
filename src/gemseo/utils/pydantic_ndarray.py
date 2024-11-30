@@ -34,7 +34,6 @@ except (ModuleNotFoundError, ImportError):  # pragma: no cover
     _DType_co = TypeVar("_DType_co", covariant=True, bound=dtype[Any])  # type: ignore[misc] # mypy seems to ignore the except block.
     _ScalarType_co = TypeVar("_ScalarType_co", bound=generic, covariant=True)  # type: ignore[misc] # mypy seems to ignore the except block.
 
-from numpy.typing import NDArray
 from pydantic_core import CoreSchema
 from pydantic_core import core_schema
 from typing_extensions import get_args
@@ -44,6 +43,7 @@ from typing_extensions import get_args
 _ShapeType = TypeVar("_ShapeType", bound=Any)
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pydantic import GetCoreSchemaHandler
 
 
@@ -113,7 +113,7 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
                 )
                 raise ValueError(msg)
 
-            return cast(NDArray[Any], data)
+            return cast("NDArray[Any]", data)
 
         return validate
 

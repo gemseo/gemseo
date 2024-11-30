@@ -1237,7 +1237,7 @@ def test_get_functions_dimensions(constrained_problem, names, dimensions) -> Non
 
 
 parametrize_unsatisfied_constraints = pytest.mark.parametrize(
-    ["design", "n_unsatisfied"],
+    ("design", "n_unsatisfied"),
     [
         (array([0.0, 0.0]), 0),
         (array([-1.0, 0.0]), 1),

@@ -181,7 +181,7 @@ class MutableMappingSchemaBuilder(
         """
         try:
             return cast(
-                SchemaBuilderProperties,
+                "SchemaBuilderProperties",
                 self._root_node._active_strategies[0]._properties,
             )
         except (AttributeError, IndexError):
@@ -200,7 +200,7 @@ class MutableMappingSchemaBuilder(
             return set()
         if required is None:
             return set()
-        return cast(set[str], required)
+        return cast("set[str]", required)
 
     def check_property_names(self, *names: str) -> None:
         """Check that the names are existing properties.

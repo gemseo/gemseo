@@ -179,7 +179,9 @@ class PydanticGrammar(BaseGrammar):
             if merge and name in fields:
                 # Pydantic typing for the argument annotation does not handle Union,
                 # we cast it.
-                annotation = cast(type[Any], Union[fields[name].annotation, annotation])
+                annotation = cast(
+                    "type[Any]", Union[fields[name].annotation, annotation]
+                )
             fields[name] = FieldInfo(annotation=annotation)
         self.__model_needs_rebuild = True
 
@@ -302,6 +304,6 @@ class PydanticGrammar(BaseGrammar):
             # Recreate the model from the fields' info.
             fields_info = self.__model
             self._clear()
-            self.__model.model_fields = cast(dict[str, FieldInfo], fields_info)
+            self.__model.model_fields = cast("dict[str, FieldInfo]", fields_info)
             self.__model_needs_rebuild = True
             self.__rebuild_model()
