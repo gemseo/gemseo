@@ -55,6 +55,7 @@ from typing import overload
 import h5py
 from numpy import abs as np_abs
 from numpy import array
+from numpy import array_equal
 from numpy import atleast_1d
 from numpy import bytes_
 from numpy import complex128
@@ -2187,21 +2188,22 @@ class DesignSpace:
         if not isinstance(other, self.__class__):
             return False
 
-        if len(other) != len(self):
+        variables = self._variables
+        other_variables = other._variables
+        if variables.keys() != other_variables.keys():
             return False
 
         for name in self:
-            if name not in other:
+            if variables[name] != other_variables[name]:
                 return False
 
-            if self._variables[name] != other._variables[name]:
-                return False
+        current_value = self._current_value
+        other_current_value = other._current_value
+        if current_value.keys() != other_current_value.keys():
+            return False
 
-        for name in self._current_value:
-            if name not in other._current_value:
-                return False
-
-            if (self._current_value[name] != other._current_value[name]).any():
+        for name, value in current_value.items():
+            if not array_equal(other_current_value[name], value):
                 return False
 
         return True

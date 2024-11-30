@@ -1840,25 +1840,22 @@ def test_round_vect(type_, rounded) -> None:
     assert space.round_vect(array([0.9])) == rounded
 
 
-def test_eq() -> None:
+@pytest.mark.parametrize(
+    "variables",
+    [
+        (),
+        (("y", 1, None),),
+        (("x", 2, None),),
+        (("x", 1, None),),
+        (("x", 1, 2),),
+    ],
+)
+def test_eq(variables) -> None:
     """Check equality of design spaces."""
     space = DesignSpace()
     space.add_variable("x", value=1)
-    # Design space with different length
     other = DesignSpace()
-    assert space != other
-    # Design space with different variable name
-    other.add_variable("y")
-    assert space != other
-    # Design space with different variable specification
-    other = DesignSpace()
-    other.add_variable("x", 2)
-    assert space != other
-    # Design space with missing current value
-    other = DesignSpace()
-    other.add_variable("x")
-    assert space != other
-    # Design space with different current value
-    other = DesignSpace()
-    other.add_variable("x", value=2)
-    assert space != other
+    for name, size, value in variables:
+        other.add_variable(name, size=size, value=value)
+
+    assert space != other != space
