@@ -112,13 +112,13 @@ def test_create_disciplines_from_sizes(grammar_type) -> None:
     assert len(disciplines) == nb_of_disc
 
     for disc in disciplines:
-        assert len(disc.io.input_grammar.names) == nb_of_disc_inputs
-        assert len(disc.io.output_grammar.names) == nb_of_disc_outputs
-        for d in disc.default_input_data.values():
+        assert len(disc.io.input_grammar) == nb_of_disc_inputs
+        assert len(disc.io.output_grammar) == nb_of_disc_outputs
+        for d in disc.io.input_grammar.defaults.values():
             assert d.size == inputs_size
 
         out = disc.execute()
-        for output_name in disc.io.output_grammar.names:
+        for output_name in disc.io.output_grammar:
             assert out[output_name].size == outputs_size
 
 

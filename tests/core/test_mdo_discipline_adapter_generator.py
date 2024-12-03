@@ -85,7 +85,7 @@ def test_range_discipline() -> None:
     sr = SobieskiMission()
     gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
-    x_shared = sr.default_input_data["x_shared"]
+    x_shared = sr.io.input_grammar.defaults["x_shared"]
     range_ = range_f_z.evaluate(x_shared).real
     range_f_z2 = gen.get_function(["x_shared"], ["y_4"])
     range2 = range_f_z2.evaluate(x_shared).real
@@ -98,7 +98,7 @@ def test_grad_ko() -> None:
     sr = SobieskiMission()
     gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
-    x_shared = sr.default_input_data["x_shared"]
+    x_shared = sr.io.input_grammar.defaults["x_shared"]
     range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-4)
     with pytest.raises(ValueError):
         range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-20)
@@ -108,7 +108,7 @@ def test_grad_ko() -> None:
 
 def test_wrong_default_inputs() -> None:
     sr = SobieskiMission()
-    sr.default_input_data = {"y_34": array([1])}
+    sr.io.input_grammar.defaults = {"y_34": array([1])}
     gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
@@ -125,7 +125,7 @@ def test_wrong_jac() -> None:
     gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
-        range_f_z.jac(sr.default_input_data["x_shared"])
+        range_f_z.jac(sr.io.input_grammar.defaults["x_shared"])
 
 
 def test_wrong_jac2() -> None:
@@ -138,7 +138,7 @@ def test_wrong_jac2() -> None:
     gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     with pytest.raises(ValueError):
-        range_f_z.jac(sr.default_input_data["x_shared"])
+        range_f_z.jac(sr.io.input_grammar.defaults["x_shared"])
 
 
 @pytest.mark.parametrize(

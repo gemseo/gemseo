@@ -73,9 +73,9 @@ class ArrayBasedFunctionDiscipline(Discipline):
         """  # noqa: D205, D212
         super().__init__()
         self.__function = function
-        self.input_grammar.update_from_names(input_names_to_sizes)
-        self.output_grammar.update_from_names(output_names_to_sizes)
-        self.default_input_data = {
+        self.io.input_grammar.update_from_names(input_names_to_sizes)
+        self.io.output_grammar.update_from_names(output_names_to_sizes)
+        self.io.input_grammar.defaults = {
             name: zeros(size) for name, size in input_names_to_sizes.items()
         }
         self.__output_names_to_sizes = output_names_to_sizes.copy()
@@ -87,7 +87,7 @@ class ArrayBasedFunctionDiscipline(Discipline):
         input_vector = concatenate_dict_of_arrays_to_array(input_data, input_data)
         output_vector = self.__function(input_vector)
         return split_array_to_dict_of_arrays(
-            output_vector, self.__output_names_to_sizes, self.io.output_grammar.names
+            output_vector, self.__output_names_to_sizes, self.io.output_grammar
         )
 
     def _compute_jacobian(
@@ -105,11 +105,11 @@ class ArrayBasedFunctionDiscipline(Discipline):
 
         input_data = self.io.get_input_data()
         input_vector = concatenate_dict_of_arrays_to_array(
-            input_data, self.io.input_grammar.names
+            input_data, self.io.input_grammar
         )
         self.jac = split_array_to_dict_of_arrays(
             self.__jac_function(input_vector),
             self.__variable_names_to_sizes,
-            self.io.output_grammar.names,
-            self.io.input_grammar.names,
+            self.io.output_grammar,
+            self.io.input_grammar,
         )

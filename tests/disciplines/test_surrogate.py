@@ -75,8 +75,8 @@ def test_linearization_mode_without_gradient(dataset) -> None:
     """Check the attribute linearization_mode for a model without gradient."""
     discipline = SurrogateDiscipline("GaussianProcessRegressor", dataset)
     assert discipline.linearization_mode == "finite_differences"
-    assert {"x_1", "x_2"} == set(discipline.io.input_grammar.names)
-    assert {"y_1", "y_2"} == set(discipline.io.output_grammar.names)
+    assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
+    assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
 
 
 def test_instantiation_from_algo(dataset) -> None:
@@ -85,8 +85,8 @@ def test_instantiation_from_algo(dataset) -> None:
     algo.learn()
     discipline = SurrogateDiscipline(algo)
     assert discipline.linearization_mode == "auto"
-    assert {"x_1", "x_2"} == set(discipline.io.input_grammar.names)
-    assert {"y_1", "y_2"} == set(discipline.io.output_grammar.names)
+    assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
+    assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
 
 
 def test_repr_str(linear_discipline) -> None:

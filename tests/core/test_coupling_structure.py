@@ -119,10 +119,10 @@ class TestCouplingStructure(unittest.TestCase):
     def test_n2_many_io(self) -> None:
         a = DummyDiscipline("a")
         b = DummyDiscipline("b")
-        a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
-        a.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
-        b.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
-        b.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
+        a.io.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
+        a.io.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
+        b.io.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
+        b.io.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
 
         cpl = CouplingStructure([a, b])
         cpl.plot_n2_chart()
@@ -142,9 +142,9 @@ class TestCouplingStructure(unittest.TestCase):
 class SelfCoupledDisc(Discipline):
     def __init__(self) -> None:
         Discipline.__init__(self)
-        self.input_grammar.update_from_names(["y"])
-        self.output_grammar.update_from_names(["y"])
-        self.default_input_data["y"] = array([0.2])
+        self.io.input_grammar.update_from_names(["y"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults["y"] = array([0.2])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["y"] = 1.0 - self.io.data["y"]

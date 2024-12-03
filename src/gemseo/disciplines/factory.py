@@ -52,7 +52,7 @@ class DisciplineFactory(BaseFactory):
         self.__base_grammar = JSONGrammar("Discipline_options")
         base_gram_path = Path(discipline.__file__).parent / "Discipline_options.json"
         self.__base_grammar.update_from_file(base_gram_path)
-        self.__base_grammar_names = self.__base_grammar.keys()
+        self.__base_grammar_names = self.__base_grammar
 
     def create(self, discipline_name: str, **options):
         """Create an :class:`.Discipline` from its name.

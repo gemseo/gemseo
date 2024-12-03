@@ -111,7 +111,7 @@ def test_jacobi_sobieski() -> None:
     """Test the execution of Jacobi on Sobieski."""
     mda = SobieskiMDAJacobi()
     mda.execute()
-    mda.default_input_data["x_shared"] += 0.02
+    mda.io.input_grammar.defaults["x_shared"] += 0.02
     mda.settings.warm_start = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
@@ -245,7 +245,7 @@ def test_no_coupling():
     """Check what happens when the disciplines are not coupled."""
     disciplines = [AnalyticDiscipline({"y": "a"}), AnalyticDiscipline({"z": "2*a"})]
     mda = MDAJacobi(disciplines)
-    mda.default_input_data["a"] = array([1.0])
+    mda.io.input_grammar.defaults["a"] = array([1.0])
     assert not mda.get_process_flow()._get_disciplines_couplings(
         DependencyGraph(disciplines)
     )

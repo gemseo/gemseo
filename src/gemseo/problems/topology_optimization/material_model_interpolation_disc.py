@@ -71,9 +71,9 @@ class MaterialModelInterpolation(Discipline):
         self.empty_elements = empty_elements
         self.full_elements = full_elements
         self.N_elements = n_x * n_y
-        self.input_grammar.update_from_names(["xPhys"])
-        self.output_grammar.update_from_names(["rho", "E"])
-        self.default_input_data = {"xPhys": ones(n_x * n_y)}
+        self.io.input_grammar.update_from_names(["xPhys"])
+        self.io.output_grammar.update_from_names(["rho", "E"])
+        self.io.input_grammar.defaults = {"xPhys": ones(n_x * n_y)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         xphys = input_data["xPhys"]

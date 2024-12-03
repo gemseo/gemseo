@@ -213,8 +213,8 @@ class DependencyGraph:
 
         for disc in disciplines:
             nodes_to_ios[disc] = (
-                set(disc.io.input_grammar.names),
-                set(disc.io.output_grammar.names),
+                set(disc.io.input_grammar),
+                set(disc.io.output_grammar),
             )
 
         graph = DiGraph()
@@ -272,14 +272,14 @@ class DependencyGraph:
         """
         output_names = set()
         for disc in graph.nodes[node_from]["members"]:
-            output_names.update(disc.io.output_grammar.names)
+            output_names.update(disc.io.output_grammar)
 
         if node_to is None:
             return output_names
 
         input_names = set()
         for disc in graph.nodes[node_to]["members"]:
-            input_names.update(disc.io.input_grammar.names)
+            input_names.update(disc.io.input_grammar)
         return output_names & input_names
 
     def __render_graph(
@@ -329,8 +329,8 @@ class DependencyGraph:
         #    (case: some outputs of a discipline are inputs of itself)
         if is_full:
             for discipline in self.__graph.nodes:
-                coupling_names = set(discipline.io.input_grammar.names).intersection(
-                    discipline.io.output_grammar.names
+                coupling_names = set(discipline.io.input_grammar).intersection(
+                    discipline.io.output_grammar
                 )
                 if coupling_names:
                     name = get_node_name_from_discipline(discipline)
@@ -340,7 +340,7 @@ class DependencyGraph:
         #    (case: some output variables of discipline are not coupling variables).
         for leaf_node in self.__get_leaves(graph):
             if isinstance(leaf_node, Discipline):
-                output_names = tuple(leaf_node.io.output_grammar.names)
+                output_names = tuple(leaf_node.io.output_grammar)
                 node_name = get_node_name_from_discipline(leaf_node)
             else:
                 # a scc edge

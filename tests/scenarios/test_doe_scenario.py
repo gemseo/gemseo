@@ -366,7 +366,7 @@ def test_scenario_without_initial_design_value() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     discipline = AnalyticDiscipline({"y": "x"})
-    discipline.default_input_data = {}
+    discipline.io.input_grammar.defaults = {}
     scenario = DOEScenario([discipline], "y", design_space, formulation_name="MDF")
     scenario.execute(algo_name="LHS", n_samples=3)
     assert len(scenario.formulation.optimization_problem.database) == 3

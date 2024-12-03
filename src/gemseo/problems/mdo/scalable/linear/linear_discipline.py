@@ -98,8 +98,8 @@ class LinearDiscipline(Discipline):
         self.input_names = input_names
         self.output_names = output_names
 
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(output_names)
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
 
         self.size_in = len(input_names) * inputs_size
         self.size_out = len(output_names) * outputs_size
@@ -127,7 +127,9 @@ class LinearDiscipline(Discipline):
         self.__sizes_d = dict.fromkeys(self.input_names, self.inputs_size)
         self.__sizes_d.update(dict.fromkeys(self.output_names, self.outputs_size))
 
-        self.default_input_data = {k: 0.5 * ones(inputs_size) for k in input_names}
+        self.io.input_grammar.defaults = {
+            k: 0.5 * ones(inputs_size) for k in input_names
+        }
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)

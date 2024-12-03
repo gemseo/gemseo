@@ -57,8 +57,8 @@ class FilteringDiscipline(Discipline):
         """  # noqa:D205 D212 D415
         self.discipline = discipline
         super().__init__(name=discipline.name)
-        original_input_names = discipline.io.input_grammar.names
-        original_output_names = discipline.io.output_grammar.names
+        original_input_names = discipline.io.input_grammar
+        original_output_names = discipline.io.output_grammar
         if not input_names:
             input_names = original_input_names
         elif not keep_in:
@@ -69,10 +69,10 @@ class FilteringDiscipline(Discipline):
         elif not keep_out:
             output_names = list(set(original_output_names) - set(output_names))
 
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(output_names)
-        self.default_input_data = self.__filter_inputs(
-            self.discipline.default_input_data
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
+        self.io.input_grammar.defaults = self.__filter_inputs(
+            self.discipline.io.input_grammar.defaults
         )
         removed_inputs = set(original_input_names) - set(input_names)
         diff_inputs = set(self.discipline._differentiated_input_names) - removed_inputs
@@ -94,8 +94,8 @@ class FilteringDiscipline(Discipline):
         self.discipline._compute_jacobian(input_names, output_names)
         self._init_jacobian(input_names, output_names)
         jac = self.discipline.jac
-        for output_name in self.io.output_grammar.names:
-            for input_name in self.io.input_grammar.names:
+        for output_name in self.io.output_grammar:
+            for input_name in self.io.input_grammar:
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
     def __filter_inputs(self, data: StrKeyMapping) -> dict[str, Any]:
@@ -107,7 +107,7 @@ class FilteringDiscipline(Discipline):
         Returns:
             The mapping filtered by input names.
         """
-        return {name: data[name] for name in self.io.input_grammar.names}
+        return {name: data[name] for name in self.io.input_grammar}
 
     def __filter_outputs(self, data) -> dict[str, Any]:
         """Filter a mapping by output names.
@@ -118,4 +118,4 @@ class FilteringDiscipline(Discipline):
         Returns:
             The mapping filtered by output names.
         """
-        return {name: data[name] for name in self.io.output_grammar.names}
+        return {name: data[name] for name in self.io.output_grammar}

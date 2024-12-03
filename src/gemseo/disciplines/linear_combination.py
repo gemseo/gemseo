@@ -87,11 +87,11 @@ class LinearCombination(Discipline):
                 If ``None``, the default inputs are initialized with size 1 arrays.
         """  # noqa: D205, D212, D415
         super().__init__()
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names([output_name])
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names([output_name])
 
         default_size = 1 if input_size is None else input_size
-        self.default_input_data.update({
+        self.io.input_grammar.defaults.update({
             input_name: zeros(default_size) for input_name in input_names
         })
 
@@ -122,5 +122,5 @@ class LinearCombination(Discipline):
         identity = eye(self.io.data[self.__output_name].size, format="csr")
 
         jac = self.jac[self.__output_name]
-        for input_name in self.io.input_grammar.names:
+        for input_name in self.io.input_grammar:
             jac[input_name] = self.__coefficients[input_name] * identity

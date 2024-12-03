@@ -69,13 +69,13 @@ def test_cstrs(patch_mdo_formulation) -> None:
 
 #     def test_disciplines_runinputs(self):
 #         sm = SobieskiMission()
-#         rid = SobieskiProblem().get_default_inputs(sm.io.input_grammar.names)
+#         rid = SobieskiProblem().get_default_inputs(sm.io.input_grammar)
 #         f = BaseMDOFormulation('CustomFormulation', [sm], rid, "y_4", ["x_shared"])
 #         inpt = f.get_discipline_run_inputs(sm)
-#         for k in sm.io.input_grammar.names:
+#         for k in sm.io.input_grammar:
 #             assert(k in inpt)
 #         for k in inpt:
-#             assert(k in sm.io.input_grammar.names)
+#             assert(k in sm.io.input_grammar)
 #
 #         gt_rid = f.get_reference_input_data()
 #         for k in rid:
@@ -149,7 +149,7 @@ def test_get_values_array_from_dict() -> None:
 def test_x_mask(patch_mdo_formulation) -> None:
     """"""
     sm = SobieskiMission()
-    rid = SobieskiProblem().get_default_inputs(sm.io.input_grammar.names)
+    rid = SobieskiProblem().get_default_inputs(sm.io.input_grammar)
     dvs = ["x_shared", "y_14"]
 
     design_space = DesignSpace()

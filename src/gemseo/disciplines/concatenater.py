@@ -67,8 +67,8 @@ class Concatenater(Discipline):
                 related to the different input variables.
         """  # noqa: D205 D212 D415
         super().__init__()
-        self.input_grammar.update_from_names(input_variables)
-        self.output_grammar.update_from_names([output_variable])
+        self.io.input_grammar.update_from_names(input_variables)
+        self.io.output_grammar.update_from_names([output_variable])
 
         self.__coefficients = dict.fromkeys(input_variables, 1.0)
         if input_coefficients:
@@ -103,7 +103,7 @@ class Concatenater(Discipline):
             input_names, output_names, init_type=self.InitJacobianType.SPARSE
         )
 
-        input_names = self.io.input_grammar.names
+        input_names = self.io.input_grammar
         local_data = self.io.data
         input_sizes = [local_data[name].size for name in self.io.input_grammar]
         total_size = sum(input_sizes)

@@ -111,9 +111,9 @@ def create_disciplines_from_desc(disc_desc):
     for name, io_names in disc_desc_items:
         disc = DummyDiscipline(name)
         input_d = dict.fromkeys(io_names[0], data)
-        disc.input_grammar.update_from_data(input_d)
+        disc.io.input_grammar.update_from_data(input_d)
         output_d = dict.fromkeys(io_names[1], data)
-        disc.output_grammar.update_from_data(output_d)
+        disc.io.output_grammar.update_from_data(output_d)
         disciplines += [disc]
 
     return disciplines

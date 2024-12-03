@@ -206,7 +206,7 @@ def test_ode_discipline_default_state_names() -> None:
         times=linspace(0.0, 10, 30),
     )
 
-    input_keys = ode_discipline.input_grammar.names
+    input_keys = ode_discipline.io.input_grammar
     assert (key in input_keys for key in ("time", "position", "velocity"))
 
 
@@ -872,8 +872,8 @@ def test_ode_discipline_two_termination_events_4():
 
     def make_func_from_discipline(disc: Discipline):
         adapter = DisciplineAdapterGenerator(discipline=disc).get_function(
-            input_names=disc.io.input_grammar.names,
-            output_names=disc.io.output_grammar.names,
+            input_names=disc.io.input_grammar,
+            output_names=disc.io.output_grammar,
         )
 
         def func(time, state):

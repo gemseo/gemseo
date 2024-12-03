@@ -31,8 +31,8 @@ from gemseo.utils.discipline import DummyDiscipline
 class MyDiscipline(DummyDiscipline):
     def __init__(self, input_name: str, output_name: str, discipline_name: str) -> None:
         super().__init__(discipline_name)
-        self.input_grammar.update_from_names([input_name])
-        self.output_grammar.update_from_names([output_name])
+        self.io.input_grammar.update_from_names([input_name])
+        self.io.output_grammar.update_from_names([output_name])
 
 
 @pytest.fixture(scope="module")

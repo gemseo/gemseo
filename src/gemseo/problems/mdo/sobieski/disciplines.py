@@ -69,8 +69,8 @@ class SobieskiDiscipline(Discipline):
         super().__init__()
         self.dtype = dtype
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.default_input_data = self.sobieski_problem.get_default_inputs(
-            self.io.input_grammar.names
+        self.io.input_grammar.defaults = self.sobieski_problem.get_default_inputs(
+            self.io.input_grammar
         )
 
     def __setstate__(self, state: StrKeyMapping) -> None:
@@ -185,9 +185,15 @@ class SobieskiStructure(SobieskiDiscipline):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.default_input_data["c_0"] = array([self.sobieski_problem.constants[0]])
-        self.default_input_data["c_1"] = array([self.sobieski_problem.constants[1]])
-        self.default_input_data["c_2"] = array([self.sobieski_problem.constants[2]])
+        self.io.input_grammar.defaults["c_0"] = array([
+            self.sobieski_problem.constants[0]
+        ])
+        self.io.input_grammar.defaults["c_1"] = array([
+            self.sobieski_problem.constants[1]
+        ])
+        self.io.input_grammar.defaults["c_2"] = array([
+            self.sobieski_problem.constants[2]
+        ])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_1, y_11, y_12, y_14, g_1 = self.sobieski_problem.structure.execute(
@@ -261,7 +267,9 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.default_input_data["c_4"] = array([self.sobieski_problem.constants[4]])
+        self.io.input_grammar.defaults["c_4"] = array([
+            self.sobieski_problem.constants[4]
+        ])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_2, y_21, y_23, y_24, g_2 = self.sobieski_problem.aerodynamics.execute(
@@ -330,7 +338,9 @@ class SobieskiPropulsion(SobieskiDiscipline):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.default_input_data["c_3"] = array([self.sobieski_problem.constants[3]])
+        self.io.input_grammar.defaults["c_3"] = array([
+            self.sobieski_problem.constants[3]
+        ])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y_3, y_34, y_31, y_32, g_3 = self.sobieski_problem.propulsion.execute(

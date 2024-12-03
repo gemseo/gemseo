@@ -159,8 +159,8 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     )
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
     adapter.execute()
-    x_shared = adapter.default_input_data["x_shared"] * 1.01
-    adapter.default_input_data["x_shared"] = x_shared
+    x_shared = adapter.io.input_grammar.defaults["x_shared"] * 1.01
+    adapter.io.input_grammar.defaults["x_shared"] = x_shared
     # initial_x is reset to the initial design value before optimization;
     # thus the optimization starts from initial_design.
     adapter.execute()
@@ -172,7 +172,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     new_initial_design = design_space.convert_dict_to_array(
         design_space.get_current_value(as_dict=True)
     )
-    adapter.default_input_data["x_shared"] = x_shared
+    adapter.io.input_grammar.defaults["x_shared"] = x_shared
     # initial_x is NOT reset to the initial design value before optimization;
     # thus the optimization starts from the last design value (=new_initial_design).
     adapter.execute()
@@ -212,7 +212,7 @@ def test_adapter_set_bounds(scenario) -> None:
 def test_chain(scenario) -> None:
     """"""
     mda = scenario.formulation.mda
-    inputs = list(mda.io.input_grammar.names) + scenario.design_space.variable_names
+    inputs = list(mda.io.input_grammar) + scenario.design_space.variable_names
     outputs = ["x_1", "x_2", "x_3"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
 
@@ -471,7 +471,7 @@ def test_keep_opt_history(tmp_wd, scenario, export_name) -> None:
         opt_history_file_prefix=export_name,
     )
     adapter.execute()
-    adapter.execute({"x_shared": adapter.default_input_data["x_shared"] + 1.0})
+    adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
 
     assert len(adapter.databases) == 2
 
@@ -520,8 +520,8 @@ class DisciplineMain(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["alpha"])
-        self.output_grammar.update_from_names(["beta"])
+        self.io.input_grammar.update_from_names(["alpha"])
+        self.io.output_grammar.update_from_names(["beta"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         alpha = self.io.data["alpha"]
@@ -538,8 +538,8 @@ class DisciplineMainWithJacobian(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["alpha"])
-        self.output_grammar.update_from_names(["beta"])
+        self.io.input_grammar.update_from_names(["alpha"])
+        self.io.output_grammar.update_from_names(["beta"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         alpha = self.io.data["alpha"]
@@ -560,8 +560,8 @@ class DisciplineSub1(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["x"])
-        self.output_grammar.update_from_names(["f"])
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["f"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -575,9 +575,9 @@ class DisciplineSub2(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["x", "beta"])
-        self.output_grammar.update_from_names(["g"])
-        self.default_input_data = {"x": array([0.0]), "beta": array([0.0])}
+        self.io.input_grammar.update_from_names(["x", "beta"])
+        self.io.output_grammar.update_from_names(["g"])
+        self.io.input_grammar.defaults = {"x": array([0.0]), "beta": array([0.0])}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -658,7 +658,7 @@ def test_linearize_scenario_adapter(scenario_fixture) -> None:
 def test_multiple_linearize() -> None:
     """Tests two linearizations and linearize in the _run method."""
     disc2 = MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])
-    disc2.default_input_data = {"x": array([0.0]), "alpha": array([0.0])}
+    disc2.io.input_grammar.defaults = {"x": array([0.0]), "alpha": array([0.0])}
     disc2.add_differentiated_inputs("x")
     disc2.add_differentiated_outputs("g")
     disc2.linearize()

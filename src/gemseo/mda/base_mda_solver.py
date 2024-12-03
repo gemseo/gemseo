@@ -265,28 +265,28 @@ class BaseMDASolver(BaseMDA):
 
         resolved_coupling_names = set(self._resolved_variable_names)
 
-        if resolved_coupling_names.issubset(self.input_grammar.keys()):
+        if resolved_coupling_names.issubset(self.io.input_grammar):
             input_coupling_names = self._resolved_variable_names
             output_coupling_names = ()
-        elif resolved_coupling_names.issubset(self.output_grammar.keys()):
+        elif resolved_coupling_names.issubset(self.io.output_grammar):
             input_coupling_names = ()
             output_coupling_names = self._resolved_variable_names
         else:
             input_coupling_names = sorted(
-                resolved_coupling_names.intersection(self.input_grammar.keys())
+                resolved_coupling_names.intersection(self.io.input_grammar)
             )
             output_coupling_names = sorted(
                 resolved_coupling_names.difference(input_coupling_names)
             )
 
         if input_coupling_names:
-            converter = self.input_grammar.data_converter
+            converter = self.io.input_grammar.data_converter
             self.__resolved_variable_names_to_slices[converter] = (
                 converter.compute_names_to_slices(input_coupling_names, self.io.data)[0]
             )
 
         if output_coupling_names:
-            converter = self.output_grammar.data_converter
+            converter = self.io.output_grammar.data_converter
             self.__resolved_variable_names_to_slices[converter] = (
                 converter.compute_names_to_slices(
                     output_coupling_names,

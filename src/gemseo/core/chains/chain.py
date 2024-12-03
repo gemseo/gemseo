@@ -101,13 +101,14 @@ class MDOChain(ProcessDiscipline):
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        self.input_grammar.clear()
-        self.output_grammar.clear()
+        self.io.input_grammar.clear()
+        self.io.output_grammar.clear()
         for discipline in self.disciplines:
-            self.input_grammar.update(
-                discipline.input_grammar, excluded_names=self.output_grammar.keys()
+            self.io.input_grammar.update(
+                discipline.io.input_grammar,
+                excluded_names=self.io.output_grammar,
             )
-            self.output_grammar.update(discipline.output_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _execute(self) -> None:
         for discipline in self.disciplines:

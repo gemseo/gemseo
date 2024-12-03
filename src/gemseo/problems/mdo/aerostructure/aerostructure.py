@@ -125,7 +125,9 @@ class Mission(Discipline):
             lift_val: The threshold to compute the lift constraint.
         """  # noqa: D205 D212
         super().__init__()
-        self.default_input_data = get_inputs("lift", "mass", "drag", "reserve_fact")
+        self.io.input_grammar.defaults = get_inputs(
+            "lift", "mass", "drag", "reserve_fact"
+        )
         self.r_val = r_val
         self.lift_val = lift_val
 
@@ -216,7 +218,7 @@ class Aerodynamics(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.default_input_data = get_inputs("sweep", "thick_airfoils", "displ")
+        self.io.input_grammar.defaults = get_inputs("sweep", "thick_airfoils", "displ")
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         sweep = input_data["sweep"]
@@ -319,7 +321,7 @@ class Structure(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.default_input_data = get_inputs("sweep", "forces", "thick_panels")
+        self.io.input_grammar.defaults = get_inputs("sweep", "forces", "thick_panels")
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         sweep = input_data["sweep"]

@@ -380,9 +380,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         """Remove variables in the design space that are not discipline inputs."""
         design_space = self.optimization_problem.design_space
         disciplines = self.get_top_level_disciplines()
-        all_inputs = {
-            var for disc in disciplines for var in disc.io.input_grammar.names
-        }
+        all_inputs = {var for disc in disciplines for var in disc.io.input_grammar}
         for name in design_space.variable_names:
             if name not in all_inputs:
                 design_space.remove_variable(name)
@@ -451,7 +449,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
              The names of the design variables.
         """
         optim_variable_names = self.get_optim_variable_names()
-        input_names = discipline.io.input_grammar.names
+        input_names = discipline.io.input_grammar
         return [name for name in optim_variable_names if name in input_names]
 
     def get_sub_scenarios(self) -> list[BaseScenario]:
@@ -474,9 +472,9 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         )
 
         for discipline in self.get_top_level_disciplines():
-            input_names = discipline.io.input_grammar.names
-            to_value = discipline.input_grammar.data_converter.convert_array_to_value
-            discipline.default_input_data.update({
+            input_names = discipline.io.input_grammar
+            to_value = discipline.io.input_grammar.data_converter.convert_array_to_value
+            discipline.io.input_grammar.defaults.update({
                 name: to_value(name, value)
                 for name, value in current_x.items()
                 if name in input_names

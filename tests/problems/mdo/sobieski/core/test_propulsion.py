@@ -34,9 +34,7 @@ def problem():
 def test_d_esf_ddrag(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     drag = indata["y_23"][0]
     throttle = indata["x_3"][0]
     lin_esf = sr._SobieskiPropulsion__compute_desf_ddrag(throttle)
@@ -49,9 +47,7 @@ def test_d_esf_ddrag(problem) -> None:
 def test_d_esf_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     drag = indata["y_23"][0]
     throttle = indata["x_3"][0]
     lin_esf = sr._SobieskiPropulsion__compute_desf_dthrottle(drag, throttle)
@@ -84,9 +80,7 @@ def test_blackbox_propulsion(problem) -> None:
 def test_d_we_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     drag = indata["y_23"][0]
     throttle = indata["x_3"][0]
     d_esf_dthrottle = sr._SobieskiPropulsion__compute_desf_dthrottle(drag, throttle)
@@ -103,9 +97,7 @@ def test_d_we_dthrottle(problem) -> None:
 def test_d_we_ddrag(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     drag = indata["y_23"][0]
     throttle = indata["x_3"][0]
     d_esf_ddrag = sr._SobieskiPropulsion__compute_desf_ddrag(throttle)
@@ -122,9 +114,7 @@ def test_d_we_ddrag(problem) -> None:
 def test_d_sfc_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     x_shared = indata["x_shared"]
     throttle = indata["x_3"][0]
 
@@ -143,9 +133,7 @@ def test_d_sfc_dthrottle(problem) -> None:
 def test_d_sfc_dh(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     throttle = indata["x_3"][0]
 
     x_shared = indata["x_shared"]
@@ -164,9 +152,7 @@ def test_d_sfc_dh(problem) -> None:
 def test_d_sfc_d_m(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     throttle = indata["x_3"][0] * 16168.6
 
     x_shared = indata["x_shared"]
@@ -185,9 +171,7 @@ def test_d_sfc_d_m(problem) -> None:
 def test_dthrottle_constraint_dthrottle(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     x_shared = indata["x_shared"]
     x_3 = indata["x_3"]
     lin_throttle = sr._SobieskiPropulsion__compute_dthrconst_dthrottle(
@@ -206,9 +190,7 @@ def test_dthrottle_constraint_dthrottle(problem) -> None:
 def test_dthrottle_constraint_dh(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     x_shared = indata["x_shared"]
     x_3 = indata["x_3"]
     lin_throttle = sr._SobieskiPropulsion__compute_dthrcons_dh(
@@ -227,9 +209,7 @@ def test_dthrottle_constraint_dh(problem) -> None:
 def test_dthrottle_constraint_dmach(problem) -> None:
     h = 1e-30
     sr = problem.propulsion
-    indata = problem.get_default_inputs(
-        names=SobieskiPropulsion().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiPropulsion().io.input_grammar)
     x_shared = indata["x_shared"]
     x_3 = indata["x_3"]
     lin_throttle = sr._SobieskiPropulsion__compute_dthrconst_dmach(
@@ -247,20 +227,20 @@ def test_dthrottle_constraint_dmach(problem) -> None:
 
 def test_jac_prop(problem) -> None:
     sr = SobieskiPropulsion("complex128")
-    indata = problem.get_default_inputs(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
-    indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar)
     assert sr.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
 
-    indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
 
     for _ in range(5):
-        indata = problem.get_random_input(names=sr.io.input_grammar.names, seed=1)
+        indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
         assert sr.check_jacobian(
             indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
         )

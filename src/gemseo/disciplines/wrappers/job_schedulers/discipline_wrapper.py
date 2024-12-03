@@ -110,9 +110,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self._setup_cmd = setup_cmd
         self._options = options
 
-        self.input_grammar = self._discipline.input_grammar
-        self.output_grammar = self._discipline.output_grammar
-        self.default_input_data = self._discipline.default_input_data
+        self.io.input_grammar = self._discipline.io.input_grammar
+        self.io.output_grammar = self._discipline.io.output_grammar
+        self.io.input_grammar.defaults = self._discipline.io.input_grammar.defaults
         self._workdir_path = workdir_path
         self.pickled_discipline = pickle.dumps(self._discipline)
         self.job_file_template = None

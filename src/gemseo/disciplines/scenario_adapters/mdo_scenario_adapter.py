@@ -190,7 +190,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 (upper_bounds, upper_suffix),
             ]:
                 bounds = {name + suffix: val for name, val in bounds.items()}
-                self.default_input_data.update(bounds)
+                self.io.input_grammar.defaults.update(bounds)
                 self._bound_names.extend(bounds.keys())
 
         # Optimization functions are redefined at each run
@@ -216,19 +216,19 @@ class MDOScenarioAdapter(ProcessDiscipline):
         opt_problem = formulation.optimization_problem
         top_leveld = formulation.get_top_level_disciplines()
         for disc in top_leveld:
-            self.input_grammar.update(disc.input_grammar)
-            self.output_grammar.update(disc.output_grammar)
+            self.io.input_grammar.update(disc.io.input_grammar)
+            self.io.output_grammar.update(disc.io.output_grammar)
             # The output may also be the optimum value of the design
             # variables, so the output grammar may contain inputs
             # of the disciplines. All grammars are filtered just after
             # this loop
-            self.output_grammar.update(disc.input_grammar)
-            self.default_input_data.update(disc.default_input_data)
+            self.io.output_grammar.update(disc.io.input_grammar)
+            self.io.input_grammar.defaults.update(disc.io.input_grammar.defaults)
 
         try:
-            self.input_grammar.restrict_to(self._input_names)
+            self.io.input_grammar.restrict_to(self._input_names)
         except KeyError:
-            missing_inputs = set(self._input_names) - set(self.input_grammar.keys())
+            missing_inputs = set(self._input_names) - set(self.io.input_grammar)
 
             if missing_inputs:
                 msg = "Can't compute inputs from scenarios: {}.".format(
@@ -247,22 +247,22 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 names_to_values.update({k + suffix: v for k, v in current_x.items()})
             bounds_grammar = JSONGrammar("bounds")
             bounds_grammar.update_from_data(names_to_values)
-            self.input_grammar.update(bounds_grammar)
+            self.io.input_grammar.update(bounds_grammar)
 
         # If a DV is not an input of the top level disciplines:
-        missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
+        missing_outputs = set(self._output_names) - set(self.io.output_grammar)
 
         if missing_outputs:
             miss_dvs = set(missing_outputs).intersection(opt_problem.design_space)
             if miss_dvs:
                 dv_gram = JSONGrammar("dvs")
                 dv_gram.update_from_names(miss_dvs)
-                self.output_grammar.update(dv_gram)
+                self.io.output_grammar.update(dv_gram)
 
         try:
-            self.output_grammar.restrict_to(self._output_names)
+            self.io.output_grammar.restrict_to(self._output_names)
         except KeyError:
-            missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
+            missing_outputs = set(self._output_names) - set(self.io.output_grammar)
 
             if missing_outputs:
                 msg = "Can't compute outputs from scenarios: {}.".format(
@@ -298,7 +298,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # Update the output grammar
         multipliers_grammar = JSONGrammar("multipliers")
         multipliers_grammar.update_from_data(base_dict)
-        self.output_grammar.update(multipliers_grammar)
+        self.io.output_grammar.update(multipliers_grammar)
 
     @staticmethod
     def get_bnd_mult_name(
@@ -351,7 +351,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         for indata in self._input_names:
             for disc in top_leveld:
                 if indata in disc.io.input_grammar:
-                    disc.default_input_data[indata] = self.io.data[indata]
+                    disc.io.input_grammar.defaults[indata] = self.io.data[indata]
 
         self._reset_optimization_problem()
 
@@ -547,7 +547,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # Fill the Jacobian blocks w.r.t. bounds with zeros
         for output_derivatives in self.jac.values():
             for bound_input_name in bound_inputs:
-                bound_input_size = self.default_input_data[bound_input_name].size
+                bound_input_size = self.io.input_grammar.defaults[bound_input_name].size
                 output_derivatives[bound_input_name] = zeros((1, bound_input_size))
 
     def _compute_auxiliary_jacobians(
@@ -593,8 +593,8 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # Linearize the required disciplines
         unique_disciplines = list(set(disciplines.values()))
         for discipline in unique_disciplines:
-            diff_inputs = set(discipline.io.input_grammar.names) & set(input_names)
-            diff_outputs = set(discipline.io.output_grammar.names) & set(func_names)
+            diff_inputs = set(discipline.io.input_grammar) & set(input_names)
+            diff_outputs = set(discipline.io.output_grammar) & set(func_names)
             if diff_inputs and diff_outputs:
                 discipline.add_differentiated_inputs(list(diff_inputs))
                 discipline.add_differentiated_outputs(list(diff_outputs))

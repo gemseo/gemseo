@@ -43,8 +43,8 @@ class DummyDiscipline(Discipline):
             output_names: The names of the output variables, if any.
         """  # noqa: D205 D212 D415
         super().__init__(name=name)
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(output_names)
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         pass

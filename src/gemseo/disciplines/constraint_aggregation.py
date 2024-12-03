@@ -122,8 +122,8 @@ class ConstraintAggregation(Discipline):
         super().__init__(name=name)
         self.__method_name = aggregation_function
         self.__meth_options = options
-        self.input_grammar.update_from_names(constraint_names)
-        self.output_grammar.update_from_names([
+        self.io.input_grammar.update_from_names(constraint_names)
+        self.io.output_grammar.update_from_names([
             f"{aggregation_function}_{constraint_name}"
             for constraint_name in constraint_names
         ])
@@ -133,7 +133,7 @@ class ConstraintAggregation(Discipline):
         input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
         evaluation_function = self._EVALUATION_FUNCTION_MAP[self.__method_name]
         output_data = atleast_1d(evaluation_function(input_data, **self.__meth_options))
-        output_names = self.io.output_grammar.names
+        output_names = self.io.output_grammar
         output_names_to_output_values = split_array_to_dict_of_arrays(
             output_data,
             dict.fromkeys(output_names, 1),
@@ -151,7 +151,7 @@ class ConstraintAggregation(Discipline):
         input_names: Sequence[str] = (),
         output_names: Sequence[str] = (),
     ) -> None:
-        input_names = self.io.input_grammar.names
+        input_names = self.io.input_grammar
         evaluation_function = self._JACOBIAN_EVALUATION_FUNCTION_MAP[self.__method_name]
         self.jac = split_array_to_dict_of_arrays(
             evaluation_function(
@@ -159,6 +159,6 @@ class ConstraintAggregation(Discipline):
                 **self.__meth_options,
             ),
             self.__data_sizes,
-            self.io.output_grammar.names,
+            self.io.output_grammar,
             input_names,
         )

@@ -233,8 +233,8 @@ def test_array_couplings(mda_class, grammar_type) -> None:
     )
 
     a_disc = disciplines[0]
-    del a_disc.input_grammar["y1"]
-    a_disc.input_grammar.update_from_data({"y1": 2.0})
+    del a_disc.io.input_grammar["y1"]
+    a_disc.io.input_grammar.update_from_data({"y1": 2.0})
 
     with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})
@@ -316,13 +316,13 @@ def test_not_numeric_couplings(caplog) -> None:
     caplog.set_level("DEBUG")
     sellar1 = Sellar1()
     # Tweak the output grammar and set y_1 as an array of string
-    prop = sellar1.output_grammar.schema.get("properties").get("y_1")
+    prop = sellar1.io.output_grammar.schema.get("properties").get("y_1")
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
     # Tweak the input grammar and set y_1 as an array of string
     sellar2 = Sellar2()
-    prop = sellar2.input_grammar.schema.get("properties").get("y_1")
+    prop = sellar2.io.input_grammar.schema.get("properties").get("y_1")
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
@@ -402,15 +402,15 @@ class LinearImplicitDiscipline(Discipline):
         super().__init__(name=name)
         self.size = size
 
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(output_names)
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
 
         self.io.residual_to_state_variable = {"r": "w"}
 
         self.io.state_equations_are_solved = False
         self.mat = default_rng(SEED).standard_normal((size, size))
 
-        self.default_input_data = {k: 0.5 * ones(size) for k in input_names}
+        self.io.input_grammar.defaults = {k: 0.5 * ones(size) for k in input_names}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         if self.io.state_equations_are_solved:
@@ -462,17 +462,17 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
 class DiscWithNonNumericInputs1(Discipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"x": zeros(1)})
-        self.input_grammar.update_from_data({"a": zeros(1)})
-        self.input_grammar.update_from_data({"b_file": array(["my_b_file"])})
+        self.io.input_grammar.update_from_data({"x": zeros(1)})
+        self.io.input_grammar.update_from_data({"a": zeros(1)})
+        self.io.input_grammar.update_from_data({"b_file": array(["my_b_file"])})
 
-        self.output_grammar.update_from_data({"y": zeros(1)})
-        self.output_grammar.update_from_data({"b": zeros(1)})
-        self.output_grammar.update_from_data({"a_file": "my_a_file"})
+        self.io.output_grammar.update_from_data({"y": zeros(1)})
+        self.io.output_grammar.update_from_data({"b": zeros(1)})
+        self.io.output_grammar.update_from_data({"a_file": "my_a_file"})
 
-        self.default_input_data["x"] = array([0.5])
-        self.default_input_data["a"] = array([0.5])
-        self.default_input_data["b_file"] = array(["my_b_file"])
+        self.io.input_grammar.defaults["x"] = array([0.5])
+        self.io.input_grammar.defaults["a"] = array([0.5])
+        self.io.input_grammar.defaults["b_file"] = array(["my_b_file"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -498,12 +498,12 @@ class DiscWithNonNumericInputs1(Discipline):
 class DiscWithNonNumericInputs2(Discipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"y": zeros(1)})
-        self.input_grammar.update_from_data({"a_file": "my_a_file"})
-        self.output_grammar.update_from_data({"x": zeros(1)})
-        self.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
-        self.default_input_data["y"] = array([0.5])
-        self.default_input_data["a_file"] = "my_a_file"
+        self.io.input_grammar.update_from_data({"y": zeros(1)})
+        self.io.input_grammar.update_from_data({"a_file": "my_a_file"})
+        self.io.output_grammar.update_from_data({"x": zeros(1)})
+        self.io.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
+        self.io.input_grammar.defaults["y"] = array([0.5])
+        self.io.input_grammar.defaults["a_file"] = "my_a_file"
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y = self.io.data["y"]
@@ -523,17 +523,17 @@ class DiscWithNonNumericInputs2(Discipline):
 class DiscWithNonNumericInputs3(Discipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"x": zeros(1)})
-        self.input_grammar.update_from_data({"y": zeros(1)})
-        self.input_grammar.update_from_data({"b": zeros(1)})
-        self.input_grammar.update_from_data({"a_file": "my_a_file"})
+        self.io.input_grammar.update_from_data({"x": zeros(1)})
+        self.io.input_grammar.update_from_data({"y": zeros(1)})
+        self.io.input_grammar.update_from_data({"b": zeros(1)})
+        self.io.input_grammar.update_from_data({"a_file": "my_a_file"})
 
-        self.output_grammar.update_from_data({"obj": zeros(1)})
-        self.output_grammar.update_from_data({"out_file_2": "my_a_file"})
-        self.default_input_data["x"] = array([0.5])
-        self.default_input_data["y"] = array([0.5])
-        self.default_input_data["b"] = array([0.5])
-        self.default_input_data["a_file"] = "my_a_file"
+        self.io.output_grammar.update_from_data({"obj": zeros(1)})
+        self.io.output_grammar.update_from_data({"out_file_2": "my_a_file"})
+        self.io.input_grammar.defaults["x"] = array([0.5])
+        self.io.input_grammar.defaults["y"] = array([0.5])
+        self.io.input_grammar.defaults["b"] = array([0.5])
+        self.io.input_grammar.defaults["a_file"] = "my_a_file"
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]

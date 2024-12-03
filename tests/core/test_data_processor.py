@@ -82,7 +82,9 @@ class TestDataProcessor(unittest.TestCase):
         sm = SobieskiMission("float64")
         sm.io.data_processor = dp
         sm.execute({
-            "x_shared": array(sm.default_input_data["x_shared"], dtype="complex128")
+            "x_shared": array(
+                sm.io.input_grammar.defaults["x_shared"], dtype="complex128"
+            )
         })
 
         assert sm.io.data["y_4"].dtype == complex128
@@ -97,8 +99,8 @@ class TestDataProcessor(unittest.TestCase):
 class LocalDisc(Discipline):
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["A", "B"])
-        self.output_grammar.update_from_names(["O"])
+        self.io.input_grammar.update_from_names(["A", "B"])
+        self.io.output_grammar.update_from_names(["O"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["o"] = self.io.data["a"] + self.io.data["b"]

@@ -223,8 +223,8 @@ class XLSStudyParser:
                 ) from None
 
             discipline = DummyDiscipline(sheet_name)
-            discipline.input_grammar.update_from_names(input_names)
-            discipline.output_grammar.update_from_names(output_names)
+            discipline.io.input_grammar.update_from_names(input_names)
+            discipline.io.output_grammar.update_from_names(output_names)
             string.indent()
             string.add("{}: {}", self.__INPUTS, pretty_str(input_names))
             string.add("{}: {}", self.__OUTPUTS, pretty_str(output_names))

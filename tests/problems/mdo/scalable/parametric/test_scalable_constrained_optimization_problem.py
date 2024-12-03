@@ -40,8 +40,8 @@ class ScalableDiscipline(Discipline):
     def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
-        self.input_grammar.update_from_names(["x"])
-        self.output_grammar.update_from_names(["f", "g"])
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["f", "g"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]

@@ -216,23 +216,23 @@ def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
     # a and b are weak couplings of all the disciplines,
     # and they are in the top-level outputs of the first adapter
     disciplines = dummy_bilevel_scenario.formulation.chain.disciplines
-    assert "b" in disciplines[0].io.input_grammar.names
-    assert "a" in disciplines[0].io.output_grammar.names
+    assert "b" in disciplines[0].io.input_grammar
+    assert "a" in disciplines[0].io.output_grammar
 
     # a is a weak coupling of all the disciplines,
     # and it is in the top-level inputs of the second adapter
-    assert "a" in disciplines[1].io.input_grammar.names
+    assert "a" in disciplines[1].io.input_grammar
 
     # a is a weak coupling of all the disciplines,
     # and is in the top-level inputs of the second adapter
-    assert "b" in disciplines[1].io.output_grammar.names
+    assert "b" in disciplines[1].io.output_grammar
 
 
 def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     """Test that the user can access the MDA1 and MDA2."""
     # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
     assert dummy_bilevel_scenario.formulation.mda1 is None
-    assert "obj" in dummy_bilevel_scenario.formulation.mda2.io.output_grammar.names
+    assert "obj" in dummy_bilevel_scenario.formulation.mda2.io.output_grammar
 
 
 def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
@@ -311,7 +311,7 @@ def test_bilevel_get_variable_names_to_warm_start_without_mdas(
     monkeypatch.setattr(scenario.formulation, "_mda2", _no_mda2())
     variables = []
     for adapter in scenario.formulation.scenario_adapters:
-        variables.extend(adapter.io.output_grammar.names)
+        variables.extend(adapter.io.output_grammar)
     assert sorted(set(variables)) == sorted(
         scenario.formulation._get_variable_names_to_warm_start()
     )
@@ -323,9 +323,9 @@ def test_test_bilevel_get_variable_names_to_warm_start_from_mdas(
     """ " Check that the variables from both MDAs are being considered in the warm
     start."""
     scenario = sobieski_bilevel_scenario()
-    for variable in scenario.formulation._mda1.io.output_grammar.names:
+    for variable in scenario.formulation._mda1.io.output_grammar:
         assert variable in scenario.formulation._get_variable_names_to_warm_start()
-    for variable in scenario.formulation._mda2.io.output_grammar.names:
+    for variable in scenario.formulation._mda2.io.output_grammar:
         assert variable in scenario.formulation._get_variable_names_to_warm_start()
 
 

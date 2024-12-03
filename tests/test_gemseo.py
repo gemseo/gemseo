@@ -554,7 +554,7 @@ def test_get_discipline_inputs_schema() -> None:
     """Test that the discipline input schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_inputs_schema(mission)
-    for key in mission.io.input_grammar.names:
+    for key in mission.io.input_grammar:
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_inputs_schema(mission, True)
@@ -566,7 +566,7 @@ def test_get_discipline_outputs_schema() -> None:
     """Test that the discipline output schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_outputs_schema(mission)
-    for key in mission.io.output_grammar.names:
+    for key in mission.io.output_grammar:
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_outputs_schema(mission, True)

@@ -154,7 +154,7 @@ class MDAJacobi(BaseMDASolver):
 
         self._input_couplings = sorted(
             set(self.coupling_structure.all_couplings).intersection(
-                self.io.input_grammar.names
+                self.io.input_grammar
             )
         )
 

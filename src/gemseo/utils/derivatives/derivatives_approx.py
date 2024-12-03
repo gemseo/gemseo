@@ -193,7 +193,9 @@ class DisciplineJacApprox:
         with self.__set_zero_cache_tol():
             compute_opt_step = self.approximator.compute_optimal_step
 
-        x_vect = self._prepare_xvect(input_names, self.discipline.default_input_data)
+        x_vect = self._prepare_xvect(
+            input_names, self.discipline.io.input_grammar.defaults
+        )
         steps_opt, errors = compute_opt_step(x_vect, numerical_error=numerical_error)
 
         if print_errors:
@@ -203,16 +205,16 @@ class DisciplineJacApprox:
             )
             LOGGER.info(errors)
 
-        data = self.discipline.default_input_data or self.discipline.io.data
+        data = self.discipline.io.input_grammar.defaults or self.discipline.io.data
         names_to_slices = (
-            self.discipline.input_grammar.data_converter.compute_names_to_slices(
+            self.discipline.io.input_grammar.data_converter.compute_names_to_slices(
                 input_names,
                 data,
             )[0]
         )
 
         self.auto_steps = (
-            self.discipline.input_grammar.data_converter.convert_array_to_data(
+            self.discipline.io.input_grammar.data_converter.convert_array_to_data(
                 steps_opt, names_to_slices
             )
         )
@@ -248,7 +250,7 @@ class DisciplineJacApprox:
         if not data:
             data = self.discipline.io.data
 
-        return self.discipline.input_grammar.data_converter.convert_data_to_array(
+        return self.discipline.io.input_grammar.data_converter.convert_data_to_array(
             input_names,
             data,
         )
@@ -274,9 +276,11 @@ class DisciplineJacApprox:
         self._create_approximator(output_names, input_names)
 
         if self.auto_steps and all(key in self.auto_steps for key in input_names):
-            step = self.discipline.input_grammar.data_converter.convert_data_to_array(
-                input_names,
-                self.auto_steps,
+            step = (
+                self.discipline.io.input_grammar.data_converter.convert_data_to_array(
+                    input_names,
+                    self.auto_steps,
+                )
             )
         else:
             step = self.step
@@ -293,13 +297,13 @@ class DisciplineJacApprox:
             )
 
         data_names_to_sizes = (
-            self.discipline.output_grammar.data_converter.compute_names_to_sizes(
+            self.discipline.io.output_grammar.data_converter.compute_names_to_sizes(
                 output_names,
                 self.discipline.io.data,
             )
         )
         input_names_to_sizes = (
-            self.discipline.input_grammar.data_converter.compute_names_to_sizes(
+            self.discipline.io.input_grammar.data_converter.compute_names_to_sizes(
                 input_names,
                 self.discipline.io.data,
             )
@@ -388,9 +392,9 @@ class DisciplineJacApprox:
             input_indices, input_names_to_indices = self._compute_variable_indices(
                 indices,
                 input_names,
-                self.discipline.input_grammar.data_converter.compute_names_to_sizes(
+                self.discipline.io.input_grammar.data_converter.compute_names_to_sizes(
                     input_names,
-                    self.discipline.default_input_data,
+                    self.discipline.io.input_grammar.defaults,
                 ),
             )
 

@@ -189,9 +189,9 @@ class AutoPyDiscipline(Discipline):
 
         # Second, create the grammar according to the pre-processing above.
         if names_to_input_types and names_to_output_types:
-            self.input_grammar.update_from_types(names_to_input_types)
-            self.input_grammar.defaults = defaults
-            self.output_grammar.update_from_types(names_to_output_types)
+            self.io.input_grammar.update_from_types(names_to_input_types)
+            self.io.input_grammar.defaults = defaults
+            self.io.output_grammar.update_from_types(names_to_output_types)
             return True
 
         msg = (
@@ -201,14 +201,14 @@ class AutoPyDiscipline(Discipline):
             "The grammars will not use the type hints at all."
         )
         LOGGER.warning(msg, self.name)
-        self.input_grammar.update_from_names(self.input_names)
+        self.io.input_grammar.update_from_names(self.input_names)
 
         for key, value in defaults.items():
             if not isinstance(value, ndarray):
                 defaults[key] = array([value])
-        self.input_grammar.defaults = defaults
+        self.io.input_grammar.defaults = defaults
 
-        self.output_grammar.update_from_names(self.output_names)
+        self.io.output_grammar.update_from_names(self.output_names)
         return False
 
     def __create_output_names(self) -> list[str]:
@@ -265,17 +265,17 @@ class AutoPyDiscipline(Discipline):
 
         if not self.__sizes:
             for name, value in self.io.data.items():
-                if name in self.input_grammar:
-                    converter = self.input_grammar.data_converter
+                if name in self.io.input_grammar:
+                    converter = self.io.input_grammar.data_converter
                 else:
-                    converter = self.output_grammar.data_converter
+                    converter = self.io.output_grammar.data_converter
                 self.__sizes[name] = converter.get_value_size(name, value)
 
-            in_to_ns = self.input_grammar.to_namespaced
+            in_to_ns = self.io.input_grammar.to_namespaced
             self.__input_names_with_namespaces = [
                 in_to_ns.get(input_name, input_name) for input_name in self.input_names
             ]
-            out_to_ns = self.output_grammar.to_namespaced
+            out_to_ns = self.io.output_grammar.to_namespaced
             self.__output_names_with_namespaces = [
                 out_to_ns.get(output_name, output_name)
                 for output_name in self.output_names

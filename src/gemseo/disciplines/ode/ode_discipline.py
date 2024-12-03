@@ -147,10 +147,10 @@ class ODEDiscipline(Discipline):
             self.__state_names = state_names
         else:
             state_names = self.__state_names = [
-                name for name in discipline.io.input_grammar.names if name != time_name
+                name for name in discipline.io.input_grammar if name != time_name
             ]
 
-        missing_names = set(state_names) - set(discipline.default_input_data)
+        missing_names = set(state_names) - set(discipline.io.input_grammar.defaults)
         if missing_names:
             msg = f"Missing default inputs in discipline for {missing_names}."
             raise ValueError(msg)
@@ -163,7 +163,7 @@ class ODEDiscipline(Discipline):
         self.__ode_solver_options = ode_solver_settings
 
         # Create ODE problem
-        initial_state = self.__get_state_vector(discipline.default_input_data)
+        initial_state = self.__get_state_vector(discipline.io.input_grammar.defaults)
         event_functions = tuple(
             Functor(self, discipline, state_names, time_name)
             for discipline in termination_event_disciplines
@@ -199,7 +199,7 @@ class ODEDiscipline(Discipline):
         ]
         output_names.extend(self.__trajectory_state_names)
         self.io.output_grammar.update_from_names(output_names)
-        self.default_input_data = copy(discipline.default_input_data)
+        self.io.input_grammar.defaults = copy(discipline.io.input_grammar.defaults)
 
     def __get_state_vector(self, input_data: Mapping[str, RealArray]) -> RealArray:
         """Return the state vector from a dictionary.

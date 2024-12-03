@@ -104,21 +104,21 @@ def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
 
-    assert list(d1.io.input_grammar.names) == ["y2", "z"]
+    assert list(d1.io.input_grammar) == ["y2", "z"]
     d1.execute()
 
     assert d1.io.data["y1"] == f1()
 
     d2 = AutoPyDiscipline(f2)
-    assert list(d2.io.input_grammar.names) == ["y1", "z"]
-    assert list(d2.io.output_grammar.names) == ["y2", "y3"]
+    assert list(d2.io.input_grammar) == ["y1", "z"]
+    assert list(d2.io.output_grammar) == ["y2", "y3"]
 
     d2.execute()
     assert d2.io.data["y2"] == f2()[0]
 
     d3 = AutoPyDiscipline(F().f1)
 
-    assert list(d3.io.input_grammar.names) == ["y2", "z"]
+    assert list(d3.io.input_grammar) == ["y2", "z"]
     d3.execute()
 
     assert d3.io.data["y1"] == F().f1()
@@ -368,8 +368,8 @@ def test_type_hints_for_grammars(
     AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.SIMPLE
     d = AutoPyDiscipline(func)
     AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.JSON
-    assert d.input_grammar == input_names_to_types
-    assert d.output_grammar == output_names_to_types
+    assert d.io.input_grammar == input_names_to_types
+    assert d.io.output_grammar == output_names_to_types
     assert caplog.messages == warnings
     if caplog.records:
         assert caplog.records[0].levelname == "WARNING"
@@ -471,8 +471,8 @@ def test_mda(x_1, mda_name, sellar_disciplines) -> None:
 
     del input_data["y_1"]
     del input_data["x_2"]
-    mda.default_input_data = {
-        k: v for k, v in input_data.items() if k in mda.input_grammar
+    mda.io.input_grammar.defaults = {
+        k: v for k, v in input_data.items() if k in mda.io.input_grammar
     }
 
     assert mda.check_jacobian(

@@ -620,7 +620,7 @@ class PCERegressor(BaseRegressor):
         )
         self.learning_set.add_variable(self.__WEIGHT, weights[:, None])
 
-        output_names = list(discipline.io.output_grammar.names)
+        output_names = list(discipline.io.output_grammar)
         input_names = self.input_names
         outputs = [[] for _ in output_names]
         for input_data in self.learning_set.get_view(

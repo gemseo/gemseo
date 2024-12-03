@@ -69,8 +69,8 @@ class SobieskiDisciplineWithSimpleGrammar(Discipline):
 
     def _set_default_inputs(self) -> None:
         """Set the default inputs from the grammars and the :class:`SobieskiProblem`."""
-        self.default_input_data = self.sobieski_problem.get_default_inputs(
-            self.io.input_grammar.names
+        self.io.input_grammar.defaults = self.sobieski_problem.get_default_inputs(
+            self.io.input_grammar
         )
 
 
@@ -92,8 +92,8 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_from_names(("y_14", "y_24", "y_34", "x_shared"))
-        self.output_grammar.update_from_names(["y_4"])
+        self.io.input_grammar.update_from_names(("y_14", "y_24", "y_34", "x_shared"))
+        self.io.output_grammar.update_from_names(["y_4"])
         self._set_default_inputs()
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -127,8 +127,8 @@ class SobieskiStructureSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_from_names(["x_1", "y_21", "y_31", "x_shared"])
-        self.output_grammar.update_from_names(["y_1", "y_11", "y_12", "y_14", "g_1"])
+        self.io.input_grammar.update_from_names(["x_1", "y_21", "y_31", "x_shared"])
+        self.io.output_grammar.update_from_names(["y_1", "y_11", "y_12", "y_14", "g_1"])
         self._set_default_inputs()
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -168,8 +168,8 @@ class SobieskiAerodynamicsSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_from_names(["x_2", "y_12", "y_32", "x_shared"])
-        self.output_grammar.update_from_names(["y_2", "y_21", "y_23", "y_24", "g_2"])
+        self.io.input_grammar.update_from_names(["x_2", "y_12", "y_32", "x_shared"])
+        self.io.output_grammar.update_from_names(["y_2", "y_21", "y_23", "y_24", "g_2"])
         self._set_default_inputs()
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -209,8 +209,8 @@ class SobieskiPropulsionSG(SobieskiDisciplineWithSimpleGrammar):
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
     ) -> None:
         super().__init__(dtype=dtype)
-        self.input_grammar.update_from_names(["x_3", "y_23", "x_shared"])
-        self.output_grammar.update_from_names(["y_3", "y_34", "y_31", "y_32", "g_3"])
+        self.io.input_grammar.update_from_names(["x_3", "y_23", "x_shared"])
+        self.io.output_grammar.update_from_names(["y_3", "y_34", "y_31", "y_32", "g_3"])
         self._set_default_inputs()
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

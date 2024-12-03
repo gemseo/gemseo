@@ -335,8 +335,8 @@ def test_variable_types(var_type1, var_type2) -> None:
     class Disc(DummyDiscipline):
         def __init__(self) -> None:
             super().__init__("foo")
-            self.input_grammar.update_from_names(("x", "y"))
-            self.output_grammar.update_from_names(("z",))
+            self.io.input_grammar.update_from_names(("x", "y"))
+            self.io.output_grammar.update_from_names(("z",))
 
         def execute(self, input_data):
             assert (
@@ -465,9 +465,9 @@ class _DummyDisc(Discipline):
 
     def __init__(self) -> None:
         super().__init__("foo")
-        self.input_grammar.update_from_names("x")
-        self.output_grammar.update_from_names(("z", "t"))
-        self.output_grammar.update_from_types({
+        self.io.input_grammar.update_from_names("x")
+        self.io.output_grammar.update_from_names(("z", "t"))
+        self.io.output_grammar.update_from_types({
             "s1": float,
             "s2": float,
             "z": ndarray,

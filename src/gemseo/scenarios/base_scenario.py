@@ -356,9 +356,11 @@ class BaseScenario(BaseMonitoredProcess):
         for discipline in get_sub_disciplines(
             self.formulation.disciplines, recursive=True
         ):
-            for key, value in discipline.default_input_data.items():
+            for key, value in discipline.io.input_grammar.defaults.items():
                 if isinstance(value, ndarray) and value.dtype == float64:
-                    discipline.default_input_data[key] = array(value, dtype=complex128)
+                    discipline.io.input_grammar.defaults[key] = array(
+                        value, dtype=complex128
+                    )
 
     def add_constraint(
         self,

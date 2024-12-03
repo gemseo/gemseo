@@ -88,7 +88,7 @@ class SellarSystem(BaseSellar):
             n: The size of the local design variables and coupling variables.
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__(n)
-        self.output_grammar.update_from_names(self._OUTPUT_NAMES)
+        self.io.output_grammar.update_from_names(self._OUTPUT_NAMES)
         self.__n = n
         self.__inv_n = 1.0 / n
         self.__inv_n_double = self.__inv_n * 2.0

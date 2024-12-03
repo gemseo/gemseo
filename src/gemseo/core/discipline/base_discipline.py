@@ -183,7 +183,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             return
 
         output_data = self.io.data.copy()
-        for name in output_data.keys() - output_grammar.names:
+        for name in output_data.keys() - output_grammar:
             del output_data[name]
 
         # Non simple caches require NumPy arrays.
@@ -209,8 +209,8 @@ class BaseDiscipline(BaseMonitoredProcess):
         input_data_ = input_data.copy()
 
         # Deepcopy the auto coupled data.
-        auto_coupled_names = set(self.io.input_grammar.keys()).intersection(
-            self.io.output_grammar.keys()
+        auto_coupled_names = set(self.io.input_grammar).intersection(
+            self.io.output_grammar
         )
 
         for auto_coupled_name in auto_coupled_names:
@@ -377,7 +377,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         return self.io.data
 
     def _execute(self) -> None:
-        if self.input_grammar.to_namespaced:
+        if self.io.input_grammar.to_namespaced:
             input_data = self.io.get_input_data(with_namespaces=False)
         else:
             # No namespaces, avoid useless processing.

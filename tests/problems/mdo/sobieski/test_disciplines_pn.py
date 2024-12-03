@@ -85,7 +85,7 @@ def compute_output_data(discipline: Discipline, factor: float) -> dict[str, ndar
     Returns:
         The output data.
     """
-    discipline.execute(compute_input_data(discipline.default_input_data, factor))
+    discipline.execute(compute_input_data(discipline.io.input_grammar.defaults, factor))
     return discipline.io.get_output_data()
 
 
@@ -153,7 +153,7 @@ def test_propulsion_execute(factor) -> None:
 def test_mission_linearize(discipline_class, factor) -> None:
     """Check the Jacobian data of the different disciplines."""
     discipline = discipline_class.create_with_physical_naming()
-    input_data = compute_input_data(discipline.default_input_data, factor)
+    input_data = compute_input_data(discipline.io.input_grammar.defaults, factor)
     discipline.check_jacobian(input_data=input_data)
 
 

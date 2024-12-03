@@ -82,7 +82,7 @@ def test_aggregation_discipline(disc_constr) -> None:
         constraint_names=["constr"],
         aggregation_function="lower_bound_KS",
     )
-    disc_agg.default_input_data = {"constr": array([1.0, 2.0])}
+    disc_agg.io.input_grammar.defaults = {"constr": array([1.0, 2.0])}
     assert disc_agg.check_jacobian(input_data={"constr": array([1.0, 2.0])})
 
     disciplines = [disc_constr, disc_agg, obj_disc]
@@ -115,7 +115,7 @@ def test_constr_jac(disc_constr, aggregation_function, indices, input_val) -> No
         aggregation_function=aggregation_function,
         indices=indices,
     )
-    disc_agg.default_input_data = {"constr": array(input_val)}
+    disc_agg.io.input_grammar.defaults = {"constr": array(input_val)}
     assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
 
 
@@ -133,7 +133,7 @@ def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val) -
         aggregation_function=aggregation_function,
         scale=scale,
     )
-    disc_agg.default_input_data = {"constr": array(input_val)}
+    disc_agg.io.input_grammar.defaults = {"constr": array(input_val)}
     assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
 
 
@@ -151,7 +151,7 @@ def test_evaluation_function_as_enum(aggregation_attribute_value) -> None:
         constraint_names=["constr"],
         aggregation_function=aggregation_attribute_value[0],
     )
-    discipline.default_input_data = {"constr": array([1.0, 2.0])}
+    discipline.io.input_grammar.defaults = {"constr": array([1.0, 2.0])}
     discipline.execute()
     output_data_with_enum = discipline.io.get_output_data()
 
@@ -160,7 +160,7 @@ def test_evaluation_function_as_enum(aggregation_attribute_value) -> None:
         constraint_names=["constr"],
         aggregation_function=aggregation_attribute_value[1],
     )
-    discipline.default_input_data = {"constr": array([1.0, 2.0])}
+    discipline.io.input_grammar.defaults = {"constr": array([1.0, 2.0])}
     discipline.execute()
     output_data_without_enum = discipline.io.get_output_data()
     assert_equal(output_data_without_enum, output_data_with_enum)

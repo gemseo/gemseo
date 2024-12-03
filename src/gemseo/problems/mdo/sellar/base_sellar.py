@@ -38,6 +38,6 @@ class BaseSellar(Discipline):
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__()
         default_input_data = get_initial_data(self._INPUT_NAMES, n)
-        self.input_grammar.update_from_data(default_input_data)
-        self.output_grammar.update_from_data(get_initial_data(self._OUTPUT_NAMES, n))
-        self.default_input_data = default_input_data
+        self.io.input_grammar.update_from_data(default_input_data)
+        self.io.output_grammar.update_from_data(get_initial_data(self._OUTPUT_NAMES, n))
+        self.io.input_grammar.defaults = default_input_data

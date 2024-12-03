@@ -36,12 +36,12 @@ def discipline() -> ArrayBasedFunctionDiscipline:
 
 def test_input_grammar(discipline):
     """Check the input grammar."""
-    assert discipline.input_grammar.names == {"x1", "x2"}
+    assert discipline.io.input_grammar.keys() == {"x1", "x2"}
 
 
 def test_output_grammar(discipline):
     """Check the output grammar."""
-    assert discipline.output_grammar.names == {"y1", "y2"}
+    assert discipline.io.output_grammar.keys() == {"y1", "y2"}
 
 
 def test_default_input_values(discipline):

@@ -51,7 +51,7 @@ class RosenMF(Discipline):
             dimension: The dimension of the design space.
         """  # noqa: D205 D212
         super().__init__()
-        self.default_input_data = {"x": zeros(dimension), "fidelity": 1.0}
+        self.io.input_grammar.defaults = {"x": zeros(dimension), "fidelity": 1.0}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         fidelity = input_data["fidelity"]

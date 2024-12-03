@@ -557,8 +557,8 @@ def complex_step_scenario() -> MDOScenario:
 
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.update_from_names(["x"])
-            self.output_grammar.update_from_names(["y"])
+            self.io.input_grammar.update_from_names(["x"])
+            self.io.output_grammar.update_from_names(["y"])
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["y"] = self.io.data["x"]
@@ -635,7 +635,7 @@ def test_complex_casting(
         mdf_scenario: A fixture for the MDOScenario.
     """
     for discipline in mdf_scenario.disciplines:
-        for value in discipline.default_input_data.values():
+        for value in discipline.io.input_grammar.defaults.values():
             assert value.dtype == float64
 
     mdf_scenario.set_differentiation_method(
@@ -643,7 +643,7 @@ def test_complex_casting(
         cast_default_inputs_to_complex=cast_default_inputs_to_complex,
     )
     for discipline in mdf_scenario.disciplines:
-        for value in discipline.default_input_data.values():
+        for value in discipline.io.input_grammar.defaults.values():
             assert value.dtype == expected_dtype
 
 
@@ -658,10 +658,10 @@ def scenario_with_non_float_variables() -> MDOScenario:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     discipline = AnalyticDiscipline({"y": "x"})
-    discipline.input_grammar.update_from_names(["z"])
-    discipline.input_grammar.update_from_names(["w"])
-    discipline.default_input_data["z"] = "some_str"
-    discipline.default_input_data["w"] = array(1, dtype=int64)
+    discipline.io.input_grammar.update_from_names(["z"])
+    discipline.io.input_grammar.update_from_names(["w"])
+    discipline.io.input_grammar.defaults["z"] = "some_str"
+    discipline.io.input_grammar.defaults["w"] = array(1, dtype=int64)
 
     return MDOScenario(
         [discipline], "y", design_space, formulation_name="DisciplinaryOpt"
@@ -916,7 +916,7 @@ def full_linear(request):
 def scenario_for_linear_check(full_linear):
     """MDOScenario for linear check."""
     my_disc = AnalyticDiscipline({"f": "x1+ x2**2"})
-    my_disc.default_input_data = {"x1": array([0.5]), "x2": array([0.5])}
+    my_disc.io.input_grammar.defaults = {"x1": array([0.5]), "x2": array([0.5])}
     my_disc.io.set_linear_relationships(["x1"], ["f"])
     ds = DesignSpace()
     ds.add_variable("x1", 1, lower_bound=0.0, upper_bound=1.0, value=0.5)
@@ -947,11 +947,11 @@ class MyDisc(Discipline):
 
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"x_float": array([0.0, 0.0])})
-        self.input_grammar.update_from_data({"x_int": array([0])})
-        self.output_grammar.update_from_data({"y1": array([0.0])})
-        self.output_grammar.update_from_data({"y2": array([0.0, 0.0])})
-        self.output_grammar.update_from_data({"name": array(["foo"])})
+        self.io.input_grammar.update_from_data({"x_float": array([0.0, 0.0])})
+        self.io.input_grammar.update_from_data({"x_int": array([0])})
+        self.io.output_grammar.update_from_data({"y1": array([0.0])})
+        self.io.output_grammar.update_from_data({"y2": array([0.0, 0.0])})
+        self.io.output_grammar.update_from_data({"name": array(["foo"])})
 
     def _run(self, input_data: StrKeyMapping):
         return {

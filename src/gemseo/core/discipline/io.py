@@ -135,7 +135,7 @@ class IO:
 
         input_data = {}
         defaults = self.input_grammar.defaults
-        for input_name in self.input_grammar.names:
+        for input_name in self.input_grammar:
             input_value = data.get(input_name)
             if input_value is not None:
                 input_data[input_name] = input_value
@@ -217,7 +217,7 @@ class IO:
             output_data: The output data to update :attr:`.data` with.
         """
         out_ns = self.output_grammar.to_namespaced
-        out_names = self.output_grammar.keys()
+        out_names = self.output_grammar
         data = self.__data
         for key, value in output_data.items():
             if key in out_names:
@@ -273,14 +273,14 @@ class IO:
         Raises:
             ValueError: If a name is not in the grammar.
         """
-        input_grammar_names = self.input_grammar.names
+        input_grammar_names = self.input_grammar
         if input_names:
             input_names = set(input_names)
             self.__check_linear_relationships("input", input_names, input_grammar_names)
         else:
             input_names = set(input_grammar_names)
 
-        output_grammar_names = self.output_grammar.names
+        output_grammar_names = self.output_grammar
         if output_names:
             output_names = set(output_names)
             self.__check_linear_relationships(

@@ -47,7 +47,7 @@ def sobieski_aerodynamics():
 def test_build_model(sobieski_aerodynamics) -> None:
     """Test the build a 1D interpolation of Sobieski's drag wrt z."""
     sizes = {}
-    for k, value in sobieski_aerodynamics.default_input_data.items():
+    for k, value in sobieski_aerodynamics.io.input_grammar.defaults.items():
         sizes[k] = len(value)
 
     with (Path(__file__).parent / "SobieskiAerodynamics.pkl").open("rb") as f:

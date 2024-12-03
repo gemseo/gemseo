@@ -251,8 +251,8 @@ class MDAChain(BaseMDA):
         """Define all inputs and outputs of the chain."""
         if self.mdo_chain is None:  # First call by super class must be ignored.
             return
-        self.input_grammar = self.mdo_chain.input_grammar.copy()
-        self.output_grammar = self.mdo_chain.output_grammar.copy()
+        self.io.input_grammar = self.mdo_chain.io.input_grammar.copy()
+        self.io.output_grammar = self.mdo_chain.io.output_grammar.copy()
 
     def _check_consistency(self) -> None:
         """Check if there is no more than 1 equation per variable.
@@ -278,10 +278,10 @@ class MDAChain(BaseMDA):
                 available_data_names=input_data,
             )
 
-            self.default_input_data.update({
+            self.io.input_grammar.defaults.update({
                 key: value
                 for key, value in init_chain.execute(input_data).items()
-                if key in self.input_grammar.names
+                if key in self.io.input_grammar
             })
             self.settings.initialize_defaults = False
         return super().execute(input_data=input_data)

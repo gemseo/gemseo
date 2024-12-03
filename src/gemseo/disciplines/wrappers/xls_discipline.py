@@ -250,8 +250,8 @@ class XLSDiscipline(Discipline):
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
         self.input_names = self.__read_sheet_col("Inputs")
         self.output_names = self.__read_sheet_col("Outputs")
-        self.input_grammar.update_from_names(self.input_names)
-        self.output_grammar.update_from_names(self.output_names)
+        self.io.input_grammar.update_from_names(self.input_names)
+        self.io.output_grammar.update_from_names(self.output_names)
 
     def _init_defaults(self) -> None:
         """Initialize the default input values.
@@ -268,7 +268,7 @@ class XLSDiscipline(Discipline):
             )
             raise ValueError(msg)
 
-        self.default_input_data = {
+        self.io.input_grammar.defaults = {
             k: array([v]) for k, v in zip(self.input_names, inputs)
         }
 

@@ -530,9 +530,9 @@ class Discipline(BaseDiscipline):
         output_names: Iterable[str],
     ) -> tuple[Iterable[str], Iterable[str]]:
         if not input_names:
-            input_names = self.io.input_grammar.keys()
+            input_names = self.io.input_grammar
         if not output_names:
-            output_names = self.io.output_grammar.keys()
+            output_names = self.io.output_grammar
         return input_names, output_names
 
     def check_jacobian(
@@ -578,7 +578,7 @@ class Discipline(BaseDiscipline):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If ``None``, use the :attr:`.Discipline.default_input_data`.
+                If ``None``, use the :attr:`.Discipline.io.input_grammar.defaults`.
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -686,8 +686,8 @@ class Discipline(BaseDiscipline):
         """
         if compute_all_jacobians:
             return (
-                tuple(self.io.input_grammar.keys()),
-                tuple(self.io.output_grammar.keys()),
+                tuple(self.io.input_grammar),
+                tuple(self.io.output_grammar),
             )
 
         return tuple(self._differentiated_input_names), tuple(
@@ -716,12 +716,12 @@ class Discipline(BaseDiscipline):
             msg = (
                 f"Cannot differentiate the discipline {self.name} w.r.t. the inputs "
                 "that are not among the discipline inputs: "
-                f"{list(input_grammar.keys())}."
+                f"{list(input_grammar)}."
             )
             raise ValueError(msg)
 
         if not input_names:
-            input_names = input_grammar.keys()
+            input_names = input_grammar
 
         self._differentiated_input_names = list(
             set(self._differentiated_input_names).union(
@@ -750,12 +750,12 @@ class Discipline(BaseDiscipline):
             msg = (
                 f"Cannot differentiate the discipline {self.name} for variables "
                 "that are not among the discipline outputs: "
-                f"{list(output_grammar.keys())}."
+                f"{list(output_grammar)}."
             )
             raise ValueError(msg)
 
         if not output_names:
-            output_names = output_grammar.keys()
+            output_names = output_grammar
 
         self._differentiated_output_names = list(
             set(self._differentiated_output_names).union(
