@@ -55,36 +55,38 @@ class TaylorDiscipline(Discipline):
                 If empty, use the default inputs of ``discipline``.
 
         Raises:
-            ValueError: If neither ``input_data`` nor ``discipline.default_input_data``
-                is specified.
+            ValueError: If neither ``input_data`` nor
+            ``discipline.io.input_grammar.defaults`` is specified.
         """  # noqa: D205 D212
-        input_names = set(discipline.io.input_grammar.names)
+        input_names = set(discipline.io.input_grammar)
         if (input_data and (input_data.keys() < input_names)) or (
-            not input_data and discipline.default_input_data.keys() < input_names
+            not input_data and discipline.io.input_grammar.defaults.keys() < input_names
         ):
             msg = (
-                "All the discipline input values must be "
-                "specified either in input_data or in discipline.default_input_data."
+                "All the discipline input values must be specified either in "
+                "input_data or in discipline.io.input_grammar.defaults."
             )
             raise ValueError(msg)
 
         discipline.linearize(compute_all_jacobians=True, input_data=input_data)
         super().__init__(name=name)
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(discipline.io.output_grammar.names)
-        self.default_input_data = input_data or discipline.default_input_data
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(discipline.io.output_grammar)
+        self.io.input_grammar.defaults = (
+            input_data or discipline.io.input_grammar.defaults
+        )
         self.__offset = {}
-        for output_name in self.io.output_grammar.names:
+        for output_name in self.io.output_grammar:
             self.__offset[output_name] = discipline.io.data[output_name] - sum(
                 discipline.jac[output_name][input_name] @ input_value
-                for input_name, input_value in self.default_input_data.items()
+                for input_name, input_value in self.io.input_grammar.defaults.items()
             )
         self.jac = deepcopy(discipline.jac)
         self._has_jacobian = True
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         output_data = {}
-        for output_name in self.io.output_grammar.names:
+        for output_name in self.io.output_grammar:
             output_data[output_name] = self.__offset[output_name] + sum(
                 self.jac[output_name][input_name] @ input_value
                 for input_name, input_value in input_data.items()

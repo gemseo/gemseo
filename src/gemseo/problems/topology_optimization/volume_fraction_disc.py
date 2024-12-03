@@ -63,9 +63,9 @@ class VolumeFraction(Discipline):
         super().__init__(name=name)
         self.n_x = n_x
         self.n_y = n_y
-        self.input_grammar.update_from_names(["rho"])
-        self.output_grammar.update_from_names(["volume fraction"])
-        self.default_input_data = {"rho": ones(n_x * n_y)}
+        self.io.input_grammar.update_from_names(["rho"])
+        self.io.output_grammar.update_from_names(["volume fraction"])
+        self.io.input_grammar.defaults = {"rho": ones(n_x * n_y)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         rho = input_data["rho"]

@@ -99,7 +99,7 @@ class MDAQuasiNewton(BaseMDARoot):
         super().__init__(disciplines, settings_model=settings_model, **settings)
 
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
-            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def __get_options(self) -> dict[str, float | int]:
         """Get the options adapted to the resolution method."""

@@ -48,7 +48,7 @@ def test_linear_combination_execution2points(linear_combination) -> None:
 
 def test_check_gradient(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
-    linear_combination.default_input_data = {
+    linear_combination.io.input_grammar.defaults = {
         "alpha": array([1.0]),
         "beta": array([1.0]),
     }
@@ -57,7 +57,7 @@ def test_check_gradient(linear_combination) -> None:
 
 def test_check_gradient2points(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
-    linear_combination.default_input_data = {
+    linear_combination.io.input_grammar.defaults = {
         "alpha": array([1.0, 0.0]),
         "beta": array([1.0, -1.0]),
     }
@@ -92,7 +92,7 @@ def test_parallel_doe_execution(linear_combination) -> None:
 def test_default_values(linear_combination) -> None:
     """Check that all the input variables have zero as default value."""
     assert compare_dict_of_arrays(
-        linear_combination.default_input_data,
+        linear_combination.io.input_grammar.defaults,
         {"alpha": zeros(1), "beta": zeros(1)},
     )
 

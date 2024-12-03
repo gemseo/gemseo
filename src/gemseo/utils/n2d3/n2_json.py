@@ -176,10 +176,10 @@ class N2JSON:
             The HTML block describing the discipline.
         """
         html_input_names = cls._create_variables_html(
-            discipline.io.input_grammar.names, variable_sizes
+            discipline.io.input_grammar, variable_sizes
         )
         html_output_names = cls._create_variables_html(
-            discipline.io.output_grammar.names, variable_sizes
+            discipline.io.output_grammar, variable_sizes
         )
         return Template(
             "The inputs of <b>{{ discipline }}</b>:"
@@ -448,9 +448,9 @@ class N2JSON:
         """
         variable_sizes = {}
         for discipline in self.__disciplines:
-            for name in discipline.io.input_grammar.names:
+            for name in discipline.io.input_grammar:
                 if name not in variable_sizes or variable_sizes[name] == self.__NA:
-                    default_value = discipline.default_input_data.get(name)
+                    default_value = discipline.io.input_grammar.defaults.get(name)
                     if hasattr(default_value, "size"):
                         size = default_value.size
                     elif isinstance(default_value, Sized):

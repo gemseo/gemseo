@@ -36,8 +36,8 @@ def discipline():
 
 def test_standard(discipline) -> None:
     fdisc = FilteringDiscipline(discipline)
-    assert set(fdisc.io.input_grammar.names) == set(discipline.io.input_grammar.names)
-    assert set(fdisc.io.output_grammar.names) == set(discipline.io.output_grammar.names)
+    assert set(fdisc.io.input_grammar) == set(discipline.io.input_grammar)
+    assert set(fdisc.io.output_grammar) == set(discipline.io.output_grammar)
     fdisc.execute()
     for name in ["x1", "x2", "x3", "y1", "y2"]:
         assert name in fdisc.io.data
@@ -50,8 +50,8 @@ def test_standard(discipline) -> None:
 
 def test_keep_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(discipline, input_names=["x1"], output_names=["y1"])
-    assert set(fdisc.io.input_grammar.names) == {"x1"}
-    assert set(fdisc.io.output_grammar.names) == {"y1"}
+    assert set(fdisc.io.input_grammar) == {"x1"}
+    assert set(fdisc.io.output_grammar) == {"y1"}
     fdisc.execute()
     for name in ["x2", "x3", "y2"]:
         assert name not in fdisc.io.data
@@ -65,8 +65,8 @@ def test_remove_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_in=False
     )
-    assert set(fdisc.io.input_grammar.names) == {"x2", "x3"}
-    assert set(fdisc.io.output_grammar.names) == {"y1"}
+    assert set(fdisc.io.input_grammar) == {"x2", "x3"}
+    assert set(fdisc.io.output_grammar) == {"y1"}
     fdisc.execute()
     for name in ["x1", "y2"]:
         assert name not in fdisc.io.data
@@ -79,8 +79,8 @@ def test_keep_in_remove_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_out=False
     )
-    assert set(fdisc.io.input_grammar.names) == {"x1"}
-    assert set(fdisc.io.output_grammar.names) == {"y2"}
+    assert set(fdisc.io.input_grammar) == {"x1"}
+    assert set(fdisc.io.output_grammar) == {"y2"}
     fdisc.execute()
     for name in ["x2", "x3", "y1"]:
         assert name not in fdisc.io.data

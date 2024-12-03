@@ -92,9 +92,9 @@ class ScalableDiscipline(Discipline):
         )
         super().__init__(self.scalable_model.name)
         self._initialize_grammars(data)
-        self.default_input_data = self.scalable_model.default_input_data
-        self.add_differentiated_inputs(self.io.input_grammar.names)
-        self.add_differentiated_outputs(self.io.output_grammar.names)
+        self.io.input_grammar.defaults = self.scalable_model.default_input_data
+        self.add_differentiated_inputs(self.io.input_grammar)
+        self.add_differentiated_outputs(self.io.output_grammar)
 
     def _initialize_grammars(self, data: IODataset) -> None:
         """Initialize input and output grammars from data names.
@@ -102,8 +102,10 @@ class ScalableDiscipline(Discipline):
         Args:
             data: The learning dataset.
         """
-        self.input_grammar.update_from_names(data.get_variable_names(data.INPUT_GROUP))
-        self.output_grammar.update_from_names(
+        self.io.input_grammar.update_from_names(
+            data.get_variable_names(data.INPUT_GROUP)
+        )
+        self.io.output_grammar.update_from_names(
             data.get_variable_names(data.OUTPUT_GROUP)
         )
 
@@ -130,6 +132,6 @@ class ScalableDiscipline(Discipline):
             fname: split_array_to_dict_of_arrays(
                 jac[fname], self.scalable_model.sizes, input_names
             )
-            for fname in self.io.output_grammar.names
+            for fname in self.io.output_grammar
         }
         self.jac = jac

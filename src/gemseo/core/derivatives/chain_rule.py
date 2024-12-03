@@ -62,16 +62,16 @@ def _initialize_add_diff_io(
     diff_ios: DisciplineIOMapping = {}
 
     for disc in graph.nodes:
-        input_grammar = disc.input_grammar
-        output_grammar = disc.output_grammar
+        input_grammar = disc.io.input_grammar
+        output_grammar = disc.io.output_grammar
 
-        common_data = set(input_names).intersection(input_grammar.names)
+        common_data = set(input_names).intersection(input_grammar)
 
         if common_data:
             diff_ios[disc] = (list(common_data), [])
             input_sources.append(disc)
 
-        common_data = set(output_names).intersection(output_grammar.names)
+        common_data = set(output_names).intersection(output_grammar)
 
         if common_data:
             output_sources.append(disc)

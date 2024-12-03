@@ -108,7 +108,7 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
         SobieskiPropulsion(),
         SobieskiMission(),
     ])
-    chain_inputs = chain.input_grammar.keys()
+    chain_inputs = chain.io.input_grammar
     indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
     return chain, indata
 
@@ -147,7 +147,7 @@ def test_check_input_data_exception(grammar_type) -> None:
     else:
         struct = SobieskiStructure()
 
-    struct_inputs = struct.input_grammar.keys()
+    struct_inputs = struct.io.input_grammar
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
 
@@ -156,7 +156,7 @@ def test_check_input_data_exception(grammar_type) -> None:
 
     struct.execute(indata)
 
-    del struct.default_input_data["x_1"]
+    del struct.io.input_grammar.defaults["x_1"]
     with pytest.raises(InvalidDataError, match=".*Missing required names: x_1"):
         struct.execute(indata)
 
@@ -190,7 +190,7 @@ def test_reset_statuses_for_run_error(sobieski_chain) -> None:
 def test_check_jac_fdapprox() -> None:
     """Test the finite difference approximation."""
     aero = SobieskiAerodynamics("complex128")
-    inpts = aero.default_input_data
+    inpts = aero.io.input_grammar.defaults
     aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     aero.linearize(inpts, compute_all_jacobians=True)
     aero.check_jacobian(inpts)
@@ -220,7 +220,7 @@ def test_check_lin_threshold() -> None:
     """Check the linearization threshold."""
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=aero.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=aero.io.input_grammar)
     aero.check_jacobian(indata, threshold=1e-50)
 
 
@@ -228,7 +228,7 @@ def test_input_exist() -> None:
     """Test is_input_existing."""
     sr = SobieskiAerodynamics()
     problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=sr.io.input_grammar)
     assert next(iter(indata.keys())) in sr.io.input_grammar
     assert "bidon" not in sr.io.input_grammar
 
@@ -237,9 +237,9 @@ def test_get_all_inputs_outputs_name() -> None:
     """Test get_all_input_outputs_name method."""
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=aero.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=aero.io.input_grammar)
     for data_name in indata:
-        assert data_name in aero.io.input_grammar.names
+        assert data_name in aero.io.input_grammar
 
 
 @pytest.mark.xfail
@@ -247,7 +247,7 @@ def test_get_all_inputs_outputs() -> None:
     """Test get all_inputs_outputs method."""
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=aero.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=aero.io.input_grammar)
     aero.execute(indata)
     aero.get_all_inputs()
     aero.get_all_outputs()
@@ -359,8 +359,8 @@ def test_linearize_errors() -> None:
     class LinDisc(Discipline):
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.update_from_names(["x"])
-            self.output_grammar.update_from_names(["y"])
+            self.io.input_grammar.update_from_names(["x"])
+            self.io.output_grammar.update_from_names(["y"])
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["y"] = array([2.0])
@@ -405,11 +405,11 @@ def test_check_jacobian_errors() -> None:
 
     sm.execute()
     sm.linearize(compute_all_jacobians=True)
-    sm._check_jacobian_shape(sm.io.input_grammar.names, sm.io.output_grammar.names)
+    sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
     sm.io.data.pop("x_shared")
-    sm._check_jacobian_shape(sm.io.input_grammar.names, sm.io.output_grammar.names)
+    sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
     sm.io.data.pop("y_4")
-    sm._check_jacobian_shape(sm.io.input_grammar.names, sm.io.output_grammar.names)
+    sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
 
 
 def test_check_jacobian() -> None:
@@ -450,9 +450,9 @@ def test_check_jacobian_2() -> None:
     class LinDisc(Discipline):
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.update_from_names(["x"])
-            self.output_grammar.update_from_names(["y"])
-            self.default_input_data = {"x": x}
+            self.io.input_grammar.update_from_names(["x"])
+            self.io.output_grammar.update_from_names(["y"])
+            self.io.input_grammar.defaults = {"x": x}
             self.jac_key = "x"
             self.jac_len = 2
 
@@ -508,8 +508,8 @@ def test_execute_rerun_errors() -> None:
             self.io.data["b"] = array([1.0])
 
     d = MyDisc()
-    d.input_grammar.update_from_names(["a"])
-    d.output_grammar.update_from_names(["b"])
+    d.io.input_grammar.update_from_names(["a"])
+    d.io.output_grammar.update_from_names(["b"])
     d.execute({"a": [1]})
     d.execution_status.value = Status.RUNNING
     with pytest.raises(ValueError):
@@ -523,7 +523,7 @@ def test_cache() -> None:
     """Test the Discipline cache."""
     sm = SobieskiMission(enable_delay=0.1)
     sm.cache.tolerance = 1e-6
-    xs = sm.default_input_data["x_shared"]
+    xs = sm.io.input_grammar.defaults["x_shared"]
     sm.execute({"x_shared": xs})
     t0 = sm.execution_statistics.duration
     sm.execute({"x_shared": xs + 1e-12})
@@ -542,7 +542,7 @@ def test_cache_h5(tmp_wd) -> None:
     sm = SobieskiMission(enable_delay=0.1)
     hdf_file = sm.name + ".hdf5"
     sm.set_cache(sm.CacheType.HDF5, hdf_file_path=hdf_file)
-    xs = sm.default_input_data["x_shared"]
+    xs = sm.io.input_grammar.defaults["x_shared"]
     sm.execute({"x_shared": xs})
     t0 = sm.execution_statistics.duration
     sm.execute({"x_shared": xs})
@@ -565,7 +565,7 @@ def test_cache_h5_inpts(tmp_wd) -> None:
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
     sm.set_cache(sm.CacheType.HDF5, hdf_file_path=hdf_file)
-    xs = sm.default_input_data["x_shared"]
+    xs = sm.io.input_grammar.defaults["x_shared"]
     sm.execute({"x_shared": xs})
     out_ref = sm.io.data["y_4"]
     sm.execute({"x_shared": xs + 1.0})
@@ -578,7 +578,7 @@ def test_cache_memory_inpts() -> None:
     """Test the CacheType.MEMORY_FULL."""
     sm = SobieskiMission()
     sm.set_cache(sm.CacheType.MEMORY_FULL)
-    xs = sm.default_input_data["x_shared"]
+    xs = sm.io.input_grammar.defaults["x_shared"]
     sm.execute({"x_shared": xs})
     out_ref = sm.io.data["y_4"]
     sm.execute({"x_shared": xs + 1.0})
@@ -592,7 +592,7 @@ def test_cache_h5_jac(tmp_wd) -> None:
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
     sm.set_cache(sm.CacheType.HDF5, hdf_file_path=hdf_file)
-    xs = sm.default_input_data["x_shared"]
+    xs = sm.io.input_grammar.defaults["x_shared"]
     input_data = {"x_shared": xs}
     jac_1 = sm.linearize(input_data, compute_all_jacobians=True)
     sm.execute(input_data)
@@ -641,7 +641,7 @@ def test_cache_run_and_linearize() -> None:
     sm._run = run_and_lin
     sm.set_cache(sm.CacheType.SIMPLE)
     sm.execute()
-    assert sm.cache[sm.default_input_data].jacobian is not None
+    assert sm.cache[sm.io.input_grammar.defaults].jacobian is not None
 
     sm.linearize()
     # Cache must be loaded
@@ -690,7 +690,7 @@ def test_jac_cache_trigger_shapecheck() -> None:
     # and jacobian is called again but with new i/o
     # it will compute the jacobian with the new i/o
     aero = SobieskiAerodynamics("complex128")
-    inpts = aero.default_input_data
+    inpts = aero.io.input_grammar.defaults
     aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     in_names = ["x_2", "y_12"]
     aero.add_differentiated_inputs(in_names)
@@ -720,9 +720,7 @@ def test_has_jacobian() -> None:
     class Aero2(SobieskiAerodynamics):
         def _run(self, input_data: StrKeyMapping):
             output_data = super()._run(input_data)
-            self._compute_jacobian(
-                self.io.input_grammar.names, self.io.output_grammar.names
-            )
+            self._compute_jacobian(self.io.input_grammar, self.io.output_grammar)
             self._has_jacobian = True
             return output_data
 
@@ -852,7 +850,7 @@ def test_grammar_inheritance() -> None:
 
     # The discipline works correctly as the parent class has IO grammar files.
     discipline = NewSellar1()
-    assert "x_1" in discipline.io.input_grammar.names
+    assert "x_1" in discipline.io.input_grammar
 
 
 # @pytest.mark.parametrize(
@@ -962,8 +960,8 @@ def test_add_differentiated_io_non_numeric(
         expected_diff_outputs: The expected differentiated outputs.
     """
     discipline = DummyDiscipline()
-    discipline.input_grammar.update_from_data(inputs)
-    discipline.output_grammar.update_from_data(outputs)
+    discipline.io.input_grammar.update_from_data(inputs)
+    discipline.io.output_grammar.update_from_data(outputs)
     discipline.add_differentiated_inputs()
     discipline.add_differentiated_outputs()
     assert discipline._differentiated_input_names == expected_diff_inputs
@@ -1071,7 +1069,7 @@ def self_coupled_disc() -> Discipline:
     """A minimalist self-coupled discipline, where the self-coupled variable is
     multiplied by two."""
     disc = AnalyticDiscipline({"x": "2*x", "y": "x"})
-    disc.default_input_data["x"] = array([1])
+    disc.io.input_grammar.defaults["x"] = array([1])
     return disc
 
 
@@ -1101,10 +1099,10 @@ def test_self_coupled(self_coupled_disc, name, group, value) -> None:
 def test_virtual_exe() -> None:
     """Tests the discipline virtual execution."""
     disc_1 = DummyDiscipline("d1")
-    disc_1.input_grammar.update_from_names(["x"])
-    disc_1.default_input_data = {"x": ones([1])}
-    disc_1.output_grammar.update_from_names(["y"])
-    disc_1.output_grammar.defaults = {"y": ones([1])}
+    disc_1.io.input_grammar.update_from_names(["x"])
+    disc_1.io.input_grammar.defaults = {"x": ones([1])}
+    disc_1.io.output_grammar.update_from_names(["y"])
+    disc_1.io.output_grammar.defaults = {"y": ones([1])}
 
     disc_1.status = Status.DONE
     disc_1.virtual_execution = True
@@ -1128,8 +1126,8 @@ class DisciplineWithPaths(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_types({"path": Path})
-        self.output_grammar.update_from_types({"out_path": Path})
+        self.io.input_grammar.update_from_types({"path": Path})
+        self.io.output_grammar.update_from_types({"out_path": Path})
         self.local_path = Path()
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

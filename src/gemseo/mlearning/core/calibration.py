@@ -144,8 +144,8 @@ class MLAlgoAssessor(Discipline):
             ValueError: If the measure option "multioutput" is True.
         """  # noqa: D205 D212
         super().__init__()
-        self.input_grammar.update_from_names(parameters)
-        self.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
+        self.io.input_grammar.update_from_names(parameters)
+        self.io.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
         self.algo = algo
         self.measure = measure
         self.measure_options = dict(measure_options)

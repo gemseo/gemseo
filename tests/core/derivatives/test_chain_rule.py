@@ -213,7 +213,7 @@ def test_chain_jac_random_with_couplings(
 #     from time import time
 #     t0=time()
 #     traverse_add_diff_io(coupling_structure.graph.graph,
-#     disciplines[0].io.input_grammar.names,
-#         disciplines[-1].io.output_grammar.names)
+#     disciplines[0].io.input_grammar,
+#         disciplines[-1].io.output_grammar)
 #
 #     raise ValueError(str(len(disciplines))+ " time = "+str(time()-t0))

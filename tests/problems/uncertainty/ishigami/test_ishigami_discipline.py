@@ -40,9 +40,11 @@ def test_init(discipline) -> None:
     """Check the instantiation of the discipline."""
     assert discipline.name == "IshigamiDiscipline"
     input_names = ["x1", "x2", "x3"]
-    assert list(discipline.input_grammar.names) == input_names
-    assert list(discipline.output_grammar.names) == ["y"]
-    assert discipline.default_input_data == {name: array([0.0]) for name in input_names}
+    assert list(discipline.io.input_grammar) == input_names
+    assert list(discipline.io.output_grammar) == ["y"]
+    assert discipline.io.input_grammar.defaults == {
+        name: array([0.0]) for name in input_names
+    }
 
 
 def test_execute(discipline, input_values) -> None:
@@ -58,6 +60,6 @@ def test_gradient(discipline, input_values) -> None:
         input_data=input_values[0], compute_all_jacobians=True
     )["y"]
     assert_equal(
-        array([gradient[name][0, 0] for name in discipline.input_grammar.names]),
+        array([gradient[name][0, 0] for name in discipline.io.input_grammar]),
         compute_gradient(input_values[1]),
     )

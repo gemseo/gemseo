@@ -114,10 +114,10 @@ class MDANewtonRaphson(BaseMDARoot):
         the coupling sizes needed for Newton.
         """
         for discipline in self.disciplines:
-            inputs_to_linearize = set(discipline.io.input_grammar.names).intersection(
+            inputs_to_linearize = set(discipline.io.input_grammar).intersection(
                 self._resolved_variable_names
             )
-            outputs_to_linearize = set(discipline.io.output_grammar.names).intersection(
+            outputs_to_linearize = set(discipline.io.output_grammar).intersection(
                 self._resolved_variable_names
             )
 

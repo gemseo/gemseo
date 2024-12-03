@@ -43,7 +43,7 @@ def discipline_and_data(tmp_wd):
     path_to_input_data = tmp_wd / "inputs.pckl"
     with path_to_input_data.open("wb") as outf:
         pickler = pickle.Pickler(outf, protocol=2)
-        pickler.dump((discipline.default_input_data, (), ()))
+        pickler.dump((discipline.io.input_grammar.defaults, (), ()))
     return path_to_discipline, path_to_outputs, path_to_input_data, discipline
 
 
@@ -119,7 +119,7 @@ def test_run_discipline_save_outputs(discipline_and_data) -> None:
     outputs_path = Path("outputs.pckl")
     _run_discipline_save_outputs(
         discipline,
-        discipline.default_input_data,
+        discipline.io.input_grammar.defaults,
         outputs_path,
         False,
         False,
@@ -151,7 +151,7 @@ def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
     outputs_path = Path("outputs.pckl")
     return_code = _run_discipline_save_outputs(
         discipline,
-        discipline.default_input_data,
+        discipline.io.input_grammar.defaults,
         outputs_path,
         False,
         False,
@@ -195,7 +195,7 @@ def test_path_serialization(tmp_wd) -> None:
 
     with open(path_to_input_data, "wb") as outf:
         pickler = pickle.Pickler(outf, protocol=2)
-        pickler.dump((discipline.default_input_data, (), ()))
+        pickler.dump((discipline.io.input_grammar.defaults, (), ()))
 
     completed = subprocess.run(
         f"gemseo-deserialize-run {path_to_discipline} "

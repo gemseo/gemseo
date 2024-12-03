@@ -86,14 +86,16 @@ class BaseFunctor:
         self.__ode_discipline = ode_discipline
         excluded_names = [time_name, *state_names]
         self.__parameter_names = tuple(
-            name for name in discipline.default_input_data if name not in excluded_names
+            name
+            for name in discipline.io.input_grammar.defaults
+            if name not in excluded_names
         )
         generator = DisciplineAdapterGenerator(discipline=discipline)
         if isinstance(state_names, Mapping):
             output_names = state_names.values()
             state_names = tuple(state_names.keys())
         else:
-            output_names = discipline.io.output_grammar.names
+            output_names = discipline.io.output_grammar
 
         self._adapter = generator.get_function(
             input_names=[
@@ -118,7 +120,7 @@ class BaseFunctor:
             array([time]),
             state,
             concatenate_dict_of_arrays_to_array(
-                self.__ode_discipline.local_data,
+                self.__ode_discipline.io.data,
                 names=self.__parameter_names,
             ),
         ))

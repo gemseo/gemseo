@@ -40,9 +40,7 @@ def problem():
 def test_dfuelweightdtoverc(problem) -> None:
     h = 1e-30
     sr = problem.structure
-    indata = problem.get_default_inputs(
-        names=SobieskiStructure().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiStructure().io.input_grammar)
     x_shared = indata["x_shared"]
     lin_wf = sr._SobieskiStructure__compute_dfuelwing_dtoverc(x_shared[3], x_shared[5])
     x_shared[0] += 1j * h
@@ -58,9 +56,7 @@ def test_dfuelweightdtoverc(problem) -> None:
 def test_dfuelweightd_ar(problem) -> None:
     h = 1e-30
     sr = problem.structure
-    indata = problem.get_default_inputs(
-        names=SobieskiStructure().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiStructure().io.input_grammar)
     x_shared = indata["x_shared"]
     lin_wf = sr._SobieskiStructure__compute_dfuelwing_dar(
         x_shared[0], x_shared[3], x_shared[5]
@@ -78,9 +74,7 @@ def test_dfuelweightd_ar(problem) -> None:
 def test_dfuelweightdsref(problem) -> None:
     h = 1e-30
     sr = problem.structure
-    indata = problem.get_default_inputs(
-        names=SobieskiStructure().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiStructure().io.input_grammar)
     x_shared = indata["x_shared"]
     lin_wf = sr._SobieskiStructure__compute_dfuelwing_dsref(
         x_shared[0], x_shared[3], x_shared[5]
@@ -98,23 +92,23 @@ def test_dfuelweightdsref(problem) -> None:
 def test_jac_structure(problem) -> None:
     """"""
     sr = SobieskiStructure("complex128")
-    indata = problem.get_default_inputs(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
 
-    indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
 
-    indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
 
     for _ in range(5):
-        indata = problem.get_random_input(names=sr.io.input_grammar.names, seed=1)
+        indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
         assert sr.check_jacobian(
             indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
         )

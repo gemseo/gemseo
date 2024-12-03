@@ -73,8 +73,8 @@ class Ishigami1D(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["x1", "x2", "x3"])
-        self.output_grammar.update_from_names(["out"])
+        self.io.input_grammar.update_from_names(["x1", "x2", "x3"])
+        self.io.output_grammar.update_from_names(["out"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         local_data = self.io.data

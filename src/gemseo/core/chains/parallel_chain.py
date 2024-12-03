@@ -95,11 +95,11 @@ class MDOParallelChain(ProcessDiscipline):
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        self.input_grammar.clear()
-        self.output_grammar.clear()
+        self.io.input_grammar.clear()
+        self.io.output_grammar.clear()
         for discipline in self.disciplines:
-            self.input_grammar.update(discipline.input_grammar)
-            self.output_grammar.update(discipline.output_grammar)
+            self.io.input_grammar.update(discipline.io.input_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _get_input_data_copies(self) -> list[DisciplineData]:
         """Return copies of the input data, one per discipline.
@@ -130,7 +130,7 @@ class MDOParallelChain(ProcessDiscipline):
         for discipline in self.disciplines:
             self.io.data.update({
                 output_name: discipline.io.data[output_name]
-                for output_name in discipline.io.output_grammar.names
+                for output_name in discipline.io.output_grammar
             })
 
     def _compute_jacobian(
@@ -176,7 +176,7 @@ class MDOParallelChain(ProcessDiscipline):
         """
         diff_inpts = set(input_names)
         for discipline in self.disciplines:
-            inputs_set = set(discipline.io.input_grammar.names) & diff_inpts
+            inputs_set = set(discipline.io.input_grammar) & diff_inpts
             if inputs_set:
                 discipline.add_differentiated_inputs(list(inputs_set))
 
@@ -195,6 +195,6 @@ class MDOParallelChain(ProcessDiscipline):
         """
         diff_outpts = set(output_names)
         for discipline in self.disciplines:
-            outputs_set = set(discipline.io.output_grammar.names) & diff_outpts
+            outputs_set = set(discipline.io.output_grammar) & diff_outpts
             if outputs_set:
                 discipline.add_differentiated_outputs(list(outputs_set))

@@ -164,7 +164,7 @@ class SurrogateDiscipline(Discipline):
         self.add_differentiated_inputs()
         self.add_differentiated_outputs()
         try:
-            self.regression_model.predict_jacobian(self.default_input_data)
+            self.regression_model.predict_jacobian(self.io.input_grammar.defaults)
             self.linearization_mode = self.LinearizationMode.AUTO
         except NotImplementedError:
             self.linearization_mode = self.LinearizationMode.FINITE_DIFFERENCES
@@ -199,10 +199,10 @@ class SurrogateDiscipline(Discipline):
             output_names: The names of the discipline outputs.
                 If empty, use all the outputs of the regression model.
         """
-        self.input_grammar.update_from_names(
+        self.io.input_grammar.update_from_names(
             input_names or self.regression_model.input_names
         )
-        self.output_grammar.update_from_names(
+        self.io.output_grammar.update_from_names(
             output_names or self.regression_model.output_names
         )
 
@@ -217,9 +217,9 @@ class SurrogateDiscipline(Discipline):
                If empty, use the center of the learning input space.
         """
         if default_input_data:
-            self.default_input_data = default_input_data
+            self.io.input_grammar.defaults = default_input_data
         else:
-            self.default_input_data = self.regression_model.input_space_center
+            self.io.input_grammar.defaults = self.regression_model.input_space_center
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         output_data = {}

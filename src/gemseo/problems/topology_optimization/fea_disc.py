@@ -96,9 +96,9 @@ class FiniteElementAnalysis(Discipline):
         self.fixednodes = fixed_nodes
         self.fixed_dir = fixed_dir
         self.prepare_fea()
-        self.input_grammar.update_from_names(["E"])
-        self.output_grammar.update_from_names(["compliance"])
-        self.default_input_data = {"E": ones(self.N_elements)}
+        self.io.input_grammar.update_from_names(["E"])
+        self.io.output_grammar.update_from_names(["compliance"])
+        self.io.input_grammar.defaults = {"E": ones(self.N_elements)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         em = input_data["E"]

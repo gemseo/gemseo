@@ -109,8 +109,8 @@ class ScalableProblem(unittest.TestCase):
         sizes = {}
 
         for disc in ScalableProblem.original_disciplines:
-            input_names = disc.io.input_grammar.names
-            output_names = disc.io.output_grammar.names
+            input_names = disc.io.input_grammar
+            output_names = disc.io.output_grammar
             for name in list(set(input_names) | set(output_names)):
                 value = self._determine_size(name)
                 sizes[name] = value.size
@@ -125,7 +125,7 @@ class ScalableProblem(unittest.TestCase):
             for discipline in ScalableProblem.original_disciplines:
                 input_names = [
                     name
-                    for name in discipline.io.input_grammar.names
+                    for name in discipline.io.input_grammar
                     if not name.startswith("c_")
                 ]
                 for input_name in input_names:

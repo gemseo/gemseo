@@ -190,10 +190,10 @@ def test_16_disc_parallel() -> None:
 def test_simple_grammar_type(in_gtype) -> None:
     disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines)
-    assert isinstance(mda.input_grammar, SimpleGrammar)
-    assert isinstance(mda.mdo_chain.input_grammar, SimpleGrammar)
+    assert isinstance(mda.io.input_grammar, SimpleGrammar)
+    assert isinstance(mda.mdo_chain.io.input_grammar, SimpleGrammar)
     for inner_mda in mda.inner_mdas:
-        assert isinstance(inner_mda.input_grammar, SimpleGrammar)
+        assert isinstance(inner_mda.io.input_grammar, SimpleGrammar)
 
 
 @pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
@@ -402,8 +402,8 @@ def test_initialize_defaults() -> None:
         chain.execute()
 
     chain = MDAChain(disciplines, initialize_defaults=True)
-    assert "z" not in chain.default_input_data
+    assert "z" not in chain.io.input_grammar.defaults
     chain.execute({"z": array([0])})
     # Tests that the default inputs are well udapted
-    assert "z" in chain.default_input_data
+    assert "z" in chain.io.input_grammar.defaults
     chain.execute({"z": array([2])})

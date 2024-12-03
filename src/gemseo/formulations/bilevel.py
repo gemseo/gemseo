@@ -180,9 +180,7 @@ class BiLevel(BaseMDOFormulation):
         couplings = self.coupling_structure.all_couplings
         mda2_inputs = self._get_mda2_inputs()
         top_disc = scenario.formulation.get_top_level_disciplines()
-        top_outputs = [
-            outpt for disc in top_disc for outpt in disc.io.output_grammar.names
-        ]
+        top_outputs = [outpt for disc in top_disc for outpt in disc.io.output_grammar]
 
         # Output couplings of scenario are given to MDA for speedup
         if output_functions:
@@ -215,7 +213,7 @@ class BiLevel(BaseMDOFormulation):
         couplings = self.coupling_structure.all_couplings
         mda1_outputs = self._get_mda1_outputs()
         top_disc = scenario.formulation.get_top_level_disciplines()
-        top_inputs = [inpt for disc in top_disc for inpt in disc.io.input_grammar.names]
+        top_inputs = [inpt for disc in top_disc for inpt in disc.io.input_grammar]
 
         # All couplings of the scenarios are taken from the MDA
         adapter_inputs = list(
@@ -235,7 +233,7 @@ class BiLevel(BaseMDOFormulation):
         Returns:
              The MDA1 outputs.
         """
-        return list(self._mda1.io.output_grammar.names) if self._mda1 else []
+        return list(self._mda1.io.output_grammar) if self._mda1 else []
 
     def _get_mda2_inputs(self) -> list[str]:
         """Return the MDA2 inputs.
@@ -243,7 +241,7 @@ class BiLevel(BaseMDOFormulation):
         Returns:
              The MDA2 inputs.
         """
-        return list(self._mda2.io.input_grammar.names) if self._mda2 else []
+        return list(self._mda2.io.input_grammar) if self._mda2 else []
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:
@@ -375,14 +373,14 @@ class BiLevel(BaseMDOFormulation):
         variable_names = [
             name
             for adapter in self.scenario_adapters
-            for name in adapter.io.output_grammar.names
+            for name in adapter.io.output_grammar
         ]
         if self._mda1:
-            for variable_name in self._mda1.io.output_grammar.names:
+            for variable_name in self._mda1.io.output_grammar:
                 if variable_name not in variable_names:
                     variable_names.append(variable_name)
         if self._mda2:
-            for variable_name in self._mda2.io.output_grammar.names:
+            for variable_name in self._mda2.io.output_grammar:
                 if variable_name not in variable_names:
                     variable_names.append(variable_name)
 

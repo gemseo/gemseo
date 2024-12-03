@@ -139,7 +139,7 @@ class PropaneReaction(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.default_input_data = {
+        self.io.input_grammar.defaults = {
             "x_shared": ones(4, dtype=complex128),
             "y_1": ones(2, dtype=complex128),
             "y_2": ones(2, dtype=complex128),
@@ -253,7 +253,7 @@ class PropaneComb1(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
+        self.io.input_grammar.defaults = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x_shared = input_data["x_shared"]
@@ -297,7 +297,7 @@ class PropaneComb2(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
+        self.io.input_grammar.defaults = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x_shared = input_data["x_shared"]
@@ -344,7 +344,7 @@ class PropaneComb3(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.default_input_data = {"x_shared": ones(4, dtype=complex128)}
+        self.io.input_grammar.defaults = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x_shared = input_data["x_shared"]

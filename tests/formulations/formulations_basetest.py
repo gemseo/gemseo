@@ -36,10 +36,10 @@ class FakeDiscipline(Discipline):
 
     def __init__(self, name: str):
         super().__init__(name)
-        self.input_grammar = JSONGrammar("inputs")
-        self.input_grammar.update_from_data({self.name + "_x": 0.0})
-        self.output_grammar = JSONGrammar("outputs")
-        self.output_grammar.update_from_data({self.name + "_y": 1.0})
+        self.io.input_grammar = JSONGrammar("inputs")
+        self.io.input_grammar.update_from_data({self.name + "_x": 0.0})
+        self.io.output_grammar = JSONGrammar("outputs")
+        self.io.output_grammar.update_from_data({self.name + "_y": 1.0})
 
 
 class FormulationsBaseTest(unittest.TestCase):

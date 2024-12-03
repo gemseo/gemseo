@@ -52,8 +52,8 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 def discipline() -> AnalyticDiscipline:
     """A linear discipline with two outputs."""
     disc = AnalyticDiscipline({"y1": "1+a1*x1+a2*x2", "y2": "-1-a1*x1-a2*x2"})
-    disc.default_input_data["a1"] = array([2.0])
-    disc.default_input_data["a2"] = array([3.0])
+    disc.io.input_grammar.defaults["a1"] = array([2.0])
+    disc.io.input_grammar.defaults["a2"] = array([3.0])
     return disc
 
 

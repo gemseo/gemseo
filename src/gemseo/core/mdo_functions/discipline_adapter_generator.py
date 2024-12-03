@@ -105,18 +105,18 @@ class DisciplineAdapterGenerator:
         input_names = self._get_names(
             "inputs",
             input_names,
-            self.discipline.input_grammar,
+            self.discipline.io.input_grammar,
         )
         output_names = self._get_names(
             "outputs",
             output_names,
-            self.discipline.output_grammar,
+            self.discipline.io.output_grammar,
         )
         if differentiated_input_names_substitute:
             self._get_names(
                 "inputs",
                 differentiated_input_names_substitute,
-                self.discipline.input_grammar,
+                self.discipline.io.input_grammar,
             )
         else:
             differentiated_input_names_substitute = input_names

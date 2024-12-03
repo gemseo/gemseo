@@ -381,7 +381,7 @@ def get_discipline_inputs_schema(
         >>> discipline = create_discipline("Sellar1")
         >>> schema = get_discipline_inputs_schema(discipline, pretty_print=True)
     """
-    return _get_schema(discipline.input_grammar, output_json, pretty_print)
+    return _get_schema(discipline.io.input_grammar, output_json, pretty_print)
 
 
 def get_discipline_outputs_schema(
@@ -404,7 +404,7 @@ def get_discipline_outputs_schema(
         >>> discipline = create_discipline("Sellar1")
         >>> get_discipline_outputs_schema(discipline, pretty_print=True)
     """
-    return _get_schema(discipline.output_grammar, output_json, pretty_print)
+    return _get_schema(discipline.io.output_grammar, output_json, pretty_print)
 
 
 def get_available_post_processings() -> list[str]:

@@ -926,7 +926,7 @@ def test_grad_normalization(pow2_problem) -> None:
 def test_2d_objective() -> None:
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
-    inputs = disc.io.input_grammar.names
+    inputs = disc.io.input_grammar
     design_space.filter([name for name in inputs if not name.startswith("c_")])
     doe_scenario = DOEScenario(
         [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"

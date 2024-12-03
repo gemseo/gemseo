@@ -91,9 +91,9 @@ class AnalyticDiscipline(Discipline):
         self._sympy_jac_exprs = {}
         self._sympy_jac_funcs = {}
         self._init_expressions()
-        self.input_grammar.update_from_names(self.input_names)
-        self.output_grammar.update_from_names(self.expressions.keys())
-        self.default_input_data = {name: zeros(1) for name in self.input_names}
+        self.io.input_grammar.update_from_names(self.input_names)
+        self.io.output_grammar.update_from_names(self.expressions.keys())
+        self.io.input_grammar.defaults = {name: zeros(1) for name in self.input_names}
 
     def _init_expressions(self) -> None:
         """Parse the expressions of the functions and their derivatives.

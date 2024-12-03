@@ -90,35 +90,27 @@ def test_init_power_sg() -> None:
 
 def test_execute_range_sg() -> None:
     sr = SobieskiMissionSG("complex128")
-    indata = SobieskiProblem("complex128").get_default_inputs(
-        names=sr.io.input_grammar.names
-    )
+    indata = SobieskiProblem("complex128").get_default_inputs(names=sr.io.input_grammar)
     sr.execute(indata)
     sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_weight_sg() -> None:
     sr = SobieskiStructureSG("float64")
-    indata = SobieskiProblem("float64").get_default_inputs(
-        names=sr.io.input_grammar.names
-    )
+    indata = SobieskiProblem("float64").get_default_inputs(names=sr.io.input_grammar)
     sr.execute(indata)
     sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_power_sg() -> None:
     sr = SobieskiPropulsionSG("float64")
-    indata = SobieskiProblem("float64").get_default_inputs(
-        names=sr.io.input_grammar.names
-    )
+    indata = SobieskiProblem("float64").get_default_inputs(names=sr.io.input_grammar)
     sr.execute(indata)
     sr.linearize(indata, compute_all_jacobians=True)
 
 
 def test_execute_aerodynamics_sg() -> None:
     sr = SobieskiAerodynamicsSG("float64")
-    indata = SobieskiProblem("float64").get_default_inputs(
-        names=sr.io.input_grammar.names
-    )
+    indata = SobieskiProblem("float64").get_default_inputs(names=sr.io.input_grammar)
     sr.execute(indata)
     sr.linearize(indata, compute_all_jacobians=True)

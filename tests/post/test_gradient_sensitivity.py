@@ -92,7 +92,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     """
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
-    inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
+    inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario(
         [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"

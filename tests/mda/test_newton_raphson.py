@@ -141,7 +141,7 @@ def test_raphson_sobieski(coupl_scaling) -> None:
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
     mda.settings.warm_start = True
-    mda.execute({"x_1": mda.default_input_data["x_1"] + 1.0e-2})
+    mda.execute({"x_1": mda.io.input_grammar.defaults["x_1"] + 1.0e-2})
     assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
 
 
@@ -269,7 +269,7 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
     mda_ref = MDAChain(disciplines)
     out_ref = mda_ref.execute(mda_input)
 
-    for output_name in mda.io.output_grammar.names:
+    for output_name in mda.io.output_grammar:
         if output_name == mda.NORMALIZED_RESIDUAL_NORM:
             continue
         assert out[output_name] == pytest.approx(out_ref[output_name], rel=1e-5)

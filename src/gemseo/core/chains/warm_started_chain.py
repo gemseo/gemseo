@@ -61,7 +61,7 @@ class MDOWarmStartedChain(MDOChain):
         if variable_names_to_warm_start and not self.io.output_grammar.has_names(
             variable_names_to_warm_start
         ):
-            all_output_names = self.io.output_grammar.names
+            all_output_names = self.io.output_grammar
             missing_output_names = set(variable_names_to_warm_start).difference(
                 all_output_names
             )

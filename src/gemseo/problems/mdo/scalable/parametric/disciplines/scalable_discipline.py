@@ -87,7 +87,7 @@ class ScalableDiscipline(BaseDiscipline):
         self.__x_i_name = get_x_local_name(self._discipline.index)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        if self.__u_i_name in self.input_grammar:
+        if self.__u_i_name in self.io.input_grammar:
             u_i = input_data[self.__u_i_name]
         else:
             u_i = 0

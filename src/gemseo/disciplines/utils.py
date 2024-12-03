@@ -77,7 +77,7 @@ def get_all_inputs(
     return sorted(
         set.union(
             *(
-                set(discipline.io.input_grammar.names)
+                set(discipline.io.input_grammar)
                 for discipline in __get_all_disciplines(
                     disciplines, skip_scenarios=skip_scenarios
                 )
@@ -103,7 +103,7 @@ def get_all_outputs(
     return sorted(
         set.union(
             *(
-                set(discipline.io.output_grammar.names)
+                set(discipline.io.output_grammar)
                 for discipline in __get_all_disciplines(
                     disciplines, skip_scenarios=skip_scenarios
                 )
@@ -200,7 +200,7 @@ def check_disciplines_consistency(
     """
     output_names_until_now = set()
     for discipline in disciplines:
-        new_output_names = set(discipline.io.output_grammar.names)
+        new_output_names = set(discipline.io.output_grammar)
         already_existing_output_names = new_output_names & output_names_until_now
         if already_existing_output_names:
             if raise_error:

@@ -60,6 +60,6 @@ class BaseDiscipline(Discipline):
             *core_discipline_parameters, **default_input_values
         )
         super().__init__(self._discipline.name)
-        self.input_grammar.update_from_names(self._discipline.input_names)
-        self.output_grammar.update_from_names(self._discipline.output_names)
-        self.default_input_data = default_input_values
+        self.io.input_grammar.update_from_names(self._discipline.input_names)
+        self.io.output_grammar.update_from_names(self._discipline.output_names)
+        self.io.input_grammar.defaults = default_input_values

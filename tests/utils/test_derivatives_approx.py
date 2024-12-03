@@ -160,7 +160,7 @@ def test_complex_fail() -> None:
         derr_approx=discipline.ApproximationMode.COMPLEX_STEP
     )
 
-    data = deepcopy(discipline.default_input_data)
+    data = deepcopy(discipline.io.input_grammar.defaults)
     data["x_shared"] += 0.1j
     with pytest.raises(ValueError):
         discipline.check_jacobian(
@@ -266,9 +266,9 @@ class ToyDiscipline(Discipline):
 
     def __init__(self, dtype) -> None:
         super().__init__()
-        self.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
-        self.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})
-        self.default_input_data = {
+        self.io.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
+        self.io.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})
+        self.io.input_grammar.defaults = {
             "x1": dtype(1.0),
             "x2": array([1.0, 1.0], dtype=dtype),
         }

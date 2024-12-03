@@ -373,7 +373,7 @@ def create_mass_ode_discipline(
         input_mapping,
         output_mapping,
     )
-    renamed_mass_discipline.input_grammar.restrict_to(input_mapping.keys())
+    renamed_mass_discipline.io.input_grammar.restrict_to(input_mapping.keys())
 
     return ODEDiscipline(
         discipline=renamed_mass_discipline,

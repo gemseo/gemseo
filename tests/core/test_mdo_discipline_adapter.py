@@ -104,7 +104,7 @@ def test_discipline_local_data(disciplinary_function) -> None:
 
 def test_discipline_default_inputs(disciplinary_function) -> None:
     """Check that input sizes can be guessed from the discipline's default inputs."""
-    disciplinary_function._DisciplineAdapter__discipline.default_input_data.update({
+    disciplinary_function._DisciplineAdapter__discipline.io.input_grammar.defaults.update({
         "x": array([1.0])
     })
     check_func_and_jac_evaluation(disciplinary_function)

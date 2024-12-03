@@ -140,15 +140,16 @@ class MDAGaussSeidel(BaseMDASolver):
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
         if self.settings.max_mda_iter == 0:
-            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
         for discipline in self.disciplines:
-            self.input_grammar.update(
-                discipline.input_grammar, excluded_names=self.output_grammar.keys()
+            self.io.input_grammar.update(
+                discipline.io.input_grammar,
+                excluded_names=self.io.output_grammar,
             )
-            self.output_grammar.update(discipline.output_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT

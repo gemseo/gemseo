@@ -52,7 +52,7 @@ def test_time_stamps(reset_time_stamping) -> None:
     """Tests the time stamps storage."""
     mission = create_discipline("SobieskiMission", enable_delay=True)
     mission.execute()
-    data = {"x_shared": mission.default_input_data["x_shared"] + 1.0}
+    data = {"x_shared": mission.io.input_grammar.defaults["x_shared"] + 1.0}
     mission.linearize(data, compute_all_jacobians=True)
     stamps = ExecutionStatistics.time_stamps
 
