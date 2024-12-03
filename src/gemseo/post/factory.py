@@ -26,6 +26,7 @@ from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
+from gemseo.utils.pydantic import get_class_name
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -57,10 +58,7 @@ class PostFactory(BaseFactory[BasePost[Any]]):
         Returns:
             The post-processor.
         """
-        if settings_model is None:
-            post_name = settings.pop("post_name")
-        else:
-            post_name = settings_model._TARGET_CLASS_NAME
+        post_name = get_class_name(settings_model, settings, class_name_arg="post_name")
         post = self.create(post_name, opt_problem)
         post.execute(settings_model=settings_model, **settings)
         return post

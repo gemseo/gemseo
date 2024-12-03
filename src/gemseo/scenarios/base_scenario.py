@@ -54,6 +54,7 @@ from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+from gemseo.utils.pydantic import get_class_name
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -217,10 +218,11 @@ class BaseScenario(BaseMonitoredProcess):
 
         self.optimization_result = None
         self.clear_history_before_execute = False
-        if formulation_settings_model is None:
-            formulation_name = formulation_settings.pop("formulation_name")
-        else:
-            formulation_name = formulation_settings_model._TARGET_CLASS_NAME
+        formulation_name = get_class_name(
+            formulation_settings_model,
+            formulation_settings,
+            class_name_arg="formulation_name",
+        )
 
         self._init_formulation(
             formulation_name,
