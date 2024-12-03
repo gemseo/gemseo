@@ -70,7 +70,7 @@ class TaylorDiscipline(Discipline):
 
         discipline.linearize(compute_all_jacobians=True, input_data=input_data)
         super().__init__(name=name)
-        self.io.input_grammar.update_from_names(input_names)
+        self.io.input_grammar.update_from_names(discipline.io.input_grammar)
         self.io.output_grammar.update_from_names(discipline.io.output_grammar)
         self.io.input_grammar.defaults = (
             input_data or discipline.io.input_grammar.defaults
