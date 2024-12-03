@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Any
 from typing import TypeVar
 
@@ -91,21 +92,30 @@ def create_model(
     raise ValueError(msg)
 
 
-def get_algo_name(settings_model: BaseModel | None, settings: dict[str, Any]) -> str:
-    """Return the algorithm name.
+def get_class_name(
+    settings_model: BaseModel | None,
+    settings: dict[str, Any],
+    class_name_arg: str = "algo_name",
+) -> str:
+    """Return the name of the class using settings defined as a Pydantic model.
 
     Args:
-        settings_model: The algorithm settings as a Pydantic model.
+        settings_model: The class settings as a Pydantic model.
             If ``None``, use ``**settings``.
-        settings: The algorithm settings,
-            including the algorithm name (use the keyword ``"algo_name"``).
-            The function will remove the ``"algo_name"`` entry.
+        settings: The settings,
+            including the class name (use the keyword ``class_name_arg``).
+            The function will remove the ``class_name_arg`` entry.
             These settings are ignored when ``settings_model`` is not ``None``.
+        class_name_arg: The name of the argument to set the class name.
 
     Returns:
-        The algorithm name.
+        The class name.
     """
     if settings_model is None:
-        return settings.pop("algo_name")
+        return settings.pop(class_name_arg)
 
     return settings_model._TARGET_CLASS_NAME
+
+
+# TODO: API: delete when algorithms become classes
+get_algo_name = partial(get_class_name, class_name_arg="algo_name")
