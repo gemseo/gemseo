@@ -36,7 +36,6 @@ from typing import Final
 from numpy import array
 from numpy import dtype
 from numpy import hstack
-from numpy import int32
 from numpy import where
 
 from gemseo.algos.base_driver_library import BaseDriverLibrary
@@ -125,11 +124,6 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     __jacobian_functions: list[MDOFunction] | None
     """The functions to compute the Jacobians, if any."""
 
-    # TODO: use DesignSpace enum once there are hashable.
-    __DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE: Final[dict[str, type]] = {
-        "float": float,
-        "integer": int32,
-    }
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"lock"}
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
@@ -210,7 +204,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             # We record the integer variables types to later be able to restore the
             # proper data type.
             python_var_types = {
-                name: self.__DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE[type_]
+                name: DesignSpace.VARIABLE_TYPES_TO_DTYPES[type_]
                 for name, type_ in variable_types.items()
                 if type_ != DesignSpace.DesignVariableType.FLOAT
             }

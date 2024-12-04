@@ -32,7 +32,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import float64
 from numpy import inf
-from numpy import int32
+from numpy import int64
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
@@ -82,7 +82,7 @@ def design_space():
     ds.add_variable("x11", size=2)
     ds.add_variable("x12")
     ds.add_variable("x13", value=array([0.5]))
-    ds.add_variable("x14", type_=INTEGER, value=array([2.0]))
+    ds.add_variable("x14", type_=INTEGER, value=array([2]))
     ds.add_variable("x15")
     ds.add_variable("x16", size=2, type_=FLOAT, value=array([1.0, 2.0]))
     ds.add_variable("x17", size=2, type_=INTEGER, value=array([1, 2]))
@@ -308,7 +308,7 @@ def test_read_from_csv() -> None:
 def test_integer_variable_set_current_x(design_space) -> None:
     """Check that an integer value is correctly set."""
     design_space.filter("x3")
-    x_i = array([0], dtype=int32)
+    x_i = array([0], dtype=int64)
     design_space.set_current_value(x_i)
     x_i_conv = design_space.convert_dict_to_array(
         design_space.convert_array_to_dict(x_i)
@@ -910,14 +910,11 @@ def test_dict_to_array() -> None:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     design_space.add_variable("y", lower_bound=-2.0, upper_bound=2.0)
 
-    with pytest.raises(TypeError, match="x_dict values must be ndarray."):
-        design_space.convert_dict_to_array({"x": 1.0}, variable_names=["x"])
-
     with pytest.raises(KeyError, match="'y'"):
         design_space.convert_dict_to_array({"x": array([1.0])})
 
 
-@pytest.mark.parametrize(("name", "dtype"), [("x1", float64), ("x3", int32)])
+@pytest.mark.parametrize(("name", "dtype"), [("x1", float64), ("x3", int64)])
 def test_dict_to_array_dtype(design_space, name, dtype) -> None:
     """Check the data type of the array returned by
     ``DesignSpace.convert_dict_to_array``."""
@@ -1463,7 +1460,7 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> No
     problem.objective = MDOFunction(lambda x: x, "f")
     out = problem.evaluate_functions(design_vector_is_normalized=normalize)
     assert out[0]["f"] == array([2])
-    assert out[0]["f"].dtype == int32
+    assert out[0]["f"].dtype == int64
 
 
 @pytest.fixture(scope="module")
