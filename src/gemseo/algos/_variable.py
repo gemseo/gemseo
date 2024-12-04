@@ -25,7 +25,7 @@ from numpy import atleast_1d
 from numpy import float64
 from numpy import full
 from numpy import inf
-from numpy import int32
+from numpy import int64
 from numpy import isfinite
 from numpy import isnan
 from numpy import logical_and
@@ -64,8 +64,8 @@ class DataType(StrEnum):
 # The mapping from a variable data type to a numpy type,
 # this is defined at the module level because pydantic does not allow class attributes
 # that are dictionary.
-_TYPE_MAP: dict[str, type[int32 | float64]] = {
-    DataType.INTEGER: int32,
+TYPE_MAP: Final[dict[str, type[int64 | float64]]] = {
+    DataType.INTEGER: int64,
     DataType.FLOAT: float64,
 }
 
@@ -131,7 +131,7 @@ class Variable(BaseModel, validate_assignment=True):
 
         if isinstance(bound, Real):
             # inf cannot be cast to int and other components rely on this value.
-            dtype = None if bound in (-inf, inf) else _TYPE_MAP[self.type]
+            dtype = None if bound in (-inf, inf) else TYPE_MAP[self.type]
             bound = full(self.size, bound, dtype=dtype)
         else:
             bound = atleast_1d(bound)

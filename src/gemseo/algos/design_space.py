@@ -66,9 +66,8 @@ from numpy import finfo
 from numpy import float64
 from numpy import full
 from numpy import genfromtxt
-from numpy import hstack
 from numpy import inf
-from numpy import int32
+from numpy import int64
 from numpy import isin
 from numpy import isinf
 from numpy import isnan
@@ -76,7 +75,6 @@ from numpy import logical_and
 from numpy import logical_or
 from numpy import mod
 from numpy import ndarray
-from numpy import number
 from numpy import ones_like
 from numpy import round as np_round
 from numpy import vectorize
@@ -84,6 +82,7 @@ from numpy import where
 from numpy import zeros_like
 from prettytable import PrettyTable
 
+from gemseo.algos._variable import TYPE_MAP
 from gemseo.algos._variable import DataType
 from gemseo.algos._variable import Variable
 from gemseo.algos.optimization_result import OptimizationResult
@@ -102,6 +101,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
+    from gemseo.typing import BooleanArray
     from gemseo.typing import IntegerArray
     from gemseo.typing import RealOrComplexArrayT
 
@@ -128,16 +128,14 @@ class DesignSpace:
     """The total dimension of the space, corresponding to the sum of the sizes of the
     variables."""
 
-    normalize: dict[str, ndarray]
+    normalize: dict[str, BooleanArray]
     """The normalization policies of the variables components indexed by the variables
     names; if `True`, the component can be normalized."""
 
     DesignVariableType = DataType
 
-    VARIABLE_TYPES_TO_DTYPES: Final[dict[str, number]] = {
-        DesignVariableType.FLOAT: float64,
-        DesignVariableType.INTEGER: int32,
-    }
+    # TODO: API: the values are not dtypes but types, either fix the values or the name.
+    VARIABLE_TYPES_TO_DTYPES: Final[dict[str, type[int64 | float64]]] = TYPE_MAP
     """One NumPy ``dtype`` per design variable type."""
 
     MINIMAL_FIELDS: ClassVar[list[str]] = ["name", "lower_bound", "upper_bound"]
@@ -149,19 +147,24 @@ class DesignSpace:
         "type",
     ]
 
-    DESIGN_SPACE_GROUP = "design_space"
-    NAME_GROUP = "name"
-    NAMES_GROUP = "names"
-    LB_GROUP = "l_b"
-    UB_GROUP = "u_b"
-    VAR_TYPE_GROUP = "var_type"
-    VALUE_GROUP = "value"
-    SIZE_GROUP = "size"
-    __INT_DTYPE = dtype("int32")
-    __FLOAT_DTYPE = dtype("float64")
-    __COMPLEX_DTYPE = dtype("complex128")
+    DESIGN_SPACE_GROUP: ClassVar[str] = "design_space"
+    NAME_GROUP: ClassVar[str] = "name"
+    NAMES_GROUP: ClassVar[str] = "names"
+    LB_GROUP: ClassVar[str] = "l_b"
+    UB_GROUP: ClassVar[str] = "u_b"
+    VAR_TYPE_GROUP: ClassVar[str] = "var_type"
+    VALUE_GROUP: ClassVar[str] = "value"
+    SIZE_GROUP: ClassVar[str] = "size"
 
-    __DEFAULT_COMMON_DTYPE = __FLOAT_DTYPE
+    __INT_DTYPE: Final[dtype[int64]] = dtype(
+        VARIABLE_TYPES_TO_DTYPES[DesignVariableType.INTEGER]
+    )
+    __FLOAT_DTYPE: Final[dtype[float64]] = dtype(
+        VARIABLE_TYPES_TO_DTYPES[DesignVariableType.FLOAT]
+    )
+    __COMPLEX_DTYPE: Final[dtype[complex128]] = dtype("complex128")
+
+    __DEFAULT_COMMON_DTYPE: Final[dtype[[float64]]] = __FLOAT_DTYPE
     """The default NumPy data type of the variables."""
 
     __CAMEL_CASE_REGEX: Final[re.Pattern] = re.compile(r"[A-Z][^A-Z]*")
@@ -235,7 +238,6 @@ class DesignSpace:
     def __update_current_metadata(self) -> None:
         """Update information about the current design value for quick access."""
         self.__update_current_status()
-        self.__update_common_dtype()
         if self.__has_current_value:
             self.__clear_dependent_data()
 
@@ -244,13 +246,6 @@ class DesignSpace:
         self.__current_value_array = array([])
         self.__norm_current_value = {}
         self.__norm_current_value_array = array([])
-
-    def __update_common_dtype(self) -> None:
-        """Update the common data type of the variables."""
-        if self.__has_current_value:
-            self.__common_dtype = self.__get_common_dtype(self.__current_value)
-        else:
-            self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
 
     def __update_current_status(self) -> None:
         """Update the availability of current design values for all the variables."""
@@ -328,7 +323,7 @@ class DesignSpace:
             self.__check_known_variable(name)
         return design_space
 
-    def filter_dimensions(self, name: str, dimensions: Iterable[int]) -> DesignSpace:
+    def filter_dimensions(self, name: str, dimensions: Sequence[int]) -> DesignSpace:
         """Filter the design space to keep a subset of dimensions for a variable.
 
         Args:
@@ -1091,13 +1086,20 @@ class DesignSpace:
         self.__norm_inds = self.convert_dict_to_array(self.normalize).nonzero()[0]
         # In case lb=ub
         norm_factor_is_zero = self._norm_factor == 0.0
-        self._norm_factor_inv = 1 / where(norm_factor_is_zero, 1, self._norm_factor)
-        self.__integer_components = concatenate([
-            [variable.type == self.DesignVariableType.INTEGER] * variable.size
-            for variable in self._variables.values()
-        ])
+        self._norm_factor_inv = 1.0 / where(norm_factor_is_zero, 1, self._norm_factor)
+        integer = self.DesignVariableType.INTEGER
+        self.__integer_components = concatenate(
+            tuple(
+                [variable.type == integer] * variable.size
+                for variable in self._variables.values()
+            )
+        )
         self.__no_integer = not self.__integer_components.any()
         self.__norm_data_is_computed = True
+        if self.__has_current_value:
+            self.__common_dtype = self.__get_common_dtype(self.__current_value.values())
+        else:
+            self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
 
     def normalize_vect(
         self,
@@ -1144,6 +1146,7 @@ class DesignSpace:
 
         # Normalize the relevant components:
         current_x_dtype = self.__common_dtype
+
         # Normalization will not work with integers.
         if current_x_dtype.kind == "i":
             current_x_dtype = self.__FLOAT_DTYPE
@@ -1300,6 +1303,7 @@ class DesignSpace:
         # Unnormalize the relevant components:
         recast_to_int = False
         current_x_dtype = self.__common_dtype
+
         # Normalization will not work with integers.
         if current_x_dtype.kind == "i":
             current_x_dtype = self.__FLOAT_DTYPE
@@ -1322,7 +1326,7 @@ class DesignSpace:
         if not self.__no_integer:
             self.round_vect(out, copy=False)
             if recast_to_int:
-                out = out.astype(int32)
+                out = out.astype(self.__INT_DTYPE)
 
         return out
 
@@ -1705,29 +1709,22 @@ class DesignSpace:
     @classmethod
     def __get_common_dtype(
         cls,
-        x_dict: Mapping[str, ndarray],
-    ) -> dtype:
-        """Return the common data type.
+        arrays: Iterable[ndarray],
+    ) -> dtype[int64] | dtype[float64] | dtype[complex128]:
+        """Return the common NumPy data type of the variable arrays.
 
-        Use the following rules by parsing the values `x_dict`:
+        Use the following rules by parsing the arrays:
 
         - there is a complex value: returns `numpy.complex128`,
         - there are real and mixed float/int values: returns `numpy.float64`,
-        - there are only integer values: returns `numpy.int32`.
+        - there are only integer values: returns `numpy.int64`.
 
         Args:
-            x_dict: The values to be parsed.
-
-        Raises:
-            TypeError: If the values of the data dictionary are not NumPy arrays.
+            arrays: The arrays to be parsed.
         """
         has_float = False
         has_int = False
-        for val_arr in x_dict.values():
-            if not isinstance(val_arr, ndarray):
-                msg = "x_dict values must be ndarray."
-                raise TypeError(msg)
-
+        for val_arr in arrays:
             if val_arr.dtype.kind == "c":
                 return cls.__COMPLEX_DTYPE
 
@@ -1767,9 +1764,10 @@ class DesignSpace:
         """
         if not variable_names:
             variable_names = self
-
-        data = {name: design_values[name] for name in variable_names}
-        return hstack(list(data.values())).astype(self.__get_common_dtype(data))
+        data = tuple(design_values[name] for name in variable_names)
+        # TODO: remove astype when numpy >= 2,
+        # since int62 will be the default on windows.
+        return concatenate(data).astype(self.__get_common_dtype(data))
 
     def get_pretty_table(
         self,
@@ -1956,8 +1954,6 @@ class DesignSpace:
         """Cast the current value to complex."""
         for name, val in self.__current_value.items():
             self.__current_value[name] = array(val, dtype=complex128)
-
-        self.__update_common_dtype()
 
     @classmethod
     def from_file(
