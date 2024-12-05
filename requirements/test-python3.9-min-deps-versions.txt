@@ -132,7 +132,7 @@ scipy==1.9.0
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-six==1.16.0
+six==1.17.0
     # via
     #   plotly
     #   python-dateutil

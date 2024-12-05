@@ -112,7 +112,7 @@ pandas==2.2.2
     # via
     #   gemseo (pyproject.toml)
     #   pandera
-pandera==0.21.0
+pandera==0.21.1
     # via gemseo (pyproject.toml)
 pbr==6.1.0
     # via sphinxcontrib-apidoc
@@ -183,7 +183,7 @@ scipy==1.13.1
     #   scikit-learn
 setuptools==75.6.0
     # via gemseo (pyproject.toml)
-six==1.16.0
+six==1.17.0
     # via
     #   pybtex
     #   python-dateutil
