@@ -194,7 +194,7 @@ def test_2_chained_masses():
     stiff_1 = 0.1
     stiff_2 = 0.1
     mass_value_1 = 10.0
-    _time_init = array([0.0])
+    time_init = array([0.0])
     times = linspace(0.0, 10, 60)
     mass_value_2 = 1.0
     stiff_3 = 1.0
@@ -207,7 +207,7 @@ def test_2_chained_masses():
     position_1_sol_init = repeat(position_1_init, len(times))
 
     def mass_0_rhs(
-        time=_time_init,
+        time=time_init,
         position_0=position_0_init,
         velocity_0=velocity_0_init,
         position_1_trajectory=position_1_sol_init,
@@ -233,7 +233,7 @@ def test_2_chained_masses():
         return position_0_dot, velocity_0_dot
 
     def mass_1_rhs(
-        time=_time_init,
+        time=time_init,
         position_1=position_1_init,
         velocity_1=velocity_1_init,
         position_0_trajectory=position_0_sol_init,

@@ -445,17 +445,17 @@ class MOERegressor(BaseRegressor):
             {self._LOCAL_OUTPUT: output_data.shape[1]},
         )
         self._fit_clusters(dataset)
-        _dataset = IODataset(dataset_name="training_set")
-        _dataset.add_group(
+        dataset_ = IODataset(dataset_name="training_set")
+        dataset_.add_group(
             dataset.INPUT_GROUP,
             input_data,
             [self._LOCAL_INPUT],
             {self._LOCAL_INPUT: input_data.shape[1]},
         )
-        _dataset.add_variable(
-            self.LABELS, self.clusterer.labels[:, newaxis], _dataset.OUTPUT_GROUP
+        dataset_.add_variable(
+            self.LABELS, self.clusterer.labels[:, newaxis], dataset_.OUTPUT_GROUP
         )
-        self._fit_classifier(_dataset)
+        self._fit_classifier(dataset_)
         self._fit_regressors(dataset)
 
     def _fit_clusters(self, dataset: Dataset) -> None:

@@ -405,11 +405,11 @@ class JSONGrammar(BaseGrammar):
         Returns:
             The original mapping cast to a JSON-interpretable object.
         """
-        _data_dict = dict(data)
+        data_dict = dict(data)
         for key, value in data.items():
-            _data_dict[key] = cls.__cast_value(value)
+            data_dict[key] = cls.__cast_value(value)
 
-        return _data_dict
+        return data_dict
 
     @classmethod
     def __cast_value(cls, value: Any) -> Any:

@@ -466,8 +466,8 @@ class Database(Mapping):
             x = x.wrapped_array
 
         for db_input_value, db_output_names_to_values in self.items():
-            _db_in_value = db_input_value.wrapped_array
-            if norm(_db_in_value - x) <= tolerance * norm(_db_in_value):
+            db_in_value = db_input_value.wrapped_array
+            if norm(db_in_value - x) <= tolerance * norm(db_in_value):
                 return db_output_names_to_values
 
         return None
@@ -1029,8 +1029,8 @@ class Database(Mapping):
         positions = []
         offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
         for input_value in input_values:
-            _positions = ((input_history == input_value).all(axis=1)).nonzero()[0]
-            positions.extend((_positions + offset).tolist())
+            positions_ = ((input_history == input_value).all(axis=1)).nonzero()[0]
+            positions.extend((positions_ + offset).tolist())
 
         data = [input_history.real]
         columns = [
@@ -1130,9 +1130,9 @@ class Database(Mapping):
                 .real
             )
             data.append(history)
-            _columns = [(group, function_name, i) for i in range(history.shape[1])]
-            columns.extend(_columns)
-            names_to_types.update(dict.fromkeys(_columns, atleast_1d(history).dtype))
+            columns_ = [(group, function_name, i) for i in range(history.shape[1])]
+            columns.extend(columns_)
+            names_to_types.update(dict.fromkeys(columns_, atleast_1d(history).dtype))
 
     @staticmethod
     def __replace_missing_values(

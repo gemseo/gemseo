@@ -416,13 +416,13 @@ def create_chained_masses(
     Returns:
         The ODE disciplines.
     """
-    _masses = [mass.mass for mass in masses]
+    masses_ = [mass.mass for mass in masses]
     positions = [mass.position for mass in masses]
     stiffnesses = [mass.left_stiffness for mass in masses]
     stiffnesses.append(last_stiffness)
 
     disciplines = []
-    for i, mass in enumerate(_masses):
+    for i, mass in enumerate(masses_):
         kwargs = {}
         if i > 0:
             kwargs["left_position_name"] = f"{POSITION}{i - 1}_trajectory"
@@ -430,7 +430,7 @@ def create_chained_masses(
         else:
             kwargs["is_left_pos_fixed"] = True
 
-        if i < (len(_masses) - 1):
+        if i < (len(masses_) - 1):
             kwargs["right_position_name"] = f"{POSITION}{i + 1}_trajectory"
             kwargs["right_position"] = array([positions[i + 1]])
         else:

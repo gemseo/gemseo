@@ -107,10 +107,10 @@ def compute_reference_n_iter():
 )
 def test_sequence_transformer(compute_reference_n_iter, transformer) -> None:
     """Tests that the sequence transform reduces the number of iterations."""
-    _transformer = factory.create(transformer)
+    transformer_ = factory.create(transformer)
 
     n_iter_ref = compute_reference_n_iter
-    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=_transformer)
+    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=transformer_)
 
     assert n_iter <= n_iter_ref
 
@@ -140,13 +140,13 @@ def test_composite(compute_reference_n_iter) -> None:
     aitken = factory.create(AccelerationMethod.AITKEN)
     relaxation = factory.create("OverRelaxation", factor=0.8)
 
-    _transformer = factory.create(
+    transformer = factory.create(
         "CompositeSequenceTransformer", sequence_transformers=[aitken, relaxation]
     )
 
     n_iter_ref = compute_reference_n_iter
-    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=_transformer)
+    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=transformer)
 
     assert n_iter <= n_iter_ref
 
-    _transformer.clear()
+    transformer.clear()

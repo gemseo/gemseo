@@ -165,11 +165,11 @@ class ScalableDiscipline(BaseDiscipline):
         if u_i is None:
             u_i = self.input_names_to_default_values.get(self.__u_i_name, 0.0)
 
-        _y_j = {
+        y_j_ = {
             name: self.input_names_to_default_values[name]
             for name in self.coefficients.C_ij
         }
-        _y_j.update(y_j)
+        y_j_.update(y_j)
 
         if compute_jacobian:
             jacobian = {}
@@ -197,6 +197,6 @@ class ScalableDiscipline(BaseDiscipline):
             - self.coefficients.D_ii @ x_i
         )
         for y_j_name, _C_ij in self.coefficients.C_ij.items():  # noqa: N806
-            y_i += _C_ij @ _y_j[y_j_name]
+            y_i += _C_ij @ y_j_[y_j_name]
 
         return {self.output_names[0]: y_i + u_i}

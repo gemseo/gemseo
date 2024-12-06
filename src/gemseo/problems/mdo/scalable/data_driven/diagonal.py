@@ -291,7 +291,7 @@ class ScalableDiagonalModel(ScalableModel):
         if add_levels and not is_binary_matrix:
             for i in range(dependency_matrix.shape[0]):
                 for j in range(dependency_matrix.shape[1]):
-                    val = int(round(dependency_matrix[i, j] * 100))
+                    val = round(dependency_matrix[i, j] * 100)
                     med = median(dependency_matrix[:, j] * 100)
                     col = "white" if val > med else "black"
                     ax.text(j, i, val, ha="center", va="center", color=col)

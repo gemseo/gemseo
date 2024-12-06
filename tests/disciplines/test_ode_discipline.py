@@ -154,14 +154,14 @@ def test_oscillator_different_initial_condition() -> None:
 
 def test_ode_discipline_bad_grammar() -> None:
     """Test error messages when passing an ill-formed grammar."""
-    _initial_time = array([0.0])
-    _initial_position = array([0.0])
-    _initial_velocity = array([1.0])
+    initial_time = array([0.0])
+    initial_position = array([0.0])
+    initial_velocity = array([1.0])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = -4 * position
@@ -183,14 +183,14 @@ def test_ode_discipline_bad_grammar() -> None:
 
 def test_ode_discipline_default_state_names() -> None:
     """Test the assignment of default names to the state variables in ODEDiscipline."""
-    _initial_time = array([0.0])
-    _initial_position = array([0.0])
-    _initial_velocity = array([1.0])
+    initial_time = array([0.0])
+    initial_position = array([0.0])
+    initial_velocity = array([1.0])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = -4 * position
@@ -212,13 +212,13 @@ def test_ode_discipline_default_state_names() -> None:
 
 def test_ode_discipline_wrong_ordering_time_derivatives():
     """Test the explicit ordering of the state derivatives in time."""
-    _times = array([0.0, 1.0])
+    times = array([0.0, 1.0])
 
-    _init_time = array([0.0])
-    _init_state_a = array([0.0])
-    _init_state_b = array([0.0])
+    init_time = array([0.0])
+    init_state_a = array([0.0])
+    init_state_b = array([0.0])
 
-    def _fct(time=_init_time, a=_init_state_a, b=_init_state_b):
+    def _fct(time=init_time, a=init_state_a, b=init_state_b):
         a_dot = 1.0
         b_dot = -1.0
         return b_dot, a_dot  # noqa: RET504
@@ -227,7 +227,7 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
 
     ode_discipline_1 = ODEDiscipline(
         discipline=discipline,
-        times=_times,
+        times=times,
         state_names={"a": "a_dot", "b": "b_dot"},
         ode_solver_name="RK45",
         return_trajectories=False,
@@ -239,7 +239,7 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
 
     ode_discipline_2 = ODEDiscipline(
         discipline=discipline,
-        times=_times,
+        times=times,
         state_names={"a": "a_dot", "b": "b_dot"},
         ode_solver_name="RK45",
         return_trajectories=False,
@@ -253,13 +253,13 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
 def test_ode_discipline_missing_names_time_derivatives():
     """Test the error message when the time derivatives are explicitly named, but
     do not correspond to the outputs of the discipline describing the RHS."""
-    _times = array([0.0, 1.0])
+    times = array([0.0, 1.0])
 
-    _init_time = array([0.0])
-    _init_state_a = array([0.0])
-    _init_state_b = array([0.0])
+    init_time = array([0.0])
+    init_state_a = array([0.0])
+    init_state_b = array([0.0])
 
-    def _fct(time=_init_time, a=_init_state_a, b=_init_state_b):
+    def _fct(time=init_time, a=init_state_a, b=init_state_b):
         a_dot = 1.0
         b_dot = -1.0
         return b_dot, a_dot  # noqa: RET504
@@ -269,7 +269,7 @@ def test_ode_discipline_missing_names_time_derivatives():
     with pytest.raises(ValueError, match=re.escape("are not names of outputs")):
         ODEDiscipline(
             discipline=discipline,
-            times=_times,
+            times=times,
             state_names={"a": "c_dot", "b": "b_dot"},
             ode_solver_name="RK45",
             return_trajectories=False,
@@ -277,12 +277,12 @@ def test_ode_discipline_missing_names_time_derivatives():
 
 
 def test_ode_discipline_not_convergent():
-    _times = linspace(0.0, 1.0, 20)
+    times = linspace(0.0, 1.0, 20)
 
-    _init_time = array([0.0])
-    _init_state = array([1.0])
+    init_time = array([0.0])
+    init_state = array([1.0])
 
-    def _fct(time=_init_time, x=_init_state):
+    def _fct(time=init_time, x=init_state):
         x_dot = x**2
         return x_dot  # noqa: RET504
 
@@ -292,7 +292,7 @@ def test_ode_discipline_not_convergent():
 
     ode_discipline = ODEDiscipline(
         discipline=discipline,
-        times=_times,
+        times=times,
         state_names=["x"],
         ode_solver_name="RK45",
         return_trajectories=True,
@@ -324,20 +324,20 @@ def test_jacobian():
     omega = 1.0
     init_state_x = 1.0
     init_state_y = 0.0
-    _init_time = 0.0
-    _final_time = 1.0
+    init_time = 0.0
+    final_time = 1.0
     # _final_time = 10.0
 
-    times = linspace(_init_time, _final_time, 30)
-    _init_state_x = array([init_state_x])
-    _init_state_y = array([init_state_y])
+    times = linspace(init_time, final_time, 30)
+    init_state_x_ = array([init_state_x])
+    init_state_y_ = array([init_state_y])
 
-    def fct(time=_init_time, x=_init_state_x, y=_init_state_y):
+    def fct(time=init_time, x=init_state_x_, y=init_state_y_):
         x_dot = y
         y_dot = -(omega**2) * x
         return x_dot, y_dot  # noqa: RET504
 
-    def jac_time_state(time=_init_time, x=_init_state_x, y=_init_state_y):
+    def jac_time_state(time=init_time, x=init_state_x_, y=init_state_y_):
         jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
         return jacobian  # noqa: RET504
 
@@ -357,9 +357,9 @@ def test_jacobian():
 
     check_jacobian1 = discipline.check_jacobian(
         input_data={
-            "time": array([_init_time]),
-            "x": _init_state_x,
-            "y": _init_state_y,
+            "time": array([init_time]),
+            "x": init_state_x_,
+            "y": init_state_y_,
         },
         input_names=["time", "x", "y"],
         output_names=["x_dot", "y_dot"],
@@ -404,16 +404,16 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
     init_state_x = 1.0
     init_state_y = 0.0
 
-    _init_time = array([times[0]])
-    _init_state_x = array([init_state_x])
-    _init_state_y = array([init_state_y])
+    init_time = array([times[0]])
+    init_state_x_ = array([init_state_x])
+    init_state_y_ = array([init_state_y])
 
-    def fct(time=_init_time, x=_init_state_x, y=_init_state_y):
+    def fct(time=init_time, x=init_state_x_, y=init_state_y_):
         x_dot = y
         y_dot = -(omega**2) * x
         return x_dot, y_dot  # noqa: RET504
 
-    def jac(time=_init_time, x=_init_state_x, y=_init_state_y):
+    def jac(time=init_time, x=init_state_x_, y=init_state_y_):
         jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
         return jacobian  # noqa: RET504
 
@@ -471,31 +471,31 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
 
 
 def test_ode_discipline_termination_event():
-    _times = linspace(0.0, 20.0, 41)
-    _initial_position = array([10.0])
-    _initial_velocity = array([0.0])
-    _initial_time = array([0.0])
+    times = linspace(0.0, 20.0, 41)
+    initial_position = array([10.0])
+    initial_velocity = array([0.0])
+    initial_time = array([0.0])
 
     gravity_acceleration = array([-9.81])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = gravity_acceleration
         return position_dot, velocity_dot
 
     def _termination_events_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         return position
 
     def _exact_solution(times):
-        return _initial_position + times * times * gravity_acceleration / 2
+        return initial_position + times * times * gravity_acceleration / 2
 
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
@@ -509,7 +509,7 @@ def test_ode_discipline_termination_event():
 
     ode_discipline = ODEDiscipline(
         free_fall_discipline,
-        times=_times,
+        times=times,
         state_names=["position", "velocity"],
         ode_solver_name="RK45",
         return_trajectories=True,
@@ -524,40 +524,40 @@ def test_ode_discipline_termination_event():
 
 
 def test_ode_discipline_two_termination_events_1():
-    _times = linspace(0.0, 20.0, 41)
-    _initial_position = array([10.0])
-    _initial_velocity = array([0.0])
-    _initial_time = array([0.0])
+    times = linspace(0.0, 20.0, 41)
+    initial_position = array([10.0])
+    initial_velocity = array([0.0])
+    initial_time = array([0.0])
 
     gravity_acceleration = array([-9.81])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = gravity_acceleration
         return position_dot, velocity_dot
 
     def _termination_events_function_1(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         termination_1 = position
         return termination_1  # noqa: RET504
 
     def _termination_events_function_2(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
-        termination_2 = 2 * _initial_position - position
+        termination_2 = 2 * initial_position - position
         return termination_2  # noqa: RET504
 
     def _exact_solution(times):
-        return _initial_position + times * times * gravity_acceleration / 2
+        return initial_position + times * times * gravity_acceleration / 2
 
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
@@ -604,8 +604,8 @@ def test_ode_discipline_two_termination_events_1():
 
     ode_problem = ODEProblem(
         func=func_time_state,
-        initial_state=concatenate((_initial_position, _initial_velocity)),
-        times=_times,
+        initial_state=concatenate((initial_position, initial_velocity)),
+        times=times,
         event_functions=[termination_1_time_state, termination_2_time_state],
     )
 
@@ -623,40 +623,40 @@ def test_ode_discipline_two_termination_events_1():
 
 
 def test_ode_discipline_two_termination_events_2():
-    _times = linspace(0.0, 20.0, 41)
-    _initial_position = array([10.0])
-    _initial_velocity = array([0.0])
-    _initial_time = array([0.0])
+    times = linspace(0.0, 20.0, 41)
+    initial_position = array([10.0])
+    initial_velocity = array([0.0])
+    initial_time = array([0.0])
 
     gravity_acceleration = array([-9.81])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = gravity_acceleration
         return position_dot, velocity_dot
 
     def _termination_events_function_1(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         termination_1 = position
         return termination_1  # noqa: RET504
 
     def _termination_events_function_2(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
-        termination_2 = 2 * _initial_position - position
+        termination_2 = 2 * initial_position - position
         return termination_2  # noqa: RET504
 
     def _exact_solution(times):
-        return _initial_position + times * times * gravity_acceleration / 2
+        return initial_position + times * times * gravity_acceleration / 2
 
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
@@ -700,8 +700,8 @@ def test_ode_discipline_two_termination_events_2():
 
     ode_problem = ODEProblem(
         func=make_func_from_adapter(ode_mdo_func),
-        initial_state=concatenate((_initial_position, _initial_velocity)),
-        times=_times,
+        initial_state=concatenate((initial_position, initial_velocity)),
+        times=times,
         event_functions=[
             make_func_from_adapter(ode_mdo_termination_1),
             make_func_from_adapter(ode_mdo_termination_2),
@@ -722,40 +722,40 @@ def test_ode_discipline_two_termination_events_2():
 
 
 def test_ode_discipline_two_termination_events_3():
-    _times = linspace(0.0, 20.0, 41)
-    _initial_position = array([10.0])
-    _initial_velocity = array([0.0])
-    _initial_time = array([0.0])
+    times = linspace(0.0, 20.0, 41)
+    initial_position = array([10.0])
+    initial_velocity = array([0.0])
+    initial_time = array([0.0])
 
     gravity_acceleration = array([-9.81])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = gravity_acceleration
         return position_dot, velocity_dot
 
     def _termination_events_function_1(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         termination_1 = position
         return termination_1  # noqa: RET504
 
     def _termination_events_function_2(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
-        termination_2 = 2 * _initial_position - position
+        termination_2 = 2 * initial_position - position
         return termination_2  # noqa: RET504
 
     def _exact_solution(times):
-        return _initial_position + times * times * gravity_acceleration / 2
+        return initial_position + times * times * gravity_acceleration / 2
 
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
@@ -801,8 +801,8 @@ def test_ode_discipline_two_termination_events_3():
 
     ode_problem = ODEProblem(
         func=make_func_from_adapter(ode_mdo_func),
-        initial_state=concatenate((_initial_position, _initial_velocity)),
-        times=_times,
+        initial_state=concatenate((initial_position, initial_velocity)),
+        times=times,
         event_functions=[make_func_from_adapter(event) for event in adapter_events],
     )
 
@@ -820,40 +820,40 @@ def test_ode_discipline_two_termination_events_3():
 
 
 def test_ode_discipline_two_termination_events_4():
-    _times = linspace(0.0, 20.0, 41)
-    _initial_position = array([10.0])
-    _initial_velocity = array([0.0])
-    _initial_time = array([0.0])
+    times = linspace(0.0, 20.0, 41)
+    initial_position = array([10.0])
+    initial_velocity = array([0.0])
+    initial_time = array([0.0])
 
     gravity_acceleration = array([-9.81])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = gravity_acceleration
         return position_dot, velocity_dot
 
     def _termination_events_function_1(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         termination_1 = position
         return termination_1  # noqa: RET504
 
     def _termination_events_function_2(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
-        termination_2 = 2 * _initial_position - position
+        termination_2 = 2 * initial_position - position
         return termination_2  # noqa: RET504
 
     def _exact_solution(times):
-        return _initial_position + times * times * gravity_acceleration / 2
+        return initial_position + times * times * gravity_acceleration / 2
 
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
@@ -885,8 +885,8 @@ def test_ode_discipline_two_termination_events_4():
 
     ode_problem = ODEProblem(
         func=make_func_from_discipline(free_fall_discipline),
-        initial_state=concatenate((_initial_position, _initial_velocity)),
-        times=_times,
+        initial_state=concatenate((initial_position, initial_velocity)),
+        times=times,
         event_functions=[make_func_from_discipline(event) for event in disc_events],
     )
 
@@ -904,40 +904,40 @@ def test_ode_discipline_two_termination_events_4():
 
 
 def test_ode_discipline_two_termination_events_6():
-    _times = linspace(0.0, 20.0, 41)
-    _initial_position = array([10.0])
-    _initial_velocity = array([0.0])
-    _initial_time = array([0.0])
+    times = linspace(0.0, 20.0, 41)
+    initial_position = array([10.0])
+    initial_velocity = array([0.0])
+    initial_time = array([0.0])
 
     gravity_acceleration = array([-9.81])
 
     def _rhs_function(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         position_dot = velocity
         velocity_dot = gravity_acceleration
         return position_dot, velocity_dot
 
     def _termination_events_function_1(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
         termination_1 = position
         return termination_1  # noqa: RET504
 
     def _termination_events_function_2(
-        time=_initial_time,
-        position=_initial_position,
-        velocity=_initial_velocity,
+        time=initial_time,
+        position=initial_position,
+        velocity=initial_velocity,
     ):
-        termination_2 = 2 * _initial_position - position
+        termination_2 = 2 * initial_position - position
         return termination_2  # noqa: RET504
 
     def _exact_solution(times):
-        return _initial_position + times * times * gravity_acceleration / 2
+        return initial_position + times * times * gravity_acceleration / 2
 
     free_fall_discipline = create_discipline(
         "AutoPyDiscipline",
@@ -956,7 +956,7 @@ def test_ode_discipline_two_termination_events_6():
 
     ode_discipline = ODEDiscipline(
         free_fall_discipline,
-        times=_times,
+        times=times,
         state_names=["position", "velocity"],
         ode_solver_name="RK45",
         return_trajectories=True,

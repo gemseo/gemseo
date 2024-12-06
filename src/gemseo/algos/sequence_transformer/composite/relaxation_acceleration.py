@@ -58,14 +58,14 @@ class RelaxationAcceleration(CompositeSequenceTransformer):
         """  # noqa:D205 D212 D415
         self.__sequence_transformer_factory = SequenceTransformerFactory()
 
-        _sequence_transformers = [
+        sequence_transformers = [
             OverRelaxation(over_relaxation_factor),
             self.__sequence_transformer_factory.create(acceleration_method),
         ]
 
         self.__acceleration_method = acceleration_method
 
-        super().__init__(_sequence_transformers)
+        super().__init__(sequence_transformers)
 
     @property
     def acceleration_method(self) -> AccelerationMethod:

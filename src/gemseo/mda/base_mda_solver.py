@@ -342,7 +342,7 @@ class BaseMDASolver(BaseMDA):
         residual = self.get_current_resolved_residual_vector()
 
         scaling = self.scaling
-        _scaling_data = self._scaling_data
+        scaling_data = self._scaling_data
         ResidualScaling = self.ResidualScaling  # noqa: N806
 
         if scaling == ResidualScaling.NO_SCALING:
@@ -351,19 +351,19 @@ class BaseMDASolver(BaseMDA):
         elif scaling == ResidualScaling.INITIAL_RESIDUAL_NORM:
             normed_residual = float(norm(residual))
 
-            if _scaling_data is None:
-                _scaling_data = normed_residual if normed_residual != 0 else 1.0
+            if scaling_data is None:
+                scaling_data = normed_residual if normed_residual != 0 else 1.0
 
-            normed_residual /= _scaling_data
+            normed_residual /= scaling_data
 
         elif scaling == ResidualScaling.N_COUPLING_VARIABLES:
-            if _scaling_data is None:
-                _scaling_data = residual.size**0.5
-            normed_residual = norm(residual) / _scaling_data
+            if scaling_data is None:
+                scaling_data = residual.size**0.5
+            normed_residual = norm(residual) / scaling_data
 
         elif scaling == ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
-            if _scaling_data is None:
-                _scaling_data = []
+            if scaling_data is None:
+                scaling_data = []
 
                 for (
                     coupling_names_to_slices
@@ -371,25 +371,25 @@ class BaseMDASolver(BaseMDA):
                     for slice_ in coupling_names_to_slices.values():
                         initial_norm = float(norm(residual[slice_]))
                         initial_norm = initial_norm if initial_norm != 0.0 else 1.0
-                        _scaling_data.append((slice_, initial_norm))
+                        scaling_data.append((slice_, initial_norm))
 
             normalized_norms = []
-            for current_slice, initial_norm in _scaling_data:
+            for current_slice, initial_norm in scaling_data:
                 normalized_norms.append(norm(residual[current_slice]) / initial_norm)
 
             normed_residual = max(normalized_norms)
 
         elif scaling == ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
-            if _scaling_data is None:
-                _scaling_data = residual + (residual == 0)
+            if scaling_data is None:
+                scaling_data = residual + (residual == 0)
 
-            normed_residual = np_abs(residual / _scaling_data).max()
+            normed_residual = np_abs(residual / scaling_data).max()
 
         elif scaling == ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
-            if _scaling_data is None:
-                _scaling_data = residual + (residual == 0)
+            if scaling_data is None:
+                scaling_data = residual + (residual == 0)
 
-            normed_residual = float(norm(residual / _scaling_data))
+            normed_residual = float(norm(residual / scaling_data))
             normed_residual /= residual.size**0.5
 
         else:
@@ -397,7 +397,7 @@ class BaseMDASolver(BaseMDA):
             ResidualScaling(scaling)
 
         self.normed_residual = normed_residual
-        self._scaling_data = _scaling_data
+        self._scaling_data = scaling_data
 
         if self.settings.log_convergence:
             LOGGER.info(

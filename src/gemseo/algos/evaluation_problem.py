@@ -599,13 +599,13 @@ class EvaluationProblem(BaseProblem):
 
         for functions in self._sequence_of_functions:
             if functions == self.__new_iter_observables:
-                _is_function_input_normalized = False
+                is_function_input_normalized_ = False
             else:
-                _is_function_input_normalized = is_function_input_normalized
+                is_function_input_normalized_ = is_function_input_normalized
             for index, function in enumerate(functions):
                 function = self._preprocess_function(
                     function,
-                    is_function_input_normalized=_is_function_input_normalized,
+                    is_function_input_normalized=is_function_input_normalized_,
                     use_database=use_database,
                     round_ints=round_ints,
                     support_sparse_jacobian=support_sparse_jacobian,

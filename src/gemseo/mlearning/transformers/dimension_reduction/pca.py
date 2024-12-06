@@ -87,8 +87,8 @@ class PCA(BaseDimensionReduction):
 
     @BaseDimensionReduction._use_2d_array
     def compute_jacobian_inverse(self, data: RealArray) -> RealArray:  # noqa: D102
-        _data = self.algo.inverse_transform(data)
-        return self.__scaler.compute_jacobian_inverse(_data) @ tile(
+        data_ = self.algo.inverse_transform(data)
+        return self.__scaler.compute_jacobian_inverse(data_) @ tile(
             self.algo.components_.T, (len(data), 1, 1)
         )
 

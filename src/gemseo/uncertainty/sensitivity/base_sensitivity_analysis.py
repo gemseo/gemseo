@@ -490,8 +490,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A bar chart representing the sensitivity indices.
         """
-        _options = {"n_digits": 2}
-        _options.update(settings)
+        options = {"n_digits": 2}
+        options.update(settings)
         bar_plot = BarPlot(
             self.__create_dataset_to_plot(
                 input_names,
@@ -500,7 +500,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 sort,
                 sorting_output,
             ),
-            **_options,
+            **options,
         )
         bar_plot.title = title
         bar_plot.execute(

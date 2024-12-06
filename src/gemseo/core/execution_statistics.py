@@ -182,11 +182,11 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
 
         time_stamps = ExecutionStatistics.time_stamps
         if time_stamps is not None:
-            _time_stamps = time_stamps.setdefault(
+            time_stamps_ = time_stamps.setdefault(
                 self.__name, get_multi_processing_manager().list()
             )
             current_time = default_timer()
-            _time_stamps.append((current_time - duration, current_time, linearize))
+            time_stamps_.append((current_time - duration, current_time, linearize))
 
     def __check_is_enabled(self) -> None:
         if not self.is_enabled:
