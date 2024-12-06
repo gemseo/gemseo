@@ -73,8 +73,8 @@ class StandardScaler(Scaler):
         super().__init__(name, offset, coefficient)
 
     def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
-        _mean = data.mean(0)
-        _std = data.std(0)
-        is_constant = _std == 0
-        self.coefficient = where(is_constant, 1 / where(_mean == 0, 1, _mean), 1 / _std)
-        self.offset = where(is_constant, where(_mean == 0, 0, -1), -_mean / _std)
+        mean = data.mean(0)
+        std = data.std(0)
+        is_constant = std == 0
+        self.coefficient = where(is_constant, 1 / where(mean == 0, 1, mean), 1 / std)
+        self.offset = where(is_constant, where(mean == 0, 0, -1), -mean / std)

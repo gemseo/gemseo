@@ -354,7 +354,7 @@ class ScalabilityStudy:
             ValueError: When an input is not available.
         """
         self.__check_discipline(discipline)
-        _input_names = next(
+        input_names_ = next(
             dataset.get_variable_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
@@ -363,10 +363,10 @@ class ScalabilityStudy:
             if not isinstance(inpt, str):
                 msg = f"{inpt} is not a string."
                 raise TypeError(msg)
-            if inpt not in _input_names:
+            if inpt not in input_names_:
                 msg = (
                     f"'{inpt}' is not a discipline input; available inputs are: "
-                    f"{_input_names}"
+                    f"{input_names_}"
                 )
                 raise ValueError(msg)
 

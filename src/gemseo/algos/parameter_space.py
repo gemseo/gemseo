@@ -1023,10 +1023,10 @@ class ParameterSpace(DesignSpace):
         if current_name in self.uncertain_variables:
             position = self.uncertain_variables.index(current_name)
             self.uncertain_variables[position] = new_name
-            _dict = self.__uncertain_variables_to_definitions
-            _dict[new_name] = _dict.pop(current_name)
-            _dict = self.distributions
-            _dict[new_name] = _dict.pop(current_name)
+            dict_ = self.__uncertain_variables_to_definitions
+            dict_[new_name] = dict_.pop(current_name)
+            dict_ = self.distributions
+            dict_[new_name] = dict_.pop(current_name)
 
     def add_variables_from(self, space: DesignSpace, *names: str) -> None:  # noqa: D102
         if not isinstance(space, ParameterSpace):

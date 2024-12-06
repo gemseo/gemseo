@@ -569,8 +569,8 @@ class DisciplineJacApprox:
             and the names of the output components
             corresponding to the columns of ``sub_jacobian``.
         """
-        _approx_jacobian = {}
-        _analytic_jacobian = {}
+        approx_jacobian = {}
+        analytic_jacobian_ = {}
         jacobian = analytic_jacobian[next(iter(analytic_jacobian))]
         input_names = list(jacobian.keys())
         input_component_names = [
@@ -579,7 +579,7 @@ class DisciplineJacApprox:
             for i in range(jacobian[input_name].shape[1])
         ]
         for output_name, output_approximated_jacobian in approximated_jacobian.items():
-            _output_approx_jacobian = concatenate(
+            output_approx_jacobian = concatenate(
                 [
                     output_approximated_jacobian[input_name]
                     for input_name in input_names
@@ -594,31 +594,31 @@ class DisciplineJacApprox:
             )
 
             if contains_sparse:
-                _output_analytic_jacobian = sparse_hstack(
+                output_analytic_jacobian = sparse_hstack(
                     [analytic_jacobian_out[input_name] for input_name in input_names],
                 ).tocsr()
             else:
-                _output_analytic_jacobian = concatenate(
+                output_analytic_jacobian = concatenate(
                     [analytic_jacobian_out[input_name] for input_name in input_names],
                     axis=1,
                 )
 
-            n_f = len(_output_approx_jacobian)
+            n_f = len(output_approx_jacobian)
 
             if n_f == 1:
-                _approx_jacobian[output_name] = _output_approx_jacobian.flatten()
+                approx_jacobian[output_name] = output_approx_jacobian.flatten()
 
                 if contains_sparse:
-                    _output_analytic_jacobian = _output_analytic_jacobian.toarray()
+                    output_analytic_jacobian = output_analytic_jacobian.toarray()
 
-                _analytic_jacobian[output_name] = _output_analytic_jacobian.flatten()
+                analytic_jacobian_[output_name] = output_analytic_jacobian.flatten()
             else:
                 for i in range(n_f):
                     output_name = f"{output_name}_{i}"
-                    _approx_jacobian[output_name] = _output_approx_jacobian[i, :]
-                    _analytic_jacobian[output_name] = _output_analytic_jacobian[i, :]
+                    approx_jacobian[output_name] = output_approx_jacobian[i, :]
+                    analytic_jacobian_[output_name] = output_analytic_jacobian[i, :]
 
-        return _analytic_jacobian, _approx_jacobian, input_component_names
+        return analytic_jacobian_, approx_jacobian, input_component_names
 
     def plot_jac_errors(
         self,

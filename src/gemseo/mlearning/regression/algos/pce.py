@@ -197,23 +197,23 @@ class PCERegressor(BaseRegressor):
                 when an input variable has a data transformer
                 or when a probability distribution is not an :class:`.OTDistribution`.
         """  # noqa: D205 D212
-        _settings = create_model(
+        settings_ = create_model(
             self.Settings, settings_model=settings_model, **settings
         )
-        cleaning_options = _settings.cleaning_options
+        cleaning_options = settings_.cleaning_options
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 
-        if _settings.use_quadrature:
-            if _settings.discipline is None and data is None:
+        if settings_.use_quadrature:
+            if settings_.discipline is None and data is None:
                 msg = "The quadrature rule requires either data or discipline."
                 raise ValueError(msg)
 
-            if _settings.discipline is not None and data is not None and len(data):
+            if settings_.discipline is not None and data is not None and len(data):
                 msg = "The quadrature rule requires data or discipline but not both."
                 raise ValueError(msg)
 
-            if _settings.use_lars:
+            if settings_.use_lars:
                 msg = "LARS is not applicable with the quadrature rule."
                 raise ValueError(msg)
 
@@ -225,11 +225,11 @@ class PCERegressor(BaseRegressor):
                 msg = "The least-squares regression requires data."
                 raise ValueError(msg)
 
-            if _settings.discipline is not None:
+            if settings_.discipline is not None:
                 msg = "The least-squares regression does not require a discipline."
                 raise ValueError(msg)
 
-        super().__init__(data, settings_model=_settings)
+        super().__init__(data, settings_model=settings_)
 
         if self._settings.use_quadrature and data.empty:
             self.input_names = self._settings.probability_space.variable_names

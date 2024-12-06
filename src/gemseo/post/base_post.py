@@ -171,11 +171,11 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        _settings = create_model(
+        settings_ = create_model(
             self.Settings, settings_model=settings_model, **settings
         )
-        self._plot(_settings)
-        self.__render(_settings)
+        self._plot(settings_)
+        self.__render(settings_)
         return self.__figures
 
     def __render(self, settings: T) -> None:

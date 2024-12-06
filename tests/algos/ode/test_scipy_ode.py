@@ -88,15 +88,15 @@ def test_ode_problem_1d(times) -> None:
     def _jac_wrt_state(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
         return array(1)
 
-    _initial_state = array([1])
-    _initial_time = 0
-    _final_time = 1
+    initial_state = array([1])
+    initial_time = 0
+    final_time = 1
 
     problem = ODEProblem(
         _func,
         jac_wrt_state=_jac_wrt_state,
-        initial_state=_initial_state,
-        times=array([_initial_time, _final_time]),
+        initial_state=initial_state,
+        times=array([initial_time, final_time]),
     )
     assert not problem.result.algorithm_has_converged
     assert problem.result.n_func_evaluations == 0
@@ -119,7 +119,7 @@ def test_ode_problem_1d(times) -> None:
     assert problem.rhs_function == _func
     assert problem.jac.state == _jac_wrt_state
     assert len(problem.initial_state) == 1
-    assert problem.initial_state == _initial_state
+    assert problem.initial_state == initial_state
     assert problem.result.state_trajectories.size != 0
     assert problem.result.state_trajectories.size == problem.result.times.size
     assert problem.result.algorithm_name == algo_name
@@ -128,7 +128,7 @@ def test_ode_problem_1d(times) -> None:
         == "The solver successfully reached the end of the integration interval."
     )
     assert problem.result.algorithm_has_converged
-    assert problem.time_interval == (_initial_time, _final_time)
+    assert problem.time_interval == (initial_time, final_time)
     assert problem.result.n_func_evaluations > 0
 
 
@@ -374,10 +374,10 @@ def test_inconsistent_space_and_time_shapes():
         return state
 
     problem = ODEProblem(_func, initial_state=array([1]), times=linspace(0.0, 0.5, 10))
-    _times_2 = linspace(0.0, 0.5, 3)
+    times_2 = linspace(0.0, 0.5, 3)
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
 
-    problem.result.times = _times_2
+    problem.result.times = times_2
 
     with pytest.raises(ValueError) as error_info:
         problem.check()
@@ -391,7 +391,7 @@ def test_terminating_event() -> None:
     gravity_acceleration = -9.81
     initial_height = 10
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -407,7 +407,7 @@ def test_terminating_event() -> None:
     problem = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
+        times=times,
         jac_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
     )
@@ -424,7 +424,7 @@ def test_terminating_event_fixed_times() -> None:
     gravity_acceleration = -9.81
     initial_height = 10
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -442,7 +442,7 @@ def test_terminating_event_fixed_times() -> None:
     problem = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
+        times=times,
         jac_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
         solve_at_algorithm_times=False,
@@ -461,7 +461,7 @@ def test_terminating_event_outside_time_interval() -> None:
     gravity_acceleration = -9.81
     initial_height = 500
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -477,7 +477,7 @@ def test_terminating_event_outside_time_interval() -> None:
     problem = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
+        times=times,
         jac_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
         solve_at_algorithm_times=False,
@@ -495,7 +495,7 @@ def test_multiple_terminating_events() -> None:
     gravity_acceleration = -9.81
     initial_height = 10
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -514,7 +514,7 @@ def test_multiple_terminating_events() -> None:
     problem_1 = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
+        times=times,
         jac_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact_floor, terminating_impact_ceiling),
     )
@@ -522,7 +522,7 @@ def test_multiple_terminating_events() -> None:
     problem_2 = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
+        times=times,
         jac_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact_ceiling, terminating_impact_floor),
     )

@@ -79,8 +79,8 @@ def get_setting_classes(
     get_setting_classes(BaseDOESettings, "gemseo.algos.doe", doe),
 )
 def test_doe_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -88,8 +88,8 @@ def test_doe_settings(module_and_cls):
     get_setting_classes(BaseOptimizerSettings, "gemseo.algos.opt", opt),
 )
 def test_opt_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -97,8 +97,8 @@ def test_opt_settings(module_and_cls):
     get_setting_classes(BaseODESolverSettings, "gemseo.algos.ode", ode),
 )
 def test_ode_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -108,8 +108,8 @@ def test_ode_settings(module_and_cls):
     ),
 )
 def test_linear_solver_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -117,8 +117,8 @@ def test_linear_solver_settings(module_and_cls):
     get_setting_classes(BasePostSettings, "gemseo.post", post),
 )
 def test_post_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -126,8 +126,8 @@ def test_post_settings(module_and_cls):
     get_setting_classes(BaseMLAlgoSettings, "gemseo.mlearning", mlearning),
 )
 def test_machine_learning_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -135,8 +135,8 @@ def test_machine_learning_settings(module_and_cls):
     get_setting_classes(BaseFormulationSettings, "gemseo.formulations", formulations),
 )
 def test_formulation_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
 
 
 @pytest.mark.parametrize(
@@ -144,5 +144,5 @@ def test_formulation_settings(module_and_cls):
     get_setting_classes(BaseMDASettings, "gemseo.mda", mda),
 )
 def test_mda_settings(module_and_cls):
-    _module, cls = module_and_cls
-    assert cls in _module.__dict__.values()
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()

@@ -155,22 +155,22 @@ class ScalableProblem:
         all_discipline_indices = set(range(N))
         for i, i_th_disc_settings in enumerate(discipline_settings):
             other_discipline_indices = all_discipline_indices - {i}
-            _p_i = i_th_disc_settings.p_i
-            D_i0.append(rng.random((_p_i, d_0)))
-            D_ii.append(rng.random((_p_i, i_th_disc_settings.d_i)))
+            p_i_ = i_th_disc_settings.p_i
+            D_i0.append(rng.random((p_i_, d_0)))
+            D_ii.append(rng.random((p_i_, i_th_disc_settings.d_i)))
             C_ij.append({
-                get_coupling_name(j + 1): rng.random((_p_i, discipline_settings[j].p_i))
+                get_coupling_name(j + 1): rng.random((p_i_, discipline_settings[j].p_i))
                 for j in other_discipline_indices
             })
-            a_i.append(rng.random(_p_i))
+            a_i.append(rng.random(p_i_))
 
         # Define the matrix C and compute its inverse.
         C = eye(self._p)  # noqa: N806
         row_start = 0
-        for i, _p_i in enumerate(p_i):
+        for i, p_i_ in enumerate(p_i):
             C_ij_i = C_ij[i]  # noqa: N806
             col_start = 0
-            row_end = row_start + _p_i
+            row_end = row_start + p_i_
             for j, _p_j in enumerate(p_i):
                 col_end = col_start + _p_j
                 if j != i:
@@ -187,8 +187,8 @@ class ScalableProblem:
         D = zeros((self._p, d))  # noqa: N806
         row_start = 0
         col_start = d_0
-        for i, _p_i in enumerate(p_i):
-            row_end = row_start + _p_i
+        for i, p_i_ in enumerate(p_i):
+            row_end = row_start + p_i_
             col_end = col_start + d_i[i]
             D[row_start:row_end, 0:d_0] = D_i0[i]
             D[row_start:row_end, col_start:col_end] = D_ii[i]

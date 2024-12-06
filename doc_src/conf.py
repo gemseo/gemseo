@@ -338,14 +338,14 @@ def __filter_versions(
         of the form ``(version_name, version_url)``.
     """
     json_versions = []
-    _versions = []
+    versions_ = []
     stable_index = 0
     version_index = -1
     stable_version = parse("0.0.0")
     for rtd_version in rtd_versions:
         slug = rtd_version["slug"]
         if rtd_version["active"] and __VERSION_REGEX.match(slug):
-            _versions.append((slug, url := rtd_version["urls"]["documentation"]))
+            versions_.append((slug, url := rtd_version["urls"]["documentation"]))
             json_versions.append({"name": slug, "version": slug, "url": url})
             version_index += 1
             if slug != "develop":
@@ -358,7 +358,7 @@ def __filter_versions(
 
     with open(Path(__file__).parent / "_static" / "versions.json", "w") as fp:
         json.dump(json_versions, fp)
-    return _versions
+    return versions_
 
 
 if os.environ.get("READTHEDOCS") == "True":

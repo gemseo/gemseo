@@ -69,9 +69,9 @@ def custom_design_space() -> DesignSpace:
 
 def test_dtype(default_design_space) -> None:
     """Check the use of a custom NumPy data type."""
-    _design_space = ScalableDesignSpace()
+    design_space = ScalableDesignSpace()
     for name in default_design_space:
-        assert _design_space.variable_types[name] == "float"
+        assert design_space.variable_types[name] == "float"
 
 
 def check_variable(space: DesignSpace, name: str, reference_space: DesignSpace) -> None:
@@ -97,27 +97,27 @@ def check_variable(space: DesignSpace, name: str, reference_space: DesignSpace) 
 
 def test_default_design_space(default_design_space) -> None:
     """Check the default configuration of the design space."""
-    _design_space = ScalableDesignSpace()
-    assert len(default_design_space) == len(_design_space)
+    design_space = ScalableDesignSpace()
+    assert len(default_design_space) == len(design_space)
     for name in default_design_space:
-        assert _design_space.variable_types[name] == "float"
-        check_variable(_design_space, name, default_design_space)
+        assert design_space.variable_types[name] == "float"
+        check_variable(design_space, name, default_design_space)
 
 
 def test_default_design_space_with_uncertainties(default_design_space) -> None:
     """Check the default configuration of the design space with uncertainties."""
-    _design_space = ScalableDesignSpace(add_uncertain_variables=True)
-    assert len(default_design_space) + 2 == len(_design_space)
+    design_space = ScalableDesignSpace(add_uncertain_variables=True)
+    assert len(default_design_space) + 2 == len(design_space)
     for name in default_design_space:
-        check_variable(_design_space, name, default_design_space)
+        check_variable(design_space, name, default_design_space)
 
-    assert _design_space.get_size("u_1") == 1
-    assert _design_space.get_size("u_2") == 1
+    assert design_space.get_size("u_1") == 1
+    assert design_space.get_size("u_2") == 1
 
 
 def test_custom_design_space(custom_design_space) -> None:
     """Check the custom configuration of the design space."""
-    _design_space = ScalableDesignSpace(
+    design_space = ScalableDesignSpace(
         [
             ScalableDisciplineSettings(1, 4),
             ScalableDisciplineSettings(2, 5),
@@ -132,14 +132,14 @@ def test_custom_design_space(custom_design_space) -> None:
             "y_2": array([0.55] * 5),
         },
     )
-    assert len(custom_design_space) == len(_design_space)
+    assert len(custom_design_space) == len(design_space)
     for name in custom_design_space:
-        check_variable(_design_space, name, custom_design_space)
+        check_variable(design_space, name, custom_design_space)
 
 
 def test_custom_design_space_with_uncertainties(custom_design_space) -> None:
     """Check the custom configuration of the design space with uncertainties."""
-    _design_space = ScalableDesignSpace(
+    design_space = ScalableDesignSpace(
         [
             ScalableDisciplineSettings(1, 4),
             ScalableDisciplineSettings(2, 5),
@@ -155,10 +155,10 @@ def test_custom_design_space_with_uncertainties(custom_design_space) -> None:
         },
         add_uncertain_variables=True,
     )
-    assert len(custom_design_space) + 3 == len(_design_space)
+    assert len(custom_design_space) + 3 == len(design_space)
     for name in custom_design_space:
-        check_variable(_design_space, name, custom_design_space)
+        check_variable(design_space, name, custom_design_space)
 
-    assert _design_space.get_size("u_1") == 4
-    assert _design_space.get_size("u_2") == 5
-    assert _design_space.get_size("u_3") == 6
+    assert design_space.get_size("u_1") == 4
+    assert design_space.get_size("u_2") == 5
+    assert design_space.get_size("u_3") == 6

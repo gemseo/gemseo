@@ -45,40 +45,40 @@ def test_constructor() -> None:
 
 def test_fit(data) -> None:
     """Test fit method."""
-    _mean = data.mean(0)
-    _std = data.std(0)
+    mean = data.mean(0)
+    std = data.std(0)
     scaler = StandardScaler()
     scaler.fit(data)
-    assert allclose(scaler.offset, -_mean / _std)
-    assert allclose(scaler.coefficient, 1 / _std)
+    assert allclose(scaler.offset, -mean / std)
+    assert allclose(scaler.coefficient, 1 / std)
 
 
 def test_transform(data) -> None:
     """Test transform method."""
-    _mean = data.mean(0)
-    _std = data.std(0)
+    mean = data.mean(0)
+    std = data.std(0)
     scaler = StandardScaler()
     another_scaler = StandardScaler(offset=3, coefficient=2)
     scaler.fit(data)
     another_scaler.fit(data)  # fit() should overload parameters
     scaled_data = scaler.transform(data)
     other_scaled_data = another_scaler.transform(data)
-    assert allclose(scaled_data, (data - _mean) / _std)
-    assert allclose(other_scaled_data, (data - _mean) / _std)
+    assert allclose(scaled_data, (data - mean) / std)
+    assert allclose(other_scaled_data, (data - mean) / std)
 
 
 def test_inverse_transform(data) -> None:
     """Test inverse_transform method."""
-    _mean = data.mean(0)
-    _std = data.std(0)
+    mean = data.mean(0)
+    std = data.std(0)
     scaler = StandardScaler()
     another_scaler = StandardScaler(offset=3, coefficient=2)
     scaler.fit(data)
     another_scaler.fit(data)  # fit() should overload parameters
     unscaled_data = scaler.inverse_transform(data)
     other_unscaled_data = another_scaler.inverse_transform(data)
-    assert allclose(unscaled_data, _mean + _std * data)
-    assert allclose(other_unscaled_data, _mean + _std * data)
+    assert allclose(unscaled_data, mean + std * data)
+    assert allclose(other_unscaled_data, mean + std * data)
 
 
 def _test_transformer(data, transformed_data, coefficient, offset) -> None:
