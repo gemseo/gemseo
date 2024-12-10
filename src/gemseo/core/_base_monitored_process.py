@@ -23,17 +23,13 @@ from typing import ClassVar
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.serializable import Serializable
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.utils.string_tools import MultiLineString
 
 
-class BaseMonitoredProcess(
-    Serializable,
-    metaclass=ABCGoogleDocstringInheritanceMeta,
-):
+class BaseMonitoredProcess(Serializable):
     """A base class to define monitored processes.
 
     A monitored process is an object
