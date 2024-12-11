@@ -196,7 +196,11 @@ class Database(Mapping):
     @property
     def last_item(self) -> DatabaseValueType:
         """The last item of the database."""
-        return next(reversed(self.__data.values()))
+        items = self.__data.values()
+        if not items:
+            return {}
+
+        return next(reversed(items))
 
     @staticmethod
     def get_hashable_ndarray(

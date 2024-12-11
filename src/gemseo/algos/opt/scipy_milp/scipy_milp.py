@@ -172,7 +172,6 @@ class ScipyMILP(BaseOptimizationLibrary):
         x_opt = problem.design_space.project_into_bounds(x_opt)
         output_functions, jacobian_functions = problem.get_functions(
             jacobian_names=(),
-            evaluate_objective=True,
             no_db_no_norm=True,
         )
 

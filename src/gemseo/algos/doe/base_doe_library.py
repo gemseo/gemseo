@@ -115,9 +115,6 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
 
-    __compute_jacobians: bool
-    """Whether to compute the Jacobians."""
-
     __output_functions: list[MDOFunction] | None
     """The functions to compute the outputs, if any."""
 
@@ -229,6 +226,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def _run(
         self,
         problem: EvaluationProblem,
+        eval_func: bool = True,
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
@@ -238,7 +236,8 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     ) -> None:
         """
         Args:
-            eval_jac: Whether to evaluate the Jacobian function.
+            eval_func: Whether to sample the functions computing the output data.
+            eval_jac: Whether to sample the functions computing the Jacobian data.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
@@ -254,12 +253,12 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             it is therefore necessary to protect its execution with an
             ``if __name__ == '__main__':`` statement when working on Windows.
         """  # noqa: D205, D212
-        self.__compute_jacobians = eval_jac
         output_functions, jacobian_functions = self._problem.get_functions(
-            jacobian_names=() if self.__compute_jacobians else None,
-            observable_names=(),
+            jacobian_names=() if eval_jac else None, observable_names=()
         )
-        self.__output_functions = output_functions or None
+        self.__output_functions = (
+            output_functions if eval_func and output_functions else None
+        )
         self.__jacobian_functions = jacobian_functions or None
         callbacks = list(callbacks)
         if n_processes > 1:

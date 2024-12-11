@@ -335,7 +335,6 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 If this number is higher than the dimension of the design space
                 then the design space will not be logged.
         """  # noqa: D205, D212
-        is_optimization_problem = isinstance(problem, OptimizationProblem)
         self._problem = problem
         self._check_algorithm(problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
@@ -343,7 +342,10 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         # Validation of the settings
         settings = self._validate_settings(settings_model=settings_model, **settings)
 
-        if is_optimization_problem:
+        solve_optimization_problem = isinstance(
+            problem, OptimizationProblem
+        ) and settings.get("eval_func", True)
+        if solve_optimization_problem:
             problem: OptimizationProblem
             problem.tolerances.equality = settings[self._EQ_TOLERANCE]
             problem.tolerances.inequality = settings[self._INEQ_TOLERANCE]
@@ -393,7 +395,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 log.dedent()
                 LOGGER.info("%s", log)
 
-        if self.__log_problem and is_optimization_problem:
+        if self.__log_problem and solve_optimization_problem:
             progress_bar_title = "Solving optimization problem with algorithm %s:"
         else:
             progress_bar_title = "Running the algorithm %s:"
@@ -411,10 +413,10 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             try:
                 self._pre_run(problem, **settings)
                 args = self._run(problem, **settings) or (None, None)
-                if is_optimization_problem:
+                if solve_optimization_problem:
                     result = self._get_result(problem, *args)
             except TerminationCriterion as termination_criterion:
-                if is_optimization_problem:
+                if solve_optimization_problem:
                     problem: OptimizationProblem
                     result = self._get_early_stopping_result(
                         problem, termination_criterion
@@ -422,7 +424,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
         self.__progress_bar.finalize_iter_observer()
         self._clear_listeners(problem)
-        if is_optimization_problem:
+        if solve_optimization_problem:
             self._post_run(
                 problem,
                 result,

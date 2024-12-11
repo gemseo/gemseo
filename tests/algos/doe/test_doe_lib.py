@@ -523,3 +523,21 @@ def test_parallel_doe_db(tmp_wd):
         f_s = db_ser.get_function_history(func, with_x_vect=False)
         f_p = db_par.get_function_history(func, with_x_vect=False)
         assert_array_equal(f_p, f_s, strict=True)
+
+
+@pytest.mark.parametrize("eval_func", [False, True])
+@pytest.mark.parametrize("eval_jac", [False, True])
+def test_eval_func_and_eval_jac(eval_func, eval_jac):
+    """Check eval_func and eval_jac."""
+    problem = Power2()
+    SciPyDOE("MC").execute(
+        problem,
+        n_samples=1,
+        eval_jac=eval_jac,
+        eval_func=eval_func,
+    )
+    database = problem.database
+    last_item = database.last_item
+    name = "pow2"
+    assert (name in last_item) is eval_func
+    assert (database.get_gradient_name(name) in last_item) is eval_jac

@@ -163,7 +163,6 @@ class ScipyLinprog(BaseOptimizationLibrary):
         x_opt = problem.design_space.project_into_bounds(linprog_result.x)
         output_functions, jacobian_functions = problem.get_functions(
             jacobian_names=(),
-            evaluate_objective=True,
             no_db_no_norm=True,
         )
         output_opt, jac_opt = problem.evaluate_functions(

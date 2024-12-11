@@ -233,7 +233,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         require_gradient = self.ALGORITHM_INFOS[self.algo_name].require_gradient
         output_functions, jacobian_functions = self._problem.get_functions(
             jacobian_names=() if require_gradient else None,
-            evaluate_objective=True,
         )
         self._function_outputs, _ = self._problem.evaluate_functions(
             output_functions=output_functions or None,
