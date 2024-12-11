@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 import gemseo.core._discipline_class_injector
-import gemseo.core.discipline
+import gemseo.core.discipline.discipline
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -38,14 +38,14 @@ pytest.skip(allow_module_level=True)
 def _reload(monkeypatch):
     # Force taking into account the new base class in the injector.
     reload(gemseo.core._discipline_class_injector)
-    reload(gemseo.core.discipline)
+    reload(gemseo.core.discipline.discipline)
 
     yield
 
     # Restore the original base discipline class.
     monkeypatch.undo()
     reload(gemseo.core._discipline_class_injector)
-    reload(gemseo.core.discipline)
+    reload(gemseo.core.discipline.discipline)
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def prepare_error(monkeypatch):
 
 def test_class_injector_with_nothing():
     """Verify that nothing is injected by default."""
-    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline import Discipline
 
     class Disc(Discipline):
         def _run(self, input_data: StrKeyMapping):
@@ -81,8 +81,7 @@ def test_class_injector_with_nothing():
 
 def test_class_injector(prepare):
     """Verify the injection of a new base class."""
-
-    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline import Discipline
 
     class Disc(Discipline):
         def _run(self, input_data: StrKeyMapping):
@@ -93,7 +92,7 @@ def test_class_injector(prepare):
 
 def test_class_injector_error(prepare_error):
     """Verify the error handling when injecting a bad class."""
-    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.discipline import Discipline
 
     match = "The class Dummy cannot be imported from the package dummy."
     with pytest.raises(ImportError, match=match):

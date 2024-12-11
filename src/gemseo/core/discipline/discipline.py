@@ -27,6 +27,7 @@ from numpy import zeros
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
+from gemseo.core._discipline_class_injector import ClassInjector
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -57,7 +58,7 @@ def _default_dict_factory() -> dict:
     return defaultdict(None)
 
 
-class Discipline(BaseDiscipline):
+class Discipline(BaseDiscipline, metaclass=ClassInjector):
     """The base class for disciplines.
 
     The :meth:`.execute` method is used to do compute output data from input data.
