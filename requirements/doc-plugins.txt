@@ -7,7 +7,6 @@ git+https://gitlab.com/gemseo/dev/gemseo-mlearning.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-mma.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-pdfo.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-petsc.git@master
-git+https://gitlab.com/gemseo/dev/gemseo-pseven.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-pymoo.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-pyoptsparse.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-scilab.git@master
