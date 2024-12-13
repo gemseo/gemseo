@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class _ProcessFlow(_BaseMDAProcessFlow):
     """The process data and execution flow."""
 
 
-class MDANewtonRaphson(BaseMDARoot):
+class MDANewtonRaphson(BaseParallelMDASolver):
     r"""Newton solver for MDA.
 
     The `Newton-Raphson method <https://en.wikipedia.org/wiki/Newton%27s_method>`__ is
@@ -105,6 +105,7 @@ class MDANewtonRaphson(BaseMDARoot):
             )
             raise ValueError(msg)
 
+        self._set_resolved_variables(self.coupling_structure.strong_couplings)
         self._set_differentiated_ios()
 
     def _set_differentiated_ios(self) -> None:
