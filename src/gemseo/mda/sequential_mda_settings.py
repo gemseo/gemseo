@@ -16,9 +16,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence  # Noqa: TC003
+from typing import ClassVar  # Noqa: TC003
+
 from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.composed_mda_settings import ComposedMDASettings
 
 
 class MDASequential_Settings(BaseMDASettings, ComposedMDASettings):  # noqa: N801
     """The settings for :class:`.MDASequential`."""
+
+    _settings_names_to_be_cascaded: ClassVar[Sequence[str]] = ["log_convergence"]
+    """The settings that must be cascaded to the inner MDAs."""

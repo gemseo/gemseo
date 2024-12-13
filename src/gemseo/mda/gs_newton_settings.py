@@ -16,19 +16,21 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # Noqa: TC003
-from typing import ClassVar  # Noqa: TC003
+from pydantic import Field
 
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings  # noqa: TC001
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings  # noqa: TC001
 from gemseo.mda.sequential_mda_settings import MDASequential_Settings
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 
 class MDAGSNewton_Settings(MDASequential_Settings):  # noqa: N801
     """The settings for :class:`.MDAGSNewton`."""
 
-    _settings_names_to_be_cascaded: ClassVar[Sequence[str]] = [
-        "tolerance",
-        "max_mda_iter",
-        "log_convergence",
-        "linear_solver_tolerance",
-    ]
-    """The settings that must be cascaded to the inner MDAs."""
+    gauss_seidel_settings: StrKeyMapping | MDAGaussSeidel_Settings = Field(
+        default_factory=dict, description="The settings for the Gauss-Seidel MDA."
+    )
+
+    newton_settings: StrKeyMapping | MDANewtonRaphson_Settings = Field(
+        default_factory=dict, description="The settings for the Newton-Raphson MDA."
+    )
