@@ -19,7 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 from strenum import StrEnum
 
-from gemseo.mda.base_mda_root_settings import BaseMDARootSettings
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 
 
 class QuasiNewtonMethod(StrEnum):
@@ -37,7 +37,7 @@ class QuasiNewtonMethod(StrEnum):
     LINEAR_MIXING = "linearmixing"
 
 
-class MDAQuasiNewton_Settings(BaseMDARootSettings):  # noqa: N801
+class MDAQuasiNewton_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for :class:`.MDAQuasiNewton`."""
 
     method: QuasiNewtonMethod = Field(

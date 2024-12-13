@@ -24,12 +24,10 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -37,7 +35,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -66,7 +63,7 @@ class _ProcessFlow(_BaseMDAProcessFlow):
         return couplings_results
 
 
-class MDAJacobi(BaseMDASolver):
+class MDAJacobi(BaseParallelMDASolver):
     r"""Perform an MDA using the Jacobi algorithm.
 
     This algorithm is a fixed point iteration method to solve systems of non-linear
@@ -104,9 +101,6 @@ class MDAJacobi(BaseMDASolver):
     Settings: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
     """The pydantic model for the settings."""
 
-    parallel_execution: DiscParallelExecution | None
-    """Either an executor of disciplines in parallel or ``None`` in serial mode."""
-
     settings: MDAJacobi_Settings
     """The settings of the MDA"""
 
@@ -122,17 +116,6 @@ class MDAJacobi(BaseMDASolver):
 
         self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
-        if self.settings.n_processes == 1:
-            self._execute_disciplines = self._execute_disciplines_sequentially
-            self.parallel_execution = None
-        else:
-            self._execute_disciplines = self._execute_disciplines_in_parallel
-            self.parallel_execution = DiscParallelExecution(
-                disciplines,
-                self.settings.n_processes,
-                self.settings.use_threading,
-                exceptions_to_re_raise=(ValueError,),
-            )
 
     def get_process_flow(self) -> BaseProcessFlow:  # noqa: D102
         process_flow = super().get_process_flow()
@@ -163,22 +146,6 @@ class MDAJacobi(BaseMDASolver):
         )
 
         return None
-
-    def _execute_disciplines_in_parallel(self) -> None:
-        """Execute the disciplines in parallel."""
-        self.parallel_execution.execute([self.io.data] * len(self.disciplines))
-
-    def _execute_disciplines_sequentially(self) -> None:
-        """Execute the disciplines sequentially."""
-        for discipline in self.disciplines:
-            discipline.execute(self.io.data)
-
-    def _execute_disciplines_and_update_local_data(
-        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
-    ) -> None:
-        self._execute_disciplines()
-        for discipline in self.disciplines:
-            self.io.data.update(discipline.io.get_output_data())
 
     def _execute(self) -> None:
         super()._execute()

@@ -32,7 +32,7 @@ from numpy import array
 from numpy import ndarray
 from scipy.optimize import root
 
-from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class MDAQuasiNewton(BaseMDARoot):
+class MDAQuasiNewton(BaseParallelMDASolver):
     r"""Quasi-Newton solver for MDA.
 
     `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
@@ -97,6 +97,7 @@ class MDAQuasiNewton(BaseMDARoot):
             ValueError: If the method is not a valid quasi-Newton method.
         """  # noqa:D205 D212 D415
         super().__init__(disciplines, settings_model=settings_model, **settings)
+        self._set_resolved_variables(self.coupling_structure.strong_couplings)
 
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
             del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]

@@ -165,7 +165,7 @@ Here is the UML diagram of the MDA classes in GEMSEO.
 
     abstract class BaseMDA
     abstract class BaseMDASolver
-    abstract class BaseMDARoot
+    abstract class BaseParallelMDASolver
 
     class MDAJacobi
     class MDAGaussSeidel
@@ -178,11 +178,11 @@ Here is the UML diagram of the MDA classes in GEMSEO.
     BaseMDA <|-- BaseMDASolver
     BaseMDA <|-- MDAChain
     BaseMDA <|-- MDASequential
-    BaseMDASolver <|-- MDAJacobi
     BaseMDASolver <|-- MDAGaussSeidel
-    BaseMDASolver <|-- BaseMDARoot
-    BaseMDARoot <|-- MDANewtonRaphson
-    BaseMDARoot <|-- MDAQuasiNewton
+    BaseMDASolver <|-- BaseParallelMDASolver
+    BaseParallelMDASolver <|-- MDAJacobi
+    BaseParallelMDASolver <|-- MDANewtonRaphson
+    BaseParallelMDASolver <|-- MDAQuasiNewton
     MDASequential <|-- MDAGSNewton
 
     MDAChain "n" *-- BaseMDASolver
