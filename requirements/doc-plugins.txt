@@ -9,6 +9,4 @@ git+https://gitlab.com/gemseo/dev/gemseo-pdfo.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-petsc.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-pymoo.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-pyoptsparse.git@master
-git+https://gitlab.com/gemseo/dev/gemseo-scilab.git@master
-git+https://gitlab.com/gemseo/dev/gemseo-template-editor-gui.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-umdo.git@master
