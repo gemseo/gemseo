@@ -1,0 +1,4 @@
+The signature of the ``MDAGSNewton`` constructor is now the same as all the other MDA classes.
+
+The ``MDAGSNewton_Settings`` settings model has two new fields, namely ``gauss_seidel_settings`` and ``newton_settings``, to provide the settings of the ``MDAGaussSeidel`` and ``MDANewtonRaphson`` respectively.
+These settings can be provided either as key/value pairs or with the appropriate settings model.

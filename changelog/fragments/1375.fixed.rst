@@ -1,0 +1,1 @@
+The ``log_convergence`` attribute of ``MDASequential`` is cascaded to the sub-MDAs.
