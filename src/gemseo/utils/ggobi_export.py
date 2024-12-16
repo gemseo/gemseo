@@ -84,7 +84,12 @@ def save_data_arrays_to_xml(
         rec = SubElement(
             records, "record", attrib={"color": str(1), "label": "Iter_" + str(i_rec)}
         )
-        rec.text = str(values_array[i_rec, :]).replace("[", "").replace("]", "")
+        rec.text = (
+            str(values_array[i_rec, :])
+            .replace("[", "")
+            .replace("]", "")
+            .replace("\n", "")
+        )
 
     with file_path.open("w") as xml_file:
         xml_file.write(prettify(root))
