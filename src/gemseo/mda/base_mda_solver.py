@@ -230,7 +230,7 @@ class BaseMDASolver(BaseMDA):
         """
         # Aggregate the residual variables from disciplines
         residual_variables = {}
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             if discipline.io.state_equations_are_solved:
                 continue
 

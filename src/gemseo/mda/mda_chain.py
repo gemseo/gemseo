@@ -203,7 +203,7 @@ class MDAChain(BaseMDA):
             if self.__requires_mda(coupled_disciplines):
                 ordered_disciplines = [
                     discipline_
-                    for discipline_ in self.disciplines
+                    for discipline_ in self._disciplines
                     if discipline_ in coupled_disciplines
                 ]
 
@@ -270,11 +270,11 @@ class MDAChain(BaseMDA):
         # The initialization is needed for MDA loops.
         if (
             self.settings.initialize_defaults
-            and len(self.disciplines) > 1
+            and len(self._disciplines) > 1
             and len(self.coupling_structure.strong_couplings) > 0
         ):
             init_chain = MDOInitializationChain(
-                self.disciplines,
+                self._disciplines,
                 available_data_names=input_data,
             )
 

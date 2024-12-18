@@ -83,9 +83,6 @@ class MDAQuasiNewton(BaseParallelMDASolver):
     settings: MDAQuasiNewton_Settings
     """The settings of the MDA"""
 
-    __current_couplings: ndarray
-    """The current values of the coupling variables."""
-
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -151,7 +148,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             """
             self._update_local_data_from_array(x_vect)
 
-            for discipline in self.disciplines:
+            for discipline in self._disciplines:
                 discipline.linearize(self.io.data)
 
             self.assembly.compute_sizes(
@@ -177,25 +174,18 @@ class MDAQuasiNewton(BaseParallelMDASolver):
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
             return None
 
-        def callback(
-            new_couplings: ndarray,
-            _,
-        ) -> None:
+        def callback(iterate: ndarray, residual: ndarray) -> None:
             """Store the current residual in the history.
 
             Args:
-                new_couplings: The new coupling variables.
-                _: ignored
+                iterate: The current iterate.
+                residual: The associated residual.
             """
             self._compute_normalized_residual_norm()
-            self.__current_couplings = new_couplings
 
         return callback
 
-    def __compute_residuals(
-        self,
-        x_vect: ndarray,
-    ) -> ndarray:
+    def __compute_residuals(self, x_vect: ndarray) -> ndarray:
         """Evaluate all residuals, possibly in parallel.
 
         Args:
@@ -204,17 +194,13 @@ class MDAQuasiNewton(BaseParallelMDASolver):
         Returns:
             The residuals.
         """
-        self.current_iter += 1
-        # Work on a temporary copy so _update_local_data can be called.
-        local_data_copy = self.io.data.copy()
         self._update_local_data_from_array(x_vect)
-        local_data_before_execution = self.io.data
-        self.io.data = local_data_copy
-        self._execute_disciplines_and_update_local_data(local_data_before_execution)
+
+        local_data_before_execution = self.io.data.copy()
+        self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
-        return self.assembly.residuals(
-            local_data_before_execution, self._resolved_variable_names
-        ).real
+
+        return self.get_current_resolved_residual_vector()
 
     def _execute(self) -> None:
         super()._execute()
@@ -230,18 +216,15 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
             return self.io.data
 
-        self.current_iter = 0
+        self._current_iter = 0
 
         if self.reset_history_each_run:
             self.residual_history = []
 
-        # initial solution
-        self.__current_couplings = self.get_current_resolved_variables_vector().real
-
         # solve the system
         y_opt = root(
             self.__compute_residuals,
-            x0=self.__current_couplings,
+            x0=self.get_current_resolved_variables_vector().real,
             method=self.settings.method,
             jac=self.__get_jacobian_computer(),
             callback=self.__get_residual_history_callback(),

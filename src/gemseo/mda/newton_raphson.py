@@ -97,7 +97,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
 
         strongly_coupled = self.coupling_structure.get_strongly_coupled_disciplines()
 
-        if len(strongly_coupled) < len(self.disciplines):
+        if len(strongly_coupled) < len(self._disciplines):
             msg = (
                 "The MDANewtonRaphson has weakly coupled disciplines, "
                 "which is not supported. Please consider using a MDAChain with "
@@ -114,7 +114,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
         Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
         the coupling sizes needed for Newton.
         """
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             inputs_to_linearize = set(discipline.io.input_grammar).intersection(
                 self._resolved_variable_names
             )
