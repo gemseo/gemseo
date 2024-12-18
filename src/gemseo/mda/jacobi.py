@@ -131,7 +131,7 @@ class MDAJacobi(BaseParallelMDASolver):
         which is not satisfying here if some disciplines are not strongly coupled.
         """
         if len(self.coupling_structure.strongly_coupled_disciplines) == len(
-            self.disciplines
+            self._disciplines
         ):
             return super()._compute_input_coupling_names()
 

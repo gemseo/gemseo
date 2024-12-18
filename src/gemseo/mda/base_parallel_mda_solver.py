@@ -95,7 +95,7 @@ class BaseParallelMDASolver(BaseMDASolver):
         Args:
             input_data: The input data to execute the disciplines on.
         """
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             discipline.execute(input_data)
 
     def _execute_disciplines_in_parallel(self, input_data: StrKeyMapping) -> None:
@@ -104,7 +104,7 @@ class BaseParallelMDASolver(BaseMDASolver):
         Args:
             input_data: The input data to execute the disciplines on.
         """
-        self.__parallel_execution.execute([input_data] * len(self.disciplines))
+        self.__parallel_execution.execute([input_data] * len(self._disciplines))
 
     def _linearize_disciplines_sequentially(self, input_data: StrKeyMapping) -> None:
         """Linearize the disciplines sequentially.
@@ -114,7 +114,7 @@ class BaseParallelMDASolver(BaseMDASolver):
                 are linearize.
         """
         execute_before_linearizing = self.settings.execute_before_linearizing
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             discipline.linearize(input_data, execute=execute_before_linearizing)
 
     def _linearize_disciplines_in_parallel(self, input_data: StrKeyMapping) -> None:
@@ -124,11 +124,11 @@ class BaseParallelMDASolver(BaseMDASolver):
             input_data: The input data defining the point around which the disciplines
                 are linearize.
         """
-        self.__parallel_linearization.execute([input_data] * len(self.disciplines))
+        self.__parallel_linearization.execute([input_data] * len(self._disciplines))
 
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
     ) -> None:
         self._execute_disciplines(input_data or self.io.data)
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             self.io.data.update(discipline.get_output_data())

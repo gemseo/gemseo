@@ -279,7 +279,7 @@ class BaseMDA(ProcessDiscipline):
 
     def _initialize_grammars(self) -> None:
         """Define the grammars as the union of the disciplines' grammars."""
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             self.io.input_grammar.update(discipline.io.input_grammar)
             self.io.output_grammar.update(discipline.io.output_grammar)
 
@@ -335,7 +335,7 @@ class BaseMDA(ProcessDiscipline):
 
         all_outs = {}
         multiple_outs = []
-        for disc in self.disciplines:
+        for disc in self._disciplines:
             for out in disc.io.output_grammar:
                 if out in all_outs:
                     multiple_outs.append(out)
@@ -399,7 +399,7 @@ class BaseMDA(ProcessDiscipline):
         """
         not_arrays = set()
         for coupling_name in self.coupling_structure.all_couplings:
-            for discipline in self.disciplines:
+            for discipline in self._disciplines:
                 for grammar in (
                     discipline.io.input_grammar,
                     discipline.io.output_grammar,
@@ -431,7 +431,7 @@ class BaseMDA(ProcessDiscipline):
         exec_cache_tol = self.lin_cache_tol_fact * self.settings.tolerance
         self.__check_linear_solver_settings()
         residual_variables = {}
-        for disc in self.disciplines:
+        for disc in self._disciplines:
             residual_variables.update(disc.io.residual_to_state_variable)
 
         couplings_adjoint = sorted(

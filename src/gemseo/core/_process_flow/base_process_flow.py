@@ -47,7 +47,7 @@ class BaseProcessFlow(BaseFlow):
         sequence = (
             ParallelExecSequence() if self.is_parallel else SequentialExecSequence()
         )
-        for discipline in self._node.disciplines:
+        for discipline in self._node._disciplines:
             sequence.extend(discipline.get_process_flow().get_execution_flow())
         return sequence
 
@@ -58,7 +58,7 @@ class BaseProcessFlow(BaseFlow):
             The disciplines.
         """
         all_disciplines = []
-        for disc in self._node.disciplines:
+        for disc in self._node._disciplines:
             disciplines = disc.get_process_flow().get_disciplines_in_data_flow()
             if not disciplines:
                 disciplines = [disc]

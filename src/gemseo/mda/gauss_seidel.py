@@ -144,7 +144,7 @@ class MDAGaussSeidel(BaseMDASolver):
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             self.io.input_grammar.update(
                 discipline.io.input_grammar,
                 excluded_names=self.io.output_grammar,
@@ -155,7 +155,7 @@ class MDAGaussSeidel(BaseMDASolver):
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
     ) -> None:
         input_data = input_data or self.io.data
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             discipline.execute(input_data)
             self.io.data.update(discipline.io.get_output_data())
 
