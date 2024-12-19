@@ -296,8 +296,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
 
         # Adapt options
         for k in self._LGMRES_SPEC_OPTS:
-            if k in settings:
-                del settings[k]
+            settings.pop(k, None)
 
         if best_res < 1.0:
             settings["x0"] = best_sol

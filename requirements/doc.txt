@@ -16,7 +16,7 @@ babel==2.16.0
     #   sphinx
 beautifulsoup4==4.12.3
     # via pydata-sphinx-theme
-certifi==2024.8.30
+certifi==2024.12.14
     # via requests
 charset-normalizer==3.4.0
     # via requests
@@ -131,9 +131,9 @@ pydantic==2.9.1
     #   pydantic-settings
 pydantic-core==2.23.3
     # via pydantic
-pydantic-settings==2.6.1
+pydantic-settings==2.7.0
     # via autodoc-pydantic
-pydata-sphinx-theme==0.16.0
+pydata-sphinx-theme==0.16.1
     # via gemseo (pyproject.toml)
 pydoe3==1.0.4
     # via gemseo (pyproject.toml)
