@@ -58,6 +58,7 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
+from gemseo import sample_disciplines
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
@@ -68,7 +69,7 @@ configure_logger()
 # Create a surrogate discipline
 # -----------------------------
 #
-# Create the learning dataset
+# Create the training dataset
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # If you already have available data from a :term:`DOE` produced externally,
@@ -124,21 +125,11 @@ design_space = design_space.filter(["x_shared", "y_24", "y_34"])
 # %%
 #
 # From this :class:`.Discipline` and this :class:`.DesignSpace`,
-# we build a :class:`.DOEScenario`
-# by means of the API function :func:`.create_scenario`:
-#
-scenario = create_scenario(
-    [discipline],
-    "y_4",
-    design_space,
-    formulation_name="DisciplinaryOpt",
-    scenario_type="DOE",
+# we can generate 30 samples by means of the :func:`.sample_disciplines` function
+# with the :term:`LHS` algorithm:
+mission_dataset = sample_disciplines(
+    [discipline], design_space, "y_4", algo_name="PYDOE_LHS", n_samples=30
 )
-
-# %%
-# Lastly, we execute the process with the :term:`LHS` algorithm and 30 samples.
-scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
-mission_dataset = scenario.to_dataset(opt_naming=False)
 
 # %%
 # .. seealso::
@@ -246,7 +237,8 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=30)
 # To understand the detailed behavior of the models, please go to the
 # documentation of the used packages.
 #
-# Extending surrogate models --------------------------
+# Extending surrogate models
+# --------------------------
 #
 # All surrogate models work the same way: the :class:`.BaseRegressor` base
 # class shall be extended. See :ref:`extending-gemseo` to learn how to run

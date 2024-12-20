@@ -51,15 +51,15 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     This measure can be minimized (e.g. :class:`.MSEMeasure`) or maximized (e.g.
     :class:`.R2Measure`).
 
-    It can be evaluated from the learning dataset, from a test dataset or using
+    It can be evaluated from the training dataset, from a test dataset or using
     resampling techniques such as boostrap, cross-validation or leave-one-out.
 
     The machine learning algorithm is usually trained. If not but required by the
     evaluation technique, the quality measure will train it.
 
-    Lastly, the transformers of the algorithm fitted from the learning dataset can be
+    Lastly, the transformers of the algorithm fitted from the training dataset can be
     used as is by the resampling methods or re-fitted for each algorithm trained on a
-    subset of the learning dataset.
+    subset of the training dataset.
     """
 
     algo: BaseMLAlgo
@@ -68,7 +68,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
     _fit_transformers: bool
     """Whether to re-fit the transformers when using resampling techniques.
 
-    If ``False``, use the transformers fitted with the whole learning dataset.
+    If ``False``, use the transformers fitted with the whole training dataset.
     """
 
     __seeder: Seeder
@@ -78,7 +78,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The evaluation method."""
 
         LEARN = "LEARN"
-        """The name of the method to evaluate the measure on the learning dataset."""
+        """The name of the method to evaluate the measure on the training dataset."""
 
         TEST = "TEST"
         """The name of the method to evaluate the measure on a test dataset."""
@@ -126,7 +126,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
                 when using resampling techniques.
                 If ``False``,
                 use the transformers of the algorithm fitted
-                from the whole learning dataset.
+                from the whole training dataset.
         """  # noqa: D205 D212
         self.algo = algo
         self._fit_transformers = fit_transformers
@@ -138,11 +138,11 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         samples: Sequence[int] = (),
         multioutput: bool = True,
     ) -> MeasureType:
-        """Evaluate the quality of the ML model from the learning dataset.
+        """Evaluate the quality of the ML model from the training dataset.
 
         Args:
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -163,7 +163,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             test_data: The test dataset.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -182,7 +182,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -216,7 +216,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             n_folds: The number of folds.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -247,7 +247,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             n_replicates: The number of bootstrap replicates.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             multioutput: Whether the quality measure is returned
                 for each component of the outputs.
                 Otherwise, the average quality measure.
@@ -299,7 +299,7 @@ class BaseMLAlgoQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
                 then an unpredictable generator will be used.

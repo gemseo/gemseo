@@ -19,8 +19,8 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Mixture of experts with PCA on Burgers dataset
-==============================================
+Mixture of experts with PCA
+===========================
 
 In this demo, we apply a mixture of experts regression model to the Burgers
 dataset. In order to reduce the output dimension, we apply a PCA to the

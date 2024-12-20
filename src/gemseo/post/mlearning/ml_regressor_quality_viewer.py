@@ -56,12 +56,12 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         """The reference dataset."""
 
         LEARNING = "LEARNING"
-        """The learning dataset."""
+        """The training dataset."""
 
         CROSS_VALIDATION = "CROSS_VALIDATION"
         r"""The cross-validation dataset.
 
-        This is the learning dataset
+        This is the training dataset
         decomposable into :math:`K` learning-validation partitions.
         """
 
@@ -316,7 +316,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
                 Used only in the case of cross-validation.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
@@ -366,7 +366,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
                 Used only in the case of cross-validation.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
@@ -426,7 +426,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
                 Used only in the case of cross-validation.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
@@ -462,7 +462,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             n_folds: The number of folds.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
@@ -528,7 +528,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
                 Used only in the case of cross-validation.
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,

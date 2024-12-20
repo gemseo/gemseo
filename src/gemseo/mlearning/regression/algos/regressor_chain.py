@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A model chaining regression models.
 
-During the training stage, the first regression model learns the learning dataset, the
+During the training stage, the first regression model learns the training dataset, the
 second regression model learns the learning error of the first regression model, and the
 $i$-th regression model learns the learning error of its predecessor.
 

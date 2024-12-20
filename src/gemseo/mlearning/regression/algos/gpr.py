@@ -42,7 +42,7 @@ that the original model :math:`f` to replace
 is an instance of a Gaussian process (GP) with mean :math:`\mu`
 and covariance :math:`\sigma^2\kappa(\|x-x'\|;\epsilon)`.
 
-Then, the GP conditioned by the learning set
+Then, the GP conditioned by the training dataset
 :math:`(x_i,y_i)_{1\leq i \leq N}`
 is entirely defined by its expectation:
 

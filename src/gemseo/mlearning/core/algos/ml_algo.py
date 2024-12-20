@@ -61,7 +61,7 @@ a regression model can predict the outputs corresponding to new inputs values.
 
 The quality of a machine learning algorithm can be measured
 using a :class:`.BaseMLAlgoQuality`
-either with respect to the learning dataset
+either with respect to the training dataset
 or to a test dataset or using resampling methods,
 such as K-folds or leave-one-out cross-validation techniques.
 The challenge is to avoid over-learning the learning data
@@ -154,7 +154,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     """
 
     learning_set: Dataset
-    """The learning dataset."""
+    """The training dataset."""
 
     transformer: dict[str, BaseTransformer]
     """The strategies to transform the variables, if any.
@@ -200,7 +200,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
-            data: The learning dataset.
+            data: The training dataset.
             settings_model: The  machine learning algorithm settings
                 as a Pydantic model.
                 If ``None``, use ``**settings``.
@@ -279,11 +279,11 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
         samples: Sequence[int] = (),
         fit_transformers: bool = True,
     ) -> None:
-        """Train the machine learning algorithm from the learning dataset.
+        """Train the machine learning algorithm from the training dataset.
 
         Args:
             samples: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             fit_transformers: Whether to fit the variable transformers.
                 Otherwise, use them as they are.
         """
@@ -306,7 +306,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             indices: The indices of the learning samples.
-                If empty, use the whole learning dataset.
+                If empty, use the whole training dataset.
             fit_transformers: Whether to fit the variable transformers.
                 Otherwise, use them as they are.
         """

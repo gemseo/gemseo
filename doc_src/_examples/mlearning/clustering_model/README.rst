@@ -9,4 +9,5 @@
 Clustering
 ~~~~~~~~~~
 
-How to create a clustering model.
+The purpose of a clustering model is
+to group training observations according to their similarities.

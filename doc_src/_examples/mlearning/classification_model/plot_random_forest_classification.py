@@ -19,8 +19,8 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Random forest classification
-============================
+Random forest
+=============
 
 We want to classify the Iris dataset using a Random Forest classifier.
 """

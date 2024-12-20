@@ -22,7 +22,7 @@
 The :mod:`~gemseo.problems.mdo.scalable.data_driven.discipline`
 implements the concept of scalable discipline.
 This is a particular discipline
-built from an input-output learning dataset associated with a function
+built from an input-output training dataset associated with a function
 and generalizing its behavior to a new user-defined problem dimension,
 that is to say new user-defined input and output dimensions.
 
@@ -82,7 +82,7 @@ class ScalableDiscipline(Discipline):
         """
         Args:
             name: The name of the class of the scalable model.
-            data: The learning dataset.
+            data: The training dataset.
             sizes: The sizes of the input and output variables.
                 If empty, use the original sizes.
             **parameters: The parameters for the model.
@@ -100,7 +100,7 @@ class ScalableDiscipline(Discipline):
         """Initialize input and output grammars from data names.
 
         Args:
-            data: The learning dataset.
+            data: The training dataset.
         """
         self.io.input_grammar.update_from_names(
             data.get_variable_names(data.INPUT_GROUP)

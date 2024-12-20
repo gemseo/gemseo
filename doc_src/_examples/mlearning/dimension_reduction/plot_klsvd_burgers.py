@@ -19,8 +19,8 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-KL-SVD on Burgers equation
-==========================
+Proper orthogonal decomposition (POD)
+=====================================
 
 Example using KL-SVD on solutions of the Burgers equation.
 """

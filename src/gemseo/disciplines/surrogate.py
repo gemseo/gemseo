@@ -94,7 +94,7 @@ class SurrogateDiscipline(Discipline):
         Args:
             surrogate: Either the name of a subclass of :class:`.BaseRegressor`
                 or an instance of this subclass.
-            data: The learning dataset to train the regression model.
+            data: The training dataset to train the regression model.
                 If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
                 This argument is ignored
@@ -123,14 +123,14 @@ class SurrogateDiscipline(Discipline):
                 use the center of the learning input space.
             input_names: The names of the input variables.
                 If empty,
-                consider all input variables mentioned in the learning dataset.
+                consider all input variables mentioned in the training dataset.
             output_names: The names of the output variables.
                 If empty,
-                consider all input variables mentioned in the learning dataset.
+                consider all input variables mentioned in the training dataset.
             **settings: The settings of the machine learning algorithm.
 
         Raises:
-            ValueError: If the learning dataset is missing
+            ValueError: If the training dataset is missing
                 whilst the regression model is not trained.
         """  # noqa: D205, D212, D415
         self.__error_measure_factory = RegressorQualityFactory()

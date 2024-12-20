@@ -19,8 +19,8 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-K nearest neighbors classification
-==================================
+k-nearest neighbors
+===================
 
 We want to classify the Iris dataset using a KNN classifier.
 """

@@ -123,7 +123,7 @@ class R2Measure(BaseRegressorQuality):
             update_seed: Whether to update the seed before resampling.
             resampler_class: The class of the resampler.
             samples: The indices of the learning samples.
-                If ``None``, use the whole learning dataset.
+                If ``None``, use the whole training dataset.
             seed: The seed of the pseudo-random number generator.
                 If ``None``,
                 then an unpredictable generator will be used.

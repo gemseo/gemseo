@@ -9,4 +9,6 @@
 Classification
 ~~~~~~~~~~~~~~
 
-How to create a classification model.
+The purpose of a classification model is
+to predict the label value corresponding to a feature value
+after being trained from several feature-label samples.

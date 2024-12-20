@@ -130,7 +130,7 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         In some cases,
         the regressor :math:`\hat{f}(x)` is used
         to approximate a model :math:`f(x,p)` at point :math:`p`
-        given a learning dataset
+        given a training dataset
         :math:`\left(x_i,f(x_i,p),\partial_p f(x_i,p)\right)_{1\leq i \leq N}`
         including not only the input and output samples
         :math:`\left(x_i,f(x_i,p)\right)_{1\leq i \leq N}`
@@ -154,7 +154,7 @@ class BaseRegressor(BaseMLSupervisedAlgo):
             with shape ``(n_samples, n_outputs, special_variable_dimension)``.
 
         Raises:
-            ValueError: When the learning dataset does not include gradient information.
+            ValueError: When the training dataset does not include gradient information.
         """
         self._check_jacobian_learning_data("predict_jacobian_wrt_special_variables")
         return self._predict_jacobian_wrt_special_variables(input_data)
@@ -163,12 +163,12 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         """Check whether the attribute can be used.
 
         Raises:
-            ValueError: When the learning dataset does not include gradient information.
+            ValueError: When the training dataset does not include gradient information.
         """
         if self._jacobian_data is None:
             msg = (
                 f"You cannot use {attribute_name} "
-                "because the learning dataset does not include gradient information."
+                "because the training dataset does not include gradient information."
             )
             raise ValueError(msg)
 

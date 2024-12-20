@@ -31,15 +31,15 @@ from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 
 # %%
-# Every quality measure can be computed from a learning dataset or a test dataset.
+# Every quality measure can be computed from a training dataset or a test dataset.
 # The use of a test dataset aims to
 # approximate the quality of the machine learning model over the whole variable space
-# in order to be less dependent on the learning dataset
+# in order to be less dependent on the training dataset
 # and so to avoid over-fitting (accurate near learning points and poor elsewhere).
 #
 # In the presence of expensive data,
 # this test dataset may just be a dream,
-# and we have to estimate this quality with techniques resampling the learning dataset,
+# and we have to estimate this quality with techniques resampling the training dataset,
 # such as leave-one-out.
 # The idea is simple:
 # we repeat iterate :math:`N` times the two-step task

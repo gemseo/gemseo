@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import sample_disciplines
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.uncertainty import create_statistics
 
@@ -48,7 +48,7 @@ configure_logger()
 # we create the dataset.
 # For that,
 # we instantiate
-# the discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`
+# the discipline :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission`
 # of the Sobieski's SSBJ problem which is known to |g|.
 discipline = create_discipline("SobieskiMission")
 
@@ -57,33 +57,31 @@ discipline = create_discipline("SobieskiMission")
 # we load the design space of the Sobieski's SSBJ problem
 # by means of the class :meth:`.SobieskiDesignSpace`
 # and :meth:`.DesignSpace.filter` the inputs of the
-# discipline :class:`~gems.problems.sobieski.disciplines.SobieskiMission`.
+# discipline :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission`.
 parameter_space = SobieskiDesignSpace()
 parameter_space.filter(discipline.io.input_grammar.names)
 
 # %%
 # Then,
 # we sample the discipline over this design space
-# by means of a :class:`.DOEScenario`
-# executed with a Monte Carlo algorithm and 100 samples.
-scenario = create_scenario(
+# by means of the :func:`.sample_disciplines` function
+# with a Monte Carlo algorithm and 100 samples.
+dataset = sample_disciplines(
     [discipline],
-    "y_4",
     parameter_space,
-    scenario_type="DOE",
+    "y_4",
     formulation_name="DisciplinaryOpt",
+    algo_name="OT_MONTE_CARLO",
+    n_samples=100,
 )
-scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)
 
 # %%
 # Create an :class:`.EmpiricalStatistics` object for all variables
 # ----------------------------------------------------------------
 # In this second stage,
 # we create an :class:`.EmpiricalStatistics`
-# from the database encapsulated in a :class:`.Dataset`:
-dataset = scenario.to_dataset(opt_naming=False)
+# from the :class:`.Dataset`:
 analysis = create_statistics(dataset, name="SobieskiMission")
-
 analysis
 
 # %%

@@ -14,5 +14,5 @@ and improve the quality of the machine learning model.
 Every machine learning model has a ``transformer`` argument to set the transformation policy (none by default).
 In the special case of regression models,
 the function :func:`.create_surrogate` and the :class:`.SurrogateDiscipline` class
-use :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` by default,
-i.e. :class:`.MinMaxScaler` for both inputs and outputs.
+use the :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` by default,
+which is :class:`.MinMaxScaler` for both inputs and outputs.

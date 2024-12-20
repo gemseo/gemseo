@@ -17,7 +17,7 @@ r"""Regressors.
 This package includes regression algorithms, a.k.a. regressors.
 
 A regressor aims to find relationships between input and output variables.
-After being fitted to a learning set,
+After being fitted to a training dataset,
 the regression algorithms can predict output values of new input data.
 
 A regression algorithm consists of identifying a function
