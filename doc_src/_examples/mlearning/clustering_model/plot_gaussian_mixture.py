@@ -20,8 +20,8 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Gaussian Mixtures
-=================
+Gaussian mixture
+================
 
 Load Iris dataset and create clusters.
 """

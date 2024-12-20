@@ -90,11 +90,11 @@ def create_mlearning_model(
     transformer: TransformerType = READ_ONLY_EMPTY_DICT,
     **parameters,
 ) -> BaseMLAlgo:
-    """Create a machine learning algorithm from a learning dataset.
+    """Create a machine learning algorithm from a training dataset.
 
     Args:
         name: The name of the machine learning algorithm.
-        data: The learning dataset.
+        data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
@@ -119,11 +119,11 @@ def create_regression_model(
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
 ) -> BaseRegressor:
-    """Create a regression model from a learning dataset.
+    """Create a regression model from a training dataset.
 
     Args:
         name: The name of the regression algorithm.
-        data: The learning dataset.
+        data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
@@ -155,11 +155,11 @@ def create_classification_model(
     transformer: TransformerType = BaseMLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters,
 ) -> BaseClassifier:
-    """Create a classification model from a learning dataset.
+    """Create a classification model from a training dataset.
 
     Args:
         name: The name of the classification algorithm.
-        data: The learning dataset.
+        data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.
@@ -182,11 +182,11 @@ def create_clustering_model(
     transformer: TransformerType = BaseClusterer.DEFAULT_TRANSFORMER,
     **parameters,
 ) -> BaseClusterer:
-    """Create a clustering model from a learning dataset.
+    """Create a clustering model from a training dataset.
 
     Args:
         name: The name of the clustering algorithm.
-        data: The learning dataset.
+        data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of :class:`.BaseTransformer`
             while keys are names of either variables or groups of variables.

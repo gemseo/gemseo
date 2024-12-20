@@ -183,7 +183,7 @@ class PCERegressor(BaseRegressor):
     ) -> None:
         """
         Args:
-            data: The learning dataset required
+            data: The training dataset required
                 in the case of the least-squares regression
                 or when ``discipline`` is ``None`` in the case of quadrature.
 
@@ -679,7 +679,7 @@ class PCERegressor(BaseRegressor):
         for more information about the notion of special variables.
 
         Raises:
-            ValueError: When the learning dataset does not include gradient information.
+            ValueError: When the training dataset does not include gradient information.
         """
         self._check_is_trained()
         self._check_jacobian_learning_data("mean_jacobian_wrt_special_variables")
@@ -693,7 +693,7 @@ class PCERegressor(BaseRegressor):
         for more information about the notion of special variables.
 
         Raises:
-            ValueError: When the learning dataset does not include gradient information.
+            ValueError: When the training dataset does not include gradient information.
         """
         self._check_is_trained()
         self._check_jacobian_learning_data(
@@ -709,7 +709,7 @@ class PCERegressor(BaseRegressor):
         for more information about the notion of special variables.
 
         Raises:
-            ValueError: When the learning dataset does not include gradient information.
+            ValueError: When the training dataset does not include gradient information.
         """
         self._check_is_trained()
         self._check_jacobian_learning_data("variance_jacobian_wrt_special_variables")

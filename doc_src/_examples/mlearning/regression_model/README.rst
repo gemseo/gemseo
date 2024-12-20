@@ -9,4 +9,6 @@
 Regression
 ~~~~~~~~~~
 
-How to create a regression model.
+The purpose of a regression model is
+to predict the output value corresponding to an input value
+after being trained from several input-output samples.

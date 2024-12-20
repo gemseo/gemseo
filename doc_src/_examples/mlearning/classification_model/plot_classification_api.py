@@ -19,11 +19,11 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Classification API
-==================
+High-level functions
+====================
 
-Here are some examples of the machine learning API
-applied to classification models.
+The :mod:`gemseo.mlearning` package includes high-level functions
+to create classification models from model class names.
 """
 
 from __future__ import annotations
@@ -38,20 +38,36 @@ configure_logger()
 
 
 # %%
-# Get available classification models
-# -----------------------------------
+# Available models
+# ----------------
+# Use the :func:`.get_classification_models`
+# to list the available model class names:
 get_classification_models()
 
 # %%
-# Get classification model options
-# --------------------------------
-get_classification_options("KNNClassifier")
+# Available model options
+# -----------------------
+# Use the :func:`.get_classification_options`
+# to get the options of a model
+# from its class name:
+get_classification_options("KNNClassifier", pretty_print=False)
 
 # %%
-# Create classification model
-# ---------------------------
-iris = create_benchmark_dataset("IrisDataset", as_io=True)
-
-model = create_classification_model("KNNClassifier", data=iris)
+#
+# .. seealso::
+#    The functions
+#    :func:`.get_classification_models` :func:`.get_classification_options`
+#    can be very useful for the developer.
+#    As a user,
+#    it may be easier to consult :ref:`this page <gen_classification_algos>`
+#    to find out about the different algorithms and their options.
+#
+# Creation
+# --------
+# Given a training dataset, *e.g.*
+dataset = create_benchmark_dataset("IrisDataset", as_io=True)
+# %%
+# use the :func:`.create_classification_model` function
+# to create a classification model from its class name and settings:
+model = create_classification_model("KNNClassifier", data=dataset)
 model.learn()
-model

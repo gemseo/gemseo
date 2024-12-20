@@ -90,7 +90,7 @@ class MLAlgoAssessor(Discipline):
     """The parameters of the machine learning algorithm."""
 
     dataset: Dataset
-    """The learning dataset."""
+    """The training dataset."""
 
     transformer: TransformerType
     """The transformation strategy for data groups."""
@@ -117,7 +117,7 @@ class MLAlgoAssessor(Discipline):
         """
         Args:
             algo: The name of a machine learning algorithm.
-            dataset: A learning dataset.
+            dataset: A training dataset.
             parameters: The parameters of the machine learning algorithm to calibrate.
             measure: A measure to assess the machine learning algorithm.
             measure_evaluation_method_name: The name of the method
@@ -165,7 +165,7 @@ class MLAlgoAssessor(Discipline):
 
         This method creates a new instance of the machine learning algorithm, from the
         hyper-parameters stored in the data attribute of the
-        :class:`.MLAlgoAssessor`. It trains it on the learning dataset and measures its
+        :class:`.MLAlgoAssessor`. It trains it on the training dataset and measures its
         quality with the :class:`.BaseMLAlgoQuality`.
         """
         inputs = self.io.get_input_data()
@@ -202,7 +202,7 @@ class MLAlgoCalibration:
     """Whether to maximize the quality measure."""
 
     dataset: Dataset | None
-    """The learning dataset after execution."""
+    """The training dataset after execution."""
 
     optimal_parameters: dict[str, ndarray] | None
     """The optimal parameters for the machine learning algorithm after execution."""
@@ -233,7 +233,7 @@ class MLAlgoCalibration:
         """
         Args:
             algo: The name of a machine learning algorithm.
-            dataset: A learning dataset.
+            dataset: A training dataset.
             parameters: The parameters of the machine learning algorithm
                 to calibrate.
             calibration_space: The space defining the calibration variables.

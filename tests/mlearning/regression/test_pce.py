@@ -742,7 +742,7 @@ def test_differentiation_wrt_special_variables_error(ishigami_pce, name):
         ValueError,
         match=re.escape(
             f"You cannot use {name} "
-            "because the learning dataset does not include gradient information."
+            "because the training dataset does not include gradient information."
         ),
     ):
         attr = getattr(ishigami_pce, name)

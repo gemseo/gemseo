@@ -9,4 +9,17 @@
 Calibration and selection
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-How to tune a machine learning model and select the best one.
+During the training stage,
+the parameters of a machine learning model are modified
+so that this model learns the training data as well as possible.
+
+This model also depends on hyperparameters that are fixed during training.
+For example, the polynomial degree in the case of polynomial regression.
+The :class:`.MLAlgoCalibration` class can be used
+to tune these hyperparameters so as to improve this model.
+
+Moreover,
+even if this model has learned well,
+it is possible that another has learned better.
+The :class:`.MLAlgoSelection` class can be used
+to select the best machine learning model from a collection.

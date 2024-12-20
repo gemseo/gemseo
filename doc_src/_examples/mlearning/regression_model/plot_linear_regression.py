@@ -40,7 +40,7 @@ from numpy import array
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import sample_disciplines
 from gemseo.mlearning import create_regression_model
 
 configure_logger()
@@ -65,26 +65,20 @@ design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
 design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
 
 # %%
-# Create the learning set
-# -----------------------
-# We can build a learning set by means of a
-# :class:`.DOEScenario` with a full factorial design of
-# experiments. The number of samples can be equal to 9 for example.
-scenario = create_scenario(
-    [discipline],
-    "y_1",
-    design_space,
-    scenario_type="DOE",
-    formulation_name="DisciplinaryOpt",
+# Create the training dataset
+# ---------------------------
+# We can build a training dataset
+# by sampling the discipline using the :func:`.sample_disciplines`
+# with a full factorial design of experiments.
+dataset = sample_disciplines(
+    [discipline], design_space, ["y_1", "y_2"], algo_name="PYDOE_FULLFACT", n_samples=9
 )
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
 
 # %%
 # Create the regression model
 # ---------------------------
-# Then, we build the linear regression model from the database and
+# Then, we build the linear regression model from the dataset and
 # displays this model.
-dataset = scenario.to_dataset(opt_naming=False)
 model = create_regression_model("LinearRegressor", dataset, transformer={})
 model.learn()
 model

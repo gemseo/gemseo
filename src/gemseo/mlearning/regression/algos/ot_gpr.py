@@ -78,7 +78,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     SHORT_ALGO_NAME: ClassVar[str] = "GPR"
 
     MAX_SIZE_FOR_LAPACK: ClassVar[int] = 100
-    """The maximum size of the learning dataset to use LAPACK as linear algebra library.
+    """The maximum size of the training dataset to use LAPACK as linear algebra library.
 
     Use HMAT otherwise.
     """

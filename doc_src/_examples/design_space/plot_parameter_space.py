@@ -29,7 +29,7 @@ from __future__ import annotations
 
 from gemseo import configure_logger
 from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import sample_disciplines
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
@@ -122,33 +122,17 @@ sample
 discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 
 # %%
-# From these parameter space and discipline, we build a :class:`.DOEScenario`
-# and execute it with a Latin Hypercube Sampling algorithm and 100 samples.
-#
-# .. warning::
-#
-#    A :class:`.Scenario` deals with all variables available in the
-#    :class:`.DesignSpace`. By inheritance, a :class:`.DOEScenario` deals
-#    with all variables available in the :class:`.ParameterSpace`.
-#    Thus, if we do not filter the uncertain variables, the
-#    :class:`.DOEScenario` will consider all variables. In particular, the
-#    deterministic variables will be considered as uniformly distributed.
-scenario = create_scenario(
-    [discipline],
-    "z",
-    parameter_space,
-    scenario_type="DOE",
-    formulation_name="DisciplinaryOpt",
+# Then,
+# we use the :func:`.sample_disciplines` function
+# with an :term:`LHS` algorithm
+# to generate 100 samples of the discipline
+# over the whole parameter space:
+dataset = sample_disciplines(
+    [discipline], parameter_space, "z", algo_name="PYDOE_LHS", n_samples=100
 )
-scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 
 # %%
-# We can visualize the result by encapsulating the database in
-# a :class:`.Dataset`:
-dataset = scenario.to_dataset(opt_naming=False)
-
-# %%
-# This visualization can be tabular for example:
+# and visualize it in a tabular way:
 dataset
 
 # %%
@@ -162,22 +146,13 @@ ScatterMatrix(dataset).execute(save=False, show=True)
 # we need to filter the uncertain variables:
 parameter_space.filter(parameter_space.uncertain_variables)
 
-# %%
-# Then, we create a new scenario from this parameter space
-# containing only the uncertain variables and execute it.
-scenario = create_scenario(
-    [discipline],
-    "z",
-    parameter_space,
-    scenario_type="DOE",
-    formulation_name="DisciplinaryOpt",
-)
-scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
+# If we want to sample a discipline over the uncertain space only,
+# we need to extract it:
+uncertain_space = parameter_space.extract_uncertain_space()
 
 # %%
-# Finally, we build a dataset from the disciplinary cache and visualize it.
-# We can see that the deterministic variable 'x' is set to its default
-# value for all evaluations, contrary to the previous case where we were
-# considering the whole parameter space.
-dataset = scenario.to_dataset(opt_naming=False)
+# Then, we sample the discipline over this uncertain space:
+dataset = sample_disciplines(
+    [discipline], uncertain_space, "z", algo_name="PYDOE_LHS", n_samples=100
+)
 dataset
