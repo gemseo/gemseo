@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from gemseo.datasets.io_dataset import IODataset
@@ -137,13 +138,14 @@ def create_regression_model(
 
     if (
         name == "PCERegressor"
-        and isinstance(transformer, dict)
+        and isinstance(transformer, Mapping)
         and IODataset.INPUT_GROUP in transformer
     ):
         LOGGER.warning(
             "Remove input data transformation because "
             "PCERegressor does not support transformers."
         )
+        transformer = dict(transformer)
         del transformer[IODataset.INPUT_GROUP]
     factory = RegressorFactory()
     return factory.create(name, data=data, transformer=transformer, **parameters)

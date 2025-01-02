@@ -23,12 +23,12 @@
 K-means
 =======
 
+A :class:`.KMeans` is a k-means model
+based on `scikit-learn <https://scikit-learn.org/>`__.
+
 Load Iris dataset and create clusters.
 """
 
-# %%
-# Import
-# ------
 from __future__ import annotations
 
 from numpy import array

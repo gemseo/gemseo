@@ -22,6 +22,8 @@
 Mixture of experts
 ==================
 
+A :class:`.MOERegressor` is a mixture of experts for regression purposes.
+
 In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
 """

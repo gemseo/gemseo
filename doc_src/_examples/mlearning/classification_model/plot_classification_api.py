@@ -56,8 +56,8 @@ get_classification_options("KNNClassifier", pretty_print=False)
 #
 # .. seealso::
 #    The functions
-#    :func:`.get_classification_models` :func:`.get_classification_options`
-#    can be very useful for the developer.
+#    :func:`.get_classification_models` and :func:`.get_classification_options`
+#    can be very useful for the developers.
 #    As a user,
 #    it may be easier to consult :ref:`this page <gen_classification_algos>`
 #    to find out about the different algorithms and their options.

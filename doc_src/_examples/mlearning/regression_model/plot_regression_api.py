@@ -56,8 +56,8 @@ get_regression_options("GaussianProcessRegressor", pretty_print=False)
 #
 # .. seealso::
 #    The functions
-#    :func:`.get_regression_models` :func:`.get_regression_options`
-#    can be very useful for the developer.
+#    :func:`.get_regression_models` and :func:`.get_regression_options`
+#    can be very useful for the developers.
 #    As a user,
 #    it may be easier to consult :ref:`this page <gen_regression_algos>`
 #    to find out about the different algorithms and their options.

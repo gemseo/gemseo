@@ -23,6 +23,9 @@
 Gaussian mixture
 ================
 
+A :class:`.GaussianMixture` is a Gaussian mixture model
+based on `scikit-learn <https://scikit-learn.org/>`__.
+
 Load Iris dataset and create clusters.
 """
 
