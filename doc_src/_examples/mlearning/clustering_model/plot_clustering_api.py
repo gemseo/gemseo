@@ -57,8 +57,8 @@ get_clustering_options("GaussianMixture", pretty_print=False)
 #
 # .. seealso::
 #    The functions
-#    :func:`.get_clustering_models` :func:`.get_clustering_options`
-#    can be very useful for the developer.
+#    :func:`.get_clustering_models` and :func:`.get_clustering_options`
+#    can be very useful for the developers.
 #    As a user,
 #    it may be easier to consult :ref:`this page <gen_clustering_algos>`
 #    to find out about the different algorithms and their options.

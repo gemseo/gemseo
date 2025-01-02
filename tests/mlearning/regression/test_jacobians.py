@@ -40,7 +40,7 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.rbf_settings import Function
+from gemseo.mlearning.regression.algos.rbf_settings import RBF
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.scenarios.doe_scenario import DOEScenario
@@ -193,7 +193,7 @@ def _der_r3(x, norx, eps):
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", [*list(Function), _r3])
+@pytest.mark.parametrize("function", [*list(RBF), _r3])
 def test_rbf(dataset, transformer, function) -> None:
     """Test polynomial regression Jacobians."""
     der_func = _der_r3 if function is _r3 else None

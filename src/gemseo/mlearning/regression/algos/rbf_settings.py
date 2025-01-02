@@ -29,7 +29,7 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
-class Function(StrEnum):
+class RBF(StrEnum):
     """The radial basis functions."""
 
     MULTIQUADRIC = "multiquadric"
@@ -41,14 +41,17 @@ class Function(StrEnum):
     THIN_PLATE = "thin_plate"
 
 
+# TODO: API: remove Function.
+Function = RBF
+
+
 class RBFRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the RBF network for regression."""
 
-    function: (
-        Function | Annotated[Callable[[float, float], float], WithJsonSchema({})]
-    ) = Field(
-        default=Function.MULTIQUADRIC,
-        description=r"""The radial basis function.
+    function: RBF | Annotated[Callable[[float, float], float], WithJsonSchema({})] = (
+        Field(
+            default=RBF.MULTIQUADRIC,
+            description=r"""The radial basis function.
 
 This function takes a radius :math:`r` as input,
 representing a distance between two points.
@@ -69,6 +72,7 @@ e.g. ``lambda self, r: sqrt((r/self.epsilon)**2 + 1)``
 for the multiquadric function.
 The epsilon parameter will be available as ``self.epsilon``.
 Other keyword arguments passed in will be available as well.""",
+        )
     )
 
     der_function: (

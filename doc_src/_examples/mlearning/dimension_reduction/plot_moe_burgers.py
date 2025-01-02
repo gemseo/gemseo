@@ -27,10 +27,6 @@ dataset. In order to reduce the output dimension, we apply a PCA to the
 outputs.
 """
 
-# %%
-# Imports
-# -------
-# Import from standard libraries and |g|.
 from __future__ import annotations
 
 import matplotlib.pyplot as plt

@@ -108,6 +108,7 @@ from numpy import atleast_2d
 from numpy import newaxis
 from numpy import repeat
 from numpy import swapaxes
+from sklearn.gaussian_process.kernels import Matern
 
 from gemseo.mlearning.data_formatters.regression_data_formatters import (
     RegressionDataFormatters,
@@ -142,12 +143,13 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
         super()._post_init()
         kernel = self._settings.kernel
         if kernel is None:
-            kernel = sklearn.gaussian_process.kernels.Matern(
-                (1.0,) * self._reduced_input_dimension,
-                self.__compute_parameter_length_scale_bounds(self._settings.bounds),
+            kernel = Matern(
+                length_scale=(1.0,) * self._reduced_input_dimension,
+                length_scale_bounds=self.__compute_parameter_length_scale_bounds(
+                    self._settings.bounds
+                ),
                 nu=2.5,
             )
-
         self.algo = sklearn.gaussian_process.GaussianProcessRegressor(
             alpha=self._settings.alpha,
             kernel=kernel,

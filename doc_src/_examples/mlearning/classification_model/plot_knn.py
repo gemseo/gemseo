@@ -22,6 +22,9 @@
 k-nearest neighbors
 ===================
 
+A :class:`.KNNClassifier` is a k-nearest neighbors model
+based on `scikit-learn <https://scikit-learn.org/>`__.
+
 We want to classify the Iris dataset using a KNN classifier.
 """
 
@@ -44,7 +47,7 @@ iris = create_benchmark_dataset("IrisDataset", as_io=True)
 # %%
 # Create the classification model
 # -------------------------------
-# Then, we build the linear regression model from the discipline cache and
+# Then, we build the k-NN classification model from the discipline cache and
 # displays this model.
 model = create_classification_model("KNNClassifier", data=iris)
 model.learn()

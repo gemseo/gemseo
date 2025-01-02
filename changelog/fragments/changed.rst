@@ -6,3 +6,4 @@
 - The integer type of a design variable is now ``int64`` instead of ``int32``,
   this matches the type of python ``int`` and the default type of integer in NumPy 2 which we will support later.
 - ``base_cache.DATA_COMPARATOR``: now use ``BaseCache.compare_dict_of_arrays``.
+- ``PolynomialRegressor``: specifying the ``degree`` is no longer mandatory; the default value is ``2``.
