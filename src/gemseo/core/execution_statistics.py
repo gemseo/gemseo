@@ -41,7 +41,6 @@ class _Meta(GoogleDocstringInheritanceMeta):
 
     @property
     def is_time_stamps_enabled(self) -> bool:
-        """Whether to record the time stamps."""
         return self.time_stamps is not None
 
     @is_time_stamps_enabled.setter
@@ -105,6 +104,9 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
        }
 
     """
+
+    is_time_stamps_enabled: bool
+    """Whether to record the time stamps."""
 
     is_enabled: ClassVar[bool] = True
     """Whether to record all the statistics."""
