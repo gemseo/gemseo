@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 class RelaxationAcceleration(CompositeSequenceTransformer):
     """A composite made up of a relaxation followed by an acceleration."""
 
-    _sequence_transformers: list[OverRelaxation | SequenceTransformer]
+    _sequence_transformers: tuple[OverRelaxation, SequenceTransformer]
     """The sequence transformers that are chained."""
 
     __acceleration_method: AccelerationMethod

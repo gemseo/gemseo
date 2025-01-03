@@ -31,7 +31,7 @@ from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTrans
 if TYPE_CHECKING:
     from typing import ClassVar
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 
 class Alternate2Delta(SequenceTransformer):
@@ -49,7 +49,7 @@ class Alternate2Delta(SequenceTransformer):
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 3
     _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 3
 
-    def _compute_transformed_iterate(self) -> NDArray:
+    def _compute_transformed_iterate(self) -> NumberArray:
         dxn_2, dxn_1, dxn = self._residuals
         gxn_2, gxn_1, gxn = self._iterates
 

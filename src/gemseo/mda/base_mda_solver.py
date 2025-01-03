@@ -26,23 +26,28 @@ from typing import ClassVar
 from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
+from numpy import inf
 from numpy import ndarray
+from numpy import ones
 from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
     RelaxationAcceleration,
 )
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-    from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline import Discipline
     from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
     from gemseo.typing import MutableStrKeyMapping
+    from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -62,12 +67,19 @@ class BaseMDASolver(BaseMDA):
     The transformation applies a relaxation followed by an acceleration.
     """
 
-    __resolved_variable_names_to_slices: dict[BaseDataConverter, dict[str, slice]]
-    """The mapping from names to slices for converting array to data structures.
+    __lower_bound_vector: RealArray | None
+    """The vector of lower bounds."""
 
-    Since the coupling data may have inputs and / or outputs, there is one mapping per
-    converter because a converter is bound to a grammar.
-    """
+    __upper_bound_vector: RealArray | None
+    """The vector of upper bounds."""
+
+    __resolved_variable_names_to_bounds: dict[
+        str, tuple[RealArray | None, RealArray | None]
+    ]
+    """The mapping from variable names to lower/upper bounds."""
+
+    __resolved_variable_names_to_slices: dict[str, slice]
+    """The mapping from names to slices for converting array to data structures."""
 
     __resolved_variable_names: tuple[str, ...]
     """The names of the resolved variables.
@@ -75,13 +87,6 @@ class BaseMDASolver(BaseMDA):
     Resolved variables are coupling and state variables (for disciplines that does not
     solve their own residuals). These variables are modified by the MDA so as to make
     the corresponding residuals converge towards 0.
-    """
-
-    __resolved_residual_names_to_slices: dict[BaseDataConverter, dict[str, slice]]
-    """The mapping from residual names to slices for converting array to data structure.
-
-    Since the resolved residual data may have inputs and/or outputs, there is one
-    mapping per converter because a converter is bound to a grammar.
     """
 
     __resolved_residual_names: tuple[str, ...]
@@ -111,10 +116,13 @@ class BaseMDASolver(BaseMDA):
         self.__resolved_variable_names_to_slices = {}
         self.__resolved_variable_names = ()
 
-        self.__resolved_residual_names_to_slices = {}
         self.__resolved_residual_names = ()
 
         self._current_residuals = {}
+
+        self.__lower_bound_vector = None
+        self.__upper_bound_vector = None
+        self.__resolved_variable_names_to_bounds = {}
 
     @property
     def acceleration_method(self) -> AccelerationMethod:
@@ -135,6 +143,16 @@ class BaseMDASolver(BaseMDA):
         self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
 
     @property
+    def lower_bound_vector(self) -> RealArray | None:
+        """The vector of resolved variables lower bound."""
+        return self.__lower_bound_vector
+
+    @property
+    def upper_bound_vector(self) -> RealArray | None:
+        """The vector of resolved variables upper bound."""
+        return self.__upper_bound_vector
+
+    @property
     def _resolved_variable_names(self) -> tuple[str, ...]:
         """The names of the variables (couplings and state) the MDA is solving."""
         return self.__resolved_variable_names
@@ -146,49 +164,40 @@ class BaseMDASolver(BaseMDA):
 
     def get_current_resolved_variables_vector(self) -> ndarray:
         """Return the vector of resolved variables (couplings and state variables)."""
-        if not self.__resolved_variable_names:
-            return array([])
-
-        self.__compute_names_to_slices()
-
-        arrays = []
-
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_variable_names_to_slices.items():
-            if couplings_names_to_slices:
-                arrays += [
-                    converter.convert_data_to_array(
-                        couplings_names_to_slices,
-                        self.io.data,
-                    )
-                ]
-
-        return concatenate(arrays)
+        return concatenate([
+            self.io.input_grammar.data_converter.convert_data_to_array(
+                self.__resolved_variable_names,
+                self.io.data,
+            )
+        ])
 
     def get_current_resolved_residual_vector(self) -> ndarray:
         """Return the vector of residuals."""
-        if not self.__resolved_residual_names:
-            return array([])
+        return concatenate([
+            self.io.output_grammar.data_converter.convert_data_to_array(
+                self.__resolved_residual_names,
+                self._current_residuals,
+            )
+        ])
 
-        self.__compute_names_to_slices()
+    def set_bounds(
+        self,
+        variable_names_to_bounds: Mapping[
+            str, tuple[RealArray | None, RealArray | None]
+        ],
+    ) -> None:
+        """Set the bounds for the resolved variables.
 
-        arrays = []
+        Args:
+            variable_names_to_bounds: The mapping from variable names to bounds.
+        """
+        self.__resolved_variable_names_to_bounds |= {
+            name: bounds
+            for name, bounds in variable_names_to_bounds.items()
+            if name in self._resolved_variable_names
+        }
 
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_residual_names_to_slices.items():
-            if couplings_names_to_slices:
-                arrays += [
-                    converter.convert_data_to_array(
-                        couplings_names_to_slices,
-                        self._current_residuals,
-                    )
-                ]
-
-        return concatenate(arrays)
+        self.__update_bounds_vectors()
 
     def _warn_convergence_criteria(self) -> tuple[bool, bool]:
         """Log a warning if max_iter is reached and if max residuals is above tolerance.
@@ -263,54 +272,23 @@ class BaseMDASolver(BaseMDA):
         if self.__resolved_variable_names_to_slices:
             return
 
-        resolved_coupling_names = set(self._resolved_variable_names)
+        self.__resolved_variable_names_to_slices = (
+            self.io.input_grammar.data_converter.compute_names_to_slices(
+                self._resolved_variable_names,
+                self.io.data,
+            )[0]
+        )
 
-        if resolved_coupling_names.issubset(self.io.input_grammar):
-            input_coupling_names = self._resolved_variable_names
-            output_coupling_names = ()
-        elif resolved_coupling_names.issubset(self.io.output_grammar):
-            input_coupling_names = ()
-            output_coupling_names = self._resolved_variable_names
-        else:
-            input_coupling_names = sorted(
-                resolved_coupling_names.intersection(self.io.input_grammar)
-            )
-            output_coupling_names = sorted(
-                resolved_coupling_names.difference(input_coupling_names)
-            )
+        # Initialize the vectors of bounds once the variable sizes are known.
+        total_size = sum(
+            slice_.stop - slice_.start
+            for slice_ in self.__resolved_variable_names_to_slices.values()
+        )
 
-        if input_coupling_names:
-            converter = self.io.input_grammar.data_converter
-            self.__resolved_variable_names_to_slices[converter] = (
-                converter.compute_names_to_slices(input_coupling_names, self.io.data)[0]
-            )
+        self.__lower_bound_vector = -inf * ones(total_size)
+        self.__upper_bound_vector = +inf * ones(total_size)
 
-        if output_coupling_names:
-            converter = self.io.output_grammar.data_converter
-            self.__resolved_variable_names_to_slices[converter] = (
-                converter.compute_names_to_slices(
-                    output_coupling_names,
-                    self.io.data,
-                )[0]
-            )
-
-        self.__resolved_residual_names_to_slices = {}
-        for (
-            converter,
-            names_to_slices,
-        ) in self.__resolved_variable_names_to_slices.items():
-            self.__resolved_residual_names_to_slices[converter] = {}
-
-            for name, slice_ in names_to_slices.items():
-                if name in self.__resolved_residual_names:
-                    self.__resolved_residual_names_to_slices[converter][name] = slice_
-                else:
-                    residual = self.__resolved_residual_names[
-                        self.__resolved_variable_names.index(name)
-                    ]
-                    self.__resolved_residual_names_to_slices[converter][residual] = (
-                        slice_
-                    )
+        self.__update_bounds_vectors()
 
     def _update_local_data_from_array(self, array_: ndarray) -> None:
         """Update the local data from an array.
@@ -318,13 +296,10 @@ class BaseMDASolver(BaseMDA):
         Args:
             array_: An array.
         """
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_variable_names_to_slices.items():
-            self.io.data.update(
-                converter.convert_array_to_data(array_, couplings_names_to_slices)
-            )
+        self.io.data |= self.io.output_grammar.data_converter.convert_array_to_data(
+            array_,
+            self.__resolved_variable_names_to_slices,
+        )
 
     def _compute_normalized_residual_norm(self, store_it: bool = True) -> float:
         """Compute the normalized residual norm at the current point.
@@ -364,14 +339,10 @@ class BaseMDASolver(BaseMDA):
         elif scaling == ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
             if scaling_data is None:
                 scaling_data = []
-
-                for (
-                    coupling_names_to_slices
-                ) in self.__resolved_variable_names_to_slices.values():
-                    for slice_ in coupling_names_to_slices.values():
-                        initial_norm = float(norm(residual[slice_]))
-                        initial_norm = initial_norm if initial_norm != 0.0 else 1.0
-                        scaling_data.append((slice_, initial_norm))
+                for slice_ in self.__resolved_variable_names_to_slices.values():
+                    initial_norm = float(norm(residual[slice_]))
+                    initial_norm = initial_norm if initial_norm != 0.0 else 1.0
+                    scaling_data.append((slice_, initial_norm))
 
             normalized_norms = []
             for current_slice, initial_norm in scaling_data:
@@ -424,6 +395,11 @@ class BaseMDASolver(BaseMDA):
         super()._execute()
         self._sequence_transformer.clear()
 
+    def _execute_disciplines_and_update_local_data(
+        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
+    ) -> None:
+        self.__compute_names_to_slices()
+
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:
         """Compute the residual vector.
 
@@ -437,19 +413,33 @@ class BaseMDASolver(BaseMDA):
         Args:
             input_data: The input data to compute residual of coupling variables.
         """
-        self.__compute_names_to_slices()
+        convert_data_to_array = (
+            self.io.output_grammar.data_converter.convert_data_to_array
+        )
 
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_residual_names_to_slices.items():
-            for name in couplings_names_to_slices:
-                local_data_array = converter.convert_data_to_array([name], self.io.data)
-                if name in self._resolved_variable_names:
-                    input_data_array = converter.convert_data_to_array(
-                        [name], input_data
-                    )
-                    residual = local_data_array - input_data_array
-                else:
-                    residual = local_data_array
-                self._current_residuals[name] = residual
+        for residual_name in self._resolved_residual_names:
+            residual = convert_data_to_array([residual_name], self.io.data)
+            if residual_name in self._resolved_variable_names:
+                residual -= convert_data_to_array([residual_name], input_data)
+
+            self._current_residuals[residual_name] = residual
+
+    def __update_bounds_vectors(self) -> None:
+        """Set the bounds of the sequence transformer."""
+        if self.__lower_bound_vector is None or self.__upper_bound_vector is None:
+            return
+
+        for name, (
+            lower_bound,
+            upper_bound,
+        ) in self.__resolved_variable_names_to_bounds.items():
+            slice_ = self.__resolved_variable_names_to_slices[name]
+            self.__lower_bound_vector[slice_] = (
+                lower_bound if lower_bound is not None else -inf
+            )
+            self.__upper_bound_vector[slice_] = (
+                upper_bound if upper_bound is not None else +inf
+            )
+
+        self._sequence_transformer.lower_bound = self.__lower_bound_vector
+        self._sequence_transformer.upper_bound = self.__upper_bound_vector

@@ -27,7 +27,7 @@ from typing import ClassVar
 from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTransformer
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 
 class NoTransformation(SequenceTransformer):
@@ -40,6 +40,6 @@ class NoTransformation(SequenceTransformer):
         pass
 
     def compute_transformed_iterate(  # noqa: D102
-        self, iterate: NDArray, residual: NDArray
-    ) -> NDArray:
+        self, iterate: NumberArray, residual: NumberArray
+    ) -> NumberArray:
         return iterate

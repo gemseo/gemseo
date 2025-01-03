@@ -25,12 +25,15 @@ from abc import abstractmethod
 from collections import deque
 from typing import TYPE_CHECKING
 
+from numpy import where
+
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from typing import ClassVar
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 
 class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -65,10 +68,19 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     _residuals: deque
     """The previously computed residuals :math:`G(x_i) - x_i`."""
 
+    lower_bound: RealArray | None
+    """The lower bound for the transformed iterates."""
+
+    upper_bound: RealArray | None
+    """The upper bound for the transformed iterates."""
+
     def __init__(self) -> None:  # noqa:D107
         # Instantiate double-ended queues to store the relevant quantities
         self._iterates = deque(maxlen=self._MINIMUM_NUMBER_OF_ITERATES)
         self._residuals = deque(maxlen=self._MINIMUM_NUMBER_OF_RESIDUALS)
+
+        self.lower_bound = None
+        self.upper_bound = None
 
     def clear(self) -> None:
         """Clear the iterates."""
@@ -77,9 +89,9 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def compute_transformed_iterate(
         self,
-        iterate: NDArray,
-        residual: NDArray,
-    ) -> NDArray:
+        iterate: NumberArray,
+        residual: NumberArray,
+    ) -> NumberArray:
         """Compute the next transformed iterate.
 
         Args:
@@ -98,10 +110,29 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
             len(self._iterates) >= self._MINIMUM_NUMBER_OF_ITERATES
             and len(self._residuals) >= self._MINIMUM_NUMBER_OF_RESIDUALS
         ):
-            return self._compute_transformed_iterate()
+            transformed_iterate = self._compute_transformed_iterate()
+        else:
+            transformed_iterate = iterate
 
-        return iterate
+        return self._project(transformed_iterate)
 
     @abstractmethod
-    def _compute_transformed_iterate(self) -> NDArray:
+    def _compute_transformed_iterate(self) -> NumberArray:
         """Compute the next transformed iterate."""
+
+    def _project(self, iterate: NumberArray) -> NumberArray:
+        """Project the iterate into the bounds.
+
+        Args:
+            iterate: The iterate to apply the bounds on.
+
+        Return:
+            The projection of the iterate onto the bounds.
+        """
+        if self.lower_bound is not None:
+            iterate = where(iterate < self.lower_bound, self.lower_bound, iterate)
+
+        if self.upper_bound is not None:
+            iterate = where(iterate > self.upper_bound, self.upper_bound, iterate)
+
+        return iterate
