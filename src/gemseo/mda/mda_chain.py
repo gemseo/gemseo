@@ -48,10 +48,13 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.mda.base_mda_solver import BaseMDASolver
+    from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -88,7 +91,7 @@ class MDAChain(BaseMDA):
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
 
-    inner_mdas: list[BaseMDA]
+    inner_mdas: list[BaseMDASolver]
     """The ordered MDAs."""
 
     mdo_chain: MDOChain
@@ -97,8 +100,8 @@ class MDAChain(BaseMDA):
     settings: MDAChain_Settings
     """The settings of the MDA"""
 
-    __inner_mda_settings: BaseMDASettings
-    """The inner MDA settings model."""
+    __inner_mda_class: BaseMDASolver
+    """The inner MDA class."""
 
     def __init__(  # noqa: D107
         self,
@@ -133,6 +136,15 @@ class MDAChain(BaseMDA):
         self._scaling = scaling
         for mda in self.inner_mdas:
             mda.scaling = scaling
+
+    def set_bounds(  # noqa: D102
+        self,
+        variable_names_to_bounds: Mapping[
+            str, tuple[RealArray | None, RealArray | None]
+        ],
+    ) -> None:
+        for inner_mda in self.inner_mdas:
+            inner_mda.set_bounds(variable_names_to_bounds)
 
     def _create_mdo_chain(self) -> MDOChain:
         """Create an MDO chain from the execution sequence of the disciplines."""

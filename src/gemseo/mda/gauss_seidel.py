@@ -159,6 +159,8 @@ class MDAGaussSeidel(BaseMDASolver):
             discipline.execute(input_data)
             self.io.data.update(discipline.io.get_output_data())
 
+        super()._execute_disciplines_and_update_local_data()
+
     def _execute(self) -> None:
         super()._execute()
         self._execute_disciplines_and_update_local_data()

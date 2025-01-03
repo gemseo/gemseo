@@ -31,7 +31,7 @@ from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTrans
 if TYPE_CHECKING:
     from typing import ClassVar
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 
 class MinimumPolynomial(SequenceTransformer):
@@ -61,7 +61,7 @@ class MinimumPolynomial(SequenceTransformer):
 
         super().__init__()
 
-    def _compute_transformed_iterate(self) -> NDArray:
+    def _compute_transformed_iterate(self) -> NumberArray:
         d2xn = (self._residuals[-1] - self._residuals[-2]).reshape(-1, 1)
         dgxn = (self._iterates[-1] - self._iterates[-2]).reshape(-1, 1)
 

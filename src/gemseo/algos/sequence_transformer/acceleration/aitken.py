@@ -28,7 +28,7 @@ from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTrans
 if TYPE_CHECKING:
     from typing import ClassVar
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 
 class Aitken(SequenceTransformer):
@@ -42,7 +42,7 @@ class Aitken(SequenceTransformer):
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 1
     _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 2
 
-    def _compute_transformed_iterate(self) -> NDArray:
+    def _compute_transformed_iterate(self) -> NumberArray:
         dxn_1, dxn = self._residuals
         gxn = self._iterates[-1]
 

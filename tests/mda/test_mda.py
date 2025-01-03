@@ -29,6 +29,7 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import eye
+from numpy import inf
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
@@ -627,3 +628,35 @@ def test_settings_type_error():
     BaseMDA.Settings = BaseMDASettings
     with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
         BaseMDA([], settings_model=settings)
+
+
+def test_set_bounds():
+    """Test that bounds are properly set."""
+    lower_bound = -array([1.0])
+    upper_bound = array([1.0])
+
+    mda = MDAJacobi([
+        LinearDiscipline("A", ["x", "b"], ["a"]),
+        LinearDiscipline("B", ["a"], ["b", "y"]),
+    ])
+
+    mda.set_bounds({"a": (lower_bound, None)})
+
+    assert mda.lower_bound_vector is None
+    assert mda.upper_bound_vector is None
+
+    mda._execute_disciplines_and_update_local_data()
+
+    assert (mda.lower_bound_vector == array([-1.0, -inf])).all()
+    assert (mda.upper_bound_vector == array([+inf, +inf])).all()
+
+    assert (mda._sequence_transformer.lower_bound == array([-1.0, -inf])).all()
+    assert (mda._sequence_transformer.upper_bound == array([+inf, +inf])).all()
+
+    mda.set_bounds({"b": (2.0 * lower_bound, upper_bound)})
+
+    assert (mda.lower_bound_vector == array([-1.0, -2.0])).all()
+    assert (mda.upper_bound_vector == array([+inf, 1.0])).all()
+
+    assert (mda._sequence_transformer.lower_bound == array([-1.0, -2.0])).all()
+    assert (mda._sequence_transformer.upper_bound == array([+inf, 1.0])).all()

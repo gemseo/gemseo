@@ -26,11 +26,13 @@ from functools import partial
 import pytest
 from numpy import allclose
 from numpy import array
+from numpy import inf
 
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.sequential_mda import MDASequential
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.utils import get_y_opt
@@ -93,3 +95,35 @@ def test_cascading_of_log_convergence(mda_sequential) -> None:
     assert mda_sequential.settings.log_convergence
     for sub_mda in mda_sequential.mda_sequence:
         assert sub_mda.settings.log_convergence
+
+
+def test_set_bounds():
+    """Test that bounds are properly dispatched to inner-MDAs."""
+    disciplines = [
+        LinearDiscipline("A", ["x", "b"], ["a"]),
+        LinearDiscipline("B", ["a"], ["b", "y"]),
+    ]
+    mda = MDASequential(
+        disciplines=disciplines,
+        mda_sequence=[
+            MDAJacobi(disciplines, max_mda_iter=2),
+            MDANewtonRaphson(disciplines),
+        ],
+    )
+
+    lower_bound = -array([1.0])
+    upper_bound = array([1.0])
+
+    mda.set_bounds({
+        "a": (lower_bound, None),
+        "b": (2.0 * lower_bound, upper_bound),
+    })
+
+    mda.execute()
+
+    for sub_mda in mda.mda_sequence:
+        assert (sub_mda.lower_bound_vector == array([-1.0, -2.0])).all()
+        assert (sub_mda.upper_bound_vector == array([+inf, 1.0])).all()
+
+        assert (sub_mda._sequence_transformer.lower_bound == array([-1.0, -2.0])).all()
+        assert (sub_mda._sequence_transformer.upper_bound == array([+inf, 1.0])).all()

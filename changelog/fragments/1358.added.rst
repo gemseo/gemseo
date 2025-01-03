@@ -1,0 +1,6 @@
+The ``SequenceTransformer`` class now has a ``set_bounds`` method which allows to set lower and/or upper bounds for the computed transformed iterates.
+When components of the iterates fall outside of the bounds, they are projected onto the appropriate bound.
+The bounds must be provided has NumPy arrays with same size as the iterates.
+
+The ``BaseMDASolver``, ``MDAChain`` and ``MDASequential`` classes now have a ``set_bounds`` method which allows to set lower and/or upper bound for each resolved variables (coupling or state).
+The bounds must be provided as a mapping from variable names to tuple of the form ``(lower_bound, upper_bound)``, where ``lower_bound`` and/or ``upper_bound`` must be NumPy arrays with the same size as the resolved variable.

@@ -132,3 +132,5 @@ class BaseParallelMDASolver(BaseMDASolver):
         self._execute_disciplines(input_data or self.io.data)
         for discipline in self._disciplines:
             self.io.data.update(discipline.get_output_data())
+
+        super()._execute_disciplines_and_update_local_data()

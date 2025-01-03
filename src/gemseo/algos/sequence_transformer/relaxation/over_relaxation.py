@@ -28,7 +28,7 @@ from gemseo.algos.sequence_transformer.sequence_transformer import SequenceTrans
 if TYPE_CHECKING:
     from typing import ClassVar
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 
 class OverRelaxation(SequenceTransformer):
@@ -63,7 +63,7 @@ class OverRelaxation(SequenceTransformer):
         self.__factor = factor
         self.clear()
 
-    def _compute_transformed_iterate(self) -> NDArray:
+    def _compute_transformed_iterate(self) -> NumberArray:
         gxn_1, gxn = self._iterates
 
         if self.__factor == 1.0:

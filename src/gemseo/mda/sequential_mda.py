@@ -30,10 +30,11 @@ from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda_settings import MDASequential_Settings
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.mda.base_mda_solver import BaseMDASolver
+    from gemseo.typing import RealArray
 
 
 class MDASequential(BaseMDA):
@@ -42,13 +43,16 @@ class MDASequential(BaseMDA):
     Settings: ClassVar[type[MDASequential_Settings]] = MDASequential_Settings
     """The pydantic model for the settings."""
 
+    mda_sequence: Sequence[BaseMDA]
+    """The sequence of MDAs."""
+
     settings: MDASequential_Settings
     """The settings of the MDA"""
 
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        mda_sequence: Sequence[BaseMDASolver],
+        mda_sequence: Sequence[BaseMDA],
         settings_model: MDASequential_Settings | None = None,
         **settings: Any,
     ) -> None:
@@ -87,3 +91,12 @@ class MDASequential(BaseMDA):
 
             if mda.normed_residual < self.settings.tolerance:
                 break
+
+    def set_bounds(  # noqa: D102
+        self,
+        variable_names_to_bounds: Mapping[
+            str, tuple[RealArray | None, RealArray | None]
+        ],
+    ) -> None:
+        for inner_mda in self.mda_sequence:
+            inner_mda.set_bounds(variable_names_to_bounds)

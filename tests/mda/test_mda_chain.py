@@ -25,6 +25,7 @@ from pathlib import Path
 
 import pytest
 from numpy import array
+from numpy import inf
 from numpy import isclose
 
 from gemseo.core.chains.parallel_chain import MDOParallelChain
@@ -37,6 +38,7 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 from .test_mda import analytic_disciplines_from_desc
@@ -407,3 +409,38 @@ def test_initialize_defaults() -> None:
     # Tests that the default inputs are well udapted
     assert "z" in chain.io.input_grammar.defaults
     chain.execute({"z": array([2])})
+
+
+def test_set_bounds():
+    """Test that bounds are properly dispatched to inner-MDAs."""
+    mda = MDAChain([
+        LinearDiscipline("A", ["x", "b"], ["a"]),
+        LinearDiscipline("B", ["a"], ["b", "y"]),
+        LinearDiscipline("C", ["b", "d"], ["c"]),
+        LinearDiscipline("D", ["c"], ["d", "z"]),
+    ])
+
+    lower_bound = -array([1.0])
+    upper_bound = array([1.0])
+
+    mda.set_bounds({
+        "a": (lower_bound, None),
+        "c": (2.0 * lower_bound, None),
+        "d": (-lower_bound, 4.0 * upper_bound),
+    })
+
+    mda.execute()
+
+    mda_1 = mda.inner_mdas[0]
+    assert (mda_1.lower_bound_vector == array([-1.0, -inf])).all()
+    assert (mda_1.upper_bound_vector == array([+inf, +inf])).all()
+
+    assert (mda_1._sequence_transformer.lower_bound == array([-1.0, -inf])).all()
+    assert (mda_1._sequence_transformer.upper_bound == array([+inf, +inf])).all()
+
+    mda_2 = mda.inner_mdas[1]
+    assert (mda_2.lower_bound_vector == array([-2.0, 1.0])).all()
+    assert (mda_2.upper_bound_vector == array([+inf, 4.0])).all()
+
+    assert (mda_2._sequence_transformer.lower_bound == array([-2.0, 1.0])).all()
+    assert (mda_2._sequence_transformer.upper_bound == array([+inf, 4.0])).all()

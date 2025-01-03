@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import ClassVar
 
-    from numpy.typing import NDArray
+    from gemseo.typing import NumberArray
 
 
 class CompositeSequenceTransformer(SequenceTransformer):
@@ -60,9 +60,9 @@ class CompositeSequenceTransformer(SequenceTransformer):
 
     def compute_transformed_iterate(
         self,
-        iterate: NDArray,
-        residual: NDArray,
-    ) -> NDArray:
+        iterate: NumberArray,
+        residual: NumberArray,
+    ) -> NumberArray:
         """Compute the next transformed iterate.
 
         Args:
@@ -80,4 +80,4 @@ class CompositeSequenceTransformer(SequenceTransformer):
                 next_iterate, next_iterate - current_iterate
             )
 
-        return next_iterate
+        return self._project(next_iterate)
