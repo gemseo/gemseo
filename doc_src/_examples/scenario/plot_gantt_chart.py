@@ -19,18 +19,25 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Gantt Chart
-===========
+Execution statistics as a Gantt chart
+=====================================
 
-In this example, we illustrate the use of the Gantt chart plot
+When
+the global attribute :attr:`.ExecutionStatistics.is_time_stamps_enabled` is ``True``
+(default: ``False``),
+the global attribute :attr:`.ExecutionStatistics.time_stamps` is
+a dictionary of the form ``{name: (initial_time, final_time, is_linearization)}``
+to store
+the initial and final times of each execution and linearization of each discipline.
+
+The :func:`.create_gantt_chart` function can display this dictionary
+in the form of a `Gantt chart <https://en.wikipedia.org/wiki/Gantt_chart>`__.
+
+In this example,
+we illustrate the use of this function
 on the Sobieski's SSBJ problem.
 """
 
-# %%
-# Import
-# ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -44,10 +51,12 @@ configure_logger()
 
 
 # %%
-# Create disciplines
+# Create the scenario
 # ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
+# First, we define the Sobieski's SSBJ problem as a scenario.
+#
+# For this,
+# we instantiate the disciplines:
 disciplines = create_discipline([
     "SobieskiPropulsion",
     "SobieskiAerodynamics",
@@ -56,19 +65,14 @@ disciplines = create_discipline([
 ])
 
 # %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
+# as well as the design space:
 design_space = SobieskiDesignSpace()
 
 # %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build an MDO scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the SLSQP optimization algorithm
-# and a maximum number of iterations equal to 100.
+# Then,
+# given these disciplines and design space,
+# we build an MDO scenario using the MDF formulation
+# in order to maximize the range ``"y_4"`` with respect to the design variables:
 scenario = create_scenario(
     disciplines,
     "y_4",
@@ -78,30 +82,59 @@ scenario = create_scenario(
 )
 
 # %%
-# Note that the formulation settings passed to :func:`.create_scenario` can be provided
-# via a Pydantic model. For more information, see :ref:`formulation_settings`.
-
+# and satisfy the inequality constraints
+# associated with the outputs ``"g_1"``, ``"g_2"`` and ``"g_3"``:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
 # %%
-# Enable time stamps
-# ------------------
-# Recording all time stamps is done by default;
-# we have to enable it:
+# Execute the scenario
+# --------------------
+# By default,
+# a scenario does *not* produce execution statistics.
+# We need to enable this *global* mechanism before executing the scenario:
 ExecutionStatistics.is_time_stamps_enabled = True
-
+# %%
+# .. warning::
+#    This mechanism is *global*
+#    and shall be modified from the :class:`.ExecutionStatistics` class
+#    (not from an :class:`.ExecutionStatistics` instance).
+#
+# The scenario can now be executed
+# using the SLSQP optimization algorithm and a maximum of 10 iterations:
 scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
-# Note that the algorithm settings passed to :meth:`.DriverLibrary.execute` can be provided
-# via a Pydantic model. For more information, see :ref:`algorithm_settings`.
+# .. seealso::
+#    The formulation settings passed to :func:`.create_scenario`
+#    and the algorithm settings passed to :meth:`.BaseScenario.execute`
+#    can be provided via Pydantic models.
+#    For more information,
+#    see :ref:`algorithm_settings` and :ref:`formulation_settings`.
+#
+# Plot the Gantt chart
+# --------------------
+# Lastly,
+# we plot the Gantt chart from the global :attr:`.ExecutionStatistics.time_stamps`:
+create_gantt_chart(save=False, show=True)
+# %%
+# This graph shows the evolution over time:
+# - the execution and linearizations of the different user disciplines,
+#   *e.g.* :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics`,
+# - the execution and linearizations of the different process disciplines,
+#   *e.g.* :class:`.MDAJacobi`,
+# - the execution of the scenario.
 
 # %%
-# Post-process scenario
-# ---------------------
-# Lastly, we plot the Gantt chart.
-create_gantt_chart(save=False, show=True)
-
-# Finally, we disable the recording of time stamps for other executions:
+# Disable recording
+# -----------------
+# Finally,
+# we disable the recording of time stamps for other executions:
 ExecutionStatistics.is_time_stamps_enabled = False
+# %%
+# .. note::
+#    As this reset :attr:`.ExecutionStatistics.time_stamps` to ``None``,
+#    the :func:`.create_gantt_chart` function can no longer be used.
+#    Set ``ExecutionStatistics.is_time_stamps_enabled`` to ``True``
+#    and execute or linearize some disciplines
+#    so that you can use it again.
