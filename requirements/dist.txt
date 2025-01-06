@@ -2,19 +2,19 @@
 #    uv pip compile requirements/dist.in -o requirements/dist.txt
 annotated-types==0.7.0
     # via pydantic
-attrs==24.2.0
+attrs==24.3.0
     # via check-wheel-contents
 build==1.2.2.post1
     # via -r requirements/dist.in
-certifi==2024.8.30
+certifi==2024.12.14
     # via requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
 check-wheel-contents==0.6.1
     # via -r requirements/dist.in
-click==8.1.7
+click==8.1.8
     # via check-wheel-contents
 cryptography==44.0.0
     # via secretstorage
@@ -32,7 +32,7 @@ jeepney==0.8.0
     # via
     #   keyring
     #   secretstorage
-keyring==25.5.0
+keyring==25.6.0
     # via twine
 markdown-it-py==3.0.0
     # via rich
@@ -42,7 +42,7 @@ more-itertools==10.5.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-nh3==0.2.19
+nh3==0.2.20
     # via readme-renderer
 packaging==24.2
     # via
@@ -53,9 +53,9 @@ pkginfo==1.12.0
     # via twine
 pycparser==2.22
     # via cffi
-pydantic==2.10.3
+pydantic==2.10.4
     # via check-wheel-contents
-pydantic-core==2.27.1
+pydantic-core==2.27.2
     # via pydantic
 pygments==2.18.0
     # via
@@ -83,7 +83,7 @@ typing-extensions==4.12.2
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.2.3
+urllib3==2.3.0
     # via
     #   requests
     #   twine

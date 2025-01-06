@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pickle
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -259,13 +260,15 @@ def test_compute_jacobian_exceptions(scenario) -> None:
 
     # Pass invalid inputs
     with pytest.raises(
-        ValueError, match="The following are not inputs of the adapter: bar, foo."
+        ValueError,
+        match=re.escape("The following are not inputs of the adapter: bar, foo."),
     ):
         adapter._compute_jacobian(input_names=["x_shared", "foo", "bar"])
 
     # Pass invalid outputs
     with pytest.raises(
-        ValueError, match="The following are not outputs of the adapter: bar, foo."
+        ValueError,
+        match=re.escape("The following are not outputs of the adapter: bar, foo."),
     ):
         adapter._compute_jacobian(output_names=["y_4", "foo", "bar"])
 
@@ -274,13 +277,16 @@ def test_compute_jacobian_exceptions(scenario) -> None:
     scenario.add_constraint(["g_2"])
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
     with pytest.raises(
-        ValueError, match="Post-optimal Jacobians of g_1, g_2 cannot be computed."
+        ValueError,
+        match=re.escape("Post-optimal Jacobians of g_1, g_2 cannot be computed."),
     ):
         adapter._compute_jacobian(output_names=["y_4", "g_2", "g_1"])
 
     # Pass a multi-valued objective
     scenario.formulation.optimization_problem.objective.output_names = ["y_4"] * 2
-    with pytest.raises(ValueError, match="The objective must be single-valued."):
+    with pytest.raises(
+        ValueError, match=re.escape("The objective must be single-valued.")
+    ):
         adapter._compute_jacobian()
 
 

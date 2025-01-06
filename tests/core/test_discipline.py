@@ -151,13 +151,13 @@ def test_check_input_data_exception(grammar_type) -> None:
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
 
-    with pytest.raises(InvalidDataError, match=".*Missing required names: x_1"):
+    with pytest.raises(InvalidDataError, match=r".*Missing required names: x_1"):
         struct.io.input_grammar.validate(indata)
 
     struct.execute(indata)
 
     del struct.io.input_grammar.defaults["x_1"]
-    with pytest.raises(InvalidDataError, match=".*Missing required names: x_1"):
+    with pytest.raises(InvalidDataError, match=r".*Missing required names: x_1"):
         struct.execute(indata)
 
 
@@ -1117,7 +1117,7 @@ def test_virtual_exe() -> None:
     disc_1.execute()
 
     disc_1.cache.clear()
-    with pytest.raises(InvalidDataError, match="Missing required names: y."):
+    with pytest.raises(InvalidDataError, match=re.escape("Missing required names: y.")):
         disc_1.execute()
 
 

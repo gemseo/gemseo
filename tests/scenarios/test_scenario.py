@@ -377,12 +377,14 @@ def test_adapter_error(idf_scenario) -> None:
     outputs = ["y_4"]
 
     with pytest.raises(
-        ValueError, match="Can't compute inputs from scenarios: missing_input."
+        ValueError,
+        match=re.escape("Can't compute inputs from scenarios: missing_input."),
     ):
         MDOScenarioAdapter(idf_scenario, [*inputs, "missing_input"], outputs)
 
     with pytest.raises(
-        ValueError, match="Can't compute outputs from scenarios: missing_output."
+        ValueError,
+        match=re.escape("Can't compute outputs from scenarios: missing_output."),
     ):
         MDOScenarioAdapter(idf_scenario, inputs, [*outputs, "missing_output"])
 
@@ -901,7 +903,7 @@ def test_get_result(mdf_scenario) -> None:
 
     with pytest.raises(
         ImportError,
-        match="The class foo is not available; the available ones are: .*",
+        match=r"The class foo is not available; the available ones are: .*",
     ):
         mdf_scenario.get_result("foo")
 

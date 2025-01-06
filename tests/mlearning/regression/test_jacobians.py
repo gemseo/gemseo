@@ -27,6 +27,7 @@ parameters.
 
 from __future__ import annotations
 
+import re
 from operator import itemgetter
 from typing import TYPE_CHECKING
 
@@ -149,7 +150,7 @@ def test_regression_model() -> None:
     with (
         pytest.raises(
             NotImplementedError,
-            match="Derivatives are not available for BaseRegressor.",
+            match=re.escape("Derivatives are not available for BaseRegressor."),
         ),
         concretize_classes(BaseRegressor),
     ):

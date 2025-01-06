@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 import sympy
 from numpy import array
@@ -67,7 +69,7 @@ def test_fast_expression_evaluation(expressions) -> None:
 
 def test_failure_with_malformed_expressions() -> None:
     with pytest.raises(
-        TypeError, match="Expression must be a SymPy expression or a string."
+        TypeError, match=re.escape("Expression must be a SymPy expression or a string.")
     ):
         AnalyticDiscipline({"y": MDOScenario})
 

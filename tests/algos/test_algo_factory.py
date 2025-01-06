@@ -40,7 +40,9 @@ def test_create_ko() -> None:
     """Verify that an error is raised when trying to create an unknown algorithm."""
     with pytest.raises(
         ValueError,
-        match="No algorithm named idontexist is available; available algorithms are .*",
+        match=(
+            r"No algorithm named idontexist is available; available algorithms are .*"
+        ),
     ):
         OptimizationLibraryFactory().create("idontexist")
 

@@ -148,7 +148,7 @@ def test_handle_outputs_errors(
     with Path(outputs_path).open("wb") as outf:
         outf.write(pickle.dumps(exception))
 
-    with pytest.raises(ValueError, match="An error."):
+    with pytest.raises(ValueError, match=re.escape("An error.")):
         discipline._handle_outputs(tmp_wd, outputs_path)
 
 

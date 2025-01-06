@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 import unittest
 from os.path import exists
 from random import shuffle
@@ -112,7 +113,7 @@ class TestCouplingStructure(unittest.TestCase):
 
         coupling_structure = CouplingStructure([disciplines[0]])
         with pytest.raises(
-            ValueError, match="N2 diagrams need at least two disciplines."
+            ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
         ):
             coupling_structure.plot_n2_chart("n2_3.png", False)
 

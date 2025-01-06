@@ -248,7 +248,7 @@ def test_missing_random_variables(dataset) -> None:
 def test_transformer(dataset, probability_space, key) -> None:
     """Check that transforming the input data raises an error."""
     with pytest.raises(
-        ValueError, match="PCERegressor does not support input transformers."
+        ValueError, match=re.escape("PCERegressor does not support input transformers.")
     ):
         PCERegressor(
             dataset,
@@ -264,7 +264,7 @@ def test_ot_distribution(dataset) -> None:
     probability_space.add_random_variable("x2", "SPUniformDistribution")
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "The probability distributions of the random variables x1, x2 "
             "are not instances of OTJointDistribution."
         ),

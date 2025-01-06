@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import array
 from numpy import ones
@@ -83,7 +85,8 @@ def test_restricted_function():
     f2.check_grad(x, error_max=1e-4)
 
     with pytest.raises(
-        ValueError, match="Inconsistent shapes for restriction values and indices."
+        ValueError,
+        match=re.escape("Inconsistent shapes for restriction values and indices."),
     ):
         RestrictedFunction(
             f_ref, restriction_indices=array([0, 1]), restriction_values=array([0])

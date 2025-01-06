@@ -19,6 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
@@ -135,7 +137,7 @@ def test_check_constraints_handling_fail(power) -> None:
     lbfgsb = ScipyOpt("L-BFGS-B")
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "Requested optimization algorithm L-BFGS-B "
             "can not handle equality constraints."
         ),

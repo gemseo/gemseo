@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 import shutil
 from pathlib import Path
 from unittest import mock
@@ -82,7 +83,9 @@ def test_discipline_self_coupled_one_disc(tmp_wd) -> None:
     In this test, only one self-coupled discipline is present in the MDO process.
     """
     analysis = MDOStudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
-    with pytest.raises(ValueError, match="N2 diagrams need at least two disciplines."):
+    with pytest.raises(
+        ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
+    ):
         analysis.generate_n2("xls_n2.pdf", fig_size=(5, 5))
 
     analysis.generate_xdsm(".")

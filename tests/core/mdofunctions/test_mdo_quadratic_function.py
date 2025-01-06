@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import array
 from numpy.testing import assert_equal
@@ -49,7 +51,7 @@ def test_init(coefficients) -> None:
     """Check the initialization of the quadratic function."""
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "Quadratic coefficients must be passed as a 2-dimensional square ndarray."
         ),
     ):

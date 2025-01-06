@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from copy import deepcopy
 from math import cos
 from math import exp
@@ -342,7 +343,9 @@ def test_wrong_step(dtype, method) -> None:
     discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7], approx_method=method)
-    with pytest.raises(ValueError, match="Inconsistent step size, expected 3 got 2."):
+    with pytest.raises(
+        ValueError, match=re.escape("Inconsistent step size, expected 3 got 2.")
+    ):
         apprx.compute_approx_jac(output_names=["y1", "y2"], input_names=["x1", "x2"])
 
 

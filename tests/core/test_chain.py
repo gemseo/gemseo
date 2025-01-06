@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import os
 import pickle
+import re
 import unittest
 from itertools import permutations
 from typing import TYPE_CHECKING
@@ -196,7 +197,8 @@ def test_warm_started_mdo_chain_jac() -> None:
     """Test that the Jacobian of an MDOWarmStartedChain raises an exception."""
     chain = MDOWarmStartedChain([SobieskiMission()], variable_names_to_warm_start=[])
     with pytest.raises(
-        NotImplementedError, match="MDOWarmStartedChain cannot be linearized."
+        NotImplementedError,
+        match=re.escape("MDOWarmStartedChain cannot be linearized."),
     ):
         chain.check_jacobian()
 

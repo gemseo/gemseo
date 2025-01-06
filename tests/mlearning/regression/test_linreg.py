@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -167,7 +168,7 @@ def test_coefficients_with_transform(dataset, model_with_transform) -> None:
     model_with_pca.get_coefficients(as_dict=False)
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "Coefficients are only representable in dictionary "
             "form if the transformers do not change the "
             "dimensions of the variables."
@@ -194,7 +195,7 @@ def test_intercept_with_output_dimension_change(dataset) -> None:
     model.learn()
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "Intercept is only representable in dictionary "
             "form if the transformers do not change the "
             "dimensions of the output variables."
@@ -261,7 +262,7 @@ def test_prediction_with_pls_failure(dataset) -> None:
     model = LinearRegressor(dataset, transformer={"outputs": PLS(n_components=2)})
     with pytest.raises(
         NotImplementedError,
-        match=(
+        match=re.escape(
             "The transformer PLS cannot be applied to the outputs "
             "to build a supervised machine learning algorithm."
         ),

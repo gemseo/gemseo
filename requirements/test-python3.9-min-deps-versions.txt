@@ -2,13 +2,13 @@
 #    uv pip compile --extra all --extra test -o requirements/test-python3.9-min-deps-versions.txt --python-version 3.9 pyproject.toml --resolution=lowest-direct
 annotated-types==0.7.0
     # via pydantic
-attrs==24.2.0
+attrs==24.3.0
     # via pytest
 cached-property==2.0.1
     # via h5py
 covdefaults==0.1.0
     # via gemseo (pyproject.toml)
-coverage==7.6.9
+coverage==7.6.10
     # via
     #   covdefaults
     #   pytest-cov
@@ -92,7 +92,7 @@ pluggy==1.5.0
     # via pytest
 prettytable==2.3.0
     # via gemseo (pyproject.toml)
-psutil==6.1.0
+psutil==6.1.1
     # via openturns
 py==1.11.0
     # via pytest
@@ -102,7 +102,7 @@ pydantic-core==2.4.0
     # via pydantic
 pydoe3==1.0.1
     # via gemseo (pyproject.toml)
-pyparsing==3.2.0
+pyparsing==3.2.1
     # via matplotlib
 pytest==7.0.0
     # via

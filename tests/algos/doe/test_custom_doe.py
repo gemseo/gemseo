@@ -120,9 +120,9 @@ def test_wrong_arguments(options):
     """Check that an error is raised when arguments are wrong."""
     with pytest.raises(
         ValidationError,
-        match=(
-            "The algorithm CustomDOE requires either a 'doe_file' or the input"
-            " 'samples' as settings."
+        match=re.escape(
+            "The algorithm CustomDOE requires "
+            "either a 'doe_file' or the input 'samples' as settings."
         ),
     ):
         execute_problem(DOE_LIB_NAME, dim=3, **options)
