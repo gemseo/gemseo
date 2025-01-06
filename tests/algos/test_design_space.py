@@ -100,7 +100,9 @@ def design_space():
 def test_add_variable_when_already_exists(design_space) -> None:
     """Check that adding an existing variable raises an error."""
     design_space.add_variable("varname")
-    with pytest.raises(ValueError, match="The variable 'varname' already exists."):
+    with pytest.raises(
+        ValueError, match=re.escape("The variable 'varname' already exists.")
+    ):
         design_space.add_variable(name="varname")
 
 
@@ -174,7 +176,9 @@ def test_add_variable_with_upper_bounds_lower_than_lower_ones(design_space) -> N
     """Check that using upper bounds lower than lower ones raises an error."""
     with pytest.raises(
         ValidationError,
-        match="The upper bounds must be greater than or equal to the lower bounds.",
+        match=re.escape(
+            "The upper bounds must be greater than or equal to the lower bounds."
+        ),
     ):
         design_space.add_variable(
             name="varname",
@@ -271,7 +275,9 @@ def test_set_current_value_with_malformed_mapping_arg(design_space) -> None:
     design_space.filter("x1")
     with pytest.raises(
         Exception,
-        match="The variable x1 of size 1 cannot be set with an array of size 2.",
+        match=re.escape(
+            "The variable x1 of size 1 cannot be set with an array of size 2."
+        ),
     ):
         design_space.set_current_value({"x1": array([1.0, 1.0])})
 
@@ -290,7 +296,7 @@ def test_set_current_value_with_malformed_current_x(design_space) -> None:
     """Check that setting the current value from a float raises an error."""
     with pytest.raises(
         TypeError,
-        match=(
+        match=re.escape(
             "The current design value should be either an array, "
             "a dictionary of arrays or an optimization result; "
             "got <class 'float'> instead."
@@ -351,7 +357,9 @@ def test_filter_by_variable_names(design_space, copy) -> None:
 
 def test_filter_with_an_unknown_variable(design_space) -> None:
     """Check that filtering a design space with an unknown name raises an error."""
-    with pytest.raises(ValueError, match="Variable 'unknown_x' is not known."):
+    with pytest.raises(
+        ValueError, match=re.escape("Variable 'unknown_x' is not known.")
+    ):
         design_space.filter("unknown_x")
 
 
@@ -457,7 +465,9 @@ def test_active_bounds() -> None:
 
     with pytest.raises(
         TypeError,
-        match="Expected dict or array for x_vec argument; got <class 'str'>.",
+        match=re.escape(
+            "Expected dict or array for x_vec argument; got <class 'str'>."
+        ),
     ):
         design_space.get_active_bounds("test")
 
@@ -669,7 +679,9 @@ def test_bounds_set_lower_bound_with_nan(design_space) -> None:
 
 def test_bounds_set_lower_bound_with_inconsistent_size(design_space) -> None:
     """Check that setting lower bound with inconsistent sized value raises an error."""
-    with pytest.raises(ValueError, match="The lower bound should be of size 1."):
+    with pytest.raises(
+        ValueError, match=re.escape("The lower bound should be of size 1.")
+    ):
         design_space.set_lower_bound("x6", ones(2))
 
 
@@ -686,7 +698,9 @@ def test_bounds_set_upper_bound_with_nan(design_space) -> None:
 
 def test_bounds_set_upper_bound_with_inconsistent_size(design_space) -> None:
     """Check that setting upper bound with inconsistent sized value raises an error."""
-    with pytest.raises(ValueError, match="The upper bound should be of size 1."):
+    with pytest.raises(
+        ValueError, match=re.escape("The upper bound should be of size 1.")
+    ):
         design_space.set_upper_bound("x6", ones(2))
 
 
@@ -754,7 +768,7 @@ def test_norm_policy() -> None:
         upper_bound=array([0.0, inf]),
     )
 
-    with pytest.raises(ValueError, match="Variable 'foo' is not known."):
+    with pytest.raises(ValueError, match=re.escape("Variable 'foo' is not known.")):
         design_space._add_norm_policy("foo")
 
 
@@ -806,20 +820,22 @@ def test_current_x() -> None:
     """
 
     assert design_space.get_type("x_1") == np.array([FLOAT])
-    with pytest.raises(ValueError, match="Variable 'x_3' is not known."):
+    with pytest.raises(ValueError, match=re.escape("Variable 'x_3' is not known.")):
         assert design_space.get_type("x_3")
-    with pytest.raises(ValueError, match="Variable 'x_3' is not known."):
+    with pytest.raises(ValueError, match=re.escape("Variable 'x_3' is not known.")):
         assert design_space.get_size("x_3")
 
     design_space.set_current_variable("x_1", np.array([5.0]))
     assert design_space.get_current_value(as_dict=True)["x_1"][0] == 5.0
 
-    with pytest.raises(ValueError, match="Variable 'x_3' is not known."):
+    with pytest.raises(ValueError, match=re.escape("Variable 'x_3' is not known.")):
         design_space.set_current_variable("x_3", 1.0)
 
     with pytest.raises(
         ValueError,
-        match="The upper bounds must be greater than or equal to the lower bounds.",
+        match=re.escape(
+            "The upper bounds must be greater than or equal to the lower bounds."
+        ),
     ):
         design_space.add_variable("error", lower_bound=1.0, upper_bound=0.0)
 
@@ -1358,7 +1374,9 @@ def test_rename_variable(value) -> None:
 def test_rename_unknown_variable() -> None:
     """Check that a value error is raised when renaming of an unknown variable."""
     design_space = DesignSpace()
-    with pytest.raises(ValueError, match="The variable x is not in the design space."):
+    with pytest.raises(
+        ValueError, match=re.escape("The variable x is not in the design space.")
+    ):
         design_space.rename_variable("x", "y")
 
 

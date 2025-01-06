@@ -20,6 +20,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import ndarray
 
@@ -49,9 +51,9 @@ DESCRIPTIONS = [
 def test_fail_no_output() -> None:
     """Test that the LinearDiscipline fails when there are no inputs or outputs in the
     description."""
-    with pytest.raises(ValueError, match="output_names must not be empty."):
+    with pytest.raises(ValueError, match=re.escape("output_names must not be empty.")):
         create_disciplines_from_desc([("A", ["x"], [])])
-    with pytest.raises(ValueError, match="input_names must not be empty."):
+    with pytest.raises(ValueError, match=re.escape("input_names must not be empty.")):
         create_disciplines_from_desc([("A", [], ["y"])])
 
 

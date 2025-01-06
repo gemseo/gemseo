@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import ClassVar
 from unittest import mock
 
@@ -78,7 +79,7 @@ def test_empty_design_space() -> None:
     driver._algo_name = "algo_name"
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "The algorithm algo_name is not adapted to the problem "
             "because the design space is empty."
         ),

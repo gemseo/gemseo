@@ -21,6 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -389,7 +390,7 @@ def test_initialize_defaults() -> None:
     ])
     del disciplines[0].default_input_data["y"]
     chain = MDAChain(disciplines, initialize_defaults=False)
-    with pytest.raises(InvalidDataError, match="Missing required names: y."):
+    with pytest.raises(InvalidDataError, match=re.escape("Missing required names: y.")):
         chain.execute()
 
     MDAChain(disciplines, initialize_defaults=True).execute()
@@ -398,8 +399,9 @@ def test_initialize_defaults() -> None:
     chain = MDAChain(disciplines, initialize_defaults=True)
     with pytest.raises(
         ValueError,
-        match="Cannot compute the inputs a, x, y, z, "
-        "for the following disciplines A, B.",
+        match=re.escape(
+            "Cannot compute the inputs a, x, y, z, for the following disciplines A, B."
+        ),
     ):
         chain.execute()
 

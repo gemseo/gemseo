@@ -16,6 +16,7 @@
 #     Matthias De Lozzo
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -114,7 +115,8 @@ def test_original_discipline(discipline) -> None:
 def test_with_discipline_wo_default_values() -> None:
     """Check that the wrapped discipline must have default input values."""
     with pytest.raises(
-        ValueError, match="The original discipline has no default input values."
+        ValueError,
+        match=re.escape("The original discipline has no default input values."),
     ):
         RemappingDiscipline(DummyDiscipline(), {}, {})
 

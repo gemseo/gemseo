@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from unittest import mock
 
@@ -142,7 +143,8 @@ def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot) -> None:
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, ax)
     with pytest.raises(
-        ValueError, match="The figure associated with the given axes is missing."
+        ValueError,
+        match=re.escape("The figure associated with the given axes is missing."),
     ):
         plot._get_figure_and_axes(None, ax)
 
@@ -153,7 +155,8 @@ def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot) -> None:
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), fig, None)
     with pytest.raises(
-        ValueError, match="The axes associated with the given figure are missing."
+        ValueError,
+        match=re.escape("The axes associated with the given figure are missing."),
     ):
         plot._get_figure_and_axes(fig, None)
 

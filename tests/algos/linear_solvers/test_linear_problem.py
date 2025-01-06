@@ -95,7 +95,7 @@ def test_plot_residuals(tmp_wd) -> None:
 def test_plot_residuals_checks() -> None:
     """Tests the residuals plot creation."""
     problem = LinearProblem(eye(1), ones(1))
-    with pytest.raises(ValueError, match="Residuals history is empty."):
+    with pytest.raises(ValueError, match=re.escape("Residuals history is empty.")):
         problem.plot_residuals()
 
 

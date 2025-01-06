@@ -149,7 +149,7 @@ def test_transformers_error(dataset) -> None:
     with (
         pytest.raises(
             ValueError,
-            match=(
+            match=re.escape(
                 "An BaseMLAlgo cannot have both a transformer "
                 "for all variables of a group and a transformer "
                 "for one variable of this group."

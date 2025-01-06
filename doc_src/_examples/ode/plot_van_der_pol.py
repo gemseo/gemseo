@@ -18,7 +18,7 @@
 """
 Solve an ODE: the Van der Pol problem
 =====================================
-"""  # noqa: 205, 212, 415
+"""
 
 from __future__ import annotations
 

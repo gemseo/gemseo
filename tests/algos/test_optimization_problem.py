@@ -1458,7 +1458,9 @@ def test_get_function_dimension(constrained_problem, name, dimension) -> None:
 
 def test_get_function_dimension_unknown(constrained_problem) -> None:
     """Check the output dimension of an unknown problem function."""
-    with pytest.raises(ValueError, match="The problem has no function named unknown."):
+    with pytest.raises(
+        ValueError, match=re.escape("The problem has no function named unknown.")
+    ):
         constrained_problem.get_function_dimension("unknown")
 
 
@@ -1972,7 +1974,7 @@ def test_is_multi_objective() -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: array([x, x]), "two")
     with pytest.raises(
-        ValueError, match="Cannot determine the dimension of the objective."
+        ValueError, match=re.escape("Cannot determine the dimension of the objective.")
     ):
         problem.is_mono_objective  # noqa: B018
 
@@ -1981,7 +1983,7 @@ def test_is_multi_objective() -> None:
 
     problem.objective.dim = 0
     with pytest.raises(
-        ValueError, match="Cannot determine the dimension of the objective."
+        ValueError, match=re.escape("Cannot determine the dimension of the objective.")
     ):
         problem.is_mono_objective  # noqa: B018
 

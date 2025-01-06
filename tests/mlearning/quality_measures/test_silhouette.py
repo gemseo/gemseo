@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import arange
 
@@ -70,7 +72,7 @@ def test_compute_learning_measure_fail(measure) -> None:
     """Test evaluate learn method; should fail if multioutput is True."""
     with pytest.raises(
         NotImplementedError,
-        match="The SilhouetteMeasure does not support the multioutput case.",
+        match=re.escape("The SilhouetteMeasure does not support the multioutput case."),
     ):
         measure.compute_learning_measure(multioutput=True)
 

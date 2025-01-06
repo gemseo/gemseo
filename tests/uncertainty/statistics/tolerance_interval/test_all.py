@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
@@ -114,6 +116,6 @@ def test_tolerance_interval_confidence_upper(side, distribution) -> None:
 def test_tolerance_interval_incorrect_side(distribution_name) -> None:
     """Check that an error is raised if the type of tolerance interval is incorrect."""
     with pytest.raises(
-        ValueError, match="The type of tolerance interval is incorrect."
+        ValueError, match=re.escape("The type of tolerance interval is incorrect.")
     ):
         DISTRIBUTIONS[distribution_name].compute(0.9, side="incorrect_side")

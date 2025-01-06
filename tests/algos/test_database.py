@@ -569,7 +569,7 @@ def test_get_hashable_ndarray() -> None:
     """Check get_hashable_ndarray."""
     with pytest.raises(
         KeyError,
-        match=(
+        match=re.escape(
             "A database key must be either a NumPy array of a HashableNdarray; "
             "got <class 'int'> instead."
         ),

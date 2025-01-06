@@ -174,7 +174,9 @@ def test_jac_pb(design_space) -> None:
 
 def test_missing_jacobian() -> None:
     auto_rosen = AutoPyDiscipline(rosen)
-    with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
+    with pytest.raises(
+        RuntimeError, match=re.escape("The analytic Jacobian is missing.")
+    ):
         auto_rosen._compute_jacobian()
 
 

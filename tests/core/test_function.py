@@ -380,7 +380,7 @@ def test_quadratic_approximation_error(
 ) -> None:
     """Test the second-order polynomial of a function with inconsistent input."""
     with pytest.raises(
-        ValueError, match="Hessian approximation must be a square ndarray."
+        ValueError, match=re.escape("Hessian approximation must be a square ndarray.")
     ):
         compute_quadratic_approximation(function_for_quadratic_approximation, *x_vect)
 
@@ -578,7 +578,9 @@ def test_deactivate_counters() -> None:
     )
     assert not func.n_calls
 
-    with pytest.raises(RuntimeError, match="The function counters are disabled."):
+    with pytest.raises(
+        RuntimeError, match=re.escape("The function counters are disabled.")
+    ):
         func.n_calls = 1
 
     ProblemFunction.enable_statistics = enable_statistics
