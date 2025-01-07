@@ -21,86 +21,170 @@
 """
 Create a discipline from a Python function
 ==========================================
+
+There is a simplified and straightforward way of integrating a discipline
+from a Python function that:
+
+- returns variables,
+  e.g. ``return x`` or ``return x, y``,
+  but no expression like ``return a+b`` or ``return a+b, y``,
+- must have a default value per argument
+  if the :class:`.AutoPyDiscipline` is used by an ``MDA``
+  (deriving from :class:`.BaseMDA`),
+  as in the case of :class:`.MDF` and :class:`.BiLevel` formulations.
 """
 
-# %%
-# Import
-# ------
 from __future__ import annotations
 
 from numpy import array
-from numpy import empty
 
 from gemseo import configure_logger
 from gemseo import create_discipline
 
 configure_logger()
-
 # %%
-# Build a discipline from a simple Python function
-# ------------------------------------------------
-# Let's consider a simple Python function, e.g.:
+# In this example,
+# we will illustrate this feature
+# using the Python function:
 
 
-def f(x=0.0, y=0.0):
-    """A simple Python function."""
+def f(x, y=0.0):
+    """A simple Python function taking float numbers and returning a float number."""
     z = x + 2 * y
     return z
 
 
 # %%
-# Create and instantiate the discipline
-# -------------------------------------
+# .. warning::
+#    Note that the Python function must return one or more *variables*.
+#    The following Python function would not be suitable
+#    as it returns an *expression* instead of a variable:
+#
+#    .. code::
+#
+#        def g(x, y=0.):
+#            """A simple Python function returning an expression."""
+#            return x + 2*y
+#
+# .. note::
+#    Note also that by default,
+#    the arguments and the returned variables of the Python function
+#    are supposed to be either ``float`` numbers
+#    or NumPy arrays with dimensions greater than 1.
+#    At the end of the example, we will see how to use other types.
+#
 # Then, we can consider the
 # :class:`.AutoPyDiscipline` class
-# to convert it into an :class:`.Discipline`.
-# For that, we can use the :func:`.create_discipline` API function
-# with ``'AutoPyDiscipline'`` as first argument:
-disc = create_discipline("AutoPyDiscipline", py_func=f)
+# to wrap this Python function into a :class:`.Discipline`.
+# For that,
+# we can use the :func:`.create_discipline` high-level function
+# with the string ``"AutoPyDiscipline"`` as first argument:
+discipline = create_discipline("AutoPyDiscipline", py_func=f)
 
 # %%
-# The original Python function may or may not include default values for input
-# arguments, however, if the resulting :class:`.AutoPyDiscipline` is going to be
-# placed inside an :class:`.MDF`, a :class:`.BiLevel` formulation or a :class:`.BaseMDA`
-# with strong couplings, then the Python function **must** assign default values
-# for its input arguments.
+# The input variables of the discipline are the arguments of the Python function ``f``:
+discipline.io.input_grammar.names
+# %%
+# the output variables of the discipline are the variables returned by ``f``:
+discipline.io.output_grammar.names
+# %%
+# and the default input values of the discipline
+# are the default values of the arguments of ``f``:
+discipline.io.input_grammar.defaults
+
+# %%
+# .. note::
+#    The argument ``x`` of the Python function ``f`` shall have a default value
+#    when the discipline is used by an ``MDA`` (deriving from :class:`.BaseMDA`),
+#    as in the case of :class:`.MDF` and :class:`.BiLevel` formulations,
+#    in presence of strong couplings.
+#    This is not the case in this example.
 
 # %%
 # Execute the discipline
 # ----------------------
-# Then, we can execute it easily, either considering default inputs:
-disc.execute()
+# Then,
+# we can execute this discipline easily,
+# either considering default input values:
+discipline.execute({"x": array([1.0])})
 
 # %%
-# or using new inputs:
-disc.execute({"x": array([1.0]), "y": array([-3.2])})
+# or custom ones:
+discipline.execute({"x": array([1.0]), "y": array([-3.2])})
 
 # %%
-# Optional arguments
-# ------------------
-# The optional arguments passed to the constructor are:
+# .. warning::
+#    You may have noticed that
+#    the input data are passed to the :class:`.AutoPyDiscipline` as NumPy arrays
+#    even if the Python function ``f`` is expecting ``float`` numbers.
 #
-# - ``py_jac=None``: pointer to the jacobian function which must returned
-#   a 2D numpy array (see below),
-# - ``use_arrays=False``: if ``True``, the function is expected to take
-#   arrays as inputs and give outputs as arrays,
-# - ``write_schema=False``: if ``True``, write the json schema on the
-#   disk.
-
-# %%
-# Define the jacobian function
+# Define the Jacobian function
 # ----------------------------
-# Here is an example of jacobian function:
+# Here is an example of a Python function
+# returning the Jacobian matrix as a 2D NumPy array:
 
 
-def dfdxy(x=0.0, y=0.0):
-    """Jacobian function of f."""
-    jac = empty((2, 1))
-    jac[0, 0] = 1
-    jac[1, 0] = 2
-    return jac
+def df(x, y):
+    """Function returning the Jacobian of z=f(x,y)"""
+    return array([[1.0, 2.0]])
 
 
 # %%
-# that we can execute with default inputs for example:
-dfdxy()
+# We can create a new :class:`AutoPyDiscipline` from ``f`` and ``df``:
+discipline = create_discipline("AutoPyDiscipline", py_func=f, py_jac=df)
+# %%
+# and compute its Jacobian at ``{"x": array([1.0]), "y": array([0.0])}``:
+discipline.linearize(input_data={"x": array([1.0])}, compute_all_jacobians=True)
+discipline.jac
+
+
+# Use custom types
+# ----------------
+# By default,
+# the :class:`.AutoPyDiscipline` assumes that
+# the arguments and the returned variables of the Python function are
+# either ``float`` numbers or NumPy arrays with dimensions greater than 1.
+# This behaviour can be changed in two different ways.
+#
+# NumPy arrays
+# ~~~~~~~~~~~~
+# We can force :class:`.AutoPyDiscipline`
+# to consider all arguments and variables as NumPy arrays
+# by setting the option ``use_arrays`` to ``True``,
+# as illustrated here:
+def copy_array(a):
+    a_copy = a.copy()
+    return a_copy
+
+
+discipline = create_discipline("AutoPyDiscipline", py_func=copy_array, use_arrays=True)
+discipline.execute({"a": array([1.0])})
+
+
+# User types
+# ~~~~~~~~~~
+# We can also define specific types for each argument and return variable.
+#
+# .. warning::
+#    If you forget to annotate an argument or a return variable,
+#    all the types you have specified will be ignored.
+#
+# As a very simple example,
+# we can consider a Python function which replicates a string *n* times:
+
+
+def replicate_string(string: str = "a", n: int = 3) -> str:
+    final_string = string * n
+    return final_string
+
+
+# %%
+# Then,
+# we create the discipline:
+discipline = create_discipline("AutoPyDiscipline", py_func=replicate_string)
+# %%
+# execute it with its default input values:
+discipline.execute()
+# %%
+# and with custom ones:
+discipline.execute({"string": "ab", "n": 5})

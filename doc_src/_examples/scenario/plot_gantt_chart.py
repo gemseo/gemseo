@@ -119,6 +119,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 create_gantt_chart(save=False, show=True)
 # %%
 # This graph shows the evolution over time:
+#
 # - the execution and linearizations of the different user disciplines,
 #   *e.g.* :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics`,
 # - the execution and linearizations of the different process disciplines,
@@ -135,6 +136,6 @@ ExecutionStatistics.is_time_stamps_enabled = False
 # .. note::
 #    As this reset :attr:`.ExecutionStatistics.time_stamps` to ``None``,
 #    the :func:`.create_gantt_chart` function can no longer be used.
-#    Set ``ExecutionStatistics.is_time_stamps_enabled`` to ``True``
+#    Set :attr:`.ExecutionStatistics.is_time_stamps_enabled` to ``True``
 #    and execute or linearize some disciplines
 #    so that you can use it again.

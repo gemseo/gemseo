@@ -130,6 +130,23 @@ def test_jac() -> None:
     assert disc.check_jacobian()
 
 
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("py_func", f5),
+        ("py_jac", df5),
+        ("input_names", ["y"]),
+        ("output_names", ["u", "f"]),
+    ],
+)
+def test_read_only(name, value) -> None:
+    """Test read-only attributes."""
+    disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
+    assert getattr(disc, name) == value
+    with pytest.raises(AttributeError):
+        setattr(disc, name, value)
+
+
 def test_use_arrays() -> None:
     """Test the use of arrays."""
     d1 = AutoPyDiscipline(f1, use_arrays=True)
@@ -268,7 +285,12 @@ def f6_no_return(x: int):
     return z  # noqa: RET504
 
 
-def f6_missing_type(x: int, y):
+def f6_missing_type_1(x: int, y):
+    z = 0
+    return z  # noqa: RET504
+
+
+def f6_missing_type_2(x: int, y) -> int:
     z = 0
     return z  # noqa: RET504
 
@@ -309,14 +331,20 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
             {"z": ndarray},
         ),
         (
-            f6_missing_type,
+            f6_missing_type_1,
             [
-                "Discipline f6_missing_type: py_func has missing type hints "
-                "for the arguments: y.",
-                "Discipline f6_missing_type: py_func has inconsistent type "
-                "hints: either both "
-                "the signature arguments and the return values shall have "
-                "type hints or none. "
+                "Discipline f6_missing_type_1: py_func has missing type hints "
+                "for the arguments: y."
+                "The grammars will not use the type hints at all.",
+            ],
+            {"x": ndarray, "y": ndarray},
+            {"z": ndarray},
+        ),
+        (
+            f6_missing_type_2,
+            [
+                "Discipline f6_missing_type_2: py_func has missing type hints "
+                "for the arguments: y."
                 "The grammars will not use the type hints at all.",
             ],
             {"x": ndarray, "y": ndarray},
@@ -328,13 +356,8 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
             [
                 "Discipline f6_missing_return_tuple: py_func has bad return "
                 "type hints: expecting "
-                "a tuple of types, got <class 'int'>.",
-                "Discipline f6_missing_return_tuple: py_func has inconsistent "
-                "type hints: "
-                "either both the signature arguments and the return values "
-                "shall have type "
-                "hints or none. The grammars will not use the type hints at "
-                "all.",
+                "a tuple of types, got <class 'int'>."
+                "The grammars will not use the type hints at all.",
             ],
             {"x": ndarray},
             {"z": ndarray, "zz": ndarray},
@@ -345,14 +368,8 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
                 "Discipline f6_bad_multiple_returns: py_func has bad return "
                 "type hints: the number "
                 "of return values and return types shall be equal: 2 return "
-                "values but 1 "
-                "return type hints.",
-                "Discipline f6_bad_multiple_returns: py_func has inconsistent "
-                "type hints: "
-                "either both the signature arguments and the return values "
-                "shall have type "
-                "hints or none. The grammars will not use the type hints at "
-                "all.",
+                "values but 1 return type hints. "
+                "The grammars will not use the type hints at all.",
             ],
             {"x": ndarray},
             {"z": ndarray, "zz": ndarray},
@@ -482,3 +499,18 @@ def test_mda(x_1, mda_name, sellar_disciplines) -> None:
         input_names=["x_1", "x_shared"],
         output_names=["y_1", "y_2"],
     )
+
+
+def f_returning_expression(x=1):
+    return x + 2
+
+
+def test_f_returning_expression():
+    """Check the message of the error raised when returning an expression."""
+    msg = (
+        "The function must return one or more variables, "
+        "e.g. 'return x' or 'return x, y',"
+        "but no expression like 'return a+b' or 'return a+b, y'."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        AutoPyDiscipline(f_returning_expression)

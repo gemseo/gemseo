@@ -20,7 +20,6 @@ Discipline
 
    disciplines/index
    disciplines/analytic_discipline
-   disciplines/autopydiscipline
    disciplines/discipline_from_scratch
    interface/exe_discipline
    interface/job_schedulers
