@@ -651,6 +651,20 @@ Run the tests for several Python versions with for instance (on Linux):
 
    tox run -e py39,py310,py311
 
+To speed up the execution of the tests,
+you may execute exclusively or
+skip some of them by using the following pytest marks:
+- ``post``: tests that post processing compare images
+- ``slow``: tests that are slow
+- ``integration``: integration tests
+
+For instance,
+skip all the post with
+
+.. code-block:: console
+
+   tox run -e py39 -- -m 'not post'
+
 Tests coverage
 ++++++++++++++
 

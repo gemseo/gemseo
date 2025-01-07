@@ -30,7 +30,7 @@ from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 if TYPE_CHECKING:
     from gemseo import Discipline
 
-MARK = "doc_examples"
+DOC_EXAMPLE_MARK = "doc_examples"
 
 
 def pytest_collection_modifyitems(
@@ -40,9 +40,11 @@ def pytest_collection_modifyitems(
 ) -> None:
     """Skip by default some marked tests."""
     if not config.getoption("-m"):
-        skip_me = pytest.mark.skip(reason=f"use '-m {MARK}' to run this test")
+        skip_me = pytest.mark.skip(
+            reason=f"use '-m {DOC_EXAMPLE_MARK}' to run this test"
+        )
         for item in items:
-            if MARK in item.keywords:
+            if DOC_EXAMPLE_MARK in item.keywords:
                 item.add_marker(skip_me)
 
 

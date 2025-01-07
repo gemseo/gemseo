@@ -174,6 +174,7 @@ def test_complex_fail() -> None:
     "method",
     [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
 )
+@pytest.mark.integration
 def test_auto_step(parallel, method, sellar_disciplines) -> None:
     for discipline in sellar_disciplines:
         assert discipline.check_jacobian(
