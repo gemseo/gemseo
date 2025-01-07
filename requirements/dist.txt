@@ -57,7 +57,7 @@ pydantic==2.10.4
     # via check-wheel-contents
 pydantic-core==2.27.2
     # via pydantic
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   readme-renderer
     #   rich

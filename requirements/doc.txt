@@ -139,7 +139,7 @@ pyenchant==3.2.2
     # via
     #   gemseo (pyproject.toml)
     #   sphinxcontrib-spelling
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   accessible-pygments
     #   pydata-sphinx-theme
@@ -170,7 +170,7 @@ scipy==1.14.1
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-setuptools==75.6.0
+setuptools==75.7.0
     # via
     #   gemseo (pyproject.toml)
     #   sphinxcontrib-bibtex
