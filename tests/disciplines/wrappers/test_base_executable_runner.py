@@ -14,6 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pytest
@@ -56,23 +57,53 @@ def test_change_working_directory(tmp_wd) -> None:
     assert Path("toto/toto.txt").exists()
 
 
-def test_attached_files(tmp_wd) -> None:
-    """Test to copy attached files."""
-    # Create empty files
-    with Path("toto.txt").open("w") as f, Path("tata.txt").open("w") as g:
+def test_directories_and_files(tmp_wd, caplog) -> None:
+    """Test to copy files and directories."""
+    # Create empty files and directory.
+    Path("directory_tata").mkdir()
+    with (
+        Path("toto.txt").open("w") as f,
+        Path("directory_tata/tata.txt").open("w") as g,
+    ):
         f.write("toto")
         g.write("tata")
 
     exec_runner = _BaseExecutableRunner(
-        "python --version", ".", files=["toto.txt", Path("tata.txt")]
+        "python --version",
+        ".",
+        data_paths=[
+            "toto.txt",
+            Path("directory_tata"),
+            "not_existing_file.txt",
+        ],
     )
+
+    # Conversion into Path() objects is done in the __init__.
+    assert exec_runner._data_paths == [
+        Path("toto.txt"),
+        Path("directory_tata"),
+        Path("not_existing_file.txt"),
+    ]
+
     wd = exec_runner.directory_creator.create()
     exec_runner.execute()
 
+    # Test the warning message if the file/directory does not exist.
+    msg = (
+        f"Can't copy not_existing_file.txt into {wd} "
+        "since it is neither a file nor a directory."
+    )
+    assert (
+        "gemseo.disciplines.wrappers._base_executable_runner",
+        logging.WARNING,
+        msg,
+    ) in caplog.record_tuples
+
+    # Test the directory and files are copied.
     assert Path("toto.txt").exists()
-    assert Path("tata.txt").exists()
+    assert Path("directory_tata/tata.txt").exists()
     assert (wd / "toto.txt").exists()
-    assert (wd / "tata.txt").exists()
+    assert (wd / "directory_tata/tata.txt").exists()
 
 
 def test_run_options(tmp_wd) -> None:
