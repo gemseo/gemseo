@@ -133,4 +133,4 @@ class BaseParallelMDASolver(BaseMDASolver):
         for discipline in self._disciplines:
             self.io.data.update(discipline.get_output_data())
 
-        super()._execute_disciplines_and_update_local_data()
+        self._compute_names_to_slices()

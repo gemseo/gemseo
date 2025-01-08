@@ -35,7 +35,6 @@ from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import 
     RelaxationAcceleration,
 )
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -47,7 +46,6 @@ if TYPE_CHECKING:
     from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import RealArray
-    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -259,7 +257,7 @@ class BaseMDASolver(BaseMDA):
 
         self.__resolved_residual_names = tuple(residuals)
 
-    def __compute_names_to_slices(self) -> None:
+    def _compute_names_to_slices(self) -> None:
         """Compute the mapping of variable names to slices for converting data to array.
 
         Two mappings are computed, one for the resolved variables (couplings and state
@@ -394,11 +392,6 @@ class BaseMDASolver(BaseMDA):
     def _execute(self) -> None:  # noqa:D103
         super()._execute()
         self._sequence_transformer.clear()
-
-    def _execute_disciplines_and_update_local_data(
-        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
-    ) -> None:
-        self.__compute_names_to_slices()
 
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:
         """Compute the residual vector.
