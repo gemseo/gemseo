@@ -33,7 +33,7 @@ from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.problems.ode.van_der_pol import VanDerPol
 
 if TYPE_CHECKING:
-    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 # %%
 # This tutorial describes how to solve an ordinary differential equation (ODE)
@@ -91,7 +91,7 @@ if TYPE_CHECKING:
 mu = 5
 
 
-def evaluate_f(time: float, state: NumberArray):
+def evaluate_f(time: float, state: RealArray):
     """Evaluate the right-hand side function :math:`f` of the equation.
 
     Args:
@@ -101,13 +101,18 @@ def evaluate_f(time: float, state: NumberArray):
     Returns:
         The value of :math:`f` at `time` and `state`.
     """
-    return state[1], mu * state[1] * (1 - state[0] ** 2) - state[0]
+    return array([state[1], mu * state[1] * (1 - state[0] ** 2) - state[0]])
 
 
 initial_state = array([2, -2 / 3])
 initial_time = 0.0
 final_time = 50.0
-ode_problem = ODEProblem(evaluate_f, initial_state, (initial_time, final_time))
+ode_problem = ODEProblem(
+    func=evaluate_f,
+    initial_state=initial_state,
+    times=(initial_time, final_time),
+    solve_at_algorithm_times=True,
+)
 
 
 # %%
@@ -117,7 +122,7 @@ ode_problem = ODEProblem(evaluate_f, initial_state, (initial_time, final_time))
 # problem, this would be:
 
 
-def evaluate_jac(time: float, state: NumberArray):
+def evaluate_jac(time: float, state: RealArray):
     """Evaluate the Jacobian of the function :math:`f`.
 
     Args:
@@ -135,7 +140,10 @@ def evaluate_jac(time: float, state: NumberArray):
 
 
 ode_problem_with_jacobian = ODEProblem(
-    evaluate_f, initial_state, (initial_time, final_time), jac_wrt_state=evaluate_jac
+    evaluate_f,
+    initial_state,
+    (initial_time, final_time),
+    jac_function_wrt_state=evaluate_jac,
 )
 
 # %%
@@ -164,7 +172,7 @@ ODESolverLibraryFactory().execute(ode_problem_with_jacobian, algo_name="RK45")
 #
 # The solution of the :class:`.ODEProblem` on the user-specified time interval
 # can be accessed through the vectors :attr:`.ODEProblem.states` and
-# :attr:`.ODEProblem.times`.
+# :attr:`.ODEProblem.times_eval`.
 
 plt.plot(ode_problem.result.times, ode_problem.result.state_trajectories[0], label="x")
 plt.plot(ode_problem.result.times, ode_problem.result.state_trajectories[1], label="y")

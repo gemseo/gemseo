@@ -18,7 +18,7 @@
 #        :author: Isabelle Santos
 #        :author: Giulio Gargantini
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A discipline for solving ordinary differential equations (ODEs)."""
+"""ODE Function."""
 
 from __future__ import annotations
 
@@ -31,59 +31,50 @@ from numpy import concatenate
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
-    from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
     from gemseo.typing import RealArray
 
 
-class BaseFunctor:
-    """A function wrapping a RHS discipline.
+class ODEFunction:
+    """A function wrapping a discipline for ODEs.
 
     This function has time and state as arguments,
     and an attribute 'terminal'.
-
-    Its subclasses are used to evaluate the outputs of the RHS discipline
-    or its Jacobian.
     """
 
     _adapter: DisciplineAdapter
-    """The :class:`MDOFunction` wrapping the discipline defining the dynamic."""
+    """The :class:`MDOFunction` wrapping the discipline."""
 
     __parameter_names: tuple[str, ...]
     """The names of the parameters."""
-
-    __ode_discipline: ODEDiscipline
-    """The ODE discipline providing the local data."""
 
     terminal: bool
     """An attribute used by ODE libraries."""
 
     def __init__(
         self,
-        ode_discipline: ODEDiscipline,
         discipline: Discipline,
         state_names: Iterable[str] | Mapping[str, str],
         time_name: str,
+        terminal: bool = False,
     ) -> None:
         """
         Args:
-            ode_discipline: The ODE discipline providing the local data.
-            discipline: The wrapped discipline defining the dynamic.
+            discipline: The wrapped discipline.
             state_names: Either the names of the state variables,
                 passed as ``(state_name, ...)``,
                 or the names of the state variables
                 bound to the associated discipline outputs,
                 passed as ``{state_name: output_name, ...}``.
             time_name: The name of the time variables.
+            terminal: Whether this is a termination function.
         """  # noqa: D205, D212, D415
         self.terminal = False
-        self.__ode_discipline = ode_discipline
         excluded_names = [time_name, *state_names]
         self.__parameter_names = tuple(
             name
@@ -98,29 +89,36 @@ class BaseFunctor:
             output_names = discipline.io.output_grammar
 
         self._adapter = generator.get_function(
-            input_names=[
-                time_name,
-                *state_names,
-                *self.__parameter_names,
-            ],
+            input_names=[time_name, *state_names],
             output_names=output_names,
+            differentiated_input_names_substitute=[*state_names],
         )
 
-    def _compute_input_vector(self, time: RealArray, state: RealArray) -> RealArray:
-        """Compute an input vector concatenating time, state and parameters.
+        self.terminal = terminal
 
+    def __call__(self, time: RealArray, state: RealArray) -> RealArray:
+        """
         Args:
-            time: The current time.
-            state: The current state.
+            time: The time at the evaluation of the function.
+            state: The state of the ODE at the evaluation of the function.
 
         Returns:
-            The concatenation of time, state and parameters.
+            The value of the function at the given time and state.
+
+        """  # noqa: D205, D212, D415
+        return self._adapter.evaluate(concatenate((array([time]), state)))
+
+    def evaluate_jacobian(self, time: RealArray, state: RealArray) -> RealArray:
         """
-        return concatenate((
-            array([time]),
-            state,
-            concatenate_dict_of_arrays_to_array(
-                self.__ode_discipline.io.data,
-                names=self.__parameter_names,
-            ),
+        Args:
+            time: The time at the evaluation of the function.
+            state: The state of the ODE at the evaluation of the function.
+
+        Returns:
+            The Jacobian wrt state of the function at the given time and state.
+
+        """  # noqa: D205, D212, D415
+        return self._adapter.jac(concatenate((array([time]), state))).reshape((
+            state.size,
+            -1,
         ))

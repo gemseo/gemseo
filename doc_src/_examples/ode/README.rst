@@ -9,9 +9,10 @@
 ..
    Contributors:
           :author: Isabelle Santos
+          :author: Giulio Gargantini
 
 
-ODE problems
-============
+Ordinary differential equations
+===============================
 
-Below are examples related to ordinary differential equations (ODE).
+Examples related to the solution of ordinary differential equations (ODE) in |g|.

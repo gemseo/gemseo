@@ -28,6 +28,7 @@ from numpy import array
 from numpy import cos
 from numpy import linspace
 from numpy import ndarray
+from numpy import pi
 from numpy import sin
 
 from gemseo import create_discipline
@@ -107,15 +108,15 @@ from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 # design variables.
 
 _time = array([0.0])
-position_1 = array([1.0])
-velocity_1 = array([0.0])
+initial_position_1 = array([1.0])
+initial_velocity_1 = array([0.0])
 omega_1 = array([2.0])
 
 
 def rhs_function(
     time: ndarray = _time,
-    position: ndarray = position_1,
-    velocity: ndarray = velocity_1,
+    position: ndarray = initial_position_1,
+    velocity: ndarray = initial_velocity_1,
     omega: ndarray = omega_1,
 ):
     position_dot = velocity
@@ -154,7 +155,7 @@ rhs_discipline = create_discipline(
 # in the output `"times"`.
 
 ode_discipline = ODEDiscipline(
-    discipline=rhs_discipline,
+    rhs_discipline=rhs_discipline,
     times=linspace(0.0, 10.0, 51),
     state_names=["position", "velocity"],
     return_trajectories=True,
@@ -180,13 +181,13 @@ ode_res_1 = ode_discipline.execute()
 # specified by passing a suitable dictionary to the `execute()` method of the
 # class:`ODEDiscipline`.
 
-position_2 = array([2.0])
-velocity_2 = array([0.5])
+initial_position_2 = array([2.0])
+initial_velocity_2 = array([0.5])
 omega_2 = array([1.0])
 
 ode_res_2 = ode_discipline.execute({
-    "position": position_2,
-    "velocity": velocity_2,
+    "initial_position": initial_position_2,
+    "initial_velocity": initial_velocity_2,
     "omega": omega_2,
 })
 
@@ -217,11 +218,13 @@ ode_res_2 = ode_discipline.execute({
 # of a harmonic oscillator from its starting point up to the instant when it crosses
 # the equilibrium position.
 
+initial_position_3 = array([1.5])
+
 
 def termination_function(
     time: ndarray = _time,
-    position: ndarray = position_1,
-    velocity: ndarray = velocity_1,
+    position: ndarray = initial_position_3,
+    velocity: ndarray = initial_velocity_1,
     omega: ndarray = omega_1,
 ):
     termination = position
@@ -241,14 +244,19 @@ termination_discipline = create_discipline(
 # `termination_event_disciplines` of the constructor of :class:`.ODEDiscipline`.
 
 ode_discipline_termination = ODEDiscipline(
-    discipline=rhs_discipline,
+    rhs_discipline=rhs_discipline,
     times=linspace(0.0, 10.0, 51),
     state_names=["position", "velocity"],
     termination_event_disciplines=(termination_discipline,),
     return_trajectories=True,
+    solve_at_algorithm_times=True,
 )
 
-ode_res_termination = ode_discipline_termination.execute()
+ode_res_termination = ode_discipline_termination.execute({
+    "initial_position": initial_position_3,
+    "initial_velocity": initial_velocity_1,
+    "omega": omega_1,
+})
 
 # %%
 # Examining the results
@@ -257,44 +265,51 @@ ode_res_termination = ode_discipline_termination.execute()
 # The outcomes of the discipline executions can be accessed by passing the names of
 # the corresponding outputs to `ode_res_1`, `ode_res_2`, and `ode_res_termination`.
 
-plt.plot(ode_res_1["times"], ode_res_1["position_trajectory"])
-plt.plot(ode_res_2["times"], ode_res_2["position_trajectory"])
-plt.plot(ode_res_termination["times"], ode_res_termination["position_trajectory"])
+plt.plot(ode_res_1["times"], ode_res_1["position"])
+plt.plot(ode_res_2["times"], ode_res_2["position"])
+plt.plot(ode_res_termination["times"], ode_res_termination["position"])
 plt.legend(["ode_res_1", "ode_res_2", "ode_res_termination"])
+plt.title("Harmonic oscillators with different frequencies")
 plt.show()
 
 
 # %%
 # These results can also be compared with the analytical solutions.
 
-analytic_res_1 = position_1 * cos(omega_1 * ode_res_1["times"]) + (
-    velocity_1 / omega_1
+analytic_res_1 = initial_position_1 * cos(omega_1 * ode_res_1["times"]) + (
+    initial_velocity_1 / omega_1
 ) * sin(omega_1 * ode_res_1["times"])
-analytic_res_2 = position_2 * cos(omega_2 * ode_res_2["times"]) + (
-    velocity_2 / omega_2
+analytic_res_2 = initial_position_2 * cos(omega_2 * ode_res_2["times"]) + (
+    initial_velocity_2 / omega_2
 ) * sin(omega_2 * ode_res_2["times"])
-analytic_res_termination = position_1 * cos(
+analytic_res_termination = initial_position_3 * cos(
     omega_1 * ode_res_termination["times"]
-) + velocity_1 / omega_1 * sin(omega_1 * ode_res_termination["times"])
+) + initial_velocity_1 / omega_1 * sin(omega_1 * ode_res_termination["times"])
 
 plt.plot(ode_res_1["times"], analytic_res_1, "r", label="Analytical solution")
 plt.plot(
     ode_res_1["times"],
-    ode_res_1["position_trajectory"],
+    ode_res_1["position"],
     "b--",
     label="Numerical solution",
 )
 plt.legend(["Analytical solution", "Solution by ODEDiscipline"])
+frequency = omega_1[0] / (2 * pi)
+title = f"Harmonic oscillator with frequency {omega_1[0]}/($2 \\pi$) = {frequency:.3f}"
+plt.title(title)
 plt.show()
 
 plt.plot(ode_res_2["times"], analytic_res_2, "r", label="Analytical solution")
 plt.plot(
     ode_res_2["times"],
-    ode_res_2["position_trajectory"],
+    ode_res_2["position"],
     "b--",
     label="Numerical solution",
 )
 plt.legend(["Analytical solution", "Solution by ODEDiscipline"])
+frequency = omega_2[0] / (2 * pi)
+title = f"Harmonic oscillator with frequency {omega_2[0]}/($2 \\pi$) = {frequency:.3f}"
+plt.title(title)
 plt.show()
 
 
@@ -306,11 +321,23 @@ plt.plot(
 )
 plt.plot(
     ode_res_termination["times"],
-    ode_res_termination["position_trajectory"],
+    ode_res_termination["position"],
     "b--",
     label="Numerical solution",
 )
-plt.legend(["Analytical solution", "Solution by ODEDiscipline"])
+plt.plot(
+    ode_res_termination["times"],
+    [0.0] * len(ode_res_termination["times"]),
+    "k--",
+    label="termination threshold = 0.0",
+)
+plt.legend([
+    "Analytical solution",
+    "Solution by ODEDiscipline",
+    "termination threshold = 0.0",
+])
+title = "Harmonic oscillator with terminating condition"
+plt.title(title)
 plt.show()
 
 

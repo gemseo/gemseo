@@ -28,7 +28,7 @@ the position :math:`x` of a harmonic oscillator is described by the equation
 
 
 with :math:`\omega \in \mathbb{R}_+^*`.
-This second-order ordinary differential equation (ODE)
+This second-order Ordinary Differential Equation (ODE)
 has an analytical solution:
 
 .. math::
@@ -59,6 +59,7 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import ndarray
 
+from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -86,6 +87,7 @@ class OscillatorDiscipline(ODEDiscipline):
         times: RealArray,
         return_trajectories: bool = False,
         final_state_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        cache_inner_discipline_is_none=True,
     ):
         """
         Args:
@@ -93,11 +95,13 @@ class OscillatorDiscipline(ODEDiscipline):
         """  # noqa: D205, D212, D415
         self.__omega_squared = omega**2
         rhs_discipline = AutoPyDiscipline(py_func=self._compute_rhs)
+        if cache_inner_discipline_is_none:
+            rhs_discipline.set_cache(cache_type=CacheType.NONE)
 
         super().__init__(
             times=times,
             state_names=("position", "velocity"),
-            discipline=rhs_discipline,
+            rhs_discipline=rhs_discipline,
             return_trajectories=return_trajectories,
             final_state_names=final_state_names,
             rtol=1e-12,

@@ -41,10 +41,10 @@ class ODEResult:
     """
 
     times: RealArray
-    r"""The times :math:`t_1,\ldots,t_N`."""
+    r"""The times_eval :math:`t_1,\ldots,t_N`."""
 
     state_trajectories: RealArray
-    r"""The states at times :math:`t_1,\ldots,t_N`.
+    r"""The states at times_eval :math:`t_1,\ldots,t_N`.
 
     Shaped as ``(d,N)``
     where ``d`` is the state dimension.
@@ -68,6 +68,12 @@ class ODEResult:
     algorithm_termination_message: str
     """The termination message of the ODE solver."""
 
+    jac_wrt_desvar: RealArray
+    """The Jacobian of the final state with respect to the design variables."""
+
+    jac_wrt_initial_state: RealArray
+    """The Jacobian of the final state with respect to the initial state."""
+
     terminal_event_index: int | None
     """The index of the event function responsible for the termination of the
     integration.
@@ -76,14 +82,14 @@ class ODEResult:
     the integration has been performed on the entire time interval without interruption.
     """
 
-    terminal_event_state: RealArray
+    final_state: RealArray
     """The state at the instant of interruption of the integration in time.
 
     If a terminal event occurs, it is the state during such occurrence. Otherwise, it is
     the state at the final time of integration.
     """
 
-    terminal_event_time: float
+    termination_time: float
     """The time of interruption of the integration in time.
 
     If a terminal event occurs, it is the time of such occurrence. Otherwise, it is the
