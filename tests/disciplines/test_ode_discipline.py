@@ -27,7 +27,6 @@ from __future__ import annotations
 import re
 from math import atan
 from math import pi
-from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
@@ -35,26 +34,19 @@ from numpy import arctan
 from numpy import array
 from numpy import concatenate
 from numpy import cos
+from numpy import exp
 from numpy import isclose
 from numpy import linspace
 from numpy import sin
 from numpy import sqrt
 from numpy.testing import assert_allclose
 
-from gemseo import create_discipline
 from gemseo import from_pickle
 from gemseo import to_pickle
-from gemseo.algos.ode.factory import ODESolverLibraryFactory
-from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
-    DisciplineAdapterGenerator,
-)
+from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
-
-if TYPE_CHECKING:
-    from gemseo.core.discipline.discipline import Discipline
 
 
 def test_create_oscillator_ode_discipline() -> None:
@@ -70,16 +62,16 @@ def test_oscillator_ode_discipline_final_time() -> None:
     The only part of the solution taken into account is the solution at the final time
     """
 
-    times = linspace(0.0, 10, 30)
+    times = (0.0, 10.0)
     oscillator_discipline = OscillatorDiscipline(omega=2, times=times)
     assert oscillator_discipline is not None
 
     final_time = times[-1]
     out = oscillator_discipline.execute()
     final_analytical_position = sin(2 * final_time) / 2
-    assert allclose(out["position_final"], final_analytical_position)
+    assert allclose(out["final_position"], final_analytical_position)
     final_analytical_velocity = cos(2 * final_time)
-    assert allclose(out["velocity_final"], final_analytical_velocity)
+    assert allclose(out["final_velocity"], final_analytical_velocity)
 
 
 def test_oscillator_final_time_set_names() -> None:
@@ -116,9 +108,9 @@ def test_oscillator_ode_discipline_trajectory() -> None:
 
     out = oscillator_discipline.execute()
     analytical_position = sin(2 * times) / 2
-    assert allclose(out["position_trajectory"], analytical_position)
+    assert allclose(out["position"], analytical_position)
     analytical_velocity = cos(2 * times)
-    assert allclose(out["velocity_trajectory"], analytical_velocity)
+    assert allclose(out["velocity"], analytical_velocity)
 
 
 def test_oscillator_different_initial_condition() -> None:
@@ -143,13 +135,136 @@ def test_oscillator_different_initial_condition() -> None:
         phase += pi
 
     out = oscillator_discipline.execute({
-        "position": initial_position,
-        "velocity": initial_velocity,
+        "initial_position": initial_position,
+        "initial_velocity": initial_velocity,
     })
     analytical_position = sin(omega * times + phase) * amplitude
     analytical_velocity = cos(omega * times + phase) * omega * amplitude
-    assert allclose(out["position_trajectory"], analytical_position)
-    assert allclose(out["velocity_trajectory"], analytical_velocity)
+    assert allclose(out["position"], analytical_position)
+    assert allclose(out["velocity"], analytical_velocity)
+
+
+def test_ode_discipline_design_variable() -> None:
+    """Test an ODEDiscipline with a design variable."""
+    initial_time = array([0.0])
+    initial_state = array([0.0])
+    parameter = array([1.0])
+    times = linspace(0.0, 10, 30)
+
+    def dynamics(time=initial_time, state=initial_state, parameter=parameter):
+        state_dot = parameter
+        return state_dot  # noqa: RET504
+
+    discipline = AutoPyDiscipline(py_func=dynamics)
+    discipline.set_cache(cache_type=CacheType.NONE)
+
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=discipline,
+        times=times,
+        time_name="time",
+        state_names={"state": "state_dot"},
+        final_state_names={"state": "final_state"},
+    )
+
+    first_solution = ode_discipline.execute()
+    assert isclose(first_solution["final_state"], 10.0)
+
+    second_solution = ode_discipline.execute({"parameter": array([2.0])})
+    assert isclose(second_solution["final_state"], 20.0)
+
+
+def test_ode_discipline_time_dependence() -> None:
+    initial_x = array([0.0])
+    times = array([0.0, 1.0])
+
+    def _fct(time=times[0], x=initial_x):
+        x_dot = time
+        return x_dot  # noqa: RET504
+
+    discipline = AutoPyDiscipline(py_func=_fct)
+    discipline.set_cache(cache_type=CacheType.NONE)
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=discipline,
+        times=times,
+        time_name="time",
+        state_names={"x": "x_dot"},
+        final_state_names={"x": "final_x"},
+    )
+
+    def exact_solution(t, init_x):
+        return init_x + 0.5 * (t[1] ** 2 - t[0] ** 2)
+
+    first_solution = ode_discipline.execute()
+    first_exact_sol = exact_solution(times, initial_x)
+    assert isclose(first_solution["final_x"], first_exact_sol)
+
+    new_times = array([-3.0, 4.0])
+    second_solution = ode_discipline.execute({
+        "initial_time": new_times[0],
+        "final_time": new_times[1],
+    })
+    second_exact_sol = exact_solution(new_times, initial_x)
+    assert isclose(second_solution["final_x"], second_exact_sol)
+
+
+def test_ode_trajectory_discipline_time_dependence() -> None:
+    initial_x = array([0.0])
+    times = linspace(0.0, 1.0, 20)
+
+    def _fct(time=times[0], x=initial_x):
+        x_dot = time
+        return x_dot  # noqa: RET504
+
+    discipline = AutoPyDiscipline(py_func=_fct)
+    discipline.set_cache(cache_type=CacheType.NONE)
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=discipline,
+        times=times,
+        time_name="time",
+        state_names={"x": "x_dot"},
+        state_trajectory_names={"x": "trajectory_x"},
+        return_trajectories=True,
+    )
+
+    def exact_solution(t, init_x):
+        return init_x + 0.5 * (t**2 - t[0] ** 2)
+
+    first_solution = ode_discipline.execute()
+    first_exact_sol = exact_solution(times, initial_x)
+    assert allclose(first_solution["trajectory_x"], first_exact_sol)
+
+    new_times = linspace(-3.0, 4.0, 50)
+    second_solution = ode_discipline.execute({"times": new_times})
+    second_exact_sol = exact_solution(new_times, initial_x)
+    assert allclose(second_solution["trajectory_x"], second_exact_sol)
+
+
+def test_ode_discipline_with_design_variable() -> None:
+    """Test an ODEDiscipline with a design variable."""
+    initial_time = array([0.0])
+    initial_state = array([0.0])
+    parameter = array([1.0])
+    times = linspace(0.0, 10, 30)
+
+    def dynamics(time=initial_time, state=initial_state, parameter=parameter):
+        state_dot = parameter
+        return state_dot  # noqa: RET504
+
+    discipline = AutoPyDiscipline(py_func=dynamics)
+
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=discipline,
+        times=times,
+        time_name="time",
+        state_names={"state": "state_dot"},
+        final_state_names={"state": "state_final"},
+    )
+
+    first_solution = ode_discipline.execute()
+    assert isclose(first_solution["state_final"], 10.0)
+
+    second_solution = ode_discipline.execute({"parameter": array([2.0])})
+    assert isclose(second_solution["state_final"], 20.0)
 
 
 def test_ode_discipline_bad_grammar() -> None:
@@ -167,13 +282,11 @@ def test_ode_discipline_bad_grammar() -> None:
         velocity_dot = -4 * position
         return position_dot, velocity_dot
 
-    oscillator = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
+    oscillator = AutoPyDiscipline(py_func=_rhs_function)
+    oscillator.set_cache(cache_type=CacheType.NONE)
     with pytest.raises(ValueError) as error_info:
         bad_input_ode_discipline = ODEDiscipline(  # noqa: F841
-            discipline=oscillator,
+            rhs_discipline=oscillator,
             state_names=["not_position", "not_velocity"],
             times=linspace(0.0, 10, 30),
         )
@@ -196,17 +309,15 @@ def test_ode_discipline_default_state_names() -> None:
         velocity_dot = -4 * position
         return position_dot, velocity_dot
 
-    oscillator = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
+    oscillator = AutoPyDiscipline(py_func=_rhs_function)
+    oscillator.set_cache(cache_type=CacheType.NONE)
 
     ode_discipline = ODEDiscipline(  # noqa: F841
-        discipline=oscillator,
+        rhs_discipline=oscillator,
         times=linspace(0.0, 10, 30),
     )
 
-    input_keys = ode_discipline.io.input_grammar
+    input_keys = ode_discipline.input_grammar.names
     assert (key in input_keys for key in ("time", "position", "velocity"))
 
 
@@ -224,35 +335,36 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
         return b_dot, a_dot  # noqa: RET504
 
     discipline = AutoPyDiscipline(py_func=_fct)
+    discipline.set_cache(cache_type=CacheType.NONE)
 
     ode_discipline_1 = ODEDiscipline(
-        discipline=discipline,
+        rhs_discipline=discipline,
         times=times,
         state_names={"a": "a_dot", "b": "b_dot"},
-        ode_solver_name="RK45",
+        ode_solver_name="DOP853",
         return_trajectories=False,
     )
 
     res_ode_1 = ode_discipline_1.execute()
-    assert_allclose(res_ode_1["a_final"], 1.0)
-    assert_allclose(res_ode_1["b_final"], -1.0)
+    assert_allclose(res_ode_1["final_a"], 1.0)
+    assert_allclose(res_ode_1["final_b"], -1.0)
 
     ode_discipline_2 = ODEDiscipline(
-        discipline=discipline,
+        rhs_discipline=discipline,
         times=times,
         state_names={"a": "a_dot", "b": "b_dot"},
-        ode_solver_name="RK45",
+        ode_solver_name="DOP853",
         return_trajectories=False,
     )
 
     res_ode_2 = ode_discipline_2.execute()
-    assert_allclose(res_ode_2["a_final"], 1.0)
-    assert_allclose(res_ode_2["b_final"], -1.0)
+    assert_allclose(res_ode_2["final_a"], 1.0)
+    assert_allclose(res_ode_2["final_b"], -1.0)
 
 
 def test_ode_discipline_missing_names_time_derivatives():
-    """Test the error message when the time derivatives are explicitly named, but
-    do not correspond to the outputs of the discipline describing the RHS."""
+    """Test the error message when the time derivatives are explicitly named,
+    but do not correspond to the outputs of the discipline describing the RHS."""
     times = array([0.0, 1.0])
 
     init_time = array([0.0])
@@ -265,13 +377,14 @@ def test_ode_discipline_missing_names_time_derivatives():
         return b_dot, a_dot  # noqa: RET504
 
     discipline = AutoPyDiscipline(py_func=_fct)
+    discipline.set_cache(cache_type=CacheType.NONE)
 
     with pytest.raises(ValueError, match=re.escape("are not names of outputs")):
         ODEDiscipline(
-            discipline=discipline,
+            rhs_discipline=discipline,
             times=times,
             state_names={"a": "c_dot", "b": "b_dot"},
-            ode_solver_name="RK45",
+            ode_solver_name="DOP853",
             return_trajectories=False,
         )
 
@@ -286,12 +399,11 @@ def test_ode_discipline_not_convergent():
         x_dot = x**2
         return x_dot  # noqa: RET504
 
-    discipline = AutoPyDiscipline(
-        py_func=_fct,
-    )
+    discipline = AutoPyDiscipline(py_func=_fct)
+    discipline.set_cache(cache_type=CacheType.NONE)
 
     ode_discipline = ODEDiscipline(
-        discipline=discipline,
+        rhs_discipline=discipline,
         times=times,
         state_names=["x"],
         ode_solver_name="RK45",
@@ -325,10 +437,9 @@ def test_jacobian():
     init_state_x = 1.0
     init_state_y = 0.0
     init_time = 0.0
-    final_time = 1.0
-    # _final_time = 10.0
+    final_time_ = 1.0
 
-    times = linspace(init_time, final_time, 30)
+    times = linspace(init_time, final_time_, 30)
     init_state_x_ = array([init_state_x])
     init_state_y_ = array([init_state_y])
 
@@ -341,13 +452,11 @@ def test_jacobian():
         jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
         return jacobian  # noqa: RET504
 
-    discipline = AutoPyDiscipline(
-        py_func=fct,
-        py_jac=jac_time_state,
-    )
+    discipline = AutoPyDiscipline(py_func=fct, py_jac=jac_time_state)
+    discipline.set_cache(cache_type=CacheType.NONE)
 
     ode_discipline = ODEDiscipline(
-        discipline=discipline,
+        rhs_discipline=discipline,
         state_names=["x", "y"],
         ode_solver_name="Radau",
         times=times,
@@ -385,11 +494,70 @@ def test_jacobian():
         return x, y
 
     res_ode = ode_discipline.execute()
-    time_final = times[-1]
-    x_exact, y_exact = exact_sol(time=time_final)
+    final_time = times[-1]
+    x_exact, y_exact = exact_sol(time=final_time)
 
-    assert_allclose(res_ode["x_final"], x_exact)
-    assert_allclose(res_ode["y_final"], y_exact)
+    assert_allclose(res_ode["final_x"], x_exact)
+    assert_allclose(res_ode["final_y"], y_exact)
+
+
+def test_jacobian_parameters():
+    omega = 1.0
+    init_state_x = 1.0
+    init_state_y = 0.0
+    init_time = 0.0
+    final_time_ = 1.0
+
+    times = linspace(init_time, final_time_, 30)
+    init_state_x_ = array([init_state_x])
+    init_state_y_ = array([init_state_y])
+
+    def fct(time=init_time, x=init_state_x_, y=init_state_y_, omega=omega):
+        x_dot = y
+        y_dot = -(omega**2) * x
+        return x_dot, y_dot  # noqa: RET504
+
+    def jac_time_state(time=init_time, x=init_state_x_, y=init_state_y_, omega=omega):
+        jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
+        return jacobian  # noqa: RET504
+
+    discipline = AutoPyDiscipline(py_func=fct)
+    discipline.set_cache(cache_type=CacheType.NONE)
+
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=discipline,
+        state_names=["x", "y"],
+        ode_solver_name="Radau",
+        times=times,
+        rtol=1e-12,
+        atol=1e-12,
+    )
+
+    new_omega = 4.0
+
+    def exact_sol(time):
+        if isclose(init_state_x, 0.0, atol=1e-12) and isclose(
+            init_state_y, 0.0, atol=1e-12
+        ):
+            x = 0.0
+            y = 0.0
+        elif isclose(init_state_x, 0.0, atol=1e-12):
+            factor = init_state_y / new_omega
+            x = factor * sin(new_omega * time)
+            y = factor * new_omega * cos(new_omega * time)
+        else:
+            phase = atan(-init_state_y / (new_omega * init_state_x))
+            factor = init_state_x / cos(phase)
+            x = factor * cos(new_omega * time + phase)
+            y = -factor * new_omega * sin(new_omega * time + phase)
+        return x, y
+
+    res_ode = ode_discipline.execute({"omega": array([new_omega])})
+    final_time = times[-1]
+    x_exact, y_exact = exact_sol(time=final_time)
+
+    assert_allclose(res_ode["final_x"], x_exact)
+    assert_allclose(res_ode["final_y"], y_exact)
 
 
 @pytest.mark.parametrize(
@@ -397,7 +565,7 @@ def test_jacobian():
     ["RK45", "RK23", "DOP853", "Radau", "BDF", "LSODA", "non_existing_algorithm"],
 )
 def test_all_ode_integration_algorithms(name_of_algorithm):
-    # times = linspace(0.0, 10.0, 30)
+    # times_eval = linspace(0.0, 10.0, 30)
     # omega = 1.0
     times = linspace(0.0, 0.001, 30)
     omega = 100.0
@@ -417,11 +585,8 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
         jacobian = array([[0.0, 0.0, 1.0], [0.0, -(omega**2), 0.0]])
         return jacobian  # noqa: RET504
 
-    discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=fct,
-        py_jac=jac,
-    )
+    discipline = AutoPyDiscipline(py_func=fct, py_jac=jac)
+    discipline.set_cache(cache_type=CacheType.NONE)
 
     def exact_sol(time):
         if isclose(init_state_x, 0.0, atol=1e-12) and isclose(
@@ -466,8 +631,8 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
             atol=1e-12,
         )
         res_ode = ode_discipline.execute()
-        assert_allclose(res_ode["x_final"], x_exact)
-        assert_allclose(res_ode["y_final"], y_exact)
+        assert_allclose(res_ode["final_x"], x_exact)
+        assert_allclose(res_ode["final_y"], y_exact)
 
 
 def test_ode_discipline_termination_event():
@@ -497,21 +662,17 @@ def test_ode_discipline_termination_event():
     def _exact_solution(times):
         return initial_position + times * times * gravity_acceleration / 2
 
-    free_fall_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
+    free_fall_discipline = AutoPyDiscipline(py_func=_rhs_function)
+    free_fall_discipline.set_cache(cache_type=CacheType.NONE)
 
-    termination_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function,
-    )
+    termination_discipline = AutoPyDiscipline(py_func=_termination_events_function)
+    termination_discipline.set_cache(cache_type=CacheType.NONE)
 
     ode_discipline = ODEDiscipline(
         free_fall_discipline,
         times=times,
         state_names=["position", "velocity"],
-        ode_solver_name="RK45",
+        ode_solver_name="DOP853",
         return_trajectories=True,
         termination_event_disciplines=(termination_discipline,),
     )
@@ -519,388 +680,8 @@ def test_ode_discipline_termination_event():
     res_ode = ode_discipline.execute()
     time_evaluation = res_ode["times"]
     exact_solution = _exact_solution(time_evaluation)
-    assert allclose(res_ode["position_trajectory"], exact_solution, rtol=1e-4)
-    assert isclose(res_ode["position_final"], 0.0, atol=1e-3)
-
-
-def test_ode_discipline_two_termination_events_1():
-    times = linspace(0.0, 20.0, 41)
-    initial_position = array([10.0])
-    initial_velocity = array([0.0])
-    initial_time = array([0.0])
-
-    gravity_acceleration = array([-9.81])
-
-    def _rhs_function(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        position_dot = velocity
-        velocity_dot = gravity_acceleration
-        return position_dot, velocity_dot
-
-    def _termination_events_function_1(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_1 = position
-        return termination_1  # noqa: RET504
-
-    def _termination_events_function_2(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_2 = 2 * initial_position - position
-        return termination_2  # noqa: RET504
-
-    def _exact_solution(times):
-        return initial_position + times * times * gravity_acceleration / 2
-
-    free_fall_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
-
-    termination_discipline_1 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_1,
-    )
-
-    termination_discipline_2 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_2,
-    )
-
-    ode_mdo_func = DisciplineAdapterGenerator(
-        discipline=free_fall_discipline
-    ).get_function(
-        input_names=["time", "position", "velocity"],
-        output_names=["position_dot", "velocity_dot"],
-    )
-
-    ode_mdo_termination_1 = DisciplineAdapterGenerator(
-        discipline=termination_discipline_1
-    ).get_function(
-        input_names=["time", "position", "velocity"], output_names=["termination_1"]
-    )
-
-    ode_mdo_termination_2 = DisciplineAdapterGenerator(
-        discipline=termination_discipline_2
-    ).get_function(
-        input_names=["time", "position", "velocity"], output_names=["termination_2"]
-    )
-
-    def func_time_state(time, state):
-        return ode_mdo_func.evaluate(concatenate((array([time]), state)))
-
-    def termination_1_time_state(time, state):
-        return ode_mdo_termination_1.evaluate(concatenate((array([time]), state)))
-
-    def termination_2_time_state(time, state):
-        return ode_mdo_termination_2.evaluate(concatenate((array([time]), state)))
-
-    ode_problem = ODEProblem(
-        func=func_time_state,
-        initial_state=concatenate((initial_position, initial_velocity)),
-        times=times,
-        event_functions=[termination_1_time_state, termination_2_time_state],
-    )
-
-    res_ode = ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="RK45",
-        rtol=1e-12,
-        atol=1e-12,
-    )
-
-    time_evaluation = res_ode.times
-    exact_solution = _exact_solution(time_evaluation)
-    assert allclose(res_ode.state_trajectories[0], exact_solution, rtol=1e-4)
-    assert isclose(res_ode.state_trajectories[0][-1], 0.0, atol=1e-3)
-
-
-def test_ode_discipline_two_termination_events_2():
-    times = linspace(0.0, 20.0, 41)
-    initial_position = array([10.0])
-    initial_velocity = array([0.0])
-    initial_time = array([0.0])
-
-    gravity_acceleration = array([-9.81])
-
-    def _rhs_function(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        position_dot = velocity
-        velocity_dot = gravity_acceleration
-        return position_dot, velocity_dot
-
-    def _termination_events_function_1(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_1 = position
-        return termination_1  # noqa: RET504
-
-    def _termination_events_function_2(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_2 = 2 * initial_position - position
-        return termination_2  # noqa: RET504
-
-    def _exact_solution(times):
-        return initial_position + times * times * gravity_acceleration / 2
-
-    free_fall_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
-
-    termination_discipline_1 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_1,
-    )
-
-    termination_discipline_2 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_2,
-    )
-
-    def make_func_from_adapter(adapter):
-        def func(time, state):
-            return adapter.evaluate(concatenate((array([time]), state)))
-
-        return func
-
-    ode_mdo_func = DisciplineAdapterGenerator(
-        discipline=free_fall_discipline
-    ).get_function(
-        input_names=["time", "position", "velocity"],
-        output_names=["position_dot", "velocity_dot"],
-    )
-
-    ode_mdo_termination_1 = DisciplineAdapterGenerator(
-        discipline=termination_discipline_1
-    ).get_function(
-        input_names=["time", "position", "velocity"], output_names=["termination_1"]
-    )
-
-    ode_mdo_termination_2 = DisciplineAdapterGenerator(
-        discipline=termination_discipline_2
-    ).get_function(
-        input_names=["time", "position", "velocity"], output_names=["termination_2"]
-    )
-
-    ode_problem = ODEProblem(
-        func=make_func_from_adapter(ode_mdo_func),
-        initial_state=concatenate((initial_position, initial_velocity)),
-        times=times,
-        event_functions=[
-            make_func_from_adapter(ode_mdo_termination_1),
-            make_func_from_adapter(ode_mdo_termination_2),
-        ],
-    )
-
-    res_ode = ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="RK45",
-        rtol=1e-12,
-        atol=1e-12,
-    )
-
-    time_evaluation = res_ode.times
-    exact_solution = _exact_solution(time_evaluation)
-    assert allclose(res_ode.state_trajectories[0], exact_solution, rtol=1e-4)
-    assert isclose(res_ode.state_trajectories[0][-1], 0.0, atol=1e-3)
-
-
-def test_ode_discipline_two_termination_events_3():
-    times = linspace(0.0, 20.0, 41)
-    initial_position = array([10.0])
-    initial_velocity = array([0.0])
-    initial_time = array([0.0])
-
-    gravity_acceleration = array([-9.81])
-
-    def _rhs_function(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        position_dot = velocity
-        velocity_dot = gravity_acceleration
-        return position_dot, velocity_dot
-
-    def _termination_events_function_1(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_1 = position
-        return termination_1  # noqa: RET504
-
-    def _termination_events_function_2(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_2 = 2 * initial_position - position
-        return termination_2  # noqa: RET504
-
-    def _exact_solution(times):
-        return initial_position + times * times * gravity_acceleration / 2
-
-    free_fall_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
-
-    termination_discipline_1 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_1,
-    )
-
-    termination_discipline_2 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_2,
-    )
-
-    def make_func_from_adapter(adapter):
-        def func(time, state):
-            return adapter.evaluate(concatenate((array([time]), state)))
-
-        return func
-
-    ode_mdo_func = DisciplineAdapterGenerator(
-        discipline=free_fall_discipline
-    ).get_function(
-        input_names=["time", "position", "velocity"],
-        output_names=["position_dot", "velocity_dot"],
-    )
-
-    ode_mdo_termination_1 = DisciplineAdapterGenerator(
-        discipline=termination_discipline_1
-    ).get_function(
-        input_names=["time", "position", "velocity"], output_names=["termination_1"]
-    )
-
-    ode_mdo_termination_2 = DisciplineAdapterGenerator(
-        discipline=termination_discipline_2
-    ).get_function(
-        input_names=["time", "position", "velocity"], output_names=["termination_2"]
-    )
-
-    adapter_events = [ode_mdo_termination_1, ode_mdo_termination_2]
-
-    ode_problem = ODEProblem(
-        func=make_func_from_adapter(ode_mdo_func),
-        initial_state=concatenate((initial_position, initial_velocity)),
-        times=times,
-        event_functions=[make_func_from_adapter(event) for event in adapter_events],
-    )
-
-    res_ode = ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="RK45",
-        rtol=1e-12,
-        atol=1e-12,
-    )
-
-    time_evaluation = res_ode.times
-    exact_solution = _exact_solution(time_evaluation)
-    assert allclose(res_ode.state_trajectories[0], exact_solution, rtol=1e-4)
-    assert isclose(res_ode.state_trajectories[0][-1], 0.0, atol=1e-3)
-
-
-def test_ode_discipline_two_termination_events_4():
-    times = linspace(0.0, 20.0, 41)
-    initial_position = array([10.0])
-    initial_velocity = array([0.0])
-    initial_time = array([0.0])
-
-    gravity_acceleration = array([-9.81])
-
-    def _rhs_function(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        position_dot = velocity
-        velocity_dot = gravity_acceleration
-        return position_dot, velocity_dot
-
-    def _termination_events_function_1(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_1 = position
-        return termination_1  # noqa: RET504
-
-    def _termination_events_function_2(
-        time=initial_time,
-        position=initial_position,
-        velocity=initial_velocity,
-    ):
-        termination_2 = 2 * initial_position - position
-        return termination_2  # noqa: RET504
-
-    def _exact_solution(times):
-        return initial_position + times * times * gravity_acceleration / 2
-
-    free_fall_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
-
-    termination_discipline_1 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_1,
-    )
-
-    termination_discipline_2 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_2,
-    )
-
-    def make_func_from_discipline(disc: Discipline):
-        adapter = DisciplineAdapterGenerator(discipline=disc).get_function(
-            input_names=disc.io.input_grammar,
-            output_names=disc.io.output_grammar,
-        )
-
-        def func(time, state):
-            return adapter.evaluate(concatenate((array([time]), state)))
-
-        return func
-
-    disc_events = [termination_discipline_1, termination_discipline_2]
-
-    ode_problem = ODEProblem(
-        func=make_func_from_discipline(free_fall_discipline),
-        initial_state=concatenate((initial_position, initial_velocity)),
-        times=times,
-        event_functions=[make_func_from_discipline(event) for event in disc_events],
-    )
-
-    res_ode = ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="RK45",
-        rtol=1e-12,
-        atol=1e-12,
-    )
-
-    time_evaluation = res_ode.times
-    exact_solution = _exact_solution(time_evaluation)
-    assert allclose(res_ode.state_trajectories[0], exact_solution, rtol=1e-4)
-    assert isclose(res_ode.state_trajectories[0][-1], 0.0, atol=1e-3)
+    assert allclose(res_ode["position"], exact_solution, rtol=1e-4)
+    assert isclose(res_ode["final_position"], 0.0, atol=1e-3)
 
 
 def test_ode_discipline_two_termination_events_6():
@@ -939,26 +720,20 @@ def test_ode_discipline_two_termination_events_6():
     def _exact_solution(times):
         return initial_position + times * times * gravity_acceleration / 2
 
-    free_fall_discipline = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_rhs_function,
-    )
+    free_fall_discipline = AutoPyDiscipline(py_func=_rhs_function)
+    free_fall_discipline.set_cache(cache_type=CacheType.NONE)
 
-    termination_discipline_1 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_1,
-    )
+    termination_discipline_1 = AutoPyDiscipline(py_func=_termination_events_function_1)
+    termination_discipline_1.set_cache(cache_type=CacheType.NONE)
 
-    termination_discipline_2 = create_discipline(
-        "AutoPyDiscipline",
-        py_func=_termination_events_function_2,
-    )
+    termination_discipline_2 = AutoPyDiscipline(py_func=_termination_events_function_2)
+    termination_discipline_2.set_cache(cache_type=CacheType.NONE)
 
     ode_discipline = ODEDiscipline(
         free_fall_discipline,
         times=times,
         state_names=["position", "velocity"],
-        ode_solver_name="RK45",
+        ode_solver_name="DOP853",
         return_trajectories=True,
         termination_event_disciplines=(
             termination_discipline_1,
@@ -969,8 +744,8 @@ def test_ode_discipline_two_termination_events_6():
     res_ode = ode_discipline.execute()
     time_evaluation = res_ode["times"]
     exact_solution = _exact_solution(time_evaluation)
-    assert allclose(res_ode["position_trajectory"], exact_solution, rtol=1e-4)
-    assert isclose(res_ode["position_final"], 0.0, atol=1e-3)
+    assert allclose(res_ode["position"], exact_solution, rtol=1e-4)
+    assert isclose(res_ode["final_position"], 0.0, atol=1e-3)
 
 
 def test_serialization(tmp_wd):
@@ -981,4 +756,40 @@ def test_serialization(tmp_wd):
     to_pickle(discipline_1, "discipline.pkl")
     discipline_2 = from_pickle("discipline.pkl")
     res_ode_2 = discipline_2.execute()
-    assert allclose(res_ode_1["position_trajectory"], res_ode_2["position_trajectory"])
+    assert allclose(res_ode_1["position"], res_ode_2["position"])
+
+
+def test_jacobian_parameters_simple():
+    a = 1.0
+    x_0 = array([1.0])
+    t_0 = 0.0
+    t_f = 2.0
+
+    def fct(t=t_0, x=x_0, a=a):
+        x_dot = array([a * x])
+        return x_dot  # noqa: RET504
+
+    def jacobian(t=t_0, x=x_0, a=a):
+        jac = concatenate((t * 0, a, x)).reshape((1, -1))
+        return jac  # noqa: RET504
+
+    rhs_discipline = AutoPyDiscipline(py_func=fct, py_jac=jacobian)
+
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=rhs_discipline,
+        state_names=["x"],
+        time_name="t",
+        ode_solver_name="Radau",
+        times=array([0.0, 1.0]),
+    )
+
+    def _exact_sol(tt, x_0):
+        return x_0 * exp(a * tt)
+
+    res_ode = ode_discipline.execute({
+        "initial_x": x_0,
+        "initial_t": t_0,
+        "final_t": t_f,
+    })
+    exact_solution = _exact_sol(t_f, x_0)
+    assert isclose(res_ode["final_x"], exact_solution, rtol=1e-4)

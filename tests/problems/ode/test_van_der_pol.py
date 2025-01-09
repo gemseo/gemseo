@@ -26,7 +26,6 @@ from numpy import array
 from numpy.linalg import norm
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
-from gemseo.algos.ode.rhs_jacobian_checking import RHSJacobianChecking
 from gemseo.problems.ode.van_der_pol import VanDerPol
 
 
@@ -64,8 +63,7 @@ def test_run(algo_name) -> None:
 def test_van_der_pol_jacobian_explicit_expression() -> None:
     """Validate the analytical expression of the jacobian."""
     problem = VanDerPol()
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    checking.function_of_state.check_grad(array([0.0, 0.0]))
+    problem.check_jacobian(array([0.0, 0.0]))
     ODESolverLibraryFactory().execute(problem, algo_name="Radau")
     assert problem.result.algorithm_has_converged
 

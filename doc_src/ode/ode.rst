@@ -9,6 +9,7 @@
 ..
    Contributors:
           :author: Isabelle Santos
+          :author: Giulio Gargantini
 
 Ordinary Differential Equations (ODE)
 -------------------------------------
@@ -16,7 +17,7 @@ Ordinary Differential Equations (ODE)
 
 .. seealso::
 
-   `The examples related to ODE resolution. <../examples/ode/index.html>`__
+   `The examples related to ODE resolution. <examples/ode/index.html>`__
 
 
 An :class:`.ODEProblem` represents a first order ordinary differential equation (ODE) with
@@ -81,7 +82,7 @@ interval :math:`[t_0,\ t_f]`.
 
 .. figure:: /_images/algorithms/ODEProblem_ODEResult_attributes_description.png
 
-    Correspondence between the elements of an ordinary differential equation with initial
+    Mapping between the elements of an ordinary differential equation with initial
     conditions and the attributes of the :class:`.ODEProblem` and :class:`.ODEResult` classes.
 
 
@@ -101,10 +102,10 @@ The classes described by the ODE module are as such:
     class "ODESolverLibraryFactory" as gemseo.algos.ode.factory.ODESolverLibraryFactory {
       execute(problem: ODEProblem, algo_name: str) -> ODEResult
     }
-    class "ScipyODEAlgos" as gemseo.algos.ode.scipy_ode.scipy_ode.ScipyODEAlgos {
+    class "ScipyODEAlgos" as gemseo.algos.ode.scipy_ode.ScipyODEAlgos {
 
     }
-    gemseo.algos.ode.scipy_ode.scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary
+    gemseo.algos.ode.scipy_ode.ScipyODEAlgos --|> gemseo.algos.ode.base_ode_solver_library.BaseODESolverLibrary
     gemseo.algos.ode.ode_result.ODEResult --* gemseo.algos.ode.ode_problem.ODEProblem : result
     gemseo.algos.ode.base_ode_solver_lib.BaseODESolverLibrary --* gemseo.algos.ode.factory.ODESolverLibraryFactory
     @enduml
@@ -121,7 +122,7 @@ The submodules are organized in the following fashion.
     set namespaceSeparator none
     package "gemseo.algos.ode" as gemseo.algos.ode {
     }
-    package "gemseo.algos.ode.scipy_ode.scipy_ode" as gemseo.algos.ode.scipy_ode.scipy_ode {
+    package "gemseo.algos.ode.scipy_ode" as gemseo.algos.ode.scipy_ode {
     }
     package "gemseo.algos.ode.ode_problem" as gemseo.algos.ode.ode_problem {
     }
@@ -131,8 +132,8 @@ The submodules are organized in the following fashion.
     }
     package "gemseo.algos.ode.factory" as gemseo.algos.ode.factory {
     }
-    gemseo.algos.ode.scipy_ode.scipy_ode --> gemseo.algos.ode.ode_result
-    gemseo.algos.ode.scipy_ode.scipy_ode --> gemseo.algos.ode.base_ode_solver_library
+    gemseo.algos.ode.scipy_ode --> gemseo.algos.ode.ode_result
+    gemseo.algos.ode.scipy_ode --> gemseo.algos.ode.base_ode_solver_library
     gemseo.algos.ode.ode_problem --> gemseo.algos.ode.ode_result
     gemseo.algos.ode.base_ode_solver_lib --> gemseo.algos.ode.ode_problem
     gemseo.algos.ode.factory --> gemseo.algos.ode.ode_problem

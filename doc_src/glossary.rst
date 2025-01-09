@@ -390,3 +390,9 @@ Glossary
 
     Newton-Raphson method
         A :term:`root finding` method that uses successive linear approximations of the function of interest
+
+    ODE
+        Ordinary Differential Equation
+
+    IVP
+        Initial Value Problem

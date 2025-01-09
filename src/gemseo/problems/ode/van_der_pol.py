@@ -99,7 +99,7 @@ class VanDerPol(ODEProblem):
             use_jacobian: Whether to use the analytical expression of the Jacobian.
                 If ``False``, use finite differences to estimate the Jacobian.
             state: The state vector of the system.
-            times: The initial and final times.
+            times: The initial and final times_eval.
         """  # noqa: D205 D212
         self.__mu = mu
         initial_state = array([
@@ -111,9 +111,10 @@ class VanDerPol(ODEProblem):
         ])
         super().__init__(
             func=self._func,
-            jac_wrt_state=self._jac_wrt_state if use_jacobian else None,
+            jac_function_wrt_state=self._jac_wrt_state if use_jacobian else None,
             initial_state=initial_state,
             times=times,
+            solve_at_algorithm_times=True,
         )
 
     def _func(self, time: float, state: RealArray) -> RealArray:

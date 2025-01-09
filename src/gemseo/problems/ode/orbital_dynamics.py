@@ -74,7 +74,6 @@ from numpy import arctan
 from numpy import array
 from numpy import cos
 from numpy import floor
-from numpy import ndarray
 from numpy import sin
 from numpy import tan
 from numpy import zeros
@@ -83,9 +82,8 @@ from scipy.optimize import fsolve
 from gemseo.algos.ode.ode_problem import ODEProblem
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
+    from collections.abc import Mapping
 
-    from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
 _default_times = array([(0, 0.5)])
@@ -118,7 +116,7 @@ def _compute_rhs(
     position_y_dot = velocity_y
     velocity_x_dot = -position_x / den
     velocity_y_dot = -position_y / den
-    return (position_x_dot, position_y_dot, velocity_x_dot, velocity_y_dot)  # noqa: RET504
+    return position_x_dot, position_y_dot, velocity_x_dot, velocity_y_dot  # noqa: RET504
 
 
 def _compute_rhs_jacobian(
@@ -127,7 +125,7 @@ def _compute_rhs_jacobian(
     position_y: float = 0.0,
     velocity_x: float = 1.0,
     velocity_y: float = 3.0,
-) -> NumberArray:
+) -> RealArray:
     """Compute the Jacobian of the right-hand side of the ODE.
 
     Args:
@@ -149,6 +147,49 @@ def _compute_rhs_jacobian(
     jac[3, 1] = (-(position_x**2) + 2 * position_y**2) / den
     jac[2, 1] = jac[3, 0] = (3 * position_x * position_y) / den
     return jac
+
+
+class KeplerEquationSolver:
+    """A class to solve the Kepler equation."""
+
+    __eccentricity: float
+    """The eccentricity of the particle trajectory."""
+
+    __mean_anomaly: float
+    """The mean anomaly."""
+
+    def __init__(self, eccentricity: float) -> None:
+        """
+        Args:
+            eccentricity: The eccentricity of the particle trajectory.
+        """  # noqa: D205 D212
+        self.__eccentricity = eccentricity
+        self.__mean_anomaly = 0.0
+
+    def __compute_residual_kepler(self, e: float) -> float:
+        """Compute the Kepler equation in the residual form.
+
+        Args:
+             e: The eccentric anomaly.
+
+        Returns:
+              The residual of the Kepler equation.
+        """
+        return e - self.__eccentricity * sin(e) - self.__mean_anomaly
+
+    def __call__(
+        self, mean_anomaly: float
+    ) -> tuple[RealArray, Mapping[str, RealArray], int, str]:
+        """Solve the Kepler equation.
+
+        Args:
+            mean_anomaly: The mean anomaly.
+
+        Returns:
+            The result of the root finding algorithm.
+        """
+        self.__mean_anomaly = mean_anomaly
+        return fsolve(self.__compute_residual_kepler, x0=array([mean_anomaly]))
 
 
 class OrbitalDynamics(ODEProblem):
@@ -197,50 +238,10 @@ class OrbitalDynamics(ODEProblem):
     __eccentricity: float
     """The eccentricity of the particle trajectory."""
 
-    class _KeplerEquationSolver:
-        """A class to solve the Kepler equation."""
-
-        __eccentricity: float
-        """The eccentricity of the particle trajectory."""
-
-        __mean_anomaly: float
-        """The mean anomaly."""
-
-        def __init__(self, eccentricity: float) -> None:
-            """
-            Args:
-                eccentricity: The eccentricity of the particle trajectory.
-            """  # noqa: D205 D212
-            self.__eccentricity = eccentricity
-            self.__mean_anomaly = 0.0
-
-        def __kepler_residual_function(self, e: float) -> float:
-            """Compute the Kepler equation in the residual form.
-
-            Args:
-                 e: The eccentric anomaly.
-
-            Returns:
-                  The residual of the Kepler equation.
-            """
-            return e - self.__eccentricity * sin(e) - self.__mean_anomaly
-
-        def __call__(self, mean_anomaly: float) -> tuple[ndarray, dict, int, str]:
-            """Solve the Kepler equation.
-
-            Args:
-                mean_anomaly: The mean anomaly.
-
-            Returns:
-                The result of the root finding algorithm.
-            """
-            self.__mean_anomaly = mean_anomaly
-            return fsolve(self.__kepler_residual_function, x0=array([mean_anomaly]))
-
     def __init__(
         self,
         eccentricity: float = 0.5,
-        times: ArrayLike = (0.0, 0.5),
+        times: RealArray = (0.0, 0.5),
     ) -> None:
         """
         Args:
@@ -254,10 +255,10 @@ class OrbitalDynamics(ODEProblem):
             sqrt((1 + eccentricity) / (1 - eccentricity)),
         ])
         self.__eccentricity = eccentricity
-        self.__kepler_equation_solver = self._KeplerEquationSolver(eccentricity)
+        self.__kepler_equation_solver = KeplerEquationSolver(eccentricity)
         super().__init__(
             func=self._func,
-            jac_wrt_state=self._jac_wrt_state,
+            jac_function_wrt_state=self._jac_wrt_state,
             initial_state=initial_state,
             times=times,
         )
@@ -272,11 +273,11 @@ class OrbitalDynamics(ODEProblem):
         x, y, vx, vy = state.T
         return array(_compute_rhs_jacobian(time, x, y, vx, vy))
 
-    def analytic_solution(self, times: NumberArray):
+    def compute_analytic_solution(self, times: RealArray):
         """Compute the analytic solution of the Kepler problem for an elliptic orbit.
 
         Args:
-            times: The times.
+            times: The times_eval.
 
         Returns:
             The x- and y- positions of the mass.

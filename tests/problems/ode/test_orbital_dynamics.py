@@ -30,11 +30,10 @@ from numpy import pi
 from numpy import sqrt
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
-from gemseo.algos.ode.rhs_jacobian_checking import RHSJacobianChecking
 from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
 
 if TYPE_CHECKING:
-    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 
 @pytest.mark.parametrize(
@@ -65,23 +64,23 @@ def test_orbital(algo_name, eccentricity, atol) -> None:
     times = linspace(0, 7, 50)
     problem = OrbitalDynamics(eccentricity=eccentricity, times=times)
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, rtol=1.0e-5)
-    x_exact, y_exact = problem.analytic_solution(times)
+    x_exact, y_exact = problem.compute_analytic_solution(times)
 
     def check_orbital_constants(
         tt, xx, yy, vvx=None, vvy=None, algo_name_msg="Analytic"
     ):
         """"""
 
-        def radius(x: float | NumberArray, y: float | NumberArray):
+        def radius(x: RealArray, y: RealArray):
             return sqrt(x * x + y * y)
 
-        def velocity(vx: float | NumberArray, vy: float | NumberArray):
+        def velocity(vx: RealArray, vy: RealArray):
             return sqrt(vx * vx + vy * vy)
 
-        def vis_viva(x: float | NumberArray, y: float | NumberArray):
+        def vis_viva(x: RealArray, y: RealArray):
             return sqrt(2 / radius(x, y) - 1)
 
-        def energy(r: float | NumberArray, v: float | NumberArray):
+        def energy(r: RealArray, v: RealArray):
             return v * v / 2 - 1.0 / r
 
         def check_vis_viva(x_vector, y_vector, vx_vector, vy_vector):
@@ -154,5 +153,4 @@ def test_orbital_jacobian_explicit_expression(eccentricity) -> None:
         0.0,
         sqrt((1 + eccentricity) / (1 - eccentricity)),
     ])
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    checking.function_of_state.check_grad(state, step=1e-7, error_max=1e-6)
+    problem.check_jacobian(state, step=1e-7, error_max=1e-6)

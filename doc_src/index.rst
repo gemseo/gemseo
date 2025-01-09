@@ -390,7 +390,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
         `SciPy <https://scipy.org/>`_.
         +++
 
-        :bdg-link-secondary-line:`Read more <ode/ode.html>`
+        :bdg-link-secondary-line:`Read more <ode/index.html>`
         :bdg-link-secondary-line:`Examples <examples/ode/index.html>`
         :bdg-link-secondary-line:`Algorithms <algorithms/ode_algos.html>`
 

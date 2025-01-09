@@ -6,24 +6,20 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-.. _user_guide:
+..
+   Contributors:
+         :author: Isabelle Santos
+         :author: Giulio Gargantini
 
-==========
-User guide
-==========
+:parenttoc: True
+.. _ode:
+
+Ordinary differential equations
+-------------------------------
 
 .. toctree::
    :maxdepth: 2
 
-   gemseo_easier
-   main_concepts
-   optimization
-   doe
-   mdo
-   machine_learning/index
-   surrogate
-   uncertainty/index
-   ode/index
-   scalable
-   algorithms/index
-   problems/index
+   Introduction <introduction>
+   ODEProblem <ode_problem>
+   ODEDiscipline <ode_discipline>
