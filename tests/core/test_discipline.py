@@ -38,6 +38,7 @@ from numpy import ndarray
 from numpy import ones
 from numpy.linalg import norm
 
+from gemseo import create_discipline
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.chains.chain import MDOChain
@@ -51,6 +52,9 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problems.mdo.sellar.variables import X_1
+from gemseo.problems.mdo.sellar.variables import X_SHARED
+from gemseo.problems.mdo.sellar.variables import Y_2
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -480,6 +484,19 @@ def test_check_jacobian_2() -> None:
     disc.jac = {"y": {"x": array([[0.0]])}}
     with pytest.raises(ValueError):
         disc.linearize({"x": x}, compute_all_jacobians=True)
+
+
+def test_check_jacobian_input_data() -> None:
+    sellar_1 = create_discipline("Sellar1")
+    input_data = {
+        X_1: array([3.0]),
+        X_SHARED: array([3.0, 3.0]),
+        Y_2: array([3.0]),
+    }
+    sellar_1.check_jacobian(
+        input_data=input_data,
+        input_names=[Y_2],
+    )
 
 
 def test_check_jacobian_parallel_fd() -> None:

@@ -134,17 +134,23 @@ class DisciplineJacApprox:
         self,
         output_names: Sequence[str],
         input_names: Sequence[str],
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Create the Jacobian approximation class.
 
         Args:
             input_names: The names of the inputs used to differentiate the outputs.
             output_names: The names of the outputs to be differentiated.
+            input_data: The input data for the Jacobian approximation.
 
         Raises:
             ValueError: If the Jacobian approximation method is unknown.
         """
-        self.func = self.generator.get_function(input_names, output_names)
+        self.func = self.generator.get_function(
+            input_names,
+            output_names,
+            input_data or None,
+        )
         self.approximator = GradientApproximatorFactory().create(
             self.approx_method,
             self.func.evaluate,
@@ -260,6 +266,7 @@ class DisciplineJacApprox:
         output_names: Iterable[str],
         input_names: Iterable[str],
         x_indices: Sequence[int] = (),
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> dict[str, dict[str, ndarray]]:
         """Approximate the Jacobian.
 
@@ -269,11 +276,14 @@ class DisciplineJacApprox:
             x_indices: The components of the input vector
                 to be used for the differentiation.
                 If empty, use all the components.
+            input_data: The input data needed to approximate the Jacobian
+                according to the discipline input grammar.
+                If empty, use the :attr:`.Discipline.default_input_data`.
 
         Returns:
             The approximated Jacobian.
         """
-        self._create_approximator(output_names, input_names)
+        self._create_approximator(output_names, input_names, input_data)
 
         if self.auto_steps and all(key in self.auto_steps for key in input_names):
             step = (
@@ -340,6 +350,7 @@ class DisciplineJacApprox:
         indices: Mapping[
             str, int | Sequence[int] | Ellipsis | slice
         ] = READ_ONLY_EMPTY_DICT,
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
@@ -381,6 +392,9 @@ class DisciplineJacApprox:
                 If a variable name is missing, consider all its components.
                 If ``None``,
                 consider all the components of all the ``inputs`` and ``outputs``.
+            input_data: The input data needed to execute the discipline
+                according to the discipline input grammar.
+                If empty, use the :attr:`.Discipline.default_input_data`.
 
         Returns:
             Whether the analytical Jacobian is correct.
@@ -404,8 +418,11 @@ class DisciplineJacApprox:
         analytic_jacobian = analytic_jacobian or self.discipline.jac
 
         if not reference_jacobian_path or save_reference_jacobian:
+            for input_name in tuple(input_data):
+                if input_name not in self.discipline.input_grammar.names:
+                    del input_data[input_name]
             approximated_jacobian = self.compute_approx_jac(
-                output_names, input_names, input_indices
+                output_names, input_names, input_indices, input_data
             )
         else:
             with Path(reference_jacobian_path).open("rb") as infile:

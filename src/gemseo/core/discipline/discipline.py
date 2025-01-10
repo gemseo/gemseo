@@ -667,6 +667,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             reference_jacobian_path=reference_jacobian_path,
             save_reference_jacobian=save_reference_jacobian,
             indices=indices,
+            input_data=input_data,
         )
 
     def _get_differentiated_io(
