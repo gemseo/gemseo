@@ -157,7 +157,7 @@ typing-extensions==4.6.1
     #   pydantic-core
 wcwidth==0.2.13
     # via prettytable
-wrapt==1.17.1
+wrapt==1.17.2
     # via pandera
 xdsmjs==1.0.0
     # via gemseo (pyproject.toml)
