@@ -1158,6 +1158,10 @@ class DesignSpace:
                 out = out.astype(current_x_dtype, copy=False)
 
         norm_inds = self.__norm_inds
+        if norm_inds.size == 0:
+            # There is no variable index to normalize.
+            return out
+
         if minus_lb:
             out[..., norm_inds] -= self.__lower_bounds_array[norm_inds]
 
@@ -1312,16 +1316,17 @@ class DesignSpace:
         if out.dtype != current_x_dtype:
             out = out.astype(current_x_dtype, copy=False)
 
-        if isinstance(out, sparse_classes):
-            # Construct a mask to only scale the required columns
-            column_mask = isin(out.indices, norm_inds)
-            # Scale the corresponding coefficients
-            out.data[column_mask] *= self._norm_factor[out.indices][column_mask]
-        else:
-            out[..., norm_inds] *= self._norm_factor[norm_inds]
+        if norm_inds.size:
+            if isinstance(out, sparse_classes):
+                # Construct a mask to only scale the required columns
+                column_mask = isin(out.indices, norm_inds)
+                # Scale the corresponding coefficients
+                out.data[column_mask] *= self._norm_factor[out.indices][column_mask]
+            else:
+                out[..., norm_inds] *= self._norm_factor[norm_inds]
 
-        if minus_lb:
-            out[..., norm_inds] += lower_bounds[norm_inds]
+            if minus_lb:
+                out[..., norm_inds] += lower_bounds[norm_inds]
 
         if not self.__no_integer:
             self.round_vect(out, copy=False)

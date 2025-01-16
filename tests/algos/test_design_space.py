@@ -1874,3 +1874,12 @@ def test_eq(variables) -> None:
         other.add_variable(name, size=size, value=value)
 
     assert space != other != space
+
+
+def test_normalize_vect_with_inout_argument() -> None:
+    """Check the normalization with the output array passed as input."""
+    space = DesignSpace()
+    space.add_variable("x", type_="integer", lower_bound=-1, upper_bound=2)
+    inout = array([0])
+    space.normalize_vect(array([0]), out=inout)
+    assert_array_equal(inout, array([0]))
