@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import NamedTuple
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class Variable(NamedTuple):
@@ -37,11 +37,11 @@ class Variable(NamedTuple):
     size: int
     """The size of the variable."""
 
-    lower_bound: NDArray[float]
+    lower_bound: RealArray
     """The lower bound of the variable."""
 
-    upper_bound: NDArray[float]
+    upper_bound: RealArray
     """The upper bound of the variable."""
 
-    default_value: NDArray[float]
+    default_value: RealArray
     """The default_value of the variable."""

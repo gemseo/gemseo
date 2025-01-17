@@ -43,7 +43,7 @@ from gemseo.problems.mdo.scalable.parametric.core.variable_names import (
 )
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class MainDiscipline(BaseDiscipline):
@@ -62,13 +62,13 @@ class MainDiscipline(BaseDiscipline):
     __c_i_names: list[str]
     r"""The names of the constraint variables :math:`c_1,\ldots,c_N`."""
 
-    __t_i: tuple[NDArray[float]]
+    __t_i: tuple[RealArray]
     r"""The threshold vectors :math:`t_1,\ldots,t_N`."""
 
     def __init__(
         self,
-        *t_i: NDArray[float],
-        **default_input_values: NDArray[float],
+        *t_i: RealArray,
+        **default_input_values: RealArray,
     ) -> None:
         r"""
         Args:
@@ -105,10 +105,10 @@ class MainDiscipline(BaseDiscipline):
 
     def __call__(
         self,
-        x_0: NDArray[float] | None = None,
+        x_0: RealArray | None = None,
         compute_jacobian: bool = False,
-        **y_i: NDArray[float],
-    ) -> dict[str, NDArray[float] | dict[str, NDArray[float]]]:
+        **y_i: RealArray,
+    ) -> dict[str, RealArray | dict[str, RealArray]]:
         r"""Compute objective and constraints or their derivatives.
 
         Args:
