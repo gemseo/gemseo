@@ -39,8 +39,7 @@ from gemseo.problems.mdo.scalable.parametric.disciplines.base_discipline import 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from numpy.typing import NDArray
-
+    from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
 
@@ -61,8 +60,8 @@ class MainDiscipline(BaseDiscipline):
 
     def __init__(
         self,
-        *t_i: NDArray[float],
-        **default_input_values: NDArray[float],
+        *t_i: RealArray,
+        **default_input_values: RealArray,
     ) -> None:
         r"""
         Args:

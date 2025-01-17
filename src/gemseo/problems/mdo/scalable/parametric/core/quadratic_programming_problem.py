@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import NamedTuple
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class QuadraticProgrammingProblem(NamedTuple):
@@ -35,20 +35,20 @@ class QuadraticProgrammingProblem(NamedTuple):
     constraints :math:`Ax-b <= 0`.
     """
 
-    Q: NDArray[float]
+    Q: RealArray
     r"""The matrix :math:`Q` of the objective function :math:`0.5x^TQx + c^Tx + d`.
 
     This matrix must be symmetric.
     """
 
-    c: NDArray[float]
+    c: RealArray
     r"""The matrix :math:`c` of the objective function :math:`0.5x^TQx + c^Tx + d`."""
 
-    d: NDArray[float]
+    d: RealArray
     r"""The matrix :math:`d` of the objective function :math:`0.5x^TQx + c^Tx + d`."""
 
-    A: NDArray[float]
+    A: RealArray
     r"""The matrix :math:`A` of the constraint function :math:`Ax-b`."""
 
-    b: NDArray[float]
+    b: RealArray
     r"""The matrix :math:`b` of the constraint function :math:`Ax-b`."""

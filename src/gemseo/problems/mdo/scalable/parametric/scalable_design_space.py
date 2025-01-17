@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class ScalableDesignSpace(ParameterSpace):
@@ -57,7 +57,7 @@ class ScalableDesignSpace(ParameterSpace):
             ScalableDisciplineSettings
         ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
         d_0: int = DEFAULT_D_0,
-        names_to_default_values: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
+        names_to_default_values: Mapping[str, RealArray] = READ_ONLY_EMPTY_DICT,
         add_uncertain_variables: bool = False,
     ) -> None:
         r"""Args:

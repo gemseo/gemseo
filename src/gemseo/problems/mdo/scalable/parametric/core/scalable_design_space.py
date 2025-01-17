@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class ScalableDesignSpace:
@@ -99,7 +99,7 @@ class ScalableDesignSpace:
         self,
         name: str,
         size: int,
-        default_value: NDArray[float] | None,
+        default_value: RealArray | None,
     ) -> None:
         """Add a variable to the design space.
 

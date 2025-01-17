@@ -69,7 +69,7 @@ dummy_disciplines = [
 # we prefer to display it in this web page
 # by setting ``file_path`` to ``""``
 # (the same would work in a notebook).
-generate_coupling_graph(dummy_disciplines)
+generate_coupling_graph(dummy_disciplines, file_path="")
 
 # %%
 # We can also draw the condensed coupling graph,

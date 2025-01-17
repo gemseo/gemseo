@@ -72,7 +72,7 @@ from gemseo.utils.string_tools import MultiLineString
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class ScalableProblem:
@@ -106,10 +106,10 @@ class ScalableProblem:
     __N_SAMPLES: Final[int] = 100000
     """The number of samples to estimate the quantile-based constraint threshold."""
 
-    __alpha: NDArray[float]
+    __alpha: RealArray
     r"""The matrix :math:`\alpha` to compute :math:`y=\alpha+\beta x."""
 
-    __beta: NDArray[float]
+    __beta: RealArray
     r"""The matrix :math:`\beta` to compute :math:`y=\alpha+\beta x."""
 
     def __init__(
@@ -271,9 +271,7 @@ class ScalableProblem:
 
         self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
 
-    def compute_y(
-        self, x: NDArray[float], u: NDArray[float] | None = None
-    ) -> NDArray[float]:
+    def compute_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
         r"""Compute the coupling vector :math:`y`.
 
         Args:
