@@ -239,12 +239,13 @@ class EmpiricalStatistics(BaseStatistics):
             name: Boxplot(self.dataset, variables=[name], **options)
             for name in self.names
         }
-        for plot in plots.values():
+        for name, plot in plots.items():
             plot.execute(
                 save=save,
                 show=show,
                 directory_path=directory_path,
                 file_format=file_format,
+                file_name=f"boxplot_{name}",
             )
         return plots
 
@@ -292,6 +293,7 @@ class EmpiricalStatistics(BaseStatistics):
                     show=show,
                     directory_path=directory_path,
                     file_format=file_format,
+                    file_name=f"pdf_{name}",
                 )
                 plots[xlabel] = plot
 
@@ -340,6 +342,7 @@ class EmpiricalStatistics(BaseStatistics):
                     show=show,
                     directory_path=directory_path,
                     file_format=file_format,
+                    file_name=f"cdf_{name}",
                 )
                 plots[xlabel] = plot
 

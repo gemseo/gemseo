@@ -244,6 +244,7 @@ def test_plot_boxplot_args(statistics) -> None:
         "show": 2,
         "directory_path": 3,
         "file_format": 4,
+        "file_name": "boxplot_x_2",
     }
 
 
@@ -268,6 +269,7 @@ def test_plot_cdf_args(statistics) -> None:
         "show": 2,
         "directory_path": 3,
         "file_format": 4,
+        "file_name": "cdf_x_2",
     }
 
 
@@ -291,4 +293,5 @@ def test_plot_pdf_args(statistics) -> None:
         "show": 2,
         "directory_path": 3,
         "file_format": 4,
+        "file_name": "pdf_x_2",
     }
