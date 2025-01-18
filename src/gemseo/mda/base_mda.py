@@ -137,9 +137,11 @@ class BaseMDA(ProcessDiscipline):
     _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
     """The data required to perform the scaling of the MDA residuals."""
 
+    # TODO: API: remove
     norm0: float | None
     """The reference residual, if any."""
 
+    # TODO: API: change to normalized_residual_norm
     normed_residual: float
     """The normed residual."""
 

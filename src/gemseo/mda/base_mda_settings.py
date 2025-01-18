@@ -80,6 +80,13 @@ If 0,
 evaluate the coupling variables without trying to solve the coupling equations.""",
     )
 
+    max_consecutive_unsuccessful_iterations: NonNegativeInt = Field(
+        default=8,
+        description="""The maximum number of consecutive unsuccessful iterations.
+
+Iterations are considered unsuccessful if the normalized residual norm increases.""",
+    )
+
     name: str = Field(
         default="",
         description="""The name to be given to the MDA.

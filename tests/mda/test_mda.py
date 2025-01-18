@@ -82,6 +82,14 @@ def sellar_inputs():
     return get_initial_data()
 
 
+@pytest.fixture
+def base_mda_solver(sellar_disciplines) -> BaseMDASolver:
+    """A concretized BaseMDASolver instance with the Sellar's disciplines."""
+    with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
+        return BaseMDASolver(sellar_disciplines)
+
+
 def test_reset(sellar_mda, sellar_inputs) -> None:
     """Test that the MDA successfully resets its disciplines after their executions."""
     disciplines = sellar_mda.disciplines
@@ -241,36 +249,40 @@ def test_array_couplings(mda_class, grammar_type) -> None:
         a_disc.execute({"x": 2.0})
 
 
-def test_convergence_warning(caplog) -> None:
-    with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
-        mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    mda.settings.tolerance = 1.0
-    mda.normed_residual = 2.0
-    mda.settings.max_mda_iter = 1
+def test_stopping_criteria(base_mda_solver, caplog) -> None:
+    """Test the stopping criteria."""
     caplog.clear()
 
-    residual_is_small, max_iter_is_reached = mda._warn_convergence_criteria()
-    assert not residual_is_small
-    assert not max_iter_is_reached
+    base_mda_solver.settings.tolerance = 1.0
 
-    mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
+    base_mda_solver.normed_residual = 0.5
+    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    base_mda_solver.normed_residual = 1.5
+    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
-    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
-    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
-    mda._compute_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
+    base_mda_solver.settings.max_mda_iter = 1
 
-    mda._compute_normalized_residual_norm()
-    mda._warn_convergence_criteria()
-    assert len(caplog.records) == 1
+    base_mda_solver._current_iter = 1
+    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
     assert (
-        "BaseMDASolver has reached its maximum number of iterations"
-        in caplog.records[0].message
+        caplog.records[0].message
+        == "BaseMDASolver has reached its maximum number of iterations, but the "
+        "normalized residual norm 1.5 is still above the tolerance 1.0."
     )
+    base_mda_solver._current_iter = 0
+    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
-    mda.normed_residual = 1e-14
-    residual_is_small, _ = mda._warn_convergence_criteria()
-    assert residual_is_small
+    base_mda_solver.settings.max_consecutive_unsuccessful_iterations = 1
+
+    base_mda_solver._BaseMDASolver__n_consecutive_unsuccessful_iterations = 1
+    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert (
+        caplog.records[1].message
+        == "BaseMDASolver has reached its maximum number of unsuccessful iterations, "
+        "but the normalized residual norm 1.5 is still above the tolerance 1.0."
+    )
+    base_mda_solver._BaseMDASolver__n_consecutive_unsuccessful_iterations = 0
+    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
 
 def test_coupling_structure(sellar_disciplines) -> None:
@@ -282,33 +294,24 @@ def test_coupling_structure(sellar_disciplines) -> None:
     assert mda_sellar.coupling_structure == coupling_structure
 
 
-def test_log_convergence(caplog) -> None:
+def test_log_convergence(base_mda_solver, caplog) -> None:
     """Check that the boolean log_convergence is correctly set."""
-    with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
-        mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    assert not mda.settings.log_convergence
-
-    mda.settings.log_convergence = True
-    assert mda.settings.log_convergence
-
+    caplog.clear()
     caplog.set_level(logging.INFO)
 
-    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
-    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
-    mda._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
+    base_mda_solver._set_resolved_variables(["y_1", "y_2"])
+    base_mda_solver.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    base_mda_solver._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
-    mda.settings.log_convergence = False
-    mda._compute_normalized_residual_norm(store_it=False)
-    assert (
-        "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
-        not in caplog.text
-    )
+    base_mda_solver.settings.log_convergence = False
+    base_mda_solver._BaseMDASolver__update_iteration_metrics()
+    assert len(caplog.records) == 0
 
-    mda.settings.log_convergence = True
-    mda._compute_normalized_residual_norm()
+    base_mda_solver.settings.log_convergence = True
+    base_mda_solver._BaseMDASolver__update_iteration_metrics()
     assert (
-        "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
+        caplog.records[0].message
+        == "BaseMDASolver running... Normalized residual norm = 1.00e+00 (iter. 2)"
     )
 
 

@@ -232,7 +232,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             options=self.__get_options(),
         )
 
-        self._warn_convergence_criteria()
+        self._check_stopping_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 
