@@ -85,6 +85,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         options = {
             "tolerance": 1e-12,
             "max_mda_iter": 50,
+            "max_consecutive_unsuccessful_iterations": 50,
             "warm_start": True,
             "use_lu_fact": False,
             "linear_solver_tolerance": 1e-14,

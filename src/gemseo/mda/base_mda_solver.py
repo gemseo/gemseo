@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -59,6 +60,9 @@ class BaseMDASolver(BaseMDA):
     settings: BaseMDASolverSettings
     """The settings of the MDA."""
 
+    _current_residuals: dict[str, ndarray]
+    """The mapping from residual names to current values."""
+
     _sequence_transformer: RelaxationAcceleration
     """The sequence transformer aimed at improving the convergence rate.
 
@@ -95,8 +99,8 @@ class BaseMDASolver(BaseMDA):
     MDA is meant to bring these residuals towards zero.
     """
 
-    _current_residuals: dict[str, ndarray]
-    """The mapping from residual names to current value."""
+    __n_consecutive_unsuccessful_iterations: int
+    """The number of consecutive unsuccessful iterations."""
 
     def __init__(  # noqa: D107
         self,
@@ -117,6 +121,7 @@ class BaseMDASolver(BaseMDA):
         self.__resolved_residual_names = ()
 
         self._current_residuals = {}
+        self.__n_consecutive_unsuccessful_iterations = 0
 
         self.__lower_bound_vector = None
         self.__upper_bound_vector = None
@@ -197,31 +202,46 @@ class BaseMDASolver(BaseMDA):
 
         self.__update_bounds_vectors()
 
-    def _warn_convergence_criteria(self) -> tuple[bool, bool]:
-        """Log a warning if max_iter is reached and if max residuals is above tolerance.
+    def _check_stopping_criteria(self, update_iteration_metrics: bool = True) -> bool:
+        """Check whether a stopping criterion has been reached.
+
+        Args:
+            update_iteration_metrics: Whether to update the iteration metrics before
+                checking the stopping criteria.
 
         Returns:
-            * Whether the normed residual is lower than the tolerance.
-            * Whether the maximum number of iterations is reached.
+            Whether a stopping criterion has been reached.
         """
-        residual_is_small = self.normed_residual <= self.settings.tolerance
-        max_iter_is_reached = self.settings.max_mda_iter <= self._current_iter
-        if max_iter_is_reached and not residual_is_small:
-            msg = (
-                "%s has reached its maximum number of iterations "
-                "but the normed residual %s is still above the tolerance %s."
-            )
-            LOGGER.warning(
-                msg, self.name, self.normed_residual, self.settings.tolerance
-            )
-        return residual_is_small, max_iter_is_reached
+        if update_iteration_metrics:
+            self.__update_iteration_metrics()
 
-    @property
-    def _stop_criterion_is_reached(self) -> bool:
-        """Whether a stop criterion is reached."""
-        self._compute_normalized_residual_norm()
-        residual_is_small, max_iter_is_reached = self._warn_convergence_criteria()
-        return residual_is_small or max_iter_is_reached
+        if self.normed_residual <= self.settings.tolerance:
+            return True
+
+        if self._current_iter >= self.settings.max_mda_iter:
+            LOGGER.warning(
+                "%s has reached its maximum number of iterations, "
+                "but the normalized residual norm %s is still above the tolerance %s.",
+                self.name,
+                self.normed_residual,
+                self.settings.tolerance,
+            )
+            return True
+
+        if (
+            self.__n_consecutive_unsuccessful_iterations
+            >= self.settings.max_consecutive_unsuccessful_iterations
+        ):
+            LOGGER.warning(
+                "%s has reached its maximum number of unsuccessful iterations, "
+                "but the normalized residual norm %s is still above the tolerance %s.",
+                self.name,
+                self.normed_residual,
+                self.settings.tolerance,
+            )
+            return True
+
+        return False
 
     def _set_resolved_variables(self, resolved_couplings: Iterable[str]) -> None:
         """Set the resolved variables and associated residuals.
@@ -299,19 +319,12 @@ class BaseMDASolver(BaseMDA):
             self.__resolved_variable_names_to_slices,
         )
 
-    def _compute_normalized_residual_norm(self, store_it: bool = True) -> float:
+    def _compute_normalized_residual_norm(self) -> float:
         """Compute the normalized residual norm at the current point.
 
-        Args:
-            store_it: Whether to store the normed residual.
-
         Returns:
-            The normed residual.
+            The normalized residual norm.
         """
-        if self._current_iter == 0 and self.reset_history_each_run:
-            self.residual_history = []
-            self._starting_indices = []
-
         residual = self.get_current_resolved_residual_vector()
 
         scaling = self.scaling
@@ -365,33 +378,15 @@ class BaseMDASolver(BaseMDA):
             # Use the StrEnum casting to raise an explicit error.
             ResidualScaling(scaling)
 
-        self.normed_residual = normed_residual
         self._scaling_data = scaling_data
 
-        if self.settings.log_convergence:
-            LOGGER.info(
-                "%s running... Normed residual = %s (iter. %s)",
-                self.name,
-                f"{self.normed_residual:.2e}",
-                self._current_iter,
-            )
-
-        if store_it:
-            if self._current_iter == 0:
-                self._starting_indices.append(len(self.residual_history))
-            self.residual_history.append(self.normed_residual)
-            self._current_iter += 1
-
-        self.io.update_output_data({
-            self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
-        })
-
-        return self.normed_residual
+        return normed_residual
 
     @abstractmethod
     def _execute(self) -> None:  # noqa:D103
         super()._execute()
         self._sequence_transformer.clear()
+        self.__n_consecutive_unsuccessful_iterations = 0
 
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:
         """Compute the residual vector.
@@ -436,3 +431,33 @@ class BaseMDASolver(BaseMDA):
 
         self._sequence_transformer.lower_bound = self.__lower_bound_vector
         self._sequence_transformer.upper_bound = self.__upper_bound_vector
+
+    def __update_iteration_metrics(self) -> None:
+        """Update the iteration metrics."""
+        if self._current_iter == 0:
+            self._starting_indices.append(len(self.residual_history))
+
+            if self.reset_history_each_run:
+                self._starting_indices.clear()
+                self.residual_history.clear()
+
+        old_normalized_residual_norm = copy(self.normed_residual)
+        self.normed_residual = self._compute_normalized_residual_norm()
+
+        if self.normed_residual >= old_normalized_residual_norm:
+            self.__n_consecutive_unsuccessful_iterations += 1
+        else:
+            self.__n_consecutive_unsuccessful_iterations = 0
+
+        self.residual_history.append(self.normed_residual)
+        self._current_iter += 1
+
+        self.io.update_output_data({
+            self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
+        })
+
+        if self.settings.log_convergence:
+            msg = "{} running... Normalized residual norm = {} (iter. {})"
+            LOGGER.info(
+                msg.format(self.name, f"{self.normed_residual:.2e}", self._current_iter)
+            )

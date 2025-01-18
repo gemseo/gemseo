@@ -1,0 +1,3 @@
+MDA now has a new setting ``max_consecutive_unsuccessful_iterations`` and corresponding stopping criteria that allows to break the MDA loop when a given number of consecutive unsuccessful iterations is reached.
+An iteration is unsuccessful if the normalized residual norm has increased.
+The default value is 8.

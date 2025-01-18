@@ -180,7 +180,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
             self._execute_disciplines_and_update_local_data()
             self._compute_residuals(local_data_before_execution)
 
-            if self._stop_criterion_is_reached:
+            if self._check_stopping_criteria():
                 break
 
             newton_step = self.__compute_newton_step(local_data_before_execution)
