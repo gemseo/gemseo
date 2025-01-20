@@ -69,6 +69,12 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    BaseToleranceInterval,
+)
+from gemseo.uncertainty.statistics.tolerance_interval.empirical import (
+    EmpiricalToleranceInterval,
+)
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -213,6 +219,78 @@ class EmpiricalStatistics(BaseStatistics):
         lower = self.compute_minimum()
         return {
             name: upper - lower[name] for name, upper in self.compute_maximum().items()
+        }
+
+    def compute_tolerance_interval(  # noqa: D102
+        self,
+        coverage: float,
+        confidence: float = 0.95,
+        side: BaseToleranceInterval.ToleranceIntervalSide = BaseToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
+    ) -> dict[str, list[BaseToleranceInterval.Bounds]]:
+        # noqa: D205
+        r"""Compute tolerance interval.
+
+        Given a confidence level :math:`1-\alpha`
+        and a coverage level :math:`\beta`,
+        the number of samples :math:`n` must verify the requirement:
+
+        - :math:`1-(1-\beta)^n>=1-\alpha`
+          for a lower one-sided tolerance interval,
+        - :math:`1-\beta^n>=1-\alpha`
+          for a upper one-sided tolerance interval,
+        - :math:`(n-1)\beta^n-n\beta^{n-1}+1>=1-\alpha`
+
+        See [1] and [2]
+        for more information about empirical tolerance intervals.
+
+        .. [1] Krishnamoorthy K. & Matthews T.,
+           Statistical Tolerance Regions:
+           Theory, Applications, and Computation,
+           Wiley Series in Probability and
+        Statistics,
+           John Wiley & Sons, 2009.
+
+        .. [2] Meeker W. Q., Hahn G. J., et Escobar L. A.
+           Statistical intervals: a guide for practitioners and researchers,
+           John Wiley & Sons, 2017.
+
+        Raises:
+            ValueError: When there are not enough samples.
+        """
+        n_samples = len(self.dataset)
+        if side == BaseToleranceInterval.ToleranceIntervalSide.LOWER:
+            value = (
+                1 - (1 - coverage) ** n_samples
+            )  # Krishnamoorthy & Matthews, p. 216 eq. 8.6.3
+        elif side == BaseToleranceInterval.ToleranceIntervalSide.UPPER:
+            value = (
+                1 - coverage**n_samples
+            )  # Krishnamoorthy & Matthews, p. 216 eq. 8.6.3
+        elif side == BaseToleranceInterval.ToleranceIntervalSide.BOTH:
+            value = (
+                (n_samples - 1) * coverage**n_samples
+                - n_samples * (coverage ** (n_samples - 1))
+                + 1
+            )  # Krishnamoorthy & Matthews, p. 215 eq. 8.6.2
+
+        else:
+            msg = "The argument side is not of ToleranceIntervalSide type."
+
+            raise TypeError(msg)
+
+        if value < confidence:
+            msg = (
+                "The dataset is not large enough to estimate "
+                "the desired tolerance interval."
+            )
+            raise ValueError(msg)
+        return {
+            name: [
+                EmpiricalToleranceInterval(
+                    self.dataset.get_view(variable_names=name).to_numpy().ravel(),
+                ).compute(coverage, confidence, side)
+            ]
+            for name in self.names
         }
 
     def plot_boxplot(

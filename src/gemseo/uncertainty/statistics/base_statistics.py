@@ -184,6 +184,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _repr_html_(self) -> str:
         return self.__string_representation._repr_html_()
 
+    @abstractmethod
     def compute_tolerance_interval(
         self,
         coverage: float,
@@ -222,7 +223,6 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             :meth:`.compute_a_value`
             :meth:`.compute_b_value`
         """
-        raise NotImplementedError
 
     SYMBOLS["tolerance_interval"] = "TI"
 
