@@ -19,9 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import unittest
 from typing import TYPE_CHECKING
 
+import pytest
 from numpy import array
 from numpy import complex128
 from numpy import float64
@@ -38,69 +38,76 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class TestDataProcessor(unittest.TestCase):
+def test_float_data_processor() -> None:
     """"""
+    dp = FloatDataProcessor()
+    in_data = {"a": array([1.1]), "b": array([3.1, 4.1])}
+    pre_data = dp.pre_process_data(in_data)
+    assert len(pre_data) == len(in_data)
+    for k, v in pre_data.items():
+        assert k in in_data
+        if k == "a":
+            assert isinstance(v, float)
+        else:
+            assert isinstance(v, list)
 
-    def test_float_data_processor(self) -> None:
-        """"""
-        dp = FloatDataProcessor()
-        in_data = {"a": array([1.1]), "b": array([3.1, 4.1])}
-        pre_data = dp.pre_process_data(in_data)
-        assert len(pre_data) == len(in_data)
-        for k, v in pre_data.items():
-            assert k in in_data
-            if k == "a":
-                assert isinstance(v, float)
-            else:
-                assert isinstance(v, list)
+    post_data = dp.post_process_data(pre_data)
+    assert len(post_data) == len(in_data)
+    for k, v in post_data.items():
+        assert k in in_data
+        assert isinstance(v, ndarray)
 
-        post_data = dp.post_process_data(pre_data)
-        assert len(post_data) == len(in_data)
-        for k, v in post_data.items():
-            assert k in in_data
-            assert isinstance(v, ndarray)
 
-    def test_complex_data_processor(self) -> None:
-        """"""
-        dp = ComplexDataProcessor()
-        in_data = {"a": array([1.1 + 2j]), "b": array([3.1, 4.1 + 3j])}
-        pre_data = dp.pre_process_data(in_data)
-        assert len(pre_data) == len(in_data)
-        for k, v in pre_data.items():
-            assert k in in_data
-            assert linalg.norm(v - in_data[k].real) == 0.0
-            assert linalg.norm(v.imag) == 0
-            assert v.dtype == float64
+def test_complex_data_processor() -> None:
+    """"""
+    dp = ComplexDataProcessor()
+    in_data = {"a": array([1.1 + 2j]), "b": array([3.1, 4.1 + 3j])}
+    pre_data = dp.pre_process_data(in_data)
+    assert len(pre_data) == len(in_data)
+    for k, v in pre_data.items():
+        assert k in in_data
+        assert linalg.norm(v - in_data[k].real) == 0.0
+        assert linalg.norm(v.imag) == 0
+        assert v.dtype == float64
 
-        post_data = dp.post_process_data(pre_data)
-        assert len(post_data) == len(in_data)
-        for k, v in post_data.items():
-            assert k in in_data
-            assert isinstance(v, ndarray)
-            assert v.dtype == complex128
+    post_data = dp.post_process_data(pre_data)
+    assert len(post_data) == len(in_data)
+    for k, v in post_data.items():
+        assert k in in_data
+        assert isinstance(v, ndarray)
+        assert v.dtype == complex128
 
-        sm = SobieskiMission("float64")
-        sm.io.data_processor = dp
-        sm.execute({
-            "x_shared": array(
-                sm.io.input_grammar.defaults["x_shared"], dtype="complex128"
-            )
-        })
+    sm = SobieskiMission("float64")
+    sm.io.data_processor = dp
+    sm.execute({
+        "x_shared": array(sm.io.input_grammar.defaults["x_shared"], dtype="complex128")
+    })
 
-        assert sm.io.data["y_4"].dtype == complex128
+    assert sm.io.data["y_4"].dtype == complex128
 
-    def test_name_mapping(self) -> None:
-        disc = LocalDisc()
-        disc.io.data_processor = NameMapping({"A": "a", "B": "b", "O": "o"})
-        out = disc.execute({"A": array([1]), "B": array([2])})
-        assert out["O"] == array([3.0])
+
+@pytest.mark.parametrize(
+    ("mapping", "input_names", "output_names", "input_data"),
+    [
+        (
+            {"A": "a", "B": "b", "O": "o"},
+            ["A", "B"],
+            ["O"],
+            {"A": array([1]), "B": array([2])},
+        ),
+        ({"A": "a", "O": "o"}, ["A", "b"], ["O"], {"A": array([1]), "b": array([2])}),
+    ],
+)
+def test_name_mapping(mapping, input_data, input_names, output_names) -> None:
+    """Check the NameMapping data convertor."""
+    disc = LocalDisc()
+    disc.io.input_grammar.update_from_names(input_names)
+    disc.io.output_grammar.update_from_names(output_names)
+    disc.io.data_processor = NameMapping(mapping)
+    out = disc.execute(input_data)
+    assert out[output_names[0]] == array([3.0])
 
 
 class LocalDisc(Discipline):
-    def __init__(self) -> None:
-        super().__init__()
-        self.io.input_grammar.update_from_names(["A", "B"])
-        self.io.output_grammar.update_from_names(["O"])
-
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["o"] = self.io.data["a"] + self.io.data["b"]
