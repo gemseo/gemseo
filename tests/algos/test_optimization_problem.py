@@ -1680,6 +1680,10 @@ def test_export_to_dataset(input_values, expected) -> None:
     algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
 
     dataset = problem.to_dataset(input_values=input_values)
+
+    assert dataset.misc["input_space"] == design_space
+    assert id(dataset.misc["input_space"]) != id(design_space)
+
     assert_equal(dataset.get_view(variable_names="dv").to_numpy(), expected)
     assert_equal(dataset.get_view(variable_names="obj").to_numpy(), expected * 2)
     assert_equal(dataset.get_view(variable_names="cstr").to_numpy(), expected * 3)

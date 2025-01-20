@@ -53,8 +53,15 @@ class CleaningOptions:
 class PCERegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the polynomial chaos expansion model."""
 
-    probability_space: ParameterSpace = Field(
-        description="The random input variables using :class:`.OTDistribution`."
+    # TODO: API: remove in gemseo v7.
+    probability_space: ParameterSpace | None = Field(
+        default=None,
+        description="""The random input variables using :class:`.OTDistribution`.
+
+If ``None``,
+:class:`.PCERegressor` uses ``data.misc["input_space"]``
+where ``data`` is the :class:`.IODataset` passed at instantiation.
+""",
     )
 
     degree: PositiveInt = Field(

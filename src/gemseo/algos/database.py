@@ -29,6 +29,7 @@ from ast import literal_eval
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
+from copy import deepcopy
 from itertools import chain
 from itertools import islice
 from typing import TYPE_CHECKING
@@ -1075,6 +1076,9 @@ class Database(Mapping):
                 names=dataset_class.COLUMN_LEVEL_NAMES,
             ),
         ).get_view(indices=positions)
+        # In case of any future modification of self.input_space,
+        # we use a copy of its current value.
+        dataset.misc["input_space"] = deepcopy(self.input_space)
 
         names_to_types_without_int = {
             k: v for k, v in names_to_types.items() if not issubdtype(v, integer)

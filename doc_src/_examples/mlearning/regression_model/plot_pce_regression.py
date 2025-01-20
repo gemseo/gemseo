@@ -69,9 +69,7 @@ training_dataset = sample_disciplines(
 # ~~~~~~~~
 # Then,
 # we train an PCE regression model from these samples:
-model = create_regression_model(
-    "PCERegressor", training_dataset, probability_space=input_space
-)
+model = create_regression_model("PCERegressor", training_dataset)
 model.learn()
 
 # %%
@@ -113,9 +111,7 @@ plt.show()
 #
 # Degree
 # ~~~~~~
-model = create_regression_model(
-    "PCERegressor", training_dataset, probability_space=input_space, degree=3
-)
+model = create_regression_model("PCERegressor", training_dataset, degree=3)
 model.learn()
 # %%
 # and see that this model seems to be better:
