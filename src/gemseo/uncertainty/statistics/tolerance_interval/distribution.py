@@ -38,15 +38,10 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
-    """Computation of tolerance intervals from a data-fitted probability distribution.
+class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
+    """Base class for the estimation of tolerance intervals.
 
-    A :class:`.BaseToleranceInterval` (TI) is initialized
-    from the number of samples
-    used to estimate the parameters of the probability distribution
-    and from the estimations of these parameters.
-
-    A :class:`.BaseToleranceInterval` can be evaluated from:
+    A tolerance interval is defined from:
 
     - a coverage defining the minimum percentage of belonging to the TI, e.g. 0.90,
     - a level of confidence in [0,1], e.g. 0.95,
@@ -79,15 +74,8 @@ class BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
         lower: NDArray[float]
         upper: NDArray[float]
 
-    def __init__(
-        self,
-        size: int,
-    ) -> None:
-        """
-        Args:
-            size: The number of samples.
-        """  # noqa: D205 D212 D415
-        self.__size = size
+    _size: int
+    """The number of samples."""
 
     @abstractmethod
     def _compute_lower_bound(
@@ -125,6 +113,7 @@ class BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
             The upper bound of the tolerance interval.
         """
 
+    @abstractmethod
     def _compute_bounds(
         self,
         coverage: float,
@@ -141,12 +130,6 @@ class BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The lower and upper bounds of the both-sided tolerance interval.
         """
-        coverage = (coverage + 1.0) / 2.0
-        alpha /= 2.0
-        return (
-            self._compute_lower_bound(coverage, alpha, size),
-            self._compute_upper_bound(coverage, alpha, size),
-        )
 
     def _compute(
         self,
@@ -206,4 +189,31 @@ class BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The tolerance bounds.
         """
-        return self._compute(coverage, 1 - confidence, self.__size, side)
+        return self._compute(coverage, 1 - confidence, self._size, side)
+
+
+class BaseToleranceInterval(_BaseToleranceInterval):
+    """Parametric estimation of tolerance intervals."""
+
+    def __init__(
+        self,
+        size: int,
+    ) -> None:
+        """
+        Args:
+            size: The number of samples.
+        """  # noqa: D205 D212 D415
+        self._size = size
+
+    def _compute_bounds(
+        self,
+        coverage: float,
+        alpha: float,
+        size: int,
+    ) -> tuple[float, float]:
+        coverage = (coverage + 1.0) / 2.0
+        alpha /= 2.0
+        return (
+            self._compute_lower_bound(coverage, alpha, size),
+            self._compute_upper_bound(coverage, alpha, size),
+        )

@@ -24,8 +24,10 @@ from unittest import mock
 import pytest
 from numpy import array
 from numpy import concatenate
+from numpy import inf
 from numpy import linspace
 from numpy import newaxis
+from numpy.random import RandomState
 from numpy.testing import assert_allclose
 
 from gemseo.datasets.dataset import Dataset
@@ -33,8 +35,13 @@ from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
+    BaseToleranceInterval,
+)
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
+
+RNG = RandomState(0)
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +57,17 @@ def dataset():
 @pytest.fixture(scope="module")
 def statistics(dataset):
     """The statistics for both x_1 and x_2."""
+    return EmpiricalStatistics(dataset)
+
+
+@pytest.fixture(scope="module")
+def full_statistics():
+    """Statictics for both x_1 and x_2 with a large dataset."""
+    dataset = Dataset.from_array(
+        RNG.exponential(1, 100),
+        ["x_0"],
+        {"x_0": 1},
+    )
     return EmpiricalStatistics(dataset)
 
 
@@ -295,3 +313,67 @@ def test_plot_pdf_args(statistics) -> None:
         "file_format": 4,
         "file_name": "pdf_x_2",
     }
+
+
+@pytest.mark.parametrize(
+    (
+        "coverage",
+        "confidence",
+        "side",
+    ),
+    [
+        (0.1, 0.95, BaseToleranceInterval.ToleranceIntervalSide.LOWER),
+        (0.9, 0.95, BaseToleranceInterval.ToleranceIntervalSide.UPPER),
+        (0.9, 0.95, BaseToleranceInterval.ToleranceIntervalSide.BOTH),
+    ],
+)
+def test_failure_tolerance_interval(statistics, coverage, confidence, side):
+    """Check that an error is raised when not enough samples are available."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The dataset is not large enough to estimate "
+            "the desired tolerance interval."
+        ),
+    ):
+        statistics.compute_tolerance_interval(
+            coverage=coverage, confidence=confidence, side=side
+        )
+
+
+def test_failure_wrong_type(statistics):
+    """Check that an error is raised when not enough samples are available."""
+    with pytest.raises(
+        TypeError,
+        match=re.escape("The argument side is not of ToleranceIntervalSide type."),
+    ):
+        statistics.compute_tolerance_interval(coverage=0.9, confidence=0.9, side="e")
+
+
+def test_tolerance_interval(full_statistics) -> None:
+    """Check compute_tolerance_intervals()."""
+    tolerance_interval = full_statistics.compute_tolerance_interval(
+        coverage=0.9,
+        confidence=0.95,
+        side=BaseToleranceInterval.ToleranceIntervalSide.BOTH,
+    )
+    assert tolerance_interval["x_0"][0].lower.shape == (1,)
+    assert tolerance_interval["x_0"][0].upper.shape == (1,)
+    assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
+    tolerance_interval = full_statistics.compute_tolerance_interval(
+        0.1, side=BaseToleranceInterval.ToleranceIntervalSide.UPPER
+    )
+    assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
+    tolerance_interval = full_statistics.compute_tolerance_interval(
+        0.1, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
+    )
+    assert tolerance_interval["x_0"][0].lower <= tolerance_interval["x_0"][0].upper
+    assert tolerance_interval["x_0"][0].upper == inf
+
+    b_value = full_statistics.compute_tolerance_interval(
+        0.9, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
+    )
+    a_value = full_statistics.compute_tolerance_interval(
+        0.95, side=BaseToleranceInterval.ToleranceIntervalSide.LOWER
+    )
+    assert b_value["x_0"][0].lower >= a_value["x_0"][0].lower
