@@ -177,15 +177,18 @@ class PCERegressor(BaseRegressor):
 
     def __init__(
         self,
-        data: IODataset | None,
+        data: IODataset,
         settings_model: PCERegressor_Settings | None = None,
         **settings: Any,
     ) -> None:
         """
         Args:
-            data: The training dataset required
-                in the case of the least-squares regression
-                or when ``discipline`` is ``None`` in the case of quadrature.
+            data: The training dataset
+                whose input space ``data.misc["input_space"]``
+                is expected to be a :class:`.ParameterSpace`
+                defining the random input variables.
+                The training dataset can be empty
+                in the case of quadrature when ``discipline`` is not ``None``.
 
         Raises:
             ValueError: When both data and discipline are missing,
@@ -204,12 +207,15 @@ class PCERegressor(BaseRegressor):
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 
+        # TODO: API: remove backward compatibility wrt data in gemseo v7.
+        there_are_data = data is not None and len(data) > 0
+        there_is_a_discipline = settings_.discipline is not None
         if settings_.use_quadrature:
-            if settings_.discipline is None and data is None:
+            if not there_is_a_discipline and not there_are_data:
                 msg = "The quadrature rule requires either data or discipline."
                 raise ValueError(msg)
 
-            if settings_.discipline is not None and data is not None and len(data):
+            if there_is_a_discipline and there_are_data:
                 msg = "The quadrature rule requires data or discipline but not both."
                 raise ValueError(msg)
 
@@ -221,23 +227,25 @@ class PCERegressor(BaseRegressor):
                 data = IODataset()
 
         else:
-            if data is None:
+            if not there_are_data:
                 msg = "The least-squares regression requires data."
                 raise ValueError(msg)
 
-            if settings_.discipline is not None:
+            if there_is_a_discipline:
                 msg = "The least-squares regression does not require a discipline."
                 raise ValueError(msg)
 
+        if settings_.probability_space is not None:
+            data.misc["input_space"] = settings_.probability_space
+
         super().__init__(data, settings_model=settings_)
 
+        probability_space = data.misc["input_space"]
         if self._settings.use_quadrature and data.empty:
-            self.input_names = self._settings.probability_space.variable_names
+            self.input_names = probability_space.variable_names
 
         if not data.empty:
-            missing = set(self.input_names) - set(
-                self._settings.probability_space.uncertain_variables
-            )
+            missing = set(self.input_names) - set(probability_space.uncertain_variables)
             if missing:
                 msg = (
                     "The probability space does not contain "
@@ -254,7 +262,7 @@ class PCERegressor(BaseRegressor):
             msg = "PCERegressor does not support input transformers."
             raise ValueError(msg)
 
-        distributions = self._settings.probability_space.distributions
+        distributions = probability_space.distributions
         wrongly_distributed_random_variable_names = [
             input_name
             for input_name in self.input_names
@@ -268,7 +276,7 @@ class PCERegressor(BaseRegressor):
             )
             raise ValueError(msg)
 
-        self.__variable_sizes = self._settings.probability_space.variable_sizes
+        self.__variable_sizes = probability_space.variable_sizes
         self.__input_dimension = sum(
             self.__variable_sizes[name] for name in self.input_names
         )
