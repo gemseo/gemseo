@@ -1,0 +1,6 @@
+The ``VariableRenamer`` class can be used to create translators,
+which are translation dictionaries
+of the form ``{discipline_name: {variable_name: new_variable_name}}``
+from tuples, dictionaries, CSV files and spreadsheets.
+These dictionaries can then be used
+to create a ``RemappingDiscipline`` or a ``NameMapping`` data processor.
