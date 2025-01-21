@@ -19,8 +19,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Rename the input and output variables
-=====================================
+Remapping the input and output variables
+========================================
 
 The :class:`.RemappingDiscipline` can be used
 to rename the input and output variables of an original discipline
