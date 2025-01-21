@@ -40,7 +40,7 @@ h5py==3.11.0
     # via gemseo (pyproject.toml)
 idna==3.10
     # via requests
-importlib-metadata==8.5.0
+importlib-metadata==8.6.1
     # via
     #   gemseo (pyproject.toml)
     #   typeguard
