@@ -20,6 +20,8 @@ cryptography==44.0.0
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
+id==1.5.0
+    # via twine
 idna==3.10
     # via requests
 jaraco-classes==3.4.0
@@ -49,8 +51,6 @@ packaging==24.2
     #   build
     #   check-wheel-contents
     #   twine
-pkginfo==1.12.0
-    # via twine
 pycparser==2.22
     # via cffi
 pydantic==2.10.5
@@ -67,6 +67,7 @@ readme-renderer==44.0
     # via twine
 requests==2.32.3
     # via
+    #   id
     #   requests-toolbelt
     #   twine
 requests-toolbelt==1.0.0
@@ -77,7 +78,7 @@ rich==13.9.4
     # via twine
 secretstorage==3.3.3
     # via keyring
-twine==6.0.1
+twine==6.1.0
     # via -r requirements/dist.in
 typing-extensions==4.12.2
     # via
