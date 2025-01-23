@@ -47,9 +47,7 @@ from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 #
 # where the right-hand side of the equation :math:`f(t, s(t))` is a function of
 # time :math:`t` and of a state :math:`s(t)` that returns another state
-# :math:`\frac{ds(t)}{dt}` (see Hartman, Philip (2002) [1964],
-# Ordinary differential equations, Classics in Applied Mathematics, vol. 38,
-# Philadelphia: Society for Industrial and Applied Mathematics). To solve this
+# :math:`\frac{ds(t)}{dt}` :cite:`hartman2002`. To solve this
 # equation, initial conditions must be set:
 #
 # .. math::
@@ -95,15 +93,14 @@ from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 # %%
 # Step 1 : Definition of the dynamic
 # ..................................
-
 # As the first step, we introduce a discipline defining the dynamics of the problem,
 # that is a discipline representing the right-hand side of the ODE.
 # For a harmonic oscillator, the discipline can be an :class:`.AutoPyDiscipline`.
 #
 # The discipline describing the RHS must include, among its inputs, the time variable
 # and the variables defining the state (in the case of the harmonic oscillator, the
-# variables `position` and `velocity`). The outputs of the discipline must be the
-# time derivatives of the state variables (here `position_dot` and `velocity_dot`).
+# variables ``position`` and ``velocity``). The outputs of the discipline must be the
+# time derivatives of the state variables (here ``position_dot`` and ``velocity_dot``).
 # All inputs that are neither the time variable nor the state variables, are denoted as
 # design variables.
 
@@ -140,19 +137,19 @@ rhs_discipline = create_discipline(
 # problem to be solved.
 #
 # The constructor of the :class:`.ODEDiscipline` must be provided with the arguments
-# `discipline` (the discipline representing the RHS of the ODE), and `times` (an
+# ``discipline`` (the discipline representing the RHS of the ODE), and ``times`` (an
 # :type:`ArrayLike` with at least two entries: the fist representing the initial time,
 # and the last one the final time).
-# The parameter `state_names` is a list of the name of the state variables in
-# `rhs_discipline`, in order  to differentiate them from the time variable (named
-# `"time"` by default), and from the design variables (here `omega`).
-# By default, the output of the `ODEDiscipline` are: the final time of the evaluation
-# of the ODE (`"termination_time"`), the list of times for which the ODE has been
-# solved (`"times"`), and the final states of the state  variables (named by default
-# `"X_final"`, where `"X"` is the name of the corresponding  state variable).
-# If the boolean `return_trajectories` is set to `True`, additional outputs is
+# The parameter ``state_names`` is a list of the name of the state variables in
+# ``rhs_discipline``, in order  to differentiate them from the time variable (named
+# ``"time"`` by default), and from the design variables (here ``omega``).
+# By default, the output of the ``ODEDiscipline`` are: the final time of the evaluation
+# of the ODE (``"termination_time"``), the list of times for which the ODE has been
+# solved (``"times"``), and the final states of the state  variables (named by default
+# ``"X_final"``, where ``"X"`` is the name of the corresponding  state variable).
+# If the boolean ``return_trajectories`` is set to ``True``, additional outputs is
 # provided, consisting in the trajectories of the state variables in the times listed
-# in the output `"times"`.
+# in the output ``"times"``.
 
 ode_discipline = ODEDiscipline(
     rhs_discipline=rhs_discipline,
@@ -166,20 +163,20 @@ ode_discipline = ODEDiscipline(
 # ......................................
 #
 # Once the :class:`.ODEDiscipline` has been initialized, it can be executed like all
-# other disciplines in |g| by the method `execute()`.
+# other disciplines in |g| by the method :meth:`execute`.
 
 ode_res_1 = ode_discipline.execute()
 
 # %%
 # The default inputs of the :class:`.ODEDiscipline` are the default inputs of the
-# underlying discipline defining the RHS of the ODE. Therefore, `ode_res_1` contains
+# underlying discipline defining the RHS of the ODE. Therefore, ``ode_res_1`` contains
 # the solution of the problem of a harmonic oscillator with angular velocity `omega`
 # equal to :math:`2.0`, with initial position :math:`1.0` and initial velocity
 # :math:`0.0`.
 #
 # Different values for the design variables and for the initial conditions can be
 # specified by passing a suitable dictionary to the `execute()` method of the
-# class:`ODEDiscipline`.
+# :class:`.ODEDiscipline`.
 
 initial_position_2 = array([2.0])
 initial_velocity_2 = array([0.5])
@@ -192,8 +189,8 @@ ode_res_2 = ode_discipline.execute({
 })
 
 # %%
-# The object `ode_res_2` contains the solution of a different harmonic oscillator
-# problem, characterized by an angular velocity `omega` equal to :math:`1.0`, with
+# The object ``ode_res_2`` contains the solution of a different harmonic oscillator
+# problem, characterized by an angular velocity ``omega`` equal to :math:`1.0`, with
 # a positive initial velocity of :math:`0.5`, and an initial position deviated by
 # :math:`2.0` from the equilibrium.
 
@@ -204,7 +201,7 @@ ode_res_2 = ode_discipline.execute({
 # In some cases, it can be useful not to pursue the solution of the ODE for the entire
 # time interval, but only up to the realization of a certain condition. For example, one
 # could be interested in the dynamic of a falling object up to its impact on the ground.
-# In solvers like `scipy.integrate.solve_ivp`, the termination condition is encoded by
+# In solvers like :mod:`scipy.integrate.solve_ivp`, the termination condition is encoded by
 # a function with the same entries as the RHS of the ODE, returning a real value.
 # The termination condition is fulfilled when the function crosses the threshold
 # :math:`0` (for further information, consult `the SciPy documentation
@@ -238,10 +235,10 @@ termination_discipline = create_discipline(
 )
 
 # %%
-# Here, `termination_discipline` is the :class:`.AutoPyDiscipline` encoding the
+# Here, ``termination_discipline`` is the :class:`.AutoPyDiscipline` encoding the
 # termination condition. In order to include this condition in the solution of the ODE,
-# we pass the tuple `(termination_discipline,)` as the argument
-# `termination_event_disciplines` of the constructor of :class:`.ODEDiscipline`.
+# we pass the tuple ``(termination_discipline,)`` as the argument
+# ``termination_event_disciplines`` of the constructor of :class:`.ODEDiscipline`.
 
 ode_discipline_termination = ODEDiscipline(
     rhs_discipline=rhs_discipline,
@@ -263,7 +260,7 @@ ode_res_termination = ode_discipline_termination.execute({
 # .....................
 #
 # The outcomes of the discipline executions can be accessed by passing the names of
-# the corresponding outputs to `ode_res_1`, `ode_res_2`, and `ode_res_termination`.
+# the corresponding outputs to ``ode_res_1``, ``ode_res_2``, and ``ode_res_termination``.
 
 plt.plot(ode_res_1["times"], ode_res_1["position"])
 plt.plot(ode_res_2["times"], ode_res_2["position"])
@@ -326,8 +323,8 @@ plt.plot(
     label="Numerical solution",
 )
 plt.plot(
-    ode_res_termination["times"],
-    [0.0] * len(ode_res_termination["times"]),
+    ode_res_1["times"],
+    [0.0] * len(ode_res_1["times"]),
     "k--",
     label="termination threshold = 0.0",
 )
