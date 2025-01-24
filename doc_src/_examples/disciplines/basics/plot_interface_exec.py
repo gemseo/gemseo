@@ -91,8 +91,9 @@ def parse_file(file_path):
 
 def write_file(data, file_path) -> None:
     with open(file_path, "w") as outf:
-        for name, value in list(data.items()):
-            outf.write(name + "=" + str(value[0]) + "\n")
+        outf.writelines(
+            name + "=" + str(value[0]) + "\n" for name, value in list(data.items())
+        )
 
 
 class ShellExecutableDiscipline(Discipline):

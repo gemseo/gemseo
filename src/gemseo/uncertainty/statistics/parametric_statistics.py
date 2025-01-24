@@ -91,7 +91,6 @@ Additional ones are:
 from __future__ import annotations
 
 import logging
-from itertools import starmap
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import NamedTuple
@@ -434,10 +433,7 @@ class ParametricStatistics(BaseStatistics):
                 )
 
             self.__distributions[variable] = list(
-                starmap(
-                    _Distribution,
-                    zip(selected_distribution_names, marginal_distributions),
-                )
+                map(_Distribution, selected_distribution_names, marginal_distributions)
             )
             if len(marginal_distributions) == 1:
                 distributions[variable] = self.__distributions[variable][0]

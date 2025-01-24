@@ -111,7 +111,6 @@ where :math:`\mathbf{A}^{\odot 2}` is the element-wise square of :math:`\mathbf{
 from __future__ import annotations
 
 import contextlib
-from itertools import starmap
 from typing import TYPE_CHECKING
 from typing import Callable
 
@@ -342,7 +341,7 @@ class CVSobolAlgorithm:
                     array([f_s_b_i.mean(axis=-1) for f_s_b_i in f_s_b]),
                     array([g_s_b_i.mean(axis=-1) for g_s_b_i in g_s_b]),
                     cv_stats / self.variance * var_b,
-                    list(starmap(cov, zip(f_s_b, g_s_b))),
+                    list(map(cov, f_s_b, g_s_b)),
                 )
                 / var_b
             )
@@ -400,7 +399,7 @@ class CVSobolAlgorithm:
                 array([f_s_i.mean(axis=-1) for f_s_i in f_s]),
                 array([g_s_i.mean(axis=-1) for g_s_i in g_s]),
                 cv_indices_numerator,
-                list(starmap(cov, zip(f_s, g_s))),
+                list(map(cov, f_s, g_s)),
             )
             / self.variance,
             self.__compute_intervals(f_s, g_s, cv_indices_numerator),

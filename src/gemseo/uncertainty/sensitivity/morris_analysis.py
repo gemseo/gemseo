@@ -72,7 +72,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
-from itertools import starmap
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -286,7 +285,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             sigma /= diff
             minimum /= diff
             maximum /= diff
-            mu_star /= array(list(starmap(max, zip(abs(lower), abs(upper)))))
+            mu_star /= array(list(map(max, abs(lower), abs(upper))))
 
         relative_sigma = sigma / mu_star
 
