@@ -21,7 +21,6 @@ size.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from itertools import starmap
 from numbers import Number
 from typing import Any
 from typing import TypeVar
@@ -37,4 +36,4 @@ class ElementWiseMetric(BaseCompositeMetric[_InputT, Any]):
     """An element-wise metric."""
 
     def compute(self, a: _InputT, b: _InputT) -> list[Any]:  # noqa: D102
-        return list(starmap(self._metric.compute, zip(a, b)))
+        return list(map(self._metric.compute, a, b))
