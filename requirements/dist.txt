@@ -2,7 +2,7 @@
 #    uv pip compile requirements/dist.in -o requirements/dist.txt
 annotated-types==0.7.0
     # via pydantic
-attrs==24.3.0
+attrs==25.1.0
     # via check-wheel-contents
 build==1.2.2.post1
     # via -r requirements/dist.in
