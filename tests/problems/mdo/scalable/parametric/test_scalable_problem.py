@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import pytest
 from numpy import array
+from numpy import hstack
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
@@ -183,4 +184,19 @@ def test_compute_y(scalable_problem) -> None:
     assert_almost_equal(
         scalable_problem.compute_y(array([1, 2, 3]), array([0.1, 0.2])),
         array([-1.1971993, -3.3483043]),
+    )
+
+
+def test_differentiate_y(scalable_problem) -> None:
+    """Check the method differentiate_y."""
+    assert_equal(
+        scalable_problem.differentiate_y(array([1, 2, 3])),
+        scalable_problem._ScalableProblem__beta,
+    )
+    assert_equal(
+        scalable_problem.differentiate_y(array([1, 2, 3]), array([0.1, 0.2])),
+        hstack((
+            scalable_problem._ScalableProblem__beta,
+            scalable_problem._inv_C,
+        )),
     )

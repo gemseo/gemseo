@@ -37,7 +37,7 @@ in the case of the minimization of the 3-dimensional Rosenbrock function
 over the hypercube :math:`[-1,1]^3`.
 
 The unique solution of this minimization problem is
-the design point :math:`x^*=(1,1,1)` at which :math:`f` is zero.
+the design point :math:`z^*=(1,1,1)` at which :math:`f` is zero.
 """
 
 from __future__ import annotations
