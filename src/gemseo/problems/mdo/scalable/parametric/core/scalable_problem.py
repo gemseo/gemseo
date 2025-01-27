@@ -28,6 +28,7 @@ from typing import Final
 from numpy import concatenate
 from numpy import eye
 from numpy import full
+from numpy import hstack
 from numpy import newaxis
 from numpy import ones
 from numpy import quantile
@@ -271,16 +272,29 @@ class ScalableProblem:
 
         self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
 
+    def differentiate_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
+        r"""Compute the derivatives of the coupling output :math:`y`.
+
+        Args:
+            x: The design point at which to compute :math:`y`.
+            u: The uncertain point at which to compute :math:`y`, if any.
+
+        Returns:
+            The derivatives of the coupling output :math:`y`
+            at the design point :math:`x` and the uncertain point :math:`u`.
+        """
+        return self.__beta if u is None else hstack((self.__beta, self._inv_C))
+
     def compute_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
         r"""Compute the coupling vector :math:`y`.
 
         Args:
-            x: A design point.
-            u: An uncertain point, if any.
+            x: The design point at which to compute :math:`y`.
+            u: The uncertain point at which to compute :math:`y`, if any.
 
         Returns:
-            The coupling vector associated with the design point :math:`x`
-            and the uncertain vector :math:`U` if any.
+            The coupling vector :math:`y`
+            at the design point :math:`x` and the uncertain point :math:`u`.
         """
         y = self.__alpha + self.__beta @ x
         if u is not None:

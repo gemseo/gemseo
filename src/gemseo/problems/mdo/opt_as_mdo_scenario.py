@@ -20,13 +20,16 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 
+from numpy import array
 from numpy import hstack
+from numpy import ones
 
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
@@ -117,6 +120,9 @@ class OptAsMDOScenario(MDOScenario):
     where :math:`c` is the implicit function
     such that :math:`c_i(x)=h_i(x_0,x_i,c_{-i}(x))` for all :math:`i\in\{1,\ldots,N\}`.
 
+    If the original discipline is analytically differentiable,
+    so are the objective and constraint functions of this MDO problem.
+
     This scenario applies
     the technique proposed by Amine Aziz-Alaoui in his doctoral thesis
     to the case of linear coupling and link disciplines.
@@ -160,7 +166,9 @@ class OptAsMDOScenario(MDOScenario):
         for i, strongly_coupled_discipline in enumerate(strongly_coupled_disciplines):
             strongly_coupled_discipline.name = f"D{i + 1}"
 
-        link_discipline = _LinkDiscipline(design_space, scalable_problem.compute_y)
+        link_discipline = _LinkDiscipline(
+            design_space, scalable_problem.compute_y, scalable_problem.differentiate_y
+        )
 
         super().__init__(
             (discipline, link_discipline, *strongly_coupled_disciplines),
@@ -180,6 +188,13 @@ class _LinkDiscipline(Discipline):
     the values of the design variables in the original optimization problem
     from
     the values of the design and coupling variables in the MDO problem.
+    It is analytically differentiable.
+    """
+
+    __differentiate_mda_analytically: Callable[[RealArray], RealArray] | None
+    """The function differentiating the MDA analytically at a given design point.
+
+    If ``None``, the discipline is not differentiable.
     """
 
     __n_strongly_coupled_disciplines: int
@@ -201,6 +216,7 @@ class _LinkDiscipline(Discipline):
         self,
         design_space: DesignSpace,
         perform_mda_analytically: Callable[[RealArray], RealArray],
+        differentiate_mda_analytically: Callable[[RealArray], RealArray] | None = None,
     ) -> None:
         """
         Args:
@@ -209,6 +225,10 @@ class _LinkDiscipline(Discipline):
                 of the MDO problem.
             perform_mda_analytically: The function
                 performing the MDA analytically at a given design point.
+            differentiate_mda_analytically: The function
+                differentiating the MDA analytically at a given design point.
+                If ``None``, the discipline will not be differentiable.
+
         """  # noqa: D205 D212
         super().__init__(name="L")
         n_strongly_coupled_disciplines = len(design_space) - 1
@@ -229,6 +249,7 @@ class _LinkDiscipline(Discipline):
         self.output_grammar.update_from_names(original_x_names)
 
         self.__perform_mda_analytically = perform_mda_analytically
+        self.__differentiate_mda_analytically = differentiate_mda_analytically
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         # The values of the design variables.
@@ -248,3 +269,27 @@ class _LinkDiscipline(Discipline):
             )
 
         return output_data
+
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        if self.__differentiate_mda_analytically is None:
+            return
+
+        self._init_jacobian(input_names, output_names)
+        input_data = self.io.get_input_data(with_namespaces=False)
+        self.jac[self.__original_x_names[0]][self.__x_names[0]] = ones((1, 1))
+
+        # The derivatives of the coupling variables from the analytical MDA.
+        x = tuple(input_data[name] for name in self.__x_names)
+        d_expected_y_dx = self.__differentiate_mda_analytically(hstack(x))
+
+        for i in range(1, self.__n_strongly_coupled_disciplines + 1):
+            jac = self.jac[self.__original_x_names[i]]
+            jac[self.__y_names[i - 1]] = ones((1, 1))
+            jac[self.__x_names[i]] = ones((1, 1)) - d_expected_y_dx[i - 1, i]
+            for j in range(self.__n_strongly_coupled_disciplines + 1):
+                if j != i:
+                    jac[self.__x_names[j]] = -array([[d_expected_y_dx[i - 1, j]]])
