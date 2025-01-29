@@ -87,6 +87,7 @@ if TYPE_CHECKING:
     )
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
@@ -1074,14 +1075,19 @@ def create_surrogate(
 def create_mda(
     mda_name: str,
     disciplines: Sequence[Discipline],
-    **mda_settings: Any,
+    settings_model: BaseMDASettings | None = None,
+    **settings: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
     Args:
         mda_name: The name of the MDA.
         disciplines: The disciplines.
-        **mda_settings: The settings of the MDA.
+        settings_model: The MDA settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+            The MDA settings model can be imported from :mod:`gemseo.settings.mda`.
+        **settings: The MDA settings as key/value pairs.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
         The MDA.
@@ -1098,7 +1104,12 @@ def create_mda(
     """
     from gemseo.mda.factory import MDAFactory
 
-    return MDAFactory().create(mda_name, disciplines, **mda_settings)
+    return MDAFactory().create(
+        mda_name,
+        disciplines,
+        settings_model=settings_model,
+        **settings,
+    )
 
 
 def execute_post(
