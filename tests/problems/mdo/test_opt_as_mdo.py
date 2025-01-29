@@ -26,6 +26,7 @@ from numpy.testing import assert_almost_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
+from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
 
 
 @pytest.fixture(scope="module")
@@ -104,3 +105,34 @@ def test_non_differentiable_link_discipline(discipline):
         ValueError, match=re.escape("The discipline L was not linearized.")
     ):
         scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+
+
+def test_coupling_equations(discipline):
+    """Check the use of coupling_equations and link_discipline argument."""
+    design_space = DesignSpace()
+    design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+
+    scalable_problem = ScalableProblem()
+    coupling_equations = (
+        scalable_problem.scalable_disciplines,
+        scalable_problem.compute_y,
+        scalable_problem.differentiate_y,
+    )
+    scenario = OptAsMDOScenario(
+        discipline,
+        "f",
+        design_space,
+        formulation_name="MDF",
+        coupling_equations=coupling_equations,
+    )
+
+    disciplines = scenario.disciplines
+    assert disciplines[0].name == "Rosenbrock"
+    assert disciplines[1].name == "L"
+    assert disciplines[2].name == "ScalableDiscipline[1]"
+    assert disciplines[3].name == "ScalableDiscipline[2]"
+
+    scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+    assert_almost_equal(scenario.optimization_result.x_opt, ones(3))
