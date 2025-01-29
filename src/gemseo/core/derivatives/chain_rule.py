@@ -27,6 +27,7 @@ from networkx import edge_bfs
 from networkx import reverse_view
 
 from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.utils.discipline import DummyBaseDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -242,6 +243,12 @@ def _apply_diff_ios(diff_ios: DisciplineIOMapping) -> None:
         diff_ios: The differentiated inputs and outputs.
     """
     for disc, (diff_in, diff_out) in diff_ios.items():
+        # DummyBaseDiscipline are created in the mda_derivatives module to represent a
+        # given set of strongly coupled disciplines (they have the same grammars)
+        # At this point, they do not need to be added differentiated inputs or outputs
+        if isinstance(disc, DummyBaseDiscipline):
+            continue
+
         if diff_in:
             disc.add_differentiated_inputs(diff_in)
         if diff_out:
