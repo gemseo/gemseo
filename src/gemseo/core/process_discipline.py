@@ -43,7 +43,7 @@ class ProcessDiscipline(Discipline):
         disciplines: Sequence[BaseDiscipline],
         name: str = "",
     ) -> None:
-        Discipline.__init__(self, name)
+        super().__init__(name)
         self._disciplines = tuple(disciplines)
         if self.cache is not None:
             self.cache._post_set_tolerance = self._post_set_cache_tolerance

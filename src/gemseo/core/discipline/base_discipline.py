@@ -235,7 +235,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         self.io.data = cache_entry.inputs
         self.io.data.update(cache_entry.outputs)
 
-    def __can_load_cache(self, input_data: StrKeyMapping) -> bool:
+    def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
         """Search and load the cached output data from input data.
 
         On cache hit, the local data are restored from the cached output data.
@@ -355,8 +355,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         input_data = self.io.prepare_input_data(input_data)
 
         if self.cache is not None:
-            if self.__can_load_cache(input_data):
-                self.io.output_grammar.validate(self.io.data)
+            if self._can_load_cache(input_data):
+                if self.validate_output_data:
+                    self.io.output_grammar.validate(self.io.data)
                 return self.io.data
 
             # Keep a pristine copy of the input data before it is eventually changed.

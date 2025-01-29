@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.discipline import Discipline
 
 if TYPE_CHECKING:
@@ -26,6 +27,29 @@ if TYPE_CHECKING:
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
+
+
+# TODO: try to keep only one of these two dummy disciplines
+class DummyBaseDiscipline(BaseDiscipline):
+    """A dummy base discipline that does nothing."""
+
+    def __init__(
+        self,
+        name: str = "",
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        """
+        Args:
+            input_names: The names of the input variables, if any.
+            output_names: The names of the output variables, if any.
+        """  # noqa: D205 D212 D415
+        super().__init__(name=name)
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        pass  # pragma: no cover
 
 
 class DummyDiscipline(Discipline):
