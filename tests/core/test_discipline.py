@@ -329,7 +329,7 @@ def test_data_processor() -> None:
     input_data = SobieskiProblem().get_default_inputs()
     aero.io.data_processor = ComplexDataProcessor()
     out_data = aero.execute(input_data)
-    for v in out_data.values():
+    for v in aero.get_output_data().values():
         assert isinstance(v, ndarray)
         assert v.dtype == complex128
     # Mix data processor and cache

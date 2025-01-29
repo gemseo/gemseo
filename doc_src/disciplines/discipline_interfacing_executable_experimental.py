@@ -10,6 +10,8 @@ from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableR
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from gemseo.typing import StrKeyMapping
+
 
 class ShellExecutableDiscipline(_BaseDiscFromExe):
     """A discipline to execute a shell script as an executable."""
@@ -31,10 +33,9 @@ class ShellExecutableDiscipline(_BaseDiscFromExe):
         # Initialize the default inputs
         self.default_input_data = {"a": np.array([1.0]), "b": np.array([2.0])}
 
-    def _create_inputs(self) -> None:
-        # Write inputs.txt file
+    def _create_inputs(self, input_data: StrKeyMapping) -> None:
         with (self.last_directory / "inputs.txt").open("w") as f:
-            for name, value in self.local_data.items():
+            for name, value in input_data.items():
                 f.write(f"{name}={value[0]}\n")
 
     def _parse_outputs(self) -> Mapping[str, np.ndarray]:

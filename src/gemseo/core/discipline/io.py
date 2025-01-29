@@ -53,7 +53,15 @@ class IO:
     """
 
     data_processor: DataProcessor | None
-    """A pre- and post-processor for the discipline data."""
+    """A pre- and post-processor for the discipline data.
+
+    This mechanism requires that
+    the ``_run()`` method of the discipline
+    for which the :class:`.IO` is an attribute
+    uses input data,
+    returns input data
+    and does not use the ``io.data`` or ``local_data`` attributes.
+    """
 
     input_grammar: BaseGrammar
     """The input grammar."""
@@ -228,32 +236,21 @@ class IO:
     def initialize(self, input_data: StrKeyMapping, validate: bool) -> None:
         """Initialize the data from input data.
 
-        If :attr:`.data_processor` is not ``None`` then ``input_data`` is passed to
-        :attr:`.data_processor.pre_process_data` before initializing :attr:`.data`.
-
         Args:
             input_data: The input data.
             validate: Whether to validate ``input_data``.
         """
         if validate:
             self.input_grammar.validate(input_data)
-        if self.data_processor is not None:
-            input_data = self.data_processor.pre_process_data(input_data)
+
         self.data = input_data
 
     def finalize(self, validate: bool) -> None:
-        """Post-process and validate the output data.
-
-        If :attr:`.data_processor` is not ``None`` then :attr:`.data` is passed to
-        :attr:`.data_processor.post_process_data` before initializing :attr:`.data`.
-        The :attr:`.data` is cleaned from items that are neither inputs nor outputs.
+        """Validate the output data.
 
         Args:
             validate: Whether to validate the (eventually post-processed) cleaned data.
         """
-        if self.data_processor is not None:
-            self.data = self.data_processor.post_process_data(self.data)
-
         if validate:
             self.output_grammar.validate(self.data)
 

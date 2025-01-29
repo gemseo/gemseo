@@ -14,14 +14,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import pytest
+from numpy import array
 
 from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.core.discipline.io import IO
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarType
+from gemseo.disciplines.analytic import AnalyticDiscipline
 
 if TYPE_CHECKING:
     from gemseo.typing import MutableStrKeyMapping
@@ -132,6 +135,11 @@ class Processor(DataProcessor):
         return new_data
 
 
+class OtherProcessor(Processor):
+    def post_process_data(self, data: MutableStrKeyMapping) -> MutableStrKeyMapping:
+        return {k: v[0] for k, v in data.items()}
+
+
 def test_initialize(io: IO):
     io.input_grammar.update_from_data({"input": 0})
 
@@ -153,13 +161,6 @@ def test_initialize(io: IO):
 
     assert io.data == {"input": 0}
 
-    # With data processor.
-    io.data_processor = Processor()
-    io.initialize({"input": 0}, validate)
-    assert io.data == {"input": 1}
-    with pytest.raises(InvalidDataError, match=match):
-        io.initialize({}, validate)
-
 
 def test_finalize(io: IO):
     io.input_grammar.update_from_data({"input": 0})
@@ -180,11 +181,40 @@ def test_finalize(io: IO):
         io.finalize(True)
     assert io.data == {"dummy": 0, "input": "0", "output": "0"}
 
-    # With data processor.
-    io.data_processor = Processor()
-    io.data = {"output": 1}
-    io.finalize(True)
-    assert io.data == {"output": 0}
+
+def test_initialize_finalize_data_processor():
+    # Validate input and output data and use data processor.
+    discipline = AnalyticDiscipline({"y": "x+2"})
+    discipline.validate_input_data = True
+    discipline.validate_output_data = True
+    discipline.io.data_processor = Processor()
+    discipline.execute()
+    # x = 0 in input data
+    # x = 1 after pre-processing
+    # y = 3 after _run
+    # y = 2 after post-processing
+    assert discipline.io.data == {"x": array([0.0]), "y": array([2.0])}
+
+    # Raises an InvalidDataError when passing scalar input data.
+    with pytest.raises(
+        InvalidDataError,
+        match=re.escape(
+            "Grammar AnalyticDiscipline_discipline_input: validation failed.\n"
+            "error: data.x must be array"
+        ),
+    ):
+        discipline.execute({"x": 1.0})
+
+    # Raises an InvalidDataError when returning scalar input data.
+    discipline.io.data_processor = OtherProcessor()
+    with pytest.raises(
+        InvalidDataError,
+        match=re.escape(
+            "Grammar AnalyticDiscipline_discipline_output: validation failed.\n"
+            "error: data.y must be array"
+        ),
+    ):
+        discipline.execute({"x": array([1.0])})
 
 
 def test_linear_relationships(io: IO):

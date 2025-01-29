@@ -55,8 +55,12 @@ class _BaseDiscFromExe(Discipline):
         self.__clean_after_execution = clean_after_execution
 
     @abstractmethod
-    def _create_inputs(self) -> None:
-        """Create the input files."""
+    def _create_inputs(self, input_data: StrKeyMapping) -> None:
+        """Create the input files.
+
+        Args:
+            input_data: The input data.
+        """
 
     @abstractmethod
     def _parse_outputs(self) -> StrKeyMapping:
@@ -68,7 +72,7 @@ class _BaseDiscFromExe(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self._executable_runner.directory_creator.create()
-        self._create_inputs()
+        self._create_inputs(input_data)
         self._executable_runner.execute()
         output_data = self._parse_outputs()
         if self.__clean_after_execution:
