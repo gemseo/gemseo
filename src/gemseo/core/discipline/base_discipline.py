@@ -382,8 +382,17 @@ class BaseDiscipline(BaseMonitoredProcess):
         else:
             # No namespaces, avoid useless processing.
             input_data = self.io.data
+
+        data_processor = self.io.data_processor
+        if data_processor is not None:
+            input_data = data_processor.pre_process_data(input_data)
+
         output_data = self._run(input_data=input_data)
+
         if output_data is not None:
+            if data_processor is not None:
+                output_data = data_processor.post_process_data(output_data)
+
             self.io.update_output_data(output_data)
 
     @abstractmethod

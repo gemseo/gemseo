@@ -266,11 +266,10 @@ class DiscFromExe(_BaseDiscFromExe):
             k: array([literal_eval(v)]) for k, v in self._input_data.items()
         }
 
-    def _create_inputs(self) -> None:
-        """Write the input file."""
+    def _create_inputs(self, input_data: StrKeyMapping) -> None:
         self.write_input_file(
             self._executable_runner.working_directory / self.input_filename,
-            self.io.data,
+            input_data,
             self._in_pos,
             self._in_lines,
         )
