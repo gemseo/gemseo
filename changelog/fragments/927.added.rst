@@ -1,0 +1,1 @@
+New discipline RetryDiscipline: it wraps a discipline to retry the execution several times. It tries to execute the discipline, if it raises an exception then it retries up to a maximum number of attempts. It can pass a tuple of exceptions that, if one of them raised, do not retry the execution.
