@@ -16,7 +16,7 @@ babel==2.16.0
     #   sphinx
 beautifulsoup4==4.12.3
     # via pydata-sphinx-theme
-certifi==2024.12.14
+certifi==2025.1.31
     # via requests
 charset-normalizer==3.4.1
     # via requests
@@ -152,7 +152,7 @@ python-dateutil==2.9.0.post0
     #   pandas
 python-dotenv==1.0.1
     # via pydantic-settings
-pytz==2024.2
+pytz==2025.1
     # via pandas
 pyxdsm==2.3.0
     # via gemseo (pyproject.toml)
