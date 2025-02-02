@@ -10,7 +10,7 @@ autodoc-pydantic==2.2.0
     # via gemseo (pyproject.toml)
 autodocsumm==0.2.14
     # via gemseo (pyproject.toml)
-babel==2.16.0
+babel==2.17.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
