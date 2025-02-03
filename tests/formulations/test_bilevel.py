@@ -22,27 +22,33 @@ import logging
 
 import pytest
 
-from gemseo import create_design_space
 from gemseo import create_discipline
-from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.bilevel import BiLevel
-from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
-    AerostructureDesignSpace,
-)
+from gemseo.formulations.bilevel_bcd import BiLevelBCD
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.testing.bilevel_test_helper import create_aerostructure_scenario
+from gemseo.utils.testing.bilevel_test_helper import create_dummy_bilevel_scenario
+from gemseo.utils.testing.bilevel_test_helper import (
+    create_sobieski_bilevel_bcd_scenario,
+)
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
-from tests.core.test_dependency_graph import create_disciplines_from_desc
+
+
+@pytest.fixture(params=["BiLevel", "BiLevelBCD"])
+def scenario_formulation_name(request):
+    return request.param
 
 
 @pytest.fixture
@@ -52,54 +58,29 @@ def sobieski_bilevel_scenario():
 
 
 @pytest.fixture
-def dummy_bilevel_scenario() -> MDOScenario:
-    """Create a dummy BiLevel scenario.
-
-    It has to be noted that there is no strongly coupled discipline in this example.
-    It implies that MDA1 will not be created. Yet, MDA2 will be created,
-    as it is built with all the sub-disciplines passed to the BiLevel formulation.
-
-    Returns: A dummy BiLevel MDOScenario.
-    """
-    disc_expressions = {
-        "disc_1": (["x_1"], ["a"]),
-        "disc_2": (["a", "x_2"], ["b"]),
-        "disc_3": (["x", "x_3", "b"], ["obj"]),
-    }
-    discipline_1, discipline_2, discipline_3 = create_disciplines_from_desc(
-        disc_expressions
-    )
-
-    system_design_space = create_design_space()
-    system_design_space.add_variable("x_3")
-
-    sub_design_space_1 = create_design_space()
-    sub_design_space_1.add_variable("x_1")
-    sub_scenario_1 = create_scenario(
-        [discipline_1, discipline_3],
-        "obj",
-        sub_design_space_1,
-        formulation_name="MDF",
-    )
-
-    sub_design_space_2 = create_design_space()
-    sub_design_space_2.add_variable("x_2")
-    sub_scenario_2 = create_scenario(
-        [discipline_2, discipline_3],
-        "obj",
-        sub_design_space_2,
-        formulation_name="MDF",
-    )
-
-    return create_scenario(
-        [sub_scenario_1, sub_scenario_2],
-        "obj",
-        system_design_space,
-        formulation_name="BiLevel",
-    )
+def sobieski_bilevel_bcd_scenario():
+    """Fixture from an existing function."""
+    return create_sobieski_bilevel_bcd_scenario()
 
 
-def test_execute(sobieski_bilevel_scenario) -> None:
+@pytest.fixture
+def dummy_bilevel_scenario(scenario_formulation_name) -> MDOScenario:
+    """Fixture from an existing function."""
+    return create_dummy_bilevel_scenario(scenario_formulation_name)
+
+
+@pytest.fixture
+def aerostructure_scenario(scenario_formulation_name) -> MDOScenario:
+    return create_aerostructure_scenario(scenario_formulation_name)
+
+
+@pytest.fixture
+def sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenario]:
+    """Fixture from an existing function."""
+    return create_sobieski_sub_scenarios()
+
+
+def test_constraint_not_in_sub_scenario(sobieski_bilevel_scenario) -> None:
     """Test the execution of the Sobieski BiLevel Scenario."""
     scenario = sobieski_bilevel_scenario(
         apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
@@ -136,73 +117,12 @@ def test_get_sub_options_grammar() -> None:
     assert "acceleration_method" in sub_option_values
 
 
-def test_bilevel_aerostructure() -> None:
+def test_bilevel_aerostructure(aerostructure_scenario) -> None:
     """Test the Bi-level formulation on the aero-structure problem."""
-    algo_options = {
-        "xtol_rel": 1e-8,
-        "xtol_abs": 1e-8,
-        "ftol_rel": 1e-8,
-        "ftol_abs": 1e-8,
-        "ineq_tolerance": 1e-5,
-        "eq_tolerance": 1e-3,
-    }
+    scenario = aerostructure_scenario
 
-    aero_formulas = {
-        "drag": "0.1*((sweep/360)**2 + 200 + thick_airfoils**2 - thick_airfoils - "
-        "4*displ)",
-        "forces": "10*sweep + 0.2*thick_airfoils - 0.2*displ",
-        "lift": "(sweep + 0.2*thick_airfoils - 2.*displ)/3000.",
-    }
-    aerodynamics = create_discipline(
-        "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
-    )
-    struc_formulas = {
-        "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels + 200.0*forces",
-        "reserve_fact": "-3*sweep - 6*thick_panels + 0.1*forces + 55",
-        "displ": "2*sweep + 3*thick_panels - 2.*forces",
-    }
-    structure = create_discipline(
-        "AnalyticDiscipline", name="Structure", expressions=struc_formulas
-    )
-    mission_formulas = {"range": "8e11*lift/(mass*drag)"}
-    mission = create_discipline(
-        "AnalyticDiscipline", name="Mission", expressions=mission_formulas
-    )
-    design_space_ref = AerostructureDesignSpace()
-
-    design_space_aero = design_space_ref.filter(["thick_airfoils"], copy=True)
-    aero_scenario = create_scenario(
-        [aerodynamics, mission],
-        "range",
-        design_space_aero,
-        formulation_name="DisciplinaryOpt",
-        maximize_objective=True,
-    )
-    aero_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=2, **algo_options)
-
-    design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
-    struct_scenario = create_scenario(
-        [structure, mission],
-        "range",
-        design_space_struct,
-        formulation_name="DisciplinaryOpt",
-        maximize_objective=True,
-    )
-    struct_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=2, **algo_options)
-
-    design_space_system = design_space_ref.filter(["sweep"], copy=True)
-    system_scenario = create_scenario(
-        [aero_scenario, struct_scenario, mission],
-        "range",
-        design_space_system,
-        formulation_name="BiLevel",
-        maximize_objective=True,
-        main_mda_name="MDAJacobi",
-        main_mda_settings={"tolerance": 1e-8},
-    )
-    system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
-    system_scenario.add_constraint("lift", value=0.5)
-    system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=5, **algo_options)
+    assert isinstance(scenario.optimization_result, OptimizationResult)
+    assert scenario.formulation.optimization_problem.database.n_iterations == 5
 
 
 def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
@@ -216,18 +136,23 @@ def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
     # a and b are weak couplings of all the disciplines,
     # and they are in the top-level outputs of the first adapter
     disciplines = dummy_bilevel_scenario.formulation.chain.disciplines
-    assert "b" in disciplines[0].io.input_grammar
     assert "a" in disciplines[0].io.output_grammar
-
-    # a is a weak coupling of all the disciplines,
-    # and it is in the top-level inputs of the second adapter
-    assert "a" in disciplines[1].io.input_grammar
-
-    # a is a weak coupling of all the disciplines,
-    # and is in the top-level inputs of the second adapter
     assert "b" in disciplines[1].io.output_grammar
 
+    if dummy_bilevel_scenario.formulation == BiLevel:
+        assert "b" in disciplines[0].io.input_grammar
+        assert "a" in disciplines[1].io.input_grammar
 
+    if dummy_bilevel_scenario.formulation == BiLevelBCD:
+        assert "b" in disciplines[0].io.output_grammar
+        assert "a" in disciplines[1].io.output_grammar
+        assert "a" not in disciplines[0].io.input_grammar
+        assert "b" not in disciplines[0].io.input_grammar
+        assert "a" not in disciplines[1].io.input_grammar
+        assert "b" not in disciplines[1].io.input_grammar
+
+
+@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     """Test that the user can access the MDA1 and MDA2."""
     # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
@@ -235,6 +160,7 @@ def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     assert "obj" in dummy_bilevel_scenario.formulation.mda2.io.output_grammar
 
 
+@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
     """Test that the user cannot modify the MDA1 and MDA2 after instantiation."""
     discipline = create_discipline("SellarSystem")
@@ -244,13 +170,16 @@ def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
         dummy_bilevel_scenario.formulation.mda2 = discipline
 
 
-def test_get_sub_disciplines(sobieski_bilevel_scenario) -> None:
+@pytest.mark.parametrize(
+    "scenario", [sobieski_bilevel_scenario, sobieski_bilevel_bcd_scenario]
+)
+def test_get_sub_disciplines(scenario, request) -> None:
     """Test the get_sub_disciplines method with the BiLevel formulation.
 
     Args:
         sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
     """
-    scenario = sobieski_bilevel_scenario()
+    scenario = request.getfixturevalue(scenario.__name__)()
     classes = [
         discipline.__class__
         for discipline in get_sub_disciplines(scenario.formulation.disciplines)
@@ -264,13 +193,16 @@ def test_get_sub_disciplines(sobieski_bilevel_scenario) -> None:
     }
 
 
-def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
+@pytest.mark.parametrize(
+    "scenario", [sobieski_bilevel_scenario, sobieski_bilevel_bcd_scenario]
+)
+def test_bilevel_warm_start(scenario, request) -> None:
     """Test the warm start of the BiLevel chain.
 
     Args:
         sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
     """
-    scenario = sobieski_bilevel_scenario()
+    scenario = request.getfixturevalue(scenario.__name__)()
     scenario.formulation.chain.set_cache(Discipline.CacheType.MEMORY_FULL)
     bilevel_chain_cache = scenario.formulation.chain.cache
     scenario.formulation.chain.disciplines[0].set_cache(
@@ -285,19 +217,21 @@ def test_bilevel_warm_start(sobieski_bilevel_scenario) -> None:
     assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
     assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
     assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()
+    assert mda1_inputs[1]["y_32"] == chain_outputs[0]["y_32"]
+    assert (mda1_inputs[1]["y_23"] == chain_outputs[0]["y_23"]).all()
+    assert mda1_inputs[2]["y_32"] == chain_outputs[1]["y_32"]
+    assert (mda1_inputs[2]["y_23"] == chain_outputs[1]["y_23"]).all()
 
 
+@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
     """Test that a warm start chain is built even if the process does not include any
     MDA1.
-
-    Args:
-        dummy_bilevel_scenario: Fixture to instantiate a dummy weakly
-            coupled scenario.
     """
     assert isinstance(dummy_bilevel_scenario.formulation.chain, MDOWarmStartedChain)
 
 
+@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_get_variable_names_to_warm_start_without_mdas(
     dummy_bilevel_scenario, monkeypatch
 ) -> None:
@@ -307,13 +241,12 @@ def test_bilevel_get_variable_names_to_warm_start_without_mdas(
     def _no_mda2(*args, **kwargs):
         return None
 
-    scenario = dummy_bilevel_scenario
-    monkeypatch.setattr(scenario.formulation, "_mda2", _no_mda2())
+    monkeypatch.setattr(dummy_bilevel_scenario.formulation, "_mda2", _no_mda2())
     variables = []
-    for adapter in scenario.formulation.scenario_adapters:
+    for adapter in dummy_bilevel_scenario.formulation._scenario_adapters:
         variables.extend(adapter.io.output_grammar)
     assert sorted(set(variables)) == sorted(
-        scenario.formulation._get_variable_names_to_warm_start()
+        dummy_bilevel_scenario.formulation._get_variable_names_to_warm_start()
     )
 
 
@@ -330,15 +263,21 @@ def test_test_bilevel_get_variable_names_to_warm_start_from_mdas(
 
 
 @pytest.mark.parametrize(
-    "options",
+    ("settings", "sub_scenario_formulation", "scenario_formulation"),
     [
-        {},
-        {"sub_scenarios_log_level": None},
-        {"sub_scenarios_log_level": logging.INFO},
-        {"sub_scenarios_log_level": logging.WARNING},
+        ({}, "MDF", "BiLevelBCD"),
+        ({"sub_scenarios_log_level": None}, "MDF", "BiLevelBCD"),
+        ({"sub_scenarios_log_level": logging.INFO}, "MDF", "BiLevelBCD"),
+        ({"sub_scenarios_log_level": logging.WARNING}, "MDF", "BiLevelBCD"),
+        ({}, "DisciplinaryOpt", "BiLevel"),
+        ({"sub_scenarios_log_level": None}, "DisciplinaryOpt", "BiLevel"),
+        ({"sub_scenarios_log_level": logging.INFO}, "DisciplinaryOpt", "BiLevel"),
+        ({"sub_scenarios_log_level": logging.WARNING}, "DisciplinaryOpt", "BiLevel"),
     ],
 )
-def test_scenario_log_level(caplog, options) -> None:
+def test_scenario_log_level(
+    caplog, settings, sub_scenario_formulation, scenario_formulation
+) -> None:
     """Check scenario_log_level."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
@@ -347,7 +286,7 @@ def test_scenario_log_level(caplog, options) -> None:
         [AnalyticDiscipline({"z": "(x+y)**2"})],
         "z",
         design_space.filter(["y"], copy=True),
-        formulation_name="DisciplinaryOpt",
+        formulation_name=sub_scenario_formulation,
         name="FooScenario",
     )
     sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
@@ -355,21 +294,15 @@ def test_scenario_log_level(caplog, options) -> None:
         [sub_scenario],
         "z",
         design_space.filter(["x"]),
-        formulation_name="BiLevel",
-        **options,
+        formulation_name=scenario_formulation,
+        **settings,
     )
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
-    sub_scenarios_log_level = options.get("sub_scenarios_log_level")
+    sub_scenarios_log_level = settings.get("sub_scenarios_log_level")
     if sub_scenarios_log_level == logging.WARNING:
         assert "Start FooScenario execution" not in caplog.text
     else:
         assert "Start FooScenario execution" in caplog.text
-
-
-@pytest.fixture
-def sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenario]:
-    """Fixture from an existing function."""
-    return create_sobieski_sub_scenarios()
 
 
 def test_remove_couplings_from_ds(sobieski_sub_scenarios) -> None:
@@ -381,3 +314,97 @@ def test_remove_couplings_from_ds(sobieski_sub_scenarios) -> None:
     )
     for strong_coupling in ["y_12", "y_21", "y_23", "y_31", "y_32"]:
         assert strong_coupling not in formulation.design_space
+
+
+@pytest.mark.parametrize(
+    ("scenario", "subscenario"),
+    [
+        (
+            sobieski_bilevel_bcd_scenario,
+            {
+                "StructureScenario_adapter": {
+                    "ssbj_local_variables": {"x_1", "x_2", "x_3"},
+                    "ssbj_input_couplings": {"y_31", "y_21", "y_23"},
+                },
+                "PropulsionScenario_adapter": {
+                    "ssbj_local_variables": {"x_1", "x_2", "x_3"},
+                    "ssbj_input_couplings": {"y_31", "y_21", "y_23"},
+                },
+                "AerodynamicsScenario_adapter": {
+                    "ssbj_local_variables": {"x_1", "x_2", "x_3"},
+                    "ssbj_input_couplings": {"y_31", "y_21", "y_23"},
+                },
+            },
+        ),
+        (
+            sobieski_bilevel_scenario,
+            {
+                "StructureScenario_adapter": {
+                    "ssbj_local_variables": {"x_1"},
+                    "ssbj_input_couplings": {"y_31", "y_21"},
+                },
+                "PropulsionScenario_adapter": {
+                    "ssbj_local_variables": {"x_3"},
+                    "ssbj_input_couplings": {"y_23"},
+                },
+                "AerodynamicsScenario_adapter": {
+                    "ssbj_local_variables": {"x_2"},
+                    "ssbj_input_couplings": {"y_32", "y_12"},
+                },
+            },
+        ),
+    ],
+)
+def test_adapters_inputs_outputs(scenario, subscenario, request) -> None:
+    """Test that the ScenarioAdapters within the BCD loop have the right inputs and
+    outputs.
+    """
+    scenario = request.getfixturevalue(scenario.__name__)()
+    all_ssbj_couplings = {
+        "y_14",
+        "y_12",
+        "y_32",
+        "y_31",
+        "y_34",
+        "y_21",
+        "y_23",
+        "y_24",
+    }
+
+    # Necessary couplings as inputs,
+    # depends on the order of the disciplines within the block MDAs.
+    ssbj_shared_variables = {"x_shared"}
+    for scenario_adapter in scenario.formulation._scenario_adapters:
+        ssbj_local_variables = subscenario[scenario_adapter.name][
+            "ssbj_local_variables"
+        ]
+        ssbj_input_couplings = subscenario[scenario_adapter.name][
+            "ssbj_input_couplings"
+        ]
+        adapter = scenario_adapter
+
+        design_variable = set(
+            adapter.scenario.formulation.optimization_problem.design_space.variable_names
+        )
+        other_local = ssbj_local_variables.difference(design_variable)
+        # Check the inputs
+        inputs = set(adapter.io.input_grammar)
+        # Check the outputs
+        outputs = set(adapter.io.output_grammar)
+        # Shared variables should always be present.
+        assert ssbj_shared_variables.issubset(inputs)
+        # Only necessary couplings should always be present.
+        assert ssbj_input_couplings.issubset(inputs)
+        # All local variables, excepted the optimized ones, should be present.
+        assert other_local.issubset(inputs)
+        assert not design_variable.issubset(inputs)
+
+        # Shared variables should never be present
+        assert not ssbj_shared_variables.issubset(outputs)
+        # Only the optimized local variables should be present.
+        assert design_variable.issubset(outputs)
+
+        if isinstance(scenario.formulation, BiLevelBCD):
+            # All couplings should always be present
+            assert all_ssbj_couplings.issubset(outputs)
+            assert not other_local.issubset(outputs)

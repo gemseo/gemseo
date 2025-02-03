@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings  # noqa:F401
 from gemseo.formulations.bilevel_settings import BiLevel_Settings  # noqa: F401
 from gemseo.formulations.disciplinary_opt_settings import (  # noqa: F401
     DisciplinaryOpt_Settings,
