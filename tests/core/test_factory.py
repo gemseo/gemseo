@@ -79,7 +79,7 @@ def test_print_configuration(reset_factory) -> None:
         assert re.findall(pattern, line)
 
     # check table body
-    formulations = ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
+    formulations = ["BiLevel", "BiLevelBCD", "DisciplinaryOpt", "IDF", "MDF"]
 
     for formulation in formulations:
         pattern = f"\\|\\s+{formulation}\\s+\\|\\s+Yes\\s+\\|.+\\|"

@@ -46,7 +46,7 @@ class BiLevelScenarioResult(ScenarioResult):
         main_problem = formulation.optimization_problem
         x_shared_opt = main_problem.solution.x_opt
         i_opt = main_problem.database.get_iteration(x_shared_opt) - 1
-        scenario_adapters = formulation.scenario_adapters
+        scenario_adapters = formulation._scenario_adapters
         self.__n_sub_problems = len(scenario_adapters)
         for index, scenario_adapter in enumerate(scenario_adapters):
             sub_problem = scenario_adapter.scenario.formulation.optimization_problem

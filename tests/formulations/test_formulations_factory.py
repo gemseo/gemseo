@@ -55,7 +55,7 @@ def test_create_with_wrong_formulation_name(factory) -> None:
         ImportError,
         match=re.escape(
             "The class foo is not available; "
-            "the available ones are: BiLevel, DisciplinaryOpt, IDF, MDF."
+            "the available ones are: BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF."
         ),
     ):
         factory.create("foo", None, None, None)
