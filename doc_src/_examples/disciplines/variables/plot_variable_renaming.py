@@ -20,8 +20,12 @@ Renaming variables
 
 from __future__ import annotations
 
+from numpy import array
+
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.variable_renaming import VariableRenamer
 from gemseo.utils.variable_renaming import VariableTranslation
+from gemseo.utils.variable_renaming import rename_discipline_variables
 
 # %%
 # In the context of a multidisciplinary study,
@@ -37,8 +41,53 @@ from gemseo.utils.variable_renaming import VariableTranslation
 # The :mod:`.variable_renaming` module
 # enables these models to be connected automatically using a set of translations.
 #
-# The main objects
-# ----------------
+# Renaming discipline variables from translators
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# :func:`.rename_discipline_variables` is a function
+# to rename some discipline variables from a dictionary of translators
+# of the form ``{discipline_name: {variable_name: new_variable_name}}``.
+# For example,
+# let us consider four analytic disciplines.
+# There is the first discipline, named ``"A"``,
+# for which we would like to rename ``"a"`` to ``"x"`` and ``"c"`` to ``"z"``,
+disciplines = [AnalyticDiscipline({"c": "2*a"}, name="A")]
+# %%
+# the second discipline, named ``"C"``, to be used as is:
+disciplines.append(AnalyticDiscipline({"t": "3*g"}, name="C"))
+# %%
+# the third disciplines, also named ``"A"``,
+# for which we would like to rename ``"a"`` to ``"x"`` and ``"c"`` to ``"z"``
+# (as said above):
+disciplines.append(AnalyticDiscipline({"c": "4*a"}, name="A"))
+# %%
+# and the last one, named ``"B"``,
+# for which we would like to rename ``"b"`` to ``"y"``:
+disciplines.append(AnalyticDiscipline({"b": "5*j"}, name="B"))
+# %%
+# The following nested dictionary indexed by the discipline names
+# defines the translators:
+translators = {"A": {"a": "x", "c": "z"}, "B": {"b": "y"}}
+# %%
+# Finally,
+# we can rename the input and output variables of the disciplines:
+rename_discipline_variables(disciplines, translators)
+# %%
+# and verify that the renaming has been done correctly:
+disc_a, disc_c, other_disc_a, disc_b = disciplines
+assert disc_a.execute({"x": array([3.0])})["z"] == array([6.0])
+assert disc_c.execute({"g": array([3.0])})["t"] == array([9.0])
+assert other_disc_a.execute({"x": array([3.0])})["z"] == array([12.0])
+assert disc_b.execute({"j": array([3.0])})["y"] == array([15.0])
+# %%
+# .. tip::
+#
+#    Creating the nested dictionary ``translators`` can be a pain
+#    when there is a lot of disciplines and a lot of variables to rename.
+#    The following sections present some tools to facilitate its creation.
+#
+# %%
+# Create translators easily
+# -------------------------
 # Variable translation
 # ~~~~~~~~~~~~~~~~~~~~
 # First,
@@ -66,6 +115,12 @@ renamer
 # mapping from discipline names to dictionaries,
 # themselves mapping from the discipline variable names to the global variable names:
 renamer.translators
+
+# %%
+# You can use these translators to rename the corresponding discipline variables,
+# by calling the :func:`.rename_discipline_variables` function
+# presented in the first section:
+rename_discipline_variables(disciplines, renamer.translators)
 
 # %%
 # We can also access the translations:

@@ -20,9 +20,13 @@ import re
 from pathlib import Path
 
 import pytest
+from numpy import array
+from numpy.testing import assert_equal
 
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.utils.variable_renaming import VariableRenamer
 from gemseo.utils.variable_renaming import VariableTranslation
+from gemseo.utils.variable_renaming import rename_discipline_variables
 
 
 @pytest.fixture(scope="module")
@@ -47,6 +51,19 @@ def translations() -> tuple[
 def translators() -> dict[str, dict[str, str]]:
     """The translators."""
     return {"A": {"a": "x", "c": "z"}, "B": {"b": "y"}}
+
+
+@pytest.fixture
+def disciplines() -> tuple[
+    AnalyticDiscipline, AnalyticDiscipline, AnalyticDiscipline, AnalyticDiscipline
+]:
+    """Four analytic disciplines."""
+    return (
+        AnalyticDiscipline({"c": "2*a"}, name="A"),
+        AnalyticDiscipline({"t": "3*g"}, name="C"),
+        AnalyticDiscipline({"c": "4*a"}, name="A"),
+        AnalyticDiscipline({"b": "5*j"}, name="B"),
+    )
 
 
 def test_variable_translation():
@@ -199,3 +216,22 @@ def test_rename_twice_error():
     )
     with pytest.raises(ValueError, match=msg):
         VariableRenamer.from_translations(*translations)
+
+
+def test_rename_discipline_variables(disciplines, translators):
+    """Check rename_discipline_variables.
+
+    Translators: {"A": {"a": "x", "c": "z"}, "B": {"b": "y"}}
+
+    Disciplines:
+        - AnalyticDiscipline({"c": "2*a"}, name="A"): rename a to x and c to z
+        - AnalyticDiscipline({"t": "3*g"}, name="C"): no renaming
+        - AnalyticDiscipline({"c": "4*a"}, name="A"): rename a to x and c to z
+        - AnalyticDiscipline({"b": "5*j"}, name="B"): rename b to y
+    """
+    rename_discipline_variables(disciplines, translators)
+    disc_a, disc_c, other_disc_a, disc_b = disciplines
+    assert_equal(disc_a.execute({"x": array([3.0])})["z"], array([6.0]))
+    assert_equal(disc_c.execute({"g": array([3.0])})["t"], array([9.0]))
+    assert_equal(other_disc_a.execute({"x": array([3.0])})["z"], array([12.0]))
+    assert_equal(disc_b.execute({"j": array([3.0])})["y"], array([15.0]))

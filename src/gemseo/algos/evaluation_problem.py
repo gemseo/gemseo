@@ -642,7 +642,7 @@ class EvaluationProblem(BaseProblem):
         round_ints: bool = True,
         support_sparse_jacobian: bool = False,
         store_jacobian: bool = True,
-    ) -> MDOFunction:
+    ) -> ProblemFunction:
         """Wrap the function for a more attractive evaluation.
 
         Args:

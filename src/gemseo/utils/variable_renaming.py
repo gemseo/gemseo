@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from collections.abc import Iterable
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import NamedTuple
@@ -27,12 +28,16 @@ from pandas import read_csv
 from pandas import read_excel
 from prettytable import PrettyTable
 
+from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from typing_extensions import Self
+
+    from gemseo.core.discipline.discipline import Discipline
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -264,3 +269,30 @@ class VariableTranslation(NamedTuple):
             f"{self.discipline_name!r}.{self.variable_name!r}"
             f"={self.new_variable_name!r}"
         )
+
+
+def rename_discipline_variables(
+    disciplines: Iterable[Discipline], translators: Mapping[str, Mapping[str, str]]
+) -> None:
+    """Rename input and output variables of disciplines.
+
+    Args:
+        disciplines: The disciplines.
+        translators: The translators
+            of the form ``{discipline_name: {variable_name: new_variable_name}}``.
+    """
+    for discipline in disciplines:
+        translator = translators.get(discipline.name)
+        if translator is None:
+            continue
+
+        grammars = [discipline.io.input_grammar, discipline.io.output_grammar]
+        for variable_name, new_variable_name in translator.items():
+            for grammar in grammars:
+                if variable_name in grammar:
+                    grammar.rename_element(variable_name, new_variable_name)
+
+        discipline.io.data_processor = NameMapping({
+            new_variable_name: variable_name
+            for variable_name, new_variable_name in translator.items()
+        })
