@@ -14,7 +14,7 @@ babel==2.17.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
-beautifulsoup4==4.13.1
+beautifulsoup4==4.13.3
     # via pydata-sphinx-theme
 certifi==2025.1.31
     # via requests
@@ -102,7 +102,7 @@ pandas==2.2.2
     #   pandera
 pandera==0.22.1
     # via gemseo (pyproject.toml)
-pbr==6.1.0
+pbr==6.1.1
     # via sphinxcontrib-apidoc
 pillow==10.4.0
     # via
@@ -173,6 +173,7 @@ scipy==1.14.1
 setuptools==75.8.0
     # via
     #   gemseo (pyproject.toml)
+    #   pbr
     #   sphinxcontrib-bibtex
 six==1.17.0
     # via
