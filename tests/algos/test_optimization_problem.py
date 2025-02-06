@@ -436,23 +436,11 @@ def _test_check_bounds(pow2_problem) -> None:
         problem.check()
 
 
-def test_differentiation_method(pow2_problem) -> None:
-    problem = pow2_problem
-    problem.differentiation_method = problem.ApproximationMode.COMPLEX_STEP
-    problem.differentiation_step = 0.0
-    with pytest.raises(ValueError):
-        problem.check()
-    problem.differentiation_step = 1e-7 + 1j * 1.0e-7
-    problem.check()
-    problem.differentiation_step = 1j * 1.0e-7
-    problem.check()
-
-    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
-    problem.differentiation_step = 0.0
-    with pytest.raises(ValueError):
-        problem.check()
-    problem.differentiation_step = 1e-7 + 1j * 1.0e-7
-    problem.check()
+def test_invalid_differentiation_method(pow2_problem) -> None:
+    """Check the error raised when using an invalid differentiation method."""
+    pow2_problem.differentiation_method = "foo"
+    with pytest.raises(ImportError, match=r"The class foo is not available"):
+        pow2_problem.preprocess_functions()
 
 
 def test_get_dv_names() -> None:

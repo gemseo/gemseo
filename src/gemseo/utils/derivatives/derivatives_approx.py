@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from numpy import atleast_1d
 from scipy.sparse import hstack as sparse_hstack
 
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
@@ -154,7 +155,7 @@ class DisciplineJacApprox:
         self.approximator = GradientApproximatorFactory().create(
             self.approx_method,
             self.func.evaluate,
-            step=self.step,
+            step=atleast_1d(self.step),
             parallel=self.__parallel,
             **self.__par_args,
         )

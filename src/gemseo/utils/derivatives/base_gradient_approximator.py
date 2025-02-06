@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
@@ -30,10 +31,11 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from numbers import Number
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+
+LOGGER = logging.getLogger(__name__)
 
 
 class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -45,13 +47,13 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
     _APPROXIMATION_MODE: ClassVar[ApproximationMode]
     """The approximation mode that a derived class implements."""
 
-    _DEFAULT_STEP: ClassVar[Number]
+    _DEFAULT_STEP: ClassVar[float]
     """The default value for the step."""
 
     def __init__(
         self,
         f_pointer: Callable[[ndarray, Any, ...], ndarray],
-        step: complex | ndarray | None = None,
+        step: complex | ndarray = 0.0,
         design_space: DesignSpace | None = None,
         normalize: bool = True,
         parallel: bool = False,
@@ -61,6 +63,8 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             f_pointer: The pointer to the function to derive.
             step: The default differentiation step.
+                If ``0.0``,
+                use a default value specific to the gradient approximation method.
             design_space: The design space
                 containing the upper bounds of the input variables.
                 If ``None``, consider that the input variables are unbounded.
@@ -72,7 +76,12 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.f_pointer = f_pointer
         self._parallel_args = parallel_args
         self._parallel = parallel
-        self.step = step if step is not None else self._DEFAULT_STEP
+        # TODO: API: replace "step not in (None, 0.0)" by "step != 0.0".
+        if isinstance(step, ndarray) or step not in (None, 0.0):
+            self.step = step
+        else:
+            self._step = self._DEFAULT_STEP
+
         self._design_space = design_space
         self._normalize = normalize
         self._function_kwargs = {}
@@ -87,7 +96,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         value: float,
     ) -> None:
-        self._step = value
+        self._step = value.real
 
     def f_gradient(
         self,
@@ -187,7 +196,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
               either one global step or one step by input component.
         """
         if step is None:
-            step = self.step
+            step = self._step
 
         if not x_indices:
             x_indices = range(n_dim)

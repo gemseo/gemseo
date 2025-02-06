@@ -115,6 +115,9 @@ class EvaluationProblem(BaseProblem):
         doc="The differentiation methods.",
     )
 
+    differentiation_method: DifferentiationMethod
+    """The differentiation method."""
+
     def __init__(
         self,
         design_space: DesignSpace,
@@ -151,7 +154,6 @@ class EvaluationProblem(BaseProblem):
         self.__observables = Observables()
         self.__new_iter_observables = Observables()
         self.differentiation_step = differentiation_step
-        self.__differentiation_method = None
         self.differentiation_method = differentiation_method
         self.database = (
             Database(input_space=design_space) if database is None else database
@@ -703,9 +705,14 @@ class EvaluationProblem(BaseProblem):
             self.design_space,
             store_jacobian,
             differentiation_method=(
-                self.differentiation_method
-                if self.differentiation_method in set(self.ApproximationMode)
-                else None
+                None
+                if (
+                    self.differentiation_method
+                    in set(self.DifferentiationMethod).difference(
+                        set(self.ApproximationMode)
+                    )
+                )
+                else self.differentiation_method
             ),
             step=self.differentiation_step,
             normalize=is_function_input_normalized,
@@ -718,39 +725,6 @@ class EvaluationProblem(BaseProblem):
     def check(self) -> None:
         """Check if the functions attached to the problem can be evaluated."""
         self.design_space.check()
-        self.__check_differentiation_method()
-
-    def __check_differentiation_method(self) -> None:
-        """Check that the differentiation method is a :attr:`.DifferentiationMethod`.
-
-        Raises:
-            ValueError: If either
-                the differentiation method is unknown,
-                the complex step is null or
-                the finite differences' step is null.
-        """
-        if self.differentiation_method == self.ApproximationMode.COMPLEX_STEP:
-            if self.differentiation_step == 0:
-                msg = "ComplexStep step is null!"
-                raise ValueError(msg)
-            if self.differentiation_step.imag != 0:
-                LOGGER.warning(
-                    "Complex step method has an imaginary "
-                    "step while required a pure real one."
-                    " Auto setting the real part"
-                )
-                self.differentiation_step = self.differentiation_step.imag
-        elif self.differentiation_method == self.ApproximationMode.FINITE_DIFFERENCES:
-            if self.differentiation_step == 0:
-                msg = "Finite differences step is null!"
-                raise ValueError(msg)
-            if self.differentiation_step.imag != 0:
-                LOGGER.warning(
-                    "Finite differences method has a complex "
-                    "step while required a pure real one."
-                    " Auto setting the imaginary part to 0"
-                )
-                self.differentiation_step = self.differentiation_step.real
 
     @overload
     def to_dataset(
