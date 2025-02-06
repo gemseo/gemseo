@@ -33,3 +33,19 @@ class ApproximationMode(StrEnum):
     CENTERED_DIFFERENCES = "centered_differences"
     """The centered differences method used to approximate the Jacobians by perturbing
     each variable with a small real number."""
+
+
+class HybridApproximationMode(StrEnum):
+    """The approximation derivation modes for semi-analytical computations."""
+
+    HYBRID_COMPLEX_STEP = "hybrid_complex_step"
+    """"The complex step method used to approximiate the Jacobian not available
+     analytically by perturbing those variables with a small complex number."""
+
+    HYBRID_FINITE_DIFFERENCES = "hybrid_finite_differences"
+    """"The finite differences method used to approxiamate the Jacobian not available
+     analytically by perturbing those variables with a small real number."""
+
+    HYBRID_CENTERED_DIFFERENCES = "hybrid_centered_differences"
+    """The centered differences method used to approxiamate the Jacobian not available
+     analytically by perturbing those variables with a small real number."""
