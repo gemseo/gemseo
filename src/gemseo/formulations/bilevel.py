@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A Bi-level formulation."""
+"""A BiLevel formulation."""
 
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BiLevel(BaseMDOFormulation):
-    """A bi-level formulation.
+    """A BiLevel formulation.
 
     This formulation draws an optimization architecture
     that involves multiple optimization problems to be solved
@@ -63,7 +63,7 @@ class BiLevel(BaseMDOFormulation):
 
     Here,
     at each iteration on the global design variables,
-    the bi-level MDO formulation implementation performs:
+    the BiLevel MDO formulation implementation performs:
 
     1. a first MDA to compute the coupling variables,
     2. several disciplinary optimizations on the local design variables in parallel,
@@ -98,7 +98,26 @@ class BiLevel(BaseMDOFormulation):
 
     Settings: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
 
+    chain: MDOChain
+    """The chain of the inner problem of the BiLevel formulation
+    (MDA1 -> sub-scenarios -> MDA2)"""
+
+    coupling_structure: CouplingStructure
+    """The coupling structure between the involved disciplines."""
+
     _settings: BiLevel_Settings
+
+    _scenario_adapters: list[MDOScenarioAdapter]
+    """The adapters of the optimization sub-scenarios."""
+
+    _mda1: BaseMDA | None
+    """The first MDA that solves the couplings before sub-scenarios.
+
+    The MDA1 is not built (``None``) if disciplines are not strongly coupled.
+    """
+
+    _mda2: BaseMDA
+    """The second MDA that solves the couplings after sub-scenarios."""
 
     __mda_factory: ClassVar[MDAFactory] = MDAFactory()
     """The MDA factory."""
@@ -141,6 +160,11 @@ class BiLevel(BaseMDOFormulation):
     def mda2(self) -> BaseMDA:
         """The MDA2 instance."""
         return self._mda2
+
+    @property
+    def scenario_adapters(self) -> list[MDOScenarioAdapter]:
+        """All the adapters that wrap sub-scenarios."""
+        return self._scenario_adapters
 
     def _build_scenario_adapters(
         self,
