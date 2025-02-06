@@ -205,6 +205,12 @@ def test_outputs(hsic_analysis, outputs) -> None:
     assert list(hsic_analysis.indices.hsic) == output_names
 
 
+def test_sort_input_variables(hsic_analysis):
+    """Check that sort_input_variables works correctly."""
+    hsic_analysis.compute_indices()
+    assert hsic_analysis.sort_input_variables("y1") == ["x2", "x1"]
+
+
 def test_methods(hsic_analysis_2) -> None:
     """Check the methods for which the indices have been computed."""
     assert {f.name for f in fields(hsic_analysis_2.indices)} == {
