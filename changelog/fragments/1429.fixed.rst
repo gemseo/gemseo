@@ -1,0 +1,1 @@
+``HSICAnalysis.sort_input_variables`` now correctly returns the input parameters sorted by order of influence.

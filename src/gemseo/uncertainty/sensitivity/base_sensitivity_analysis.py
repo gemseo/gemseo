@@ -276,7 +276,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         the sensitivity index which is a 1D NumPy array can be accessed through
         ``main_indices[output_name][output_component][input_name]``.
         """
-        return getattr(self.indices, str(self.main_method).lower())
+        return getattr(self.indices, str(self.main_method).lower().replace("-", "_"))
 
     def sort_input_variables(self, output: VariableType) -> list[str]:
         """Return the input variables sorted in descending order.
