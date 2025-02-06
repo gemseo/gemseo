@@ -68,6 +68,8 @@ from gemseo.utils.pickle import to_pickle
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.typing import StrKeyMapping
 
 Status = ExecutionStatus.Status
@@ -115,6 +117,44 @@ def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
     chain_inputs = chain.io.input_grammar
     indata = SobieskiProblem().get_default_inputs(names=chain_inputs)
     return chain, indata
+
+
+@pytest.fixture
+def hybrid_jacobian_discipline() -> Discipline:
+    class HybridDiscipline(Discipline):
+        def __init__(self) -> None:
+            super().__init__()
+            self.input_grammar.update_from_names(["x_1"])
+            self.input_grammar.update_from_names(["x_2"])
+            self.input_grammar.update_from_names(["x_3"])
+            self.output_grammar.update_from_names(["y_1"])
+            self.output_grammar.update_from_names(["y_2"])
+            self.output_grammar.update_from_names(["y_3"])
+            self.default_input_data = {
+                "x_1": array([1.0]),
+                "x_2": array([2.0]),
+                "x_3": array([1.0]),
+            }
+
+        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+            self.io.data["y_1"] = input_data["x_1"] * input_data["x_2"]
+            self.io.data["y_2"] = (
+                input_data["x_1"] * input_data["x_2"] * input_data["x_3"]
+            )
+            self.io.data["y_3"] = input_data["x_1"]
+
+        def _compute_jacobian(
+            self,
+            input_names: Iterable[str] = (),
+            output_names: Iterable[str] = (),
+        ) -> None:
+            self._init_jacobian()
+            x1 = array([self.get_input_data(with_namespaces=False)["x_1"]])
+            x2 = array([self.get_input_data(with_namespaces=False)["x_2"]])
+            x3 = array([self.get_input_data(with_namespaces=False)["x_3"]])
+            self.jac = {"y_1": {"x_1": x2}, "y_2": {"x_2": x1 * x3}}
+
+    return HybridDiscipline()
 
 
 @pytest.mark.xfail
@@ -198,7 +238,6 @@ def test_check_jac_fdapprox() -> None:
     aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     aero.linearize(inpts, compute_all_jacobians=True)
     aero.check_jacobian(inpts)
-
     aero.linearization_mode = "auto"
     aero.check_jacobian(inpts)
 
@@ -209,6 +248,25 @@ def test_check_jac_csapprox() -> None:
     aero.linearization_mode = aero.ApproximationMode.COMPLEX_STEP
     aero.linearize(compute_all_jacobians=True)
     aero.check_jacobian()
+
+
+@pytest.mark.parametrize(
+    "hybrid_approximation_mode",
+    ["hybrid_complex_step", "hybrid_finite_differences", "hybrid_centered_differences"],
+)
+def test_check_jac_hybrid_approx(
+    hybrid_jacobian_discipline, hybrid_approximation_mode
+) -> None:
+    """Test the hybrid finite difference approximation."""
+
+    disc = hybrid_jacobian_discipline
+
+    inputs = disc.default_input_data
+    disc.linearization_mode = hybrid_approximation_mode
+    disc.linearize(inputs, compute_all_jacobians=True)
+    disc.check_jacobian(
+        inputs, linearization_mode=disc.ApproximationMode.FINITE_DIFFERENCES
+    )
 
 
 def test_check_jac_approx_plot(tmp_wd) -> None:

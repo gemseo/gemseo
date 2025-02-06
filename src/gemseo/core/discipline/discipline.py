@@ -32,6 +32,7 @@ from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.enumeration import merge_enums
@@ -85,7 +86,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         SPARSE = "sparse"
         """Initialized as SciPy CSR arrays filled with zeros."""
 
-    ApproximationMode: EnumType = ApproximationMode
+    ApproximationMode: EnumType = merge_enums(
+        "ApproximationMode", StrEnum, ApproximationMode, HybridApproximationMode
+    )
 
     LinearizationMode: EnumType = merge_enums(
         "LinearizationMode",
@@ -123,6 +126,14 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
     __output_names: Iterable[str]
     """The output names used for handling execution status and statistics."""
+
+    __hybrid_approximation_name_to_mode: ClassVar[
+        Mapping[ApproximationMode, ApproximationMode]
+    ] = {
+        ApproximationMode.HYBRID_FINITE_DIFFERENCES: ApproximationMode.FINITE_DIFFERENCES,  # noqa: E501
+        ApproximationMode.HYBRID_CENTERED_DIFFERENCES: ApproximationMode.CENTERED_DIFFERENCES,  # noqa: E501
+        ApproximationMode.HYBRID_COMPLEX_STEP: ApproximationMode.COMPLEX_STEP,
+    }
 
     def __init__(  # noqa: D107
         self,
@@ -252,9 +263,12 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     def __compute_jacobian(self):
         """Callable used for handling execution status and statistics."""
         if self._linearization_mode in set(self.ApproximationMode):
-            self.jac = self._jac_approx.compute_approx_jac(
-                self.__output_names, self.__input_names
-            )
+            if self._linearization_mode in set(HybridApproximationMode):
+                self._compose_hybrid_jacobian(self.__output_names, self.__input_names)
+            else:
+                self.jac = self._jac_approx.compute_approx_jac(
+                    self.__output_names, self.__input_names
+                )
         else:
             self._compute_jacobian(self.__input_names, self.__output_names)
 
@@ -289,10 +303,15 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             jac_approx_wait_time: The time waited between two forks
                 of the process / thread.
         """
+        approx_method = (
+            self.__hybrid_approximation_name_to_mode[jac_approx_type]
+            if jac_approx_type in set(HybridApproximationMode)
+            else jac_approx_type
+        )
         self._jac_approx = DisciplineJacApprox(
             # TODO: pass the bare minimum instead of self.
             self,
-            approx_method=jac_approx_type,
+            approx_method=approx_method,
             step=jax_approx_step,
             parallel=jac_approx_n_processes > 1,
             n_processes=jac_approx_n_processes,
@@ -807,3 +826,60 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             output_names: The names of the outputs to be differentiated.
                 If empty, use all the outputs.
         """
+
+    def _compose_hybrid_jacobian(
+        self,
+        output_names: Iterable[str] = (),
+        input_names: Iterable[str] = (),
+    ) -> None:
+        """Compose a hybrid Jacobian using analytical and approximated expressions.
+
+        This method allows to complete a given Jacobian for which not all
+        inputs-outputs have been defined by using approximation methods.
+
+        Args:
+            input_names: The names of the input wrt the ``output_names`` are
+                linearized.
+            output_names: The names  of the output to be linearized.
+        """
+        analytical_jacobian = self.jac
+
+        self.set_jacobian_approximation(self._linearization_mode)
+
+        approximated_jac = {}
+        outputs_names_to_approximate = []
+        input_names_to_approximate = []
+
+        for output_name in output_names:
+            if output_name not in analytical_jacobian:
+                analytical_jacobian[output_name] = {}
+            for input_name in input_names:
+                if input_name not in analytical_jacobian[output_name]:
+                    approximated_jac[output_name] = {}
+                    # Map the outputs to be differentiated wrt the corresponding inputs.
+                    outputs_names_to_approximate.append(output_name)
+                    input_names_to_approximate.append(input_name)
+
+        # Compute approximated Jacobian elements.
+        for output_name, input_name in zip(
+            outputs_names_to_approximate, input_names_to_approximate
+        ):
+            jac_input_output = self._jac_approx.compute_approx_jac(
+                [output_name], [input_name]
+            )
+            approximated_jac[output_name][input_name] = jac_input_output[output_name][
+                input_name
+            ]
+
+        # Fill in missing inputs of the Jacobian.
+        for output_name in output_names:
+            analytical_jacobian_out = analytical_jacobian[output_name]
+            approximated_jac_out = approximated_jac[output_name]
+            for input_name in input_names:
+                if input_name not in analytical_jacobian_out:
+                    analytical_jacobian_out[input_name] = approximated_jac_out[
+                        input_name
+                    ]
+
+        # Recover analytical Jacobian data.
+        self.jac = analytical_jacobian
