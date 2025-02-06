@@ -760,6 +760,9 @@ class OptimizationProblem(EvaluationProblem):
             group = get_hdf5_group(h5file, problem._OPT_DESCR_GROUP)
             for attr_name, attr in group.items():
                 val = attr[()]
+                if isinstance(val, bytes):
+                    val = val.decode()
+
                 if isinstance(val, ndarray) and isinstance(val[0], bytes_):
                     val = val[0].decode()
 
