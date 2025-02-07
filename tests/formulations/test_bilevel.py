@@ -305,7 +305,7 @@ def test_scenario_log_level(
         assert "Start FooScenario execution" in caplog.text
 
 
-def test_remove_couplings_from_ds(sobieski_sub_scenarios) -> None:
+def test_remove_couplings_from_ds(sobieski_sub_scenarios, caplog) -> None:
     """Check the removal of strong couplings for the design space."""
     formulation = BiLevel(
         [*sobieski_sub_scenarios, SobieskiMission()],
@@ -314,6 +314,9 @@ def test_remove_couplings_from_ds(sobieski_sub_scenarios) -> None:
     )
     for strong_coupling in ["y_12", "y_21", "y_23", "y_31", "y_32"]:
         assert strong_coupling not in formulation.design_space
+    assert (
+        "The coupling variable y_12 was removed from the design space." in caplog.text
+    )
 
 
 @pytest.mark.parametrize(
@@ -408,3 +411,67 @@ def test_adapters_inputs_outputs(scenario, subscenario, request) -> None:
             # All couplings should always be present
             assert all_ssbj_couplings.issubset(outputs)
             assert not other_local.issubset(outputs)
+
+
+@pytest.mark.parametrize(
+    ("sub_scenario_formulation", "scenario_formulation"),
+    [
+        ("MDF", "BiLevelBCD"),
+        ("MDF", "BiLevel"),
+    ],
+)
+def test_system_variables_not_in_variables_to_warm_start(
+    sub_scenario_formulation, scenario_formulation
+):
+    """Test that the system variables are not in the list of variables to warm start.
+
+    This test simulates a very particular configuration in which one of the design
+    variables of the system-level scenario is included in the MDA1 of the BiLevel Chain.
+
+    The BiLevel formulation uses a warm-start mechanism for all variables that are
+    outputs of either the MDA1, the MDA2, or the sub-scenarios. Here, we verify that
+    even in this particular configuration, the system variable is not included in the
+    list of variables to warm-start.
+
+    This is important because if it were included, the value provided by the solver for
+    the design variable would be replaced with the value from the previous iteration.
+    And this would occur at the _execute level, so the system level optimizer would not
+    "see" the replaced value.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("b", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("baz", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    sub_scenario_1 = MDOScenario(
+        [AnalyticDiscipline({"z": "(x+y)**2", "b": "c+y"}, "foo")],
+        "z",
+        design_space.filter(["y"], copy=True),
+        formulation_name=sub_scenario_formulation,
+        name="FooScenario",
+    )
+    sub_scenario_1.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+
+    sub_scenario_2 = MDOScenario(
+        [AnalyticDiscipline({"c": "(x+b)**2"}, "bar")],
+        "c",
+        design_space.filter(["b"], copy=True),
+        formulation_name=sub_scenario_formulation,
+        name="BarScenario",
+    )
+    sub_scenario_2.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+
+    scenario = MDOScenario(
+        [
+            sub_scenario_1,
+            sub_scenario_2,
+            AnalyticDiscipline({"qux": "baz"}),
+            AnalyticDiscipline({"x": "x"}),
+        ],
+        "z",
+        design_space.filter(["x", "baz"]),
+        formulation_name=scenario_formulation,
+        apply_cstr_tosub_scenarios=False,
+    )
+    assert "x" not in scenario.formulation.chain._variable_names_to_warm_start
+    assert "baz" not in scenario.formulation.chain._variable_names_to_warm_start
