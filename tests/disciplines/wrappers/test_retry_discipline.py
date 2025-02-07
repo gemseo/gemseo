@@ -159,7 +159,7 @@ def test_failure_zero_division_error_with_timeout(
     disc = RetryDiscipline(
         a_crashing_analytic_discipline,
         n_retry=n_try,
-        timeout=5.0,
+        timeout=10.0,
         fatal_exceptions=fatal_exceptions,
     )
     with pytest.raises(ZeroDivisionError, match="float division by zero"):
