@@ -1,0 +1,1 @@
+``ODEDiscipline`` is insensitive to the order of state variable names passed to the argument ``state_names``.

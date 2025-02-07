@@ -33,6 +33,7 @@ from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.ode.ode_function import ODEFunction
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -162,7 +163,7 @@ class ODEDiscipline(Discipline):
 
         Raises:
             ValueError: If an expected state variable does not appear in
-                rhs_discipline.
+                ``rhs_discipline``.
         """  # noqa: D205, D212, D415
         self._rhs_discipline = rhs_discipline
         self._output_trajectory = (
@@ -177,26 +178,45 @@ class ODEDiscipline(Discipline):
 
         # Define the names of the state variables and their time derivatives
         if state_names:
+            wrong_state_names = set(state_names) - set(rhs_discipline.io.input_grammar)
+            if wrong_state_names:
+                msg = (
+                    f"{pretty_repr(wrong_state_names, use_and=True)} are not input"
+                    f" variables of the RHS discipline."
+                )
+                raise ValueError(msg)
+
             if isinstance(state_names, Mapping):
+                state_names = {
+                    input_name: state_names[input_name]
+                    for input_name in rhs_discipline.io.input_grammar.names
+                    if input_name in state_names
+                }
                 self.__state_names = state_names.keys()
-                self.__state_dot_names = state_names.values()
+                state_dot_names = state_names.values()
+                wrong_output_names = set(state_dot_names) - set(
+                    rhs_discipline.io.output_grammar
+                )
+                if wrong_output_names:
+                    msg = (
+                        f"{pretty_repr(wrong_output_names, use_and=True)} are not "
+                        f"output variables of the RHS discipline."
+                    )
+                    raise ValueError(msg)
             else:
-                self.__state_names = state_names
-                self.__state_dot_names = tuple(f"{state}_dot" for state in state_names)
+                self.__state_names = tuple(
+                    input_name
+                    for input_name in rhs_discipline.io.input_grammar.names
+                    if input_name in state_names
+                )
+                state_dot_names = rhs_discipline.io.output_grammar.names
         else:
             self.__state_names = tuple(
                 name
                 for name in rhs_discipline.io.input_grammar.names
                 if name != time_name
             )
-            self.__state_dot_names = tuple(
-                f"{state}_dot" for state in self.__state_names
-            )
-
-        missing_names = set(state_names) - set(rhs_discipline.default_input_data)
-        if missing_names:
-            msg = f"Missing default inputs in rhs_discipline for {missing_names}."
-            raise ValueError(msg)
+            state_dot_names = rhs_discipline.io.output_grammar.names
 
         excluded_names = [self.__time_name, *self.__state_names]
         self.__design_variables_names = tuple(
@@ -207,7 +227,7 @@ class ODEDiscipline(Discipline):
 
         self.__initial_state_names = tuple(
             initial_state_names.get(state_name, f"initial_{state_name}")
-            for state_name in state_names
+            for state_name in self.__state_names
         )
 
         self.__ode_solver = ODESolverLibraryFactory().create(ode_solver_name)
@@ -255,10 +275,14 @@ class ODEDiscipline(Discipline):
             names=self.__initial_state_names,
         )
         event_functions = tuple(
-            ODEFunction(termination_discipline, state_names, time_name, terminal=True)
+            ODEFunction(
+                termination_discipline, time_name, self.__state_names, terminal=True
+            )
             for termination_discipline in termination_event_disciplines
         )
-        ode_func = ODEFunction(rhs_discipline, state_names, time_name)
+        ode_func = ODEFunction(
+            rhs_discipline, time_name, self.__state_names, output_names=state_dot_names
+        )
         self._ode_problem = ODEProblem(
             func=ode_func,
             initial_state=initial_state,
@@ -271,12 +295,12 @@ class ODEDiscipline(Discipline):
         # Define the names for the trajectories and final states.
         self.__final_state_names = tuple(
             final_state_names.get(state_name, f"final_{state_name}")
-            for state_name in state_names
+            for state_name in self.__state_names
         )
         if self._output_trajectory:
             self.__trajectory_state_names = tuple(
                 state_trajectory_names.get(state_name, state_name)
-                for state_name in state_names
+                for state_name in self.__state_names
             )
         else:
             self.__trajectory_state_names = READ_ONLY_EMPTY_DICT

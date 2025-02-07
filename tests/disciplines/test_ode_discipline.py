@@ -284,14 +284,16 @@ def test_ode_discipline_bad_grammar() -> None:
 
     oscillator = AutoPyDiscipline(py_func=_rhs_function)
     oscillator.set_cache(cache_type=CacheType.NONE)
-    with pytest.raises(ValueError) as error_info:
+    msg = (
+        "'not_position' and 'not_velocity' are not input variables of "
+        "the RHS discipline."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
         bad_input_ode_discipline = ODEDiscipline(  # noqa: F841
             rhs_discipline=oscillator,
             state_names=["not_position", "not_velocity"],
             times=linspace(0.0, 10, 30),
         )
-
-    assert "Missing default input" in str(error_info.value)
 
 
 def test_ode_discipline_default_state_names() -> None:
@@ -379,7 +381,8 @@ def test_ode_discipline_missing_names_time_derivatives():
     discipline = AutoPyDiscipline(py_func=_fct)
     discipline.set_cache(cache_type=CacheType.NONE)
 
-    with pytest.raises(ValueError, match=re.escape("are not names of outputs")):
+    msg = "'c_dot' are not output variables of the RHS discipline."
+    with pytest.raises(ValueError, match=re.escape(msg)):
         ODEDiscipline(
             rhs_discipline=discipline,
             times=times,
@@ -390,6 +393,7 @@ def test_ode_discipline_missing_names_time_derivatives():
 
 
 def test_ode_discipline_not_convergent():
+    """Test the error message when an ODE does not converge to a solution."""
     times = linspace(0.0, 1.0, 20)
 
     init_time = array([0.0])
@@ -417,6 +421,8 @@ def test_ode_discipline_not_convergent():
 
 
 def test_incompatible_times():
+    """Test the error message when ODEDiscipline is provided with a vector of times
+    that is not compatible with the problem data."""
     times = linspace(0.0, 10, 30)
     other_times = linspace(0.0, 5, 6)
     ode_disc = OscillatorDiscipline(times=times, omega=4)
@@ -433,6 +439,7 @@ def test_incompatible_times():
 # @pytest.mark.parametrize("init_state_x", [1.0, 0.0])
 # @pytest.mark.parametrize("init_state_y", [1.0, 0.0])
 def test_jacobian():
+    """Test the computation of the Jacobian with respect to the state."""
     omega = 1.0
     init_state_x = 1.0
     init_state_y = 0.0
@@ -481,6 +488,7 @@ def test_jacobian():
             init_state_y, 0.0, atol=1e-12
         ):
             x = 0.0
+
             y = 0.0
         elif isclose(init_state_x, 0.0, atol=1e-12):
             factor = init_state_y / omega
@@ -502,6 +510,7 @@ def test_jacobian():
 
 
 def test_jacobian_parameters():
+    """Test the computation of the Jacobian with respect to the design parameters."""
     omega = 1.0
     init_state_x = 1.0
     init_state_y = 0.0
@@ -565,6 +574,7 @@ def test_jacobian_parameters():
     ["RK45", "RK23", "DOP853", "Radau", "BDF", "LSODA", "non_existing_algorithm"],
 )
 def test_all_ode_integration_algorithms(name_of_algorithm):
+    """Test all integration algorithms available in scipy."""
     # times_eval = linspace(0.0, 10.0, 30)
     # omega = 1.0
     times = linspace(0.0, 0.001, 30)
@@ -636,6 +646,7 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
 
 
 def test_ode_discipline_termination_event():
+    """Test one termination event."""
     times = linspace(0.0, 20.0, 41)
     initial_position = array([10.0])
     initial_velocity = array([0.0])
@@ -684,7 +695,8 @@ def test_ode_discipline_termination_event():
     assert isclose(res_ode["final_position"], 0.0, atol=1e-3)
 
 
-def test_ode_discipline_two_termination_events_6():
+def test_ode_discipline_two_termination_events():
+    """Test two termination events."""
     times = linspace(0.0, 20.0, 41)
     initial_position = array([10.0])
     initial_velocity = array([0.0])
@@ -760,6 +772,7 @@ def test_serialization(tmp_wd):
 
 
 def test_jacobian_parameters_simple():
+    """Test a gradient-based quadrature algorithm."""
     a = 1.0
     x_0 = array([1.0])
     t_0 = 0.0
@@ -793,3 +806,89 @@ def test_jacobian_parameters_simple():
     })
     exact_solution = _exact_sol(t_f, x_0)
     assert isclose(res_ode["final_x"], exact_solution, rtol=1e-4)
+
+
+def test_swap_order_inputs():
+    """Test the case when the inputs of the rhs_discipline are provided in an order
+    different from the one in ODEDiscipline."""
+    time = array([0.0])
+    initial_position_1 = array([1.0])
+    initial_velocity_1 = array([0.0])
+    omega_1 = array([2.0])
+
+    def rhs_function(
+        time=time,
+        position=initial_position_1,
+        velocity=initial_velocity_1,
+        omega=omega_1,
+    ):
+        position_dot = velocity
+        velocity_dot = -(omega**2) * position
+
+        return position_dot, velocity_dot  # noqa: RET504
+
+    rhs_discipline = AutoPyDiscipline(py_func=rhs_function)
+
+    ode_discipline = ODEDiscipline(
+        rhs_discipline=rhs_discipline,
+        times=linspace(0.0, 1.0, 11),
+        state_names=["position", "velocity"],
+        return_trajectories=True,
+    )
+    ode_discipline.execute()
+    expected_final_velocity = ode_discipline.io.data["final_velocity"]
+
+    ode_discipline_swap = ODEDiscipline(
+        rhs_discipline=rhs_discipline,
+        times=linspace(0.0, 1.0, 11),
+        # We swap velocity and position.
+        state_names=["velocity", "position"],
+        return_trajectories=True,
+    )
+    ode_discipline_swap.execute()
+    assert ode_discipline_swap.io.data["final_velocity"] == expected_final_velocity
+
+
+def test_swap_order_inputs_and_derivatives_with_non_conventional_names():
+    """Test the case when the outputs of the rhs_discipline have names
+    different from state_dot."""
+    time = array([0.0])
+    initial_position_1 = array([1.0])
+    initial_velocity_1 = array([0.0])
+    omega_1 = array([2.0])
+
+    def rhs_function(
+        time=time,
+        position=initial_position_1,
+        velocity=initial_velocity_1,
+        omega=omega_1,
+    ):
+        position_prime = velocity
+        velocity_prime = -(omega**2) * position
+
+        return position_prime, velocity_prime  # noqa: RET504
+
+    rhs_discipline = AutoPyDiscipline(py_func=rhs_function)
+
+    ode_discipline_map = ODEDiscipline(
+        rhs_discipline=rhs_discipline,
+        times=linspace(0.0, 1.0, 51),
+        state_names={"velocity": "velocity_prime", "position": "position_prime"},
+        return_trajectories=True,
+    )
+    ode_discipline_map.execute()
+    expected_final_position = (initial_velocity_1 / omega_1) * sin(
+        omega_1
+    ) + initial_position_1 * cos(omega_1)
+
+    tts = linspace(0.0, 1.0, 51)
+    (
+        (initial_velocity_1 / omega_1) * sin(omega_1 * tts)
+        + initial_position_1 * cos(omega_1 * tts)
+    )
+
+    assert isclose(
+        ode_discipline_map.io.data["final_position"],
+        expected_final_position,
+        atol=1.0e-3,
+    )
