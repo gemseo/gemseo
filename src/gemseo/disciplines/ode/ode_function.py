@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from numpy import array
@@ -34,6 +33,7 @@ from gemseo.core.mdo_functions.discipline_adapter_generator import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
@@ -59,19 +59,19 @@ class ODEFunction:
     def __init__(
         self,
         discipline: Discipline,
-        state_names: Iterable[str] | Mapping[str, str],
         time_name: str,
+        state_names: Iterable[str] | Mapping[str, str],
+        output_names: Iterable[str] = (),
         terminal: bool = False,
     ) -> None:
         """
         Args:
             discipline: The wrapped discipline.
-            state_names: Either the names of the state variables,
-                passed as ``(state_name, ...)``,
-                or the names of the state variables
-                bound to the associated discipline outputs,
-                passed as ``{state_name: output_name, ...}``.
-            time_name: The name of the time variables.
+            time_name: The name of the time variable.
+            state_names: The names of the state variables.
+            output_names: The names of the output variables.
+                If empty,
+                use all ``discipline``'s output variables.
             terminal: Whether this is a termination function.
         """  # noqa: D205, D212, D415
         self.terminal = False
@@ -82,10 +82,7 @@ class ODEFunction:
             if name not in excluded_names
         )
         generator = DisciplineAdapterGenerator(discipline=discipline)
-        if isinstance(state_names, Mapping):
-            output_names = state_names.values()
-            state_names = tuple(state_names.keys())
-        else:
+        if not output_names:
             output_names = discipline.io.output_grammar
 
         self._adapter = generator.get_function(
