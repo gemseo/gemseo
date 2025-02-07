@@ -1,0 +1,2 @@
+The ``BiLevel`` and ``BiLevelBCD`` formulations now log a warning when
+a coupling variable is removed from the design space.

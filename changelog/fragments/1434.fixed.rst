@@ -1,0 +1,3 @@
+The ``BiLevel`` and ``BiLevelBCD`` formulations no longer include
+a system-level variable in the warm-starting mechanism even if
+the variable is an output of the MDA1, the MDA2, or the sub-scenarios.

@@ -425,7 +425,11 @@ class BiLevel(BaseMDOFormulation):
                 if variable_name not in variable_names:
                     variable_names.append(variable_name)
 
-        return variable_names
+        return [
+            variable_name
+            for variable_name in variable_names
+            if variable_name not in self.design_space.variable_names
+        ]
 
     def _update_design_space(self) -> None:
         """Update the design space by removing the coupling variables."""
@@ -443,6 +447,10 @@ class BiLevel(BaseMDOFormulation):
             design_space = self.optimization_problem.design_space
             for coupling in couplings:
                 if coupling in design_space:
+                    LOGGER.warning(
+                        "The coupling variable %s was removed from the design space.",
+                        coupling,
+                    )
                     design_space.remove_variable(coupling)
 
     def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
