@@ -241,7 +241,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             name: The name of the module or package to be imported.
             error: The exception object raised while importing the module or package.
         """
-        LOGGER.debug("Failed to import module: %s", name, exc_info=True)
+        LOGGER.debug("Failed to import module: %s", name)
         self.failed_imports[name] = str(error)
 
     def __get_sub_classes(self, cls: type[T]) -> dict[str, type[T]]:
