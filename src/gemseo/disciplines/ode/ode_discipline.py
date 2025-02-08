@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
 
+from numpy import atleast_1d
+
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.core.discipline.discipline import Discipline
@@ -271,7 +273,7 @@ class ODEDiscipline(Discipline):
 
         # Define ODEProblem
         initial_state = concatenate_dict_of_arrays_to_array(
-            mapping_initial_state,
+            {k: atleast_1d(v) for k, v in mapping_initial_state.items()},
             names=self.__initial_state_names,
         )
         event_functions = tuple(
@@ -333,7 +335,8 @@ class ODEDiscipline(Discipline):
             termination_discipline.default_input_data.update(mapping_parameters)
 
         self._ode_problem.initial_state = concatenate_dict_of_arrays_to_array(
-            input_data, names=self.__initial_state_names
+            {k: atleast_1d(v) for k, v in input_data.items()},
+            names=self.__initial_state_names,
         )
         self.__ode_solver.execute(self._ode_problem, **self.__ode_solver_options)
         result = self._ode_problem.result
