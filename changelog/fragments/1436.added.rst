@@ -1,0 +1,1 @@
+``MDOScenario`` supports DOE algorithms, making it possible to use a DOE and an optimizer with the same scenario.

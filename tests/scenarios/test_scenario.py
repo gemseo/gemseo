@@ -30,6 +30,7 @@ from numpy import complex128
 from numpy import float64
 from numpy import int64
 from numpy.linalg import norm
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 from pandas.testing import assert_frame_equal
 
@@ -989,3 +990,37 @@ def test_scenario_to_dataset(tmp_wd):
     reference_dataset.add_variable("y2", [0.0, 3.0], "outputs", components=0)
     reference_dataset.add_variable("y2", [0.0, 3.0], "outputs", components=1)
     assert_frame_equal(dataset, reference_dataset, check_dtype=False)
+
+
+@pytest.mark.parametrize(
+    ("use_doe_first", "expected"),
+    [
+        (False, [array([1.0]), array([-0.5]), array([0.0]), array([0.123])]),
+        (
+            True,
+            [
+                array([0.123]),
+                array([0.41533333]),
+                array([1.11022302e-16]),
+                array([0.0]),
+            ],
+        ),
+    ],
+)
+def test_opt_and_doe(use_doe_first, expected):
+    """Check the execution of a scenario with an optimizer and a DOE."""
+    discipline = AnalyticDiscipline({"f": "x**2"})
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-0.5, upper_bound=1.0, value=1.0)
+    scenario = MDOScenario(
+        [discipline], "f", design_space, formulation_name="DisciplinaryOpt"
+    )
+    if use_doe_first:
+        scenario.execute(algo_name="CustomDOE", samples=array([[0.123]]))
+        scenario.execute(algo_name="SLSQP", max_iter=3)
+    else:
+        scenario.execute(algo_name="SLSQP", max_iter=3)
+        scenario.execute(algo_name="CustomDOE", samples=array([[0.123]]))
+
+    x = scenario.formulation.optimization_problem.database.get_x_vect_history()
+    assert_almost_equal(x, expected)

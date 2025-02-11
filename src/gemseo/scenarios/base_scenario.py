@@ -40,6 +40,7 @@ from pydantic import BaseModel
 from pydantic import Field
 from strenum import StrEnum
 
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
@@ -59,9 +60,9 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.algos.base_algo_factory import BaseAlgoFactory
     from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.driver_library import DriverLibraryFactory
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
@@ -146,8 +147,8 @@ class BaseScenario(BaseMonitoredProcess):
     """The possible algorithm class names, this attribute is solely necessary for
     pickling."""
 
-    _ALGO_FACTORY_CLASS: ClassVar[type[BaseAlgoFactory]]
-    """The algorithm factory."""
+    _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]]
+    """The driver factory."""
 
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of :meth:`.execute`."""
@@ -616,6 +617,21 @@ class BaseScenario(BaseMonitoredProcess):
         """
         if algo_settings_model is not None or algo_settings:
             self.set_algorithm(algo_settings_model=algo_settings_model, **algo_settings)
+
+        # DOE algorithms do not normalize the input data
+        # but if an optimization algorithm was used in the previous execution,
+        # the functions attached to the OptimizationProblem
+        # expect normalized input data.
+        # So the original functions must be used.
+        # As it is possible that other types of driver do the same as optimizers,
+        # the original functions are restored each time a DOE is used.
+        if DOELibraryFactory().is_available(self._settings.algo_name):
+            self.formulation.optimization_problem.reset(
+                database=False,
+                current_iter=False,
+                design_space=False,
+                function_calls=False,
+            )
 
         t_0 = timeit.default_timer()
         LOGGER.info(" ")

@@ -19,19 +19,17 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Pierre-Jean Barjhoux, Benoit Pauwels - MDOScenarioAdapter
 #                                                        Jacobian computation
-"""A multidisciplinary scenario to be executed by an optimizer."""
+"""A scenario to solve an MDO problem, using an optimizer or a DOE algorithm."""
 
 from __future__ import annotations
 
 from typing import ClassVar
 
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.driver_library import DriverLibraryFactory
 from gemseo.scenarios.base_scenario import BaseScenario
 
 
 class MDOScenario(BaseScenario):
-    """A multidisciplinary scenario to be executed by an optimizer."""
+    """A scenario to solve an MDO problem, using an optimizer or a DOE algorithm."""
 
-    _ALGO_FACTORY_CLASS: ClassVar[type[OptimizationLibraryFactory]] = (
-        OptimizationLibraryFactory
-    )
+    _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]] = DriverLibraryFactory
