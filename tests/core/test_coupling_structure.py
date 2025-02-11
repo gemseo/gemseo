@@ -46,10 +46,10 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
-from .test_dependency_graph import create_disciplines_from_desc
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping

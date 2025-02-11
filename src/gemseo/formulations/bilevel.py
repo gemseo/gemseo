@@ -142,8 +142,14 @@ class BiLevel(BaseMDOFormulation):
             get_sub_disciplines(self.disciplines)
         )
         self._mda1, self._mda2 = self._create_mdas()
-        # Create the multidisciplinary chain: MDA1 -> sub scenarios -> MDA2
-        self.chain = self._create_multidisciplinary_chain()
+
+        self._create_scenario_adapters(
+            reset_x0_before_opt=self._settings.reset_x0_before_opt,
+            keep_opt_history=True,
+        )
+
+        # Create the inner chain: MDA1 -> sub scenarios -> MDA2
+        self.chain = self._create_inner_chain()
 
         # Cleanup design space
         self._update_design_space()
@@ -166,13 +172,13 @@ class BiLevel(BaseMDOFormulation):
         """All the adapters that wrap sub-scenarios."""
         return self._scenario_adapters
 
-    def _build_scenario_adapters(
+    def _create_scenario_adapters(
         self,
         output_functions: bool = False,
         adapter_class: type[MDOScenarioAdapter] = MDOScenarioAdapter,
         **adapter_options,
     ) -> None:
-        """Build the MDOScenarioAdapter required for each sub scenario.
+        """Create the MDOScenarioAdapter required for each sub scenario.
 
         This is used to build the self.chain.
 
@@ -355,42 +361,18 @@ class BiLevel(BaseMDOFormulation):
 
         return mda1, mda2
 
-    def _build_chain_dis_sub_opts(
-        self,
-    ) -> tuple[list | BaseMDA, list[MDOScenarioAdapter]]:
-        """Initialize the chain of disciplines and the sub-scenarios.
-
-        Returns:
-            The first MDA (if exists) and the sub-scenarios.
-        """
-        return [] if self._mda1 is None else [self._mda1], self._scenario_adapters
-
-    def _create_multidisciplinary_chain(self) -> MDOChain:
-        """Create the multidisciplinary chain.
+    def _create_inner_chain(self) -> MDOChain:
+        """Create the inner chain.
 
         This chain is: MDA -> MDOScenarios -> MDA.
 
         Returns:
             The multidisciplinary chain.
         """
-        # Build the scenario adapters to be chained with MDAs
-        self._build_scenario_adapters(
-            reset_x0_before_opt=self._settings.reset_x0_before_opt,
-            keep_opt_history=True,
-        )
-        chain_dis, sub_opts = self._build_chain_dis_sub_opts()
+        chain_dis = [] if self._mda1 is None else [self._mda1]
 
-        if self._settings.parallel_scenarios:
-            chain_dis.append(
-                MDOParallelChain(
-                    sub_opts, use_threading=self._settings.multithread_scenarios
-                )
-            )
-        else:
-            # Chain MDA -> scenarios exec -> MDA
-            chain_dis += sub_opts
+        chain_dis += [self._create_sub_scenarios_chain()]
 
-        # Add MDA2 if needed
         if self._mda2:
             chain_dis += [self._mda2]
 
@@ -403,6 +385,20 @@ class BiLevel(BaseMDOFormulation):
             variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
         )
 
+    def _create_sub_scenarios_chain(self) -> MDOChain | MDOParallelChain:
+        """Create the chain of sub-scenarios.
+
+        Returns:
+            The chain of sub-scenarios,
+            either parallel or sequential.
+        """
+        if self._settings.parallel_scenarios:
+            return MDOParallelChain(
+                self.scenario_adapters,
+                use_threading=self._settings.multithread_scenarios,
+            )
+        return MDOChain(self.scenario_adapters)
+
     def _get_variable_names_to_warm_start(self) -> list[str]:
         """Retrieve the names of the variables to warm start.
 
@@ -413,7 +409,7 @@ class BiLevel(BaseMDOFormulation):
         """
         variable_names = [
             name
-            for adapter in self._scenario_adapters
+            for adapter in self.scenario_adapters
             for name in adapter.io.output_grammar
         ]
         if self._mda1:

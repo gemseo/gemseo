@@ -21,15 +21,19 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import ClassVar
 
-from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings
 from gemseo.mda.factory import MDAFactory
 
 if TYPE_CHECKING:
-    from gemseo.core.chains.chain import MDOChain
+    from collections.abc import Sequence
+    from typing import Any
+    from typing import ClassVar
+
+    from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.discipline import Discipline
+    from gemseo.mda.gauss_seidel import MDAGaussSeidel
 
 
 class BiLevelBCD(BiLevel):
@@ -50,38 +54,40 @@ class BiLevelBCD(BiLevel):
 
     Settings: ClassVar[type[BiLevel_BCD_Settings]] = BiLevel_BCD_Settings
 
+    _bcd_mda: MDAGaussSeidel
+    """The MDA of the BCD algorithm."""
+
     _settings: BiLevel_BCD_Settings
 
     __mda_factory: ClassVar[MDAFactory] = MDAFactory()
     """The MDA factory."""
 
-    def _create_multidisciplinary_chain(self) -> MDOChain:
-        """Build the chain on top of which all functions are built.
-
-        This chain is: MDA -> MDAGaussSeidel(MDOScenarios) -> MDA.
-
-        Returns:
-            The multidisciplinary chain.
-        """
-        # Build the scenario adapters to be chained with MDAs
-        self._build_scenario_adapters(
-            reset_x0_before_opt=self._settings.reset_x0_before_opt,
-            keep_opt_history=True,
+    def __init__(  # noqa: D107
+        self,
+        disciplines: Sequence[Discipline],
+        objective_name: str,
+        design_space: DesignSpace,
+        settings_model: BiLevel_BCD_Settings | None = None,
+        **settings: Any,
+    ) -> None:
+        self._bcd_mda = None
+        super().__init__(
+            disciplines,
+            objective_name,
+            design_space,
+            settings_model=settings_model,
+            **settings,
         )
-        chain_disc, sub_opts = self._build_chain_dis_sub_opts()
 
-        bcd_mda = self.__mda_factory.create(
+    @property
+    def bcd_mda(self) -> MDAGaussSeidel:
+        """The MDA of the BCD algorithm."""
+        return self._bcd_mda
+
+    def _create_sub_scenarios_chain(self) -> MDAGaussSeidel:
+        self._bcd_mda = self.__mda_factory.create(
             "MDAGaussSeidel",
-            sub_opts,
+            self.scenario_adapters,
             settings_model=self._settings.bcd_mda_settings,
         )
-
-        chain_disc += [bcd_mda]
-        if self._mda2:
-            chain_disc += [self._mda2]
-
-        return MDOWarmStartedChain(
-            chain_disc,
-            name=self.CHAIN_NAME,
-            variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
-        )
+        return self._bcd_mda

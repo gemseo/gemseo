@@ -250,10 +250,10 @@ def test_bilevel_get_variable_names_to_warm_start_without_mdas(
     )
 
 
-def test_test_bilevel_get_variable_names_to_warm_start_from_mdas(
+def test_bilevel_get_variable_names_to_warm_start_from_mdas(
     sobieski_bilevel_scenario,
 ) -> None:
-    """ " Check that the variables from both MDAs are being considered in the warm
+    """Check that the variables from both MDAs are being considered in the warm
     start."""
     scenario = sobieski_bilevel_scenario()
     for variable in scenario.formulation._mda1.io.output_grammar:
@@ -475,3 +475,10 @@ def test_system_variables_not_in_variables_to_warm_start(
     )
     assert "x" not in scenario.formulation.chain._variable_names_to_warm_start
     assert "baz" not in scenario.formulation.chain._variable_names_to_warm_start
+
+
+def test_bcd_mda(sobieski_bilevel_bcd_scenario):
+    """Test that a BCD MDA is created and included in the chain."""
+    scenario = sobieski_bilevel_bcd_scenario()
+    assert scenario.formulation.bcd_mda
+    assert scenario.formulation.bcd_mda == scenario.formulation.chain.disciplines[1]
