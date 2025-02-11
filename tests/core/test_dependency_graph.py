@@ -27,7 +27,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from numpy import ones
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import Discipline
@@ -40,7 +39,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 
 DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
@@ -91,32 +90,6 @@ DISC_DESCRIPTIONS = {
         SobieskiMission,
     ),
 }
-
-
-def create_disciplines_from_desc(disc_desc):
-    """Return the disciplines from their descriptions.
-
-    Args:
-        disc_desc: The disc_desc of a discipline, either a list of classes or a dict.
-    """
-    if isinstance(disc_desc, tuple):
-        # these are disciplines classes
-        return [cls() for cls in disc_desc]
-
-    disciplines = []
-    data = ones(1)
-
-    disc_desc_items = disc_desc.items()
-
-    for name, io_names in disc_desc_items:
-        disc = DummyDiscipline(name)
-        input_d = dict.fromkeys(io_names[0], data)
-        disc.io.input_grammar.update_from_data(input_d)
-        output_d = dict.fromkeys(io_names[1], data)
-        disc.io.output_grammar.update_from_data(output_d)
-        disciplines += [disc]
-
-    return disciplines
 
 
 @pytest.fixture(params=DISC_DESCRIPTIONS.items(), ids=DISC_DESCRIPTIONS.keys())

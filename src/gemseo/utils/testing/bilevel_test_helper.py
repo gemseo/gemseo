@@ -19,8 +19,6 @@ from __future__ import annotations
 from typing import Any
 from typing import Callable
 
-from tests.core.test_dependency_graph import create_disciplines_from_desc
-
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -33,18 +31,19 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 
 
 def create_sobieski_bilevel_scenario(
     formulation_name: str = "BiLevel",
 ) -> Callable[[dict[str, Any]], MDOScenario]:
-    """Create a function to generate a Sobieski Scenario.
+    """Create a function to generate a BiLevel Sobieski Scenario.
 
     Args:
         formulation_name: The name of the formulation of the scenario.
 
     Returns:
-        A function which generates a Sobieski scenario with specific options.
+        A function which generates a BiLevel Sobieski scenario with specific options.
     """
 
     def func(**settings):
@@ -114,10 +113,11 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
 
 
 def create_sobieski_bilevel_bcd_scenario() -> Callable[[dict[str, Any]], MDOScenario]:
-    """Create a function to generate a Sobieski Scenario.
+    """Create a function to generate a BiLevel BCD Sobieski Scenario.
 
     Returns:
-        A function which generates a Sobieski scenario with specific options.
+        A function which generates a BiLevel BCD Sobieski scenario
+        with specific options.
     """
 
     def func(**settings):
