@@ -129,10 +129,14 @@ def test_variable_renamer(translations, translators):
     assert renamer._repr_html_() == expected[1:-1]
 
 
-def test_variable_renamer_from_tuples(translations, translators):
-    """Check VariableRenamer from tuples."""
-    renamer = VariableRenamer.from_tuples(
-        ("A", "a", "x"), ("B", "b", "y"), ("A", "c", "z")
+def test_variable_renamer_from_translations_and_tuples(translations, translators):
+    """Check VariableRenamer from translations and tuples."""
+    renamer = VariableRenamer.from_translations(
+        ("A", "a", "x"),
+        VariableTranslation(
+            discipline_name="B", variable_name="b", new_variable_name="y"
+        ),
+        ("A", "c", "z"),
     )
     assert renamer.translations == translations
     assert renamer.translators == translators
@@ -218,7 +222,45 @@ def test_rename_twice_error():
         VariableRenamer.from_translations(*translations)
 
 
-def test_rename_discipline_variables(disciplines, translators):
+def test_add_translations_by_variable():
+    """Check the method add_translations_by_variable."""
+    renamer = VariableRenamer()
+    renamer.add_translations_by_variable("x", {"A": "a", "B": "b"})
+    renamer.add_translations_by_variable("z", {"C": "c"})
+    assert renamer.translations == (
+        VariableTranslation(
+            discipline_name="A", variable_name="a", new_variable_name="x"
+        ),
+        VariableTranslation(
+            discipline_name="B", variable_name="b", new_variable_name="x"
+        ),
+        VariableTranslation(
+            discipline_name="C", variable_name="c", new_variable_name="z"
+        ),
+    )
+    assert renamer.translators == {"A": {"a": "x"}, "B": {"b": "x"}, "C": {"c": "z"}}
+
+
+def test_add_translations_by_discipline():
+    """Check the method add_translations_by_discipline."""
+    renamer = VariableRenamer()
+    renamer.add_translations_by_discipline("A", {"a": "x", "b": "x"})
+    renamer.add_translations_by_discipline("C", {"c": "z"})
+    assert renamer.translations == (
+        VariableTranslation(
+            discipline_name="A", variable_name="a", new_variable_name="x"
+        ),
+        VariableTranslation(
+            discipline_name="A", variable_name="b", new_variable_name="x"
+        ),
+        VariableTranslation(
+            discipline_name="C", variable_name="c", new_variable_name="z"
+        ),
+    )
+    assert renamer.translators == {"A": {"a": "x", "b": "x"}, "C": {"c": "z"}}
+
+
+def test_rename_discipline_variables(disciplines, translators, caplog):
     """Check rename_discipline_variables.
 
     Translators: {"A": {"a": "x", "c": "z"}, "B": {"b": "y"}}
@@ -235,3 +277,13 @@ def test_rename_discipline_variables(disciplines, translators):
     assert_equal(disc_c.execute({"g": array([3.0])})["t"], array([9.0]))
     assert_equal(other_disc_a.execute({"x": array([3.0])})["z"], array([12.0]))
     assert_equal(disc_b.execute({"j": array([3.0])})["y"], array([15.0]))
+    assert caplog.record_tuples[0] == (
+        "gemseo.utils.variable_renaming",
+        30,
+        "The discipline 'C' has no translator.",
+    )
+
+    with pytest.raises(
+        ValueError, match=re.escape("The discipline 'A' has no variable 'foo'.")
+    ):
+        rename_discipline_variables(disciplines, {"A": {"foo": "bar"}})
