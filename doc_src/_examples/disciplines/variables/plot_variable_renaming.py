@@ -42,14 +42,14 @@ from gemseo.utils.variable_renaming import rename_discipline_variables
 # enables these models to be connected automatically using a set of translations.
 #
 # Renaming discipline variables from translators
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ----------------------------------------------
 # :func:`.rename_discipline_variables` is a function
 # to rename some discipline variables from a dictionary of translators
 # of the form ``{discipline_name: {variable_name: new_variable_name}}``.
 # For example,
 # let us consider four analytic disciplines.
 # There is the first discipline, named ``"A"``,
-# for which we would like to rename ``"a"`` to ``"x"`` and ``"c"`` to ``"z"``,
+# for which we would like to rename ``"a"`` to ``"x"`` and ``"c"`` to ``"z"``:
 disciplines = [AnalyticDiscipline({"c": "2*a"}, name="A")]
 # %%
 # the second discipline, named ``"C"``, to be used as is:
@@ -85,7 +85,6 @@ assert disc_b.execute({"j": array([3.0])})["y"] == array([15.0])
 #    when there is a lot of disciplines and a lot of variables to rename.
 #    The following sections present some tools to facilitate its creation.
 #
-# %%
 # Create translators easily
 # -------------------------
 # Variable translation
@@ -102,10 +101,12 @@ variable_translation
 # Variable renamer
 # ~~~~~~~~~~~~~~~~
 # Then,
-# we can create a :class:`.VariableRenamer` from a set of translations:
+# we can create a :class:`.VariableRenamer` from a set of translations
+# that can include both :class:`.VariableTranslation` instances
+# and tuples of the form ``(discipline_name, variable_name, new_variable_name)``:
 renamer = VariableRenamer.from_translations(
     variable_translation,
-    VariableTranslation(discipline_name="B", variable_name="b", new_variable_name="y"),
+    ("B", "b", "y"),
     VariableTranslation(discipline_name="A", variable_name="c", new_variable_name="z"),
 )
 renamer
@@ -123,25 +124,56 @@ renamer.translators
 rename_discipline_variables(disciplines, renamer.translators)
 
 # %%
-# We can also access the translations:
+# You can also access the :attr:`.translations`:
 renamer.translations
 
 # %%
-# Define the translation from tuples or dictionaries
-# --------------------------------------------------
-# The :class:`.VariableRenamer` can also be created from tuples
-# of the form ``(discipline_name, variable_name, new_variable_name)``:
-renamer = VariableRenamer.from_tuples(("A", "a", "x"), ("B", "b", "y"), ("A", "c", "z"))
-renamer.translators
+# Add translations
+# ~~~~~~~~~~~~~~~~
+# Finally,
+# you can add translations to a :class:`.VariableRenamer`.
+#
+# One by one
+# ..........
+# You can add them one by one
+# using its :meth:`~.VariableRenamer.add_translation` method:
+renamer.add_translation(
+    VariableTranslation(discipline_name="Y", variable_name="x", new_variable_name="b")
+)
+renamer.translations
+
 # %%
-# or from a nested dictionary
-# of the form ``{discipline_name: {variable_name: new_variable_name}}``:
+# By discipline
+# .............
+# You can add several translations associated with the same discipline
+# using its :meth:`~.VariableRenamer.add_translations_by_discipline` method
+# from a discipline name
+# and a dictionary of the form ``{variable_name: new_variable_name}``:
+renamer.add_translations_by_discipline("T", {"x": "e", "o": "p"})
+renamer.translations
+
+# By variable
+# ...........
+# You add several translations,
+# indicating which variables in which disciplines are to be renamed in the same way,
+# using its :meth:`~.VariableRenamer.add_translations_by_variable` method
+# from a new variable name
+# and a dictionary of the form ``{discipline_name: variable_name}``:
+renamer.add_translations_by_discipline("i", {"A": "r", "B": "m"})
+renamer.translations
+
+# %%
+# Define the renamer from a dictionary
+# ------------------------------------
+# You can also use a nested dictionary
+# of the form ``{discipline_name: {variable_name: new_variable_name}}``
+# to create the :class:`.VariableRenamer`:
 renamer = VariableRenamer.from_dictionary({"A": {"a": "x", "c": "z"}, "B": {"b": "y"}})
 renamer.translators
 
 # %%
-# Define the translation from a file
-# ----------------------------------
+# Define the renamer from a file
+# ------------------------------
 # Lastly,
 # The :class:`.VariableRenamer` can easily be created from a file,
 # which may be more convenient from a user point of view.

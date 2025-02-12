@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from collections.abc import Iterable
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import NamedTuple
 
@@ -32,6 +30,8 @@ from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
     from pathlib import Path
 
     from typing_extensions import Self
@@ -51,29 +51,9 @@ class VariableRenamer:
     __translators: Mapping[str, Mapping[str, str]]
     """The translators."""
 
-    def __initialize(
-        self,
-        data: tuple[VariableTranslation, ...] | Mapping[str, Mapping[str, str]],
-    ) -> None:
-        """Set the translations and translators.
-
-        Args:
-            data: Either the translations or translators.
-        """
-        if isinstance(data, Mapping):
-            self.__translations = tuple(
-                VariableTranslation(
-                    discipline_name=discipline_name,
-                    variable_name=variable_name,
-                    new_variable_name=new_variable_name,
-                )
-                for discipline_name, discipline_translations in data.items()
-                for variable_name, new_variable_name in discipline_translations.items()
-            )
-            self.__translators = data
-        else:
-            self.__translations = data
-            self.__translators = self.__compute_translators()
+    def __init__(self) -> None:  # noqa: D107
+        self.__translations = ()
+        self.__translators = defaultdict(dict)
 
     def __get_pretty_table(self) -> PrettyTable:
         """Return a tabular view.
@@ -116,41 +96,25 @@ class VariableRenamer:
         return self.__translators
 
     @classmethod
-    def from_translations(cls, *translations: VariableTranslation) -> VariableRenamer:
+    def from_translations(
+        cls, *translations: VariableTranslation | tuple[str, str, str]
+    ) -> VariableRenamer:
         """Create from translations.
 
         Args:
             *translations: The translations
                 of the discipline input and output variables.
+                If ``tuple``,
+                formatted as ``(discipline_name, variable_name, new_variable_name)``.
 
         Returns:
             A renamer.
         """
         renamer = cls()
-        renamer.__initialize(translations)
+        for translation in translations:
+            renamer.add_translation(translation)
+
         return renamer
-
-    @classmethod
-    def from_tuples(cls, *translations: tuple[str, str, str]) -> VariableRenamer:
-        """Create from tuples.
-
-        Args:
-            *translations: The translations of the discipline input and output variables
-                as ``(discipline_name, variable_name, new_variable_name)``.
-
-        Returns:
-            A renamer.
-        """
-        return cls.from_translations(
-            *(
-                VariableTranslation(
-                    discipline_name=discipline_name,
-                    variable_name=variable_name,
-                    new_variable_name=new_variable_name,
-                )
-                for (discipline_name, variable_name, new_variable_name) in translations
-            )
-        )
 
     @classmethod
     def from_dictionary(
@@ -166,7 +130,14 @@ class VariableRenamer:
             A renamer.
         """
         renamer = cls()
-        renamer.__initialize(translations)
+        for (
+            discipline_name,
+            variable_names_to_new_variable_names,
+        ) in translations.items():
+            renamer.add_translations_by_discipline(
+                discipline_name, variable_names_to_new_variable_names
+            )
+
         return renamer
 
     @classmethod
@@ -222,34 +193,91 @@ class VariableRenamer:
         ]
         return cls.from_translations(*translations)
 
-    def __compute_translators(self) -> dict[str, dict[str, str]]:
-        """Compute one translator per discipline.
+    def add_translation(
+        self, translation: VariableTranslation | tuple[str, str, str]
+    ) -> None:
+        """Add a translation.
 
-        Returns:
-            One translator per discipline
+        Args:
+            translation: A variable translation.
+                If tuple,
+                formatted as ``(discipline_name, variable_name, new_variable_name)``.
 
         Raises:
             ValueError: When a variable has already been renamed.
         """
-        translators = defaultdict(dict)
-        for t in self.__translations:
-            translator = translators[t.discipline_name]
-            new_variable_name = translator.get(t.variable_name)
-            if new_variable_name is not None:
-                msg = (
-                    f"In discipline {t.discipline_name!r}, "
-                    f"the variable {t.variable_name!r} cannot be renamed "
-                    f"to {t.new_variable_name!r} "
-                    f"because it has already been renamed to {new_variable_name!r}."
+        if not isinstance(translation, VariableTranslation):
+            translation = VariableTranslation(
+                discipline_name=translation[0],
+                variable_name=translation[1],
+                new_variable_name=translation[2],
+            )
+
+        self.__translations = (*self.__translations, translation)
+        translator = self.__translators[translation.discipline_name]
+        new_variable_name = translator.get(translation.variable_name)
+        if new_variable_name is not None:
+            msg = (
+                f"In discipline {translation.discipline_name!r}, "
+                f"the variable {translation.variable_name!r} cannot be renamed "
+                f"to {translation.new_variable_name!r} "
+                f"because it has already been renamed to {new_variable_name!r}."
+            )
+            if new_variable_name == translation.new_variable_name:
+                LOGGER.warning(msg)
+            else:
+                raise ValueError(msg)
+
+        translator[translation.variable_name] = translation.new_variable_name
+
+    def add_translations_by_discipline(
+        self,
+        discipline_name: str,
+        variable_names_to_new_variable_names: Mapping[str, str],
+    ) -> None:
+        """Add one or more translations for a given discipline.
+
+        Args:
+            discipline_name: The name of the discipline.
+            variable_names_to_new_variable_names: The new variable names
+                bound to the old variable names.
+        """
+        for (
+            variable_name,
+            new_variable_name,
+        ) in variable_names_to_new_variable_names.items():
+            self.add_translation(
+                VariableTranslation(
+                    discipline_name=discipline_name,
+                    variable_name=variable_name,
+                    new_variable_name=new_variable_name,
                 )
-                if new_variable_name == t.new_variable_name:
-                    LOGGER.warning(msg)
-                else:
-                    raise ValueError(msg)
+            )
 
-            translator[t.variable_name] = t.new_variable_name
+    def add_translations_by_variable(
+        self,
+        new_variable_name: str,
+        discipline_names_to_variable_names: Mapping[str, str],
+    ) -> None:
+        """Add one or more translations for a same variable.
 
-        return translators
+        Args:
+            new_variable_name: The new name of the variable
+                to rename discipline variables.
+            discipline_names_to_variable_names: The variable names
+                bound to the discipline names.
+        """
+        for (
+            discipline_name,
+            variable_name,
+        ) in discipline_names_to_variable_names.items():
+            self.add_translation(
+                VariableTranslation(
+                    discipline_name=discipline_name,
+                    variable_name=variable_name,
+                    new_variable_name=new_variable_name,
+                )
+            )
 
 
 class VariableTranslation(NamedTuple):
@@ -280,17 +308,30 @@ def rename_discipline_variables(
         disciplines: The disciplines.
         translators: The translators
             of the form ``{discipline_name: {variable_name: new_variable_name}}``.
+
+    Raises:
+        ValueError: when a translator uses a wrong ``variable_name``.
     """
     for discipline in disciplines:
-        translator = translators.get(discipline.name)
+        translator = translators.get(discipline_name := discipline.name)
         if translator is None:
+            LOGGER.warning("The discipline '%s' has no translator.", discipline_name)
             continue
 
         grammars = [discipline.io.input_grammar, discipline.io.output_grammar]
         for variable_name, new_variable_name in translator.items():
+            variable_name_does_not_exist = True
             for grammar in grammars:
                 if variable_name in grammar:
+                    variable_name_does_not_exist = False
                     grammar.rename_element(variable_name, new_variable_name)
+
+            if variable_name_does_not_exist:
+                msg = (
+                    f"The discipline {discipline_name!r} "
+                    f"has no variable {variable_name!r}."
+                )
+                raise ValueError(msg)
 
         discipline.io.data_processor = NameMapping({
             new_variable_name: variable_name
