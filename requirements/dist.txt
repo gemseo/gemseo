@@ -16,7 +16,7 @@ check-wheel-contents==0.6.1
     # via -r requirements/dist.in
 click==8.1.8
     # via check-wheel-contents
-cryptography==44.0.0
+cryptography==44.0.1
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
