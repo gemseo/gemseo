@@ -77,9 +77,10 @@ class TaylorDiscipline(Discipline):
         )
         self.__offset = {}
         for output_name in self.io.output_grammar:
+            defaults = self.io.input_grammar.defaults
             self.__offset[output_name] = discipline.io.data[output_name] - sum(
-                discipline.jac[output_name][input_name] @ input_value
-                for input_name, input_value in self.io.input_grammar.defaults.items()
+                discipline.jac[output_name][input_name] @ defaults[input_name]
+                for input_name in sorted(defaults)
             )
         self.jac = deepcopy(discipline.jac)
         self._has_jacobian = True
@@ -88,7 +89,7 @@ class TaylorDiscipline(Discipline):
         output_data = {}
         for output_name in self.io.output_grammar:
             output_data[output_name] = self.__offset[output_name] + sum(
-                self.jac[output_name][input_name] @ input_value
-                for input_name, input_value in input_data.items()
+                self.jac[output_name][input_name] @ input_data[input_name]
+                for input_name in sorted(input_data)
             )
         return output_data
