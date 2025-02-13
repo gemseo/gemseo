@@ -121,7 +121,7 @@ renamer.translators
 # You can use these translators to rename the corresponding discipline variables,
 # by calling the :func:`.rename_discipline_variables` function
 # presented in the first section:
-rename_discipline_variables(disciplines, renamer.translators)
+# ``rename_discipline_variables(disciplines, renamer.translators)``.
 
 # %%
 # You can also access the :attr:`.translations`:
@@ -152,6 +152,7 @@ renamer.translations
 renamer.add_translations_by_discipline("T", {"x": "e", "o": "p"})
 renamer.translations
 
+# %%
 # By variable
 # ...........
 # You add several translations,
