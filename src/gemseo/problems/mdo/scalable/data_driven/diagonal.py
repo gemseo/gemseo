@@ -317,7 +317,7 @@ class ScalableDiagonalModel(ScalableModel):
         A basis function is a mono dimensional function
         interpolating the samples of a given output component
         over the input sampling line
-        :math:`t\in[0,1]\mapsto \\underline{x}+t(\overline{x}-\\underline{x})`.
+        :math:`t\in[0,1]\mapsto \underline{x}+t(\overline{x}-\underline{x})`.
 
         There are as many basis functions
         as there are output components from the discipline.

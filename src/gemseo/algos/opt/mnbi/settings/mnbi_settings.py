@@ -121,7 +121,7 @@ which the theoretical result has already been found.""",
     custom_phi_betas: Sequence[NDArrayPydantic] = Field(
         default=(),
         description=(
-            r"The custom values of :math:`\\Phi \beta` to be used in the optimization."
+            r"The custom values of :math:`\Phi \beta` to be used in the optimization."
         ),
     )
 

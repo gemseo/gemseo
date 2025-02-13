@@ -23,13 +23,13 @@ The F1 score is defined by
 
 .. math::
 
-    F_1 = 2\\frac{\\mathit{precision}\\mathit{recall}}
-        {\\mathit{precision}+\\mathit{recall}}
+    F_1 = 2\frac{\mathit{precision}\times\mathit{recall}}
+        {\mathit{precision}+\mathit{recall}}
 
 where
-:math:`\\mathit{precision}` is the number of correctly predicted positives
+:math:`\mathit{precision}` is the number of correctly predicted positives
 divided by the total number of *predicted* positives
-and :math:`\\mathit{recall}` is the number of correctly predicted positives
+and :math:`\mathit{recall}` is the number of correctly predicted positives
 divided by the total number of *true* positives.
 """
 

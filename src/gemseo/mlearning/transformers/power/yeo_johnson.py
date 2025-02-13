@@ -23,9 +23,9 @@ Transform :math:`x` as:
 
 .. math::
 
-   y   = & ((x + 1)^\lambda - 1) / \lambda, \text{ for } x \geq 0, \lambda \neq 0 \\\\
-   & \log(x + 1), \text{ for }x \geq 0, \lambda = 0 \\\\
-   & -\frac{(1-x)^{2 - \lambda} - 1}{2-\lambda}, \text{for} x < 0, \lambda \neq 2\\\\
+   y   = & ((x + 1)^\lambda - 1) / \lambda, \text{ for } x \geq 0, \lambda \neq 0 \\
+   & \log(x + 1), \text{ for }x \geq 0, \lambda = 0 \\
+   & -\frac{(1-x)^{2 - \lambda} - 1}{2-\lambda}, \text{ for } x < 0, \lambda \neq 2\\
    & -log(1-x), \text{ for } x < 0, \lambda = 2
 
 Dependence

@@ -26,49 +26,49 @@ through voting.
 The algorithm may also predict the probabilities of belonging to each class
 by counting the number of occurrences of the class withing the k nearest neighbors.
 
-Let :math:`(x_i)_{i=1,\\cdots,n_{\\text{samples}}}\\in
-\\mathbb{R}^{n_{\\text{samples}}\\times n_{\\text{inputs}}}`
-and :math:`(y_i)_{i=1,\\cdots,n_{\\text{samples}}}\\in
-\\{1,\\cdots,n_{\\text{classes}}\\}^{n_{\\text{samples}}}`
+Let :math:`(x_i)_{i=1,\cdots,n_{\text{samples}}}\in
+\mathbb{R}^{n_{\text{samples}}\times n_{\text{inputs}}}`
+and :math:`(y_i)_{i=1,\cdots,n_{\text{samples}}}\in
+\{1,\cdots,n_{\text{classes}}\}^{n_{\text{samples}}}`
 denote the input and output training data respectively.
 
-The procedure for predicting the class of a new input point :math:`x\\in
-\\mathbb{R}^{n_{\\text{inputs}}}` is the following:
+The procedure for predicting the class of a new input point :math:`x\in
+\mathbb{R}^{n_{\text{inputs}}}` is the following:
 
-Let :math:`i_1(x), \\cdots, i_{n_{\\text{samples}}}(x)` be
+Let :math:`i_1(x), \cdots, i_{n_{\text{samples}}}(x)` be
 the indices of the input training points
 sorted by distance to the prediction point :math:`x`,
 i.e.
 
 .. math::
 
-    \\|x-x_{i_1(x)}\\| \\leq \\cdots \\leq
-    \\|x-x_{i_{n_{\\text{samples}}}(x)}\\|.
+    \|x-x_{i_1(x)}\| \leq \cdots \leq
+    \|x-x_{i_{n_{\text{samples}}}(x)}\|.
 
 The ordered indices may be formally determined through the inductive formula
 
 .. math::
 
-    i_p(x) = \\underset{i\\in I_p(x)}{\\operatorname{argmin}}\\|x-x_i\\|,\\quad
-    p=1,\\cdots,n_{\\text{samples}}
+    i_p(x) = \underset{i\in I_p(x)}{\operatorname{argmin}}\|x-x_i\|,\quad
+    p=1,\cdots,n_{\text{samples}}
 
 where
 
 .. math::
 
-    I_1(x) = \\{1,\\cdots,n_{\\text{samples}}\\}\\\\
-    I_{p+1} = I_p(x)\\setminus \\{i_p(x)\\},\\quad
-    p=1,\\cdots,n_{\\text{samples}}-1,
+    I_1(x) = \{1,\cdots,n_{\text{samples}}\}\\
+    I_{p+1} = I_p(x)\setminus \{i_p(x)\},\quad
+    p=1,\cdots,n_{\text{samples}}-1,
 
 that is
 
 .. math::
 
-    I_p(x) = \\{1,\\cdots,n_{\\text{samples}}\\}\\setminus
-    \\{i_1(x),\\cdots,i_{p-1}(x)\\}.
+    I_p(x) = \{1,\cdots,n_{\text{samples}}\}\setminus
+    \{i_1(x),\cdots,i_{p-1}(x)\}.
 
 Then,
-by denoting :math:`\\operatorname{mode}(\\cdot)` the mode operator,
+by denoting :math:`\operatorname{mode}(\cdot)` the mode operator,
 i.e. the operator that extracts the element with the highest occurrence,
 we may define the prediction operator as the mode of the set of output classes
 associated to the :math:`k` first indices
@@ -76,7 +76,7 @@ associated to the :math:`k` first indices
 
 .. math::
 
-    f(x) = \\operatorname{mode}(y_{i_1(x)}, \\cdots, y_{i_k(x)})
+    f(x) = \operatorname{mode}(y_{i_1(x)}, \cdots, y_{i_k(x)})
 
 
 This concept is implemented through the :class:`.KNNClassifier` class which

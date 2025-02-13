@@ -23,10 +23,10 @@ The root mean squared error (RMSE) is defined by
 
 .. math::
 
-    \\operatorname{RMSE}(\\hat{y})=\\sqrt{\\frac{1}{n}\\sum_{i=1}^n(\\hat{y}_i-y_i)^2},
+    \operatorname{RMSE}(\hat{y})=\sqrt{\frac{1}{n}\sum_{i=1}^n(\hat{y}_i-y_i)^2},
 
 where
-:math:`\\hat{y}` are the predictions and
+:math:`\hat{y}` are the predictions and
 :math:`y` are the data points.
 """
 
