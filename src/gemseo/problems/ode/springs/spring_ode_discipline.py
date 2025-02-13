@@ -128,10 +128,10 @@ class SpringODEDiscipline(ODEDiscipline):
 
         .. math::
 
-        \\left\\{ \begin{cases}
-            \\dot{x} &= y \\
-            \\dot{y} &= \frac{k_1 + k_2}{m} x
-        \\end{cases} \right.
+           \left\{ \begin{cases}
+               \dot{x} &= y \\
+               \dot{y} &= \frac{k_1 + k_2}{m} x
+           \end{cases} \right.
 
         where :math:`k_1` and :math:`k_2` are the stiffnesses of the springs.
 
@@ -140,10 +140,10 @@ class SpringODEDiscipline(ODEDiscipline):
 
         .. math::
 
-            x(t) = \frac{1}{2}\big( x + \frac{y_0}{\\omega} \big) \\exp^{i\\omega t}
-                + \frac{1}{2}\big( x - \frac{y_0}{\\omega} \big) \\exp^{-i\\omega t}
+            x(t) = \frac{1}{2}\big( x + \frac{y_0}{\omega} \big) \exp^{i\omega t}
+                + \frac{1}{2}\big( x - \frac{y_0}{\omega} \big) \exp^{-i\omega t}
 
-        with :math:`\\omega = \frac{-k_1+k_2}{m}`.
+        with :math:`\omega = \frac{-k_1+k_2}{m}`.
 
         Args:
             initial_position: The initial position.

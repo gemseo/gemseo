@@ -23,13 +23,13 @@ The R2 score s defined by
 
 .. math::
 
-    R_2(\\hat{y}) = 1 - \\frac{\\sum_i (\\hat{y}_i - y_i)^2}
-                              {\\sum_i (y_i-\\bar{y})^2},
+    R_2(\hat{y}) = 1 - \frac{\sum_i (\hat{y}_i - y_i)^2}
+                              {\sum_i (y_i-\bar{y})^2},
 
 where
-:math:`\\hat{y}` are the predictions,
+:math:`\hat{y}` are the predictions,
 :math:`y` are the data points and
-:math:`\\bar{y}` is the mean of :math:`y`.
+:math:`\bar{y}` is the mean of :math:`y`.
 """
 
 from __future__ import annotations
