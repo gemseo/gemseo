@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -41,7 +42,7 @@ class RetryDiscipline(Discipline):
 
     This :class:`.Discipline` wraps another discipline.
 
-    It can be executed multiple times (up to a specified number of retries)
+    It can be executed multiple times (up to a specified number of trials)
     if the previous attempts fail to produce any result.
 
     A timeout in seconds can be specified to prevent executions from becoming stuck.
@@ -66,11 +67,11 @@ class RetryDiscipline(Discipline):
     )
     """The possible timeout exceptions that can be raised during execution."""
 
-    n_retry: int
-    """The number of retry of the discipline."""
+    n_trials: int
+    """The number of trials to execute the discipline."""
 
     wait_time: float
-    """The time to wait between 2 retries (in seconds)."""
+    """The time to wait between 2 trials (in seconds)."""
 
     timeout: float
     """The maximum duration, in seconds, that the discipline is allowed to run."""
@@ -82,7 +83,7 @@ class RetryDiscipline(Discipline):
     def __init__(
         self,
         discipline: Discipline,
-        n_retry: int = 5,
+        n_trials: int = 5,
         wait_time: float = 0.0,
         timeout: float = math.inf,
         fatal_exceptions: Iterable[type[Exception]] = (),
@@ -90,8 +91,8 @@ class RetryDiscipline(Discipline):
         """
         Args:
             discipline: The discipline to wrap in the retry loop.
-            n_retry: The number of retry of the discipline.
-            wait_time: The time to wait between 2 retries (in seconds).
+            n_trials: The number of trials of the discipline.
+            wait_time: The time to wait between 2 trials (in seconds).
             timeout: The maximum duration, in seconds, that the discipline is
                            allowed to run. If this time limit is exceeded, the
                            execution is terminated. If ``math.inf``, the
@@ -109,7 +110,7 @@ class RetryDiscipline(Discipline):
         self.__discipline = discipline
         self.io.input_grammar = discipline.io.input_grammar
         self.io.output_grammar = discipline.io.output_grammar
-        self.n_retry = n_retry
+        self.n_trials = n_trials
         self.wait_time = wait_time
         self.timeout = timeout
         self.fatal_exceptions = fatal_exceptions
@@ -123,11 +124,13 @@ class RetryDiscipline(Discipline):
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.__n_executions = 0
 
-        for n_try in range(1, self.n_retry + 1):
+        for n_trial in range(1, self.n_trials + 1):
             self.__n_executions += 1
 
             LOGGER.debug(
-                "Trying to execute the discipline: attempt %d/%d", n_try, self.n_retry
+                "Trying to execute the discipline: attempt %d/%d",
+                n_trial,
+                self.n_trials,
             )
 
             try:
@@ -144,7 +147,7 @@ class RetryDiscipline(Discipline):
                 current_error = TimeoutError(msg)
 
             except Exception as error:  # noqa: BLE001
-                if isinstance(error, self.fatal_exceptions):
+                if isinstance(error, tuple(self.fatal_exceptions)):
                     LOGGER.info(
                         "Failed to execute discipline %s, "
                         "aborting retry because of the exception type %s.",
@@ -155,14 +158,16 @@ class RetryDiscipline(Discipline):
                 current_error = error
 
             time.sleep(self.wait_time)
+            self.__discipline.execution_status.value = ExecutionStatus.Status.DONE
 
-        plural_suffix = "s" if self.n_retry > 1 else ""
+        plural_suffix = "s" if self.n_trials > 1 else ""
         LOGGER.error(
             "Failed to execute discipline %s after %d attempt%s.",
             self.__discipline.name,
-            self.n_retry,
+            self.n_trials,
             plural_suffix,
         )
+
         raise current_error
 
     def _execute_discipline(self, input_data: StrKeyMapping) -> StrKeyMapping:

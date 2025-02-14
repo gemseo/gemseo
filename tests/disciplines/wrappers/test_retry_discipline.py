@@ -85,13 +85,13 @@ def test_retry_discipline(an_analytic_discipline, timeout, caplog) -> None:
 
 
 @pytest.mark.parametrize("wait_time", [0.5, 1.0])
-@pytest.mark.parametrize("n_retry", [1, 3])
+@pytest.mark.parametrize("n_trials", [1, 3])
 def test_failure_retry_discipline_with_timeout(
-    an_analytic_discipline, n_retry, wait_time, caplog
+    an_analytic_discipline, n_trials, wait_time, caplog
 ) -> None:
     """Test failure of the discipline with a too much very short timeout."""
     disc_with_timeout = RetryDiscipline(
-        an_analytic_discipline, timeout=1e-4, n_retry=n_retry, wait_time=wait_time
+        an_analytic_discipline, timeout=1e-4, n_trials=n_trials, wait_time=wait_time
     )
 
     with (
@@ -105,16 +105,16 @@ def test_failure_retry_discipline_with_timeout(
         disc_with_timeout.execute({"x": array([4.0])})
 
     elapsed_time = timer.elapsed_time
-    assert elapsed_time > 0.05 + (n_retry - 1) * wait_time
+    assert elapsed_time > 0.05 + (n_trials - 1) * wait_time
 
-    assert disc_with_timeout.n_executions == n_retry
+    assert disc_with_timeout.n_executions == n_trials
     assert disc_with_timeout.local_data == {"x": array([4.0])}
 
     assert "Process stopped as it exceeds timeout" in caplog.text
 
-    plural_suffix = "s" if n_retry > 1 else ""
+    plural_suffix = "s" if n_trials > 1 else ""
     log_message = (
-        f"Failed to execute discipline AnalyticDiscipline after {n_retry}"
+        f"Failed to execute discipline AnalyticDiscipline after {n_trials}"
         f" attempt{plural_suffix}."
     )
     assert log_message in caplog.text
@@ -123,9 +123,9 @@ def test_failure_retry_discipline_with_timeout(
 def test_failure_zero_division_error(a_crashing_analytic_discipline, caplog) -> None:
     """Test failure of the discipline with a bad x entry.
 
-    In order to catch the ZeroDivisionError, set n_retry=1
+    In order to catch the ZeroDivisionError, set n_trials=1
     """
-    disc = RetryDiscipline(a_crashing_analytic_discipline, n_retry=1)
+    disc = RetryDiscipline(a_crashing_analytic_discipline, n_trials=1)
     with pytest.raises(ZeroDivisionError, match="float division by zero"):
         disc.execute({"x": array([0.0])})
 
@@ -144,9 +144,9 @@ def test_failure_zero_division_error(a_crashing_analytic_discipline, caplog) -> 
         (OverflowError, FloatingPointError, ZeroDivisionError),
     ],
 )
-@pytest.mark.parametrize("n_try", [1, 3])
+@pytest.mark.parametrize("n_trials", [1, 3])
 def test_failure_zero_division_error_with_timeout(
-    n_try: int,
+    n_trials: int,
     fatal_exceptions: Iterable[type[Exception]],
     a_crashing_analytic_discipline,
     caplog,
@@ -154,11 +154,11 @@ def test_failure_zero_division_error_with_timeout(
     """Test failure of the discipline with timeout and a bad x entry.
 
     In order to catch the ZeroDivisionError that arises before timeout (5s), test with
-    n_retry=1 and 3 to be sure every case is ok.
+    n_trials=1 and 3 to be sure every case is ok.
     """
     disc = RetryDiscipline(
         a_crashing_analytic_discipline,
-        n_retry=n_try,
+        n_trials=n_trials,
         timeout=10.0,
         fatal_exceptions=fatal_exceptions,
     )
@@ -184,7 +184,7 @@ def test_a_not_implemented_error_analytic_discipline(
     """
     retry_discipline = RetryDiscipline(
         a_crashing_discipline_in_run,
-        n_retry=5,
+        n_trials=5,
         timeout=100.0,
         fatal_exceptions=(
             ZeroDivisionError,
@@ -212,10 +212,10 @@ def test_retry_discipline_timeout_feature(
     a_long_time_running_discipline, caplog
 ) -> None:
     """Test the timeout feature of discipline with a long computation."""
-    n_retry = 1
+    n_trials = 1
 
     disc_with_timeout = RetryDiscipline(
-        a_long_time_running_discipline, timeout=2.0, n_retry=n_retry
+        a_long_time_running_discipline, timeout=2.0, n_trials=n_trials
     )
     with pytest.raises(
         TimeoutError,
@@ -224,7 +224,7 @@ def test_retry_discipline_timeout_feature(
     ):
         disc_with_timeout.execute({"x": array([0.0])})
 
-    assert disc_with_timeout.n_executions == n_retry
+    assert disc_with_timeout.n_executions == n_trials
     assert disc_with_timeout.local_data == {}
 
     assert "Process stopped as it exceeds timeout" in caplog.text
