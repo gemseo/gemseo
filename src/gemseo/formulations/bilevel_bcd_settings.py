@@ -37,7 +37,7 @@ copy_field_opt = partial(copy_field, model=BaseMDASettings)
 class BiLevel_BCD_Settings(BiLevel_Settings):  # noqa: N801
     """Settings of the :class:`.BiLevel` formulation."""
 
-    _TARGET_CLASS_NAME = "BiLevel_BCD"
+    _TARGET_CLASS_NAME = "BiLevelBCD"
 
     bcd_mda_settings: MDAGaussSeidel_Settings = Field(
         default=MDAGaussSeidel_Settings(warm_start=True),

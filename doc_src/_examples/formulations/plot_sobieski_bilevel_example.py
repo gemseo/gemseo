@@ -170,6 +170,8 @@ system_scenario.execute(cobyla_settings)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For the first MDA:
 system_scenario.formulation.mda1.plot_residual_history(save=False, show=True)
+
+# %%
 # For the second MDA:
 system_scenario.formulation.mda2.plot_residual_history(save=False, show=True)
 
