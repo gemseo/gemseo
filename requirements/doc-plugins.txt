@@ -1,6 +1,7 @@
 git+https://gitlab.com/gemseo/dev/gemseo-benchmark.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-calibration.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-fmu.git@master
+git+https://gitlab.com/gemseo/dev/gemseo-hexaly.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-jax.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-matlab.git@master
 git+https://gitlab.com/gemseo/dev/gemseo-mlearning.git@master
