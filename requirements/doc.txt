@@ -113,7 +113,7 @@ plotly==5.24.0
     # via gemseo (pyproject.toml)
 prettytable==3.12.0
     # via gemseo (pyproject.toml)
-psutil==6.1.1
+psutil==7.0.0
     # via openturns
 pybtex==0.24.0
     # via
@@ -197,7 +197,7 @@ sphinx==8.1.3
     #   sphinxcontrib-spelling
 sphinx-design==0.6.1
     # via gemseo (pyproject.toml)
-sphinx-gallery==0.18.0
+sphinx-gallery==0.19.0
     # via gemseo (pyproject.toml)
 sphinxcontrib-apidoc==0.5.0
     # via gemseo (pyproject.toml)

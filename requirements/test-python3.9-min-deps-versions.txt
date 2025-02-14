@@ -92,7 +92,7 @@ pluggy==1.5.0
     # via pytest
 prettytable==2.3.0
     # via gemseo (pyproject.toml)
-psutil==6.1.1
+psutil==7.0.0
     # via openturns
 py==1.11.0
     # via pytest
