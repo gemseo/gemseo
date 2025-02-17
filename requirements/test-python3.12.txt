@@ -146,7 +146,7 @@ threadpoolctl==3.5.0
     # via scikit-learn
 tqdm==4.66.5
     # via gemseo (pyproject.toml)
-typeguard==4.4.1
+typeguard==4.4.2
     # via pandera
 typing-extensions==4.12.2
     # via
