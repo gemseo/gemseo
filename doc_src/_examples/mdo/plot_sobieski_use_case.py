@@ -63,9 +63,9 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.disciplines.utils import get_all_inputs
-from gemseo.disciplines.utils import get_all_outputs
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.utils.discipline import get_all_inputs
+from gemseo.utils.discipline import get_all_outputs
 
 configure_logger()
 

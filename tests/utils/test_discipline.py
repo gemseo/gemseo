@@ -23,10 +23,13 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
+from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.variable_renaming import VariableRenamer
-from gemseo.utils.variable_renaming import VariableTranslation
-from gemseo.utils.variable_renaming import rename_discipline_variables
+from gemseo.utils.discipline import DisciplineVariableProperties
+from gemseo.utils.discipline import VariableRenamer
+from gemseo.utils.discipline import VariableTranslation
+from gemseo.utils.discipline import get_discipline_variable_properties
+from gemseo.utils.discipline import rename_discipline_variables
 
 
 @pytest.fixture(scope="module")
@@ -195,7 +198,7 @@ def test_rename_twice_log(caplog):
     )
     VariableRenamer.from_translations(*translations)
     assert caplog.record_tuples[0] == (
-        "gemseo.utils.variable_renaming",
+        "gemseo.utils.discipline",
         30,
         "In discipline 'A', "
         "the variable 'a' cannot be renamed to 'x' "
@@ -278,7 +281,7 @@ def test_rename_discipline_variables(disciplines, translators, caplog):
     assert_equal(other_disc_a.execute({"x": array([3.0])})["z"], array([12.0]))
     assert_equal(disc_b.execute({"j": array([3.0])})["y"], array([15.0]))
     assert caplog.record_tuples[0] == (
-        "gemseo.utils.variable_renaming",
+        "gemseo.utils.discipline",
         30,
         "The discipline 'C' has no translator.",
     )
@@ -287,3 +290,39 @@ def test_rename_discipline_variables(disciplines, translators, caplog):
         ValueError, match=re.escape("The discipline 'A' has no variable 'foo'.")
     ):
         rename_discipline_variables(disciplines, {"A": {"foo": "bar"}})
+
+
+def test_get_discipline_variable_properties():
+    """Check get_discipline_variable_properties."""
+    discipline = AnalyticDiscipline({"foo": "foo"})
+    grammars = [discipline.io.input_grammar, discipline.io.output_grammar]
+    for index, grammar in enumerate(grammars):
+        names_to_properties = get_discipline_variable_properties(discipline)[index]
+        assert names_to_properties["foo"] == DisciplineVariableProperties(
+            current_name="foo",
+            original_name="foo",
+            current_name_without_namespace="foo",
+        )
+        grammar.rename_element("foo", "bar")
+        discipline.io.data_processor = NameMapping({"bar": "foo"})
+        names_to_properties = get_discipline_variable_properties(discipline)[index]
+        assert names_to_properties["bar"] == DisciplineVariableProperties(
+            current_name="bar",
+            original_name="foo",
+            current_name_without_namespace="bar",
+        )
+        grammar.rename_element("bar", "baz")
+        discipline.io.data_processor = NameMapping({"baz": "foo"})
+        names_to_properties = get_discipline_variable_properties(discipline)[index]
+        assert names_to_properties["baz"] == DisciplineVariableProperties(
+            current_name="baz",
+            original_name="foo",
+            current_name_without_namespace="baz",
+        )
+        grammar.add_namespace("baz", "ns")
+        names_to_properties = get_discipline_variable_properties(discipline)[index]
+        assert names_to_properties["ns:baz"] == DisciplineVariableProperties(
+            current_name="ns:baz",
+            original_name="foo",
+            current_name_without_namespace="baz",
+        )

@@ -30,7 +30,6 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
@@ -40,6 +39,7 @@ from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.testing.helpers import concretize_classes
 
 

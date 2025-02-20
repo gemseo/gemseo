@@ -88,7 +88,7 @@ discipline.io.get_input_data(), discipline.io.get_output_data()
 # %%
 # Finally,
 # we may also be interested in
-# :ref:`this example <sphx_glr_examples_disciplines_variables_plot_variable_renaming>`,
+# :ref:`this example <sphx_glr_examples_disciplines_variables_plot_variable_renaming.py>`,
 # which illustrates the use of :func:`.rename_discipline_variables`.
 # Given a collection of disciplines
 # and a dictionary of translations

@@ -21,11 +21,11 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.utils import check_disciplines_consistency
-from gemseo.disciplines.utils import get_all_inputs
-from gemseo.disciplines.utils import get_all_outputs
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.discipline import check_disciplines_consistency
+from gemseo.utils.discipline import get_all_inputs
+from gemseo.utils.discipline import get_all_outputs
 
 
 class MyDiscipline(DummyDiscipline):

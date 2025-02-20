@@ -1,0 +1,2 @@
+- The ``get_discipline_variable_properties`` function returns the properties of the input and output discipline variables, such as the original name, the current name, and the current name without namespace.
+- The module ``gemseo.disciplines.utils`` has been merged into ``gemseo.utils.discipline``.

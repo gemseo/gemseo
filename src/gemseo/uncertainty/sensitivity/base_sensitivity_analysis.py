@@ -47,13 +47,13 @@ from strenum import StrEnum
 from gemseo import sample_disciplines
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.typing import RealArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import convert_strings_to_iterable

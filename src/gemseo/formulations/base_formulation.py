@@ -39,9 +39,9 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
-from gemseo.disciplines.utils import check_disciplines_consistency
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
 
