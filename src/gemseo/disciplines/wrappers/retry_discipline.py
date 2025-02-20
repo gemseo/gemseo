@@ -107,7 +107,7 @@ class RetryDiscipline(Discipline):
 
         """  # noqa:D205 D212 D415
         super().__init__(discipline.name)
-        self.__discipline = discipline
+        self._discipline = discipline
         self.io.input_grammar = discipline.io.input_grammar
         self.io.output_grammar = discipline.io.output_grammar
         self.n_trials = n_trials
@@ -135,13 +135,13 @@ class RetryDiscipline(Discipline):
 
             try:
                 if math.isinf(self.timeout):
-                    return self.__discipline.execute(input_data)
+                    return self._discipline.execute(input_data)
                 return self._execute_discipline(input_data)
 
             except self.__time_out_exceptions:
                 msg = (
                     "Timeout reached during the execution of "
-                    f"discipline {self.__discipline.name}"
+                    f"discipline {self._discipline.name}"
                 )
                 LOGGER.debug(msg)
                 current_error = TimeoutError(msg)
@@ -151,24 +151,33 @@ class RetryDiscipline(Discipline):
                     LOGGER.info(
                         "Failed to execute discipline %s, "
                         "aborting retry because of the exception type %s.",
-                        self.__discipline.name,
+                        self._discipline.name,
                         type(error),
                     )
                     raise
                 current_error = error
 
+            self._discipline.execution_status.value = ExecutionStatus.Status.DONE
             time.sleep(self.wait_time)
-            self.__discipline.execution_status.value = ExecutionStatus.Status.DONE
+            self._run_before_next_trial()
 
         plural_suffix = "s" if self.n_trials > 1 else ""
         LOGGER.error(
             "Failed to execute discipline %s after %d attempt%s.",
-            self.__discipline.name,
+            self._discipline.name,
             self.n_trials,
             plural_suffix,
         )
 
         raise current_error
+
+    def _run_before_next_trial(self) -> None:
+        """Run before the next trial.
+
+        This method is called whenever a trial has just ended, without success.
+        It can be used to perform any necessary cleanup or
+        preparation for the next trial.
+        """
 
     def _execute_discipline(self, input_data: StrKeyMapping) -> StrKeyMapping:
         """Execute the discipline with a timeout.
@@ -181,13 +190,13 @@ class RetryDiscipline(Discipline):
         """
         LOGGER.debug(
             "Executing discipline %s with a timeout of %s s",
-            self.__discipline.name,
+            self._discipline.name,
             self.timeout,
         )
 
         with ProcessPoolExecutor() as executor:
             run_discipline = executor.submit(
-                self.__discipline.execute,
+                self._discipline.execute,
                 input_data,
             )
 
