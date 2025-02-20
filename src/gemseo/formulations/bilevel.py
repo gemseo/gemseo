@@ -31,13 +31,13 @@ from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
+from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:

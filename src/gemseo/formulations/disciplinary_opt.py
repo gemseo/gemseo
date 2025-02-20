@@ -25,9 +25,9 @@ from typing import Any
 from typing import ClassVar
 
 from gemseo.core.chains.chain import MDOChain
-from gemseo.disciplines.utils import get_all_inputs
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.utils.discipline import get_all_inputs
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

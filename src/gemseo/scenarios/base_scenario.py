@@ -51,10 +51,10 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 )
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.pydantic import get_class_name
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str

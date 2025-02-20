@@ -23,9 +23,9 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.variable_renaming import VariableRenamer
-from gemseo.utils.variable_renaming import VariableTranslation
-from gemseo.utils.variable_renaming import rename_discipline_variables
+from gemseo.utils.discipline import VariableRenamer
+from gemseo.utils.discipline import VariableTranslation
+from gemseo.utils.discipline import rename_discipline_variables
 
 # %%
 # In the context of a multidisciplinary study,
@@ -38,8 +38,8 @@ from gemseo.utils.variable_renaming import rename_discipline_variables
 # the output of one model and the input of another model
 # represent the same parameter in the study.
 #
-# The :mod:`.variable_renaming` module
-# enables these models to be connected automatically using a set of translations.
+# The :mod:`gemseo.utils.discipline` module includes capabilities
+# enabling these models to be connected automatically using a set of translations.
 #
 # Renaming discipline variables from translators
 # ----------------------------------------------

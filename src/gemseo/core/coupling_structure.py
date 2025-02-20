@@ -33,7 +33,7 @@ from matplotlib.patches import Circle
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.dependency_graph import ExecutionSequence
-from gemseo.disciplines.utils import check_disciplines_consistency
+from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.n2d3.n2_html import N2HTML
 
 if TYPE_CHECKING:

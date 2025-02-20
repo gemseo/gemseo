@@ -64,9 +64,9 @@ from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.factory import MDAFactory
 from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import MultiLineString
 

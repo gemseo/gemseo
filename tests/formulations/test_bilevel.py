@@ -28,7 +28,6 @@ from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd import BiLevelBCD
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
@@ -37,6 +36,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.testing.bilevel_test_helper import create_aerostructure_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_dummy_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import (
