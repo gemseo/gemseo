@@ -171,8 +171,16 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             self._input_names = []
             self._output_names = []
         else:
-            self._input_names = samples.input_names
-            self._output_names = samples.output_names
+            self._input_names = list(
+                samples.get_view(group_names=samples.INPUT_GROUP)
+                .columns.get_level_values(1)
+                .unique()
+            )
+            self._output_names = list(
+                samples.get_view(group_names=samples.OUTPUT_GROUP)
+                .columns.get_level_values(1)
+                .unique()
+            )
         self._indices = self.SensitivityIndices()
 
     def compute_samples(
