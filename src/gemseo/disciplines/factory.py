@@ -123,13 +123,13 @@ class DisciplineFactory(BaseFactory):
         return common_options, specific_options
 
     def get_options_grammar(
-        self, name: str, write_schema: bool = False, schema_path: str | None = None
+        self, name: str, write_schema: bool = False, schema_path: str = ""
     ) -> JSONGrammar:
         """Get the options default values for the given class name.
 
         Args:
             name: The name of the class.
-            schema_path: the output json file path. If ``None``: input.json or
+            schema_path: the output json file path. If empty: input.json or
                 output.json depending on grammar type.
             write_schema: Whether to write the schema files
 

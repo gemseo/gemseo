@@ -86,15 +86,15 @@ class ScalabilityStudy:
         design_variables: Iterable[str],
         directory: str = "study",
         prefix: str = "",
-        eq_constraints: Iterable[str] | None = None,
-        ineq_constraints: Iterable[str] | None = None,
+        eq_constraints: Iterable[str] = (),
+        ineq_constraints: Iterable[str] = (),
         maximize_objective: bool = False,
         fill_factor: float = 0.7,
         active_probability: float = 0.1,
         feasibility_level: float = 0.8,
         start_at_equilibrium: bool = True,
         early_stopping: bool = True,
-        coupling_variables: Iterable[str] | None = None,
+        coupling_variables: Iterable[str] = (),
     ) -> None:
         """Constructor.
 
@@ -159,6 +159,7 @@ class ScalabilityStudy:
         self.datasets = []
         self.objective = objective
         self.design_variables = design_variables
+        # TODO: API: remove "or []"
         self.eq_constraints = eq_constraints or []
         self.ineq_constraints = ineq_constraints or []
         self.coupling_variables = coupling_variables or []

@@ -45,7 +45,7 @@ class LSF(JobSchedulerDisciplineWrapper):
         workdir_path: Path,
         scheduler_run_command: str = "bsub -K",
         job_out_filename: str = "batch.sh",
-        job_template_path: Path | str | None = None,
+        job_template_path: Path | str = "",
         use_template=True,
         setup_cmd: str = "",
         user_email: str = "",

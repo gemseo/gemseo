@@ -89,7 +89,7 @@ class CustomDOE(BaseDOELibrary):
     @staticmethod
     def read_file(
         doe_file: str | Path | TextIO,
-        delimiter: str | None = ",",
+        delimiter: str = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,
     ) -> RealArray:
@@ -98,7 +98,6 @@ class CustomDOE(BaseDOELibrary):
         Args:
             doe_file: Either the file, the filename, or the generator to read.
             delimiter: The character used to separate values.
-                If ``None``, use whitespace.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
                 ``None`` implies no comments.

@@ -38,8 +38,8 @@ class FilteringDiscipline(Discipline):
     def __init__(
         self,
         discipline: Discipline,
-        input_names: Iterable[str] | None = None,
-        output_names: Iterable[str] | None = None,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         keep_in: bool = True,
         keep_out: bool = True,
     ) -> None:
@@ -47,9 +47,9 @@ class FilteringDiscipline(Discipline):
         Args:
             discipline: The original discipline.
             input_names: The names of the inputs of interest.
-                If ``None``, use all the inputs.
+                If empty, use all the inputs.
             output_names: The names of the outputs of interest.
-                If ``None``, use all the outputs.
+                If empty, use all the outputs.
             keep_in: Whether to keep the inputs of interest.
                 Otherwise, remove them.
             keep_out: Whether to keep the outputs of interest.

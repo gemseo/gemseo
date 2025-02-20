@@ -956,7 +956,7 @@ class ParameterSpace(DesignSpace):
         Args:
             dataset: The dataset used for the initialization.
             groups: The groups of the dataset to be considered.
-                If ``None``, consider all the groups.
+                If empty, consider all the groups.
             uncertain: Whether the variables should be uncertain or not.
             copula: A name of copula defining the dependency between random variables.
         """
@@ -965,7 +965,7 @@ class ParameterSpace(DesignSpace):
         if uncertain is None:
             uncertain = {}
 
-        if groups is None:
+        if not groups:
             groups = dataset.group_names
         for group in groups:
             for name in dataset.get_variable_names(group):

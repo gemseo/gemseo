@@ -45,7 +45,7 @@ class SLURM(JobSchedulerDisciplineWrapper):
         workdir_path: Path,
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.sh",
-        job_template_path: Path | str | None = None,
+        job_template_path: Path | str = "",
         use_template: bool = True,
         setup_cmd: str = "",
         user_email: str = "",

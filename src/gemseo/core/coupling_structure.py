@@ -90,7 +90,6 @@ class CouplingStructure:
         self._weakly_coupled_disc = None
         self._strong_couplings = None
         self._strongly_coupled_disc = None
-        self._output_couplings = None
         self._all_couplings = None
 
     @staticmethod

@@ -553,7 +553,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
     def _compute_auxiliary_jacobians(
         self,
         input_names: Iterable[str],
-        func_names: Iterable[str] | None = None,
+        func_names: Iterable[str] = (),
         use_threading: bool = True,
     ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobians of the optimization functions.
@@ -561,7 +561,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         Args:
             input_names: The names of the inputs w.r.t. which differentiate.
             func_names: The names of the functions to differentiate
-                If ``None``, then all the optimizations functions are differentiated.
+                If empty, then all the optimizations functions are differentiated.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -575,7 +575,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         """
         # Gather the names of the functions to differentiate
         opt_problem = self.scenario.formulation.optimization_problem
-        if func_names is None:
+        if not func_names:
             func_names = opt_problem.objective.output_names + [
                 output_name
                 for constraint in opt_problem.constraints
