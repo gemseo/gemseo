@@ -103,9 +103,7 @@ class XDSMToPDFConverter:
                     batchmode=batchmode,
                 )
 
-    def __add_processes(
-        self, workflow: list[Any], prev: str | list[str] | None = None
-    ) -> None:
+    def __add_processes(self, workflow: list[Any], prev: str | list[str] = "") -> None:
         """Create the pyXDSM processes from a given workflow in a recursive way.
 
         Args:

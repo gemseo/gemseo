@@ -308,7 +308,7 @@ class ScalableDiagonalModel(ScalableModel):
         save: bool = False,
         show: bool = False,
         step: float = 0.01,
-        varnames: Sequence[str] | None = None,
+        varnames: Sequence[str] = (),
         directory: str = ".",
         png: bool = False,
     ) -> list[str]:
@@ -340,7 +340,7 @@ class ScalableDiagonalModel(ScalableModel):
             show: Whether to display the figure.
             step: The step to evaluate the 1d interpolation function.
             varnames: The names of the variable to plot.
-                If ``None``, all the variables are plotted.
+                If empty, all the variables are plotted.
             directory: The directory path.
             png: Whether to use PNG file format instead of PDF.
 

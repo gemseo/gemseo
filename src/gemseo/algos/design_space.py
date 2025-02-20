@@ -118,7 +118,7 @@ class DesignSpace:
     that can be used as the initial solution of an :class:`.OptimizationProblem`.
     """
 
-    name: str | None
+    name: str
     """The name of the space."""
 
     _variables: dict[str, Variable]
@@ -688,14 +688,14 @@ class DesignSpace:
     def check_membership(
         self,
         x_vect: Mapping[str, ndarray] | ndarray,
-        variable_names: Sequence[str] | None = None,
+        variable_names: Sequence[str] = (),
     ) -> None:
         """Check whether the variables satisfy the design space requirements.
 
         Args:
             x_vect: The values of the variables.
             variable_names: The names of the variables.
-                If ``None``, use the names of the variables of the design space.
+                If empty, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of the values vector is wrong,
@@ -711,15 +711,7 @@ class DesignSpace:
                     f"The array should be of size {self.dimension}; got {x_vect.size}."
                 )
                 raise ValueError(msg)
-            if variable_names is None:
-                if self.__lower_bounds_array is None:
-                    self.__lower_bounds_array = self.get_lower_bounds()
-
-                if self.__upper_bounds_array is None:
-                    self.__upper_bounds_array = self.get_upper_bounds()
-
-                self.__check_membership_x_vect(x_vect)
-            else:
+            if variable_names:
                 self.__check_membership(
                     split_array_to_dict_of_arrays(
                         x_vect,
@@ -728,6 +720,14 @@ class DesignSpace:
                     ),
                     variable_names,
                 )
+            else:
+                if self.__lower_bounds_array is None:
+                    self.__lower_bounds_array = self.get_lower_bounds()
+
+                if self.__upper_bounds_array is None:
+                    self.__upper_bounds_array = self.get_upper_bounds()
+
+                self.__check_membership_x_vect(x_vect)
         else:
             msg = (
                 "The input vector should be an array or a dictionary; "
@@ -771,14 +771,14 @@ class DesignSpace:
     def __check_membership(
         self,
         x_dict: Mapping[str, ndarray],
-        variable_names: Iterable[str] | None,
+        variable_names: Iterable[str],
     ) -> None:
         """Check whether the variables satisfy the design space requirements.
 
         Args:
             x_dict: The values of the variables.
             variable_names: The names of the variables.
-                If ``None``, use the names of the variables of the design space.
+                If empty, use the names of the variables of the design space.
 
         Raises:
             ValueError: Either if the dimension of an array is wrong,
@@ -895,13 +895,13 @@ class DesignSpace:
 
     def _check_current_names(
         self,
-        variable_names: Iterable[str] | None = None,
+        variable_names: Iterable[str] = (),
     ) -> None:
         """Check the names of the current design value.
 
         Args:
             variable_names: The names of the variables.
-                If ``None``, use the names of the variables of the design space.
+                If empty, use the names of the variables of the design space.
 
         Raises:
             ValueError: If the names of the variables of the current design value

@@ -69,7 +69,7 @@ class XLSDiscipline(Discipline):
         self,
         xls_file_path: Path | str,
         name: str = "",
-        macro_name: str | None = "execute",
+        macro_name: str = "execute",
         copy_xls_at_setstate: bool = False,
         recreate_book_at_run: bool = False,
     ) -> None:
@@ -120,7 +120,7 @@ class XLSDiscipline(Discipline):
                 a macro named "execute" must exist and will be called by the
                 :meth:`~.XLSDiscipline._run` method before retrieving the outputs.
             macro_name: The name of the macro to be executed for a XLSM file.
-                If ``None`` is provided, do not run a macro.
+                If empty, do not run a macro.
             copy_xls_at_setstate: If ``True``, create a copy of the original Excel file
                 for each of the pickled parallel processes. This option is required
                 to be set to ``True`` for parallelization in Windows platforms.
@@ -301,7 +301,7 @@ class XLSDiscipline(Discipline):
 
         self.__write_inputs(input_data)
 
-        if self._xls_file_path.match("*.xlsm") and self.macro_name is not None:
+        if self._xls_file_path.match("*.xlsm") and self.macro_name:
             try:
                 self._xls_app.api.Application.Run(self.macro_name)
             except BaseException as err:  # noqa: BLE001

@@ -322,14 +322,14 @@ class SobieskiProblem:
     def __set_indata(
         self,
         design_vector: ndarray,
-        names: str | Iterable[str] | None,
+        names: str | Iterable[str],
     ) -> dict[str, ndarray]:
         """Return the default values of some variables of the problem.
 
         Args:
             design_vector: The design vector to be used.
             names: The names of the variables of interest.
-                If ``None``, use all the variables of the problem.
+                If empty, use all the variables of the problem.
 
         Returns:
             The default values of some variables of the problem.
@@ -362,7 +362,7 @@ class SobieskiProblem:
             "c_4": array([constants[4]], dtype=dtype),
         }
 
-        if names is None:
+        if not names:
             return names_to_default_values
 
         return {
@@ -373,13 +373,13 @@ class SobieskiProblem:
 
     def get_default_inputs(
         self,
-        names: str | Iterable[str] | None = None,
+        names: str | Iterable[str] = "",
     ) -> dict[str, ndarray]:
         """Return the default variable values at the default initial point.
 
         Args:
             names: The names of the variables of interest.
-                If ``None``, use all the variables of the problem.
+                If empty, use all the variables of the problem.
 
         Returns:
             The default values of some variables at the default initial point.
@@ -388,13 +388,13 @@ class SobieskiProblem:
 
     def get_default_inputs_feasible(
         self,
-        names: str | Iterable[str] | None = None,
+        names: str | Iterable[str] = "",
     ) -> dict[str, ndarray]:
         """Return the default variable values at the default initial feasible point.
 
         Args:
             names: The names of the variables of interest.
-                If ``None``, use all the variables of the problem.
+                If empty, use all the variables of the problem.
 
         Returns:
             The default values of some variables at the default initial feasible point.
@@ -403,7 +403,7 @@ class SobieskiProblem:
 
     def get_default_inputs_equilibrium(
         self,
-        names: str | Iterable[str] | None = None,
+        names: str | Iterable[str] = "",
     ) -> dict[str, ndarray]:
         """Return the default variable values at a multidisciplinary feasible point.
 
@@ -412,7 +412,7 @@ class SobieskiProblem:
 
         Args:
             names: The names of the variables of interest.
-                If ``None``, use all the variables of the problem.
+                If empty, use all the variables of the problem.
 
         Returns:
             The default values of some variables at a multidisciplinary feasible point.
@@ -450,21 +450,21 @@ class SobieskiProblem:
             "c_4": array([constants[4]], dtype=self.__dtype),
         }
 
-        if names is not None:
+        if names:
             return {name: names_to_default_values[name] for name in names}
 
         return names_to_default_values
 
     def get_random_input(
         self,
-        names: str | Iterable[str] | None = None,
+        names: str | Iterable[str] = "",
         seed: int | None = None,
     ) -> ndarray:
         """Return a randomized starting point related to some input variables.
 
         Args:
             names: The names of the variables.
-                If ``None``, use all the input variables.
+                If empty, use all the input variables.
             seed: The seed for the random number generation.
                 If ``None``, do not set the seed.
 
@@ -496,26 +496,26 @@ class SobieskiProblem:
             "c_4": array([self.__base.constants[4]], dtype=dtype),
         }
 
-        if names is not None:
+        if names:
             return {name: names_to_random_values[name] for name in names}
 
         return names_to_random_values
 
-    def get_x0_feasible(self, names: str | Iterable[str] | None = None) -> ndarray:
+    def get_x0_feasible(self, names: str | Iterable[str] = "") -> ndarray:
         """Return a feasible starting point related to some input variables.
 
         Args:
             names: The names of the variables.
-                If ``None``, use all the input variables.
+                If empty, use all the input variables.
 
         Returns:
             The feasible starting point.
         """
+        if not names:
+            names = self.__DESIGN_VARIABLE_NAMES
+
         if isinstance(names, str):
             names = [names]
-
-        if names is None:
-            names = self.__DESIGN_VARIABLE_NAMES
 
         return concatenate([self.__names_to_feasible_values[name] for name in names])
 
