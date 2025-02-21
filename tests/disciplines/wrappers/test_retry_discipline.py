@@ -26,6 +26,7 @@ from numpy import array
 
 from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.wrappers.retry_discipline import RetryDiscipline
 from gemseo.utils.timer import Timer
 
@@ -70,6 +71,25 @@ class DisciplineLongTimeRunning(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> None:
         time.sleep(5.0)
+
+
+class FictiveDiscipline(Discipline):
+    """Discipline to be executed several times.
+
+    - The first 2 times, raise a RuntimeError,
+    - and finally succeed.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.attempt = 0
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        self.attempt += 1
+        if self.attempt < 3:
+            msg = "runtime error in FictiveDiscipline"
+            raise RuntimeError(msg)
+        return {}
 
 
 @pytest.mark.parametrize("timeout", [math.inf, 10.0])
@@ -232,3 +252,38 @@ def test_retry_discipline_timeout_feature(
         "Failed to execute discipline DisciplineLongTimeRunning after 1 attempt."
     )
     assert log_message in caplog.text
+
+
+@pytest.mark.parametrize("n_trials", [1, 3])
+def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> None:
+    """Test a discipline crashing each time, n_trials = 1 or 3."""
+    disc = RetryDiscipline(
+        a_crashing_analytic_discipline,
+        n_trials=n_trials,
+    )
+    with pytest.raises(ZeroDivisionError, match="float division by zero"):
+        disc.execute({"x": array([0.0])})
+
+    assert disc.n_executions == n_trials
+    assert disc.io.data == {"x": array([0.0])}
+
+    assert disc.execution_status.value == ExecutionStatus.Status.FAILED
+
+    plural_suffix = "s" if n_trials > 1 else ""
+    log_message = (
+        "Failed to execute discipline AnalyticDiscipline"
+        f" after {n_trials} attempt{plural_suffix}."
+    )
+    assert log_message in caplog.text
+
+
+def test_2fails_then_succeed(caplog) -> None:
+    """Test a discipline crashing the 2 first times, then succeeding."""
+    disc = RetryDiscipline(
+        FictiveDiscipline(),
+        n_trials=3,
+    )
+    disc.execute()
+    assert disc.n_executions == 3
+    assert disc.io.data == {}
+    assert disc.execution_status.value == ExecutionStatus.Status.DONE
