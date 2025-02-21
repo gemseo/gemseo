@@ -1,0 +1,1 @@
+In ``LinearCombination``, the inputs are averaged when ``input_coefficients`` is empty and the new argument ``average`` is ``True`` (default: ``False``).
