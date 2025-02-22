@@ -192,6 +192,7 @@ class PydanticGrammar(BaseGrammar):
         # here,
         # and not from an external class deriving from BaseModel,
         self.__model.__internal__ = None  # type: ignore[attr-defined]
+        # TODO: This is no longer needed since pydantic 2.10, remove at some point.
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
 
@@ -293,7 +294,9 @@ class PydanticGrammar(BaseGrammar):
         state = self.__dict__.copy()
         if hasattr(self.__model, "__internal__"):
             # Workaround for pickling models created at runtime in _clear,
-            # the fields info are pickled instead in order to recreate the model later.
+            # because pickling a class requires the source of the class which
+            # does not exist in this case.
+            # The fields info are pickled instead in order to recreate the model later.
             model_arg_name = f"_{self.__class__.__name__}__model"
             state[model_arg_name] = self.__model.model_fields
         return state
@@ -304,6 +307,8 @@ class PydanticGrammar(BaseGrammar):
             # Recreate the model from the fields' info.
             fields_info = self.__model
             self._clear()
-            self.__model.model_fields = cast("dict[str, FieldInfo]", fields_info)
+            model_fields = self.__model.model_fields
+            for name, info in fields_info.items():
+                model_fields[name] = info
             self.__model_needs_rebuild = True
             self.__rebuild_model()

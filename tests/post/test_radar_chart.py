@@ -21,7 +21,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import matplotlib
 import pytest
+from packaging import version
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.radar_chart import RadarChart
@@ -94,6 +96,10 @@ def test_iteration_error(problem) -> None:
 TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
 
 
+@pytest.mark.skipif(
+    version.parse(matplotlib.__version__) < version.parse("3.10.0"),
+    reason="Does not work with matplotlib < 3.10.0",
+)
 @pytest.mark.parametrize(
     "baseline_images",
     TEST_PARAMETERS.values(),
