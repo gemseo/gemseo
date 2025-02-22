@@ -26,7 +26,7 @@ cycler==0.12.1
     # via matplotlib
 dill==0.3.9
     # via openturns
-docstring-inheritance==2.2.1
+docstring-inheritance==2.2.2
     # via gemseo (pyproject.toml)
 docutils==0.21.2
     # via
@@ -36,7 +36,7 @@ docutils==0.21.2
     #   sphinxcontrib-bibtex
 et-xmlfile==2.0.0
     # via openpyxl
-fastjsonschema==2.20.0
+fastjsonschema==2.21.1
     # via gemseo (pyproject.toml)
 fonttools==4.56.0
     # via matplotlib
@@ -44,13 +44,13 @@ genson==1.3.0
     # via gemseo (pyproject.toml)
 graphviz==0.20.3
     # via gemseo (pyproject.toml)
-h5py==3.11.0
+h5py==3.13.0
     # via gemseo (pyproject.toml)
 idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
-jinja2==3.1.4
+jinja2==3.1.5
     # via
     #   gemseo (pyproject.toml)
     #   sphinx
@@ -62,13 +62,13 @@ latexcodec==3.0.0
     # via pybtex
 markupsafe==3.0.2
     # via jinja2
-matplotlib==3.9.2
+matplotlib==3.10.0
     # via gemseo (pyproject.toml)
 mpmath==1.3.0
     # via sympy
 mypy-extensions==1.0.0
     # via typing-inspect
-networkx==3.3
+networkx==3.4.2
     # via gemseo (pyproject.toml)
 nlopt==2.7.1
     # via gemseo (pyproject.toml)
@@ -89,14 +89,14 @@ openpyxl==3.1.5
     # via gemseo (pyproject.toml)
 openturns==1.24
     # via gemseo (pyproject.toml)
-packaging==24.1
+packaging==24.2
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
     #   pandera
     #   plotly
     #   sphinx
-pandas==2.2.2
+pandas==2.2.3
     # via
     #   gemseo (pyproject.toml)
     #   pandera
@@ -104,14 +104,14 @@ pandera==0.22.1
     # via gemseo (pyproject.toml)
 pbr==6.1.1
     # via sphinxcontrib-apidoc
-pillow==10.4.0
+pillow==11.1.0
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
     #   sphinx-gallery
-plotly==5.24.0
+plotly==5.24.1
     # via gemseo (pyproject.toml)
-prettytable==3.12.0
+prettytable==3.14.0
     # via gemseo (pyproject.toml)
 psutil==7.0.0
     # via openturns
@@ -121,15 +121,15 @@ pybtex==0.24.0
     #   sphinxcontrib-bibtex
 pybtex-docutils==1.0.3
     # via sphinxcontrib-bibtex
-pydantic==2.9.1
+pydantic==2.10.6
     # via
     #   gemseo (pyproject.toml)
     #   autodoc-pydantic
     #   pandera
     #   pydantic-settings
-pydantic-core==2.23.3
+pydantic-core==2.27.2
     # via pydantic
-pydantic-settings==2.7.1
+pydantic-settings==2.8.0
     # via autodoc-pydantic
 pydata-sphinx-theme==0.16.1
     # via gemseo (pyproject.toml)
@@ -154,7 +154,7 @@ python-dotenv==1.0.1
     # via pydantic-settings
 pytz==2025.1
     # via pandas
-pyxdsm==2.3.0
+pyxdsm==2.3.1
     # via gemseo (pyproject.toml)
 pyyaml==6.0.2
     # via pybtex
@@ -165,9 +165,9 @@ requests==2.32.3
     #   sphinxcontrib-spelling
 roman-numerals-py==3.0.0
     # via sphinx
-scikit-learn==1.5.2
+scikit-learn==1.6.1
     # via gemseo (pyproject.toml)
-scipy==1.14.1
+scipy==1.15.2
     # via
     #   gemseo (pyproject.toml)
     #   pydoe3
@@ -185,7 +185,7 @@ snowballstemmer==2.2.0
     # via sphinx
 soupsieve==2.6
     # via beautifulsoup4
-sphinx==8.2.0
+sphinx==8.2.1
     # via
     #   gemseo (pyproject.toml)
     #   autodoc-pydantic
@@ -223,13 +223,13 @@ sphinxcontrib-spelling==8.0.1
     # via gemseo (pyproject.toml)
 strenum==0.4.15
     # via gemseo (pyproject.toml)
-sympy==1.13.2
+sympy==1.13.3
     # via gemseo (pyproject.toml)
 tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
-tqdm==4.66.5
+tqdm==4.67.1
     # via gemseo (pyproject.toml)
 typeguard==4.4.2
     # via pandera
