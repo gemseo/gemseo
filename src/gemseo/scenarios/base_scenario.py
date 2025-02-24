@@ -180,9 +180,6 @@ class BaseScenario(BaseMonitoredProcess):
     __history_backup_is_set: bool
     """Whether the history backup database option is set."""
 
-    __disciplines: tuple[BaseDiscipline, ...]
-    """The disciplines."""
-
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -213,7 +210,6 @@ class BaseScenario(BaseMonitoredProcess):
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        self.__disciplines = tuple(disciplines)
         self._form_factory = self._formulation_factory
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
 
@@ -226,6 +222,7 @@ class BaseScenario(BaseMonitoredProcess):
         )
 
         self._init_formulation(
+            disciplines,
             formulation_name,
             objective_name,
             design_space,
@@ -268,7 +265,7 @@ class BaseScenario(BaseMonitoredProcess):
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
         """The disciplines."""
-        return self.__disciplines
+        return self.formulation.disciplines
 
     @classmethod
     def __init_subclass__(cls) -> None:
@@ -432,6 +429,7 @@ class BaseScenario(BaseMonitoredProcess):
 
     def _init_formulation(
         self,
+        disciplines: Sequence[Discipline],
         formulation_name: str,
         objective_name: str,
         design_space: DesignSpace,
@@ -441,6 +439,7 @@ class BaseScenario(BaseMonitoredProcess):
         """Initialize the MDO formulation.
 
         Args:
+            disciplines: The disciplines.
             formulation_name: The name of the MDO formulation,
                 also the name of a class inheriting from :class:`.BaseMDOFormulation`.
             objective_name: The name of the objective.
@@ -452,7 +451,7 @@ class BaseScenario(BaseMonitoredProcess):
         """
         self.formulation = self._form_factory.create(
             formulation_name,
-            disciplines=self.__disciplines,
+            disciplines=disciplines,
             objective_name=objective_name,
             design_space=design_space,
             settings_model=formulation_settings_model,
@@ -670,7 +669,9 @@ class BaseScenario(BaseMonitoredProcess):
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
-        msg.add("Disciplines: {}", pretty_str(self.__disciplines, delimiter=" "))
+        msg.add(
+            "Disciplines: {}", pretty_str(self.formulation.disciplines, delimiter=" ")
+        )
         msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return str(msg)
 
@@ -681,7 +682,7 @@ class BaseScenario(BaseMonitoredProcess):
         msg = MultiLineString()
         msg.add("Scenario Execution Statistics")
         msg.indent()
-        for disc in self.__disciplines:
+        for disc in self.formulation.disciplines:
             msg.add("Discipline: {}", disc.name)
             msg.indent()
             msg.add("Executions number: {}", disc.execution_statistics.n_executions)
