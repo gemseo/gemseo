@@ -408,7 +408,8 @@ class BaseMDASolver(BaseMDA):
         for residual_name in self._resolved_residual_names:
             residual = convert_data_to_array([residual_name], self.io.data)
             if residual_name in self._resolved_variable_names:
-                residual -= convert_data_to_array([residual_name], input_data)
+                # No -= assignment to avoid possible casting problems.
+                residual = residual - convert_data_to_array([residual_name], input_data)
 
             self._current_residuals[residual_name] = residual
 
