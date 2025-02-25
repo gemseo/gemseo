@@ -14,7 +14,7 @@ coverage==7.6.12
     #   pytest-cov
 cycler==0.12.1
     # via matplotlib
-decorator==5.2.0
+decorator==5.2.1
     # via networkx
 dill==0.3.9
     # via openturns
