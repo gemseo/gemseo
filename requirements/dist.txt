@@ -44,7 +44,7 @@ more-itertools==10.6.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-nh3==0.2.20
+nh3==0.2.21
     # via readme-renderer
 packaging==24.2
     # via
