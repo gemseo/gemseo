@@ -29,6 +29,7 @@ from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import copy
 from copy import deepcopy
+from numbers import Complex
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -96,7 +97,10 @@ class JSONGrammar(BaseGrammar):
         "string": str,
         "integer": int,
         "boolean": bool,
-        "number": complex,
+        # As opposed to the complex type, Complex follows sub-typing,
+        # such that a float number is a sub-type of complex number.
+        # This is especially important when converting to SimpleGrammar.
+        "number": Complex,
     }
     """The mapping from JSON types to Python types."""
 
