@@ -318,3 +318,22 @@ def test_to_json(tmp_wd) -> None:
 def test_cast(value, expected) -> None:
     """Check the method casting any value to a JSON-interpretable one."""
     assert JSONGrammar._JSONGrammar__cast_value(value) == expected
+
+
+@pytest.mark.parametrize("type_", [float, complex])
+@pytest.mark.parametrize("value", [1.0, 1.0 + 1.0j])
+def test_to_simple_grammar_float_complex(type_, value):
+    """Check that a JSONGrammar.to_simple_grammar() can validate float and complex."""
+    data = {"x": value}
+
+    json_grammar = JSONGrammar("g_json")
+    json_grammar.update_from_types({"x": type_})
+    json_grammar.validate(data)
+
+    simple_grammar = json_grammar.to_simple_grammar()
+    simple_grammar.validate(data)
+
+    # Warning:
+    # This SimpleGrammar validates complex data with imaginary part when type_ is float
+    # because JSONGrammar cannot distinguish between float and complex
+    # and thus creates the SimpleGrammar with the most generic type, which is complex.

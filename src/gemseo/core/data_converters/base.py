@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
+from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -81,7 +82,7 @@ class BaseDataConverter(ABC, Generic[T]):
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, str)
+    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, Complex, str)
     """The base types that are not arrays like."""
 
     _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
