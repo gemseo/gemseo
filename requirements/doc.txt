@@ -129,7 +129,7 @@ pydantic==2.10.6
     #   pydantic-settings
 pydantic-core==2.27.2
     # via pydantic
-pydantic-settings==2.8.0
+pydantic-settings==2.8.1
     # via autodoc-pydantic
 pydata-sphinx-theme==0.16.1
     # via gemseo (pyproject.toml)
