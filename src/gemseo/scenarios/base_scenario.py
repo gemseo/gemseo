@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import logging
-import timeit
 from collections.abc import Mapping
 from collections.abc import Sequence
 from datetime import timedelta
@@ -614,6 +613,10 @@ class BaseScenario(BaseMonitoredProcess):
                 including the algorithm name (use the keyword ``"algo_name"``).
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
+        LOGGER.info("*** Start %s execution ***", self.name)
+        LOGGER.info("%s", repr(self))
+        initial_duration = self.execution_statistics.duration
+
         if algo_settings_model is not None or algo_settings:
             self.set_algorithm(algo_settings_model=algo_settings_model, **algo_settings)
 
@@ -632,11 +635,6 @@ class BaseScenario(BaseMonitoredProcess):
                 function_calls=False,
             )
 
-        t_0 = timeit.default_timer()
-        LOGGER.info(" ")
-        LOGGER.info("*** Start %s execution ***", self.name)
-        LOGGER.info("%s", repr(self))
-
         if self.clear_history_before_execute:
             # Clear the database when multiple runs are performed,
             # see MDOScenarioAdapter.
@@ -644,11 +642,6 @@ class BaseScenario(BaseMonitoredProcess):
         database = self.formulation.optimization_problem.database
         n_x = len(database)
         self._execute_monitored()
-        LOGGER.info(
-            "*** End %s execution (time: %s) ***",
-            self.name,
-            timedelta(seconds=timeit.default_timer() - t_0),
-        )
         # The last call to the functions may not trigger the callback
         # so some values may be missing in the database.
         # This ensures that the callback is called after the last iteration.
@@ -657,6 +650,16 @@ class BaseScenario(BaseMonitoredProcess):
             if 0 < n_x < n_x_a:
                 x_vect = database.get_x_vect(n_x_a)
                 self._execute_backup_callback(x_vect)
+
+        execution_statistics = self.execution_statistics
+        if execution_statistics.is_enabled:
+            LOGGER.info(
+                "*** End %s execution (time: %s) ***",
+                self.name,
+                timedelta(seconds=execution_statistics.duration - initial_duration),
+            )
+        else:
+            LOGGER.info("*** End %s execution ***", self.name)
 
     def _execute(self) -> None:
         self.optimization_result = self._algo_factory.execute(

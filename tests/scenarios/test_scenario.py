@@ -446,18 +446,25 @@ def test_database_name(mdf_scenario) -> None:
     assert mdf_scenario.formulation.optimization_problem.database.name == "MDOScenario"
 
 
-@patch("timeit.default_timer", new=lambda: 1)
-def test_run_log(mdf_scenario, caplog) -> None:
+@patch("gemseo.core.execution_statistics.ExecutionStatistics.duration", new=1)
+@pytest.mark.parametrize(
+    ("is_enabled", "expected"), [(False, ""), (True, "(time: 0:00:00) ")]
+)
+def test_run_log(mdf_scenario, caplog, is_enabled, expected) -> None:
     """Check the log message of Scenario._run."""
+    old_is_enabled = mdf_scenario.execution_statistics.is_enabled
+    mdf_scenario.execution_statistics.is_enabled = is_enabled
     mdf_scenario._execute = lambda: None
     mdf_scenario.name = "ABC Scenario"
     mdf_scenario.execute(max_iter=1, algo_name="SLSQP")
     strings = [
         "*** Start ABC Scenario execution ***",
-        "*** End ABC Scenario execution (time: 0:00:00) ***",
+        f"*** End ABC Scenario execution {expected}***",
     ]
     for string in strings:
         assert string in caplog.text
+
+    mdf_scenario.execution_statistics.is_enabled = old_is_enabled
 
 
 def test_clear_history_before_run(mdf_scenario) -> None:

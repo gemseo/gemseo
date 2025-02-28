@@ -320,7 +320,6 @@ def test_log(caplog, discipline, parameter_space) -> None:
     analysis.compute_samples([discipline], parameter_space, 4)
     result = "\n".join([line[2] for line in caplog.record_tuples])
     pattern = r"""^No coupling in MDA, switching chain_linearize to True\.
-\s
 \*\*\* Start MorrisAnalysisSamplingPhase execution \*\*\*
 MorrisAnalysisSamplingPhase
    Disciplines: my_function
