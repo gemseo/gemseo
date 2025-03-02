@@ -86,7 +86,7 @@ pandas==2.2.3
     # via
     #   gemseo (pyproject.toml)
     #   pandera
-pandera==0.22.1
+pandera==0.23.0
     # via gemseo (pyproject.toml)
 pillow==11.1.0
     # via
