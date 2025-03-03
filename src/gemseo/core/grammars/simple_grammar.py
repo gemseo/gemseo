@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import collections
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -89,7 +90,7 @@ class SimpleGrammar(BaseGrammar):
         del self.__names_to_types[name]
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
-        grammar.__names_to_types = self.__names_to_types.copy()
+        grammar.__names_to_types = deepcopy(self.__names_to_types)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)

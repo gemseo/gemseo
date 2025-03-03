@@ -260,12 +260,27 @@ def test_rename_error(grammar) -> None:
 
 def test_copy(grammar) -> None:
     """Verify copy."""
-    grammar.update_from_names(["name"])
-    grammar.defaults["name"] = 0
+    grammar.update_from_names(["name1", "name2"])
+    grammar.defaults["name1"] = 0
+    grammar.add_namespace("name2", "ns")
     grammar_copy = grammar.copy()
     assert grammar_copy.keys() == grammar.keys()
     assert grammar_copy.defaults == grammar.defaults
     assert grammar_copy.required_names == grammar.required_names
+    assert grammar_copy.from_namespaced == grammar.from_namespaced
+    assert grammar_copy.to_namespaced == grammar.to_namespaced
+
+    # Verify that the copy is deep.
+    grammar_copy.add_namespace("name1", "ns")
+    assert "ns:name1" in grammar_copy
+    assert "ns:name1" not in grammar
+
+    grammar_copy.clear()
+    assert grammar.keys()
+    assert grammar.defaults
+    assert grammar.required_names
+    assert grammar.from_namespaced
+    assert grammar.to_namespaced
 
 
 def test_validate_empty_grammar(grammar) -> None:
