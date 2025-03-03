@@ -1,0 +1,2 @@
+The ``copy`` method of a grammar was partly returning a shallow copy which did not have a consistent state.
+It now returns a deep copy.

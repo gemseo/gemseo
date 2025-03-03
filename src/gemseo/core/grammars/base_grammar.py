@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from copy import copy
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -67,6 +67,10 @@ class BaseGrammar(
     A grammar considers a certain type of data defined by mandatory and optional names
     bound to types. A name-type pair is referred to as a grammar *element*. A grammar
     can validate a data from these elements.
+
+    Notes:
+        Contrary to the standard dictionary, the :meth:``.copy`` method creates
+        a deep copy.
     """
 
     name: str
@@ -155,17 +159,18 @@ class BaseGrammar(
         """
 
     def __copy__(self) -> Self:
-        """Create a shallow copy.
+        """Create a deep copy.
 
         Returns:
-            The shallow copy.
+            The copy.
         """
         grammar = self.__class__(self.name)
-        grammar.to_namespaced = copy(self.to_namespaced)
-        grammar.from_namespaced = copy(self.from_namespaced)
-        grammar._required_names = copy(self._required_names)
+        grammar.to_namespaced = deepcopy(self.to_namespaced)
+        grammar.from_namespaced = deepcopy(self.from_namespaced)
         self._copy(grammar)
-        grammar._defaults.update(self._defaults)
+        grammar._required_names = RequiredNames(grammar, names=self._required_names)
+        # Cast to dict to avoid the cost of deep-copying the grammar.
+        grammar._defaults = Defaults(grammar, deepcopy(dict(self._defaults)))
         return grammar
 
     copy = __copy__

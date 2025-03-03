@@ -27,7 +27,6 @@ from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
 from contextlib import contextmanager
-from copy import copy
 from copy import deepcopy
 from numbers import Complex
 from os import PathLike
@@ -159,8 +158,6 @@ class JSONGrammar(BaseGrammar):
     def _copy(self, grammar: Self) -> None:
         # Updating is much faster than deep copying a schema builder.
         grammar.__schema_builder.add_schema(self.__schema_builder, True)
-        grammar.__schema = self.__schema.copy()
-        grammar.__validator = copy(self.__validator)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__schema_builder.properties[new_name] = (
