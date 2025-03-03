@@ -185,7 +185,7 @@ snowballstemmer==2.2.0
     # via sphinx
 soupsieve==2.6
     # via beautifulsoup4
-sphinx==8.2.1
+sphinx==8.2.3
     # via
     #   gemseo (pyproject.toml)
     #   autodoc-pydantic
