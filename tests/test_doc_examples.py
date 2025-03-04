@@ -35,7 +35,7 @@ EXAMPLE_PATHS = [
 @pytest.mark.parametrize(
     "example_path", EXAMPLE_PATHS, ids=(path.name for path in EXAMPLE_PATHS)
 )
-def test_script_execution(example_path, tmp_wd, monkeypatch) -> None:
+def test_script_execution(example_path: Path, tmp_wd: Path, monkeypatch) -> None:
     dir_path = example_path.parent.name
     copytree(example_path.parent, dir_path)
     monkeypatch.chdir(dir_path)
