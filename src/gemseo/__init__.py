@@ -92,7 +92,9 @@ if TYPE_CHECKING:
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
-    from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.problems.mdo.scalable.data_driven.discipline import (
+        DataDrivenScalableDiscipline,
+    )
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
     from gemseo.scenarios.scenario_results.scenario_result import (
@@ -989,7 +991,7 @@ def create_scalable(
     data: Dataset,
     sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     **parameters: Any,
-) -> ScalableDiscipline:
+) -> DataDrivenScalableDiscipline:
     """Create a scalable discipline from a dataset.
 
     Args:
@@ -1002,10 +1004,10 @@ def create_scalable(
         The scalable discipline.
     """
     from gemseo.problems.mdo.scalable.data_driven.discipline import (  # noqa:F811
-        ScalableDiscipline,
+        DataDrivenScalableDiscipline,
     )
 
-    return ScalableDiscipline(name, data, sizes, **parameters)
+    return DataDrivenScalableDiscipline(name, data, sizes, **parameters)
 
 
 def create_surrogate(

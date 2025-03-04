@@ -24,7 +24,7 @@ Scalable diagonal discipline
 
 Let us consider the
 :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` discipline.
-We want to build its :class:`.ScalableDiscipline` counterpart,
+We want to build its :class:`.DataDrivenScalableDiscipline` counterpart,
 using a :class:`.ScalableDiagonalModel`
 
 For that, we can use a 20-length :class:`.DiagonalDOE`
@@ -95,7 +95,7 @@ scenario.execute(algo_name="DiagonalDOE", n_samples=20)
 # %%
 # Build the scalable discipline
 # -----------------------------
-# The second step is to build a :class:`.ScalableDiscipline`,
+# The second step is to build a :class:`.DataDrivenScalableDiscipline`,
 # using a :class:`.ScalableDiagonalModel` and the database
 # converted to a :class:`.Dataset`.
 dataset = scenario.to_dataset(opt_naming=False)

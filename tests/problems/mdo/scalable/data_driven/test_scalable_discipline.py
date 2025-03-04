@@ -29,7 +29,9 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.problems.mdo.scalable.data_driven.discipline import (
+    DataDrivenScalableDiscipline,
+)
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -138,7 +140,7 @@ class ScalableProblem(unittest.TestCase):
                 with (Path(__file__).parent / f"{discipline.name}.pkl").open("rb") as f:
                     pickler = pickle.Unpickler(f)
                     dataset = pickler.load()
-                scal_disc = ScalableDiscipline(
+                scal_disc = DataDrivenScalableDiscipline(
                     ScalableProblem.scalable_model,
                     data=dataset,
                     sizes=sizes,
@@ -235,7 +237,7 @@ class ScalableProblem(unittest.TestCase):
         with (Path(__file__).parent / f"{hdf_node_path}.pkl").open("rb") as f:
             pickler = pickle.Unpickler(f)
             dataset = pickler.load()
-        ScalableDiscipline(
+        DataDrivenScalableDiscipline(
             ScalableProblem.scalable_model,
             data=dataset,
             sizes=ScalableProblem.sizes,

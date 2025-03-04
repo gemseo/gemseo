@@ -35,12 +35,12 @@ Scalable models
 
 .. uml::
 
-   Discipline <|-- ScalableDiscipline
-   ScalableDiscipline *-- ScalableModel
+   Discipline <|-- DataDrivenScalableDiscipline
+   DataDrivenScalableDiscipline *-- ScalableModel
    ScalableModel <|-- ScalableDiagonalModel
    ScalableDiagonalModel *-- ScalableApproximation
 
-   class ScalableDiscipline {
+   class DataDrivenScalableDiscipline {
     +scalable_model
     +_initialize_grammars()
 	#compute_jacobian()
