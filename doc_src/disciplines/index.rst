@@ -115,7 +115,7 @@ which results in:
        - Aerostructure problem: :class:`.Structure`, :class:`.Aerodynamics` and :class:`.Mission`,
        - Propane problem: :class:`.PropaneComb1`, :class:`.PropaneComb2`, :class:`.PropaneComb3` and :class:`.PropaneReaction`,
 
-   - classes implementing special disciplines: :class:`.MDOParallelChain`, :class:`.MDOChain`, :class:`.ScalableDiscipline` and :class:`.MDOScenarioAdapter`.
+   - classes implementing special disciplines: :class:`.MDOParallelChain`, :class:`.MDOChain` and :class:`.MDOScenarioAdapter`.
    - classes implementing optimization discipline: :class:`.RosenMF`.
 
 How to instantiate an existing :class:`.Discipline`?

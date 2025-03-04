@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class ScalableDiscipline(Discipline):
+class DataDrivenScalableDiscipline(Discipline):
     """A scalable discipline."""
 
     _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union(["scalable_model"])

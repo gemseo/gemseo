@@ -65,7 +65,9 @@ from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.mda.factory import MDAFactory
-from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.problems.mdo.scalable.data_driven.discipline import (
+    DataDrivenScalableDiscipline,
+)
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import MultiLineString
@@ -242,7 +244,7 @@ class ScalableProblem:
             if "fill_factor" in parameters:
                 copied_parameters["fill_factor"] = parameters["fill_factor"][disc]
             self.scaled_disciplines.append(
-                ScalableDiscipline(
+                DataDrivenScalableDiscipline(
                     "ScalableDiagonalModel",
                     self.data[disc],
                     new_varsizes,

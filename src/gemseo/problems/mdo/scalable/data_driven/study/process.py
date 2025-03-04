@@ -27,7 +27,7 @@ the concept of scalability study:
    constraints.
 2. For each discipline, the user adds a dataset stored
    in a :class:`.Dataset` and select a type of
-   :class:`.ScalableModel` to build the :class:`.ScalableDiscipline`
+   :class:`.ScalableModel` to build the :class:`.DataDrivenScalableDiscipline`
    associated with this discipline.
 3. The user adds different optimization strategies, defined in terms
    of both optimization algorithms and MDO formulation.
