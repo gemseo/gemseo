@@ -1751,6 +1751,7 @@ def wrap_discipline_in_job_scheduler(
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in GEMSEO are serializable but it is possible that
         custom ones are not and this will make the submission proess fail.
+        Also, see :ref:`platform-paths` to handle paths for cross-platforms.
 
     Examples:
         This example execute a DOE of 100 points on an MDA, each MDA is executed on 24

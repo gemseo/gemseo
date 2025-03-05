@@ -132,3 +132,21 @@ is recommended as an alternative.
 The execution of any script using parallel execution on Windows including, but not limited to, :class:`.DOEScenario`
 with ``n_processes > 1``, :class:`.HDF5Cache`, :class:`.MemoryFullCache`, :class:`.CallableParallelExecution`,
 :class:`.DiscParallelExecution`, must be protected by an ``if __name__ == '__main__':`` statement.
+
+.. _platform-paths:
+
+Handling paths for different OSes
+---------------------------------
+
+Some disciplines wrap other disciplines in order to execute them remotely.
+Those disciplines may use paths stored as :class:`.Path`,
+which are handled differently on Windows and on POSIX platforms (Linux and MacOS).
+Despite the fact that |g| takes care of converting those types of paths,
+it cannot convert absolute paths.
+For instance, in the path ``C:\\some\path``,
+the ``C:`` part has no meaning on POSIX platforms.
+In that case,
+to prevent |g| from terminating with an error,
+these types of paths should be defined as relative paths.
+For instance, the paths ``some\path`` or ``some/path`` are relative paths,
+which are relative to the current working directory.
