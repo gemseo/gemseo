@@ -46,6 +46,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
     launched, it will set up the environment, deserialize the discipline and its inputs,
     execute it and serialize the outputs. Finally, the deserialized outputs are returned
     by the wrapper.
+
+    .. warning::
+        See :ref:`platform-paths` to handle paths for cross-platforms.
     """
 
     DISC_PICKLE_FILE_NAME: ClassVar[str] = "discipline.pckl"
