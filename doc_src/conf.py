@@ -94,6 +94,7 @@ if not os.environ.get("DOC_WITHOUT_GALLERY"):
         # objects to exclude from implicit backreferences. The default option
         # is an empty set, i.e. exclude nothing.
         "exclude_implicit_doc": {r"gemseo\.configure_logger"},
+        "reset_modules": ("sobieski_mdf_scenario.save_optimization_history"),
     }
 
 # Add any paths that contain templates here, relative to this directory.

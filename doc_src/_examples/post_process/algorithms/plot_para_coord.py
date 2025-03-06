@@ -22,94 +22,27 @@
 Parallel coordinates
 ====================
 
-In this example, we illustrate the use of the
-:class:`.ParallelCoordinates` plot on the Sobieski's SSBJ
-problem.
+In this example, we illustrate the use of the :class:`.ParallelCoordinates` plot
+on the Sobieski's SSBJ problem.
+
+The :class:`.ParallelCoordinates` post-processing provides parallel coordinates plots
+among design variables, outputs functions and constraints.
+
+The :class:`.ParallelCoordinates` portrays the design variables history during the
+scenario execution. Each vertical coordinate is dedicated to a design variable,
+normalized by its bounds.
+
+A polyline joins all components of a given design vector and is colored by objective
+function values. This highlights the correlations between the values of the design
+variables and the values of the objective function.
 """
 
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo import execute_post
+from gemseo.settings.post import ParallelCoordinates_Settings
 
-# %%
-# Import
-# ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
-
-configure_logger()
-
-# %%
-# Description
-# -----------
-#
-# The :class:`.ParallelCoordinates` post-processing
-# builds parallel coordinates plots among design
-# variables, outputs functions and constraints.
-#
-# The :class:`.ParallelCoordinates` portrays the design
-# variables history during the scenario execution. Each vertical coordinate is
-# dedicated to a design variable, normalized by its bounds.
-#
-# A polyline joins all components of a given design vector and is colored
-# by objective function values. This highlights the correlations between
-# the values of the design variables and the values of the objective function.
-
-# %%
-# Create disciplines
-# ------------------
-# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
-
-# %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
-design_space = SobieskiDesignSpace()
-
-# %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build an MDO scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the SLSQP optimization algorithm
-# and a maximum number of iterations equal to 100.
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
+execute_post(
+    "sobieski_mdf_scenario.h5",
+    settings_model=ParallelCoordinates_Settings(save=False, show=True),
 )
-scenario.set_differentiation_method()
-for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo_name="SLSQP", max_iter=10)
-
-# %%
-# Post-process scenario
-# ---------------------
-# Lastly, we post-process the scenario by means of the
-# :class:`.ParallelCoordinates` plot which parallel
-# coordinates plots among design variables, objective function and constraints.
-
-# %%
-# .. tip::
-#
-#    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the high-level function
-#    :func:`.get_post_processing_options_schema` to print a table with
-#    the options for any post-processing algorithm.
-#    Or refer to our dedicated page:
-#    :ref:`gen_post_algos`.
-scenario.post_process(post_name="ParallelCoordinates", save=False, show=True)

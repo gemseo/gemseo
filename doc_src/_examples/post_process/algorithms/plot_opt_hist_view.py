@@ -22,103 +22,38 @@
 Optimization History View
 =========================
 
-In this example, we illustrate the use of the :class:`.OptHistoryView` plot
+In this example, we illustrate the use of the :class:`.OptHistoryView` post-processing
 on the Sobieski's SSBJ problem.
+
+The :class:`.OptHistoryView` post-processing creates a series of plots:
+
+- **The design variables history**: shows the normalized values of the design variables.
+  On the :math:`y` axis are the components of the design variables vector and on the
+  :math:`x` axis the iterations. The values are **normalized** between 0 and 1 and
+  represented by colors.
+- **The objective function history**: shows the evolution of the objective function
+  value during the optimization.
+- **The distance to the best design variables**: shows the Euclidean distance
+  :math:`||x-x^*||_2` between the different design variable vectors considered by the
+  optimizer and the best one (in log scale).
+- **The inequality constraint history**: shows the evolution of the constraints values.
+  On the :math:`y` axis are the components of the constraints and on the :math:`x` axis
+  the iterations.The color indicates whether the constraint component is satisfied: red
+  means violated, white means active and green means satisfied.
+  For an :ref:`IDF formulation <idf_formulation>`, an additional plot is created to
+  track the equality constraint history.
 """
 
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo import execute_post
+from gemseo.settings.post import OptHistoryView_Settings
 
-# %%
-# Import
-# ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
-
-configure_logger()
-# %%
-# Description
-# -----------
-# The **OptHistoryView** post-processing
-# creates a series of plots:
-#
-# - The design variables history - This graph shows the normalized values of the
-#   design variables, the :math:`y` axis is the index of the inputs in the vector;
-#   and the :math:`x` axis represents the iterations.
-# - The objective function history - It shows the evolution of the objective
-#   value during the optimization.
-# - The distance to the best design variables - Plots the vector
-#   :math:`log( ||x-x^*|| )` in log scale.
-# - The history of the Hessian approximation of the objective - Plots an approximation
-#   of the second order derivatives of the objective function
-#   :math:`\frac{\partial^2 f(x)}{\partial x^2}`, which is a measure of
-#   the sensitivity of the function with respect to the design variables,
-#   and of the anisotropy of the problem (differences of curvatures in the
-#   design space).
-# - The inequality constraint history - Portrays the evolution of the values of the
-#   :term:`constraints`. The inequality constraints must be non-positive, that is why
-#   the plot must be green or white for satisfied constraints (white = active,
-#   red = violated). For an :ref:`IDF formulation <idf_formulation>`, an additional
-#   plot is created to track the equality constraint history.
-
-# %%
-# Create disciplines
-# ------------------
-# At this point we instantiate the disciplines of Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
-
-# %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
-design_space = SobieskiDesignSpace()
-
-# %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build an MDO scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the SLSQP optimization algorithm
-# and a maximum number of iterations equal to 100.
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
-)
-scenario.set_differentiation_method()
-for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo_name="SLSQP", max_iter=100)
-
-# %%
-# Post-process scenario
-# ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.OptHistoryView`
-# plot which plots the history of optimization for both objective function,
-# constraints, design parameters and distance to the optimum.
-
-# %%
-# .. tip::
-#
-#    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the high-level function
-#    :func:`.get_post_processing_options_schema` to print a table with
-#    the options for any post-processing algorithm.
-#    Or refer to our dedicated page:
-#    :ref:`gen_post_algos`.
-scenario.post_process(
-    post_name="OptHistoryView", save=False, show=True, variable_names=["x_2", "x_1"]
+execute_post(
+    "sobieski_mdf_scenario.h5",
+    settings_model=OptHistoryView_Settings(
+        variable_names=["x_1", "x_2"],
+        save=False,
+        show=True,
+    ),
 )
