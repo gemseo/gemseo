@@ -1,9 +1,21 @@
 digraph {
-	D1 -> D0 [label=y10 color=black dir=forward fontcolor=black penwidth=1.0]
-	D1 -> D2 [label=y10 color=black dir=forward fontcolor=black penwidth=1.0]
-	D2 -> D0 [label=y2 color=black dir=forward fontcolor=black penwidth=1.0]
-	D2 -> D1 [label=y2 color=black dir=forward fontcolor=black penwidth=1.0]
-	D1 -> D1 [label=y11 color=black dir=forward fontcolor=black penwidth=1.0]
-	D0 -> _D0 [label=y0 color=black dir=forward fontcolor=black penwidth=1.0]
+	D1 -> D0 [label=y10 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D0'
+
+y10, y10, y10" penwidth=1.0]
+	D1 -> D2 [label=y10 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
+
+y10, y10, y10" penwidth=1.0]
+	D2 -> D0 [label=y2 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2', Name in discipline 'D0'
+
+y2, y2, y2" penwidth=1.0]
+	D2 -> D1 [label=y2 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2', Name in discipline 'D1'
+
+y2, y2, y2" penwidth=1.0]
+	D1 -> D1 [label=y11 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D1'
+
+y11, y11, y11" penwidth=1.0]
+	D0 -> _D0 [label=y0 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D0'
+
+y0, y0" penwidth=1.0]
 	_D0 [style=invis]
 }

@@ -1,5 +1,5 @@
 digraph {
-	"MDA of D1, D2" -> D0 [label="y10,y2" color=black dir=forward fontcolor=black penwidth=1.0]
+	"MDA of D1, D2" -> D0 [label="y10, y2" color=black dir=forward fontcolor=black penwidth=1.0]
 	D0 -> _0 [label=y0 color=black dir=forward fontcolor=black penwidth=1.0]
 	_0 [style=invis]
 }
