@@ -1,0 +1,2 @@
+The class ``NameGenerator`` generates unique names based on the given ``NameGenerator.Naming`` through the
+``generate_name()`` method.
