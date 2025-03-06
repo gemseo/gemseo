@@ -321,11 +321,11 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_no_return,
             [
-                "Discipline f6_no_return: py_func has inconsistent type "
-                "hints: either both "
-                "the signature arguments and the return values shall have "
-                "type hints or none. "
-                "The grammars will not use the type hints at all."
+                "The py_func of the AutoPyDiscipline 'f6_no_return' "
+                "has inconsistent type hints: "
+                "either both the signature arguments and the return values "
+                "shall have type hints or none. "
+                "The grammars of this discipline will not use the type hints at all."
             ],
             {"x": ndarray},
             {"z": ndarray},
@@ -333,9 +333,9 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_missing_type_1,
             [
-                "Discipline f6_missing_type_1: py_func has missing type hints "
-                "for the arguments: y."
-                "The grammars will not use the type hints at all.",
+                "The py_func of the AutoPyDiscipline 'f6_missing_type_1' "
+                "has missing type hints for the arguments 'y'."
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray, "y": ndarray},
             {"z": ndarray},
@@ -343,9 +343,9 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_missing_type_2,
             [
-                "Discipline f6_missing_type_2: py_func has missing type hints "
-                "for the arguments: y."
-                "The grammars will not use the type hints at all.",
+                "The py_func of the AutoPyDiscipline 'f6_missing_type_2' "
+                "has missing type hints for the arguments 'y'."
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray, "y": ndarray},
             {"z": ndarray},
@@ -354,10 +354,10 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_missing_return_tuple,
             [
-                "Discipline f6_missing_return_tuple: py_func has bad return "
-                "type hints: expecting "
-                "a tuple of types, got <class 'int'>."
-                "The grammars will not use the type hints at all.",
+                "The py_func of the AutoPyDiscipline 'f6_missing_return_tuple' "
+                "has bad return type hints: "
+                "expecting a tuple of types, got <class 'int'>."
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray},
             {"z": ndarray, "zz": ndarray},
@@ -365,11 +365,10 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_bad_multiple_returns,
             [
-                "Discipline f6_bad_multiple_returns: py_func has bad return "
-                "type hints: the number "
-                "of return values and return types shall be equal: 2 return "
-                "values but 1 return type hints. "
-                "The grammars will not use the type hints at all.",
+                "The py_func of the AutoPyDiscipline 'f6_bad_multiple_returns' "
+                "has bad return type hints: "
+                "the number of return values (2) and return types (1) shall be equal. "
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray},
             {"z": ndarray, "zz": ndarray},
