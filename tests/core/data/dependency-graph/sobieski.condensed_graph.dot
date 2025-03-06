@@ -1,5 +1,5 @@
 digraph {
-	"MDA of SobieskiAerodynamics, SobieskiStructure, SobieskiPropulsion" -> SobieskiMission [label="y_14,y_24,y_34" color=black dir=forward fontcolor=black penwidth=1.0]
+	"MDA of SobieskiAerodynamics, SobieskiStructure, SobieskiPropulsion" -> SobieskiMission [label="y_14, y_24, y_34" color=black dir=forward fontcolor=black penwidth=1.0]
 	SobieskiMission -> _0 [label=y_4 color=black dir=forward fontcolor=black penwidth=1.0]
 	_0 [style=invis]
 }

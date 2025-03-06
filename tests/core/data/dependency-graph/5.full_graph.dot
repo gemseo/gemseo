@@ -1,8 +1,20 @@
 digraph {
-	A -> B [label=a color=black dir=forward fontcolor=black penwidth=1.0]
-	A -> C [label=c color=black dir=forward fontcolor=black penwidth=1.0]
-	B -> A [label=b color=black dir=forward fontcolor=black penwidth=1.0]
-	C -> D [label=d color=black dir=forward fontcolor=black penwidth=1.0]
-	D -> C [label=e color=black dir=forward fontcolor=black penwidth=1.0]
-	D -> E [label=f color=black dir=forward fontcolor=black penwidth=1.0]
+	A -> B [label=a color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'A', Name in discipline 'B'
+
+a, a, a" penwidth=1.0]
+	A -> C [label=c color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'A', Name in discipline 'C'
+
+c, c, c" penwidth=1.0]
+	B -> A [label=b color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'B', Name in discipline 'A'
+
+b, b, b" penwidth=1.0]
+	C -> D [label=d color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'C', Name in discipline 'D'
+
+d, d, d" penwidth=1.0]
+	D -> C [label=e color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D', Name in discipline 'C'
+
+e, e, e" penwidth=1.0]
+	D -> E [label=f color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D', Name in discipline 'E'
+
+f, f, f" penwidth=1.0]
 }

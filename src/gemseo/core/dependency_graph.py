@@ -25,6 +25,8 @@ from typing import Final
 from typing import cast
 
 from gemseo.core.discipline import Discipline
+from gemseo.utils.discipline import DisciplineVariableProperties
+from gemseo.utils.discipline import get_discipline_variable_properties
 from gemseo.utils.string_tools import pretty_str
 
 try:
@@ -44,6 +46,7 @@ from networkx import strongly_connected_components
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
+    from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
 
@@ -308,6 +311,21 @@ class DependencyGraph:
 
         graph_view = GraphView()
         get_node_name_from_discipline = self.__get_node_name_from_discipline
+        add_tooltip = (
+            # This is a full graph.
+            is_full
+            # There are no homonymous disciplines.
+            and get_node_name_from_discipline != self._get_node_name_from_disc_id
+        )
+        if add_tooltip:
+            get_properties = get_discipline_variable_properties
+            discipline_names_to_properties = {
+                discipline.name: get_properties(discipline)
+                for discipline in self.__graph.nodes
+            }
+        else:
+            discipline_names_to_properties = {}
+
         if get_node_name_from_discipline == self._get_node_name_from_disc_id:
             for discipline in graph.nodes:
                 graph_view.node(
@@ -316,14 +334,21 @@ class DependencyGraph:
 
         # 1. Add the edges with different head and tail nodes
         #    (case: some outputs of a discipline are inputs of another one)
-        for head_node, tail_node, coupling_names in graph.edges(data=self.IO):
-            head_name = self.__get_node_name(graph, head_node)
+        for tail_node, head_node, coupling_names in graph.edges(data=self.IO):
             tail_name = self.__get_node_name(graph, tail_node)
-            if not isinstance(tail_node, Discipline):
+            head_name = self.__get_node_name(graph, head_node)
+            if not isinstance(head_node, Discipline):
                 # a scc edge
-                coupling_names = self.__get_scc_edge_names(graph, head_node, tail_node)
+                coupling_names = self.__get_scc_edge_names(graph, tail_node, head_node)
 
-            graph_view.edge(head_name, tail_name, pretty_str(coupling_names, ","))
+            self.__add_edge(
+                graph_view,
+                coupling_names,
+                discipline_names_to_properties,
+                tail_name,
+                head_name,
+                add_tooltip,
+            )
 
         # 2. Add the edges with same head and tail nodes
         #    (case: some outputs of a discipline are inputs of itself)
@@ -334,7 +359,14 @@ class DependencyGraph:
                 )
                 if coupling_names:
                     name = get_node_name_from_discipline(discipline)
-                    graph_view.edge(name, name, pretty_str(coupling_names, ","))
+                    self.__add_edge(
+                        graph_view,
+                        coupling_names,
+                        discipline_names_to_properties,
+                        name,
+                        name,
+                        add_tooltip,
+                    )
 
         # 3. Add the edges without head node
         #    (case: some output variables of discipline are not coupling variables).
@@ -350,15 +382,87 @@ class DependencyGraph:
             if not output_names:
                 continue
 
-            tail_name = f"_{leaf_node}"
-            graph_view.edge(node_name, tail_name, pretty_str(output_names, ","))
-            graph_view.hide_node(tail_name)
+            self.__add_edge(
+                graph_view,
+                output_names,
+                discipline_names_to_properties,
+                node_name,
+                f"_{leaf_node}",
+                add_tooltip,
+                hide_head=True,
+            )
 
         if file_path:
             # 4. Write the dot and target files.
             graph_view.visualize(show=False, file_path=file_path, clean_up=False)
 
         return graph_view
+
+    @staticmethod
+    def __add_edge(
+        graph_view: GraphView,
+        coupling_names: Iterable[str],
+        discipline_names_to_properties: Mapping[
+            str,
+            tuple[
+                Mapping[str, DisciplineVariableProperties],
+                Mapping[str, DisciplineVariableProperties],
+            ],
+        ],
+        tail_name: str,
+        head_name: str,
+        add_tooltip: bool,
+        hide_head: bool = False,
+    ) -> None:
+        """Add an edge to a graph view.
+
+        Args:
+            graph_view: The graph view.
+            coupling_names: The names of the coupling variables.
+            discipline_names_to_properties: The variables properties
+                associated with the discipline names.
+            tail_name: The name of the tail discipline.
+            head_name: The name of the head discipline.
+            add_tooltip: Whether to display
+                the original and current names of the coupling variables
+                when hovered over.
+            hide_head: Whether to hide the head node.
+        """
+        if add_tooltip:
+            lines = []
+            sep = ", "
+            if hide_head:
+                lines.append(f"Global name{sep}Name in discipline {tail_name!r}\n")
+            else:
+                lines.append(
+                    f"Global name{sep}"
+                    f"Name in discipline {tail_name!r}{sep}"
+                    f"Name in discipline {head_name!r}\n"
+                )
+
+            tail_properties = discipline_names_to_properties[tail_name][1]
+            if hide_head:
+                for coupling_name in coupling_names:
+                    tail_original_name = tail_properties[coupling_name].original_name
+                    lines.append(f"{coupling_name}{sep}{tail_original_name}")
+            else:
+                head_properties = discipline_names_to_properties[head_name][0]
+                for coupling_name in coupling_names:
+                    head_original_name = head_properties[coupling_name].original_name
+                    tail_original_name = tail_properties[coupling_name].original_name
+                    lines.append(
+                        f"{coupling_name}{sep}"
+                        f"{tail_original_name}{sep}"
+                        f"{head_original_name}"
+                    )
+
+            kwargs = {"labeltooltip": "\n".join(lines)}
+        else:
+            kwargs = {}
+
+        graph_view.edge(tail_name, head_name, pretty_str(coupling_names), **kwargs)
+        if hide_head:
+            graph_view.hide_node(head_name)
 
     def render_full_graph(self, file_path: str | Path) -> GraphView | None:
         """Render the full graph.
