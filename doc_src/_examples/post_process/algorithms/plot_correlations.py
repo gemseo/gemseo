@@ -22,101 +22,38 @@
 Correlations
 ============
 
-In this example, we illustrate the use of the :class:`.Correlations` plot
+In this example, we illustrate the use of the :class:`.Correlations` post-processing
 on the Sobieski's SSBJ problem.
+
+A correlation coefficient indicates whether there is a linear relationship between two
+quantities :math:`x` and :math:`y`. It is the normalized covariance between the two
+quantities defined as:
+
+.. math::
+
+   R_{xy}=\frac {\\sum \\limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{ns_{x}s_{y}}
+   =\frac {\\sum \\limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{\\sqrt {\\sum
+   \\limits _{i=1}^n(x_i-{\bar{x}})^{2}\\sum \\limits _{i=1}^n(y_i-{\bar{y}})^{2}}}
+
+The :class:`.Correlations` post-processing provides scatter plots of correlated
+variables among design variables, outputs functions, and constraints.
+
+By default, only the variables with a correlation coefficient greater than 0.95 are
+considered. The threshold value can be modified in the post-processing settings.
 """
 
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo import execute_post
+from gemseo.settings.post import Correlations_Settings
 
-# %%
-# Import
-# ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
-
-configure_logger()
-
-# %%
-# Description
-# -----------
-#
-# A correlation coefficient indicates whether there is a linear
-# relationship between 2 quantities :math:`x` and :math:`y`, in which case
-# it equals 1 or -1. It is the normalized covariance between the two
-# quantities:
-#
-# .. math::
-#
-#    R_{xy}=\frac {\sum \limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{ns_{x}s_{y}}
-#    =\frac {\sum \limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{\sqrt {\sum
-#    \limits _{i=1}^n(x_i-{\bar{x}})^{2}\sum \limits _{i=1}^n(y_i-{\bar{y}})^{2}}}
-#
-# The **Correlations** post-processing builds scatter plots of correlated variables
-# among design variables, output functions, and constraints.
-#
-# The plot method considers all variable correlations greater than 95%. A different
-# threshold value and/or a sublist of variable names can be passed as options.
-
-# %%
-# Create disciplines
-# ------------------
-# Then, we instantiate the disciplines of the Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
-
-# %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
-design_space = SobieskiDesignSpace()
-
-# %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build an MDO scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the SLSQP optimization algorithm
-# and a maximum number of iterations equal to 100.
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
+# Correlations of the constraint `g_3`.
+execute_post(
+    "sobieski_mdf_scenario.h5",
+    settings_model=Correlations_Settings(
+        func_names=["g_3"],
+        coeff_limit=0.95,  # Default value, here for illustration purpose.
+        save=False,
+        show=True,
+    ),
 )
-scenario.set_differentiation_method()
-for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo_name="SLSQP", max_iter=10)
-
-# %%
-# Post-process scenario
-# ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.Correlations`
-# plot which provides scatter plots of correlated variables among design
-# variables, outputs functions and constraints any of the constraint or
-# objective functions w.r.t. optimization iterations or sampling snapshots.
-# This method requires the list of functions names to plot.
-
-# %%
-# .. tip::
-#
-#    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the API function
-#    :func:`.get_post_processing_options_schema` to print a table with
-#    the options for any post-processing algorithm.
-#    Or refer to our dedicated page:
-#    :ref:`gen_post_algos`.
-
-scenario.post_process(post_name="Correlations", save=False, show=True)

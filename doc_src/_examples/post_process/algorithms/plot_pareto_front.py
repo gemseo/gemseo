@@ -24,87 +24,22 @@ Pareto front
 
 In this example, we illustrate the use of the :class:`.ParetoFront` plot
 on the Sobieski's SSBJ problem.
+
+The :class:`.ParetoFront` post-processing provides a matrix of plots (if there are more
+than 2 objectives). It indicates in red the locally non-dominated points for the current
+objective, and in green the globally (all objectives) Pareto optimal points.
 """
 
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo import execute_post
+from gemseo.settings.post import ParetoFront_Settings
 
-# %%
-# Import
-# ------
-# The first step is to import a high-level function for logging.
-
-configure_logger()
-
-# %%
-# Description
-# -----------
-#
-# The :class:`.ParetoFront` post-processing generates
-# a plot or a matrix of plots (if there are more than
-# 2 objectives). It indicates in red the locally non-dominated points for the
-# current objectives, and in green the globally (all objectives) Pareto optimal
-# points.
-
-# %%
-# Create disciplines
-# ------------------
-# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
-# :class:`.SobieskiPropulsion`, :class:`.SobieskiAerodynamics`,
-# :class:`.SobieskiStructure` and :class:`.SobieskiMission`.
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
-
-# %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
-design_space = SobieskiDesignSpace()
-
-# %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build an MDO scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the SLSQP optimization algorithm
-# and a maximum number of iterations equal to 100.
-# and a maximum number of iterations equal to 100.
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
-)
-scenario.set_differentiation_method()
-for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo_name="SLSQP", max_iter=10)
-
-# %%
-# Post-process scenario
-# ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.ParetoFront`.
-
-# %%
-# .. tip::
-#
-#    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the high-level function
-#    :func:`.get_post_processing_options_schema` to print a table with
-#    the options for any post-processing algorithm.
-#    Or refer to our dedicated page:
-#    :ref:`gen_post_algos`.
-
-scenario.post_process(
-    post_name="ParetoFront", objectives=["g_3", "-y_4"], save=False, show=True
+execute_post(
+    "sobieski_mdf_scenario.h5",
+    settings_model=ParetoFront_Settings(
+        objectives=["g_3", "-y_4"],
+        save=False,
+        show=True,
+    ),
 )

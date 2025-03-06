@@ -57,8 +57,8 @@ doe_factory = DOELibraryFactory()
 doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
 # %%
-# Post-process scenario
-# ---------------------
+# Post-processing
+# ---------------
 # Lastly, we post-process the scenario by means of the :class:`.ParetoFront`
 # plot which generates a plot or a matrix of plots if there are more than
 # 2 objectives, plots in blue the locally non dominated points for the current

@@ -22,94 +22,25 @@
 Scatter plot matrix
 ===================
 
-In this example, we illustrate the use of the :class:`.ScatterPlotMatrix` plot
-on the Sobieski's SSBJ problem.
+In this example, we illustrate the use of the :class:`.ScatterPlotMatrix`
+post-processing on the Sobieski's SSBJ problem.
+
+The :class:`.ScatterPlotMatrix` post-processing provide the scatter plot matrix among
+design variables and outputs functions. Each non-diagonal block represents the samples
+according to the x- and y- coordinates names while the diagonal ones approximate
+the probability distributions of the variables, using a kernel-density estimator.
 """
 
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo import execute_post
+from gemseo.settings.post import ScatterPlotMatrix_Settings
 
-# %%
-# Import
-# ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
-
-configure_logger()
-
-# %%
-# Description
-# -----------
-#
-# The **ScatterPlotMatrix** post-processing builds the scatter plot matrix among
-# design variables and outputs functions.
-# Each non-diagonal block represents the samples
-# according to the x- and y- coordinates names while the diagonal ones approximate
-# the probability distributions of the variables, using a kernel-density estimator.
-
-# %%
-# Create disciplines
-# ------------------
-# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
-
-# %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
-design_space = SobieskiDesignSpace()
-
-# %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build a DOE scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the Monte Carlo DOE algorithm and 30 samples.
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
-    scenario_type="DOE",
-)
-scenario.set_differentiation_method()
-for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=30)
-
-# %%
-# Post-process scenario
-# ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.ScatterPlotMatrix`
-# plot which builds scatter plot matrix among design variables, objective
-# function and constraints.
-
-# %%
-# .. tip::
-#
-#    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the high-level function
-#    :func:`.get_post_processing_options_schema` to print a table with
-#    the options for any post-processing algorithm.
-#    Or refer to our dedicated page:
-#    :ref:`gen_post_algos`.
-
-design_variables = ["x_shared", "x_1", "x_2", "x_3"]
-scenario.post_process(
-    post_name="ScatterPlotMatrix",
-    variable_names=[*design_variables, "-y_4"],
-    save=False,
-    show=True,
+execute_post(
+    "sobieski_mdf_scenario.h5",
+    settings_model=ScatterPlotMatrix_Settings(
+        variable_names=["x_shared", "x_1", "x_2", "x_3", "-y_4"],
+        save=False,
+        show=True,
+    ),
 )
