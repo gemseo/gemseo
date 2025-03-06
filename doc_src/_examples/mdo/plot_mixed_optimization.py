@@ -257,6 +257,17 @@ outer_scenario.xdsmize(save_html=False, pdf_build=False)
 outer_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=9))
 
 # %%
+#
+# .. tip::
+#
+#    In a :class:`.DOEScenario`, we know a priori the samples that will be evaluated.
+#    This means we can run the outer scenario in parallel if we set the setting
+#    ``n_processes`` to at least 2. Note that if you are running the outer scenario in
+#    parallel and requesting the databases of the continuous optimizations on the disk,
+#    you will need to instantiate the :class:`.MDOScenarioAdapter` with the argument
+#    ``naming="UUID"``, which is multiprocessing-safe.
+
+# %%
 # Plot the objective and constraint history for the scenario.
 # -----------------------------------------------------------
 # At the end of the optimization we see the results of the problem. The optimal

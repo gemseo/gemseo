@@ -42,6 +42,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
 from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
+from gemseo.utils.name_generator import NameGenerator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -101,6 +102,16 @@ class MDOScenarioAdapter(ProcessDiscipline):
     UPPER_BND_SUFFIX = "_upper_bnd"
     MULTIPLIER_SUFFIX = "_multiplier"
 
+    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
+        "_MDOScenarioAdapter__name_generator"
+    ])
+
+    __name_generator: NameGenerator
+    """A name generator used to get unique file names when exporting databases."""
+
+    __naming: NameGenerator.Naming
+    """The way of naming the files when exporting databases."""
+
     __scenario_log_level: int | None
     """The level of the root logger during the scenario execution.
 
@@ -120,6 +131,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         keep_opt_history: bool = False,
         opt_history_file_prefix: str = "",
         scenario_log_level: int | None = None,
+        naming: NameGenerator.Naming = NameGenerator.Naming.NUMBERED,
     ) -> None:
         """
         Args:
@@ -141,14 +153,17 @@ class MDOScenarioAdapter(ProcessDiscipline):
             keep_opt_history: Whether to keep databases copies after each execution.
             opt_history_file_prefix: The base name for the databases to be exported.
                 The full names of the databases are built from
-                the provided base name suffixed by ``"_i.h5"``
-                where ``i`` is replaced by the execution number,
-                i.e the number of stored databases.
+                the provided base name suffixed by ``"_identifier.h5"``
+                where ``identifier`` is replaced by an identifier according to the
+                ``naming_method``.
                 If empty, the databases are not exported.
-                The databases can be exported only is ``keep_opt_history=True``.
+                The databases can be exported only if ``keep_opt_history=True``.
             scenario_log_level: The level of the root logger
                 during the scenario execution.
                 If ``None``, do not change the level of the root logger.
+            naming: The way of naming the database files.
+                When the adapter will be executed in parallel, this method shall be set
+                to ``UUID`` because this method is multiprocess-safe.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -163,6 +178,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         self._output_names = output_names
         self._reset_x0_before_opt = reset_x0_before_opt
         self._output_multipliers = output_multipliers
+        self.__naming = naming
         self.keep_opt_history = keep_opt_history
         self.databases = []
         self.__opt_history_file_prefix = opt_history_file_prefix
@@ -204,6 +220,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         )
         self.post_optimal_analysis = None
         self.__scenario_log_level = scenario_log_level
+        self._init_shared_memory_attrs_after()
 
     def _update_grammars(self) -> None:
         """Update the input and output grammars.
@@ -300,6 +317,9 @@ class MDOScenarioAdapter(ProcessDiscipline):
         multipliers_grammar.update_from_data(base_dict)
         self.io.output_grammar.update(multipliers_grammar)
 
+    def _init_shared_memory_attrs_after(self) -> None:
+        self.__name_generator = NameGenerator(naming_method=self.__naming)
+
     @staticmethod
     def get_bnd_mult_name(
         variable_name: str,
@@ -388,7 +408,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
             self.databases.append(deepcopy(opt_problem.database))
             if self.__opt_history_file_prefix:
                 self.databases[-1].to_hdf(
-                    f"{self.__opt_history_file_prefix}_{len(self.databases)}.h5"
+                    f"{self.__opt_history_file_prefix}_{self.__name_generator.generate_name()}.h5"
                 )
 
         # Test if the last evaluation is the optimum

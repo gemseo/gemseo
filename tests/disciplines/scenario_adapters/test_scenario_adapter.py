@@ -36,6 +36,7 @@ from numpy import zeros_like
 
 from gemseo import create_scenario
 from gemseo.algos.database import Database
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.discipline import Discipline
@@ -52,8 +53,10 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.name_generator import NameGenerator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -497,7 +500,7 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
 
     The focus of this test is to guarantee that the loaded MDOChain instance can be
     executed, if an AttributeError is raised, it means that the attribute is missing in
-    MDOScenarioAdapter._ATTR_TO_SERIALIZE.
+    ``MDOScenarioAdapter._ATTR_NOT_TO_SERIALIZE``.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
@@ -505,7 +508,12 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
             without physical naming.
     """
     adapter = MDOScenarioAdapter(
-        scenario, ["x_shared"], ["y_4"], set_x0_before_opt=set_x0_before_opt
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        set_x0_before_opt=set_x0_before_opt,
+        keep_opt_history=True,
+        opt_history_file_prefix="test",
     )
 
     with open("adapter.pkl", "wb") as file:
@@ -516,6 +524,29 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
 
     adapter.execute()
     assert adapter.scenario.optimization_result.is_feasible
+
+
+def test_parallel_adapter(tmp_wd, scenario):
+    """Test the execution of an MDOScenarioAdapter in multiprocessing."""
+    adapter = MDOScenarioAdapter(
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        keep_opt_history=True,
+        opt_history_file_prefix="test",
+        naming=NameGenerator.Naming.UUID,
+    )
+    design_space = SobieskiDesignSpace()
+    design_space.filter(["x_shared"])
+    scenario_doe = DOEScenario(
+        [adapter],
+        "y_4",
+        design_space=design_space,
+        maximize_objective=True,
+        formulation_name="DisciplinaryOpt",
+    )
+    scenario_doe.execute(LHS_Settings(n_samples=10, n_processes=2))
+    assert len(list(tmp_wd.rglob("test_*.h5"))) == 10
 
 
 class DisciplineMain(Discipline):

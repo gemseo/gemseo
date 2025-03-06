@@ -17,43 +17,20 @@
 from __future__ import annotations
 
 from ast import literal_eval
-from multiprocessing import Lock
-from multiprocessing import Value
 from pathlib import Path
-from uuid import uuid4
 
-from strenum import StrEnum
+from gemseo.utils.name_generator import NameGenerator
 
-from gemseo.core.serializable import Serializable
-
-
-class DirectoryNamingMethod(StrEnum):
-    """The method to generate directory names."""
-
-    NUMBERED = "NUMBERED"
-    """The generated directories are named by an integer i+1, i+2, i+3 etc, where ``i``
-    is the maximum value of the already existing directories."""
-
-    UUID = "UUID"
-    """A unique number based on the UUID function is generated.
-
-    This last option shall be used if multiple MDO processes are run in the same working
-    directory. This is multi-process safe.
-    """
+# TODO: API Rename to Naming and update all references.
+DirectoryNamingMethod = NameGenerator.Naming
 
 
-class DirectoryCreator(Serializable):
+class DirectoryCreator(NameGenerator):
     """A class to create directories."""
-
-    __counter: Value
-    """The number of created directories."""
 
     __root_directory: Path
     """The absolute path of the root directory, wherein unique directories will be
     created."""
-
-    __lock: Lock
-    """The non-recursive lock object."""
 
     __directory_naming_method: DirectoryNamingMethod
     """The method to create the directory names."""
@@ -74,16 +51,9 @@ class DirectoryCreator(Serializable):
             directory_naming_method: The method to create the directory names.
         """  # noqa:D205 D212 D415
         self.__root_directory = Path(root_directory) if root_directory else Path.cwd()
-        self.__directory_naming_method = directory_naming_method
-        self._init_shared_memory_attrs_after()
         self.__last_directory = None
-
-    def _init_shared_memory_attrs_after(self) -> None:
-        if self.__directory_naming_method == DirectoryNamingMethod.NUMBERED:
-            self.__lock = Lock()
-            self.__counter = Value("i", self.__get_initial_counter())
-        else:
-            self.__counter = 1
+        # TODO: API Rename to naming_method
+        super().__init__(naming_method=directory_naming_method)
 
     @property
     def last_directory(self) -> Path | None:
@@ -96,36 +66,14 @@ class DirectoryCreator(Serializable):
         Returns:
             The directory path.
         """
-        self.__last_directory = self.__root_directory / self.__generate_uid()
+        self.__last_directory = self.__root_directory / self._generate_name()
         self.__last_directory.mkdir(parents=True, exist_ok=True)
         return self.__last_directory
 
-    def __generate_uid(self) -> str:
-        """Generate a unique identifier.
-
-        Generate a unique identifier for the current execution.
-        If the ``directory_naming_method`` strategy is
-        :attr:`~.DirectoryNamingMethod.NUMBERED`,
-        the successive uid are named by an integer 1, 2, 3 etc.
-        Otherwise, a unique number based on the UUID function is generated.
-        This last option shall be used if multiple MDO processes are run
-        in the same working directory, since it is multi-process safe.
-
-        Returns:
-            A unique identifier.
-        """
-        if self.__directory_naming_method == DirectoryNamingMethod.NUMBERED:
-            with self.__lock:
-                self.__counter.value += 1
-                return str(self.__counter.value)
-        elif self.__directory_naming_method == DirectoryNamingMethod.UUID:
-            return str(uuid4()).split("-")[-1]
-        return None
-
-    def __get_initial_counter(self) -> int:
+    def _get_initial_counter(self) -> int:
         """Return the initial value of the counter for creating directories.
 
-        This accounts for the already existing directories in :attr:`.root_directory`.
+        This accounts for the already existing directories in :attr:`.__root_directory`.
 
         Returns:
              The initial value of the counter.
