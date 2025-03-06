@@ -41,6 +41,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.source_parsing import get_callable_argument_defaults
+from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -111,7 +112,11 @@ class AutoPyDiscipline(Discipline):
     __sizes: dict[str, int]
     """The sizes of the input and output variables."""
 
-    __LOG_PREFIX: Final[str] = "Discipline %s: py_func has"
+    __LOG_PREFIX: Final[str] = "The py_func of the AutoPyDiscipline '%s' has"
+
+    __LOG_SUFFIX: Final[str] = (
+        "The grammars of this discipline will not use the type hints at all."
+    )
 
     def __init__(
         self,
@@ -199,10 +204,12 @@ class AutoPyDiscipline(Discipline):
             missing_args_types = set(self.__input_names).difference(type_hints.keys())
             if missing_args_types:
                 msg = (
-                    f"{self.__LOG_PREFIX} missing type hints for the arguments: %s."
-                    "The grammars will not use the type hints at all."
+                    f"{self.__LOG_PREFIX} missing type hints for the arguments %s."
+                    f"{self.__LOG_SUFFIX}"
                 )
-                LOGGER.warning(msg, self.name, ",".join(missing_args_types))
+                LOGGER.warning(
+                    msg, self.name, pretty_repr(missing_args_types, use_and=True)
+                )
                 raise_if_inconsistency = False
             else:
                 names_to_input_types = type_hints
@@ -220,7 +227,7 @@ class AutoPyDiscipline(Discipline):
                     msg = (
                         f"{self.__LOG_PREFIX} bad return type hints: "
                         "expecting a tuple of types, got %s."
-                        "The grammars will not use the type hints at all."
+                        f"{self.__LOG_SUFFIX}"
                     )
                     LOGGER.warning(msg, self.name, return_type)
                     raise_if_inconsistency = False
@@ -231,10 +238,9 @@ class AutoPyDiscipline(Discipline):
                     if n_type_args != n_output_names:
                         msg = (
                             f"{self.__LOG_PREFIX} bad return type hints: "
-                            "the number of return values and return types shall be "
-                            "equal: "
-                            "%i return values but %i return type hints. "
-                            "The grammars will not use the type hints at all."
+                            "the number of return values (%i) and return types (%i) "
+                            "shall be equal. "
+                            f"{self.__LOG_SUFFIX}"
                         )
                         LOGGER.warning(msg, self.name, n_output_names, n_type_args)
                         raise_if_inconsistency = False
@@ -257,7 +263,7 @@ class AutoPyDiscipline(Discipline):
                 f"{self.__LOG_PREFIX} inconsistent type hints: "
                 "either both the signature arguments and the return values shall have "
                 "type hints or none. "
-                "The grammars will not use the type hints at all."
+                f"{self.__LOG_SUFFIX}"
             )
             LOGGER.warning(msg, self.name)
 
