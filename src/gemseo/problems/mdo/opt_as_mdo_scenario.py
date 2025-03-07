@@ -368,44 +368,12 @@ class OptAsMDOScenario(MDOScenario):
            for the input and output variables of ``discipline``.
            So,
            you can use :math:`a,b,c` in ``design_space`` instead of :math:`z_0,z_1,z_2`.
-
-        Raises:
-            ValueError: When the design space includes less than three variables
-                or when a design variable is not scalar.
         """  # noqa: D205, D212, E501
-        n_variables = len(design_space)
-        if n_variables < 3:
-            msg = (
-                "The design space must have at least three scalar design variables; "
-                f"got {n_variables}."
-            )
-            raise ValueError(msg)
-
-        if design_space.dimension != n_variables:
-            msg = "The design space must include scalar variables only."
-            raise ValueError(msg)
-
-        if coupling_equations:
-            strongly_coupled_disciplines, compute_y, differentiate_y = (
-                coupling_equations
-            )
-        else:
-            scalable_problem = ScalableProblem()
-            strongly_coupled_disciplines = scalable_problem.scalable_disciplines
-            for i, strongly_coupled_discipline in enumerate(
-                strongly_coupled_disciplines
-            ):
-                strongly_coupled_discipline.name = f"D{i + 1}"
-
-            compute_y = scalable_problem.compute_y
-            differentiate_y = scalable_problem.differentiate_y
-
-        link_discipline = link_discipline_class(
-            design_space, compute_y, differentiate_y
+        disciplines = create_disciplines(
+            discipline, design_space, coupling_equations, link_discipline_class
         )
-
         super().__init__(
-            (discipline, link_discipline, *strongly_coupled_disciplines),
+            disciplines,
             objective_name,
             design_space,
             name=name,
@@ -413,3 +381,68 @@ class OptAsMDOScenario(MDOScenario):
             formulation_settings_model=formulation_settings_model,
             **formulation_settings,
         )
+
+
+def create_disciplines(
+    discipline: Discipline,
+    design_space: DesignSpace,
+    coupling_equations: tuple[
+        Iterable[Discipline, ...],
+        Callable[[RealArray], RealArray],
+        Callable[[RealArray], RealArray],
+    ],
+    link_discipline_class: type[BaseLinkDiscipline],
+) -> tuple[Discipline, BaseLinkDiscipline, Discipline]:
+    r"""Create the disciplines to make an optimization problem multidisciplinary.
+
+    Args:
+        discipline: The discipline
+            computing the objective, constraints and observables
+            from the design variables.
+        design_space: The design space
+            including the design variables :math:`z_0,z_1,\ldots,z_N`
+            which will be replaced by :math:`x_0,x_1,\ldots,x_N` respectively
+            in the MDO problem.
+        coupling_equations: The material
+            to evaluate and solve the coupling equations,
+            namely the disciplines :math:`h_1,\ldots,h_N`,
+            the function :math:`c`
+            and the Jacobian function :math:`\nabla c(x)`.
+            If empty,
+            the :math:`i`-th discipline is linear.
+        link_discipline_class: The class of the link discipline.
+
+    Returns:
+        The original discipline,
+        the link discipline,
+        and the strongly coupled disciplines.
+
+    Raises:
+        ValueError: When the design space includes less than three variables
+            or when a design variable is not scalar.
+    """
+    n_variables = len(design_space)
+    if n_variables < 3:
+        msg = (
+            "The design space must have at least three scalar design variables; "
+            f"got {n_variables}."
+        )
+        raise ValueError(msg)
+
+    if design_space.dimension != n_variables:
+        msg = "The design space must include scalar variables only."
+        raise ValueError(msg)
+
+    if coupling_equations:
+        strongly_coupled_disciplines, compute_y, differentiate_y = coupling_equations
+    else:
+        scalable_problem = ScalableProblem()
+        strongly_coupled_disciplines = scalable_problem.scalable_disciplines
+        for i, strongly_coupled_discipline in enumerate(strongly_coupled_disciplines):
+            strongly_coupled_discipline.name = f"D{i + 1}"
+
+        compute_y = scalable_problem.compute_y
+        differentiate_y = scalable_problem.differentiate_y
+
+    link_discipline = link_discipline_class(design_space, compute_y, differentiate_y)
+    return discipline, link_discipline, *strongly_coupled_disciplines
