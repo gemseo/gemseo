@@ -121,7 +121,7 @@ generate_coupling_graph(mdo_scenario.disciplines, file_path="")
 # connected by the coupling variables :math:`y_1` and :math:`y_2`.
 # These disciplines are weakly coupled to a downstream link discipline :math:`L`,
 # which is weakly coupled to the downstream original discipline.
-# Let us not that the link discipline computes
+# Let us note that the link discipline computes
 # the values of the design variables in the original optimization problem
 # from the values of the design and coupling variables in the MDO problem.
 #
