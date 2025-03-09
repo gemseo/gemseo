@@ -100,7 +100,7 @@ pandas==2.2.3
     # via
     #   gemseo (pyproject.toml)
     #   pandera
-pandera==0.23.0
+pandera==0.23.1
     # via gemseo (pyproject.toml)
 pbr==6.1.1
     # via sphinxcontrib-apidoc
@@ -172,7 +172,7 @@ scipy==1.15.2
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-setuptools==75.8.2
+setuptools==75.9.0
     # via
     #   gemseo (pyproject.toml)
     #   pbr
