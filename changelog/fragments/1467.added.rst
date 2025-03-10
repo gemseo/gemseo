@@ -1,0 +1,1 @@
+Added a ``protocol`` argument to the ``to_pickle`` function and to the ``deserialize_and_run`` command line for specifying the pickling protocol.
