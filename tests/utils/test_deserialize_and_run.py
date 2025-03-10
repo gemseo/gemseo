@@ -34,15 +34,15 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-@pytest.fixture
-def discipline_and_data(tmp_wd):
+@pytest.mark.parametrize("protocol", [pickle.DEFAULT_PROTOCOL, pickle.HIGHEST_PROTOCOL])
+def discipline_and_data(protocol, tmp_wd):
     path_to_discipline = tmp_wd / "discipline.pckl"
     discipline = create_discipline("SobieskiMission")
     to_pickle(discipline, path_to_discipline)
     path_to_outputs = tmp_wd / "outputs.pckl"
     path_to_input_data = tmp_wd / "inputs.pckl"
     with path_to_input_data.open("wb") as outf:
-        pickler = pickle.Pickler(outf, protocol=2)
+        pickler = pickle.Pickler(outf, protocol=protocol)
         pickler.dump((discipline.io.input_grammar.defaults, (), ()))
     return path_to_discipline, path_to_outputs, path_to_input_data, discipline
 
@@ -62,6 +62,7 @@ def sys_argv(discipline_and_data):
     ]
 
 
+@pytest.fixture
 def test_parse_inputs(discipline_and_data, sys_argv) -> None:
     """Test the input parsing for the deserialize_and_run executable."""
     (
@@ -89,6 +90,33 @@ def test_parse_inputs(discipline_and_data, sys_argv) -> None:
     assert outs[-2]
 
 
+@pytest.fixture(params=[pickle.DEFAULT_PROTOCOL, pickle.HIGHEST_PROTOCOL])
+def test_parse_inputs_with_protocol(discipline_and_data, sys_argv, request) -> None:
+    protocol = request.param
+    """Test the input with a specific pickle protocol."""
+    (
+        path_to_discipline,
+        path_to_outputs,
+        path_to_input_data,
+        _,
+    ) = discipline_and_data
+    sys_argv.append(f"--protocol={protocol}")
+    (
+        serialized_disc_path,
+        input_data_path,
+        outputs_path,
+        linearize,
+        execute_at_linearize,
+        parsed_protocol,
+    ) = _parse_inputs(sys_argv)
+    assert serialized_disc_path == path_to_discipline
+    assert input_data_path == path_to_input_data
+    assert outputs_path == path_to_outputs
+    assert not linearize
+    assert not execute_at_linearize
+    assert parsed_protocol == protocol
+
+
 def test_parse_inputs_fail(tmp_wd) -> None:
     """Test the input parsing failure handling."""
     with pytest.raises(SystemExit):
@@ -108,6 +136,7 @@ def test_parse_inputs_fail(tmp_wd) -> None:
     _parse_inputs([i_exist, i_exist, i_exist])
 
 
+@pytest.fixture
 def test_run_discipline_save_outputs(discipline_and_data) -> None:
     """Test the run and save outputs."""
     (
@@ -132,6 +161,7 @@ def test_run_discipline_save_outputs(discipline_and_data) -> None:
     assert compare_dict_of_arrays(outputs, discipline.execute())
 
 
+@pytest.fixture
 def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
     """Test the outputs saving error handling."""
     error_message = "I failed"
@@ -185,7 +215,8 @@ def test_cli_options_error(tmp_wd):
         ))
 
 
-def test_path_serialization(tmp_wd) -> None:
+@pytest.mark.parametrize("protocol", [pickle.DEFAULT_PROTOCOL, pickle.HIGHEST_PROTOCOL])
+def test_path_serialization(tmp_wd, protocol):
     """Test the execution of a serialized discipline that contains Paths."""
     path_to_discipline = "discipline.pckl"
     discipline = PathDiscipline(tmp_wd)
@@ -194,7 +225,7 @@ def test_path_serialization(tmp_wd) -> None:
     path_to_input_data = "inputs.pckl"
 
     with open(path_to_input_data, "wb") as outf:
-        pickler = pickle.Pickler(outf, protocol=2)
+        pickler = pickle.Pickler(outf, protocol=protocol)
         pickler.dump((discipline.io.input_grammar.defaults, (), ()))
 
     completed = subprocess.run(
@@ -208,4 +239,5 @@ def test_path_serialization(tmp_wd) -> None:
     assert completed.returncode == 0
 
     out = discipline.execute()
+    assert out["y"] == 1
     assert out["y"] == 1

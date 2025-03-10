@@ -33,15 +33,18 @@ if TYPE_CHECKING:
 
 def _parse_inputs(
     args: Sequence[str] = (),
-) -> tuple[Path, Path, Path, bool, bool]:
+) -> tuple[Path, Path, Path, bool, bool, int]:
     """Parse the arguments of the command.
 
     Args:
         args: The command line arguments. If empty, uses ``sys.argv[1:]``.
 
     Returns:
-        The path to the serialized discipline, the path
-        to the serialized input data, the path to the serialized output data
+        The path to the serialized discipline, the path to the serialized input data,
+        the path to the serialized output data, whether to linearize the discipline,
+        wether to call :meth:`.Discipline.execute` when calling
+        :meth:`.Discipline.linearize`,
+        and the pickle protocol to use for serializing outputs.
 
     Raises:
         RuntimeError: When one of the paths provided in the arguments does not exist,
@@ -73,14 +76,21 @@ def _parse_inputs(
     )
     parser.add_argument(
         "--execute-at-linearize",
-        help="Whether to call execute() when calling linearize().",
+        help="""Whether to call execute() when calling linearize().
+        Requires --linearize.""",
         action="store_true",
+    )
+    parser.add_argument(
+        "--protocol",
+        help="""The pickle protocol to use for serializing outputs.""",
+        type=int,
+        default=pickle.HIGHEST_PROTOCOL,
     )
 
     parsed_args = parser.parse_args(args or None)
 
     if parsed_args.execute_at_linearize and not parsed_args.linearize:
-        msg = "The option --execute-at-linearize cannot be used without --linearize."
+        msg = "The option --execute-at-linearize cannot be used without --linearize"
         raise ValueError(msg)
 
     return (
@@ -89,6 +99,7 @@ def _parse_inputs(
         Path(parsed_args.outputs_path),
         parsed_args.linearize,
         parsed_args.execute_at_linearize,
+        parsed_args.protocol,
     )
 
 
@@ -100,6 +111,7 @@ def _run_discipline_save_outputs(
     execute_at_linearize: bool,
     differentiated_inputs: Iterable[str],
     differentiated_outputs: Iterable[str],
+    protocol: int = pickle.HIGHEST_PROTOCOL,
 ) -> int:
     """Run or linearize the discipline and serialize its outputs to disk.
 
@@ -113,6 +125,7 @@ def _run_discipline_save_outputs(
             inputs that define the rows of the jacobian.
         differentiated_outputs: If the linearization is performed, the
             outputs that define the columns of the jacobian.
+        protocol: The protocol to use for pickling.
 
     Returns:
         The return code, 0 if success, 1 if failure.
@@ -137,7 +150,7 @@ def _run_discipline_save_outputs(
         return_code = 0
 
     with outputs_path.open("wb") as file_:
-        pickler = pickle.Pickler(file_, protocol=2)
+        pickler = pickle.Pickler(file_, protocol=protocol)
         pickler.dump(outputs)
 
     return return_code
@@ -150,6 +163,9 @@ def main() -> int:
         - discipline_path: The path to the serialized discipline.
         - inputs_path: The path to the serialized input data.
         - outputs_path: The path to the serialized output data.
+        - --linearize: Whether to linearize the discipline or execute.
+        - --execute-at-linearize: Whether to call execute() when calling linearize().
+        - --protocol: The pickle protocol to use for serializing outputs.
 
     Returns:
         The return code, 0 if success, 1 if failure.
@@ -164,6 +180,7 @@ def main() -> int:
         outputs_path,
         linearize,
         execute_at_linearize,
+        protocol,
     ) = _parse_inputs()
 
     with serialized_disc_path.open("rb") as discipline_file:
@@ -180,4 +197,5 @@ def main() -> int:
         execute_at_linearize,
         linearize_inputs,
         linearize_outputs,
+        protocol,
     )
