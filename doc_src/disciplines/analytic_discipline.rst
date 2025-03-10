@@ -19,6 +19,18 @@ A simple :class:`.Discipline` can be created using analytic formulas,
 e.g. :math:`y_1=2x^2` and :math:`y_2=5+3x^2z^3`,
 thanks to the class  :class:`.AnalyticDiscipline` which is a quick alternative to model a simple analytic MDO problem!
 
+.. note::
+   The :class:`.AnalyticDiscipline` requires additional dependencies.
+   Make sure to install GEMSEO with the ``[all]`` option:
+
+   .. code-block:: console
+
+      pip install gemseo[all]
+
+   If you encounter a ``"Discipline AnalyticDiscipline not found in [...]"`` error,
+   it's likely because these additional dependencies are not installed.
+   You can check `installation <https://gemseo.readthedocs.io/en/develop/software/installation.html#installation>`_ for more details.
+
 Create the dictionary of analytic outputs
 *****************************************
 
