@@ -14,7 +14,6 @@
 .vim*
 .vscode
 tags
-
 /doc_src/examples
 !/doc_src/examples/index.rst
 /doc_src/gen_modules
@@ -41,3 +40,7 @@ coverage.xml
 .coverage*
 !.coveragerc
 asv-gemseo
+.env
+.envrc
+devbox.json
+devbox.lock
