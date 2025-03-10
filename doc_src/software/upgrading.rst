@@ -28,18 +28,26 @@ MDODiscipline
   ``.io``, ``.execution_statistics``, ``.execution_status`` and the method ``get_process_flow``.
 - The signature of the method ``__init__`` has the following changes:
 
-  - The arguments use ``auto_detect_grammar_files`` is removed, now use the class attribute ``auto_detect_grammar_files.``
-  - The arguments ``input_grammar_file`` and ``output_grammar_file`` are removed, use ``auto_detect_grammar_files.``
-  - The argument ``grammar_type`` is removed, now use the class attribute ``default_grammar_type.``
-  - The argument ``cache_type`` is removed, now use the class attribute ``default_cache_type.``
-  - The argument ``cache_file_path`` is removed, now use the method ``set_cache.``
+  - The argument ``auto_detect_grammar_files`` is removed, now use the class attribute ``auto_detect_grammar_files``.
+  - The arguments ``input_grammar_file`` and ``output_grammar_file`` are removed, use ``auto_detect_grammar_files``.
+  - The argument ``grammar_type`` is removed, now use the class attribute ``default_grammar_type``.
+  - The argument ``cache_type`` is removed, now use the class attribute ``default_cache_type``.
+  - The argument ``cache_file_path`` is removed, now use the method ``set_cache``.
 - The method ``_run`` now takes ``input_data`` as argument and may return the output data,
   this allow a more natural and clearer implementation of the main business logic of a discipline.
-  Moreover, using the provided ``input_data`` and also returning the output data will ensure that a
-  discipline can be used with namespaces.
-  Besides the addition of this new method argument in the signature, the usage  of ``input_data`` is optional,
-  as well as returning the output data: i.e. the body of ``_run`` could be left unchanged.
-  But in that case it is not guaranteed to support the use of namespaces.
+  These input and output data are dictionaries of the form ``{variable_name_without_namespace: variable_value, ...}``.
+
+  - Using the provided ``input_data`` and also returning the output data will ensure that the
+    discipline can be used with namespaces and ``NameMapping`` data processors. This approach is preferable.
+  - You can also avoid using ``input_data`` and return output data as in the versions prior to 6
+    and thus leave the body of ``_run`` unchanged,
+    with typical lines like ``input_data = self.get_input_data(with_namespace=False)``,
+    ``x_value, y_value = self.get_inputs_by_name(["x", "y"])``
+    and ``self.store_local_data(output_name=output_value)``
+    (please note that the methods ``get_input_data``, ``get_inputs_by_name`` and ``store_local_data``
+    have also been modified; see below).
+    But in that case, the discipline may not support the use of namespaces and ``NameMapping`` data processors.
+    For this reason, it is preferable to modify ``_run`` according to the first approach.
 - The signature of ``_compute_jacobian`` is now ``_compute_jacobian(self, input_names=(), output_names=())``.
 - The attributes have the following changes:
 
@@ -90,9 +98,12 @@ MDODiscipline
   - ``.get_inputs_asarray``: is removed
   - ``.get_inputs_by_name``: now use ``.get_input_data``
   - ``.get_outputs_by_name``: now use ``.get_output_data``
-  - ``.get_input_data_names``: now use ``.get_input_data``
-  - ``.get_output_data_names``: now use ``.get_output_data``
-  - ``.get_input_output_data_names``: now use ``.local_data``
+  - ``.get_input_data_names(): now use ``.input_grammar.names`` and cast it into ``list``
+  - ``.get_input_data_names(True)``: now use ``.input_grammar.names`` and cast it into ``list``
+  - ``.get_input_data_names(False)``: now use ``.input_grammar.names_without_namespace`` and cast it into ``list``
+  - ``.get_output_data_names(): now use ``.output_grammar.names`` and cast it into ``list``
+  - ``.get_output_data_names(True)``: now use ``.output_grammar.names`` and cast it into ``list``
+  - ``.get_output_data_names(False)``: now use ``.output_grammar.names_without_namespace`` and cast it into ``list``
   - ``.get_all_inputs``: now use ``.get_input_data``
   - ``.get_all_outputs``: now use ``.get_output_data``
   - ``.to_pickle``: now use ``gemseo.to_pickle``

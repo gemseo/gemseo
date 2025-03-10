@@ -401,14 +401,24 @@ class BaseDiscipline(BaseMonitoredProcess):
         """Compute the outputs from the inputs.
 
         This method shall be implemented in derived classes.
-        The ``input_data`` are the discipline inputs completed with the default inputs,
-        the keys of those items have the namespace prefixes (if any) removed.
-        This method could return the output data or return ``None``.
-        If the output data are returned, they will be used to update the data of the
-        discipline (:attr:`.local_data`).
-        In that case, the output data may either use the name with namespaces or not.
-        If nothing or ``None`` is returned, then the data of the discipline shall be
-        updated in the implementation of this method.
+
+        The ``input_data`` are the discipline inputs completed with the default inputs.
+        This method may return the output data.
+
+        These input and output data are dictionaries
+        of the form ``{variable_name_without_namespace: variable_value, ...}``.
+
+        Using the provided ``input_data`` and also returning the output data
+        will ensure that the discipline can be used with namespaces.
+        This approach, which appeared in the version 6 of |g|, is preferable.
+
+        As in the |g| versions prior to 6,
+        you can also avoid using ``input_data`` and return output data,
+        and thus leave the body ``_run`` unchanged.
+        But in that case
+        the discipline does not automatically support the use of namespaces.
+        For this reason,
+        it is preferable to use the first approach.
 
         Args:
             input_data: The input data without namespace prefixes.
