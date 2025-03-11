@@ -27,6 +27,7 @@ from typing import Union
 import pytest
 from matplotlib.figure import Figure
 from numpy import array
+from numpy import isnan
 from numpy import ndarray
 from numpy import pi
 from numpy import sin
@@ -421,10 +422,18 @@ def test_unscale_indices(sobol, use_variance, order) -> None:
 
     unscaled_indices = sobol.unscale_indices(indices, use_variance=use_variance)
     for output_name, output_values in expected.items():
+        unscaled_indices_ = unscaled_indices[output_name]
         for output_index, output_value in enumerate(output_values):
             assert compare_dict_of_arrays(
-                unscaled_indices[output_name][output_index], output_value, tolerance=0.1
+                unscaled_indices_[output_index], output_value, tolerance=0.1
             )
+
+
+def test_unscale_index_with_negative_values(sobol):
+    """Check that negative estimates do not include nan."""
+    f = sobol._SobolAnalysis__unscale_index
+    assert not any(isnan(f(array([0.23, -0.87]), "y", 0, False)))
+    assert not any(isnan(f({"foo": array([0.23, -0.87])}, "y", 0, False)["foo"]))
 
 
 def test_compute_indices_output_names(sobol) -> None:
