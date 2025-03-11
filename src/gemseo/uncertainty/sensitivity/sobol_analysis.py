@@ -118,6 +118,7 @@ from matplotlib.transforms import Affine2D
 from numpy import array
 from numpy import hstack
 from numpy import newaxis
+from numpy import sign
 from numpy import vstack
 from numpy.random import default_rng
 from openturns import JansenSensitivityAlgorithm
@@ -711,11 +712,15 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         if isinstance(sobol_index, Mapping):
             unscaled_data = {k: v * factor for k, v in sobol_index.items()}
             if not use_variance:
-                return {k: v**0.5 for k, v in unscaled_data.items()}
+                return {
+                    k: sign(v) * (sign(v) * v) ** 0.5 for k, v in unscaled_data.items()
+                }
         else:
             unscaled_data = sobol_index * factor
             if not use_variance:
-                return unscaled_data**0.5
+                return (
+                    sign(unscaled_data) * (sign(unscaled_data) * unscaled_data) ** 0.5
+                )
 
         return unscaled_data
 
