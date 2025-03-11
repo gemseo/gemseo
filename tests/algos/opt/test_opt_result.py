@@ -24,10 +24,12 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.problems.optimization.power_2 import Power2
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
@@ -229,3 +231,14 @@ def test_from_optimization_problem(
         constraint_values={f"[g{sign}1.0]": array([constraint])},
         constraints_grad={f"[g{sign}1.0]": None},
     )
+
+
+def test_opt_result_from_opt_problem(tmp_path):
+    """Test the creation of an OptimizationResult from an OptimizationProblem."""
+    problem = Power2()
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP", max_iter=50)
+    out_file = tmp_path / "output.hdf"
+    problem.to_hdf(out_file)
+    read_problem = OptimizationProblem.from_hdf(out_file)
+    opt_result = OptimizationResult.from_optimization_problem(read_problem)
+    assert isinstance(opt_result, OptimizationResult)
