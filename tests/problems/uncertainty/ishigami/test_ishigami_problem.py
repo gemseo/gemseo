@@ -19,6 +19,7 @@ import pytest
 from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
 from gemseo.problems.uncertainty.ishigami.ishigami_problem import IshigamiProblem
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problems.uncertainty.utils import UniformDistribution
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
 
@@ -34,7 +35,7 @@ def test_ishigami_problem() -> None:
 
 @pytest.mark.parametrize(
     "uniform_distribution_name",
-    [IshigamiSpace.UniformDistribution.OPENTURNS, "OTUniformDistribution"],
+    [UniformDistribution.OPENTURNS, "OTUniformDistribution"],
 )
 def test_ishigami_problem_openturns(uniform_distribution_name) -> None:
     """Check the Ishigami problem using OpenTURNS."""
