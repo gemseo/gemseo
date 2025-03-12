@@ -1,0 +1,4 @@
+The ``MDOScenarioAdapter`` now includes the argument ``save_opt_history``
+(default: ``False``)
+to save the optimization history of each run to the disk.
+This setting is also accessible via the attribute of the same name.
