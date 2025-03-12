@@ -25,6 +25,9 @@ from gemseo.problems.uncertainty.utils import UniformDistribution
 class IshigamiSpace(ParameterSpace):
     r"""The uncertain space used in the Ishigami use case."""
 
+    UniformDistribution = UniformDistribution
+    """The name of the class implementing the uniform distribution."""
+
     def __init__(
         self, uniform_distribution_name: UniformDistribution = UniformDistribution.SCIPY
     ) -> None:

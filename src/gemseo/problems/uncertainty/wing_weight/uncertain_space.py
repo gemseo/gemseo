@@ -23,6 +23,9 @@ from gemseo.problems.uncertainty.utils import UniformDistribution
 class WingWeightUncertainSpace(ParameterSpace):
     """The uncertain space of the wing weight problem."""
 
+    UniformDistribution = UniformDistribution
+    """The name of the class implementing the uniform distribution."""
+
     def __init__(
         self,
         uniform_distribution_name: UniformDistribution = UniformDistribution.SCIPY,
