@@ -468,30 +468,52 @@ def test_lagrange_multipliers_outputs() -> None:
     assert allclose(lagr_grad, zeros_like(lagr_grad))
 
 
-@pytest.mark.parametrize("export_name", ["", "local_database"])
-def test_keep_opt_history(tmp_wd, scenario, export_name) -> None:
-    """Test the option that keeps the local history of sub optimizations, with and
-    without the export option."""
+@pytest.mark.parametrize("keep_opt_history", [True, False])
+def test_keep_opt_history(tmp_wd, scenario, keep_opt_history) -> None:
+    """Test the option that keeps the local history of sub optimizations."""
     adapter = MDOScenarioAdapter(
         scenario,
         ["x_shared"],
         ["y_4"],
-        keep_opt_history=True,
-        opt_history_file_prefix=export_name,
+        keep_opt_history=keep_opt_history,
     )
     adapter.execute()
     adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
 
-    assert len(adapter.databases) == 2
+    assert len(adapter.databases) == (2 if keep_opt_history else 0)
 
     for database in adapter.databases:
         assert isinstance(database, Database)
         assert len(database) > 2
 
-    if export_name:
-        path = Path(export_name)
-        assert (path.parent / f"{path.name}_1.h5").exists()
-        assert (path.parent / f"{path.name}_2.h5").exists()
+
+@pytest.mark.parametrize(
+    ("save_opt_history", "opt_history_file_prefix"),
+    [(True, "local_database"), (True, ""), (False, "local_database"), (False, "")],
+)
+def test_save_opt_history(
+    tmp_wd, scenario, save_opt_history, opt_history_file_prefix
+) -> None:
+    """Test the option that saves the local history of sub optimizations, with and
+    without the file prefix."""
+    adapter = MDOScenarioAdapter(
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        save_opt_history=save_opt_history,
+        opt_history_file_prefix=opt_history_file_prefix,
+    )
+    adapter.execute()
+    adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
+
+    path = Path(opt_history_file_prefix)
+    if opt_history_file_prefix:
+        prefix = path.name
+    else:
+        prefix = MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX
+
+    assert (path.parent / f"{prefix}_1.h5").exists() is save_opt_history
+    assert (path.parent / f"{prefix}_2.h5").exists() is save_opt_history
 
 
 @pytest.mark.parametrize("set_x0_before_opt", [True, False])
@@ -533,6 +555,7 @@ def test_parallel_adapter(tmp_wd, scenario):
         ["x_shared"],
         ["y_4"],
         keep_opt_history=True,
+        save_opt_history=True,
         opt_history_file_prefix="test",
         naming=NameGenerator.Naming.UUID,
     )

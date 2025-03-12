@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core._process_flow.execution_sequences import LoopExecSequence
+    from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.scenarios.base_scenario import BaseScenario
 
@@ -84,23 +84,27 @@ class MDOScenarioAdapter(ProcessDiscipline):
     discipline outputs.
     """
 
-    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
-
-    scenario: BaseScenario
-    """The scenario to be adapted."""
-
-    post_optimal_analysis: PostOptimalAnalysis
-    """The post-optimal analysis."""
+    databases: list[Database]
+    """The copies of the scenario databases after execution."""
 
     keep_opt_history: bool
     """Whether to keep databases copies after each execution."""
 
-    databases: list[Database]
-    """The copies of the scenario databases after execution."""
+    post_optimal_analysis: PostOptimalAnalysis
+    """The post-optimal analysis."""
 
-    LOWER_BND_SUFFIX = "_lower_bnd"
-    UPPER_BND_SUFFIX = "_upper_bnd"
-    MULTIPLIER_SUFFIX = "_multiplier"
+    save_opt_history: bool
+    """Whether to save the optimization history after each execution."""
+
+    scenario: BaseScenario
+    """The scenario to be adapted."""
+
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
+    LOWER_BND_SUFFIX: ClassVar[str] = "_lower_bnd"
+    UPPER_BND_SUFFIX: ClassVar[str] = "_upper_bnd"
+    MULTIPLIER_SUFFIX: ClassVar[str] = "_multiplier"
+    DEFAULT_DATABASE_FILE_PREFIX: ClassVar[str] = "database"
 
     _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
         "_MDOScenarioAdapter__name_generator"
@@ -129,6 +133,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         output_multipliers: bool = False,
         name: str = "",
         keep_opt_history: bool = False,
+        save_opt_history: bool = False,
         opt_history_file_prefix: str = "",
         scenario_log_level: int | None = None,
         naming: NameGenerator.Naming = NameGenerator.Naming.NUMBERED,
@@ -151,13 +156,17 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 If empty,
                 use the name of the scenario adapter suffixed by ``"_adapter"``.
             keep_opt_history: Whether to keep databases copies after each execution.
+                Depending on the size of the databases
+                and the number of consecutive executions,
+                this can be very memory consuming.
+            save_opt_history: Whether to save the optimization history
+                to an HDF5 file after each execution.
             opt_history_file_prefix: The base name for the databases to be exported.
                 The full names of the databases are built from
                 the provided base name suffixed by ``"_identifier.h5"``
                 where ``identifier`` is replaced by an identifier according to the
                 ``naming_method``.
-                If empty, the databases are not exported.
-                The databases can be exported only if ``keep_opt_history=True``.
+                If empty, use ``:attr:`.DEFAULT_DATABASE_FILE_PREFIX`.
             scenario_log_level: The level of the root logger
                 during the scenario execution.
                 If ``None``, do not change the level of the root logger.
@@ -180,8 +189,11 @@ class MDOScenarioAdapter(ProcessDiscipline):
         self._output_multipliers = output_multipliers
         self.__naming = naming
         self.keep_opt_history = keep_opt_history
+        self.save_opt_history = save_opt_history
         self.databases = []
-        self.__opt_history_file_prefix = opt_history_file_prefix
+        self.__opt_history_file_prefix = (
+            opt_history_file_prefix or self.DEFAULT_DATABASE_FILE_PREFIX
+        )
 
         name = name or f"{scenario.name}_adapter"
         super().__init__((), name=name)
@@ -404,20 +416,21 @@ class MDOScenarioAdapter(ProcessDiscipline):
         opt_problem = formulation.optimization_problem
         design_space = opt_problem.design_space
 
-        if self.keep_opt_history and opt_problem.solution is not None:
-            self.databases.append(deepcopy(opt_problem.database))
-            if self.__opt_history_file_prefix:
-                self.databases[-1].to_hdf(
-                    f"{self.__opt_history_file_prefix}_{self.__name_generator.generate_name()}.h5"
-                )
+        database = opt_problem.database
+        if self.keep_opt_history:
+            self.databases.append(deepcopy(database))
+        if self.save_opt_history:
+            database.to_hdf(
+                f"{self.__opt_history_file_prefix}_{self.__name_generator.generate_name()}.h5"
+            )
 
         # Test if the last evaluation is the optimum
         x_opt = design_space.get_current_value()
-        last_x = opt_problem.database.get_x_vect(-1)
+        last_x = database.get_x_vect(-1)
         last_eval_not_opt = norm(x_opt - last_x) / (1.0 + norm(last_x)) > 1e-14
         if last_eval_not_opt:
             # Revaluate all functions at optimum
-            # To re execute all disciplines and get the right data
+            # To re-execute all disciplines and get the right data
             output_functions, jacobian_functions = opt_problem.get_functions(
                 no_db_no_norm=True
             )

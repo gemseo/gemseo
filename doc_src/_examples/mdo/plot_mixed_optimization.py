@@ -214,9 +214,17 @@ adapted_inner_scenario = MDOScenarioAdapter(
 #
 #    You may be interested in keeping the optimization history of the inner scenario for
 #    each of the executions launched by the outer scenario. To do this, set the argument
-#    ``keep_opt_history`` to ``True``. An ``hdf5`` file will be saved on the disk at
+#    ``keep_opt_history`` to ``True``, this option will store the databases in memory
+#    and make them accessible via the :attr:`.MDOScenarioAdapter.databases` attribute.
+#    Keep in mind that depending on the size of the database, storing it in memory may
+#    lead to a significant increase in memory usage.
+#    If you prefer to store the databases on disk instead, set the argument
+#    ``save_opt_history`` to ``True``. An ``hdf5`` file will be saved on the disk at
 #    each new execution. You may also choose a prefix for the name of these files with
-#    the argument ``opt_history_file_prefix``.
+#    the argument ``opt_history_file_prefix``. If no prefix is given, the default
+#    prefix is ``"database"``.
+#    Both ``keep_opt_history`` and ``save_opt_history`` are independent of
+#    each-other.
 
 # %%
 # Create the design space for the outer DOE scenario.

@@ -1,0 +1,13 @@
+BREAKING CHANGE:
+It is no longer necessary to set the option ``keep_opt_history`` to ``True``
+to save the optimization database to the disk after each execution of the ``MDOScenarioAdapter``.
+If you wish to save the optimization database to the disk, use the option ``save_opt_history`` instead. Concerning
+``keep_opt_history``, you may set it to ``False`` if you are not interested in accessing the databases in memory or to
+``True`` otherwise. This setting will not affect the saving of the optimization database to the disk. Storing many
+databases in memory can lead to high memory consumption.
+From now on,
+the option ``opt_history_file_prefix`` only sets the prefix of the files to be saved and no longer controls whether the
+optimization databases are saved to the disk or not. You shall set the option ``save_opt_history`` to ``True`` if you
+wish to save the optimization database to the disk.
+If it is not provided,
+the default prefix is ``MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX``.
