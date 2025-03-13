@@ -935,12 +935,15 @@ class DesignSpace:
                 as a dictionary of the form ``{variable_name: variable_value}``.
             normalize: Whether to normalize the design values in :math:`[0,1]`
                 with the bounds of the variables.
+                N.B. Normalization is possible if and only if
+                *all* the current design values are set.
 
         Returns:
             The current design value.
 
         Raises:
             ValueError: If names in ``variable_names`` are not in the design space.
+            KeyError: If one of the required design variables has no current value.
 
         Warnings:
             For performance purposes,
@@ -957,70 +960,163 @@ class DesignSpace:
             To modify the current value,
             please use :meth:`.set_current_value` or :meth:`.set_current_variable`.
         """
-        if variable_names is not None:
-            if not variable_names:
-                return {} if as_dict else array([])
+        if variable_names is not None and not variable_names:
+            return {} if as_dict else array([])
 
-            not_variable_names = set(variable_names) - self._variables.keys()
-            if not_variable_names:
+        # Whether to return the current values of all the design variables
+        return_all = (
+            variable_names is None or set(variable_names) == self._variables.keys()
+        )
+
+        if not self.__has_current_value:
+            # A design variable has no current value.
+            if return_all and as_dict and not normalize:
+                # TODO: API break: The cases `as_dict is True` (current block) and
+                # `as_dict is False` are handled differently: in the former an empty
+                # dictionary is returned (which does not make sense) while in the latter
+                # an exception is raised.
+                # For consistency, the current block should be removed.
+                # This will break the API because an exception will be raised (as in the
+                # case `as_dict is False`) instead of returning an empty dictionary.
+                # N.B. the good practice is for the user to either catch the exception
+                # or, even better, to check the ``DesignSpace.has_current_value`` flag
+                # before calling the ``DesignSpace.get_current_value``.
+                # This break is simple to handle in GEMSEO, but make sure to take care
+                # of the plugins as well.
+                return self._current_value
+
+            if return_all or normalize:
+                variables = self._variables.keys() - self.__current_value.keys()
                 msg = (
-                    "There are no such variables named: "
-                    f"{pretty_str(not_variable_names)}."
+                    "There is no current value for the design variables: "
+                    f"{pretty_str(variables, use_and=True)}."
                 )
-                raise ValueError(msg)
+                if not normalize:
+                    raise KeyError(msg)
 
-        if self.__has_current_value and not len(self.__current_value_array):
+                msg = (
+                    "The current value of a design space cannot be normalized "
+                    f"when some variables have no current value. {msg}"
+                )
+                raise KeyError(msg)
+
+        if normalize:
+            # Make sure the normalized current value is computed.
+            self.__normalize_current_value()
+
+        if (
+            variable_names is None or list(variable_names) == self.variable_names
+        ) and not as_dict:
+            # Return the current value of all the variables in the design space order.
+            return self.__format_current_value_array(
+                self.__norm_current_value_array
+                if normalize
+                else self.__get_current_value_array(),
+                complex_to_real,
+            )
+
+        if return_all and as_dict:
+            return self.__format_current_value_dict(
+                self.__norm_current_value if normalize else self.__current_value,
+                complex_to_real,
+            )
+
+        # Check that the required variables exist.
+        not_variable_names = set(variable_names) - set(self._variables)
+        if not_variable_names:
+            msg = (
+                "There are no such variables named: "
+                f"{pretty_str(not_variable_names, use_and=True)}."
+            )
+            raise ValueError(msg)
+
+        # Check that the required variables have a current value.
+        # N.B. when `normalize` is `True`, this has already been checked.
+        if not normalize:
+            missing_values = set(variable_names) - set(self.__current_value)
+            if missing_values:
+                msg = (
+                    "There is no current value for the design variables: "
+                    f"{pretty_str(missing_values, use_and=True)}."
+                )
+                raise KeyError(msg)
+
+        dict_ = self.__norm_current_value if normalize else self.__current_value
+        current_value = {name: dict_[name] for name in variable_names}
+
+        if as_dict:
+            return self.__format_current_value_dict(current_value, complex_to_real)
+
+        return self.__format_current_value_array(
+            self.convert_dict_to_array(current_value, variable_names), complex_to_real
+        )
+
+    def __get_current_value_array(self) -> ndarray:
+        """Return the current value as a NumPy array.
+
+        Returns:
+            The current value as a NumPy array.
+        """
+        if not len(self.__current_value_array):
             self.__current_value_array = self.convert_dict_to_array(
                 self.__current_value
             )
 
-        if normalize:
-            if self.__has_current_value and not len(self.__norm_current_value_array):
-                self.__norm_current_value_array = self.normalize_vect(
-                    self.__current_value_array,
-                )
-                self.__norm_current_value = self.convert_array_to_dict(
-                    self.__norm_current_value_array,
-                )
-            current_x_array = self.__norm_current_value_array
-            current_x_dict = self.__norm_current_value
-        else:
-            current_x_array = self.__current_value_array
-            current_x_dict = self.__current_value
+        return self.__current_value_array
 
-        if variable_names is None or set(variable_names) == self._variables.keys():
-            if as_dict:
-                if complex_to_real:
-                    return {k: v.real for k, v in current_x_dict.items()}
-                return current_x_dict
+    def __normalize_current_value(self) -> None:
+        """Normalize the current value."""
+        if not len(self.__norm_current_value_array):
+            self.__norm_current_value_array = self.normalize_vect(
+                self.__get_current_value_array(),
+            )
+            self.__norm_current_value = self.convert_array_to_dict(
+                self.__norm_current_value_array,
+            )
+            for name, to_normalize in self.normalize.items():
+                if (
+                    not to_normalize.any()
+                    and self.variable_types[name] is self.DesignVariableType.INTEGER
+                ):
+                    self.__norm_current_value[name] = self.__norm_current_value[
+                        name
+                    ].astype(self.__INT_DTYPE, copy=False)
 
-            if not self.__has_current_value:
-                variables = self._variables.keys() - current_x_dict.keys()
-                msg = (
-                    "There is no current value for the design variables: "
-                    f"{pretty_str(variables)}."
-                )
-                raise KeyError(msg)
+    @staticmethod
+    def __format_current_value_dict(
+        current_value: dict[str, ndarray], complex_to_real: bool
+    ) -> dict[str, ndarray]:
+        """Return a current value as a dictionary of real or complex NumPy arrays.
 
-            if variable_names is None or list(variable_names) == self.variable_names:
-                if complex_to_real:
-                    return current_x_array.real
-                return current_x_array
+        Args:
+            current_value: The current value.
+            complex_to_real: Whether to cast complex numbers to real ones.
 
-        if as_dict:
-            current_value = {name: current_x_dict[name] for name in variable_names}
-            if complex_to_real:
-                return {k: v.real for k, v in current_value.items()}
-            return current_value
-
-        current_x_array = self.convert_dict_to_array(
-            current_x_dict,
-            variable_names=variable_names,
-        )
+        Returns:
+            The current value as a dictionary of real or complex NumPy arrays.
+        """
         if complex_to_real:
-            return current_x_array.real
+            return {name: value.real for name, value in current_value.items()}
 
-        return current_x_array
+        return current_value
+
+    @staticmethod
+    def __format_current_value_array(
+        current_value: ndarray, complex_to_real: bool
+    ) -> ndarray:
+        """Return a current value as a real or complex NumPy array.
+
+        Args:
+            current_value: The current value.
+            complex_to_real: Whether to cast complex numbers to real ones.
+
+        Returns:
+            The current value as a real or complex NumPy array.
+        """
+        if complex_to_real:
+            return current_value.real
+
+        return current_value
 
     def get_indexed_variable_names(
         self, variable_names: str | Sequence[str] = ()
@@ -1144,6 +1240,11 @@ class DesignSpace:
             use_out = True
             out[...] = x_vect
 
+        norm_inds = self.__norm_inds
+        if norm_inds.size == 0:
+            # There is no variable index to normalize.
+            return out
+
         # Normalize the relevant components:
         current_x_dtype = self.__common_dtype
 
@@ -1156,11 +1257,6 @@ class DesignSpace:
                 out[...] = out.astype(current_x_dtype, copy=False)
             else:
                 out = out.astype(current_x_dtype, copy=False)
-
-        norm_inds = self.__norm_inds
-        if norm_inds.size == 0:
-            # There is no variable index to normalize.
-            return out
 
         if minus_lb:
             out[..., norm_inds] -= self.__lower_bounds_array[norm_inds]
