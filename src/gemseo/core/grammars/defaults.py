@@ -16,83 +16,12 @@
 
 from __future__ import annotations
 
-from copy import copy
-from typing import TYPE_CHECKING
-from typing import Any
+from gemseo.core.grammars.grammar_properties import GrammarProperties
 
-from gemseo.core.serializable import Serializable
-from gemseo.typing import MutableStrKeyMapping
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+# TODO: API: remove this deprecated class.
+Defaults = GrammarProperties
+"""A class for handling grammar default values.
 
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from typing_extensions import Self
-
-    from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.typing import StrKeyMapping
-
-
-# This class cannot derive from dict because dict unpickling is specific,
-# it calls __setitem__ before the attribute __grammar exists.
-class Defaults(
-    Serializable,
-    MutableStrKeyMapping,
-    metaclass=ABCGoogleDocstringInheritanceMeta,
-):
-    """A class for handling grammar default values.
-
-    A dictionary-like interface to bind grammar names to default values. The namespace
-    settings of the grammar are taken into account.
-    """
-
-    __data: MutableStrKeyMapping
-    """The internal dict-like object."""
-
-    __grammar: BaseGrammar
-    """The grammar bound to the defaults."""
-
-    def __init__(
-        self,
-        grammar: BaseGrammar,
-        data: StrKeyMapping,
-    ) -> None:
-        """
-        Args:
-            grammar: The grammar bound to the defaults.
-        """  # noqa: D205, D212, D415
-        self.__data = {}
-        self.__grammar = grammar
-        # Explicitly set the items such that they are checked.
-        if data:
-            self.update(data)
-
-    def __setitem__(self, name: str, value: Any) -> None:
-        if name not in self.__grammar:
-            msg = f"The name {name} is not in the grammar."
-            raise KeyError(msg)
-        self.__data[name] = value
-
-    def __getitem__(self, key: str) -> Any:
-        return self.__data[key]
-
-    def __delitem__(self, key: str) -> None:
-        del self.__data[key]
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self.__data)
-
-    def __len__(self) -> int:
-        return len(self.__data)
-
-    def __repr__(self) -> str:
-        return repr(self.__data)
-
-    def __copy__(self) -> Self:
-        # Bypass the checking done in update since it has already been done.
-        obj = self.__class__(self.__grammar, {})
-        obj.__data = copy(self.__data)
-        return obj
-
-    def copy(self) -> Self:  # noqa: D102
-        return self.__copy__()
+A dictionary-like interface to bind grammar names to default values. The namespace
+settings of the grammar are taken into account.
+"""

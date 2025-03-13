@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "differentiated_input_names_substitute": {
-      "description": "The names of the discipline inputs with respect to which to differentiate the discipline outputs used as objective, constraints and observables. If empty, consider the inputs of these functions. More precisely, for each function, an :class:`.MDOFunction` is built from the ``disciplines``, which depend on input variables :math:`x_1,\\ldots,x_d,x_{d+1}`, and over an input space spanned by the input variables :math:`x_1,\\ldots,x_d` and depending on both the MDO formulation and the ``design_space``. Then, the methods :meth:`.MDOFunction.evaluate` and :meth:`.MDOFunction.jac` are called at a given point of the input space and return the output value and the Jacobian matrix, i.e. the matrix concatenating the partial derivatives with respect to the inputs :math:`x_1,\\ldots,x_d` at this point of the input space. This argument can be used to compute the matrix concatenating the partial derivatives at the same point of the input space but with respect to custom inputs, e.g. :math:`x_{d-1}` and :math:`x_{d+1}`. Mathematically speaking, this matrix returned by :meth:`.MDOFunction.jac` is no longer a Jacobian.",
-      "type": "array"
+      "type": "array",
+      "description": "The names of the discipline inputs with respect to which to differentiate the discipline outputs used as objective, constraints and observables. If empty, consider the inputs of these functions. More precisely, for each function, an :class:`.MDOFunction` is built from the ``disciplines``, which depend on input variables :math:`x_1,\\ldots,x_d,x_{d+1}`, and over an input space spanned by the input variables :math:`x_1,\\ldots,x_d` and depending on both the MDO formulation and the ``design_space``. Then, the methods :meth:`.MDOFunction.evaluate` and :meth:`.MDOFunction.jac` are called at a given point of the input space and return the output value and the Jacobian matrix, i.e. the matrix concatenating the partial derivatives with respect to the inputs :math:`x_1,\\ldots,x_d` at this point of the input space. This argument can be used to compute the matrix concatenating the partial derivatives at the same point of the input space but with respect to custom inputs, e.g. :math:`x_{d-1}` and :math:`x_{d+1}`. Mathematically speaking, this matrix returned by :meth:`.MDOFunction.jac` is no longer a Jacobian."
     },
     "normalize_constraints": {
-      "description": "Whether the outputs of the coupling consistency constraints are scaled.",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether the outputs of the coupling consistency constraints are scaled."
     },
     "n_processes": {
-      "description": "The maximum simultaneous number of threads if ``use_threading`` is True, or processes otherwise, used to parallelize the execution.",
-      "type": "integer"
+      "type": "integer",
+      "description": "The maximum simultaneous number of threads if ``use_threading`` is True, or processes otherwise, used to parallelize the execution."
     },
     "use_threading": {
-      "description": "Whether to use threads instead of processes to parallelize the execution; multiprocessing will copy (serialize) all the disciplines, while threading will share all the memory. This is important to note if you want to execute the same discipline multiple times, you shall use multiprocessing.",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether to use threads instead of processes to parallelize the execution; multiprocessing will copy (serialize) all the disciplines, while threading will share all the memory. This is important to note if you want to execute the same discipline multiple times, you shall use multiprocessing."
     },
     "start_at_equilibrium": {
-      "description": "Whether an MDA is used to initialize the coupling variables.",
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether an MDA is used to initialize the coupling variables."
     },
     "mda_chain_settings_for_start_at_equilibrium": {
-      "description": "The settings for the MDA when ``start_at_equilibrium=True``. See detailed settings in :class:`.MDAChain`.",
-      "type": "object"
+      "type": "object",
+      "description": "The settings for the MDA when ``start_at_equilibrium=True``.  See detailed settings in :class:`.MDAChain`."
     }
   }
 }

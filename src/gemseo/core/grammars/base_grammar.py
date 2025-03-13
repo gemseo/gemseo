@@ -30,8 +30,8 @@ from typing import ClassVar
 from typing import Optional
 
 from gemseo.core.data_converters.factory import DataConverterFactory
-from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.grammar_properties import GrammarProperties
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
@@ -84,8 +84,11 @@ class BaseGrammar(
     """The mapping from element names with namespace prefix to element names without
     namespace prefix."""
 
-    _defaults: Defaults
+    _defaults: GrammarProperties
     """The mapping from the names to the default values, if any."""
+
+    _descriptions: GrammarProperties
+    """The mapping from the names to the descriptions."""
 
     _data_converter: BaseDataConverter[BaseGrammar]
     """The converter of data values to NumPy arrays and vice-versa."""
@@ -146,7 +149,9 @@ class BaseGrammar(
         name: str,
     ) -> None:
         self._check_name(name)
-        self._defaults.pop(name, None)
+        for properties in (self._defaults, self._descriptions):
+            properties.pop(name, None)
+
         self._required_names.discard(name)
         self._delitem(name)
 
@@ -170,7 +175,10 @@ class BaseGrammar(
         self._copy(grammar)
         grammar._required_names = RequiredNames(grammar, names=self._required_names)
         # Cast to dict to avoid the cost of deep-copying the grammar.
-        grammar._defaults = Defaults(grammar, deepcopy(dict(self._defaults)))
+        grammar._defaults = GrammarProperties(grammar, deepcopy(dict(self._defaults)))
+        grammar._descriptions = GrammarProperties(
+            grammar, deepcopy(dict(self._descriptions))
+        )
         return grammar
 
     copy = __copy__
@@ -194,9 +202,13 @@ class BaseGrammar(
             if (name in self._required_names) == required:
                 repr_.add(f"{name}:")
                 repr_.indent()
+                if (description := self._descriptions.get(name)) is not None:
+                    repr_.add(f"Description: {description}")
+
                 self._update_grammar_repr(repr_, properties)
                 if not required:
                     repr_.add(f"Default: {self._defaults.get(name, 'N/A')}")
+
                 repr_.dedent()
 
     @abstractmethod
@@ -230,13 +242,22 @@ class BaseGrammar(
         return set(self.keys()).issuperset(names)
 
     @property
-    def defaults(self) -> Defaults:
+    def defaults(self) -> GrammarProperties:
         """The mapping from the names to the default values, if any."""
         return self._defaults
 
     @defaults.setter
     def defaults(self, data: StrKeyMapping) -> None:
-        self._defaults = Defaults(self, data)
+        self._defaults = GrammarProperties(self, data)
+
+    @property
+    def descriptions(self) -> GrammarProperties:
+        """The mapping from the names to the descriptions."""
+        return self._descriptions
+
+    @descriptions.setter
+    def descriptions(self, data: StrKeyMapping) -> None:
+        self._descriptions = GrammarProperties(self, data)
 
     @property
     def required_names(self) -> RequiredNames:
@@ -250,7 +271,8 @@ class BaseGrammar(
         self._clear()
         self.to_namespaced = {}
         self.from_namespaced = {}
-        self._defaults = Defaults(self, {})
+        self._defaults = GrammarProperties(self, {})
+        self._descriptions = GrammarProperties(self, {})
         self._required_names = RequiredNames(self)
 
     @abstractmethod
@@ -276,9 +298,14 @@ class BaseGrammar(
             return
         self._update(grammar, excluded_names, merge)
         self.__update_namespaces_from_grammar(grammar)
-        self._defaults.update({
-            k: v for k, v in grammar._defaults.items() if k not in excluded_names
-        })
+        for properties, other_properties in (
+            (self._defaults, grammar._defaults),
+            (self._descriptions, grammar._descriptions),
+        ):
+            properties.update({
+                k: v for k, v in other_properties.items() if k not in excluded_names
+            })
+
         self._required_names |= (grammar.keys() - excluded_names).intersection(
             grammar._required_names.get_names_difference(excluded_names)
         )
@@ -465,6 +492,7 @@ class BaseGrammar(
             required_names=self._required_names,
         )
         grammar.defaults = self._defaults
+        grammar.descriptions = self._descriptions
         return grammar
 
     @abstractmethod
@@ -491,8 +519,10 @@ class BaseGrammar(
             KeyError: If a name is not in the grammar.
         """
         self._check_name(*names)
-        for name in self._defaults.keys() - names:
-            del self._defaults[name]
+        for properties in (self._defaults, self._descriptions):
+            for name in properties.keys() - names:
+                del properties[name]
+
         self._required_names &= set(names)
         self._restrict_to(names)
 
@@ -519,9 +549,11 @@ class BaseGrammar(
         if current_name in self._required_names:
             self._required_names.remove(current_name)
             self._required_names.add(new_name)
-        default_value = self._defaults.pop(current_name, None)
-        if default_value is not None:
-            self._defaults[new_name] = default_value
+
+        for properties in (self._defaults, self._descriptions):
+            default_value = properties.pop(current_name, None)
+            if default_value is not None:
+                properties[new_name] = default_value
 
     @abstractmethod
     def _rename_element(self, current_name: str, new_name: str) -> None:

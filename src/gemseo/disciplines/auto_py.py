@@ -41,6 +41,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.source_parsing import get_callable_argument_defaults
+from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
@@ -251,10 +252,16 @@ class AutoPyDiscipline(Discipline):
 
         defaults = get_callable_argument_defaults(self.__py_func)
 
+        try:
+            input_descriptions = get_options_doc(self.__py_func)
+        except ValueError:
+            input_descriptions = {}
+
         # Second, create the grammar according to the pre-processing above.
         if names_to_input_types and names_to_output_types:
             self.io.input_grammar.update_from_types(names_to_input_types)
             self.io.input_grammar.defaults = defaults
+            self.io.input_grammar.descriptions.update(input_descriptions)
             self.io.output_grammar.update_from_types(names_to_output_types)
             return True
 
@@ -268,11 +275,11 @@ class AutoPyDiscipline(Discipline):
             LOGGER.warning(msg, self.name)
 
         self.io.input_grammar.update_from_names(self.__input_names)
-
         for key, value in defaults.items():
             if not isinstance(value, ndarray):
                 defaults[key] = array([value])
         self.io.input_grammar.defaults = defaults
+        self.io.input_grammar.descriptions.update(input_descriptions)
 
         self.io.output_grammar.update_from_names(self.__output_names)
         return False

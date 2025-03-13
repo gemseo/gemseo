@@ -17,6 +17,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.core.grammars.defaults import Defaults
+from gemseo.core.grammars.grammar_properties import GrammarProperties
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
 exclude_names = pytest.mark.parametrize(
@@ -30,74 +31,79 @@ exclude_names = pytest.mark.parametrize(
 
 
 @pytest.fixture
-def defaults() -> Defaults:
-    """Return a Defaults object."""
-    return Defaults(
+def properties() -> GrammarProperties:
+    """Return a GrammarProperties object."""
+    return GrammarProperties(
         SimpleGrammar("g", names_to_types={"name": None, "other_name": None}), {}
     )
+
+
+def test_defaults():
+    """Verify that Defaults is GrammarProperties."""
+    assert Defaults is GrammarProperties
 
 
 def test_init() -> None:
     """Verify the initialization from an existing dictionary."""
     data = {"name": 0}
-    defaults = Defaults(
+    properties = GrammarProperties(
         SimpleGrammar("g", names_to_types={"name": None}),
         data,
     )
-    assert defaults == data
+    assert properties == data
 
 
 def test_init_error() -> None:
     """Verify the error when initializing from an existing dictionary."""
     msg = "The name bad-name is not in the grammar."
     with pytest.raises(KeyError, match=msg):
-        Defaults(SimpleGrammar("g"), {"bad-name": 0})
+        GrammarProperties(SimpleGrammar("g"), {"bad-name": 0})
 
 
-def test_len(defaults: Defaults) -> None:
+def test_len(properties: GrammarProperties) -> None:
     """Verify len."""
-    assert len(defaults) == 0
-    defaults["name"] = 0
-    assert len(defaults) == 1
+    assert len(properties) == 0
+    properties["name"] = 0
+    assert len(properties) == 1
 
 
-def test_iter(defaults: Defaults) -> None:
+def test_iter(properties: GrammarProperties) -> None:
     """Verify iter."""
-    assert list(iter(defaults)) == []
-    defaults["name"] = 0
-    assert list(iter(defaults)) == ["name"]
+    assert list(iter(properties)) == []
+    properties["name"] = 0
+    assert list(iter(properties)) == ["name"]
 
 
-def test_delitem(defaults: Defaults) -> None:
+def test_delitem(properties: GrammarProperties) -> None:
     """Verify delete."""
     # Non existing name.
     with pytest.raises(KeyError, match="dummy"):
-        del defaults["dummy"]
+        del properties["dummy"]
 
     # Existing name.
-    defaults["name"] = 0
-    del defaults["name"]
-    assert "name" not in defaults
+    properties["name"] = 0
+    del properties["name"]
+    assert "name" not in properties
 
 
-def test_getitem(defaults: Defaults) -> None:
+def test_getitem(properties: GrammarProperties) -> None:
     """Verify setitem."""
     # Non existing name.
     with pytest.raises(KeyError, match="dummy"):
-        defaults["dummy"]
+        properties["dummy"]
 
     # Existing name.
-    defaults["name"] = 0
-    assert defaults["name"] == 0
+    properties["name"] = 0
+    assert properties["name"] == 0
 
 
-def test_setitem(defaults: Defaults) -> None:
+def test_setitem(properties: GrammarProperties) -> None:
     """Verify setitem."""
     # Set without error.
-    defaults["name"] = 0
-    assert defaults["name"] == 0
+    properties["name"] = 0
+    assert properties["name"] == 0
 
     # Non existing name.
     msg = r"The name dummy is not in the grammar\."
     with pytest.raises(KeyError, match=msg):
-        defaults["dummy"] = 0
+        properties["dummy"] = 0

@@ -590,6 +590,9 @@ class DisciplineVariableProperties:
     current_name_without_namespace: str
     """The current name of the variable without namespace."""
 
+    description: str
+    """The description of the variable."""
+
     original_name: str
     """The original name of the variable."""
 
@@ -636,6 +639,7 @@ def get_discipline_variable_properties(
                 current_name=current_name,
                 current_name_without_namespace=current_name_without_namespace,
                 original_name=original_name,
+                description=grammar.descriptions.get(current_name, ""),
             )
 
     return input_names_to_properties, output_names_to_properties

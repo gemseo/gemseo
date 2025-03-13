@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from gemseo.caches.base_cache import BaseCache
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.core.grammars.defaults import Defaults
+    from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
 
@@ -439,7 +439,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         self.io.input_grammar = grammar
 
     @property
-    def default_input_data(self) -> Defaults:
+    def default_input_data(self) -> GrammarProperties:
         """The default input data."""
         return self.io.input_grammar.defaults
 
@@ -483,7 +483,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         self.io.output_grammar = grammar
 
     @property
-    def default_output_data(self) -> Defaults:
+    def default_output_data(self) -> GrammarProperties:
         """The default output data used when :attr:`.virtual_execution` is ``True``."""
         return self.io.output_grammar.defaults
 

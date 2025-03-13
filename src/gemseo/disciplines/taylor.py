@@ -72,6 +72,8 @@ class TaylorDiscipline(Discipline):
         super().__init__(name=name)
         self.io.input_grammar.update_from_names(discipline.io.input_grammar)
         self.io.output_grammar.update_from_names(discipline.io.output_grammar)
+        self.io.input_grammar.descriptions = discipline.io.input_grammar.descriptions
+        self.io.output_grammar.descriptions = discipline.io.output_grammar.descriptions
         self.io.input_grammar.defaults = (
             input_data or discipline.io.input_grammar.defaults
         )
