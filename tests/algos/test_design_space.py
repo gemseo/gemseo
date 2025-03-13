@@ -473,7 +473,9 @@ def test_active_bounds() -> None:
 
     with pytest.raises(
         KeyError,
-        match=re.escape("There is no current value for the design variables: x, y, z."),
+        match=re.escape(
+            "There is no current value for the design variables: x, y and z."
+        ),
     ):
         design_space.get_active_bounds()
 
@@ -1674,9 +1676,181 @@ def test_get_current_value_empty_names(as_dict) -> None:
 
 def test_get_current_value_bad_names() -> None:
     design_space = DesignSpace()
-    match = "There are no such variables named: bar, foo."
+    match = "There are no such variables named: bar and foo."
     with pytest.raises(ValueError, match=match):
         design_space.get_current_value(variable_names=["foo", "bar"])
+
+
+@pytest.fixture(scope="module")
+def mixed_design_space_without_value() -> DesignSpace:
+    """A mixed design space without current value."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-2.0, upper_bound=3.0)
+    design_space.add_variable("y", type_="integer", lower_bound=-2, upper_bound=3)
+    return design_space
+
+
+@pytest.mark.parametrize("variable_names", [None, ["x", "y"]])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+def test_get_current_value_missing_as_dict_not_normalized(
+    mixed_design_space_without_value, variable_names, complex_to_real
+) -> None:
+    """Check the access to a missing current value as a dictionary."""
+    assert (
+        mixed_design_space_without_value.get_current_value(
+            variable_names, complex_to_real, as_dict=True, normalize=False
+        )
+        == {}
+    )
+
+
+@pytest.mark.parametrize("variable_names", [None, ["x", "y"]])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+def test_get_current_value_missing_as_array_not_normalized(
+    mixed_design_space_without_value, variable_names, complex_to_real
+) -> None:
+    """Check the access to a missing current value as a NumPy array."""
+    with pytest.raises(
+        KeyError,
+        match=re.escape("There is no current value for the design variables: x and y."),
+    ):
+        mixed_design_space_without_value.get_current_value(
+            variable_names, complex_to_real, as_dict=False, normalize=False
+        )
+
+
+@pytest.mark.parametrize("name", ["x", "y"])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_get_current_value_missing_partial_not_normalized(
+    mixed_design_space_without_value, name, complex_to_real, as_dict
+) -> None:
+    """Check the access to a missing current value."""
+    with pytest.raises(
+        KeyError,
+        match=re.escape(f"There is no current value for the design variables: {name}."),
+    ):
+        mixed_design_space_without_value.get_current_value(
+            [name], complex_to_real, as_dict, normalize=False
+        )
+
+
+@pytest.mark.parametrize("variable_names", [None, ["x", "y"], ["x"], ["y"]])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_get_current_value_missing_normalized(
+    mixed_design_space_without_value, variable_names, complex_to_real, as_dict
+) -> None:
+    """Check the access to a missing current value."""
+    with pytest.raises(
+        KeyError,
+        match=re.escape(
+            "The current value of a design space cannot be normalized "
+            "when some variables have no current value. "
+            "There is no current value for the design variables: x and y."
+        ),
+    ):
+        mixed_design_space_without_value.get_current_value(
+            variable_names, complex_to_real, as_dict, normalize=True
+        )
+
+
+@pytest.fixture(scope="module")
+def mixed_design_space_with_partial_value() -> DesignSpace:
+    """A mixed design space with a current value."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-2.0, upper_bound=3.0, value=1.0)
+    design_space.add_variable("y", type_="integer", lower_bound=-2, upper_bound=3)
+    return design_space
+
+
+@pytest.mark.parametrize("variable_names", [None, ["x", "y"]])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+def test_get_current_value_partially_missing_as_dict_not_normalized(
+    mixed_design_space_with_partial_value, variable_names, complex_to_real
+) -> None:
+    """Check the access to a partially missing current value as a dictionary."""
+    current_value = mixed_design_space_with_partial_value.get_current_value(
+        variable_names, complex_to_real, as_dict=True, normalize=False
+    )
+    assert current_value.keys() == {"x"}
+    assert_equal(current_value["x"], [1.0])
+
+
+@pytest.mark.parametrize("variable_names", [None, ["x", "y"], ["y"]])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+def test_get_current_value_partially_missing_as_array_not_normalized(
+    mixed_design_space_with_partial_value, variable_names, complex_to_real
+) -> None:
+    """Check the access to a missing current value as a NumPy array."""
+    with pytest.raises(
+        KeyError,
+        match=re.escape("There is no current value for the design variables: y."),
+    ):
+        mixed_design_space_with_partial_value.get_current_value(
+            variable_names, complex_to_real, as_dict=False, normalize=False
+        )
+
+
+@pytest.mark.parametrize("variable_names", [None, ["x", "y"], ["x"], ["y"]])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+@pytest.mark.parametrize("as_dict", [False, True])
+def test_get_current_value_partially_missing_as_array_normalized(
+    mixed_design_space_with_partial_value, variable_names, complex_to_real, as_dict
+) -> None:
+    """Check the access to a missing current value as a NumPy array."""
+    with pytest.raises(
+        KeyError,
+        match=re.escape(
+            "The current value of a design space cannot be normalized "
+            "when some variables have no current value. "
+            "There is no current value for the design variables: y."
+        ),
+    ):
+        mixed_design_space_with_partial_value.get_current_value(
+            variable_names, complex_to_real, as_dict, normalize=True
+        )
+
+
+@pytest.fixture
+def mixed_design_space_with_value() -> DesignSpace:
+    """A design space with mixed variables."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-2.0, upper_bound=3.0, value=1.0)
+    design_space.add_variable(
+        "y", type_="integer", lower_bound=-2, upper_bound=3, value=1
+    )
+    return design_space
+
+
+@pytest.mark.parametrize(("name", "dtype"), [("x", float64), ("y", int64)])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+@pytest.mark.parametrize("normalize", [False, True])
+def test_get_current_value_as_array_dtype(
+    mixed_design_space_with_value, name, complex_to_real, dtype, normalize
+) -> None:
+    """Check the data type of the current value."""
+    assert (
+        mixed_design_space_with_value.get_current_value(
+            [name], complex_to_real, False, normalize
+        ).dtype
+        == dtype
+    )
+
+
+@pytest.mark.parametrize(("name", "dtype"), [("x", float64), ("y", int64)])
+@pytest.mark.parametrize("complex_to_real", [False, True])
+@pytest.mark.parametrize("normalize", [False, True])
+def test_get_current_value_as_dict_dtype(
+    mixed_design_space_with_value, name, complex_to_real, dtype, normalize
+) -> None:
+    """Check the data type of the current value."""
+    assert (
+        mixed_design_space_with_value.get_current_value(
+            [name], complex_to_real, True, normalize=normalize
+        )[name].dtype
+        == dtype
+    )
 
 
 @pytest.mark.parametrize(
@@ -1827,7 +2001,10 @@ def test_to_scalar_variables():
     assert new_space.get_type("y[1]") == DesignSpace.DesignVariableType.INTEGER
     assert_array_equal(new_space.get_lower_bounds(), [1, 3, 5])
     assert_array_equal(new_space.get_upper_bounds(), [2, 4, 6])
-    with pytest.raises(KeyError, match="'foo'"):
+    with pytest.raises(
+        KeyError,
+        match=re.escape("There is no current value for the design variables: foo."),
+    ):
         new_space.get_current_value(["foo"])
 
     assert_array_equal(new_space.get_current_value(["y[0]", "y[1]"]), [3, 6])
