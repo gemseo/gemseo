@@ -74,11 +74,12 @@ def model(
 
 
 def test_init_with_model(model1) -> None:
-    """Verify initializing with a file."""
+    """Verify initializing with a Pydantic model."""
     grammar = PydanticGrammar("g", model=model1)
     assert grammar
     assert grammar.keys() == {"name1", "name2"}
     assert grammar.required_names == {"name1"}
+    assert grammar.descriptions == {"name2": "Description of name2."}
 
 
 def test_getitem(model1) -> None:
@@ -234,11 +235,13 @@ def test_set_descriptions(descriptions, model2) -> None:
     grammar = PydanticGrammar("g", model=model2)
     grammar.set_descriptions(descriptions)
 
+    descriptions_ = {"name2": "Original description for name 2"}
+    descriptions_.update(descriptions)
+    assert grammar.descriptions == descriptions_
+
     for name in grammar:
-        if name in descriptions:
-            assert (
-                grammar.schema["properties"][name]["description"] == descriptions[name]
-            )
+        if (description := descriptions_.get(name)) is not None:
+            assert grammar.schema["properties"][name]["description"] == description
         else:
             assert "description" not in grammar.schema["properties"][name]
 
@@ -246,8 +249,10 @@ def test_set_descriptions(descriptions, model2) -> None:
 def test_set_descriptions_no_rebuild(model2) -> None:
     """Verify setting descriptions that does nothing."""
     grammar = PydanticGrammar("g", model=model2)
-    grammar.set_descriptions({"dummy": "description"})
-    assert "dummy" not in grammar
+    with pytest.raises(
+        KeyError, match=re.escape("The name dummy is not in the grammar.")
+    ):
+        grammar.set_descriptions({"dummy": "description"})
 
 
 @pytest.mark.parametrize(
@@ -263,6 +268,7 @@ def test_set_descriptions_no_rebuild(model2) -> None:
                         "anyOf": [{"type": "integer"}, {"type": "string"}],
                         "default": 0,
                         "title": "Name2",
+                        "description": "Original description for name 2",
                     },
                 },
                 "required": ["name1"],

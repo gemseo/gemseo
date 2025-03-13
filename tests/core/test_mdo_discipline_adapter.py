@@ -34,14 +34,14 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.core.grammars.defaults import Defaults
+    from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 INPUT_VECTOR = array([1.0, 1.0])
 
 
 def create_disciplinary_function(
-    default_input_data: Defaults = READ_ONLY_EMPTY_DICT,
+    default_input_data: GrammarProperties = READ_ONLY_EMPTY_DICT,
     names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
 ) -> DisciplineAdapter:
     """Create a disciplinary function.

@@ -85,6 +85,23 @@ RE_PATTERN_ARGS = re.compile(
     r"\**(\w+)\s*:\s*(.*?)(?:$|(?=\n\**\w+\s*:))", flags=re.DOTALL
 )
 
+RE_PATTERN_RETURN = re.compile(r"Returns:\s*(.*)", re.DOTALL)
+
+
+def get_return_description(f: Callable[[Any], Any]):
+    """Return the description of the returned object in the Returns block.
+
+    Args:
+        f: A callable.
+
+    Returns:
+        The description.
+    """
+    try:
+        return RE_PATTERN_RETURN.findall(f.__doc__)[0].strip()
+    except TypeError:
+        return ""
+
 
 def parse_google(docstring: str, n_arguments: int = 0) -> dict[str, str]:
     """Parse a Google docstring.

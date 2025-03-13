@@ -296,12 +296,15 @@ def test_get_discipline_variable_properties():
     """Check get_discipline_variable_properties."""
     discipline = AnalyticDiscipline({"foo": "foo"})
     grammars = [discipline.io.input_grammar, discipline.io.output_grammar]
+    description = "The description of foo."
     for index, grammar in enumerate(grammars):
+        grammar.descriptions["foo"] = description
         names_to_properties = get_discipline_variable_properties(discipline)[index]
         assert names_to_properties["foo"] == DisciplineVariableProperties(
             current_name="foo",
             original_name="foo",
             current_name_without_namespace="foo",
+            description=description,
         )
         grammar.rename_element("foo", "bar")
         discipline.io.data_processor = NameMapping({"bar": "foo"})
@@ -310,6 +313,7 @@ def test_get_discipline_variable_properties():
             current_name="bar",
             original_name="foo",
             current_name_without_namespace="bar",
+            description=description,
         )
         grammar.rename_element("bar", "baz")
         discipline.io.data_processor = NameMapping({"baz": "foo"})
@@ -318,6 +322,7 @@ def test_get_discipline_variable_properties():
             current_name="baz",
             original_name="foo",
             current_name_without_namespace="baz",
+            description=description,
         )
         grammar.add_namespace("baz", "ns")
         names_to_properties = get_discipline_variable_properties(discipline)[index]
@@ -325,4 +330,13 @@ def test_get_discipline_variable_properties():
             current_name="ns:baz",
             original_name="foo",
             current_name_without_namespace="baz",
+            description=description,
+        )
+        del grammar.descriptions["ns:baz"]
+        names_to_properties = get_discipline_variable_properties(discipline)[index]
+        assert names_to_properties["ns:baz"] == DisciplineVariableProperties(
+            current_name="ns:baz",
+            original_name="foo",
+            current_name_without_namespace="baz",
+            description="",
         )

@@ -29,6 +29,7 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import StrKeyMapping
 
 
@@ -71,8 +72,18 @@ class FilteringDiscipline(Discipline):
 
         self.io.input_grammar.update_from_names(input_names)
         self.io.output_grammar.update_from_names(output_names)
-        self.io.input_grammar.defaults = self.__filter_inputs(
-            self.discipline.io.input_grammar.defaults
+        self.io.input_grammar.descriptions.update(
+            self.__filter(
+                discipline.io.input_grammar.descriptions, self.io.input_grammar
+            )
+        )
+        self.io.output_grammar.descriptions.update(
+            self.__filter(
+                discipline.io.output_grammar.descriptions, self.io.output_grammar
+            )
+        )
+        self.io.input_grammar.defaults = self.__filter(
+            discipline.io.input_grammar.defaults, self.io.input_grammar
         )
         removed_inputs = set(original_input_names) - set(input_names)
         diff_inputs = set(self.discipline._differentiated_input_names) - removed_inputs
@@ -84,7 +95,9 @@ class FilteringDiscipline(Discipline):
         self.add_differentiated_outputs(list(diff_outputs))
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        return self.__filter_outputs(self.discipline.execute(self.io.get_input_data()))
+        return self.__filter(
+            self.discipline.execute(self.io.get_input_data()), self.io.output_grammar
+        )
 
     def _compute_jacobian(
         self,
@@ -98,24 +111,14 @@ class FilteringDiscipline(Discipline):
             for input_name in self.io.input_grammar:
                 self.jac[output_name][input_name] = jac[output_name][input_name]
 
-    def __filter_inputs(self, data: StrKeyMapping) -> dict[str, Any]:
-        """Filter a mapping by input names.
+    def __filter(self, data: StrKeyMapping, grammar: BaseGrammar) -> dict[str, Any]:
+        """Filter data by variable names.
 
         Args:
             data: The original mapping.
+            grammar: The grammar.
 
         Returns:
-            The mapping filtered by input names.
+            The mapping filtered by variable names.
         """
-        return {name: data[name] for name in self.io.input_grammar}
-
-    def __filter_outputs(self, data) -> dict[str, Any]:
-        """Filter a mapping by output names.
-
-        Args:
-            data: The original mapping.
-
-        Returns:
-            The mapping filtered by output names.
-        """
-        return {name: data[name] for name in self.io.output_grammar}
+        return {k: v for k, v in data.items() if k in grammar}

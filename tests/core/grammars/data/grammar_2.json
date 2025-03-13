@@ -10,7 +10,8 @@
       "type": "array",
       "items": {
         "type": "number"
-      }
+      },
+      "description": "The description of name2."
     }
   },
   "required": [

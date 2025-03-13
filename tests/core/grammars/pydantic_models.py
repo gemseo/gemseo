@@ -33,7 +33,9 @@ def get_model1() -> ModelType:
 
     class Model(BaseModel):
         name1: int
-        name2: NDArrayPydantic[int] = Field(default_factory=lambda: array([0]))
+        name2: NDArrayPydantic[int] = Field(
+            default_factory=lambda: array([0]), description="Description of name2."
+        )
 
     return Model
 
@@ -43,7 +45,9 @@ def get_model2() -> ModelType:
 
     class Model(BaseModel):
         name1: int
-        name2: int | str = 0
+        name2: int | str = Field(
+            default=0, description="""Original description for name 2"""
+        )
 
     return Model
 

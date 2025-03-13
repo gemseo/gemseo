@@ -27,6 +27,7 @@ from pydantic.fields import FieldInfo
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarFactory
+from gemseo.core.grammars.grammar_properties import GrammarProperties
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
@@ -88,6 +89,7 @@ def test_init(grammar):
     assert grammar.name == "g"
     assert not grammar
     assert not grammar.defaults
+    assert not grammar.descriptions
     assert not grammar.required_names
 
 
@@ -102,10 +104,12 @@ def test_delitem(grammar) -> None:
     """Verify __delitem__."""
     grammar.update_from_names(["name"])
     grammar.defaults["name"] = 0
+    grammar.descriptions["name"] = "A description."
     del grammar["name"]
     assert "name" not in grammar
     assert "name" not in grammar.required_names
     assert "name" not in grammar.defaults
+    assert "name" not in grammar.descriptions
 
 
 def test_getitem_error(grammar):
@@ -176,10 +180,12 @@ def test_clear(grammar, names_to_types) -> None:
     """Verify clear."""
     grammar.update_from_types(names_to_types)
     grammar.defaults.update(create_defaults(names_to_types))
+    grammar.descriptions.update(dict.fromkeys(names_to_types, "A description."))
     grammar.clear()
     assert not grammar
     assert not grammar.required_names
     assert not grammar.defaults
+    assert not grammar.descriptions
 
 
 NAMES = [
@@ -197,6 +203,7 @@ def test_restrict_to(grammar, names, required_names) -> None:
     grammar.update_from_names(names_to_types)
     defaults = create_defaults(names_to_types)
     grammar.defaults.update(defaults)
+    grammar.descriptions.update(dict.fromkeys(names_to_types, "A description"))
     g_required_names_before = set(grammar.required_names)
 
     grammar.restrict_to(names)
@@ -206,7 +213,10 @@ def test_restrict_to(grammar, names, required_names) -> None:
 
     for name in names:
         assert grammar.defaults[name] == defaults[name]
+        assert grammar.descriptions[name] == "A description"
+
     assert len(grammar.defaults) == len(names)
+    assert len(grammar.descriptions) == len(names)
 
 
 def test_restrict_to_error(grammar) -> None:
@@ -224,6 +234,7 @@ def test_convert_to_simple_grammar(grammar) -> None:
     assert set(grammar) == set(simple_grammar)
     assert grammar.required_names == simple_grammar.required_names
     assert grammar.defaults == simple_grammar.defaults
+    assert grammar.descriptions == simple_grammar.descriptions
     assert isinstance(simple_grammar, SimpleGrammar)
     assert simple_grammar.items() == names_to_types.items()
 
@@ -239,6 +250,7 @@ def test_rename(grammar) -> None:
     """Verify rename."""
     grammar.update_from_names(["name"])
     grammar.defaults["name"] = 0
+    grammar.descriptions["name"] = "A description."
 
     grammar.rename_element("name", "new_name")
 
@@ -246,6 +258,7 @@ def test_rename(grammar) -> None:
     assert list(grammar) == ["new_name"]
     assert grammar.defaults.keys() == {"new_name"}
     assert grammar.defaults["new_name"] == 0
+    assert grammar.descriptions["new_name"] == "A description."
 
     # Cover the case when renaming an element that is not required.
     grammar.required_names.remove("new_name")
@@ -262,10 +275,12 @@ def test_copy(grammar) -> None:
     """Verify copy."""
     grammar.update_from_names(["name1", "name2"])
     grammar.defaults["name1"] = 0
+    grammar.descriptions["name1"] = "A description."
     grammar.add_namespace("name2", "ns")
     grammar_copy = grammar.copy()
     assert grammar_copy.keys() == grammar.keys()
     assert grammar_copy.defaults == grammar.defaults
+    assert grammar_copy.descriptions == grammar.descriptions
     assert grammar_copy.required_names == grammar.required_names
     assert grammar_copy.from_namespaced == grammar.from_namespaced
     assert grammar_copy.to_namespaced == grammar.to_namespaced
@@ -278,6 +293,7 @@ def test_copy(grammar) -> None:
     grammar_copy.clear()
     assert grammar.keys()
     assert grammar.defaults
+    assert grammar.descriptions
     assert grammar.required_names
     assert grammar.from_namespaced
     assert grammar.to_namespaced
@@ -294,6 +310,7 @@ def test_repr(grammar) -> None:
     grammar.update_from_types(names_to_types)
     grammar.required_names.remove("name2")
     grammar.defaults["name2"] = "foo"
+    grammar.descriptions["name2"] = "A description."
 
     is_json_grammar = grammar.__class__ is JSONGrammar
     if is_json_grammar:
@@ -316,6 +333,7 @@ Grammar name: g
          Type: {type_repr["name1"]}
    Optional elements:
       name2:
+         Description: A description.
          Type: {type_repr["name2"]}
          Default: foo
 """.strip()
@@ -343,6 +361,7 @@ Grammar name: g
         "<ul>"
         "<li>name2:"
         "<ul>"
+        "<li>Description: A description.</li>"
         f"<li>Type: {type_repr['name2']}</li>"
         "<li>Default: foo</li>"
         "</ul>"
@@ -671,3 +690,21 @@ def test_has_names(grammar):
     assert not grammar.has_names(("dummy", "name"))
     assert grammar.has_names(("name",))
     assert grammar.has_names(())
+
+
+def test_defaults_setter(grammar):
+    """Check the defaults' setter."""
+    grammar.update_from_types({"x": float})
+    grammar.defaults = {"x": 1.0}
+
+    assert isinstance(grammar.defaults, GrammarProperties)
+    assert grammar.defaults == {"x": 1.0}
+
+
+def test_descriptions_setter(grammar):
+    """Check the descriptions' setter."""
+    grammar.update_from_types({"x": float})
+    grammar.descriptions = {"x": "foo"}
+
+    assert isinstance(grammar.descriptions, GrammarProperties)
+    assert grammar.descriptions == {"x": "foo"}

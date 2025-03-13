@@ -9,10 +9,12 @@
     "name2": {
       "anyOf": [
         {
-          "type": "string"
+          "type": "string",
+          "description": "The description of name2."
         },
         {
-          "type": "integer"
+          "type": "integer",
+          "description": "The description of name2."
         }
       ]
     }

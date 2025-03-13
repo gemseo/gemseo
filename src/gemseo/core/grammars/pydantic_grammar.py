@@ -57,6 +57,7 @@ class PydanticGrammar(BaseGrammar):
 
     The Pydantic model passed to the grammar is used to initialize the grammar defaults.
     Currently, changing the defaults will not update the model.
+    Changing the descriptions will update the model when accessing :attr:`.schema`.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
@@ -101,6 +102,9 @@ class PydanticGrammar(BaseGrammar):
             self.__model = model
         # Set the defaults and required names.
         for name, field in self.__model.__pydantic_fields__.items():
+            if description := field.description:
+                self._descriptions[name] = description
+
             if field.is_required():
                 self._required_names.add(name)
             else:
@@ -263,31 +267,29 @@ class PydanticGrammar(BaseGrammar):
 
         return names_to_types
 
+    # TODO: API: turn into a getter since it is costly.
     @property
     def schema(self) -> dict[str, Schema]:
         """The dictionary representation of the schema."""
+        # The rebuild cannot be postponed for descriptions because these seem to be
+        # stored in the schema.
+        descriptions = self.descriptions
+        for name, field in self.__model.__pydantic_fields__.items():
+            if description := descriptions.get(name):
+                field.description = description
+                self.__model_needs_rebuild = True
+
+        self.__rebuild_model()
         return self.__model.model_json_schema()
 
-    # TODO: keep for backward compatibility but remove at some point since
-    # the descriptions are set in the model.
+    # TODO: API: remove this deprecated method.
     def set_descriptions(self, descriptions: Mapping[str, str]) -> None:
         """Set the properties descriptions.
 
         Args:
             descriptions: The mapping from names to the description.
         """
-        if not descriptions:
-            return
-
-        # The rebuild cannot be postponed for descriptions because these seem to be
-        # stored in the schema.
-        for name, field in self.__model.__pydantic_fields__.items():
-            description = descriptions.get(name)
-            if description:
-                field.description = description
-                self.__model_needs_rebuild = True
-
-        self.__rebuild_model()
+        self._descriptions.update(descriptions)
 
     def _check_name(self, *names: str) -> None:
         if not names:

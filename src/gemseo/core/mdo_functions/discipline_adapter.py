@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.grammars.defaults import Defaults
+    from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.typing import JacobianData
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
@@ -63,7 +63,7 @@ class DisciplineAdapter(MDOFunction):
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_input_data: Defaults,
+        default_input_data: GrammarProperties,
         discipline: Discipline,
         names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
         differentiated_input_names_substitute: Sequence[str] = (),
@@ -123,7 +123,7 @@ class DisciplineAdapter(MDOFunction):
 
     def __compute_input_dimension(
         self,
-        default_input_data: Defaults,
+        default_input_data: GrammarProperties,
     ) -> int | None:
         """Compute the input dimension.
 

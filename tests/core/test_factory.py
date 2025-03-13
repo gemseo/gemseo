@@ -120,8 +120,8 @@ def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
     grammar = factory.get_options_grammar(formulation_name, write_schema=True)
     file_name = f"{grammar.name}.json"
     assert (
-        Path(DATA / file_name).read_text().split()
-        == Path(file_name).read_text().split()
+        Path(file_name).read_text().split()
+        == Path(DATA / file_name).read_text().split()
     )
 
     grammar.validate(opt_vals)

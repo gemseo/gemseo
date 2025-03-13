@@ -100,6 +100,20 @@ def df5(y=2.0):
     return array([[-0.01], [-0.02]])
 
 
+def f_docstring(foo, bar):
+    """A function with docstrings.
+
+    Args:
+        foo: The docstring of foo.
+        bar: The docstring of bar.
+
+    Returns:
+        The description of the output.
+    """
+    baz = foo + bar
+    return baz  # noqa: RET504
+
+
 def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
@@ -513,3 +527,18 @@ def test_f_returning_expression():
     )
     with pytest.raises(ValueError, match=re.escape(msg)):
         AutoPyDiscipline(f_returning_expression)
+
+
+def test_no_descriptions():
+    """Check that no grammar descriptions when the arguments have not docstrings."""
+    discipline = AutoPyDiscipline(f1)
+    assert not discipline.io.input_grammar.descriptions
+
+
+def test_descriptions():
+    """Check the grammar descriptions when the arguments have docstrings."""
+    discipline = AutoPyDiscipline(f_docstring)
+    assert discipline.io.input_grammar.descriptions == {
+        "foo": "The docstring of foo.",
+        "bar": "The docstring of bar.",
+    }

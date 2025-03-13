@@ -25,6 +25,7 @@ import pytest
 
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
+from gemseo.utils.source_parsing import get_return_description
 from gemseo.utils.source_parsing import parse_google
 
 
@@ -120,3 +121,14 @@ def test_no_docstring():
         match=r"Empty doc for <function test_no_docstring.<locals>.foo at .*\.",
     ):
         get_options_doc(foo)
+
+
+def test_return_docstring():
+    """Get the docstring of the return object."""
+    docstring = get_return_description(function_with_google_docstring)
+    assert docstring == "The sum of the elements."
+
+    def foo() -> None: ...
+
+    docstring = get_return_description(foo)
+    assert docstring == ""
