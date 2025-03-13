@@ -1,0 +1,1 @@
+The ``compare_dict_of_arrays`` function now handles ``NaNs`` via the ``nan_are_equal`` argument. By default, ``nan_are_equal=False`` that is ``NaN != NaN`` in the component-wise comparison.
