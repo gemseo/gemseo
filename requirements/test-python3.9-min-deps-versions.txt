@@ -2,7 +2,7 @@
 #    uv pip compile --extra all --extra test -o requirements/test-python3.9-min-deps-versions.txt --python-version 3.9 pyproject.toml --resolution=lowest-direct
 annotated-types==0.7.0
     # via pydantic
-attrs==25.1.0
+attrs==25.2.0
     # via pytest
 cached-property==2.0.1
     # via h5py
