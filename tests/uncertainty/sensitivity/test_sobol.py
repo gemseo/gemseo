@@ -30,6 +30,7 @@ from numpy import array
 from numpy import isnan
 from numpy import ndarray
 from numpy import pi
+from numpy import sign
 from numpy import sin
 from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
@@ -409,9 +410,13 @@ def test_unscale_indices(sobol, use_variance, order) -> None:
             output_name: [
                 {
                     input_name: (
-                        {k: v**0.5 for k, v in sobol_index.items()}
+                        {
+                            k: sign(v) * (sign(v) * v) ** 0.5
+                            for k, v in sobol_index.items()
+                        }
                         if is_second_order
-                        else sobol_index**0.5
+                        else sign(sobol_index)
+                        * (sign(sobol_index) * sobol_index) ** 0.5
                     )
                     for input_name, sobol_index in output_value.items()
                 }

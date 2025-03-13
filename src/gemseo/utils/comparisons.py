@@ -20,14 +20,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from functools import partial
 from typing import Union
 
+from numpy import allclose
+from numpy import array_equal
 from numpy import asarray
-from numpy.linalg import norm
-from scipy.sparse.linalg import norm as spnorm
+from numpy import ndarray
 
 from gemseo.typing import SparseOrDenseRealArray
-from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import flatten_nested_dict
 
@@ -37,23 +38,28 @@ DataToCompare = Union[
 ]
 
 
+# TODO: add runtime optimization to detect,
+# until some point in gemseo process (first algo iteration?),
+# if sparse arrays are actually used and
+# then allow this function to use a specialized implementation.
 def compare_dict_of_arrays(
     dict_of_arrays: DataToCompare,
     other_dict_of_arrays: DataToCompare,
     tolerance: float = 0.0,
+    nan_are_equal: bool = False,
 ) -> bool:
-    """Check if two dictionaries of NumPy arrays and/or SciPy sparse matrices are equal.
+    """Check if two dictionaries of NumPy and/or SciPy sparse arrays are equal.
 
-    These dictionaries can be nested.
+    The dictionaries can be nested, in which case they are flattened. If the tolerance
+    is set, then arrays are considered equal if ``norm(dict_of_arrays[name] -
+    other_dict_of_arrays[name]) /(1 + norm(other_dict_of_arrays[name])) <= tolerance``.
 
     Args:
         dict_of_arrays: A dictionary of NumPy arrays and/or SciPy sparse matrices.
         other_dict_of_arrays: Another dictionary of NumPy arrays and/or SciPy sparse
             matrices.
-        tolerance: A relative tolerance. The dictionaries are considered equal if for
-            any key ``reference_name`` of ``reference_dict_of_arrays``,
-            ``norm(dict_of_arrays[name] - reference_dict_of_arrays[name])
-            /(1 + norm(reference_dict_of_arrays)) <= tolerance``.
+        tolerance: The relative tolerance. If 0.0, the array must be exactly equal.
+        nan_are_equal: Whether to compare NaN's as equal.
 
     Returns:
         Whether the dictionaries are equal.
@@ -61,52 +67,50 @@ def compare_dict_of_arrays(
     # Flatten the dictionaries if nested
     if any(isinstance(value, Mapping) for value in dict_of_arrays.values()):
         dict_of_arrays = flatten_nested_dict(dict_of_arrays)
+    if any(isinstance(value, Mapping) for value in other_dict_of_arrays.values()):
         other_dict_of_arrays = flatten_nested_dict(other_dict_of_arrays)
 
     # Check the keys
     if dict_of_arrays.keys() != other_dict_of_arrays.keys():
         return False
 
-    # Check the values
     if tolerance:
-        for key, value in dict_of_arrays.items():
-            other_value = other_dict_of_arrays[key]
-            if (
-                isinstance(other_value, array_classes)
-                and isinstance(value, array_classes)
-                and other_value.shape not in (value.shape, (1, *value.shape))
-            ):
-                return False
-
-            difference = other_value - value
-
-            if isinstance(difference, sparse_classes):
-                norm_diff = spnorm(difference)
-            else:
-                norm_diff = norm(difference)
-
-            norm_ref = (
-                spnorm(value) if isinstance(value, sparse_classes) else norm(value)
-            )
-
-            if norm_diff > tolerance * (1.0 + norm_ref):
-                return False
+        compare_arrays = partial(
+            allclose,
+            rtol=tolerance,
+            atol=tolerance,
+            equal_nan=nan_are_equal,
+        )
     else:
-        for key, value in dict_of_arrays.items():
-            other_value = other_dict_of_arrays[key]
-            if (
-                isinstance(other_value, array_classes)
-                and isinstance(value, array_classes)
-                and other_value.shape not in (value.shape, (1, *value.shape))
-            ):
-                return False
+        compare_arrays = partial(array_equal, equal_nan=nan_are_equal)
 
-            is_different = other_value != value
+    # Check the values
+    for key, array_ in dict_of_arrays.items():
+        other_array = other_dict_of_arrays[key]
 
-            if isinstance(is_different, sparse_classes):
-                is_different = is_different.data
+        if not isinstance(array_, (ndarray, sparse_classes)):
+            array_ = asarray(array_)
 
-            if asarray(is_different).any():
-                return False
+        if not isinstance(other_array, (ndarray, sparse_classes)):
+            other_array = asarray(other_array)
+
+        if array_.shape != other_array.shape:
+            return False
+
+        array_is_dense = isinstance(array_, ndarray)
+        other_array_is_dense = isinstance(other_array, ndarray)
+
+        if array_is_dense or other_array_is_dense:
+            if not array_is_dense:
+                array_ = array_.toarray()
+            if not other_array_is_dense:
+                other_array = other_array.toarray()
+        # Sparsity is kept only when both arrays are sparse
+        else:
+            array_ = array_.data.reshape(-1)
+            other_array = other_array.data.reshape(-1)
+
+        if not compare_arrays(array_, other_array):
+            return False
 
     return True
