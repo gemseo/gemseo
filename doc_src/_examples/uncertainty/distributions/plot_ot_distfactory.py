@@ -28,7 +28,9 @@ from __future__ import annotations
 from numpy.random import default_rng
 
 from gemseo import configure_logger
-from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
+from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
+    OTDistributionFitter,
+)
 
 configure_logger()
 

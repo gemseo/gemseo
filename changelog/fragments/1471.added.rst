@@ -1,0 +1,2 @@
+- ``BaseDistributionFitter`` is the base class to fit a probability distribution to data, from which the ``OTDistributionFitter`` class using the OpenTURNS library is derived.
+- ``SPDistributionFitter`` is the class to fit a probability distribution to data using the SciPy library; the fitting criteria are the following statistical significance tests: Anderson-Darling, Cramer-von Mises, Filliben and Kolmogorov-Smirnov.
