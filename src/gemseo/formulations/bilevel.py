@@ -145,7 +145,10 @@ class BiLevel(BaseMDOFormulation):
 
         self._create_scenario_adapters(
             reset_x0_before_opt=self._settings.reset_x0_before_opt,
-            keep_opt_history=True,
+            keep_opt_history=self._settings.keep_opt_history,
+            save_opt_history=self._settings.save_opt_history,
+            scenario_log_level=self._settings.sub_scenarios_log_level,
+            naming=self._settings.naming,
         )
 
         # Create the inner chain: MDA1 -> sub scenarios -> MDA2
@@ -188,9 +191,6 @@ class BiLevel(BaseMDOFormulation):
             adapter_class: The class of the adapters.
             **adapter_options: The options for the adapters' initialization.
         """
-        scenario_log_level = adapter_options.pop(
-            "scenario_log_level", self._settings.sub_scenarios_log_level
-        )
         for scenario in self.get_sub_scenarios():
             adapter_inputs = self._compute_adapter_inputs(scenario)
             adapter_outputs = self._compute_adapter_outputs(scenario, output_functions)
@@ -198,7 +198,7 @@ class BiLevel(BaseMDOFormulation):
                 scenario,
                 adapter_inputs,
                 adapter_outputs,
-                scenario_log_level=scenario_log_level,
+                opt_history_file_prefix=scenario.name,
                 **adapter_options,
             )
             self._scenario_adapters.append(adapter)

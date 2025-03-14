@@ -31,7 +31,10 @@ BiLevel BCD-based MDO on the Sobieski SSBJ test case
 
 from __future__ import annotations
 
+from copy import deepcopy
+
 from gemseo import configure_logger
+from gemseo import execute_post
 from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings
@@ -152,9 +155,26 @@ structure_sc.add_constraint("g_1", constraint_type="ineq")
 # for the BCD MDA, such as shown below.
 
 bcd_mda_settings = MDAGaussSeidel_Settings(tolerance=1e-5, max_mda_iter=10)
+
+# %%
+# Then, you may pass the BCD MDA settings directly to the formulation settings.
+
 system_settings = BiLevel_BCD_Settings(
     bcd_mda_settings=bcd_mda_settings,
 )
+
+# %%
+# .. tip::
+#
+#    When running BiLevel scenarios, it is interesting to access the optimization
+#    history of the sub-scenarios for each system iteration. By default, the setting
+#    ``keep_opt_history`` is set to ``True``. This allows you to store in memory the
+#    databases of the sub-scenarios (see the last section of this example for more
+#    details).
+#    In some cases, storing the databases in memory can take up too much space and cause
+#    performance issues. In these cases, set ``keep_opt_history=False`` and save the
+#    databases to the disk using ``save_opt_history=True``.
+
 # Just like for the sub-scenario, we define the algorithm settings for the
 # system scenario.
 
@@ -214,6 +234,15 @@ system_scenario.formulation.bcd_mda.plot_residual_history(save=False, show=True)
 # Plot the system optimization history view
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+
+# %%
+# Plot the structure optimization histories of the 2 first iterations
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+struct_databases = system_scenario.formulation.scenario_adapters[2].databases
+for database in struct_databases[:2]:
+    opt_problem = deepcopy(structure_sc.formulation.optimization_problem)
+    opt_problem.database = database
+    execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Print execution metrics on disciplines and sub-scenarios

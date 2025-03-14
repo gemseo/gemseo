@@ -37,6 +37,18 @@
     "sub_scenarios_log_level": {
       "type": "null",
       "description": "The level of the root logger during the sub-scenarios executions. If ``None``, do not change the level of the root logger."
+    },
+    "keep_opt_history": {
+      "type": "boolean",
+      "description": "Whether to keep database copies of the sub-scenario adapters after each execution. Depending on the size of the databases and the number of consecutive executions, this can be very memory consuming. If the adapter will be executed in parallel, the databases will not be saved to the main process by the sub-processes, so this setting should be set to ``False`` to avoid unnecessary memory use in the sub-processes."
+    },
+    "save_opt_history": {
+      "type": "boolean",
+      "description": "Whether to save the optimization history to an HDF5 file after each execution."
+    },
+    "naming": {
+      "type": "string",
+      "description": "The way of naming the database files. When the adapter will be executed in parallel, this method shall be set to ``UUID`` because this method is multiprocess-safe."
     }
   }
 }
