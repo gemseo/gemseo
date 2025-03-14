@@ -24,12 +24,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from numpy import allclose
 from numpy import array
 from numpy import inf
 from numpy import int32
 from numpy import ndarray
-from numpy.random import RandomState
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 from openturns import Beta
@@ -51,7 +49,6 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
 )
-from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.openturns.log_normal import (
     OTLogNormalDistribution,
@@ -234,61 +231,6 @@ def test_plot_save(
             assert args[2] == expected
         else:
             assert args[2] == Path(tmp_wd / expected)
-
-
-@pytest.fixture
-def norm_data() -> ndarray:
-    """Normal samples."""
-    return RandomState(1).normal(size=100)
-
-
-def test_otdistfitter_distribution(norm_data) -> None:
-    factory = OTDistributionFitter("x", norm_data)
-    dist = OTJointDistribution([OTNormalDistribution()] * 2)
-    with pytest.raises(TypeError):
-        factory.compute_measure(dist, "BIC")
-
-
-def test_otdistfitter_fit(norm_data) -> None:
-    factory = OTDistributionFitter("x", norm_data)
-    dist = factory.fit("Normal")
-    assert isinstance(dist, OTDistribution)
-
-
-def tst_otdistfitter_bic(norm_data) -> None:
-    factory = OTDistributionFitter("x", norm_data)
-    dist = factory.fit("Normal")
-    quality_measure = factory.compute_measure(dist, "BIC")
-    assert allclose(quality_measure, 2.59394512877)
-    factory = OTDistributionFitter("x", norm_data)
-    quality_measure = factory.compute_measure("Normal", "BIC")
-    assert allclose(quality_measure, 2.59394512877)
-
-
-def test_otdistfitter_kolmogorov(norm_data) -> None:
-    factory = OTDistributionFitter("x", norm_data)
-    dist = factory.fit("Normal")
-    acceptable, details = factory.compute_measure(dist, "Kolmogorov")
-    assert acceptable
-    assert "statistics" in details
-    assert "p-value" in details
-    assert "level" in details
-    assert details["level"] == 0.05
-    assert allclose(details["statistics"], 0.04330972976650932)
-    assert allclose(details["p-value"], 0.9879299613543082)
-
-
-def test_otdistfitter_available(norm_data) -> None:
-    factory = OTDistributionFitter("x", norm_data)
-    assert "BIC" in factory.available_criteria
-    assert "BIC" not in factory.available_significance_tests
-    assert "Normal" in factory.available_distributions
-
-
-def test_otdistfitter_select(norm_data) -> None:
-    factory = OTDistributionFitter("x", norm_data)
-    dist = factory.select(["Normal", "Exponential"], "BIC")
-    assert isinstance(dist, OTDistribution)
 
 
 def test_compute_cdf_int32():

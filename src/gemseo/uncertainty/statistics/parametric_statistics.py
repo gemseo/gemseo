@@ -102,8 +102,9 @@ from numpy import linspace
 from prettytable import PrettyTable
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
-from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
+from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
+    OTDistributionFitter,
+)
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
@@ -125,6 +126,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
+    from gemseo.uncertainty.distributions.base_distribution_fitter import MeasureType
 
 LOGGER = logging.getLogger(__name__)
 
