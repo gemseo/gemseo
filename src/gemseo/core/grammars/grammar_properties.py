@@ -20,6 +20,7 @@ from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 
+from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.core.serializable import Serializable
 from gemseo.typing import MutableStrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -68,7 +69,7 @@ class GrammarProperties(
 
     def __setitem__(self, name: str, value: Any) -> None:
         if name not in self.__grammar:
-            msg = f"The name {name} is not in the grammar."
+            msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
             raise KeyError(msg)
         self.__data[name] = value
 

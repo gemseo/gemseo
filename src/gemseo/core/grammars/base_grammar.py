@@ -35,7 +35,6 @@ from gemseo.core.grammars.grammar_properties import GrammarProperties
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import MutableNamespacesMapping
 from gemseo.core.namespaces import namespaces_separator
-from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import update_namespaces
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -68,9 +67,17 @@ class BaseGrammar(
     bound to types. A name-type pair is referred to as a grammar *element*. A grammar
     can validate a data from these elements.
 
+    The names can include any character
+    except the special character :attr:`.namespaces_separator` (default: ``":"``)
+
     Notes:
         Contrary to the standard dictionary, the :meth:``.copy`` method creates
         a deep copy.
+
+    Warnings:
+        A name can be prefixed by a namespace.
+        Never add a namespace by any other means
+        than the method :meth:`.add_namespace`.
     """
 
     name: str
@@ -228,7 +235,8 @@ class BaseGrammar(
     @property
     def names_without_namespace(self) -> Iterator[str]:
         """The names of the elements without namespace prefixes."""
-        return remove_prefix(self.keys())
+        from_namespaced_get = self.from_namespaced.get
+        return (from_namespaced_get(name, name) for name in self)
 
     def has_names(self, names: Iterable[str]) -> bool:
         """Return whether names are all element names.
@@ -589,20 +597,37 @@ class BaseGrammar(
     def add_namespace(self, name: str, namespace: str) -> None:
         """Add a namespace prefix to an existing grammar element.
 
-        The updated element name will be
-        ``namespace``+:data:`~gemseo.core.namespaces.namespace_separator`+``name``.
+        For example,
+        the grammar element named ``"foo"`` will be renamed to ``"ns:foo"
+        when using the namespace named ``"ns"``.
+        ``":"`` is the default value
+        of the special character :attr:`.namespaces_separator`.
 
         Args:
             name: The element name to rename.
             namespace: The name of the namespace.
 
         Raises:
-            ValueError: If the variable already has a namespace.
+            ValueError: If the element already has a namespace prefix.
+
+        Warnings:
+           Never add a namespace by any other means
+           than the method :meth:`.add_namespace`,
+           e.g. do not write
+           ``my_discipline.io.input_grammar.update_from_names(["ns:foo"])``,
+           but write instead:
+
+            .. code-block:: python
+
+               my_discipline.io.input_grammar.update_from_names(["foo"])
+               my_discipline.io.input_grammar.add_namespace("foo", "ns")``.
         """
         self._check_name(name)
 
         if namespaces_separator in name:
-            msg = f"The variable {name} already has a namespace."
+            original_name = self.from_namespaced[name]
+            ns = name.strip(original_name).strip(namespaces_separator)
+            msg = f"The variable {original_name!r} already has a namespace ({ns!r})."
             raise ValueError(msg)
 
         new_name = namespace + namespaces_separator + name

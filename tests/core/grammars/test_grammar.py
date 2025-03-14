@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import pickle
+import re
 from copy import deepcopy
 from itertools import chain
 from itertools import combinations
@@ -221,7 +222,7 @@ def test_restrict_to(grammar, names, required_names) -> None:
 
 def test_restrict_to_error(grammar) -> None:
     """Verify that raises the expected error."""
-    msg = "The name foo is not in the grammar."
+    msg = "The name 'foo' is not in the grammar."
     with pytest.raises(KeyError, match=msg):
         grammar.restrict_to(["foo"])
 
@@ -673,12 +674,16 @@ def test_add_namespace(grammar) -> None:
     assert "n:x" in grammar
     assert "n:x" in grammar.required_names
 
-    match = "The name dummy is not in the grammar."
-    with pytest.raises(KeyError, match=match):
+    match = "The name 'dummy' is not in the grammar."
+    with pytest.raises(KeyError, match=re.escape(match)):
         grammar.add_namespace("dummy", "n")
 
-    match = "The variable n:x already has a namespace."
-    with pytest.raises(ValueError, match=match):
+    match = "The name 'x' is not in the grammar."
+    with pytest.raises(KeyError, match=re.escape(match)):
+        grammar.add_namespace("x", "n")
+
+    match = "The variable 'x' already has a namespace ('n')."
+    with pytest.raises(ValueError, match=re.escape(match)):
         grammar.add_namespace("n:x", "")
 
 
@@ -708,3 +713,19 @@ def test_descriptions_setter(grammar):
 
     assert isinstance(grammar.descriptions, GrammarProperties)
     assert grammar.descriptions == {"x": "foo"}
+
+
+def test_name_including_colon(grammar):
+    """Check that a grammar does not confuse names inc. colons with namespaced names."""
+    g = SimpleGrammar("g")
+    # ":" is the namespaces separator
+    # and shall never be used by the end-user to define the name of an element.
+    # This special character is reserved for namespace management.
+    # The end-user must always use the method add_namespace to add namespace.
+    # This test is just to check that
+    # if the end-user does not follow these instructions,
+    # its name will not be interpreted as a namespaced name.
+    g.update_from_names(["x:y", "z"])
+    g.add_namespace("z", "x")
+    assert tuple(g.names) == ("x:y", "x:z")
+    assert tuple(g.names_without_namespace) == ("x:y", "z")

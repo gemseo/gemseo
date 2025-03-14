@@ -43,7 +43,7 @@ def test_init(grammar):
     rn = RequiredNames(grammar, names=["name"])
     assert "name" in rn
 
-    match = r"The name bad is not in the grammar\."
+    match = r"The name 'bad' is not in the grammar\."
     with pytest.raises(KeyError, match=match):
         RequiredNames(grammar, names=["bad"])
 
@@ -53,7 +53,7 @@ def test_add(grammar):
     rn = RequiredNames(grammar)
     rn.add("name")
 
-    match = r"The name bad is not in the grammar\."
+    match = r"The name 'bad' is not in the grammar\."
     with pytest.raises(KeyError, match=match):
         rn.add("bad")
 
@@ -96,7 +96,7 @@ def test_from_iterable(grammar):
     rn = RequiredNames(grammar, names=["name"])
     rn | {"name"}
 
-    match = r"The name bad is not in the grammar\."
+    match = r"The name 'bad' is not in the grammar\."
     with pytest.raises(KeyError, match=match):
         rn | {"bad"}
 

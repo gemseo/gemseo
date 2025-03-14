@@ -28,7 +28,12 @@ For instance, if a discipline A with input "x" and output "y"
 is chained with a discipline B of input "y" and output "z", adding the namespace "ns" to the output
 y of A will result in a "disconnection" between "y" as the output of A and "y" as the input of B.
 
-In terms of API this would result in the following example:
+In terms of interface,
+you must always use the method :meth:`.add_namespace_to_input` and :meth:`.add_namespace_to_output`
+to set the namespaces to the input and output variables after defining the latter.
+Never prefix a variable with a namespace by any other means.
+
+This would result in the following example:
 
 .. code::
 
