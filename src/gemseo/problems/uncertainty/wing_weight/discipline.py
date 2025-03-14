@@ -48,3 +48,18 @@ class WingWeightDiscipline(AnalyticDiscipline):
             "q": array([14.5]),
             "tc": array([0.13]),
         })
+
+        self.io.input_grammar.descriptions.update({
+            "A": "The aspect ratio (-).",
+            "Lamda": "The quarter-chord sweep angle (deg).",
+            "Nz": "The ultimate load factor (-).",
+            "Sw": "The wing area (ft²).",
+            "Wdg": "The flight design gross weight (lb).",
+            "Wfw": "The weight of fuel in the wing (lb).",
+            "Wp": "The paint weight (lb/ft²).",
+            "ell": "The taper ratio (-).",
+            "q": "The dynamic pressure at cruise (lb/ft²).",
+            "tc": "The airfoil thickness to chord ratio (-).",
+        })
+
+        self.io.output_grammar.descriptions.update({"Ww": "The wing weight (lb)."})
