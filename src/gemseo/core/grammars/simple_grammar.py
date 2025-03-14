@@ -24,6 +24,7 @@ from typing import ClassVar
 
 from numpy import ndarray
 
+from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.core.grammars.base_grammar import BaseGrammar
 
 if TYPE_CHECKING:
@@ -234,5 +235,5 @@ class SimpleGrammar(BaseGrammar):
     def _check_name(self, *names: str) -> None:
         for name in names:
             if name not in self.__names_to_types:
-                msg = f"The name {name} is not in the grammar."
+                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
                 raise KeyError(msg)

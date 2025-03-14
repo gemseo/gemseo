@@ -250,7 +250,7 @@ def test_set_descriptions_no_rebuild(model2) -> None:
     """Verify setting descriptions that does nothing."""
     grammar = PydanticGrammar("g", model=model2)
     with pytest.raises(
-        KeyError, match=re.escape("The name dummy is not in the grammar.")
+        KeyError, match=re.escape("The name 'dummy' is not in the grammar.")
     ):
         grammar.set_descriptions({"dummy": "description"})
 

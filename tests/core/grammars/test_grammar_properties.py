@@ -55,7 +55,7 @@ def test_init() -> None:
 
 def test_init_error() -> None:
     """Verify the error when initializing from an existing dictionary."""
-    msg = "The name bad-name is not in the grammar."
+    msg = "The name 'bad-name' is not in the grammar."
     with pytest.raises(KeyError, match=msg):
         GrammarProperties(SimpleGrammar("g"), {"bad-name": 0})
 
@@ -104,6 +104,6 @@ def test_setitem(properties: GrammarProperties) -> None:
     assert properties["name"] == 0
 
     # Non existing name.
-    msg = r"The name dummy is not in the grammar\."
+    msg = r"The name 'dummy' is not in the grammar\."
     with pytest.raises(KeyError, match=msg):
         properties["dummy"] = 0

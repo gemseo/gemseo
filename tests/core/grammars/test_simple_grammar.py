@@ -45,7 +45,7 @@ def test_init_errors(grammar_class) -> None:
     with pytest.raises(TypeError, match=msg):
         grammar_class("g", names_to_types={"name": 0})
 
-    msg = "foo is not in the grammar."
+    msg = "The name 'foo' is not in the grammar."
     with pytest.raises(KeyError, match=msg):
         grammar_class("g", names_to_types={"name": str}, required_names=["foo"])
 

@@ -1,0 +1,6 @@
+The documentation has been updated to inform the end-user
+not to use ``namespaces_separator`` (default: ``":"``) in discipline variable names,
+as |g| uses this special character  to separate the original names from the namespace associated with these variables.
+The end-user must never add the namespaces by hand
+but always use the dedicated methods
+such as ``Discipline.add_namespace_to_input``, ``Discipline.add_namespace_to_output`` and ``BaseGrammar.add_namespace``.

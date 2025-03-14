@@ -32,6 +32,7 @@ from pydantic.fields import FieldInfo
 from typing_extensions import Self
 from typing_extensions import get_origin
 
+from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
@@ -298,7 +299,7 @@ class PydanticGrammar(BaseGrammar):
         fields = self.__model.__pydantic_fields__
         for name in names:
             if name not in fields:
-                msg = f"The name {name} is not in the grammar."
+                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
                 raise KeyError(msg)
 
     def __rebuild_model(self) -> None:
