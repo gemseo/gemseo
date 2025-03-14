@@ -1,0 +1,5 @@
+The ``BiLevel`` formulation and its derived classes now include settings for the scenario adapters used to
+run the sub-scenarios. These settings are:
+- ``keep_opt_history``: To control whether the databases of the sub-scenarios are be kept in memory after each execution.
+- ``save_opt_history``: To control whether the databases of the sub-scenarios are saved to the disk after each execution. The database files use the ``Scenario.name`` attribute of each sub-scenario to prefix the name of the files. Use this setting if the sub-scenarios are running in parallel.
+- ``naming``: To select the id to append to the prefix of each database file when ``save_opt_history=True``. See ``NameGenerator.Naming`` for more details.

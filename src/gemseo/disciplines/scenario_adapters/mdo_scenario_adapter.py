@@ -155,10 +155,13 @@ class MDOScenarioAdapter(ProcessDiscipline):
             name: The name of the scenario adapter.
                 If empty,
                 use the name of the scenario adapter suffixed by ``"_adapter"``.
-            keep_opt_history: Whether to keep databases copies after each execution.
+            keep_opt_history: Whether to keep database copies after each execution.
                 Depending on the size of the databases
                 and the number of consecutive executions,
-                this can be very memory consuming.
+                this can be very memory consuming. If the adapter will be executed in
+                parallel, the databases will not be saved to the main process by the
+                sub-processes, so this argument should be set to ``False`` to avoid
+                unnecessary memory use in the sub-processes.
             save_opt_history: Whether to save the optimization history
                 to an HDF5 file after each execution.
             opt_history_file_prefix: The base name for the databases to be exported.
@@ -166,7 +169,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 the provided base name suffixed by ``"_identifier.h5"``
                 where ``identifier`` is replaced by an identifier according to the
                 ``naming_method``.
-                If empty, use ``:attr:`.DEFAULT_DATABASE_FILE_PREFIX`.
+                If empty, use :attr:`.DEFAULT_DATABASE_FILE_PREFIX`.
             scenario_log_level: The level of the root logger
                 during the scenario execution.
                 If ``None``, do not change the level of the root logger.

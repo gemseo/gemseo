@@ -274,6 +274,9 @@ outer_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=9))
 #    parallel and requesting the databases of the continuous optimizations on the disk,
 #    you will need to instantiate the :class:`.MDOScenarioAdapter` with the argument
 #    ``naming="UUID"``, which is multiprocessing-safe.
+#    Running in parallel also means that the option ``keep_opt_history`` will not work
+#    because we are unable to copy the databases from the sub-processes to the main
+#    process.
 
 # %%
 # Plot the objective and constraint history for the scenario.

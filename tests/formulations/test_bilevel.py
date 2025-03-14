@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import pytest
 
@@ -37,6 +38,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.discipline import get_sub_disciplines
+from gemseo.utils.name_generator import NameGenerator
 from gemseo.utils.testing.bilevel_test_helper import create_aerostructure_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_dummy_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import (
@@ -482,3 +484,46 @@ def test_bcd_mda(sobieski_bilevel_bcd_scenario):
     scenario = sobieski_bilevel_bcd_scenario()
     assert scenario.formulation.bcd_mda
     assert scenario.formulation.bcd_mda == scenario.formulation.chain.disciplines[1]
+
+
+@pytest.mark.parametrize("keep_opt_history", [True, False])
+def test_keep_opt_history(sobieski_bilevel_scenario, keep_opt_history) -> None:
+    """Test the keep_opt_history setting."""
+    scenario = sobieski_bilevel_scenario(keep_opt_history=keep_opt_history)
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    assert len(scenario.formulation.scenario_adapters[0].databases) == (
+        2 if keep_opt_history else 0
+    )
+
+
+@pytest.mark.parametrize(
+    ("save_opt_history", "naming"),
+    [
+        (True, NameGenerator.Naming.NUMBERED),
+        (True, NameGenerator.Naming.UUID),
+        (False, NameGenerator.Naming.NUMBERED),
+        (False, NameGenerator.Naming.UUID),
+    ],
+)
+def test_save_opt_history(
+    tmp_wd, sobieski_bilevel_scenario, save_opt_history, naming
+) -> None:
+    """Test the save_opt_history and naming settings."""
+    scenario = sobieski_bilevel_scenario(
+        save_opt_history=save_opt_history, naming=naming
+    )
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    # path_structure= Path("StructureScenario")
+    # path_aero = Path("AerodynamicsScenario")
+    path_propulsion = Path("PropulsionScenario")
+    if naming == NameGenerator.Naming.NUMBERED:
+        assert (
+            path_propulsion.parent / f"{path_propulsion.name}_1.h5"
+        ).exists() is save_opt_history
+        assert (
+            path_propulsion.parent / f"{path_propulsion.name}_2.h5"
+        ).exists() is save_opt_history
+    else:
+        assert (
+            len(list(tmp_wd.rglob(f"{path_propulsion.name}_*.h5"))) == 2
+        ) is save_opt_history

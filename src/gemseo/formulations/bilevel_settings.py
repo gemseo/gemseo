@@ -19,6 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.utils.name_generator import NameGenerator
 
 
 class BiLevel_Settings(MDF_Settings):  # noqa: N801
@@ -61,4 +62,28 @@ from the initial guesses, otherwise warm start them.""",
         description="""The level of the root logger
 during the sub-scenarios executions.
 If ``None``, do not change the level of the root logger.""",
+    )
+
+    keep_opt_history: bool = Field(
+        default=True,
+        description="""Whether to keep database copies of the sub-scenario adapters
+after each execution.
+Depending on the size of the databases and the number of consecutive
+executions, this can be very memory consuming. If the adapter will be executed in
+parallel, the databases will not be saved to the main process by the
+sub-processes, so this setting should be set to ``False`` to avoid
+unnecessary memory use in the sub-processes.""",
+    )
+
+    save_opt_history: bool = Field(
+        default=False,
+        description="""Whether to save the optimization history
+to an HDF5 file after each execution.""",
+    )
+
+    naming: NameGenerator.Naming = Field(
+        default=NameGenerator.Naming.NUMBERED,
+        description="""The way of naming the database files.
+When the adapter will be executed in parallel, this method shall be set
+to ``UUID`` because this method is multiprocess-safe.""",
     )

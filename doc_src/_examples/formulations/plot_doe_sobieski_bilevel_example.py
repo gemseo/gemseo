@@ -30,6 +30,7 @@ from os import name as os_name
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo import execute_post
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
@@ -116,6 +117,8 @@ system_scenario = create_scenario(
     reset_x0_before_opt=True,
     scenario_type="DOE",
     formulation_name="BiLevel",
+    save_opt_history="True",
+    naming="UUID",
 )
 
 # %%
@@ -123,6 +126,23 @@ system_scenario = create_scenario(
 #
 #    Setting ``reset_x0_before_opt=True`` is mandatory when doing a DOE
 #    in parallel. If we want reproducible results, don't reuse previous xopt.
+
+# %%
+# .. tip::
+#
+#    When running BiLevel scenarios, it is interesting to access the optimization
+#    history of the sub-scenarios for each system iteration. By default, the setting
+#    ``keep_opt_history`` is set to ``True``. This allows you to store in memory the
+#    databases of the sub-scenarios (see the last section of this example for more
+#    details).
+#    In some cases, storing the databases in memory can take up too much space and cause
+#    performance issues. In these cases, set ``keep_opt_history=False`` and save the
+#    databases to the disk using ``save_opt_history=True``. If your sub-scenarios are
+#    running in parallel, and you are saving the optimization histories to the disk, set
+#    the ``naming`` setting to ``"UUID"``, which is multiprocessing-safe.
+#    The setting ``keep_opt_history`` will not work if the sub-scenarios are running in
+#    parallel because the databases are not copied from the sub-processes to the main
+#    process. In this case you shall always save the optimization history to the disk.
 
 system_scenario.formulation.mda1.warm_start = False
 system_scenario.formulation.mda2.warm_start = False
@@ -207,3 +227,18 @@ system_scenario.post_process(post_name="ParallelCoordinates", save=False, show=T
 # Plot correlations
 # ^^^^^^^^^^^^^^^^^
 system_scenario.post_process(post_name="Correlations", save=False, show=True)
+
+# %%
+# Plot the structure optimization histories of the 2 first iterations
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The code below will not work if you ran the system scenario with ``n_processes`` > 1.
+# Indeed, parallel execution of sub-scenarios prevents us to save the databases from
+# each sub-process to the main process. If you ran the system scenario with many
+# processes, you can still save the databases to the disk with
+# ``save_opt_history=True`` and ``naming="UUID"``. Refer to the formulation settings for
+# more information.
+struct_databases = system_scenario.formulation.scenario_adapters[2].databases
+for database in struct_databases[:2]:
+    opt_problem = deepcopy(sc_str.formulation.optimization_problem)
+    opt_problem.database = database
+    execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
