@@ -1,1 +1,0 @@
-- ``Discipline.check_jacobian`` now correctly uses the ``input_data`` argument for the approximate Jacobian when provided.

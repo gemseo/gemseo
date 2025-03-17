@@ -1,6 +1,0 @@
-So far,
-the methods ``BaseScenario.to_dataset``, ``EvaluationProblem.to_dataset`` and ``Database.to_dataset``
-export the ``Database`` to a ``Dataset``.
-Now,
-they also store at the key ``"input_space"`` of the dictionary ``Dataset.misc``
-the input space (of type ``DesignSpace``) used to generate the data.

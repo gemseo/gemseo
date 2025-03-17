@@ -1,4 +1,0 @@
-- The return value of ``DesignSpace.get_current_value``
-  when accessing an integer design variable has now integer data type.
-- A self-explanatory exception is raised when trying to access the current value
-  of a design variable that has none.

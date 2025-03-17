@@ -1,1 +1,0 @@
-``TaylorDiscipline`` is now deterministic (independent of the Python hash seed).

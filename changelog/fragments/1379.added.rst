@@ -1,1 +1,0 @@
-The mNBI example on the Binh-Korn problem now illustrates the user defined refinement of the Pareto front.

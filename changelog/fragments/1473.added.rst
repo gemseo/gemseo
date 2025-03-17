@@ -1,1 +1,0 @@
-The wing weight problem has been added to benchmark and illustrate UQ algorithms; see ``gemseo.problems.uncertainty.wing_weight``.

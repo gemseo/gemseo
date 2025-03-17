@@ -1,2 +1,0 @@
-- Warnings issued from some pydantic models.
-- ``PolynomialRegressor_Settings``: the default value of ``degree`` is a positive integer.

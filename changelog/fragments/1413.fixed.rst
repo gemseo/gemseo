@@ -1,3 +1,0 @@
-The methods ``plot_boxplot``, ``plot_cdf`` and ``plot_pdf`` of ``EmpiricalStatistics`` save one figure per variable,
-instead of the figure for the last variable only.
-For ``plot_foo``, the file name for the variable called ``"bar"`` is ``"foo_bar"``.

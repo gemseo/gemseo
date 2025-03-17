@@ -1,1 +1,0 @@
-The ``DesignSpace.__eq__`` operator is now symmetrical.

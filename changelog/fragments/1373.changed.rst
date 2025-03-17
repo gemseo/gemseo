@@ -1,7 +1,0 @@
-``PCERegressor`` uses a probability space of type ``ParameterSpace`` to define the input random variables.
-Now,
-this probability space can be passed to the argument ``data`` of type ``IODataset``,
-by means of its dictionary attribute ``misc``, *e.g.* ``io_dataset.misc["input_space"] = probability_space``.
-When the ``IODataset`` is the result of sampling on the ``ParameterSpace``,
-using the ``sample_disciplines`` function or the ``DOEScenario`` with its ``to_dataset`` method for example,
-this ``ParameterSpace``  is automatically stored in ``io_dataset.misc["input_space"]``.

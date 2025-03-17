@@ -1,3 +1,0 @@
-The ``BiLevel`` formulation has been refactored in order to
-simplify the ``BiLevelBCD`` integration or any other formulation
-that may inherit from it.

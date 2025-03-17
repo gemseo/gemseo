@@ -1,1 +1,0 @@
-Updated the default protocol for the ``to_pickle`` function to ``HIGHEST_PROTOCOL``.

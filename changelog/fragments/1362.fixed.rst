@@ -1,3 +1,0 @@
-Normalizing a vector, relative to a design space of integer variables,
-using an integer NumPy array as value of the ``out`` argument of ``DesignSpace.normalize_vect``
-no longer crashes.

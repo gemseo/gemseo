@@ -1,3 +1,0 @@
-- Data processors are now compatible with namespaces and ``NameMapping``.
-- ``NameMapping`` is now compatible with the new way of implementing the ``Discipline._run`` method since |g| 6,
-  i.e. using input data passed as a dictionary and returning output data as a dictionary.

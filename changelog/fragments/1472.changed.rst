@@ -1,4 +1,0 @@
-The class ``DirectoryCreator`` now inherits from ``NameGenerator``. Its argument ``directory_naming_method`` will be
-deprecated in the next major release of GEMSEO in favor of ``naming``.
-The class ``DirectoryNamingMethod`` is now an alias for ``NameGenerator.Naming``. It will be deprecated in
-the next major release of GEMSEO in favor of ``NameGenerator.Naming``.

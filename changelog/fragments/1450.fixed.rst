@@ -1,1 +1,0 @@
-The method ``OptimizationResult.from_optimization_problem()`` properly returns an ``OptimizationResult`` object when giving an ``OptimizationProblem`` as an argument.

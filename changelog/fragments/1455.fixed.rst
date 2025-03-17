@@ -1,1 +1,0 @@
-A ``SimpleGrammar`` built from a ``JSONGrammar``, which validates float data, validates in turn float data.

@@ -1,1 +1,0 @@
-The grammars have a new dictionary-like attribute, called ``descriptions``, to set the descriptions of the elements.

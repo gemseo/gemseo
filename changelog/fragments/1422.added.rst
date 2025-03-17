@@ -1,1 +1,0 @@
-The function ``rename_discipline_variables`` can be used to rename some discipline variables.

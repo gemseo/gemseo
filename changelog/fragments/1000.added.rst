@@ -1,2 +1,0 @@
-The normalization of integer design variables can be switched on and off
-thanks to the property ``DesignSpace.normalize_integer_variables``.

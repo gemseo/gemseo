@@ -1,1 +1,0 @@
-The Gantt chart created by the ``create_gantt_chart`` function displays the time unit and the legend for the blue and red areas.

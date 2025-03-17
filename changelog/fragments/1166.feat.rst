@@ -1,1 +1,0 @@
-Jacobian can be approximated hybridly by defining certain elements of the Jacobian within the discipline and then calling the ``linearize`` method and passing one of the hybrid Approximation modes: ``HYBRID_FINITE_DIFFERENCES``, ``HYBRID_CENTERED_DIFFERENCES``, ``HYBRID_COMPLEX_STEP``

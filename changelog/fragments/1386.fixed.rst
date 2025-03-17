@@ -1,4 +1,0 @@
-- The attributes ``input_names`` and ``output_names`` of ``AutoPyDiscipline``, which were supposed to be non-modifiable, are now read-only and will be removed in the next major release.
-- The attributes ``py_func`` and ``py_jac`` of ``AutoPyDiscipline``, which were supposed to be non-modifiable, are now read-only.
-- The attribute ``sizes`` appearing in the documentation of ``AutoPyDiscipline`` has been removed as it was not used (not even initialized).
-- ``AutoPyDiscipline`` no longer logs a warning message when ``py_func`` has no type hints, neither for arguments nor return variables.
