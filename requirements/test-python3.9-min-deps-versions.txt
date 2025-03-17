@@ -8,7 +8,7 @@ cached-property==2.0.1
     # via h5py
 covdefaults==0.1.0
     # via gemseo (pyproject.toml)
-coverage==7.6.12
+coverage==7.7.0
     # via
     #   covdefaults
     #   pytest-cov
