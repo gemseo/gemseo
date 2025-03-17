@@ -57,10 +57,10 @@ all = [
   "pyDOE3 >=1.0.1,<=1.0.4",
   "scikit-learn >=1,<=1.6.1",
   "sympy >=1.5,<=1.13.3",
-  # xlwings > 0.30.4 fails test with multi-threading.
-  "xlwings >=0.27.0,<=0.30.4 ; platform_system=='Windows'",
   "pillow >=9.5.0,<=11.1.0",
   "plotly >=5.7.0,<=5.24.1",
+  # xlwings > 0.30.4 fails test with multi-threading.
+  "xlwings >=0.27.0,<=0.30.4 ; platform_system=='Windows'",
 ]
 test = [
   "covdefaults",

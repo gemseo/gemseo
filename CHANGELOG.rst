@@ -146,9 +146,9 @@ Fixed
 - ``Discipline.check_jacobian`` now correctly uses the ``input_data`` argument for the approximate Jacobian when provided.
   `#1369 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1369>`_
 - The return value of ``DesignSpace.get_current_value``
-    when accessing an integer design variable has now integer data type.
+  when accessing an integer design variable has now integer data type.
 - A self-explanatory exception is raised when trying to access the current value
-    of a design variable that has none.
+  of a design variable that has none.
   `#1370 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1370>`_
 - ``PCERegressor.learn`` works properly when its argument ``samples`` is not empty and the learning dataset includes gradient information.
   `#1374 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1374>`_
@@ -163,7 +163,7 @@ Fixed
   `#1386 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1386>`_
 - Data processors are now compatible with namespaces and ``NameMapping``.
 - ``NameMapping`` is now compatible with the new way of implementing the ``Discipline._run`` method since |g| 6,
-    i.e. using input data passed as a dictionary and returning output data as a dictionary.
+  i.e. using input data passed as a dictionary and returning output data as a dictionary.
   `#1406 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1406>`_
 - The methods ``plot_boxplot``, ``plot_cdf`` and ``plot_pdf`` of ``EmpiricalStatistics`` save one figure per variable,
   instead of the figure for the last variable only.

@@ -309,11 +309,7 @@ Initial setup
 
   * :command:`git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git`
 
-* Get access to the IRT CI:
-
-  * from your account on gitlab.com,
-  * go to **Settings > CI/CD** and expand the **Runners** section,
-  * under **Specific runners**, copy the **registration token** and send it to a maintainer.
+* Get access to the IRT CI by contacting a maintainer.
 
 Working on a new feature
 ************************
@@ -360,7 +356,7 @@ Finishing a feature
   for instance :file:`123.fixed.rst`,
   in :file:`changelog/fragments`.
 * `MR basic information
-  <https://docs.gitlab.com/ee/user/project/merge_requests/getting_started.html>`_.
+  <https://docs.gitlab.com/user/project/merge_requests/>`_.
 * How to `create a MR
   <https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html#new-merge-request-from-a-fork>`_.
 * Assign the MR to a maintainer (AntoineD by default)
@@ -492,7 +488,7 @@ Install it with:
 
 .. code-block:: console
 
-   pip install commitizen --user
+   uv tool install commitizen
 
 Run it and and let it drive you through with:
 

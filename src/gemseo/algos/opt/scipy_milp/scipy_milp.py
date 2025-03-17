@@ -24,7 +24,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Final
 
 from numpy import concatenate
 from numpy import inf
@@ -81,14 +80,13 @@ class ScipyMILP(BaseOptimizationLibrary):
     variables.
     """
 
-    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
-
     ALGORITHM_INFOS: ClassVar[dict[str, ScipyMILPAlgorithmDescription]] = {
         "Scipy_MILP": ScipyMILPAlgorithmDescription(
             algorithm_name="Branch & Cut algorithm",
             description="Mixed-integer linear programming",
             internal_algorithm_name="milp",
-            website=f"{__DOC}scipy.optimize.milp.html",
+            website="https://docs.scipy.org/doc/scipy/reference/generated/"
+            "scipy.optimize.milp.html",
             Settings=SciPyMILP_Settings,
         ),
     }

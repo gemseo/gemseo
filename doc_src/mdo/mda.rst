@@ -61,7 +61,7 @@ The available non-linear solvers available in |g| can be split in two categories
     `Newton-Raphson <https://en.wikipedia.org/wiki/Newton%27s_method>`__ method
     which uses the (possibly partial) derivatives :math:`\partial R(y) / \partial y`,
     and several derivative-free variants known as
-    `quasi-Newton <https://en.wikipedia.org/wiki/Quasi%E2%80%93Newton_method>`__ methods.
+    `quasi-Newton <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__ methods.
 
 .. note::
 
