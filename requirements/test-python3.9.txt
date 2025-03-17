@@ -48,7 +48,7 @@ importlib-resources==6.5.2
     # via matplotlib
 iniconfig==2.0.0
     # via pytest
-jinja2==3.1.5
+jinja2==3.1.6
     # via gemseo (pyproject.toml)
 joblib==1.4.2
     # via scikit-learn
@@ -104,7 +104,7 @@ plotly==5.24.1
     # via gemseo (pyproject.toml)
 pluggy==1.5.0
     # via pytest
-prettytable==3.14.0
+prettytable==3.15.1
     # via gemseo (pyproject.toml)
 psutil==7.0.0
     # via openturns
