@@ -144,17 +144,34 @@ def dataset(request) -> Dataset:
     return create_dataset(*request.param)
 
 
-def test_regression_model() -> None:
+def test_regression_model_jacobian() -> None:
     """Test that by default the computation of the Jacobian raises an error."""
     dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
     with (
         pytest.raises(
             NotImplementedError,
-            match=re.escape("Derivatives are not available for BaseRegressor."),
+            match=re.escape(
+                "The Jacobian function of BaseRegressor is not implemented."
+            ),
         ),
         concretize_classes(BaseRegressor),
     ):
         BaseRegressor(dataset).predict_jacobian(array([1.0]))
+
+
+def test_regression_model_hessian() -> None:
+    """Test that by default the computation of the Hessian raises an error."""
+    dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
+    with (
+        pytest.raises(
+            NotImplementedError,
+            match=re.escape(
+                "The Hessian function of BaseRegressor is not implemented."
+            ),
+        ),
+        concretize_classes(BaseRegressor),
+    ):
+        BaseRegressor(dataset).predict_hessian(array([1.0]))
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)

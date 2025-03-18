@@ -206,10 +206,32 @@ def test_kriging_predict_std(transformer, dataset, x1, x2):
     KrigingResult.getConditionalCovariance = original_method
 
 
-def test_kriging_predict_jacobian(kriging):
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([0.0, 0.0]), (2, 2)),
+        (array([[0.0, 0.0]]), (1, 2, 2)),
+        (array([[0.0, 0.0], [-2.0, -2.0], [2.0, 2.0]]), (3, 2, 2)),
+    ],
+)
+def test_kriging_predict_jacobian(kriging, input_data, expected_shape):
     """Check the shape of the Jacobian."""
-    jacobian = kriging.predict_jacobian(array([[0.0, 0.0], [-2.0, -2.0], [2.0, 2.0]]))
-    assert jacobian.shape == (3, 2, 2)
+    jacobian = kriging.predict_jacobian(input_data)
+    assert jacobian.shape == expected_shape
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([0.0, 0.0]), (2, 2, 2)),
+        (array([[0.0, 0.0]]), (1, 2, 2, 2)),
+        (array([[0.0, 0.0], [-2.0, -2.0], [2.0, 2.0]]), (3, 2, 2, 2)),
+    ],
+)
+def test_kriging_predict_hessian(kriging, input_data, expected_shape):
+    """Check the shape of the Hessian."""
+    hessian = kriging.predict_hessian(input_data)
+    assert hessian.shape == expected_shape
 
 
 @pytest.mark.parametrize("output_name", ["rosen", "rosen2"])

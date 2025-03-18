@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -158,6 +159,26 @@ def test_kernel(dataset) -> None:
     assert id(model.kernel) == id(model.algo.kernel)
     model.learn()
     assert id(model.kernel) == id(model.algo.kernel_)
+
+
+def test_failure_jacobian(model):
+    """Check that the Jacobian function is not available."""
+    msg = f"The Jacobian function of {model.__class__.__name__} is not implemented."
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(msg),
+    ):
+        model.predict_jacobian(array([[1.85016387, 4.00618543]]))
+
+
+def test_failure_hessian(model):
+    """Check that the Hessian function is not available."""
+    msg = f"The Hessian function of {model.__class__.__name__} is not implemented."
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(msg),
+    ):
+        model.predict_hessian(array([[1.85016387, 4.00618543]]))
 
 
 @pytest.mark.parametrize(

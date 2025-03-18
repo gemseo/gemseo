@@ -1,0 +1,1 @@
+The method ``BaseRegressor.predict_hessian`` allows to compute the Hessian of a regressor. This feature is implemented only in the case of ``OTGaussianProcessRegressor``.
