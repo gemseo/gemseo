@@ -13,6 +13,6 @@
 
 
 ODEDiscipline
-=============
+~~~~~~~~~~~~~
 
 Examples about the declaration, execution, and coupling of instances of :class:`.ODEDiscipline`.
