@@ -23,4 +23,4 @@ The data have been saved in an HDF5 file, which is passed to the high-level func
    the following dedicated page: :ref:`gen_post_algos`.
 
 Details on how to execute such a scenario can be found
-`here <../../formulations/plot_sobieski_mdf_example.html>`__.
+:ref:`here <sphx_glr_examples_formulations_plot_sobieski_mdf_example.py>`.
