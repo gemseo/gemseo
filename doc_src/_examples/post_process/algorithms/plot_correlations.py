@@ -18,7 +18,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
+r"""
 Correlations
 ============
 
@@ -31,9 +31,9 @@ quantities defined as:
 
 .. math::
 
-   R_{xy}=\frac {\\sum \\limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{ns_{x}s_{y}}
-   =\frac {\\sum \\limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{\\sqrt {\\sum
-   \\limits _{i=1}^n(x_i-{\bar{x}})^{2}\\sum \\limits _{i=1}^n(y_i-{\bar{y}})^{2}}}
+   R_{xy}=\frac {\sum \limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{ns_{x}s_{y}}
+   =\frac {\sum \limits _{i=1}^n(x_i-{\bar{x}})(y_i-{\bar{y}})}{\sqrt {\sum
+   \limits _{i=1}^n(x_i-{\bar{x}})^{2}\sum \limits _{i=1}^n(y_i-{\bar{y}})^{2}}}
 
 The :class:`.Correlations` post-processing provides scatter plots of correlated
 variables among design variables, outputs functions, and constraints.

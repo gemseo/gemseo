@@ -175,6 +175,7 @@ system_settings = BiLevel_BCD_Settings(
 #    performance issues. In these cases, set ``keep_opt_history=False`` and save the
 #    databases to the disk using ``save_opt_history=True``.
 
+# %%
 # Just like for the sub-scenario, we define the algorithm settings for the
 # system scenario.
 
