@@ -318,6 +318,10 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         gradient = self.algo.getMetaModel().gradient
         return array([array(gradient(Point(data))).T for data in input_data])
 
+    def _predict_hessian(self, input_data: NumberArray) -> NumberArray:
+        hessian = self.algo.getMetaModel().getHessian().hessian
+        return array([array(hessian(Point(data))).T for data in input_data])
+
     @RegressionDataFormatters.format_input_output(input_axis=1)
     def compute_samples(  # noqa: D102
         self, input_data: NumberArray, n_samples: int, seed: int | None = None
