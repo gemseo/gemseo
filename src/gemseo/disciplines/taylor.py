@@ -16,13 +16,13 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Mapping
 
     from numpy.typing import NDArray
@@ -31,12 +31,16 @@ if TYPE_CHECKING:
 
 
 class TaylorDiscipline(Discipline):
-    r"""The first-order polynomial of a discipline.
+    r"""The first-order Taylor polynomial of a discipline.
 
-    The first-order polynomial
+    The first-order Taylor polynomial
     of a function :math:`f`
     at an expansion point :math:`a`
     is :math:`f(a)+\sum_{i=1}^d\frac{\partial f(a)}{\partial x_i}(x_i-a_i)`.
+
+    The default output values of this discipline correspond
+    to the first term :math:`f(a)` of this polynomial
+    and can be accessed using ``taylor_discipline.io.output_grammar.defaults``.
     """
 
     __offset: Mapping[str, NDArray[float]]
@@ -46,6 +50,8 @@ class TaylorDiscipline(Discipline):
         self,
         discipline: Discipline,
         input_data: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
         name: str = "",
     ) -> None:
         """
@@ -53,15 +59,20 @@ class TaylorDiscipline(Discipline):
             discipline: The discipline to be approximated by a Taylor polynomial.
             input_data: The point of expansion.
                 If empty, use the default inputs of ``discipline``.
+            input_names: The names of the input variables of interest.
+                If empty, use all the input variables of ``discipline``.
+            output_names: The names of the output variables of interest.
+                If empty, use all the output variables of ``discipline``.
 
         Raises:
             ValueError: If neither ``input_data`` nor
             ``discipline.io.input_grammar.defaults`` is specified.
         """  # noqa: D205 D212
-        input_names = set(discipline.io.input_grammar)
-        if (input_data and (input_data.keys() < input_names)) or (
-            not input_data and discipline.io.input_grammar.defaults.keys() < input_names
-        ):
+        all_input_names = set(discipline.io.input_grammar)
+        input_names = sorted(input_names or all_input_names)
+        output_names = output_names or discipline.io.output_grammar
+        input_data = input_data or discipline.io.input_grammar.defaults
+        if input_data.keys() < all_input_names:
             msg = (
                 "All the discipline input values must be specified either in "
                 "input_data or in discipline.io.input_grammar.defaults."
@@ -70,21 +81,40 @@ class TaylorDiscipline(Discipline):
 
         discipline.linearize(compute_all_jacobians=True, input_data=input_data)
         super().__init__(name=name)
-        self.io.input_grammar.update_from_names(discipline.io.input_grammar)
-        self.io.output_grammar.update_from_names(discipline.io.output_grammar)
-        self.io.input_grammar.descriptions = discipline.io.input_grammar.descriptions
-        self.io.output_grammar.descriptions = discipline.io.output_grammar.descriptions
-        self.io.input_grammar.defaults = (
-            input_data or discipline.io.input_grammar.defaults
-        )
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
+        descriptions = discipline.io.input_grammar.descriptions
+        self.io.input_grammar.descriptions = {
+            k: descriptions[k] for k in input_names if k in descriptions
+        }
+        descriptions = discipline.io.output_grammar.descriptions
+        self.io.output_grammar.descriptions = {
+            k: descriptions[k] for k in output_names if k in descriptions
+        }
+        self.io.input_grammar.defaults = {k: input_data[k] for k in input_names}
         self.__offset = {}
-        for output_name in self.io.output_grammar:
-            defaults = self.io.input_grammar.defaults
-            self.__offset[output_name] = discipline.io.data[output_name] - sum(
-                discipline.jac[output_name][input_name] @ defaults[input_name]
-                for input_name in sorted(defaults)
+        data = discipline.io.data
+        input_defaults = self.io.input_grammar.defaults
+        output_defaults = self.io.output_grammar.defaults
+        for output_name in output_names:
+            default_output_value = data[output_name]
+            jac = discipline.jac[output_name]
+            self.__offset[output_name] = default_output_value - sum(
+                jac[input_name] @ input_defaults[input_name]
+                for input_name in input_names
             )
-        self.jac = deepcopy(discipline.jac)
+            output_defaults[output_name] = default_output_value
+
+        discipline_jac = discipline.jac
+        self.jac = {
+            output_name: {
+                input_name: __jac.copy()
+                for input_name, __jac in _jac.items()
+                if input_name in input_names
+            }
+            for output_name, _jac in discipline_jac.items()
+            if output_name in output_names
+        }
         self._has_jacobian = True
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
