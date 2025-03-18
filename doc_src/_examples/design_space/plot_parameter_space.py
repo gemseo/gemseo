@@ -73,13 +73,15 @@ parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
 # and ``parameters`` as a dictionary of SciPy parameter names and values
 # (`see the documentation of SciPy
 # <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html>`__).
-
-# parameter_space.add_random_variable(
-#     "y",
-#     "SPDistribution",
-#     interfaced_distribution="norm",
-#     parameters={"loc": 1.0, "scale": 2.0},
-# )
+#
+# .. code-block:: python
+#
+#    parameter_space.add_random_variable(
+#        "y",
+#        "SPDistribution",
+#        interfaced_distribution="norm",
+#        parameters={"loc": 1.0, "scale": 2.0},
+#    )
 
 # %%
 # A similar procedure can be followed
@@ -92,13 +94,15 @@ parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
 # (`see the documentation of OpenTURNS
 # <https://openturns.github.io/openturns/latest/user_manual/_generated/
 # openturns.Normal.html#openturns.Normal>`__).
-
-# parameter_space.add_random_variable(
-#     "y",
-#     "OTDistribution",
-#     interfaced_distribution="Normal",
-#     parameters=(1.0, 2.0),
-# )
+#
+# .. code-block:: python
+#
+#    parameter_space.add_random_variable(
+#        "y",
+#        "OTDistribution",
+#        interfaced_distribution="Normal",
+#        parameters=(1.0, 2.0),
+#    )
 
 # %%
 # Sample from the parameter space
@@ -146,6 +150,7 @@ ScatterMatrix(dataset).execute(save=False, show=True)
 # we need to filter the uncertain variables:
 parameter_space.filter(parameter_space.uncertain_variables)
 
+# %%
 # If we want to sample a discipline over the uncertain space only,
 # we need to extract it:
 uncertain_space = parameter_space.extract_uncertain_space()

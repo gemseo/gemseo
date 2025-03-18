@@ -98,10 +98,10 @@ discipline.check_jacobian(
 # a step of 0.1 (red dots). This kind of graph can be used to spot implementation
 # mistakes in fact we can already spot a large mistake in the wrong components.
 #
-
+#
 # The ``derr_approx`` argument can be either ``finite_differences``, ``centered_differences`` or
 # ``complex_step``.
-
+#
 # Centered differences
 # --------------------
 discipline.check_jacobian(
@@ -112,9 +112,9 @@ discipline.check_jacobian(
     step=1e-1,
 )
 
+# %%
 # With the same step the truncation error is in this case much smaller.
-
-
+#
 # Complex step
 # ------------
 discipline.check_jacobian(
@@ -124,10 +124,10 @@ discipline.check_jacobian(
     plot_result=True,
     step=1e-1,
 )
-
+# %%
 # With the same step the truncation error is also smaller than finite differences.
 # This confirms again that an implementation mistake was done.
-
+#
 # Advantages and drawbacks of each method
 # ---------------------------------------
 # Finite differences and complex are first-order methods, they use one

@@ -98,7 +98,7 @@ scenario = create_scenario(
     maximize_objective=True,
     scenario_type="DOE",
 )
-
+# %%
 # Visualize the XDSM
 # ^^^^^^^^^^^^^^^^^^
 # The XDSM shows well the averaging proces and the duplication of the disciplines
