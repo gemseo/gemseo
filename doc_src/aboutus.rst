@@ -148,7 +148,7 @@ with the contributions of following members:
 `Capgemini <https://www.capgemini.com/>`_,
 `Cerfacs <https://www.cerfacs.fr/en/>`_,
 `Cenaero <http://www.cenaero.be/>`_
-and `INSA Toulouse <https://www.insa-toulouse.fr/en/index.html>`_.
+and `INSA Toulouse <https://www.insa-toulouse.fr/en>`_.
 
 Open source
 ***********
