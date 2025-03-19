@@ -56,7 +56,6 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from gemseo.core.discipline.base_discipline import _CacheType
-    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -131,12 +130,6 @@ class BaseMDA(ProcessDiscipline):
     reset_history_each_run: bool
     """Whether to reset the history of MDA residuals before each run."""
 
-    _scaling: ResidualScaling
-    """The scaling method applied to MDA residuals for convergence monitoring."""
-
-    _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
-    """The data required to perform the scaling of the MDA residuals."""
-
     # TODO: API: remove
     norm0: float | None
     """The reference residual, if any."""
@@ -150,6 +143,15 @@ class BaseMDA(ProcessDiscipline):
 
     lin_cache_tol_fact: float
     """The tolerance factor to cache the Jacobian."""
+
+    _current_iter: int
+    """The iteration number."""
+
+    _scaling: ResidualScaling
+    """The scaling method applied to MDA residuals for convergence monitoring."""
+
+    _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
+    """The data required to perform the scaling of the MDA residuals."""
 
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
@@ -360,7 +362,7 @@ class BaseMDA(ProcessDiscipline):
     def _get_differentiated_io(
         self,
         compute_all_jacobians: bool = False,
-    ) -> tuple[set[str] | list[str], set[str] | list[str]]:
+    ) -> tuple[tuple[str, ...], tuple[str, ...]]:
         if compute_all_jacobians:
             strong_cpl = set(self.coupling_structure.strong_couplings)
             inputs = set(self.io.input_grammar)
@@ -504,13 +506,6 @@ class BaseMDA(ProcessDiscipline):
         ]
         return input_names, output_names
 
-    def execute(  # noqa:D102
-        self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-    ) -> DisciplineData:
-        self._current_iter = 0
-        return super().execute(input_data=input_data)
-
     def plot_residual_history(
         self,
         show: bool = False,
@@ -617,10 +612,24 @@ class BaseMDA(ProcessDiscipline):
             if input_value is not None:
                 yield input_name, input_value
 
-    @abstractmethod
-    def _execute(self) -> None:  # noqa:D103
+    def _execute(self) -> None:  # noqa: D103
+        self._current_iter = 0
+        if self._pre_solve():
+            self._solve()
+
+    def _pre_solve(self) -> bool:
+        """Prepare to solve the MDA.
+
+        Returns:
+            Whether the MDA can be solved.
+        """
         if self.settings.warm_start:
             self._prepare_warm_start()
+        return True
+
+    @abstractmethod
+    def _solve(self) -> None:
+        """Solve the MDA."""
 
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT

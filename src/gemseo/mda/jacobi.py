@@ -113,7 +113,6 @@ class MDAJacobi(BaseParallelMDASolver):
         **settings: Any,
     ) -> None:
         super().__init__(disciplines, settings_model=settings_model, **settings)
-
         self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
 
@@ -147,20 +146,18 @@ class MDAJacobi(BaseParallelMDASolver):
 
         return None
 
-    def _execute(self) -> None:
-        super()._execute()
+    def _iterate_once(self) -> bool:
+        local_data_before_execution = self.io.data.copy()
+        self._execute_disciplines_and_update_local_data()
+        self._compute_residuals(local_data_before_execution)
 
-        while True:
-            local_data_before_execution = self.io.data.copy()
-            self._execute_disciplines_and_update_local_data()
-            self._compute_residuals(local_data_before_execution)
+        if self._check_stopping_criteria():
+            return False
 
-            if self._check_stopping_criteria():
-                break
+        updated_couplings = self._sequence_transformer.compute_transformed_iterate(
+            self.get_current_resolved_variables_vector(),
+            self.get_current_resolved_residual_vector(),
+        )
 
-            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
-                self.get_current_resolved_variables_vector(),
-                self.get_current_resolved_residual_vector(),
-            )
-
-            self._update_local_data_from_array(updated_couplings)
+        self._update_local_data_from_array(updated_couplings)
+        return True
