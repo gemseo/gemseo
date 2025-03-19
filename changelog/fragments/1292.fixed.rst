@@ -1,0 +1,1 @@
+``AutoPyDiscipline`` did not support subscripted type annotations, e.g. ``RealArray`` defined as ``NDArray[floating[Any]]``, when parsing the function signature.

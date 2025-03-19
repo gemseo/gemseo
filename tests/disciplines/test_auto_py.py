@@ -40,6 +40,8 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.problems.mdo.sellar.utils import get_initial_data
+from gemseo.typing import IntegerArray  # noqa: TC001
+from gemseo.typing import RealArray  # noqa: TC001
 
 X_DIM = 4
 
@@ -327,10 +329,23 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
     return z, zz
 
 
+def f7(x: RealArray) -> RealArray:
+    z = x
+    return z  # noqa: RET504
+
+
+def f8(x: RealArray) -> tuple[RealArray, IntegerArray]:
+    z = x
+    zz = 0
+    return z, zz  # noqa: RET504
+
+
 @pytest.mark.parametrize(
     ("func", "warnings", "input_names_to_types", "output_names_to_types"),
     [
         (f6, [], {"x": int}, {"z": int}),
+        (f7, [], {"x": ndarray}, {"z": ndarray}),
+        (f8, [], {"x": ndarray}, {"z": ndarray, "zz": ndarray}),
         (f6_with_defaults, [], {"x": int}, {"z": int}),
         (
             f6_no_return,
