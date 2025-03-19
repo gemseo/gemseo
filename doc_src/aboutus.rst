@@ -99,7 +99,7 @@ and involving both academic and industrial partners.
         <div class="col my-auto text-center"><a href='https://www.cerfacs.fr/en/' target="_blank"><img src='_static/contributors/cerfacs.png'/></a></div>
         <div class="col my-auto text-center"><a href='https://expleogroup.com/' target="_blank"><img src='_static/contributors/expleo.png'/></a></div>
         <div class="col my-auto text-center"><a href='https://ica.cnrs.fr/home/' target="_blank"><img src='_static/contributors/ica.jpg' style="max-height: 50px;"/></a></div>
-        <div class="col my-auto text-center"><a href='https://www.insa-toulouse.fr/en/index.html' target="_blank"><img src='_static/contributors/insa.jpg'/></a></div>
+        <div class="col my-auto text-center"><a href='https://www.insa-toulouse.fr/en' target="_blank"><img src='_static/contributors/insa.jpg'/></a></div>
       </div>
       <div class="row" style="margin-bottom:30px;">
         <div class="col my-auto text-center"><a href='https://www.isae-supaero.fr/en/' target="_blank"><img src='_static/contributors/isae_supaero.png' style="max-height: 50px;"/></a></div>

@@ -212,7 +212,7 @@ class OpenTURNS(BaseDOELibrary):
             algorithm_name=__LHS,
             description="Latin Hypercube Sampling",
             internal_algorithm_name=__LHS,
-            website=f"{__DOC}_generated/openturns.LHS.html",
+            website=f"{__DOC}_generated/openturns.LHSExperiment.html",
             Settings=OT_LHS_Settings,
         ),
         __LHSC: OpenTURNSAlgorithmDescription(
