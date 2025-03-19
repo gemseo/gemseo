@@ -183,6 +183,23 @@ class AutoPyDiscipline(Discipline):
         """The Python function to compute the Jacobian from the inputs."""
         return self.__py_jac
 
+    @staticmethod
+    def __get_original_type(tp: type) -> type:
+        """Return the unsubscripted version of a type.
+
+        If the type is already unsubscripted,
+        return the type itself.
+
+        Args:
+            tp: A type,
+                e.g. ``str`` (unsubscripted) or ``NDArray[str]`` (subscripted).
+
+        Returns:
+            The unsubscripted version of ``tp``.
+        """
+        origin = get_origin(tp)
+        return tp if origin is None else origin
+
     def __create_grammars(self) -> bool:
         """Create the grammars.
 
@@ -213,7 +230,10 @@ class AutoPyDiscipline(Discipline):
                 )
                 raise_if_inconsistency = False
             else:
-                names_to_input_types = type_hints
+                names_to_input_types = {
+                    name: self.__get_original_type(tp)
+                    for name, tp in type_hints.items()
+                }
 
         names_to_output_types = {}
 
@@ -221,7 +241,9 @@ class AutoPyDiscipline(Discipline):
             # There could be only one return value of type tuple, or multiple return
             # values that would also be type hinted with tuple.
             if len(self.__output_names) == 1:
-                names_to_output_types = {self.__output_names[0]: return_type}
+                names_to_output_types = {
+                    self.__output_names[0]: self.__get_original_type(return_type)
+                }
             else:
                 origin = get_origin(return_type)
                 if origin is not tuple:
@@ -247,7 +269,10 @@ class AutoPyDiscipline(Discipline):
                         raise_if_inconsistency = False
                     else:
                         names_to_output_types = dict(
-                            zip(self.__output_names, type_args)
+                            zip(
+                                self.__output_names,
+                                map(self.__get_original_type, type_args),
+                            )
                         )
 
         defaults = get_callable_argument_defaults(self.__py_func)
