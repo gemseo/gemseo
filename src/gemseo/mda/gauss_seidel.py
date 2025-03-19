@@ -161,22 +161,24 @@ class MDAGaussSeidel(BaseMDASolver):
 
         self._compute_names_to_slices()
 
-    def _execute(self) -> None:
-        super()._execute()
+    def _pre_solve(self) -> bool:
+        if not super()._pre_solve():
+            return False
         self._execute_disciplines_and_update_local_data()
-        if self.settings.max_mda_iter == 0:
-            return
+        return self.settings.max_mda_iter != 0
 
-        while True:
-            local_data_before_execution = self.io.data.copy()
-            self._execute_disciplines_and_update_local_data()
-            self._compute_residuals(local_data_before_execution)
+    def _iterate_once(self) -> bool:
+        local_data_before_execution = self.io.data.copy()
+        self._execute_disciplines_and_update_local_data()
+        self._compute_residuals(local_data_before_execution)
 
-            if self._check_stopping_criteria():
-                break
+        if self._check_stopping_criteria():
+            return False
 
-            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
-                self.get_current_resolved_variables_vector(),
-                self.get_current_resolved_residual_vector(),
-            )
-            self._update_local_data_from_array(updated_couplings)
+        updated_couplings = self._sequence_transformer.compute_transformed_iterate(
+            self.get_current_resolved_variables_vector(),
+            self.get_current_resolved_residual_vector(),
+        )
+
+        self._update_local_data_from_array(updated_couplings)
+        return True

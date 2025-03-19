@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.core.discipline import Discipline
-    from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.typing import StrKeyMapping
 
 
 LOGGER = logging.getLogger(__name__)
@@ -134,10 +134,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
                 discipline.add_differentiated_inputs(inputs_to_linearize)
                 discipline.add_differentiated_outputs(outputs_to_linearize)
 
-    def __compute_newton_step(
-        self,
-        input_data: dict[str, Any] | DisciplineData,
-    ) -> NDArray:
+    def __compute_newton_step(self, input_data: StrKeyMapping) -> NDArray:
         """Compute the full Newton step without relaxation.
 
         The Newton's step is defined as :math:`-[∂R/∂Y(y)]^{-1} R(y)`, where R(y) is the
@@ -170,23 +167,21 @@ class MDANewtonRaphson(BaseParallelMDASolver):
 
         return newton_step
 
-    def _execute(self) -> None:
-        super()._execute()
+    def _iterate_once(self) -> bool:
+        local_data_before_execution = self.io.data.copy()
+        input_couplings = self.get_current_resolved_variables_vector()
 
-        while True:
-            local_data_before_execution = self.io.data.copy()
-            input_couplings = self.get_current_resolved_variables_vector()
+        self._execute_disciplines_and_update_local_data()
+        self._compute_residuals(local_data_before_execution)
 
-            self._execute_disciplines_and_update_local_data()
-            self._compute_residuals(local_data_before_execution)
+        if self._check_stopping_criteria():
+            return False
 
-            if self._check_stopping_criteria():
-                break
+        newton_step = self.__compute_newton_step(local_data_before_execution)
+        updated_couplings = self._sequence_transformer.compute_transformed_iterate(
+            input_couplings + newton_step,
+            newton_step,
+        )
 
-            newton_step = self.__compute_newton_step(local_data_before_execution)
-            updated_couplings = self._sequence_transformer.compute_transformed_iterate(
-                input_couplings + newton_step,
-                newton_step,
-            )
-
-            self._update_local_data_from_array(updated_couplings)
+        self._update_local_data_from_array(updated_couplings)
+        return True

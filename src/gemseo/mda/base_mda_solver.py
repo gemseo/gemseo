@@ -382,11 +382,22 @@ class BaseMDASolver(BaseMDA):
 
         return normed_residual
 
-    @abstractmethod
-    def _execute(self) -> None:  # noqa:D103
-        super()._execute()
+    def _pre_solve(self) -> bool:  # noqa: D103
         self._sequence_transformer.clear()
         self.__n_consecutive_unsuccessful_iterations = 0
+        return super()._pre_solve()
+
+    def _solve(self) -> None:
+        while self._iterate_once():
+            pass
+
+    @abstractmethod
+    def _iterate_once(self) -> bool:
+        """Perform one MDA iteration.
+
+        Returns:
+            Whether the iteration should be stopped.
+        """
 
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:
         """Compute the residual vector.

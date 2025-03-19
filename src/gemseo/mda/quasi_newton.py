@@ -27,6 +27,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
+from typing import Literal
 
 from numpy import array
 from numpy import ndarray
@@ -202,9 +203,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
         return self.get_current_resolved_residual_vector()
 
-    def _execute(self) -> None:
-        super()._execute()
-
+    def _iterate_once(self) -> Literal[False]:
         self._execute_disciplines_and_update_local_data()
 
         if not self.coupling_structure.strong_couplings:
@@ -214,7 +213,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             )
             LOGGER.warning(msg)
             self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
-            return self.io.data
+            return False
 
         self._current_iter = 0
 
@@ -240,4 +239,5 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             self.io.update_output_data({
                 self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual]),
             })
-        return None
+
+        return False

@@ -298,9 +298,7 @@ class MDAChain(BaseMDA):
             self.settings.initialize_defaults = False
         return super().execute(input_data=input_data)
 
-    def _execute(self) -> None:
-        super()._execute()
-
+    def _solve(self) -> None:
         self.io.data = self.mdo_chain.execute(self.io.data)
 
         res_sum = 0.0
