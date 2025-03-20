@@ -101,6 +101,7 @@ class PydanticGrammar(BaseGrammar):
         super().__init__(name)
         if model is not None:
             self.__model = model
+            self.__patch_model(self.__model)
         # Set the defaults and required names.
         for name, field in self.__model.__pydantic_fields__.items():
             if description := field.description:
@@ -143,6 +144,7 @@ class PydanticGrammar(BaseGrammar):
         # passed, we set it now.
         grammar.__model.model_config = deepcopy(model.model_config)
         grammar.__model_needs_rebuild = self.__model_needs_rebuild
+        self.__patch_model(grammar.__model)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa:D102
         fields = self.__model.__pydantic_fields__
@@ -216,6 +218,7 @@ class PydanticGrammar(BaseGrammar):
         # TODO: This is no longer needed since pydantic 2.10, remove at some point.
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
+        self.__patch_model(self.__model)
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties.annotation}")
@@ -331,3 +334,13 @@ class PydanticGrammar(BaseGrammar):
                 fields[name] = info
             self.__model_needs_rebuild = True
             self.__rebuild_model()
+
+    @staticmethod
+    def __patch_model(model: ModelType) -> None:
+        """Patch the model for internal API change since pydantic 2.10.
+
+        Args:
+            model: The model to patch.
+        """
+        if not hasattr(model, "__pydantic_fields__"):
+            model.__pydantic_fields__ = model.model_fields
