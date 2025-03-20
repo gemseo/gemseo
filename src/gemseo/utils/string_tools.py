@@ -46,9 +46,16 @@ class MessageLine(NamedTuple):
     """Store the raw ingredient of a string to be formatted later."""
 
     str_format: str
+    """The string to be processed by the ``format()`` method."""
+
     level: int
+    """The indentation level."""
+
     args: Any
+    """The positional arguments passed to the ``format()`` method."""
+
     kwargs: Any
+    """The keyword arguments passed to the ``format()`` method."""
 
 
 DEFAULT_DELIMITER = ", "
@@ -285,9 +292,9 @@ class MultiLineString:
         """Add a line.
 
         Args:
-            str_format: The string to be process by the format() method.
-            args: The args passed to the format() method.
-            kwargs: The kwargs passed to the format() method.
+            str_format: The string to be processed by the ``format()`` method.
+            args: The args passed to the ``format()`` method.
+            kwargs: The kwargs passed to the ``format()`` method.
         """
         self.__lines.append(MessageLine(str_format, self.__level, args, kwargs))
 
