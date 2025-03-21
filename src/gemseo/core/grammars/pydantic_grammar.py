@@ -342,5 +342,5 @@ class PydanticGrammar(BaseGrammar):
         Args:
             model: The model to patch.
         """
-        if not hasattr(model, "__pydantic_fields__"):
+        if not hasattr(model, "__pydantic_fields__"): # pragma: no cover
             model.__pydantic_fields__ = model.model_fields
