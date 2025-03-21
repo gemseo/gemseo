@@ -6,6 +6,8 @@ attrs==25.3.0
     # via pytest
 cached-property==2.0.1
     # via h5py
+contourpy==1.3.0
+    # via matplotlib
 covdefaults==0.1.0
     # via gemseo (pyproject.toml)
 coverage==7.7.0
@@ -18,28 +20,28 @@ decorator==5.2.1
     # via networkx
 dill==0.3.9
     # via openturns
-docstring-inheritance==1.0.0
+docstring-inheritance==2.0.0
     # via gemseo (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
-eval-type-backport==0.2.0
+eval-type-backport==0.2.2
     # via gemseo (pyproject.toml)
 execnet==2.1.1
     # via pytest-xdist
 fastjsonschema==2.14.5
     # via gemseo (pyproject.toml)
+fonttools==4.56.0
+    # via matplotlib
 genson==1.2.2
     # via gemseo (pyproject.toml)
-graphviz==0.16
+graphviz==0.19
     # via gemseo (pyproject.toml)
 h5py==3.0.0
     # via gemseo (pyproject.toml)
 importlib-metadata==3.6.0
     # via gemseo (pyproject.toml)
-iniconfig==2.0.0
+iniconfig==2.1.0
     # via pytest
-jdcal==1.4.1
-    # via openpyxl
 jinja2==3.0.0
     # via gemseo (pyproject.toml)
 joblib==1.4.2
@@ -48,7 +50,7 @@ kiwisolver==1.4.7
     # via matplotlib
 markupsafe==3.0.2
     # via jinja2
-matplotlib==3.3.0
+matplotlib==3.6.0
     # via gemseo (pyproject.toml)
 mpmath==1.3.0
     # via sympy
@@ -56,9 +58,10 @@ networkx==2.5
     # via gemseo (pyproject.toml)
 nlopt==2.7.0
     # via gemseo (pyproject.toml)
-numpy==1.22.0
+numpy==1.23.0
     # via
     #   gemseo (pyproject.toml)
+    #   contourpy
     #   h5py
     #   matplotlib
     #   nlopt
@@ -68,15 +71,16 @@ numpy==1.22.0
     #   pyxdsm
     #   scikit-learn
     #   scipy
-openpyxl==3.0.0
+openpyxl==3.0.7
     # via gemseo (pyproject.toml)
-openturns==1.19
+openturns==1.20.post3
     # via gemseo (pyproject.toml)
-packaging==15.0
+packaging==20.0
     # via
     #   gemseo (pyproject.toml)
+    #   matplotlib
     #   pytest
-pandas==1.3.0
+pandas==1.5.0
     # via
     #   gemseo (pyproject.toml)
     #   pandera
@@ -96,14 +100,16 @@ psutil==7.0.0
     # via openturns
 py==1.11.0
     # via pytest
-pydantic==2.1.0
+pydantic==2.6.0
     # via gemseo (pyproject.toml)
-pydantic-core==2.4.0
+pydantic-core==2.16.1
     # via pydantic
 pydoe3==1.0.1
     # via gemseo (pyproject.toml)
 pyparsing==3.2.1
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   packaging
 pytest==7.0.0
     # via
     #   gemseo (pyproject.toml)
@@ -119,21 +125,22 @@ python-dateutil==2.9.0.post0
     #   pandas
 pytz==2025.1
     # via pandas
-pyxdsm==2.1.0
+pyxdsm==2.2.1
     # via gemseo (pyproject.toml)
 requests==0.2.0
     # via gemseo (pyproject.toml)
 schema==0.7.7
     # via pandera
-scikit-learn==1.0
+scikit-learn==1.2.0
     # via gemseo (pyproject.toml)
-scipy==1.9.0
+scipy==1.11.1
     # via
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
 six==1.17.0
     # via
+    #   packaging
     #   plotly
     #   python-dateutil
 strenum==0.4.9
@@ -148,7 +155,7 @@ tomli==2.2.1
     # via
     #   coverage
     #   pytest
-tqdm==4.41.0
+tqdm==4.50.0
     # via gemseo (pyproject.toml)
 typing-extensions==4.6.1
     # via

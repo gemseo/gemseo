@@ -209,6 +209,7 @@ Fixed
   `#1696 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1696>`_
 - Warnings issued from some pydantic models.
 - ``PolynomialRegressor_Settings``: the default value of ``degree`` is a positive integer.
+- The minimum required versions of the dependencies of the |g| packages were not up to date.
 
 Changed
 -------

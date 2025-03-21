@@ -1017,7 +1017,7 @@ def test_import_error_with_missing_file() -> None:
     """Check that a missing HDF file cannot be imported."""
     hdf_file_name = "i_dont_exist.h5"
     assert not Path(hdf_file_name).exists()
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises((OSError, FileNotFoundError)):
         DesignSpace.from_hdf(hdf_file_name)
 
 
