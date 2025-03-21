@@ -16,14 +16,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TCH003
+from pathlib import Path  # noqa: TC003
 
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveInt
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 
 class MultiStart_Settings(BaseOptimizerSettings):  # noqa: N801

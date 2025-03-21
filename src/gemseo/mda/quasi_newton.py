@@ -32,7 +32,7 @@ from numpy import array
 from numpy import ndarray
 from scipy.optimize import root
 
-from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class MDAQuasiNewton(BaseMDARoot):
+class MDAQuasiNewton(BaseParallelMDASolver):
     r"""Quasi-Newton solver for MDA.
 
     `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
@@ -83,9 +83,6 @@ class MDAQuasiNewton(BaseMDARoot):
     settings: MDAQuasiNewton_Settings
     """The settings of the MDA"""
 
-    __current_couplings: ndarray
-    """The current values of the coupling variables."""
-
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -97,9 +94,10 @@ class MDAQuasiNewton(BaseMDARoot):
             ValueError: If the method is not a valid quasi-Newton method.
         """  # noqa:D205 D212 D415
         super().__init__(disciplines, settings_model=settings_model, **settings)
+        self._set_resolved_variables(self.coupling_structure.strong_couplings)
 
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
-            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def __get_options(self) -> dict[str, float | int]:
         """Get the options adapted to the resolution method."""
@@ -150,7 +148,7 @@ class MDAQuasiNewton(BaseMDARoot):
             """
             self._update_local_data_from_array(x_vect)
 
-            for discipline in self.disciplines:
+            for discipline in self._disciplines:
                 discipline.linearize(self.io.data)
 
             self.assembly.compute_sizes(
@@ -176,25 +174,18 @@ class MDAQuasiNewton(BaseMDARoot):
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
             return None
 
-        def callback(
-            new_couplings: ndarray,
-            _,
-        ) -> None:
+        def callback(iterate: ndarray, residual: ndarray) -> None:
             """Store the current residual in the history.
 
             Args:
-                new_couplings: The new coupling variables.
-                _: ignored
+                iterate: The current iterate.
+                residual: The associated residual.
             """
             self._compute_normalized_residual_norm()
-            self.__current_couplings = new_couplings
 
         return callback
 
-    def __compute_residuals(
-        self,
-        x_vect: ndarray,
-    ) -> ndarray:
+    def __compute_residuals(self, x_vect: ndarray) -> ndarray:
         """Evaluate all residuals, possibly in parallel.
 
         Args:
@@ -203,17 +194,13 @@ class MDAQuasiNewton(BaseMDARoot):
         Returns:
             The residuals.
         """
-        self.current_iter += 1
-        # Work on a temporary copy so _update_local_data can be called.
-        local_data_copy = self.io.data.copy()
         self._update_local_data_from_array(x_vect)
-        local_data_before_execution = self.io.data
-        self.io.data = local_data_copy
-        self._execute_disciplines_and_update_local_data(local_data_before_execution)
+
+        local_data_before_execution = self.io.data.copy()
+        self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
-        return self.assembly.residuals(
-            local_data_before_execution, self._resolved_variable_names
-        ).real
+
+        return self.get_current_resolved_residual_vector()
 
     def _execute(self) -> None:
         super()._execute()
@@ -229,18 +216,15 @@ class MDAQuasiNewton(BaseMDARoot):
             self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
             return self.io.data
 
-        self.current_iter = 0
+        self._current_iter = 0
 
         if self.reset_history_each_run:
             self.residual_history = []
 
-        # initial solution
-        self.__current_couplings = self.get_current_resolved_variables_vector().real
-
         # solve the system
         y_opt = root(
             self.__compute_residuals,
-            x0=self.__current_couplings,
+            x0=self.get_current_resolved_variables_vector().real,
             method=self.settings.method,
             jac=self.__get_jacobian_computer(),
             callback=self.__get_residual_history_callback(),
@@ -248,7 +232,7 @@ class MDAQuasiNewton(BaseMDARoot):
             options=self.__get_options(),
         )
 
-        self._warn_convergence_criteria()
+        self._check_stopping_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 

@@ -198,7 +198,6 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         # First, evaluate all functions at x_0. Some algorithms don't do this
         output_functions, jacobian_functions = problem.get_functions(
             jacobian_names=() if require_gradient else None,
-            evaluate_objective=True,
             observable_names=None,
         )
 

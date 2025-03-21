@@ -296,9 +296,9 @@ def test_nelder_mead(initial_simplex) -> None:
 def test_tnc_maxiter(caplog):
     """Check that TNC no longer receives the unknown maxiter option."""
     problem = Rosenbrock()
-    with pytest.warns() as record:
+    with pytest.warns(UserWarning, match="foo") as record:  # noqa: B028, PT031
         OptimizationLibraryFactory().execute(problem, algo_name="TNC", max_iter=2)
-        warn("foo", UserWarning)  # noqa: B028
+        warn("foo", UserWarning, stacklevel=2)
 
     assert len(record) == 1
 

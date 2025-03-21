@@ -151,6 +151,18 @@ system_scenario = create_scenario(
 system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
 
 # %%
+# .. tip::
+#
+#    When running BiLevel scenarios, it is interesting to access the optimization
+#    history of the sub-scenarios for each system iteration. By default, the setting
+#    ``keep_opt_history`` is set to ``True``. This allows you to store in memory the
+#    databases of the sub-scenarios (see the last section of this example for more
+#    details).
+#    In some cases, storing the databases in memory can take up too much space and cause
+#    performance issues. In these cases, set ``keep_opt_history=False`` and save the
+#    databases to the disk using ``save_opt_history=True``.
+
+# %%
 # Visualize the XDSM
 # ^^^^^^^^^^^^^^^^^^
 # Generate the XDSM on the fly:
@@ -170,6 +182,8 @@ system_scenario.execute(cobyla_settings)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # For the first MDA:
 system_scenario.formulation.mda1.plot_residual_history(save=False, show=True)
+
+# %%
 # For the second MDA:
 system_scenario.formulation.mda2.plot_residual_history(save=False, show=True)
 
@@ -180,8 +194,7 @@ system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
 # Plot the structure optimization histories of the 2 first iterations
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 struct_databases = system_scenario.formulation.scenario_adapters[2].databases
 for database in struct_databases[:2]:
     opt_problem = deepcopy(sc_str.formulation.optimization_problem)
@@ -189,4 +202,4 @@ for database in struct_databases[:2]:
     execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
 
 for disc in [propu, aero, mission, struct]:
-    print(f"{disc.name}: {disc.execution_statistics.n_calls} calls.")
+    print(f"{disc.name}: {disc.execution_statistics.n_executions} calls.")

@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from gemseo.caches.base_cache import BaseCache
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.core.grammars.defaults import Defaults
+    from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
 
@@ -183,7 +183,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             return
 
         output_data = self.io.data.copy()
-        for name in output_data.keys() - output_grammar.names:
+        for name in output_data.keys() - output_grammar:
             del output_data[name]
 
         # Non simple caches require NumPy arrays.
@@ -209,8 +209,8 @@ class BaseDiscipline(BaseMonitoredProcess):
         input_data_ = input_data.copy()
 
         # Deepcopy the auto coupled data.
-        auto_coupled_names = set(self.io.input_grammar.keys()).intersection(
-            self.io.output_grammar.keys()
+        auto_coupled_names = set(self.io.input_grammar).intersection(
+            self.io.output_grammar
         )
 
         for auto_coupled_name in auto_coupled_names:
@@ -235,7 +235,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         self.io.data = cache_entry.inputs
         self.io.data.update(cache_entry.outputs)
 
-    def __can_load_cache(self, input_data: StrKeyMapping) -> bool:
+    def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
         """Search and load the cached output data from input data.
 
         On cache hit, the local data are restored from the cached output data.
@@ -355,8 +355,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         input_data = self.io.prepare_input_data(input_data)
 
         if self.cache is not None:
-            if self.__can_load_cache(input_data):
-                self.io.output_grammar.validate(self.io.data)
+            if self._can_load_cache(input_data):
+                if self.validate_output_data:
+                    self.io.output_grammar.validate(self.io.data)
                 return self.io.data
 
             # Keep a pristine copy of the input data before it is eventually changed.
@@ -377,13 +378,22 @@ class BaseDiscipline(BaseMonitoredProcess):
         return self.io.data
 
     def _execute(self) -> None:
-        if self.input_grammar.to_namespaced:
+        if self.io.input_grammar.to_namespaced:
             input_data = self.io.get_input_data(with_namespaces=False)
         else:
             # No namespaces, avoid useless processing.
             input_data = self.io.data
+
+        data_processor = self.io.data_processor
+        if data_processor is not None:
+            input_data = data_processor.pre_process_data(input_data)
+
         output_data = self._run(input_data=input_data)
+
         if output_data is not None:
+            if data_processor is not None:
+                output_data = data_processor.post_process_data(output_data)
+
             self.io.update_output_data(output_data)
 
     @abstractmethod
@@ -391,14 +401,24 @@ class BaseDiscipline(BaseMonitoredProcess):
         """Compute the outputs from the inputs.
 
         This method shall be implemented in derived classes.
-        The ``input_data`` are the discipline inputs completed with the default inputs,
-        the keys of those items have the namespace prefixes (if any) removed.
-        This method could return the output data or return ``None``.
-        If the output data are returned, they will be used to update the data of the
-        discipline (:attr:`.local_data`).
-        In that case, the output data may either use the name with namespaces or not.
-        If nothing or ``None`` is returned, then the data of the discipline shall be
-        updated in the implementation of this method.
+
+        The ``input_data`` are the discipline inputs completed with the default inputs.
+        This method may return the output data.
+
+        These input and output data are dictionaries
+        of the form ``{variable_name_without_namespace: variable_value, ...}``.
+
+        Using the provided ``input_data`` and also returning the output data
+        will ensure that the discipline can be used with namespaces.
+        This approach, which appeared in the version 6 of |g|, is preferable.
+
+        As in the |g| versions prior to 6,
+        you can also avoid using ``input_data`` and return output data,
+        and thus leave the body ``_run`` unchanged.
+        But in that case
+        the discipline does not automatically support the use of namespaces.
+        For this reason,
+        it is preferable to use the first approach.
 
         Args:
             input_data: The input data without namespace prefixes.
@@ -419,7 +439,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         self.io.input_grammar = grammar
 
     @property
-    def default_input_data(self) -> Defaults:
+    def default_input_data(self) -> GrammarProperties:
         """The default input data."""
         return self.io.input_grammar.defaults
 
@@ -463,7 +483,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         self.io.output_grammar = grammar
 
     @property
-    def default_output_data(self) -> Defaults:
+    def default_output_data(self) -> GrammarProperties:
         """The default output data used when :attr:`.virtual_execution` is ``True``."""
         return self.io.output_grammar.defaults
 

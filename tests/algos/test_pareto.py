@@ -136,7 +136,7 @@ def test_get_utopia_nearest_neighbors():
 
 
 def test_pretty_table():
-    """Test the creation of a :class:`gemseo.third_party.prettytable.PrettyTable`."""
+    """Test the creation of a PrettyTable."""
     # Create DataFrame with multiple index and column levels.
     dframe = DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8]})
     indexes = [("i", "1"), ("i", "2"), ("j", "1"), ("j", "2")]
@@ -144,13 +144,14 @@ def test_pretty_table():
     columns = [("c", "a"), ("c", "b")]
     dframe.columns = MultiIndex.from_tuples(columns)
 
-    p_table = str(ParetoFront._ParetoFront__get_pretty_table_from_df(dframe))
+    get_pretty_table_from_df = ParetoFront._ParetoFront__get_pretty_table_from_df
+    p_table = str(get_pretty_table_from_df(dframe))
     for val in columns + indexes:
         assert f"{val[0]} ({val[1]})" in p_table
 
     # Drop multiple indexes.
     dframe.reset_index(level=[0, 1], drop=True, inplace=True)
-    p_table = str(ParetoFront._ParetoFront__get_pretty_table_from_df(dframe))
+    p_table = str(get_pretty_table_from_df(dframe))
     for val in range(4):
         assert str(val) in p_table
 

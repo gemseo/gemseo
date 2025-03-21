@@ -273,14 +273,14 @@ class OTDistribution(
         Args:
             distribution: The original probability distribution.
         """
-        _range = distribution.getRange()
-        lower_bound = _range.getLowerBound()[0]
-        upper_bound = _range.getUpperBound()[0]
+        range_ = distribution.getRange()
+        lower_bound = range_.getLowerBound()[0]
+        upper_bound = range_.getUpperBound()[0]
         self.num_lower_bound = lower_bound
         self.num_upper_bound = upper_bound
-        if not _range.getFiniteLowerBound()[0]:
+        if not range_.getFiniteLowerBound()[0]:
             lower_bound = -inf
-        if not _range.getFiniteUpperBound()[0]:
+        if not range_.getFiniteUpperBound()[0]:
             upper_bound = inf
         self.math_lower_bound = lower_bound
         self.math_upper_bound = upper_bound

@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pickle
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -35,6 +36,7 @@ from numpy import zeros_like
 
 from gemseo import create_scenario
 from gemseo.algos.database import Database
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.discipline import Discipline
@@ -51,8 +53,10 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
+from gemseo.utils.name_generator import NameGenerator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -159,8 +163,8 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     )
     adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
     adapter.execute()
-    x_shared = adapter.default_input_data["x_shared"] * 1.01
-    adapter.default_input_data["x_shared"] = x_shared
+    x_shared = adapter.io.input_grammar.defaults["x_shared"] * 1.01
+    adapter.io.input_grammar.defaults["x_shared"] = x_shared
     # initial_x is reset to the initial design value before optimization;
     # thus the optimization starts from initial_design.
     adapter.execute()
@@ -172,7 +176,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     new_initial_design = design_space.convert_dict_to_array(
         design_space.get_current_value(as_dict=True)
     )
-    adapter.default_input_data["x_shared"] = x_shared
+    adapter.io.input_grammar.defaults["x_shared"] = x_shared
     # initial_x is NOT reset to the initial design value before optimization;
     # thus the optimization starts from the last design value (=new_initial_design).
     adapter.execute()
@@ -212,7 +216,7 @@ def test_adapter_set_bounds(scenario) -> None:
 def test_chain(scenario) -> None:
     """"""
     mda = scenario.formulation.mda
-    inputs = list(mda.io.input_grammar.names) + scenario.design_space.variable_names
+    inputs = list(mda.io.input_grammar) + scenario.design_space.variable_names
     outputs = ["x_1", "x_2", "x_3"]
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
 
@@ -259,13 +263,15 @@ def test_compute_jacobian_exceptions(scenario) -> None:
 
     # Pass invalid inputs
     with pytest.raises(
-        ValueError, match="The following are not inputs of the adapter: bar, foo."
+        ValueError,
+        match=re.escape("The following are not inputs of the adapter: bar, foo."),
     ):
         adapter._compute_jacobian(input_names=["x_shared", "foo", "bar"])
 
     # Pass invalid outputs
     with pytest.raises(
-        ValueError, match="The following are not outputs of the adapter: bar, foo."
+        ValueError,
+        match=re.escape("The following are not outputs of the adapter: bar, foo."),
     ):
         adapter._compute_jacobian(output_names=["y_4", "foo", "bar"])
 
@@ -274,13 +280,16 @@ def test_compute_jacobian_exceptions(scenario) -> None:
     scenario.add_constraint(["g_2"])
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
     with pytest.raises(
-        ValueError, match="Post-optimal Jacobians of g_1, g_2 cannot be computed."
+        ValueError,
+        match=re.escape("Post-optimal Jacobians of g_1, g_2 cannot be computed."),
     ):
         adapter._compute_jacobian(output_names=["y_4", "g_2", "g_1"])
 
     # Pass a multi-valued objective
     scenario.formulation.optimization_problem.objective.output_names = ["y_4"] * 2
-    with pytest.raises(ValueError, match="The objective must be single-valued."):
+    with pytest.raises(
+        ValueError, match=re.escape("The objective must be single-valued.")
+    ):
         adapter._compute_jacobian()
 
 
@@ -459,30 +468,52 @@ def test_lagrange_multipliers_outputs() -> None:
     assert allclose(lagr_grad, zeros_like(lagr_grad))
 
 
-@pytest.mark.parametrize("export_name", ["", "local_database"])
-def test_keep_opt_history(tmp_wd, scenario, export_name) -> None:
-    """Test the option that keeps the local history of sub optimizations, with and
-    without the export option."""
+@pytest.mark.parametrize("keep_opt_history", [True, False])
+def test_keep_opt_history(tmp_wd, scenario, keep_opt_history) -> None:
+    """Test the option that keeps the local history of sub optimizations."""
     adapter = MDOScenarioAdapter(
         scenario,
         ["x_shared"],
         ["y_4"],
-        keep_opt_history=True,
-        opt_history_file_prefix=export_name,
+        keep_opt_history=keep_opt_history,
     )
     adapter.execute()
-    adapter.execute({"x_shared": adapter.default_input_data["x_shared"] + 1.0})
+    adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
 
-    assert len(adapter.databases) == 2
+    assert len(adapter.databases) == (2 if keep_opt_history else 0)
 
     for database in adapter.databases:
         assert isinstance(database, Database)
         assert len(database) > 2
 
-    if export_name:
-        path = Path(export_name)
-        assert (path.parent / f"{path.name}_1.h5").exists()
-        assert (path.parent / f"{path.name}_2.h5").exists()
+
+@pytest.mark.parametrize(
+    ("save_opt_history", "opt_history_file_prefix"),
+    [(True, "local_database"), (True, ""), (False, "local_database"), (False, "")],
+)
+def test_save_opt_history(
+    tmp_wd, scenario, save_opt_history, opt_history_file_prefix
+) -> None:
+    """Test the option that saves the local history of sub optimizations, with and
+    without the file prefix."""
+    adapter = MDOScenarioAdapter(
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        save_opt_history=save_opt_history,
+        opt_history_file_prefix=opt_history_file_prefix,
+    )
+    adapter.execute()
+    adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
+
+    path = Path(opt_history_file_prefix)
+    if opt_history_file_prefix:
+        prefix = path.name
+    else:
+        prefix = MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX
+
+    assert (path.parent / f"{prefix}_1.h5").exists() is save_opt_history
+    assert (path.parent / f"{prefix}_2.h5").exists() is save_opt_history
 
 
 @pytest.mark.parametrize("set_x0_before_opt", [True, False])
@@ -491,7 +522,7 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
 
     The focus of this test is to guarantee that the loaded MDOChain instance can be
     executed, if an AttributeError is raised, it means that the attribute is missing in
-    MDOScenarioAdapter._ATTR_TO_SERIALIZE.
+    ``MDOScenarioAdapter._ATTR_NOT_TO_SERIALIZE``.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
@@ -499,7 +530,12 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
             without physical naming.
     """
     adapter = MDOScenarioAdapter(
-        scenario, ["x_shared"], ["y_4"], set_x0_before_opt=set_x0_before_opt
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        set_x0_before_opt=set_x0_before_opt,
+        keep_opt_history=True,
+        opt_history_file_prefix="test",
     )
 
     with open("adapter.pkl", "wb") as file:
@@ -512,6 +548,30 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
     assert adapter.scenario.optimization_result.is_feasible
 
 
+def test_parallel_adapter(tmp_wd, scenario):
+    """Test the execution of an MDOScenarioAdapter in multiprocessing."""
+    adapter = MDOScenarioAdapter(
+        scenario,
+        ["x_shared"],
+        ["y_4"],
+        keep_opt_history=True,
+        save_opt_history=True,
+        opt_history_file_prefix="test",
+        naming=NameGenerator.Naming.UUID,
+    )
+    design_space = SobieskiDesignSpace()
+    design_space.filter(["x_shared"])
+    scenario_doe = DOEScenario(
+        [adapter],
+        "y_4",
+        design_space=design_space,
+        maximize_objective=True,
+        formulation_name="DisciplinaryOpt",
+    )
+    scenario_doe.execute(LHS_Settings(n_samples=10, n_processes=2))
+    assert len(list(tmp_wd.rglob("test_*.h5"))) == 10
+
+
 class DisciplineMain(Discipline):
     """Discipline that takes as inputs alpha and computes beta=2*alpha.
 
@@ -520,8 +580,8 @@ class DisciplineMain(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["alpha"])
-        self.output_grammar.update_from_names(["beta"])
+        self.io.input_grammar.update_from_names(["alpha"])
+        self.io.output_grammar.update_from_names(["beta"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         alpha = self.io.data["alpha"]
@@ -538,8 +598,8 @@ class DisciplineMainWithJacobian(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["alpha"])
-        self.output_grammar.update_from_names(["beta"])
+        self.io.input_grammar.update_from_names(["alpha"])
+        self.io.output_grammar.update_from_names(["beta"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         alpha = self.io.data["alpha"]
@@ -560,8 +620,8 @@ class DisciplineSub1(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["x"])
-        self.output_grammar.update_from_names(["f"])
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["f"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -575,9 +635,9 @@ class DisciplineSub2(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["x", "beta"])
-        self.output_grammar.update_from_names(["g"])
-        self.default_input_data = {"x": array([0.0]), "beta": array([0.0])}
+        self.io.input_grammar.update_from_names(["x", "beta"])
+        self.io.output_grammar.update_from_names(["g"])
+        self.io.input_grammar.defaults = {"x": array([0.0]), "beta": array([0.0])}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -658,7 +718,7 @@ def test_linearize_scenario_adapter(scenario_fixture) -> None:
 def test_multiple_linearize() -> None:
     """Tests two linearizations and linearize in the _run method."""
     disc2 = MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])
-    disc2.default_input_data = {"x": array([0.0]), "alpha": array([0.0])}
+    disc2.io.input_grammar.defaults = {"x": array([0.0]), "alpha": array([0.0])}
     disc2.add_differentiated_inputs("x")
     disc2.add_differentiated_outputs("g")
     disc2.linearize()

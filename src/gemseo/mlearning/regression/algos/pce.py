@@ -19,16 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Polynomial chaos expansion model.
 
-.. _FunctionalChaosAlgorithm:
-https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated
-/openturns.FunctionalChaosAlgorithm.html
-.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual
-/response_surface/_generated/openturns.CleaningStrategy.html
-.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling
-/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
-.. _hyperbolic and anisotropic enumerate function:
-https://openturns.github.io/openturns/latest/user_manual/_generated/openturns
-.HyperbolicAnisotropicEnumerateFunction.html
+.. _FunctionalChaosAlgorithm: https://openturns.github.io/
+openturns/latest/user_manual/response_surface/response_surface.html
+.. _CleaningStrategy: https://openturns.github.io/
+openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
+.. _LARS: https://openturns.github.io/
+openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html
+.. _hyperbolic and anisotropic enumerate function: https://openturns.github.io/
+openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html
 
 The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal
@@ -98,6 +96,8 @@ from typing import Final
 from numpy import array
 from numpy import atleast_1d
 from numpy import concatenate
+from numpy import hstack
+from numpy import newaxis
 from numpy import vstack
 from numpy import zeros
 from openturns import LARS
@@ -117,6 +117,7 @@ from openturns import OrthogonalBasis
 from openturns import OrthogonalProductPolynomialFactory
 from openturns import Point
 from openturns import StandardDistributionPolynomialFactory
+from scipy.linalg import solve
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
@@ -148,17 +149,44 @@ class PCERegressor(BaseRegressor):
 
     Settings: ClassVar[type[PCERegressor_Settings]] = PCERegressor_Settings
 
+    _coefficients: RealArray | None
+    """The coefficients to differentiate with respect to the special variables.
+
+    Shaped as ``(output_dimension, special_variable_dimension, n_basis_functions)``.
+    """
+
+    _mean_jacobian_wrt_special_variables: RealArray | None
+    """The gradient of the mean with respect to the special variables.
+
+    Shaped as ``(output_dimension, special_variable_dimension)``.
+    """
+
+    _standard_deviation_jacobian_wrt_special_variables: RealArray | None
+    """The gradient of the standard deviation with respect the special variables.
+
+    Shaped as ``(output_dimension, special_variable_dimension)``.
+    """
+
+    _variance_jacobian_wrt_special_variables: RealArray | None
+    """The gradient of the variance with respect the special variables.
+
+    Shaped as ``(output_dimension, special_variable_dimension)``.
+    """
+
     def __init__(
         self,
-        data: IODataset | None,
+        data: IODataset,
         settings_model: PCERegressor_Settings | None = None,
         **settings: Any,
     ) -> None:
         """
         Args:
-            data: The learning dataset required
-                in the case of the least-squares regression
-                or when ``discipline`` is ``None`` in the case of quadrature.
+            data: The training dataset
+                whose input space ``data.misc["input_space"]``
+                is expected to be a :class:`.ParameterSpace`
+                defining the random input variables.
+                The training dataset can be empty
+                in the case of quadrature when ``discipline`` is not ``None``.
 
         Raises:
             ValueError: When both data and discipline are missing,
@@ -170,23 +198,26 @@ class PCERegressor(BaseRegressor):
                 when an input variable has a data transformer
                 or when a probability distribution is not an :class:`.OTDistribution`.
         """  # noqa: D205 D212
-        _settings = create_model(
+        settings_ = create_model(
             self.Settings, settings_model=settings_model, **settings
         )
-        cleaning_options = _settings.cleaning_options
+        cleaning_options = settings_.cleaning_options
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 
-        if _settings.use_quadrature:
-            if _settings.discipline is None and data is None:
+        # TODO: API: remove backward compatibility wrt data in gemseo v7.
+        there_are_data = data is not None and len(data) > 0
+        there_is_a_discipline = settings_.discipline is not None
+        if settings_.use_quadrature:
+            if not there_is_a_discipline and not there_are_data:
                 msg = "The quadrature rule requires either data or discipline."
                 raise ValueError(msg)
 
-            if _settings.discipline is not None and data is not None and len(data):
+            if there_is_a_discipline and there_are_data:
                 msg = "The quadrature rule requires data or discipline but not both."
                 raise ValueError(msg)
 
-            if _settings.use_lars:
+            if settings_.use_lars:
                 msg = "LARS is not applicable with the quadrature rule."
                 raise ValueError(msg)
 
@@ -194,23 +225,25 @@ class PCERegressor(BaseRegressor):
                 data = IODataset()
 
         else:
-            if data is None:
+            if not there_are_data:
                 msg = "The least-squares regression requires data."
                 raise ValueError(msg)
 
-            if _settings.discipline is not None:
+            if there_is_a_discipline:
                 msg = "The least-squares regression does not require a discipline."
                 raise ValueError(msg)
 
-        super().__init__(data, settings_model=_settings)
+        if settings_.probability_space is not None:
+            data.misc["input_space"] = settings_.probability_space
 
+        super().__init__(data, settings_model=settings_)
+
+        probability_space = data.misc["input_space"]
         if self._settings.use_quadrature and data.empty:
-            self.input_names = self._settings.probability_space.variable_names
+            self.input_names = probability_space.variable_names
 
         if not data.empty:
-            missing = set(self.input_names) - set(
-                self._settings.probability_space.uncertain_variables
-            )
+            missing = set(self.input_names) - set(probability_space.uncertain_variables)
             if missing:
                 msg = (
                     "The probability space does not contain "
@@ -227,7 +260,7 @@ class PCERegressor(BaseRegressor):
             msg = "PCERegressor does not support input transformers."
             raise ValueError(msg)
 
-        distributions = self._settings.probability_space.distributions
+        distributions = probability_space.distributions
         wrongly_distributed_random_variable_names = [
             input_name
             for input_name in self.input_names
@@ -241,7 +274,7 @@ class PCERegressor(BaseRegressor):
             )
             raise ValueError(msg)
 
-        self.__variable_sizes = self._settings.probability_space.variable_sizes
+        self.__variable_sizes = probability_space.variable_sizes
         self.__input_dimension = sum(
             self.__variable_sizes[name] for name in self.input_names
         )
@@ -282,6 +315,10 @@ class PCERegressor(BaseRegressor):
         self._second_order_sobol_indices = []
         self._total_order_sobol_indices = []
         self._prediction_function = None
+        self._coefficients = None
+        self._mean_jacobian_wrt_special_variables = None
+        self._standard_deviation_jacobian_wrt_special_variables = None
+        self._variance_jacobian_wrt_special_variables = None
 
     def __instantiate_functional_chaos_algorithm(
         self, input_data: RealArray, output_data: RealArray
@@ -394,11 +431,11 @@ class PCERegressor(BaseRegressor):
         # Create and train the PCE.
         algo = self.__instantiate_functional_chaos_algorithm(input_data, output_data)
         algo.run()
-        self.algo = algo.getResult()
-        self._prediction_function = self.algo.getMetaModel()
+        self.algo = pce_result = algo.getResult()
+        self._prediction_function = pce_result.getMetaModel()
 
         # Compute some statistics.
-        random_vector = FunctionalChaosRandomVector(self.algo)
+        random_vector = FunctionalChaosRandomVector(pce_result)
         self._mean = array(random_vector.getMean())
         self._covariance = array(random_vector.getCovariance())
         self._variance = self._covariance.diagonal()
@@ -407,12 +444,13 @@ class PCERegressor(BaseRegressor):
         # Compute some sensitivity indices.
         names_to_positions = {}
         start = 0
+        names_to_sizes = self.learning_set.variable_names_to_n_components
         for name in self.input_names:
-            stop = start + self.learning_set.variable_names_to_n_components[name]
+            stop = start + names_to_sizes[name]
             names_to_positions[name] = range(start, stop)
             start = stop
 
-        ot_sobol_indices = FunctionalChaosSobolIndices(self.algo)
+        ot_sobol_indices = FunctionalChaosSobolIndices(pce_result)
         self.__compute_first_or_total_order_indices(
             names_to_positions, ot_sobol_indices, True
         )
@@ -420,6 +458,60 @@ class PCERegressor(BaseRegressor):
         self.__compute_first_or_total_order_indices(
             names_to_positions, ot_sobol_indices, False
         )
+
+        # Compute the derivatives of the coefficients wrt the special variables.
+        # as well as those of the mean and variance.
+        if self._jacobian_data is not None:
+            basis_functions = pce_result.getReducedBasis()
+            input_sample = pce_result.getInputSample()
+            transformation = self.algo.getTransformation()
+            phi = hstack([
+                array(basis_function(transformation(input_sample)))
+                for basis_function in basis_functions
+            ])
+            jacobian_data = self._jacobian_data[self._learning_samples_indices]
+            coefficients = (
+                jacobian_data.T
+                @ solve(
+                    phi.T @ phi,
+                    phi.T,
+                    overwrite_a=True,
+                    overwrite_b=True,
+                    assume_a="sym",
+                ).T
+            )
+            shape = (self._reduced_output_dimension, -1, len(basis_functions))
+            self._coefficients = coefficients.reshape(shape)
+            self._variance_jacobian_wrt_special_variables = vstack([
+                2 * ci_jac @ ci_out
+                for ci_jac, ci_out in zip(
+                    self._coefficients[..., 1:],
+                    array(pce_result.getCoefficients()).T[..., 1:],
+                )
+            ])
+            # _variance_jacobian_wrt_special_variables: (n_out, n_in)
+            # _standard_deviation: (n_out,)
+            self._standard_deviation_jacobian_wrt_special_variables = (
+                self._variance_jacobian_wrt_special_variables
+                / 2
+                / self._standard_deviation[:, newaxis]
+            )
+
+            first_basis_function = basis_functions[0]
+            phi = array(first_basis_function(transformation(input_sample)))
+            coefficients = (
+                solve(
+                    phi.T @ phi,
+                    phi.T,
+                    overwrite_a=True,
+                    overwrite_b=True,
+                    assume_a="sym",
+                )
+                @ jacobian_data
+            )
+            self._mean_jacobian_wrt_special_variables = coefficients.sum(0).reshape(
+                self._reduced_output_dimension, -1
+            )
 
     def __compute_second_order_indices(
         self,
@@ -534,8 +626,8 @@ class PCERegressor(BaseRegressor):
         )
         self.learning_set.add_variable(self.__WEIGHT, weights[:, None])
 
-        output_names = list(discipline.io.output_grammar.names)
-        input_names = list(discipline.io.input_grammar.names)
+        output_names = list(discipline.io.output_grammar)
+        input_names = self.input_names
         outputs = [[] for _ in output_names]
         for input_data in self.learning_set.get_view(
             group_names=self.learning_set.INPUT_GROUP, variable_names=input_names
@@ -573,6 +665,61 @@ class PCERegressor(BaseRegressor):
             jac[index] = array(gradient(Point(data))).T
 
         return jac
+
+    def _predict_jacobian_wrt_special_variables(  # noqa: D102
+        self, input_data: RealArray
+    ) -> RealArray:
+        basis_functions = self.algo.getReducedBasis()
+        transformation = self.algo.getTransformation()
+        y = array([
+            basis_function(transformation(input_data))[0]
+            for basis_function in basis_functions
+        ])
+        return self._coefficients @ y
+
+    @property
+    def mean_jacobian_wrt_special_variables(self) -> RealArray:
+        """The gradient of the mean with respect to the special variables.
+
+        See :meth:`.predict_jacobian_wrt_special_variables`
+        for more information about the notion of special variables.
+
+        Raises:
+            ValueError: When the training dataset does not include gradient information.
+        """
+        self._check_is_trained()
+        self._check_jacobian_learning_data("mean_jacobian_wrt_special_variables")
+        return self._mean_jacobian_wrt_special_variables
+
+    @property
+    def standard_deviation_jacobian_wrt_special_variables(self) -> RealArray:
+        """The gradient of the standard deviation with respect to the special variables.
+
+        See :meth:`.predict_jacobian_wrt_special_variables`
+        for more information about the notion of special variables.
+
+        Raises:
+            ValueError: When the training dataset does not include gradient information.
+        """
+        self._check_is_trained()
+        self._check_jacobian_learning_data(
+            "standard_deviation_jacobian_wrt_special_variables"
+        )
+        return self._standard_deviation_jacobian_wrt_special_variables
+
+    @property
+    def variance_jacobian_wrt_special_variables(self) -> RealArray:
+        """The gradient of the variance with respect to the special variables.
+
+        See :meth:`.predict_jacobian_wrt_special_variables`
+        for more information about the notion of special variables.
+
+        Raises:
+            ValueError: When the training dataset does not include gradient information.
+        """
+        self._check_is_trained()
+        self._check_jacobian_learning_data("variance_jacobian_wrt_special_variables")
+        return self._variance_jacobian_wrt_special_variables
 
     @property
     def mean(self) -> RealArray:

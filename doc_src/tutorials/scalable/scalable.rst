@@ -61,13 +61,13 @@ Then, the scalable discipline can be created.
 2. Creation of the scalable discipline
 --------------------------------------
 
-In |g|, scalable disciplines are defined by the class :class:`.ScalableDiscipline` that inherits from :class:`.Discipline`.
+In |g|, scalable disciplines are defined by the class :class:`.DataDrivenScalableDiscipline` that inherits from :class:`.Discipline`.
 
 Such a scalable discipline takes as mandatory arguments:
 
 - a ``hdf_file_path`` with its ``hdf_node_path`` storing the evaluations of the :class:`.Discipline`, here ``sellar``, over a :class:`.DiagonalDOE`,
 - a ``sizes`` dictionary describing the required sizes of inputs and outputs,
-- a ``fill_factor`` describing the probability of connection between an input and an output in the :class:`.ScalableDiscipline`,
+- a ``fill_factor`` describing the probability of connection between an input and an output in the :class:`.DataDrivenScalableDiscipline`,
 
 and optional ones :
 
@@ -118,7 +118,7 @@ A scalable discipline is a discipline version for which inputs and outputs can t
    output_names = sellar.get_output_data_names()
    sizes = {name: variable_sizes for name in input_names + output_names}
 
-The ``sizes`` of the inputs are specified in a dictionary at the construction of the :class:`.ScalableDiscipline` instance.
+The ``sizes`` of the inputs are specified in a dictionary at the construction of the :class:`.DataDrivenScalableDiscipline` instance.
 
 Lastly, we define the density factor for the matrix S describing the dependencies between the inputs and the outputs of the discipline:
 
@@ -127,12 +127,12 @@ Lastly, we define the density factor for the matrix S describing the dependencie
    # Density factor for the dependency matrix S
    fill_factor = 0.6
 
-From this, we can create the :class:`.ScalableDiscipline` by means of the API function :func:`.create_discipline`:
+From this, we can create the :class:`.DataDrivenScalableDiscipline` by means of the API function :func:`.create_discipline`:
 
 .. code::
 
    # Creation of the scalable discipline
-   scalable_sellar = create_discipline('ScalableDiscipline',
+   scalable_sellar = create_discipline('DataDrivenScalableDiscipline',
                                        hdf_file_path='sellar.hdf5',
                                        hdf_node_path='Sellar1',
                                        sizes=sizes,
@@ -172,7 +172,7 @@ Arbitrary input dimensions arrays can be provided. Here, only three components f
 
     variable_sizes = 3
     sizes = {name: variable_sizes for name in input_names + output_names}
-    scalable_sellar = create_discipline('ScalableDiscipline',
+    scalable_sellar = create_discipline('DataDrivenScalableDiscipline',
                                         hdf_file_path='sellar.hdf5',
                                         hdf_node_path='Sellar1',
                                         sizes=sizes,
@@ -195,9 +195,9 @@ We obtain different output components in higher dimension.
 4. Perspectives
 ---------------
 
-This :class:`.ScalableDiscipline` can now be included as any other in an :class:`.MDOScenario` to compare the scalability of MDO or coupling strategies.
+This :class:`.DataDrivenScalableDiscipline` can now be included as any other in an :class:`.MDOScenario` to compare the scalability of MDO or coupling strategies.
 
-Such a :class:`.ScalableDiscipline` as two main advantages:
+Such a :class:`.DataDrivenScalableDiscipline` as two main advantages:
 
 - The execution time shall be very small even for thousands of inputs and outputs.
 - Analytical derivatives are also available (Jacobian matrices), even if the original discipline has no analytic derivatives.

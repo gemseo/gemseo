@@ -91,8 +91,9 @@ def parse_file(file_path):
 
 def write_file(data, file_path) -> None:
     with open(file_path, "w") as outf:
-        for name, value in list(data.items()):
-            outf.write(name + "=" + str(value[0]) + "\n")
+        outf.writelines(
+            name + "=" + str(value[0]) + "\n" for name, value in list(data.items())
+        )
 
 
 class ShellExecutableDiscipline(Discipline):
@@ -107,7 +108,7 @@ class ShellExecutableDiscipline(Discipline):
         inputs_file = os.path.join(cwd, "inputs.txt")
         outputs_file = os.path.join(cwd, "outputs.txt")
         write_file(input_data, inputs_file)
-        subprocess.run("python run.py".split(), cwd=cwd)
+        subprocess.run(["python", "run.py"], cwd=cwd)
         return parse_file(outputs_file)
 
 

@@ -20,6 +20,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import pytest
 from numpy import ndarray
 
@@ -49,9 +51,9 @@ DESCRIPTIONS = [
 def test_fail_no_output() -> None:
     """Test that the LinearDiscipline fails when there are no inputs or outputs in the
     description."""
-    with pytest.raises(ValueError, match="output_names must not be empty."):
+    with pytest.raises(ValueError, match=re.escape("output_names must not be empty.")):
         create_disciplines_from_desc([("A", ["x"], [])])
-    with pytest.raises(ValueError, match="input_names must not be empty."):
+    with pytest.raises(ValueError, match=re.escape("input_names must not be empty.")):
         create_disciplines_from_desc([("A", [], ["y"])])
 
 
@@ -112,13 +114,13 @@ def test_create_disciplines_from_sizes(grammar_type) -> None:
     assert len(disciplines) == nb_of_disc
 
     for disc in disciplines:
-        assert len(disc.io.input_grammar.names) == nb_of_disc_inputs
-        assert len(disc.io.output_grammar.names) == nb_of_disc_outputs
-        for d in disc.default_input_data.values():
+        assert len(disc.io.input_grammar) == nb_of_disc_inputs
+        assert len(disc.io.output_grammar) == nb_of_disc_outputs
+        for d in disc.io.input_grammar.defaults.values():
             assert d.size == inputs_size
 
         out = disc.execute()
-        for output_name in disc.io.output_grammar.names:
+        for output_name in disc.io.output_grammar:
             assert out[output_name].size == outputs_size
 
 

@@ -108,9 +108,9 @@ def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
 def test_sobieski(tmp_wd) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
-    mda.default_input_data["x_shared"] += 0.1
+    mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.execute()
-    mda.default_input_data["x_shared"] += 0.1
+    mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.settings.warm_start = True
     mda.execute()
 
@@ -205,10 +205,10 @@ def test_self_coupled() -> None:
 class SelfCoupledDisc(Discipline):
     def __init__(self, plus_y=False) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["y", "x"])
-        self.output_grammar.update_from_names(["y", "o"])
-        self.default_input_data["y"] = array([0.25])
-        self.default_input_data["x"] = array([0.0])
+        self.io.input_grammar.update_from_names(["y", "x"])
+        self.io.output_grammar.update_from_names(["y", "o"])
+        self.io.input_grammar.defaults["y"] = array([0.25])
+        self.io.input_grammar.defaults["x"] = array([0.0])
         self.coeff = 1.0
         if not plus_y:
             self.coeff = -1.0
@@ -263,7 +263,7 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
     """
     mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
     mda.execute()
-    mda.default_input_data["x_shared"] += 0.1
+    mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.execute()
     mda.plot_residual_history(save=False, n_iterations=n_iterations, logscale=logscale)
 
@@ -286,17 +286,17 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
 def test_max_mda_iter_0():
     """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
     mda = SobieskiMDAGaussSeidel(max_mda_iter=0)
-    assert mda.NORMALIZED_RESIDUAL_NORM not in mda.output_grammar
+    assert mda.NORMALIZED_RESIDUAL_NORM not in mda.io.output_grammar
 
     mda.execute()
 
     for discipline in mda.disciplines:
-        assert discipline.execution_statistics.n_calls == 1
+        assert discipline.execution_statistics.n_executions == 1
 
     output_data = mda.io.get_output_data()
 
     expected_output_data = {}
-    local_data = dict(mda.input_grammar.defaults)
+    local_data = dict(mda.io.input_grammar.defaults)
     for discipline in mda.disciplines:
         discipline.cache.clear()
         discipline.execute(local_data)

@@ -27,7 +27,7 @@ the concept of scalability study:
    constraints.
 2. For each discipline, the user adds a dataset stored
    in a :class:`.Dataset` and select a type of
-   :class:`.ScalableModel` to build the :class:`.ScalableDiscipline`
+   :class:`.ScalableModel` to build the :class:`.DataDrivenScalableDiscipline`
    associated with this discipline.
 3. The user adds different optimization strategies, defined in terms
    of both optimization algorithms and MDO formulation.
@@ -86,15 +86,15 @@ class ScalabilityStudy:
         design_variables: Iterable[str],
         directory: str = "study",
         prefix: str = "",
-        eq_constraints: Iterable[str] | None = None,
-        ineq_constraints: Iterable[str] | None = None,
+        eq_constraints: Iterable[str] = (),
+        ineq_constraints: Iterable[str] = (),
         maximize_objective: bool = False,
         fill_factor: float = 0.7,
         active_probability: float = 0.1,
         feasibility_level: float = 0.8,
         start_at_equilibrium: bool = True,
         early_stopping: bool = True,
-        coupling_variables: Iterable[str] | None = None,
+        coupling_variables: Iterable[str] = (),
     ) -> None:
         """Constructor.
 
@@ -159,6 +159,7 @@ class ScalabilityStudy:
         self.datasets = []
         self.objective = objective
         self.design_variables = design_variables
+        # TODO: API: remove "or []"
         self.eq_constraints = eq_constraints or []
         self.ineq_constraints = ineq_constraints or []
         self.coupling_variables = coupling_variables or []
@@ -354,7 +355,7 @@ class ScalabilityStudy:
             ValueError: When an input is not available.
         """
         self.__check_discipline(discipline)
-        _input_names = next(
+        input_names_ = next(
             dataset.get_variable_names(dataset.INPUT_GROUP)
             for dataset in self.datasets
             if dataset.name == discipline
@@ -363,10 +364,10 @@ class ScalabilityStudy:
             if not isinstance(inpt, str):
                 msg = f"{inpt} is not a string."
                 raise TypeError(msg)
-            if inpt not in _input_names:
+            if inpt not in input_names_:
                 msg = (
                     f"'{inpt}' is not a discipline input; available inputs are: "
-                    f"{_input_names}"
+                    f"{input_names_}"
                 )
                 raise ValueError(msg)
 

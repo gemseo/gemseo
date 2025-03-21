@@ -83,12 +83,12 @@ class DictSellarBase(Discipline):
             name: {name: value}
             for name, value in get_initial_data(self._INPUT_NAMES).items()
         }
-        self.input_grammar.update_from_data(default_input_data)
-        self.output_grammar.update_from_data({
+        self.io.input_grammar.update_from_data(default_input_data)
+        self.io.output_grammar.update_from_data({
             name: {name: value}
             for name, value in get_initial_data(self._OUTPUT_NAMES).items()
         })
-        self.default_input_data = default_input_data
+        self.io.input_grammar.defaults = default_input_data
 
 
 class DictSellar1(DictSellarBase):

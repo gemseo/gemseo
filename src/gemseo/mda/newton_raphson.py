@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_mda_root import BaseMDARoot
+from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class _ProcessFlow(_BaseMDAProcessFlow):
     """The process data and execution flow."""
 
 
-class MDANewtonRaphson(BaseMDARoot):
+class MDANewtonRaphson(BaseParallelMDASolver):
     r"""Newton solver for MDA.
 
     The `Newton-Raphson method <https://en.wikipedia.org/wiki/Newton%27s_method>`__ is
@@ -97,7 +97,7 @@ class MDANewtonRaphson(BaseMDARoot):
 
         strongly_coupled = self.coupling_structure.get_strongly_coupled_disciplines()
 
-        if len(strongly_coupled) < len(self.disciplines):
+        if len(strongly_coupled) < len(self._disciplines):
             msg = (
                 "The MDANewtonRaphson has weakly coupled disciplines, "
                 "which is not supported. Please consider using a MDAChain with "
@@ -105,6 +105,7 @@ class MDANewtonRaphson(BaseMDARoot):
             )
             raise ValueError(msg)
 
+        self._set_resolved_variables(self.coupling_structure.strong_couplings)
         self._set_differentiated_ios()
 
     def _set_differentiated_ios(self) -> None:
@@ -113,11 +114,11 @@ class MDANewtonRaphson(BaseMDARoot):
         Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
         the coupling sizes needed for Newton.
         """
-        for discipline in self.disciplines:
-            inputs_to_linearize = set(discipline.io.input_grammar.names).intersection(
+        for discipline in self._disciplines:
+            inputs_to_linearize = set(discipline.io.input_grammar).intersection(
                 self._resolved_variable_names
             )
-            outputs_to_linearize = set(discipline.io.output_grammar.names).intersection(
+            outputs_to_linearize = set(discipline.io.output_grammar).intersection(
                 self._resolved_variable_names
             )
 
@@ -179,7 +180,7 @@ class MDANewtonRaphson(BaseMDARoot):
             self._execute_disciplines_and_update_local_data()
             self._compute_residuals(local_data_before_execution)
 
-            if self._stop_criterion_is_reached:
+            if self._check_stopping_criteria():
                 break
 
             newton_step = self.__compute_newton_step(local_data_before_execution)

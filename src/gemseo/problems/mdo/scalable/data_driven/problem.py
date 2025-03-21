@@ -64,9 +64,11 @@ from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.disciplines.utils import get_all_inputs
 from gemseo.mda.factory import MDAFactory
-from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.problems.mdo.scalable.data_driven.discipline import (
+    DataDrivenScalableDiscipline,
+)
+from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import MultiLineString
 
@@ -242,7 +244,7 @@ class ScalableProblem:
             if "fill_factor" in parameters:
                 copied_parameters["fill_factor"] = parameters["fill_factor"][disc]
             self.scaled_disciplines.append(
-                ScalableDiscipline(
+                DataDrivenScalableDiscipline(
                     "ScalableDiagonalModel",
                     self.data[disc],
                     new_varsizes,
@@ -489,7 +491,7 @@ class ScalableProblem:
         """The number of top-level disciplinary calls per discipline."""
         disciplines = self.scenario.formulation.get_top_level_disciplines()
         return {
-            discipline.name: discipline.execution_statistics.n_calls
+            discipline.name: discipline.execution_statistics.n_executions
             for discipline in disciplines
         }
 
@@ -498,7 +500,7 @@ class ScalableProblem:
         """The number of top-level disciplinary linearizations per discipline."""
         disciplines = self.scenario.formulation.get_top_level_disciplines()
         return {
-            discipline.name: discipline.execution_statistics.n_calls_linearize
+            discipline.name: discipline.execution_statistics.n_linearizations
             for discipline in disciplines
         }
 
@@ -506,7 +508,7 @@ class ScalableProblem:
     def n_calls(self) -> dict[str, int]:
         """The number of disciplinary calls per discipline."""
         return {
-            discipline.name: discipline.execution_statistics.n_calls
+            discipline.name: discipline.execution_statistics.n_executions
             for discipline in self.scenario.disciplines
         }
 
@@ -514,7 +516,7 @@ class ScalableProblem:
     def n_calls_linearize(self) -> dict[str, int]:
         """The number of disciplinary linearizations per discipline."""
         return {
-            discipline.name: discipline.execution_statistics.n_calls_linearize
+            discipline.name: discipline.execution_statistics.n_linearizations
             for discipline in self.scenario.disciplines
         }
 

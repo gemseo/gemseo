@@ -118,9 +118,9 @@ class XDSMizer:
         else:
             self._is_scenario = False
             design_space = DesignSpace()
-            for name in discipline.input_grammar.names:
+            for name in discipline.io.input_grammar:
                 design_space.add_variable(name)
-            output_names = iter(discipline.output_grammar.names)
+            output_names = iter(discipline.io.output_grammar)
             discipline = MDOScenario(
                 [discipline],
                 next(output_names),
@@ -471,7 +471,7 @@ class XDSMizer:
                 if isinstance(atom.process, BaseScenario):
                     continue
                 varnames = sorted(
-                    set(atom.process.io.input_grammar.names)
+                    set(atom.process.io.input_grammar)
                     & set(self.scenario.get_optim_variable_names())
                 )
 
@@ -479,7 +479,7 @@ class XDSMizer:
                     add_edge(OPT_ID, self.to_id[atom], varnames)
 
                 varnames = sorted(
-                    set(atom.process.io.output_grammar.names) & set(function_varnames)
+                    set(atom.process.io.output_grammar) & set(function_varnames)
                 )
                 if varnames:
                     add_edge(self.to_id[atom], OPT_ID, varnames)
@@ -493,12 +493,10 @@ class XDSMizer:
                 if isinstance(atom.process, (BaseMDA, BaseScenario)):
                     continue
                 out_to_user = [
-                    o
-                    for o in atom.process.io.output_grammar.names
-                    if o not in disc_to_opt
+                    o for o in atom.process.io.output_grammar if o not in disc_to_opt
                 ]
                 out_to_opt = [
-                    o for o in atom.process.io.output_grammar.names if o in disc_to_opt
+                    o for o in atom.process.io.output_grammar if o in disc_to_opt
                 ]
                 if out_to_user:
                     add_edge(self.to_id[atom], USER_ID, [x + "^*" for x in out_to_user])

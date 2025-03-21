@@ -43,12 +43,12 @@ from gemseo.caches.cache_entry import CacheEntry
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.typing import StrKeyMapping
-from gemseo.utils.comparisons import DataToCompare
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from gemseo.typing import JacobianData
+    from gemseo.utils.comparisons import DataToCompare
 
     class DataComparator(Protocol):
         """A structural type for data comparator."""
@@ -62,13 +62,6 @@ if TYPE_CHECKING:
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-DATA_COMPARATOR: DataComparator = compare_dict_of_arrays
-"""The comparator of input data structures.
-
-It is used to check whether an input data has been cached in.
-"""
 
 
 class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
@@ -414,3 +407,5 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     # TODO: API: make it behave like mappings, ie. like .keys().
     def __iter__(self) -> Iterator[CacheEntry]:  # type: ignore[override]
         return self.get_all_entries()
+
+    compare_dict_of_arrays = staticmethod(compare_dict_of_arrays)

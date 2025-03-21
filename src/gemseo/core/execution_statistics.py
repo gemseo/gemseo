@@ -16,11 +16,9 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 from multiprocessing import Value
 from timeit import default_timer
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -30,7 +28,7 @@ from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 from gemseo.utils.timer import Timer
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Callable
     from multiprocessing.managers import DictProxy
     from multiprocessing.managers import ListProxy
     from multiprocessing.sharedctypes import Synchronized
@@ -43,7 +41,6 @@ class _Meta(GoogleDocstringInheritanceMeta):
 
     @property
     def is_time_stamps_enabled(self) -> bool:
-        """Whether to record the time stamps."""
         return self.time_stamps is not None
 
     @is_time_stamps_enabled.setter
@@ -76,8 +73,8 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     statistics.
 
     The results of the recordings can be accessed with
-    :attr:`.n_calls`,
-    :attr:`.n_calls_linearize`,
+    :attr:`.n_executions`,
+    :attr:`.n_linearizations`,
     :attr:`.duration`,
     :attr:`.time_stamps`.
     The time stamps should be processed with :func:`create_gantt_chart`.
@@ -108,16 +105,19 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
 
     """
 
+    is_time_stamps_enabled: bool
+    """Whether to record the time stamps."""
+
     is_enabled: ClassVar[bool] = True
     """Whether to record all the statistics."""
 
     __duration: Synchronized[float]
     """The cumulated execution duration."""
 
-    __n_calls: Synchronized[int]
+    __n_executions: Synchronized[int]
     """The number of calls to the execution method."""
 
-    __n_calls_linearize: Synchronized[int]
+    __n_linearizations: Synchronized[int]
     """The number of calls to the linearization method."""
 
     __name: str
@@ -125,8 +125,8 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
         "__duration",
-        "__n_calls",
-        "__n_calls_linearize",
+        "__n_executions",
+        "__n_linearizations",
     }
 
     def __init__(self, name: str):
@@ -137,33 +137,40 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
         self.__name = name
         self._init_shared_memory_attrs_before()
 
-    @contextmanager
-    def record(self, linearize: bool = False) -> Generator[Any, Any, Any]:
-        """Record execution statistics while executing code in a context manager.
-
-        Args:
-            linearize: Whether measuring execution for linearization.
-        """
+    def __record_call(
+        self,
+        function: Callable[..., None],
+        linearization: bool,
+    ) -> None:
+        """Record statistics while calling a function."""
         if self.is_enabled:
-            if linearize:
+            with Timer() as timer:
+                function()
+            if linearization:
                 self.__increment_n_linearizations()
             else:
                 self.__increment_n_executions()
-            with Timer() as timer:
-                yield
-            self.__add_duration(timer.elapsed_time, linearize)
+            self.__add_duration(timer.elapsed_time, linearization)
         else:
-            yield
+            function()
+
+    def record_execution(self, function: Callable[..., None]) -> None:
+        """Record execution statistics."""
+        self.__record_call(function, False)
+
+    def record_linearization(self, function: Callable[..., None]) -> None:
+        """Record linearization statistics."""
+        self.__record_call(function, True)
 
     def __increment_n_executions(self) -> None:
         """Increment the number of executions by 1."""
-        with self.__n_calls.get_lock():
-            self.__n_calls.value += 1
+        with self.__n_executions.get_lock():
+            self.__n_executions.value += 1
 
     def __increment_n_linearizations(self) -> None:
         """Increment the number of linearizations by 1."""
-        with self.__n_calls_linearize.get_lock():
-            self.__n_calls_linearize.value += 1
+        with self.__n_linearizations.get_lock():
+            self.__n_linearizations.value += 1
 
     def __add_duration(self, duration: float, linearize: bool) -> None:
         """Add execution duration.
@@ -177,11 +184,11 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
 
         time_stamps = ExecutionStatistics.time_stamps
         if time_stamps is not None:
-            _time_stamps = time_stamps.setdefault(
+            time_stamps_ = time_stamps.setdefault(
                 self.__name, get_multi_processing_manager().list()
             )
             current_time = default_timer()
-            _time_stamps.append((current_time - duration, current_time, linearize))
+            time_stamps_.append((current_time - duration, current_time, linearize))
 
     def __check_is_enabled(self) -> None:
         if not self.is_enabled:
@@ -192,7 +199,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
             raise RuntimeError(msg)
 
     @property
-    def n_calls(self) -> int | None:
+    def n_executions(self) -> int | None:
         """The number of executions.
 
         This property is multiprocessing safe.
@@ -201,13 +208,13 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
             RuntimeError: If the statistics are disabled.
         """
         if self.is_enabled:
-            return self.__n_calls.value
+            return self.__n_executions.value
         return None
 
-    @n_calls.setter
-    def n_calls(self, value: int) -> None:
+    @n_executions.setter
+    def n_executions(self, value: int) -> None:
         self.__check_is_enabled()
-        self.__n_calls.value = value
+        self.__n_executions.value = value
 
     @property
     def duration(self) -> float | None:
@@ -228,7 +235,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
         self.__duration.value = value
 
     @property
-    def n_calls_linearize(self) -> int | None:
+    def n_linearizations(self) -> int | None:
         """The number of linearizations.
 
         This property is multiprocessing safe.
@@ -237,15 +244,15 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
             RuntimeError: If the statistics are disabled.
         """
         if self.is_enabled:
-            return self.__n_calls_linearize.value
+            return self.__n_linearizations.value
         return None
 
-    @n_calls_linearize.setter
-    def n_calls_linearize(self, value: int) -> None:
+    @n_linearizations.setter
+    def n_linearizations(self, value: int) -> None:
         self.__check_is_enabled()
-        self.__n_calls_linearize.value = value
+        self.__n_linearizations.value = value
 
     def _init_shared_memory_attrs_before(self) -> None:
         self.__duration = Value("d", 0.0)
-        self.__n_calls = Value("i", 0)
-        self.__n_calls_linearize = Value("i", 0)
+        self.__n_executions = Value("i", 0)
+        self.__n_linearizations = Value("i", 0)

@@ -72,7 +72,7 @@ class MLAlgoSelection:
     """Machine learning algorithm selector."""
 
     dataset: Dataset
-    """The learning dataset."""
+    """The training dataset."""
 
     measure: type[BaseMLAlgoQuality]
     """The name of a quality measure to measure the quality of the machine learning
@@ -98,7 +98,7 @@ class MLAlgoSelection:
     ) -> None:
         """
         Args:
-            dataset: The learning dataset.
+            dataset: The training dataset.
             measure: The name of a quality measure
                 to measure the quality of the machine learning algorithms.
             measure_evaluation_method_name: The name of the method

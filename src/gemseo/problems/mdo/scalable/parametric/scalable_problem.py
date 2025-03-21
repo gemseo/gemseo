@@ -53,9 +53,8 @@ from gemseo.problems.mdo.scalable.parametric.scalable_design_space import (
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from numpy.typing import NDArray
-
     from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.typing import RealArray
 
 
 class ScalableProblem(_ScalableProblem):
@@ -107,7 +106,7 @@ class ScalableProblem(_ScalableProblem):
     def create_quadratic_programming_problem(
         self,
         add_coupling: bool = False,
-        covariance_matrices: Iterable[NDArray[float]] = (),
+        covariance_matrices: Iterable[RealArray] = (),
         use_margin: bool = True,
         margin_factor: float = 2.0,
         tolerance: float = 0.01,

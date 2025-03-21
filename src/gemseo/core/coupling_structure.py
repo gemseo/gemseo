@@ -33,7 +33,7 @@ from matplotlib.patches import Circle
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.dependency_graph import ExecutionSequence
-from gemseo.disciplines.utils import check_disciplines_consistency
+from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.n2d3.n2_html import N2HTML
 
 if TYPE_CHECKING:
@@ -90,7 +90,6 @@ class CouplingStructure:
         self._weakly_coupled_disc = None
         self._strong_couplings = None
         self._strongly_coupled_disc = None
-        self._output_couplings = None
         self._all_couplings = None
 
     @staticmethod
@@ -107,8 +106,8 @@ class CouplingStructure:
         Returns:
             Whether the discipline is self-coupled.
         """
-        self_c_vars = set(discipline.io.input_grammar.names) & set(
-            discipline.io.output_grammar.names
+        self_c_vars = set(discipline.io.input_grammar) & set(
+            discipline.io.output_grammar
         )
 
         if discipline.io.residual_to_state_variable:
@@ -231,8 +230,8 @@ class CouplingStructure:
         strong_couplings = set()
 
         for group in self.get_strongly_coupled_disciplines(by_group=True):
-            inputs = itertools.chain(*(disc.io.input_grammar.names for disc in group))
-            outputs = itertools.chain(*(disc.io.output_grammar.names for disc in group))
+            inputs = itertools.chain(*(disc.io.input_grammar for disc in group))
+            outputs = itertools.chain(*(disc.io.output_grammar for disc in group))
             strong_couplings.update(set(inputs) & set(outputs))
 
         self._strong_couplings = sorted(strong_couplings)
@@ -249,7 +248,7 @@ class CouplingStructure:
         # disciplines that are inputs of any other discipline
         weak_couplings: set[str] = set()
         for weak_discipline in self.weakly_coupled_disciplines:
-            weak_couplings.update(weak_discipline.io.output_grammar.names)
+            weak_couplings.update(weak_discipline.io.output_grammar)
         self._weak_couplings = sorted(weak_couplings)
 
     @property
@@ -274,8 +273,8 @@ class CouplingStructure:
         inputs: set[str] = set()
         outputs: set[str] = set()
         for discipline in self.disciplines:
-            inputs.update(discipline.io.input_grammar.names)
-            outputs.update(discipline.io.output_grammar.names)
+            inputs.update(discipline.io.input_grammar)
+            outputs.update(discipline.io.output_grammar)
         self._all_couplings = sorted(inputs & outputs)
 
     def get_output_couplings(
@@ -293,7 +292,7 @@ class CouplingStructure:
         Returns:
             The names of the output coupling variables.
         """
-        output_names = discipline.io.output_grammar.names
+        output_names = discipline.io.output_grammar
         couplings = self.strong_couplings if strong else self.all_couplings
         return sorted(name for name in output_names if name in couplings)
 
@@ -312,7 +311,7 @@ class CouplingStructure:
         Returns:
             The names of the input coupling variables.
         """
-        input_names = discipline.io.input_grammar.names
+        input_names = discipline.io.input_grammar
         couplings = self.strong_couplings if strong else self.all_couplings
         return sorted(name for name in input_names if name in couplings)
 
@@ -375,8 +374,8 @@ class CouplingStructure:
 
         self_coupling = {}
         for discipline in self.disciplines:
-            coupling_names = set(discipline.input_grammar.names).intersection(
-                discipline.output_grammar.names
+            coupling_names = set(discipline.io.input_grammar).intersection(
+                discipline.io.output_grammar
             )
             if coupling_names:
                 self_coupling[discipline] = sorted(coupling_names)

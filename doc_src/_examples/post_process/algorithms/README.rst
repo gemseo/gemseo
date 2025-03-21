@@ -8,3 +8,19 @@
 
 Algorithms
 ~~~~~~~~~~
+
+The data used to illustrate the post-processing algorithms in the following examples are
+from an MDO scenario on the Sobieski's SSBJ problem.
+The scenario uses the MDF formulation and was solved using the SciPy SLSQP algorithm.
+The data have been saved in an HDF5 file, which is passed to the high-level function
+:func:`.execute_post` along with the appropriate settings model.
+
+.. note::
+
+   To get the specific settings of a given post-processing, one should use the
+   appropriate settings model accessible in :mod:`gemseo.settings.post`.
+   Further details on the available post-processings and their settings can be found in
+   the following dedicated page: :ref:`gen_post_algos`.
+
+Details on how to execute such a scenario can be found
+:ref:`here <sphx_glr_examples_formulations_plot_sobieski_mdf_example.py>`.

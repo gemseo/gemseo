@@ -35,9 +35,7 @@ def problem():
 def test_dk_d_mach(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     lin_k = sr_aero._SobieskiAerodynamics__compute_dk_aero_dmach(
@@ -54,9 +52,7 @@ def test_dk_d_mach(problem) -> None:
 def test_dk_dsweep(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     x_shared[1] = 35000.0
@@ -72,9 +68,7 @@ def test_dk_dsweep(problem) -> None:
 
 def test_d_c_dmin_dsweep(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     x_shared[1] = 35000.0
@@ -94,9 +88,7 @@ def test_d_c_dmin_dsweep(problem) -> None:
 
 def test_d_cd_dsweep(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     x_shared[1] = 35000.0
@@ -117,9 +109,7 @@ def test_d_cd_dsweep(problem) -> None:
 
 def test_d_cd_d_mach(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     y_12 = indata["y_12"] * 0.1
@@ -143,9 +133,7 @@ def test_d_cd_d_mach(problem) -> None:
 
 def test_d_cd_dsref(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     y_12 = indata["y_12"]
@@ -167,9 +155,7 @@ def test_d_cd_dsref(problem) -> None:
 
 def test_d_cl_dh(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     y_12 = indata["y_12"]
@@ -206,9 +192,7 @@ def test_d_cl_dh(problem) -> None:
 def test_d_cl_dsref(problem) -> None:
     """"""
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     y_12 = indata["y_12"]
@@ -227,9 +211,7 @@ def test_d_cl_dsref(problem) -> None:
 
 def test_d_cl_d_mach(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"][:]
     y_12 = indata["y_12"]
@@ -247,9 +229,7 @@ def test_d_cl_d_mach(problem) -> None:
     )
 
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     x_shared = indata["x_shared"][:]
     x_shared[1] = 35000.0
     sr_aero._SobieskiAerodynamics__compute_rho_v(x_shared[2], x_shared[1])
@@ -268,9 +248,7 @@ def test_d_cl_d_mach(problem) -> None:
 
 def test_drho_v2_dh(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     sr_aero._SobieskiAerodynamics__compute_rho_v(x_shared[2], x_shared[1])
@@ -284,9 +262,7 @@ def test_drho_v2_dh(problem) -> None:
     )
 
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     x_shared[1] = 35000.0
     sr_aero._SobieskiAerodynamics__compute_rho_v(x_shared[2], x_shared[1])
     sr_aero._SobieskiAerodynamics__compute_rhov2()
@@ -303,9 +279,7 @@ def test_drho_v2_dh(problem) -> None:
 
 def test_drho_v2_d_m(problem) -> None:
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     h = 1e-30
     x_shared = indata["x_shared"]
     sr_aero._SobieskiAerodynamics__compute_rho_v(x_shared[2], x_shared[1])
@@ -319,9 +293,7 @@ def test_drho_v2_d_m(problem) -> None:
     )
 
     sr_aero = problem.aerodynamics
-    indata = problem.get_default_inputs(
-        names=SobieskiAerodynamics().io.input_grammar.names
-    )
+    indata = problem.get_default_inputs(names=SobieskiAerodynamics().io.input_grammar)
     x_shared = indata["x_shared"]
     x_shared[1] = 35000.0
     sr_aero._SobieskiAerodynamics__compute_rho_v(x_shared[2], x_shared[1])
@@ -405,21 +377,21 @@ def test_d_v_dh_drho_dh(problem) -> None:
 def test_jac_aero(problem) -> None:
     """"""
     sr = SobieskiAerodynamics("complex128")
-    indata = problem.get_default_inputs(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
-    indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
 
-    indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar.names)
+    indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
     assert sr.check_jacobian(
         indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
     )
     for _ in range(5):
-        indata = problem.get_random_input(names=sr.io.input_grammar.names, seed=1)
+        indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
         assert sr.check_jacobian(
             indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
         )

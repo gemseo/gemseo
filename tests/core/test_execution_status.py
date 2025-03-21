@@ -98,66 +98,35 @@ def test_value_setter_error_without_enum(execution_status: ExecutionStatus):
         execution_status.value = "bad"
 
 
-@pytest.mark.parametrize("initial_status", [Status.DONE])
-def test_run_success(execution_status: ExecutionStatus, initial_status: Status):
-    """Verify the run method on success."""
-    execution_status.value = initial_status
-    with execution_status.run():
-        pass
+@pytest.mark.parametrize("status", [Status.RUNNING, Status.LINEARIZING])
+def test_handle_success(execution_status: ExecutionStatus, status: Status):
+    """Verify the handle method on success."""
+    execution_status.value = Status.DONE
+    execution_status.handle(status, lambda: None)
     assert execution_status.value == Status.DONE
 
 
-@pytest.mark.parametrize("initial_status", [Status.LINEARIZING])
-def test_run_bad_initial_status(
-    execution_status: ExecutionStatus, initial_status: Status
-):
-    """Verify the run method on bad initial status."""
-    execution_status.value = initial_status
-    match = f" cannot be set to status RUNNING while in status {initial_status}"
-    with pytest.raises(ValueError, match=match), execution_status.run():
-        pass
-    assert execution_status.value == initial_status
+@pytest.mark.parametrize("status", [Status.RUNNING, Status.LINEARIZING])
+def test_handle_failure(execution_status: ExecutionStatus, status: Status):
+    """Verify the handle method on failure."""
+    execution_status.value = Status.DONE
 
-
-@pytest.mark.parametrize("initial_status", [Status.DONE])
-def test_run_failure(execution_status: ExecutionStatus, initial_status: Status):
-    """Verify the run method on failure."""
-    execution_status.value = initial_status
-    with pytest.raises(ValueError, match="message"), execution_status.run():  # noqa: PT012
-        msg = "message"
+    def _raise(msg: str) -> None:
         raise ValueError(msg)
+
+    with pytest.raises(ValueError, match="message"):
+        execution_status.handle(status, _raise, "message")
     assert execution_status.value == Status.FAILED
 
 
-@pytest.mark.parametrize("initial_status", [Status.DONE])
-def test_linearize_success(execution_status: ExecutionStatus, initial_status: Status):
-    """Verify the linearize method on success."""
-    execution_status.value = initial_status
-    with execution_status.linearize():
-        pass
-    assert execution_status.value == Status.DONE
-
-
-@pytest.mark.parametrize("initial_status", [Status.LINEARIZING])
-def test_linearize_bad_initial_status(
-    execution_status: ExecutionStatus, initial_status: Status
-):
-    """Verify the linearize method on bad initial status."""
-    execution_status.value = initial_status
-    match = f" cannot be set to status LINEARIZING while in status {initial_status}"
-    with pytest.raises(ValueError, match=match), execution_status.linearize():
-        pass
-    assert execution_status.value == initial_status
-
-
-@pytest.mark.parametrize("initial_status", [Status.DONE])
-def test_linearize_failure(execution_status: ExecutionStatus, initial_status: Status):
-    """Verify the linearize method on failure."""
-    execution_status.value = initial_status
-    with pytest.raises(ValueError, match="message"), execution_status.linearize():  # noqa: PT012
-        msg = "message"
-        raise ValueError(msg)
-    assert execution_status.value == Status.FAILED
+@pytest.mark.parametrize("status", [Status.RUNNING, Status.LINEARIZING])
+def test_handle_bad_initial_status(execution_status: ExecutionStatus, status: Status):
+    """Verify the handle method on bad initial status."""
+    execution_status.value = Status.LINEARIZING
+    match = f" cannot be set to status {status} while in status LINEARIZING"
+    with pytest.raises(ValueError, match=match):
+        execution_status.handle(status, lambda: None)
+    assert execution_status.value == Status.LINEARIZING
 
 
 class Observer(BaseExecutionStatusObserver):

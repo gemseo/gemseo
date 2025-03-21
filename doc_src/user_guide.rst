@@ -23,6 +23,7 @@ User guide
    machine_learning/index
    surrogate
    uncertainty/index
+   ode/index
    scalable
    algorithms/index
    problems/index

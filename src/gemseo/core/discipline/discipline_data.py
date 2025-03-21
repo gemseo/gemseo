@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class DisciplineData(dict[str, Any]):
+class DisciplineData(dict[str, Any]):  # noqa: FURB189
     """A dict-like class for handling disciplines data."""
 
     def __getstate__(self) -> dict[str, Any]:

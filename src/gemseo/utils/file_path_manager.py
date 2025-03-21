@@ -31,7 +31,10 @@ class FileDefinition(NamedTuple):
     """The definition of a file name."""
 
     name: str
+    """The name of the file."""
+
     extension: str
+    """The extension of the file."""
 
 
 class FilePathManager:
@@ -167,9 +170,9 @@ class FilePathManager:
         """
         message = message.replace("-", "_").replace(" ", "_")
         message = "_".join(
-            [elem.lower() for elem in findall("[A-Z][^A-Z]*", message)] or [message]
+            [elem.lower() for elem in findall(r"[A-Z][^A-Z]*", message)] or [message]
         )
-        return re.sub("_+", "_", message)
+        return re.sub(r"_+", "_", message)
 
     @classmethod
     def add_suffix(

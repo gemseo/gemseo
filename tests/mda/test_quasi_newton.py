@@ -52,7 +52,7 @@ def test_broyden_sellar(method) -> None:
     assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
 
     mda.settings.warm_start = True
-    mda.execute({X_SHARED: mda.default_input_data[X_SHARED] + 0.1})
+    mda.execute({X_SHARED: mda.io.input_grammar.defaults[X_SHARED] + 0.1})
 
 
 def test_hybrid_sellar() -> None:
@@ -110,5 +110,5 @@ def test_methods_supporting_callbacks(method):
     mda = MDAQuasiNewton([Sellar1(), SellarSystem()], method=method)
     method_supports_callbacks = method in MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS
     assert (
-        mda.NORMALIZED_RESIDUAL_NORM in mda.output_grammar
+        mda.NORMALIZED_RESIDUAL_NORM in mda.io.output_grammar
     ) is method_supports_callbacks

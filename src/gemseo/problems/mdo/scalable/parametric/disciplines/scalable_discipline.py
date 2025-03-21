@@ -41,6 +41,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
 
@@ -65,8 +66,8 @@ class ScalableDiscipline(BaseDiscipline):
         a_i: NDArray,
         D_i0: NDArray,  # noqa: N803
         D_ii: NDArray,  # noqa: N803
-        C_ij: Mapping[str, NDArray[float]],  # noqa: N803
-        **default_input_values: NDArray[float],
+        C_ij: Mapping[str, RealArray],  # noqa: N803
+        **default_input_values: RealArray,
     ) -> None:
         r"""
         Args:
@@ -87,7 +88,7 @@ class ScalableDiscipline(BaseDiscipline):
         self.__x_i_name = get_x_local_name(self._discipline.index)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        if self.__u_i_name in self.input_grammar:
+        if self.__u_i_name in self.io.input_grammar:
             u_i = input_data[self.__u_i_name]
         else:
             u_i = 0

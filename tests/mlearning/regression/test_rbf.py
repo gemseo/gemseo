@@ -31,7 +31,7 @@ from scipy.interpolate.rbf import Rbf
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.algos.rbf import RBFRegressor
-from gemseo.mlearning.regression.algos.rbf_settings import Function
+from gemseo.mlearning.regression.algos.rbf_settings import RBF
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -97,7 +97,7 @@ def model_with_1d_output(dataset) -> RBFRegressor:
 
 def test_get_available_functions() -> None:
     """Test available RBFs."""
-    for function in Function:
+    for function in RBF:
         assert hasattr(Rbf, f"_h_{function}")
 
 
@@ -178,7 +178,7 @@ def test_pred_single_out(model_with_1d_output) -> None:
 
 def test_predict_jacobian(dataset) -> None:
     """Test prediction."""
-    for function in Function:
+    for function in RBF:
         model_ = RBFRegressor(dataset, function=function)
         model_.learn()
         jacobian = model_.predict_jacobian(INPUT_VALUE)

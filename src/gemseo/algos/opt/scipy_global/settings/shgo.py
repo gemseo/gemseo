@@ -23,7 +23,7 @@ from pydantic import PositiveInt
 from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 
 class SHGO_Settings(BaseSciPyGlobalSettings):  # noqa: N801

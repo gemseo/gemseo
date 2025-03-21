@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import logging
-import timeit
 from collections.abc import Mapping
 from collections.abc import Sequence
 from datetime import timedelta
@@ -40,6 +39,7 @@ from pydantic import BaseModel
 from pydantic import Field
 from strenum import StrEnum
 
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
@@ -50,17 +50,18 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 )
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.disciplines.utils import get_sub_disciplines
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+from gemseo.utils.discipline import get_sub_disciplines
+from gemseo.utils.pydantic import get_class_name
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.algos.base_algo_factory import BaseAlgoFactory
     from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.driver_library import DriverLibraryFactory
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
@@ -145,8 +146,8 @@ class BaseScenario(BaseMonitoredProcess):
     """The possible algorithm class names, this attribute is solely necessary for
     pickling."""
 
-    _ALGO_FACTORY_CLASS: ClassVar[type[BaseAlgoFactory]]
-    """The algorithm factory."""
+    _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]]
+    """The driver factory."""
 
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of :meth:`.execute`."""
@@ -178,9 +179,6 @@ class BaseScenario(BaseMonitoredProcess):
     __history_backup_is_set: bool
     """Whether the history backup database option is set."""
 
-    __disciplines: tuple[BaseDiscipline, ...]
-    """The disciplines."""
-
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -211,18 +209,19 @@ class BaseScenario(BaseMonitoredProcess):
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        self.__disciplines = tuple(disciplines)
         self._form_factory = self._formulation_factory
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
 
         self.optimization_result = None
         self.clear_history_before_execute = False
-        if formulation_settings_model is None:
-            formulation_name = formulation_settings.pop("formulation_name")
-        else:
-            formulation_name = formulation_settings_model._TARGET_CLASS_NAME
+        formulation_name = get_class_name(
+            formulation_settings_model,
+            formulation_settings,
+            class_name_arg="formulation_name",
+        )
 
         self._init_formulation(
+            disciplines,
             formulation_name,
             objective_name,
             design_space,
@@ -265,7 +264,7 @@ class BaseScenario(BaseMonitoredProcess):
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
         """The disciplines."""
-        return self.__disciplines
+        return self.formulation.disciplines
 
     @classmethod
     def __init_subclass__(cls) -> None:
@@ -356,9 +355,11 @@ class BaseScenario(BaseMonitoredProcess):
         for discipline in get_sub_disciplines(
             self.formulation.disciplines, recursive=True
         ):
-            for key, value in discipline.default_input_data.items():
+            for key, value in discipline.io.input_grammar.defaults.items():
                 if isinstance(value, ndarray) and value.dtype == float64:
-                    discipline.default_input_data[key] = array(value, dtype=complex128)
+                    discipline.io.input_grammar.defaults[key] = array(
+                        value, dtype=complex128
+                    )
 
     def add_constraint(
         self,
@@ -427,6 +428,7 @@ class BaseScenario(BaseMonitoredProcess):
 
     def _init_formulation(
         self,
+        disciplines: Sequence[Discipline],
         formulation_name: str,
         objective_name: str,
         design_space: DesignSpace,
@@ -436,6 +438,7 @@ class BaseScenario(BaseMonitoredProcess):
         """Initialize the MDO formulation.
 
         Args:
+            disciplines: The disciplines.
             formulation_name: The name of the MDO formulation,
                 also the name of a class inheriting from :class:`.BaseMDOFormulation`.
             objective_name: The name of the objective.
@@ -447,7 +450,7 @@ class BaseScenario(BaseMonitoredProcess):
         """
         self.formulation = self._form_factory.create(
             formulation_name,
-            disciplines=self.__disciplines,
+            disciplines=disciplines,
             objective_name=objective_name,
             design_space=design_space,
             settings_model=formulation_settings_model,
@@ -610,13 +613,27 @@ class BaseScenario(BaseMonitoredProcess):
                 including the algorithm name (use the keyword ``"algo_name"``).
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
+        LOGGER.info("*** Start %s execution ***", self.name)
+        LOGGER.info("%s", repr(self))
+        initial_duration = self.execution_statistics.duration
+
         if algo_settings_model is not None or algo_settings:
             self.set_algorithm(algo_settings_model=algo_settings_model, **algo_settings)
 
-        t_0 = timeit.default_timer()
-        LOGGER.info(" ")
-        LOGGER.info("*** Start %s execution ***", self.name)
-        LOGGER.info("%s", repr(self))
+        # DOE algorithms do not normalize the input data
+        # but if an optimization algorithm was used in the previous execution,
+        # the functions attached to the OptimizationProblem
+        # expect normalized input data.
+        # So the original functions must be used.
+        # As it is possible that other types of driver do the same as optimizers,
+        # the original functions are restored each time a DOE is used.
+        if DOELibraryFactory().is_available(self._settings.algo_name):
+            self.formulation.optimization_problem.reset(
+                database=False,
+                current_iter=False,
+                design_space=False,
+                function_calls=False,
+            )
 
         if self.clear_history_before_execute:
             # Clear the database when multiple runs are performed,
@@ -625,11 +642,6 @@ class BaseScenario(BaseMonitoredProcess):
         database = self.formulation.optimization_problem.database
         n_x = len(database)
         self._execute_monitored()
-        LOGGER.info(
-            "*** End %s execution (time: %s) ***",
-            self.name,
-            timedelta(seconds=timeit.default_timer() - t_0),
-        )
         # The last call to the functions may not trigger the callback
         # so some values may be missing in the database.
         # This ensures that the callback is called after the last iteration.
@@ -638,6 +650,16 @@ class BaseScenario(BaseMonitoredProcess):
             if 0 < n_x < n_x_a:
                 x_vect = database.get_x_vect(n_x_a)
                 self._execute_backup_callback(x_vect)
+
+        execution_statistics = self.execution_statistics
+        if execution_statistics.is_enabled:
+            LOGGER.info(
+                "*** End %s execution (time: %s) ***",
+                self.name,
+                timedelta(seconds=execution_statistics.duration - initial_duration),
+            )
+        else:
+            LOGGER.info("*** End %s execution ***", self.name)
 
     def _execute(self) -> None:
         self.optimization_result = self._algo_factory.execute(
@@ -650,7 +672,9 @@ class BaseScenario(BaseMonitoredProcess):
         msg = MultiLineString()
         msg.add(self.name)
         msg.indent()
-        msg.add("Disciplines: {}", pretty_str(self.__disciplines, delimiter=" "))
+        msg.add(
+            "Disciplines: {}", pretty_str(self.formulation.disciplines, delimiter=" ")
+        )
         msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return str(msg)
 
@@ -661,18 +685,18 @@ class BaseScenario(BaseMonitoredProcess):
         msg = MultiLineString()
         msg.add("Scenario Execution Statistics")
         msg.indent()
-        for disc in self.__disciplines:
+        for disc in self.formulation.disciplines:
             msg.add("Discipline: {}", disc.name)
             msg.indent()
-            msg.add("Executions number: {}", disc.execution_statistics.n_calls)
+            msg.add("Executions number: {}", disc.execution_statistics.n_executions)
             msg.add("Execution time: {} s", disc.execution_statistics.duration)
             msg.add(
-                "Linearizations number: {}", disc.execution_statistics.n_calls_linearize
+                "Linearizations number: {}", disc.execution_statistics.n_linearizations
             )
             msg.dedent()
 
-            n_calls += disc.execution_statistics.n_calls
-            n_lin += disc.execution_statistics.n_calls_linearize
+            n_calls += disc.execution_statistics.n_executions
+            n_lin += disc.execution_statistics.n_linearizations
 
         msg.add("Total number of executions calls: {}", n_calls)
         msg.add("Total number of linearizations: {}", n_lin)

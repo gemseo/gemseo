@@ -19,80 +19,137 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Random forest regression
-========================
+Random forest
+=============
 
-We want to approximate a discipline with two inputs and two outputs:
-
-- :math:`y_1=1+2x_1+3x_2`
-- :math:`y_2=-1-2x_1-3x_2`
-
-over the unit hypercube :math:`[0,1]\\times[0,1]`.
+A :class:`.RandomForestRegressor` is a random forest model
+based on `scikit-learn <https://scikit-learn.org/>`__.
 """
 
-# %%
-# Import
-# ------
 from __future__ import annotations
 
+from matplotlib import pyplot as plt
 from numpy import array
 
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import sample_disciplines
 from gemseo.mlearning import create_regression_model
 
 configure_logger()
 
-
 # %%
-# Create the discipline to learn
-# ------------------------------
-# We can implement this analytic discipline by means of the
-# :class:`.AnalyticDiscipline` class.
-expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
+# Problem
+# -------
+# In this example,
+# we represent the function :math:`f(x)=(6x-2)^2\sin(12x-4)` :cite:`forrester2008`
+# by the :class:`.AnalyticDiscipline`
 discipline = create_discipline(
-    "AnalyticDiscipline", name="func", expressions=expressions
+    "AnalyticDiscipline",
+    name="f",
+    expressions={"y": "(6*x-2)**2*sin(12*x-4)"},
+)
+# %%
+# and seek to approximate it over the input space
+input_space = create_design_space()
+input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+
+# %%
+# To do this,
+# we create a training dataset with 6 equispaced points:
+training_dataset = sample_disciplines(
+    [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
 
 # %%
-# Create the input sampling space
-# -------------------------------
-# We create the input sampling space by adding the variables one by one.
-design_space = create_design_space()
-design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
-design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-
-# %%
-# Create the learning set
-# -----------------------
-# We can build a learning set by means of a
-# :class:`.DOEScenario` with a full factorial design of
-# experiments. The number of samples can be equal to 9 for example.
-scenario = create_scenario(
-    [discipline],
-    "y_1",
-    design_space,
-    scenario_type="DOE",
-    formulation_name="DisciplinaryOpt",
-)
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
-
-# %%
-# Create the regression model
-# ---------------------------
-# Then, we build the linear regression model from the database and
-# displays this model.
-dataset = scenario.to_dataset(opt_naming=False)
-model = create_regression_model("RandomForestRegressor", data=dataset)
+# Basics
+# ------
+# Training
+# ~~~~~~~~
+# Then,
+# we train an random forest regression model from these samples:
+model = create_regression_model("RandomForestRegressor", training_dataset)
 model.learn()
-model
 
 # %%
-# Predict output
-# --------------
-# Once it is built, we can use it for prediction.
-input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
+# Prediction
+# ~~~~~~~~~~
+# Once it is built,
+# we can predict the output value of :math:`f` at a new input point:
+input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
+
+# %%
+# but cannot predict its Jacobian value:
+try:
+    model.predict_jacobian(input_value)
+except NotImplementedError:
+    print("The derivatives are not available for RandomForestRegressor.")
+
+# %%
+# Plotting
+# ~~~~~~~~
+# You can see that the random forest model is pretty good on the left,
+# but bad on the right:
+test_dataset = sample_disciplines(
+    [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=100
+)
+input_data = test_dataset.get_view(variable_names=model.input_names).to_numpy()
+reference_output_data = test_dataset.get_view(variable_names="y").to_numpy().ravel()
+predicted_output_data = model.predict(input_data).ravel()
+plt.plot(input_data.ravel(), reference_output_data, label="Reference")
+plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
+plt.grid()
+plt.legend()
+plt.show()
+
+# %%
+# Settings
+# --------
+# Number of estimators
+# ~~~~~~~~~~~~~~~~~~~~
+# The main hyperparameter of random forest regression is
+# the number of trees in the forest (default: 100).
+# Here is a comparison when increasing and decreasing this number:
+model = create_regression_model(
+    "RandomForestRegressor", training_dataset, n_estimators=10
+)
+model.learn()
+predicted_output_data_1 = model.predict(input_data).ravel()
+model = create_regression_model(
+    "RandomForestRegressor", training_dataset, n_estimators=1000
+)
+model.learn()
+predicted_output_data_2 = model.predict(input_data).ravel()
+plt.plot(input_data.ravel(), reference_output_data, label="Reference")
+plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
+plt.plot(input_data.ravel(), predicted_output_data_1, label="Regression - 10 trees")
+plt.plot(input_data.ravel(), predicted_output_data_2, label="Regression - 1000 trees")
+plt.grid()
+plt.legend()
+plt.show()
+
+# %%
+# Others
+# ------
+# The ``RandomForestRegressor`` class of scikit-learn has a lot of settings
+# (`read more <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`__),
+# and we have chosen to exhibit only ``n_estimators``.
+# However,
+# any argument of ``RandomForestRegressor`` can be set
+# using the dictionary ``parameters``.
+# For example,
+# we can impose a minimum of two samples per leaf:
+model = create_regression_model(
+    "RandomForestRegressor", training_dataset, parameters={"min_samples_leaf": 2}
+)
+model.learn()
+predicted_output_data_ = model.predict(input_data).ravel()
+plt.plot(input_data.ravel(), reference_output_data, label="Reference")
+plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
+plt.plot(input_data.ravel(), predicted_output_data_, label="Regression - 2 samples")
+plt.grid()
+plt.legend()
+plt.show()

@@ -100,25 +100,39 @@ def df5(y=2.0):
     return array([[-0.01], [-0.02]])
 
 
+def f_docstring(foo, bar):
+    """A function with docstrings.
+
+    Args:
+        foo: The docstring of foo.
+        bar: The docstring of bar.
+
+    Returns:
+        The description of the output.
+    """
+    baz = foo + bar
+    return baz  # noqa: RET504
+
+
 def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
 
-    assert list(d1.io.input_grammar.names) == ["y2", "z"]
+    assert list(d1.io.input_grammar) == ["y2", "z"]
     d1.execute()
 
     assert d1.io.data["y1"] == f1()
 
     d2 = AutoPyDiscipline(f2)
-    assert list(d2.io.input_grammar.names) == ["y1", "z"]
-    assert list(d2.io.output_grammar.names) == ["y2", "y3"]
+    assert list(d2.io.input_grammar) == ["y1", "z"]
+    assert list(d2.io.output_grammar) == ["y2", "y3"]
 
     d2.execute()
     assert d2.io.data["y2"] == f2()[0]
 
     d3 = AutoPyDiscipline(F().f1)
 
-    assert list(d3.io.input_grammar.names) == ["y2", "z"]
+    assert list(d3.io.input_grammar) == ["y2", "z"]
     d3.execute()
 
     assert d3.io.data["y1"] == F().f1()
@@ -128,6 +142,23 @@ def test_jac() -> None:
     """Test a basic jacobian."""
     disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
     assert disc.check_jacobian()
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("py_func", f5),
+        ("py_jac", df5),
+        ("input_names", ["y"]),
+        ("output_names", ["u", "f"]),
+    ],
+)
+def test_read_only(name, value) -> None:
+    """Test read-only attributes."""
+    disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
+    assert getattr(disc, name) == value
+    with pytest.raises(AttributeError):
+        setattr(disc, name, value)
 
 
 def test_use_arrays() -> None:
@@ -174,7 +205,9 @@ def test_jac_pb(design_space) -> None:
 
 def test_missing_jacobian() -> None:
     auto_rosen = AutoPyDiscipline(rosen)
-    with pytest.raises(RuntimeError, match="The analytic Jacobian is missing."):
+    with pytest.raises(
+        RuntimeError, match=re.escape("The analytic Jacobian is missing.")
+    ):
         auto_rosen._compute_jacobian()
 
 
@@ -266,7 +299,12 @@ def f6_no_return(x: int):
     return z  # noqa: RET504
 
 
-def f6_missing_type(x: int, y):
+def f6_missing_type_1(x: int, y):
+    z = 0
+    return z  # noqa: RET504
+
+
+def f6_missing_type_2(x: int, y) -> int:
     z = 0
     return z  # noqa: RET504
 
@@ -297,25 +335,31 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_no_return,
             [
-                "Discipline f6_no_return: py_func has inconsistent type "
-                "hints: either both "
-                "the signature arguments and the return values shall have "
-                "type hints or none. "
-                "The grammars will not use the type hints at all."
+                "The py_func of the AutoPyDiscipline 'f6_no_return' "
+                "has inconsistent type hints: "
+                "either both the signature arguments and the return values "
+                "shall have type hints or none. "
+                "The grammars of this discipline will not use the type hints at all."
             ],
             {"x": ndarray},
             {"z": ndarray},
         ),
         (
-            f6_missing_type,
+            f6_missing_type_1,
             [
-                "Discipline f6_missing_type: py_func has missing type hints "
-                "for the arguments: y.",
-                "Discipline f6_missing_type: py_func has inconsistent type "
-                "hints: either both "
-                "the signature arguments and the return values shall have "
-                "type hints or none. "
-                "The grammars will not use the type hints at all.",
+                "The py_func of the AutoPyDiscipline 'f6_missing_type_1' "
+                "has missing type hints for the arguments 'y'."
+                "The grammars of this discipline will not use the type hints at all.",
+            ],
+            {"x": ndarray, "y": ndarray},
+            {"z": ndarray},
+        ),
+        (
+            f6_missing_type_2,
+            [
+                "The py_func of the AutoPyDiscipline 'f6_missing_type_2' "
+                "has missing type hints for the arguments 'y'."
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray, "y": ndarray},
             {"z": ndarray},
@@ -324,15 +368,10 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_missing_return_tuple,
             [
-                "Discipline f6_missing_return_tuple: py_func has bad return "
-                "type hints: expecting "
-                "a tuple of types, got <class 'int'>.",
-                "Discipline f6_missing_return_tuple: py_func has inconsistent "
-                "type hints: "
-                "either both the signature arguments and the return values "
-                "shall have type "
-                "hints or none. The grammars will not use the type hints at "
-                "all.",
+                "The py_func of the AutoPyDiscipline 'f6_missing_return_tuple' "
+                "has bad return type hints: "
+                "expecting a tuple of types, got <class 'int'>."
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray},
             {"z": ndarray, "zz": ndarray},
@@ -340,17 +379,10 @@ def f6_bad_multiple_returns(x: int) -> tuple[int]:
         (
             f6_bad_multiple_returns,
             [
-                "Discipline f6_bad_multiple_returns: py_func has bad return "
-                "type hints: the number "
-                "of return values and return types shall be equal: 2 return "
-                "values but 1 "
-                "return type hints.",
-                "Discipline f6_bad_multiple_returns: py_func has inconsistent "
-                "type hints: "
-                "either both the signature arguments and the return values "
-                "shall have type "
-                "hints or none. The grammars will not use the type hints at "
-                "all.",
+                "The py_func of the AutoPyDiscipline 'f6_bad_multiple_returns' "
+                "has bad return type hints: "
+                "the number of return values (2) and return types (1) shall be equal. "
+                "The grammars of this discipline will not use the type hints at all.",
             ],
             {"x": ndarray},
             {"z": ndarray, "zz": ndarray},
@@ -368,8 +400,8 @@ def test_type_hints_for_grammars(
     AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.SIMPLE
     d = AutoPyDiscipline(func)
     AutoPyDiscipline.default_grammar_type = AutoPyDiscipline.GrammarType.JSON
-    assert d.input_grammar == input_names_to_types
-    assert d.output_grammar == output_names_to_types
+    assert d.io.input_grammar == input_names_to_types
+    assert d.io.output_grammar == output_names_to_types
     assert caplog.messages == warnings
     if caplog.records:
         assert caplog.records[0].levelname == "WARNING"
@@ -471,8 +503,8 @@ def test_mda(x_1, mda_name, sellar_disciplines) -> None:
 
     del input_data["y_1"]
     del input_data["x_2"]
-    mda.default_input_data = {
-        k: v for k, v in input_data.items() if k in mda.input_grammar
+    mda.io.input_grammar.defaults = {
+        k: v for k, v in input_data.items() if k in mda.io.input_grammar
     }
 
     assert mda.check_jacobian(
@@ -480,3 +512,33 @@ def test_mda(x_1, mda_name, sellar_disciplines) -> None:
         input_names=["x_1", "x_shared"],
         output_names=["y_1", "y_2"],
     )
+
+
+def f_returning_expression(x=1):
+    return x + 2
+
+
+def test_f_returning_expression():
+    """Check the message of the error raised when returning an expression."""
+    msg = (
+        "The function must return one or more variables, "
+        "e.g. 'return x' or 'return x, y',"
+        "but no expression like 'return a+b' or 'return a+b, y'."
+    )
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        AutoPyDiscipline(f_returning_expression)
+
+
+def test_no_descriptions():
+    """Check that no grammar descriptions when the arguments have not docstrings."""
+    discipline = AutoPyDiscipline(f1)
+    assert not discipline.io.input_grammar.descriptions
+
+
+def test_descriptions():
+    """Check the grammar descriptions when the arguments have docstrings."""
+    discipline = AutoPyDiscipline(f_docstring)
+    assert discipline.io.input_grammar.descriptions == {
+        "foo": "The docstring of foo.",
+        "bar": "The docstring of bar.",
+    }

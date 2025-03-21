@@ -36,10 +36,11 @@ from numpy.linalg import norm as np_norm
 from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import concat as pd_concat
+from prettytable import PrettyTable
 
 from gemseo.algos.pareto.utils import compute_pareto_optimal_points
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.string_tools import MultiLineString
+from gemseo.utils.string_tools import _format_value_in_pretty_table_6
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -300,7 +301,7 @@ class ParetoFront:
             fields += [f"{col[0]} ({pretty_str(col[1:])})" for col in df.columns]
 
         table = PrettyTable(fields)
-        table.float_format = "%.6g"
+        table.custom_format = _format_value_in_pretty_table_6
         for _, row in df.iterrows():
             name = row.name
             if isinstance(name, tuple):

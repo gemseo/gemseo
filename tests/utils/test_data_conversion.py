@@ -24,7 +24,6 @@ import pytest
 from numpy import array
 from numpy import array_equal
 from numpy import ndarray
-from scipy.sparse import csr_matrix
 
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -218,41 +217,3 @@ def test_deepcopy_dict_of_arrays(possibly_nested_xy_dict, names) -> None:
         else:
             assert array_equal(original_dict[key], dict_copy[key])
             assert id(original_dict[key]) != id(dict_copy[key])
-
-
-@pytest.mark.parametrize(
-    ("d_1", "d_2", "d_3", "d_4", "d_5"),
-    [
-        (
-            {"x": array([1.0]), "y": array([1, 2])},
-            {"x": array([1.0]), "y": array([1, 2])},
-            {"x": array([1.0]), "y": array([1, 3])},
-            {"x": array([1.0]), "y": array([1, 2]), "z": array([1.0])},
-            {"xx": array([1.0]), "y": array([1, 3])},
-        ),
-        (
-            {"x": array([1.0]), "y": {"z": array([1, 2])}},
-            {"x": array([1.0]), "y": {"z": array([1, 2])}},
-            {"x": array([1.0]), "y": {"z": array([1, 3])}},
-            {"x": array([1.0]), "y": {"z": array([1, 2])}, "z": array([1.0])},
-            {"xx": array([1.0]), "y": {"z": array([1, 3])}},
-        ),
-        (
-            {"x": csr_matrix([1.0]), "y": array([1, 2])},
-            {"x": csr_matrix([1.0]), "y": csr_matrix([1, 2])},
-            {"x": array([1.0]), "y": csr_matrix([1, 3])},
-            {"x": array([1.0]), "y": array([1, 2]), "z": array([1.0])},
-            {"xx": csr_matrix([1.0]), "y": array([1, 3])},
-        ),
-    ],
-)
-def test_compare_dict_of_arrays(d_1, d_2, d_3, d_4, d_5) -> None:
-    """Check the comparison of dictionaries of NumPy arrays."""
-    assert compare_dict_of_arrays(d_1, d_2)
-    assert not compare_dict_of_arrays(d_1, d_3)
-    assert not compare_dict_of_arrays(d_1, d_4)
-    assert not compare_dict_of_arrays(d_1, d_5)
-    d_1_copy = deepcopy_dict_of_arrays(d_1)
-    d_1_copy["x"] *= 0.99
-    assert not compare_dict_of_arrays(d_1, d_1_copy)
-    assert compare_dict_of_arrays(d_1, d_1_copy, tolerance=0.1)

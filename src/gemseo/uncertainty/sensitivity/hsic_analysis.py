@@ -291,7 +291,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         hsic_class = self.__ANALYSIS_TO_OT_CLASSES[analysis_type]
         indices = {}
         for method in self.Method:
-            _indices = indices[str(method).lower().replace("-", "_")] = {}
+            indices_ = indices[str(method).lower().replace("-", "_")] = {}
             if (
                 method == method.P_VALUE_ASYMPTOTIC
                 and analysis_type == analysis_type.CONDITIONAL
@@ -349,7 +349,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                         )
                     )
 
-                _indices[output_name] = output_indices
+                indices_[output_name] = output_indices
 
         self._indices = self.SensitivityIndices(**indices)
         return self.indices

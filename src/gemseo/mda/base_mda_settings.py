@@ -19,16 +19,16 @@ from __future__ import annotations
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TCH002
-from pydantic import NonNegativeInt  # noqa: TCH002
+from pydantic import NonNegativeFloat  # noqa: TC002
+from pydantic import NonNegativeInt  # noqa: TC002
 from strenum import StrEnum
 
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TCH001
+from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TC001
     BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.core.coupling_structure import CouplingStructure  # noqa: TCH001
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
@@ -78,6 +78,13 @@ The log displays the normalized residual norm.""",
 
 If 0,
 evaluate the coupling variables without trying to solve the coupling equations.""",
+    )
+
+    max_consecutive_unsuccessful_iterations: NonNegativeInt = Field(
+        default=8,
+        description="""The maximum number of consecutive unsuccessful iterations.
+
+Iterations are considered unsuccessful if the normalized residual norm increases.""",
     )
 
     name: str = Field(

@@ -29,6 +29,8 @@ from gemseo.disciplines.wrappers.filtering_discipline import FilteringDiscipline
 def discipline():
     expressions = {"y1": "x1+x2+x3", "y2": "-x1-x2-x3"}
     disc = create_discipline("AnalyticDiscipline", expressions=expressions, name="foo")
+    disc.io.input_grammar.descriptions = {"x1": "This is x1.", "x2": "This is x2."}
+    disc.io.output_grammar.descriptions = {"y1": "This is y1.", "y2": "This is y2."}
     disc.add_differentiated_inputs(["x1", "x2", "x3"])
     disc.add_differentiated_outputs(["y1", "y2"])
     return disc
@@ -36,8 +38,8 @@ def discipline():
 
 def test_standard(discipline) -> None:
     fdisc = FilteringDiscipline(discipline)
-    assert set(fdisc.io.input_grammar.names) == set(discipline.io.input_grammar.names)
-    assert set(fdisc.io.output_grammar.names) == set(discipline.io.output_grammar.names)
+    assert set(fdisc.io.input_grammar) == set(discipline.io.input_grammar)
+    assert set(fdisc.io.output_grammar) == set(discipline.io.output_grammar)
     fdisc.execute()
     for name in ["x1", "x2", "x3", "y1", "y2"]:
         assert name in fdisc.io.data
@@ -47,11 +49,19 @@ def test_standard(discipline) -> None:
         for input_name in ["x1", "x2", "x3"]:
             assert input_name in fdisc.jac[output_name]
 
+    assert (
+        fdisc.io.input_grammar.descriptions == discipline.io.input_grammar.descriptions
+    )
+    assert (
+        fdisc.io.output_grammar.descriptions
+        == discipline.io.output_grammar.descriptions
+    )
+
 
 def test_keep_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(discipline, input_names=["x1"], output_names=["y1"])
-    assert set(fdisc.io.input_grammar.names) == {"x1"}
-    assert set(fdisc.io.output_grammar.names) == {"y1"}
+    assert set(fdisc.io.input_grammar) == {"x1"}
+    assert set(fdisc.io.output_grammar) == {"y1"}
     fdisc.execute()
     for name in ["x2", "x3", "y2"]:
         assert name not in fdisc.io.data
@@ -60,13 +70,16 @@ def test_keep_in_keep_out(discipline) -> None:
     for input_name in ["x2", "x3"]:
         assert input_name not in fdisc.jac["y1"]
 
+    assert fdisc.io.input_grammar.descriptions == {"x1": "This is x1."}
+    assert fdisc.io.output_grammar.descriptions == {"y1": "This is y1."}
+
 
 def test_remove_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_in=False
     )
-    assert set(fdisc.io.input_grammar.names) == {"x2", "x3"}
-    assert set(fdisc.io.output_grammar.names) == {"y1"}
+    assert set(fdisc.io.input_grammar) == {"x2", "x3"}
+    assert set(fdisc.io.output_grammar) == {"y1"}
     fdisc.execute()
     for name in ["x1", "y2"]:
         assert name not in fdisc.io.data
@@ -79,8 +92,8 @@ def test_keep_in_remove_out(discipline) -> None:
     fdisc = FilteringDiscipline(
         discipline, input_names=["x1"], output_names=["y1"], keep_out=False
     )
-    assert set(fdisc.io.input_grammar.names) == {"x1"}
-    assert set(fdisc.io.output_grammar.names) == {"y2"}
+    assert set(fdisc.io.input_grammar) == {"x1"}
+    assert set(fdisc.io.output_grammar) == {"y2"}
     fdisc.execute()
     for name in ["x2", "x3", "y1"]:
         assert name not in fdisc.io.data

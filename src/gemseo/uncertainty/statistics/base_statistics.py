@@ -121,11 +121,11 @@ if TYPE_CHECKING:
 class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A toolbox to compute statistics.
 
-    Unless otherwise stated, the statistics are computed *variable-wise* and *component-
-    wise*, i.e. variable-by-variable and component-by-component. So, for the sake of
-    readability, the methods named as :meth:`compute_statistic` return ``dict[str,
-    RealArray]`` objects whose values are the names of the variables and the values are
-    the statistic estimated for the different component.
+    Unless otherwise stated, the statistics are computed *variable-wise* and
+    *component-wise*, i.e. variable-by-variable and component-by-component. So, for the
+    sake of readability, the methods named as :meth:`.compute_statistic` return
+    ``dict[str, RealArray]`` objects whose values are the names of the variables and the
+    values are the statistic estimated for the different component.
     """
 
     dataset: Dataset
@@ -184,6 +184,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     def _repr_html_(self) -> str:
         return self.__string_representation._repr_html_()
 
+    @abstractmethod
     def compute_tolerance_interval(
         self,
         coverage: float,
@@ -222,7 +223,6 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             :meth:`.compute_a_value`
             :meth:`.compute_b_value`
         """
-        raise NotImplementedError
 
     SYMBOLS["tolerance_interval"] = "TI"
 

@@ -42,6 +42,8 @@ to solve the :class:`.BinhKorn` problem :cite:`binh1997mobes`:
 
 from __future__ import annotations
 
+from numpy import array
+
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
@@ -70,4 +72,26 @@ result = execute_algo(problem, settings_model=mnbi_settings)
 # Display the Pareto front
 # ------------------------
 # |g| detects the Pareto optimal points and the dominated ones.
+execute_post(problem, post_name="ParetoFront", save=False, show=True)
+
+# %%
+# Refine the Pareto front in the user specified area
+# --------------------------------------------------
+# The Pareto front is then refined with 5 new sub-optimizations.
+# The ``custom_anchor_points`` argument corresponds to the bounds of
+# both objectives in order to define the refinement area.
+mnbi_settings = MNBI_Settings(
+    max_iter=10000,
+    sub_optim_max_iter=200,
+    n_sub_optim=5,
+    sub_optim_algo="NLOPT_SLSQP",
+    custom_anchor_points=[array([44.5, 14]), array([29.4, 19])],
+)
+
+execute_algo(problem, settings_model=mnbi_settings)
+# %%
+# Display the Pareto front
+# ^^^^^^^^^^^^^^^^^^^^^^^^
+# We can clearly see the effect of the local refinement.
+
 execute_post(problem, post_name="ParetoFront", save=False, show=True)

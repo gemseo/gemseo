@@ -32,30 +32,30 @@ This process is repeated until convergence.
 
 Cluster values of new points may be predicted
 by returning the value of the closest centroid.
-Denoting :math:`(c_1, \\cdots, c_k) \\in \\mathbb{R}^{n \\times k}` the centroids,
+Denoting :math:`(c_1, \cdots, c_k) \in \mathbb{R}^{n \times k}` the centroids,
 and assuming no overlap between the centroids,
 we may compute the prediction
 
 .. math::
 
-        \\operatorname{cluster}(x) =
-            \\underset{i=1,\\cdots,k}{\\operatorname{argmin}} \\|x-c_i\\|.
+        \operatorname{cluster}(x) =
+            \underset{i=1,\cdots,k}{\operatorname{argmin}} \|x-c_i\|.
 
 A probability measure may also be provided,
 using the distances from the point to each of the centroids:
 
 .. math::
 
-    \\mathbb{P}(x \\in C_i) = \\begin{cases}
-        1 & \\operatorname{if} x = c_i\\\\
-        0 & \\operatorname{if} x = c_j,\\ j \\neq i\\\\
-        \\frac{\\frac{1}{\\|x-c_i\\|}}{\\sum_{j=1}^k \\frac{1}{\\|x-c_j\\|}}
-            & \\operatorname{if} x \\neq c_j\\, \\forall j=1,\\cdots,k
-    \\end{cases},
+    \mathbb{P}(x \in C_i) = \begin{cases}
+        1 & \operatorname{if} x = c_i\\
+        0 & \operatorname{if} x = c_j,\ j \neq i\\
+        \frac{\frac{1}{\|x-c_i\|}}{\sum_{j=1}^k \frac{1}{\|x-c_j\|}}
+            & \operatorname{if} x \neq c_j\, \forall j=1,\cdots,k
+    \end{cases},
 
-where :math:`C_i = \\{x\\, | \\, \\operatorname{cluster}(x) = i \\}`.
+where :math:`C_i = \{x\, | \, \operatorname{cluster}(x) = i \}`.
 Here,
-:math:`\\mathbb{P}(x \\in C_i)` represents the probability of cluster :math:`i`
+:math:`\mathbb{P}(x \in C_i)` represents the probability of cluster :math:`i`
 given the point :math:`x`.
 
 

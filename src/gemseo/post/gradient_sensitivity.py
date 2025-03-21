@@ -141,11 +141,11 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
 
             gradient_value = atleast_2d(gradient_value)
             size = len(gradient_value)
-            for i, _gradient_value in enumerate(gradient_value):
+            for i, gradient_value_ in enumerate(gradient_value):
                 if scale_gradients:
-                    _gradient_value = scale_gradient(_gradient_value, minus_lb=False)
+                    gradient_value_ = scale_gradient(gradient_value_, minus_lb=False)
                 function_names_to_gradients[repr_variable(function_name, i, size)] = (
-                    _gradient_value
+                    gradient_value_
                 )
 
         return function_names_to_gradients

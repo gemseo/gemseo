@@ -21,7 +21,7 @@ from pydantic import Field
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
     BaseScipyODESolverJacSettings,
 )
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
 class BaseScipyODESolverJacSparsitySettings(BaseScipyODESolverJacSettings):

@@ -20,16 +20,13 @@
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-API
-===
+High-level functions
+====================
 
-Here are some examples of the machine learning API
-applied to clustering models.
+The :mod:`gemseo.mlearning` package includes high-level functions
+to create clustering models from model class names.
 """
 
-# %%
-# Import
-# ------
 from __future__ import annotations
 
 from gemseo import configure_logger
@@ -42,20 +39,36 @@ configure_logger()
 
 
 # %%
-# Get available clustering models
-# -------------------------------
+# Available models
+# ----------------
+# Use the :func:`.get_clustering_models`
+# to list the available model class names:
 get_clustering_models()
 
 # %%
-# Get clustering model options
-# ----------------------------
-get_clustering_options("GaussianMixture")
+# Available model options
+# -----------------------
+# Use the :func:`.get_clustering_options`
+# to get the options of a model
+# from its class name:
+get_clustering_options("GaussianMixture", pretty_print=False)
 
 # %%
-# Create clustering model
-# -----------------------
-iris = create_benchmark_dataset("IrisDataset")
-
-model = create_clustering_model("KMeans", data=iris, n_clusters=3)
+#
+# .. seealso::
+#    The functions
+#    :func:`.get_clustering_models` and :func:`.get_clustering_options`
+#    can be very useful for the developers.
+#    As a user,
+#    it may be easier to consult :ref:`this page <gen_clustering_algos>`
+#    to find out about the different algorithms and their options.
+#
+# Creation
+# --------
+# Given a training dataset, *e.g.*
+dataset = create_benchmark_dataset("IrisDataset")
+# %%
+# use the :func:`.create_clustering_model` function
+# to create a clustering model from its class name and settings:
+model = create_clustering_model("KMeans", data=dataset, n_clusters=3)
 model.learn()
-model

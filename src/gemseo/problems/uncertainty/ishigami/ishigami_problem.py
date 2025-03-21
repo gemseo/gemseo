@@ -19,6 +19,7 @@ from __future__ import annotations
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.uncertainty.ishigami.ishigami_function import IshigamiFunction
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problems.uncertainty.utils import UniformDistribution
 
 
 class IshigamiProblem(OptimizationProblem):
@@ -26,7 +27,7 @@ class IshigamiProblem(OptimizationProblem):
 
     def __init__(
         self,
-        uniform_distribution_name: IshigamiSpace.UniformDistribution = IshigamiSpace.UniformDistribution.SCIPY,  # noqa: E501
+        uniform_distribution_name: UniformDistribution = UniformDistribution.SCIPY,
     ) -> None:
         """
         Args:

@@ -21,7 +21,7 @@
 
 This module implements the abstract concept of scalable model
 which is used by scalable disciplines. A scalable model is built
-from an input-output learning dataset associated with a function
+from an input-output training dataset associated with a function
 and generalizing its behavior to a new user-defined problem dimension,
 that is to say new user-defined input and output dimensions.
 
@@ -66,7 +66,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     ABBR = "sm"
 
     data: IODataset
-    """The learning dataset."""
+    """The training dataset."""
 
     def __init__(
         self,
@@ -76,7 +76,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
-            data: The learning dataset.
+            data: The training dataset.
             sizes: The sizes of the input and output variables.
                 If empty, use the original sizes.
             **parameters: The parameters of the model.

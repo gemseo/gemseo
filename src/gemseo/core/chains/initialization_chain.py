@@ -65,11 +65,11 @@ def order_disciplines_from_default_inputs(
     while remaining_discs:
         removed_discs = []
         for disc in remaining_discs:
-            required_inputs = set(disc.io.input_grammar.names)
-            if not required_inputs.difference(disc.default_input_data).difference(
-                available_data_names
-            ):
-                available_data_names.extend(disc.io.output_grammar.names)
+            required_inputs = set(disc.io.input_grammar)
+            if not required_inputs.difference(
+                disc.io.input_grammar.defaults
+            ).difference(available_data_names):
+                available_data_names.extend(disc.io.output_grammar)
                 removed_discs.append(disc)
 
         if not removed_discs:
@@ -78,7 +78,7 @@ def order_disciplines_from_default_inputs(
                 {
                     in_name
                     for disc in remaining_discs
-                    for in_name in disc.io.input_grammar.names
+                    for in_name in disc.io.input_grammar
                 }.difference(available_data_names)
             )
 

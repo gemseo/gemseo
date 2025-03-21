@@ -19,8 +19,8 @@
 #        :author: Matthias De Lozzo, Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-PCA on Burgers equation
-=======================
+Principal component analysis (PCA)
+==================================
 
 Example using PCA on solutions of the Burgers equation.
 """

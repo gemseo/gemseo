@@ -28,7 +28,9 @@ import pytest
 from gemseo.problems.mdo.scalable.data_driven.diagonal import (
     ScalableDiagonalApproximation,
 )
-from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.problems.mdo.scalable.data_driven.discipline import (
+    DataDrivenScalableDiscipline,
+)
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
@@ -47,14 +49,16 @@ def sobieski_aerodynamics():
 def test_build_model(sobieski_aerodynamics) -> None:
     """Test the build a 1D interpolation of Sobieski's drag wrt z."""
     sizes = {}
-    for k, value in sobieski_aerodynamics.default_input_data.items():
+    for k, value in sobieski_aerodynamics.io.input_grammar.defaults.items():
         sizes[k] = len(value)
 
     with (Path(__file__).parent / "SobieskiAerodynamics.pkl").open("rb") as f:
         pickler = pickle.Unpickler(f)
         dataset = pickler.load()
 
-    scd = ScalableDiscipline("ScalableDiagonalModel", dataset, sizes, fill_factor=0.7)
+    scd = DataDrivenScalableDiscipline(
+        "ScalableDiagonalModel", dataset, sizes, fill_factor=0.7
+    )
     comp_dep, in_dep = scd.scalable_model.generate_random_dependency()
     scale_pb = ScalableDiagonalApproximation(sizes, comp_dep, in_dep)
     scale_pb.build_scalable_function("y_23", dataset, ["x_shared"])
@@ -74,12 +78,14 @@ def test_build_model(sobieski_aerodynamics) -> None:
     #    fout = scalable_func(get_samples(n_in))
     #    assert -1e-3 <= fout <= 1.001
 
-    scd = ScalableDiscipline("ScalableDiagonalModel", dataset, sizes, fill_factor=0.0)
+    scd = DataDrivenScalableDiscipline(
+        "ScalableDiagonalModel", dataset, sizes, fill_factor=0.0
+    )
     comp_dep, in_dep = scd.scalable_model.generate_random_dependency()
     scale_pb = ScalableDiagonalApproximation(sizes, comp_dep, in_dep)
     scale_pb.build_scalable_function("y_23", dataset, ["x_shared"])
 
-    scd = ScalableDiscipline(
+    scd = DataDrivenScalableDiscipline(
         "ScalableDiagonalModel",
         dataset,
         sizes,
@@ -89,7 +95,9 @@ def test_build_model(sobieski_aerodynamics) -> None:
     )
     scd.scalable_model.generate_random_dependency()
 
-    scd = ScalableDiscipline("ScalableDiagonalModel", dataset, sizes, fill_factor=0.7)
+    scd = DataDrivenScalableDiscipline(
+        "ScalableDiagonalModel", dataset, sizes, fill_factor=0.7
+    )
     comp_dep, in_dep = scd.scalable_model.generate_random_dependency()
     ScalableDiagonalApproximation(sizes, comp_dep, in_dep)
 

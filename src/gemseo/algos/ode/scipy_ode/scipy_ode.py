@@ -122,10 +122,10 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         if issubclass(
             self.ALGORITHM_INFOS[self.algo_name].Settings, BaseScipyODESolverJacSettings
         ):
-            settings_["jac"] = problem.jac.state
+            settings_["jac"] = problem.jac_function_wrt_state
 
-        if problem.solve_at_algorithm_times:
-            settings_["t_eval"] = problem.times
+        if problem.compute_trajectory and not problem.solve_at_algorithm_times:
+            settings_["t_eval"] = problem.evaluation_times
 
         solution = solve_ivp(
             fun=problem.rhs_function,
@@ -140,7 +140,6 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         problem.result.algorithm_settings = settings_
         problem.result.algorithm_has_converged = solution.status >= 0
         problem.result.algorithm_termination_message = solution.message
-        problem.result.state_trajectories = solution.y
         problem.result.times = solution.t
         problem.result.n_func_evaluations = solution.nfev
         problem.result.n_jac_evaluations = solution.njev
@@ -153,17 +152,18 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             for i, t_event in enumerate(solution.t_events):
                 if len(t_event):
                     index = i
-                break
+                    break
+
+        if problem.compute_trajectory:
+            problem.result.state_trajectories = solution.y
 
         problem.result.terminal_event_index = index
         if problem.event_functions and index is not None:
-            problem.result.terminal_event_time = solution.t_events[index]
-            problem.result.terminal_event_state = solution.y_events[index][0][
-                :, newaxis
-            ]
+            problem.result.termination_time = solution.t_events[index]
+            problem.result.final_state = solution.y_events[index][0][:, newaxis]
         else:
-            problem.result.terminal_event_time = solution.t[-1:]
-            problem.result.terminal_event_state = solution.y[:, -1][:, newaxis]
+            problem.result.termination_time = solution.t[-1:]
+            problem.result.final_state = solution.y[:, -1][:, newaxis]
 
     def _get_result(self, problem: ODEProblem) -> ODEResult:
         return problem.result

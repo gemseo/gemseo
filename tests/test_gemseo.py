@@ -191,7 +191,9 @@ def test_get_algorithm_options_schema() -> None:
         assert key in out_dict
         assert out_dict[key] == val
 
-    with pytest.raises(ValueError, match="Algorithm named unknown is not available."):
+    with pytest.raises(
+        ValueError, match=re.escape("Algorithm named unknown is not available.")
+    ):
         get_algorithm_options_schema("unknown")
 
     get_algorithm_options_schema("SLSQP", pretty_print=True)
@@ -228,7 +230,8 @@ def test_create_scenario_and_monitor() -> None:
     )
 
     with pytest.raises(
-        ValueError, match="Unknown scenario type: unknown, use one of : 'MDO' or 'DOE'."
+        ValueError,
+        match=re.escape("Unknown scenario type: unknown, use one of : 'MDO' or 'DOE'."),
     ):
         create_scenario(
             create_discipline("SobieskiMission"),
@@ -554,7 +557,7 @@ def test_get_discipline_inputs_schema() -> None:
     """Test that the discipline input schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_inputs_schema(mission)
-    for key in mission.io.input_grammar.names:
+    for key in mission.io.input_grammar:
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_inputs_schema(mission, True)
@@ -566,7 +569,7 @@ def test_get_discipline_outputs_schema() -> None:
     """Test that the discipline output schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
     schema_dict = get_discipline_outputs_schema(mission)
-    for key in mission.io.output_grammar.names:
+    for key in mission.io.output_grammar:
         assert key in schema_dict["properties"]
 
     schema_str = get_discipline_outputs_schema(mission, True)

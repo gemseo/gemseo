@@ -58,7 +58,7 @@ def __common_problem():  # noqa: PT005
 
 
 @pytest.fixture
-def three_length_common_problem(__common_problem):  # noqa: PYI063
+def three_length_common_problem(__common_problem):  # noqa: PYI063, RUF052
     """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
@@ -67,7 +67,7 @@ def three_length_common_problem(__common_problem):  # noqa: PYI063
 
 
 @pytest.fixture
-def common_problem(__common_problem):  # noqa: PYI063
+def common_problem(__common_problem):  # noqa: PYI063, RUF052
     """The __common_problem sampled twice on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
@@ -76,7 +76,7 @@ def common_problem(__common_problem):  # noqa: PYI063
 
 
 @pytest.fixture
-def large_common_problem(__common_problem):  # noqa: PYI063
+def large_common_problem(__common_problem):  # noqa: PYI063, RUF052
     """The __common_problem sampled 20 times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"

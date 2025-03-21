@@ -101,16 +101,17 @@ class MDOChain(ProcessDiscipline):
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        self.input_grammar.clear()
-        self.output_grammar.clear()
-        for discipline in self.disciplines:
-            self.input_grammar.update(
-                discipline.input_grammar, excluded_names=self.output_grammar.keys()
+        self.io.input_grammar.clear()
+        self.io.output_grammar.clear()
+        for discipline in self._disciplines:
+            self.io.input_grammar.update(
+                discipline.io.input_grammar,
+                excluded_names=self.io.output_grammar,
             )
-            self.output_grammar.update(discipline.output_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _execute(self) -> None:
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             self.io.data.update(discipline.execute(self.io.data))
 
     def reverse_chain_rule(
@@ -205,7 +206,7 @@ class MDOChain(ProcessDiscipline):
         output_names: Iterable[str],
     ) -> None:
         if self._coupling_structure is None:
-            self._coupling_structure = CouplingStructure(self.disciplines)
+            self._coupling_structure = CouplingStructure(self._disciplines)
 
         diff_ios = (set(input_names), set(output_names))
         if self._last_diff_inouts != diff_ios:
@@ -222,7 +223,7 @@ class MDOChain(ProcessDiscipline):
         self._compute_diff_in_outs(input_names, output_names)
 
         # Initializes self jac with copy of last discipline (reverse mode)
-        last_discipline = self.disciplines[-1]
+        last_discipline = self._disciplines[-1]
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that
         last_cached = last_discipline.io.get_input_data()
@@ -232,7 +233,7 @@ class MDOChain(ProcessDiscipline):
         self.jac = self.copy_jacs(last_discipline.jac)
 
         # reverse mode of remaining disciplines
-        remaining_disciplines = self.disciplines[:-1]
+        remaining_disciplines = self._disciplines[:-1]
         for discipline in remaining_disciplines[::-1]:
             self.reverse_chain_rule(output_names, discipline)
 

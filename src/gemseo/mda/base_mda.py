@@ -137,9 +137,11 @@ class BaseMDA(ProcessDiscipline):
     _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
     """The data required to perform the scaling of the MDA residuals."""
 
+    # TODO: API: remove
     norm0: float | None
     """The reference residual, if any."""
 
+    # TODO: API: change to normalized_residual_norm
     normed_residual: float
     """The normed residual."""
 
@@ -262,7 +264,7 @@ class BaseMDA(ProcessDiscipline):
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
-        self.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
+        self.io.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
         self._check_consistency()
         self.__check_linear_solver_settings()
         self._check_coupling_types()
@@ -279,9 +281,9 @@ class BaseMDA(ProcessDiscipline):
 
     def _initialize_grammars(self) -> None:
         """Define the grammars as the union of the disciplines' grammars."""
-        for discipline in self.disciplines:
-            self.input_grammar.update(discipline.input_grammar)
-            self.output_grammar.update(discipline.output_grammar)
+        for discipline in self._disciplines:
+            self.io.input_grammar.update(discipline.io.input_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def __check_linear_solver_settings(self) -> None:
         """Check the linear solver options.
@@ -317,7 +319,7 @@ class BaseMDA(ProcessDiscipline):
         if also_strong:
             for disc in also_strong:
                 in_outs = sorted(
-                    set(disc.io.input_grammar.names) & set(disc.io.output_grammar.names)
+                    set(disc.io.input_grammar) & set(disc.io.output_grammar)
                 )
                 LOGGER.warning(
                     "Self coupling variables in discipline %s are: %s.",
@@ -335,8 +337,8 @@ class BaseMDA(ProcessDiscipline):
 
         all_outs = {}
         multiple_outs = []
-        for disc in self.disciplines:
-            for out in disc.io.output_grammar.names:
+        for disc in self._disciplines:
+            for out in disc.io.output_grammar:
                 if out in all_outs:
                     multiple_outs.append(out)
                 all_outs[out] = disc
@@ -351,7 +353,7 @@ class BaseMDA(ProcessDiscipline):
         """Compute the strong couplings that are inputs of the MDA."""
         self._input_couplings = sorted(
             set(self.coupling_structure.strong_couplings).intersection(
-                self.io.input_grammar.names
+                self.io.input_grammar
             )
         )
 
@@ -361,8 +363,8 @@ class BaseMDA(ProcessDiscipline):
     ) -> tuple[set[str] | list[str], set[str] | list[str]]:
         if compute_all_jacobians:
             strong_cpl = set(self.coupling_structure.strong_couplings)
-            inputs = set(self.io.input_grammar.names)
-            outputs = self.io.output_grammar.names
+            inputs = set(self.io.input_grammar)
+            outputs = self.io.output_grammar
             # Don't linearize wrt
             inputs -= strong_cpl & inputs
             # Don't do this with output couplings because
@@ -379,12 +381,12 @@ class BaseMDA(ProcessDiscipline):
         inputs = [
             input_
             for input_ in inputs
-            if self.input_grammar.data_converter.is_numeric(input_)
+            if self.io.input_grammar.data_converter.is_numeric(input_)
         ]
         outputs = [
             output
             for output in outputs
-            if self.output_grammar.data_converter.is_numeric(output)
+            if self.io.output_grammar.data_converter.is_numeric(output)
         ]
 
         return inputs, outputs
@@ -399,8 +401,11 @@ class BaseMDA(ProcessDiscipline):
         """
         not_arrays = set()
         for coupling_name in self.coupling_structure.all_couplings:
-            for discipline in self.disciplines:
-                for grammar in (discipline.input_grammar, discipline.output_grammar):
+            for discipline in self._disciplines:
+                for grammar in (
+                    discipline.io.input_grammar,
+                    discipline.io.output_grammar,
+                ):
                     if (
                         coupling_name in grammar
                         and not grammar.data_converter.is_numeric(coupling_name)
@@ -428,7 +433,7 @@ class BaseMDA(ProcessDiscipline):
         exec_cache_tol = self.lin_cache_tol_fact * self.settings.tolerance
         self.__check_linear_solver_settings()
         residual_variables = {}
-        for disc in self.disciplines:
+        for disc in self._disciplines:
             residual_variables.update(disc.io.residual_to_state_variable)
 
         couplings_adjoint = sorted(
@@ -490,12 +495,12 @@ class BaseMDA(ProcessDiscipline):
         input_names = [
             input_
             for input_ in input_names
-            if self.input_grammar.data_converter.is_numeric(input_)
+            if self.io.input_grammar.data_converter.is_numeric(input_)
         ]
         output_names = [
             output
             for output in output_names
-            if self.output_grammar.data_converter.is_numeric(output)
+            if self.io.output_grammar.data_converter.is_numeric(output)
         ]
         return input_names, output_names
 
@@ -590,7 +595,7 @@ class BaseMDA(ProcessDiscipline):
 
         # Non simple caches require NumPy arrays.
         if not isinstance(self.cache, SimpleCache):
-            to_value = self.input_grammar.data_converter.convert_array_to_value
+            to_value = self.io.input_grammar.data_converter.convert_array_to_value
             for input_name, input_value in self.__get_cached_outputs(cached_outputs):
                 self.io.update_output_data({
                     input_name: to_value(input_name, input_value)

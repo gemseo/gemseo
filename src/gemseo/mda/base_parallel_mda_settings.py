@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import PositiveInt  # noqa: TCH002
+from pydantic import PositiveInt  # noqa: TC002
 
 from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
 from gemseo.utils.constants import N_CPUS
@@ -25,6 +25,14 @@ from gemseo.utils.constants import N_CPUS
 
 class BaseParallelMDASettings(BaseMDASolverSettings):
     """The settings for the MDA algorithms that can be run in parallel."""
+
+    execute_before_linearizing: bool = Field(
+        default=True,
+        description="""Whether to start by executing the disciplines before linearizing.
+            This ensures that the discipline are executed and linearized with the same
+            input data. It can be almost free if the corresponding output data have been
+            stored in the :attr:`.BaseMDA.cache`.""",
+    )
 
     n_processes: PositiveInt = Field(
         default=N_CPUS,

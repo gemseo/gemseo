@@ -84,22 +84,22 @@ class MDOParallelChain(ProcessDiscipline):
         self._use_deep_copy = use_deep_copy
         self._initialize_grammars()
         if n_processes is None:
-            n_processes = len(self.disciplines)
+            n_processes = len(self._disciplines)
 
         self.parallel_execution = DiscParallelExecution(
-            self.disciplines, n_processes, use_threading=use_threading
+            self._disciplines, n_processes, use_threading=use_threading
         )
         self.parallel_lin = DiscParallelLinearization(
-            self.disciplines, n_processes, use_threading=use_threading
+            self._disciplines, n_processes, use_threading=use_threading
         )
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        self.input_grammar.clear()
-        self.output_grammar.clear()
-        for discipline in self.disciplines:
-            self.input_grammar.update(discipline.input_grammar)
-            self.output_grammar.update(discipline.output_grammar)
+        self.io.input_grammar.clear()
+        self.io.output_grammar.clear()
+        for discipline in self._disciplines:
+            self.io.input_grammar.update(discipline.io.input_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _get_input_data_copies(self) -> list[DisciplineData]:
         """Return copies of the input data, one per discipline.
@@ -114,23 +114,23 @@ class MDOParallelChain(ProcessDiscipline):
         if self._use_deep_copy:
             return [
                 DisciplineData(deepcopy_dict_of_arrays(self.io.data))
-                for _ in range(len(self.disciplines))
+                for _ in range(len(self._disciplines))
             ]
 
         for value in self.io.data.values():
             if isinstance(value, ndarray):
                 value.flags.writeable = False
 
-        return [self.io.data] * len(self.disciplines)
+        return [self.io.data] * len(self._disciplines)
 
     def _execute(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
 
         # Update data according to input order of priority
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             self.io.data.update({
                 output_name: discipline.io.data[output_name]
-                for output_name in discipline.io.output_grammar.names
+                for output_name in discipline.io.output_grammar
             })
 
     def _compute_jacobian(
@@ -175,8 +175,8 @@ class MDOParallelChain(ProcessDiscipline):
             input_names: The names of the inputs to be added.
         """
         diff_inpts = set(input_names)
-        for discipline in self.disciplines:
-            inputs_set = set(discipline.io.input_grammar.names) & diff_inpts
+        for discipline in self._disciplines:
+            inputs_set = set(discipline.io.input_grammar) & diff_inpts
             if inputs_set:
                 discipline.add_differentiated_inputs(list(inputs_set))
 
@@ -194,7 +194,7 @@ class MDOParallelChain(ProcessDiscipline):
             output_names: The outputs to be added.
         """
         diff_outpts = set(output_names)
-        for discipline in self.disciplines:
-            outputs_set = set(discipline.io.output_grammar.names) & diff_outpts
+        for discipline in self._disciplines:
+            outputs_set = set(discipline.io.output_grammar) & diff_outpts
             if outputs_set:
                 discipline.add_differentiated_outputs(list(outputs_set))

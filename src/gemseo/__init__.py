@@ -87,11 +87,14 @@ if TYPE_CHECKING:
     )
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
-    from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+    from gemseo.problems.mdo.scalable.data_driven.discipline import (
+        DataDrivenScalableDiscipline,
+    )
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
     from gemseo.scenarios.scenario_results.scenario_result import (
@@ -381,7 +384,7 @@ def get_discipline_inputs_schema(
         >>> discipline = create_discipline("Sellar1")
         >>> schema = get_discipline_inputs_schema(discipline, pretty_print=True)
     """
-    return _get_schema(discipline.input_grammar, output_json, pretty_print)
+    return _get_schema(discipline.io.input_grammar, output_json, pretty_print)
 
 
 def get_discipline_outputs_schema(
@@ -404,7 +407,7 @@ def get_discipline_outputs_schema(
         >>> discipline = create_discipline("Sellar1")
         >>> get_discipline_outputs_schema(discipline, pretty_print=True)
     """
-    return _get_schema(discipline.output_grammar, output_json, pretty_print)
+    return _get_schema(discipline.io.output_grammar, output_json, pretty_print)
 
 
 def get_available_post_processings() -> list[str]:
@@ -736,7 +739,7 @@ def _pretty_print_schema(schema: dict[str, Any]):
     Args:
         schema: The json schema to pretty print.
     """
-    from gemseo.third_party.prettytable.prettytable import PrettyTable
+    from prettytable import PrettyTable
 
     title = schema["name"].replace("_", " ") if "name" in schema else None
     table = PrettyTable(title=title, max_table_width=150)
@@ -988,12 +991,12 @@ def create_scalable(
     data: Dataset,
     sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     **parameters: Any,
-) -> ScalableDiscipline:
+) -> DataDrivenScalableDiscipline:
     """Create a scalable discipline from a dataset.
 
     Args:
         name: The name of the class of the scalable model.
-        data: The learning dataset.
+        data: The training dataset.
         sizes: The sizes of the input and output variables.
         **parameters: The parameters of the scalable model.
 
@@ -1001,10 +1004,10 @@ def create_scalable(
         The scalable discipline.
     """
     from gemseo.problems.mdo.scalable.data_driven.discipline import (  # noqa:F811
-        ScalableDiscipline,
+        DataDrivenScalableDiscipline,
     )
 
-    return ScalableDiscipline(name, data, sizes, **parameters)
+    return DataDrivenScalableDiscipline(name, data, sizes, **parameters)
 
 
 def create_surrogate(
@@ -1022,7 +1025,7 @@ def create_surrogate(
     Args:
             surrogate: Either the name of a subclass of :class:`.BaseRegressor`
                 or an instance of this subclass.
-            data: The learning dataset to train the regression model.
+            data: The training dataset to train the regression model.
                 If ``None``, the regression model is supposed to be trained.
             transformer: The strategies to transform the variables.
                 This argument is ignored
@@ -1051,10 +1054,10 @@ def create_surrogate(
                 use the center of the learning input space.
             input_names: The names of the input variables.
                 If empty,
-                consider all input variables mentioned in the learning dataset.
+                consider all input variables mentioned in the training dataset.
             output_names: The names of the output variables.
                 If empty,
-                consider all input variables mentioned in the learning dataset.
+                consider all input variables mentioned in the training dataset.
             **parameters: The parameters of the machine learning algorithm.
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
@@ -1074,14 +1077,19 @@ def create_surrogate(
 def create_mda(
     mda_name: str,
     disciplines: Sequence[Discipline],
-    **mda_settings: Any,
+    settings_model: BaseMDASettings | None = None,
+    **settings: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
     Args:
         mda_name: The name of the MDA.
         disciplines: The disciplines.
-        **mda_settings: The settings of the MDA.
+        settings_model: The MDA settings as a Pydantic model.
+            If ``None``, use ``**settings``.
+            The MDA settings model can be imported from :mod:`gemseo.settings.mda`.
+        **settings: The MDA settings as key/value pairs.
+            These arguments are ignored when ``settings_model`` is not ``None``.
 
     Returns:
         The MDA.
@@ -1098,7 +1106,12 @@ def create_mda(
     """
     from gemseo.mda.factory import MDAFactory
 
-    return MDAFactory().create(mda_name, disciplines, **mda_settings)
+    return MDAFactory().create(
+        mda_name,
+        disciplines,
+        settings_model=settings_model,
+        **settings,
+    )
 
 
 def execute_post(
@@ -1738,6 +1751,7 @@ def wrap_discipline_in_job_scheduler(
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in GEMSEO are serializable but it is possible that
         custom ones are not and this will make the submission proess fail.
+        Also, see :ref:`platform-paths` to handle paths for cross-platforms.
 
     Examples:
         This example execute a DOE of 100 points on an MDA, each MDA is executed on 24

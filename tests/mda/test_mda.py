@@ -29,6 +29,7 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import eye
+from numpy import inf
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
@@ -79,6 +80,14 @@ def sellar_mda(sellar_disciplines):
 def sellar_inputs():
     """Build dictionary with initial solution."""
     return get_initial_data()
+
+
+@pytest.fixture
+def base_mda_solver(sellar_disciplines) -> BaseMDASolver:
+    """A concretized BaseMDASolver instance with the Sellar's disciplines."""
+    with concretize_classes(BaseMDASolver):
+        BaseMDASolver.Settings = BaseMDASolverSettings
+        return BaseMDASolver(sellar_disciplines)
 
 
 def test_reset(sellar_mda, sellar_inputs) -> None:
@@ -233,43 +242,47 @@ def test_array_couplings(mda_class, grammar_type) -> None:
     )
 
     a_disc = disciplines[0]
-    del a_disc.input_grammar["y1"]
-    a_disc.input_grammar.update_from_data({"y1": 2.0})
+    del a_disc.io.input_grammar["y1"]
+    a_disc.io.input_grammar.update_from_data({"y1": 2.0})
 
     with pytest.raises(InvalidDataError):
         a_disc.execute({"x": 2.0})
 
 
-def test_convergence_warning(caplog) -> None:
-    with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
-        mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    mda.settings.tolerance = 1.0
-    mda.normed_residual = 2.0
-    mda.settings.max_mda_iter = 1
+def test_stopping_criteria(base_mda_solver, caplog) -> None:
+    """Test the stopping criteria."""
     caplog.clear()
 
-    residual_is_small, max_iter_is_reached = mda._warn_convergence_criteria()
-    assert not residual_is_small
-    assert not max_iter_is_reached
+    base_mda_solver.settings.tolerance = 1.0
 
-    mda.scaling = BaseMDASolver.ResidualScaling.NO_SCALING
+    base_mda_solver.normed_residual = 0.5
+    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    base_mda_solver.normed_residual = 1.5
+    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
-    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
-    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
-    mda._compute_residuals({"y_1": array([2.0]), "y_2": array([2.0])})
+    base_mda_solver.settings.max_mda_iter = 1
 
-    mda._compute_normalized_residual_norm()
-    mda._warn_convergence_criteria()
-    assert len(caplog.records) == 1
+    base_mda_solver._current_iter = 1
+    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
     assert (
-        "BaseMDASolver has reached its maximum number of iterations"
-        in caplog.records[0].message
+        caplog.records[0].message
+        == "BaseMDASolver has reached its maximum number of iterations, but the "
+        "normalized residual norm 1.5 is still above the tolerance 1.0."
     )
+    base_mda_solver._current_iter = 0
+    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
-    mda.normed_residual = 1e-14
-    residual_is_small, _ = mda._warn_convergence_criteria()
-    assert residual_is_small
+    base_mda_solver.settings.max_consecutive_unsuccessful_iterations = 1
+
+    base_mda_solver._BaseMDASolver__n_consecutive_unsuccessful_iterations = 1
+    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert (
+        caplog.records[1].message
+        == "BaseMDASolver has reached its maximum number of unsuccessful iterations, "
+        "but the normalized residual norm 1.5 is still above the tolerance 1.0."
+    )
+    base_mda_solver._BaseMDASolver__n_consecutive_unsuccessful_iterations = 0
+    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
 
 def test_coupling_structure(sellar_disciplines) -> None:
@@ -281,33 +294,24 @@ def test_coupling_structure(sellar_disciplines) -> None:
     assert mda_sellar.coupling_structure == coupling_structure
 
 
-def test_log_convergence(caplog) -> None:
+def test_log_convergence(base_mda_solver, caplog) -> None:
     """Check that the boolean log_convergence is correctly set."""
-    with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
-        mda = BaseMDASolver([Sellar1(), Sellar2(), SellarSystem()])
-    assert not mda.settings.log_convergence
-
-    mda.settings.log_convergence = True
-    assert mda.settings.log_convergence
-
+    caplog.clear()
     caplog.set_level(logging.INFO)
 
-    mda._set_resolved_variables(mda.coupling_structure.strong_couplings)
-    mda.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
-    mda._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
+    base_mda_solver._set_resolved_variables(["y_1", "y_2"])
+    base_mda_solver.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    base_mda_solver._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
-    mda.settings.log_convergence = False
-    mda._compute_normalized_residual_norm(store_it=False)
-    assert (
-        "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)"
-        not in caplog.text
-    )
+    base_mda_solver.settings.log_convergence = False
+    base_mda_solver._BaseMDASolver__update_iteration_metrics()
+    assert len(caplog.records) == 0
 
-    mda.settings.log_convergence = True
-    mda._compute_normalized_residual_norm()
+    base_mda_solver.settings.log_convergence = True
+    base_mda_solver._BaseMDASolver__update_iteration_metrics()
     assert (
-        "BaseMDASolver running... Normed residual = 1.00e+00 (iter. 0)" in caplog.text
+        caplog.records[0].message
+        == "BaseMDASolver running... Normalized residual norm = 1.00e+00 (iter. 2)"
     )
 
 
@@ -316,13 +320,13 @@ def test_not_numeric_couplings(caplog) -> None:
     caplog.set_level("DEBUG")
     sellar1 = Sellar1()
     # Tweak the output grammar and set y_1 as an array of string
-    prop = sellar1.output_grammar.schema.get("properties").get("y_1")
+    prop = sellar1.io.output_grammar.schema.get("properties").get("y_1")
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
     # Tweak the input grammar and set y_1 as an array of string
     sellar2 = Sellar2()
-    prop = sellar2.input_grammar.schema.get("properties").get("y_1")
+    prop = sellar2.io.input_grammar.schema.get("properties").get("y_1")
     sub_prop = prop.get("items", prop)
     sub_prop["type"] = "string"
 
@@ -402,15 +406,15 @@ class LinearImplicitDiscipline(Discipline):
         super().__init__(name=name)
         self.size = size
 
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names(output_names)
+        self.io.input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names(output_names)
 
         self.io.residual_to_state_variable = {"r": "w"}
 
         self.io.state_equations_are_solved = False
         self.mat = default_rng(SEED).standard_normal((size, size))
 
-        self.default_input_data = {k: 0.5 * ones(size) for k in input_names}
+        self.io.input_grammar.defaults = {k: 0.5 * ones(size) for k in input_names}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         if self.io.state_equations_are_solved:
@@ -462,17 +466,17 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
 class DiscWithNonNumericInputs1(Discipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"x": zeros(1)})
-        self.input_grammar.update_from_data({"a": zeros(1)})
-        self.input_grammar.update_from_data({"b_file": array(["my_b_file"])})
+        self.io.input_grammar.update_from_data({"x": zeros(1)})
+        self.io.input_grammar.update_from_data({"a": zeros(1)})
+        self.io.input_grammar.update_from_data({"b_file": array(["my_b_file"])})
 
-        self.output_grammar.update_from_data({"y": zeros(1)})
-        self.output_grammar.update_from_data({"b": zeros(1)})
-        self.output_grammar.update_from_data({"a_file": "my_a_file"})
+        self.io.output_grammar.update_from_data({"y": zeros(1)})
+        self.io.output_grammar.update_from_data({"b": zeros(1)})
+        self.io.output_grammar.update_from_data({"a_file": "my_a_file"})
 
-        self.default_input_data["x"] = array([0.5])
-        self.default_input_data["a"] = array([0.5])
-        self.default_input_data["b_file"] = array(["my_b_file"])
+        self.io.input_grammar.defaults["x"] = array([0.5])
+        self.io.input_grammar.defaults["a"] = array([0.5])
+        self.io.input_grammar.defaults["b_file"] = array(["my_b_file"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -498,12 +502,12 @@ class DiscWithNonNumericInputs1(Discipline):
 class DiscWithNonNumericInputs2(Discipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"y": zeros(1)})
-        self.input_grammar.update_from_data({"a_file": "my_a_file"})
-        self.output_grammar.update_from_data({"x": zeros(1)})
-        self.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
-        self.default_input_data["y"] = array([0.5])
-        self.default_input_data["a_file"] = "my_a_file"
+        self.io.input_grammar.update_from_data({"y": zeros(1)})
+        self.io.input_grammar.update_from_data({"a_file": "my_a_file"})
+        self.io.output_grammar.update_from_data({"x": zeros(1)})
+        self.io.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
+        self.io.input_grammar.defaults["y"] = array([0.5])
+        self.io.input_grammar.defaults["a_file"] = "my_a_file"
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         y = self.io.data["y"]
@@ -523,17 +527,17 @@ class DiscWithNonNumericInputs2(Discipline):
 class DiscWithNonNumericInputs3(Discipline):
     def __init__(self):
         super().__init__()
-        self.input_grammar.update_from_data({"x": zeros(1)})
-        self.input_grammar.update_from_data({"y": zeros(1)})
-        self.input_grammar.update_from_data({"b": zeros(1)})
-        self.input_grammar.update_from_data({"a_file": "my_a_file"})
+        self.io.input_grammar.update_from_data({"x": zeros(1)})
+        self.io.input_grammar.update_from_data({"y": zeros(1)})
+        self.io.input_grammar.update_from_data({"b": zeros(1)})
+        self.io.input_grammar.update_from_data({"a_file": "my_a_file"})
 
-        self.output_grammar.update_from_data({"obj": zeros(1)})
-        self.output_grammar.update_from_data({"out_file_2": "my_a_file"})
-        self.default_input_data["x"] = array([0.5])
-        self.default_input_data["y"] = array([0.5])
-        self.default_input_data["b"] = array([0.5])
-        self.default_input_data["a_file"] = "my_a_file"
+        self.io.output_grammar.update_from_data({"obj": zeros(1)})
+        self.io.output_grammar.update_from_data({"out_file_2": "my_a_file"})
+        self.io.input_grammar.defaults["x"] = array([0.5])
+        self.io.input_grammar.defaults["y"] = array([0.5])
+        self.io.input_grammar.defaults["b"] = array([0.5])
+        self.io.input_grammar.defaults["a_file"] = "my_a_file"
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = self.io.data["x"]
@@ -627,3 +631,35 @@ def test_settings_type_error():
     BaseMDA.Settings = BaseMDASettings
     with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
         BaseMDA([], settings_model=settings)
+
+
+def test_set_bounds():
+    """Test that bounds are properly set."""
+    lower_bound = -array([1.0])
+    upper_bound = array([1.0])
+
+    mda = MDAJacobi([
+        LinearDiscipline("A", ["x", "b"], ["a"]),
+        LinearDiscipline("B", ["a"], ["b", "y"]),
+    ])
+
+    mda.set_bounds({"a": (lower_bound, None)})
+
+    assert mda.lower_bound_vector is None
+    assert mda.upper_bound_vector is None
+
+    mda._execute_disciplines_and_update_local_data()
+
+    assert (mda.lower_bound_vector == array([-1.0, -inf])).all()
+    assert (mda.upper_bound_vector == array([+inf, +inf])).all()
+
+    assert (mda._sequence_transformer.lower_bound == array([-1.0, -inf])).all()
+    assert (mda._sequence_transformer.upper_bound == array([+inf, +inf])).all()
+
+    mda.set_bounds({"b": (2.0 * lower_bound, upper_bound)})
+
+    assert (mda.lower_bound_vector == array([-1.0, -2.0])).all()
+    assert (mda.upper_bound_vector == array([+inf, 1.0])).all()
+
+    assert (mda._sequence_transformer.lower_bound == array([-1.0, -2.0])).all()
+    assert (mda._sequence_transformer.upper_bound == array([+inf, 1.0])).all()

@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa:TCH002
+from pydantic import NonNegativeFloat  # noqa:TC002
 
 from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
     BaseSciPyLinProgSettings,

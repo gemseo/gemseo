@@ -18,14 +18,11 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
-N2 chart
+"""N2 chart.
 ========
 """
 
 from __future__ import annotations
-
-from numpy import ones
 
 from gemseo import generate_n2_plot
 from gemseo.utils.discipline import DummyDiscipline
@@ -33,33 +30,29 @@ from gemseo.utils.discipline import DummyDiscipline
 # %%
 # Create the disciplines
 # ----------------------
-descriptions = {
-    "A": ([f"a{i}" for i in range(500)], ["b"]),
-    "B": (["c"], [f"a{i}" for i in range(500)] + ["n"]),
-    "C": (["b", "d"], ["c", "e"]),
-    "D": (["f"], ["d", "g"]),
-    "E": (["e"], ["f", "h", "o"]),
-    "F": (["g", "j"], ["i"]),
-    "G": (["i", "h"], ["k", "l"]),
-    "H": (["k", "m"], ["j"]),
-    "I": (["l"], ["m", "w"]),
-    "J": (["n", "o"], ["p", "q"]),
-    "K": (["y"], ["x"]),
-    "L": (["w", "x"], ["y", "z"]),
-    "M": (["p", "s"], ["r"]),
-    "N": (["r"], ["t", "u"]),
-    "O": (["q", "t"], ["s", "v"]),
-    "P": (["u", "v", "z"], ["z"]),
-}
-disciplines = []
-data = ones(1)
-for discipline_name, (inputs, outputs) in descriptions.items():
-    inputs = dict.fromkeys(inputs, data)
-    outputs = dict.fromkeys(outputs, data)
-    discipline = DummyDiscipline(discipline_name)
-    discipline.input_grammar.update_from_data(dict.fromkeys(inputs, data))
-    discipline.output_grammar.update_from_data(dict.fromkeys(outputs, data))
-    disciplines.append(discipline)
+# First,
+# we create dummy disciplines that do nothing:
+dummy_disciplines = [
+    DummyDiscipline(name=name, input_names=input_names, output_names=output_names)
+    for (name, input_names, output_names) in (
+        ("A", [f"a{i}" for i in range(500)], ["b"]),
+        ("B", ["c"], [f"a{i}" for i in range(500)] + ["n"]),
+        ("C", ["b", "d"], ["c", "e"]),
+        ("D", ["f"], ["d", "g"]),
+        ("E", ["e"], ["f", "h", "o"]),
+        ("F", ["g", "j"], ["i"]),
+        ("G", ["i", "h"], ["k", "l"]),
+        ("H", ["k", "m"], ["j"]),
+        ("I", ["l"], ["m", "w"]),
+        ("J", ["n", "o"], ["p", "q"]),
+        ("K", ["y"], ["x"]),
+        ("L", ["w", "x"], ["y", "z"]),
+        ("M", ["p", "s"], ["r"]),
+        ("N", ["r"], ["t", "u"]),
+        ("O", ["q", "t"], ["s", "v"]),
+        ("P", ["u", "v", "z"], ["z"]),
+    )
+]
 
 # %%
 # Generate the N2 chart
@@ -78,7 +71,7 @@ for discipline_name, (inputs, outputs) in descriptions.items():
 # the N2 chart is hard to analyze when the number of disciplines increases.
 # This is the reason why in this example,
 # we propose to use an interactive representation in a web browser:
-generate_n2_plot(disciplines, save=False, show_html=True)
+generate_n2_plot(dummy_disciplines, save=False, show_html=True)
 
 # %%
 # `Click here <../../_static/n2.html>`_ to see the rendering.

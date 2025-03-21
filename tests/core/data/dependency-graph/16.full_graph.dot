@@ -1,30 +1,84 @@
 digraph {
-	A -> C [label=b color=black dir=forward fontcolor=black penwidth=1.0]
-	B -> A [label=a color=black dir=forward fontcolor=black penwidth=1.0]
-	B -> J [label=n color=black dir=forward fontcolor=black penwidth=1.0]
-	C -> B [label=c color=black dir=forward fontcolor=black penwidth=1.0]
-	C -> E [label=e color=black dir=forward fontcolor=black penwidth=1.0]
-	D -> C [label=d color=black dir=forward fontcolor=black penwidth=1.0]
-	D -> F [label=g color=black dir=forward fontcolor=black penwidth=1.0]
-	E -> D [label=f color=black dir=forward fontcolor=black penwidth=1.0]
-	E -> G [label=h color=black dir=forward fontcolor=black penwidth=1.0]
-	E -> J [label=o color=black dir=forward fontcolor=black penwidth=1.0]
-	F -> G [label=i color=black dir=forward fontcolor=black penwidth=1.0]
-	G -> H [label=k color=black dir=forward fontcolor=black penwidth=1.0]
-	G -> I [label=l color=black dir=forward fontcolor=black penwidth=1.0]
-	H -> F [label=j color=black dir=forward fontcolor=black penwidth=1.0]
-	I -> H [label=m color=black dir=forward fontcolor=black penwidth=1.0]
-	I -> L [label=w color=black dir=forward fontcolor=black penwidth=1.0]
-	J -> M [label=p color=black dir=forward fontcolor=black penwidth=1.0]
-	J -> O [label=q color=black dir=forward fontcolor=black penwidth=1.0]
-	K -> L [label=x color=black dir=forward fontcolor=black penwidth=1.0]
-	L -> K [label=y color=black dir=forward fontcolor=black penwidth=1.0]
-	L -> P [label=z color=black dir=forward fontcolor=black penwidth=1.0]
-	M -> N [label=r color=black dir=forward fontcolor=black penwidth=1.0]
-	N -> O [label=t color=black dir=forward fontcolor=black penwidth=1.0]
-	N -> P [label=u color=black dir=forward fontcolor=black penwidth=1.0]
-	O -> M [label=s color=black dir=forward fontcolor=black penwidth=1.0]
-	O -> P [label=v color=black dir=forward fontcolor=black penwidth=1.0]
-	P -> _P [label=obj color=black dir=forward fontcolor=black penwidth=1.0]
+	A -> C [label=b color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'A', Name in discipline 'C'
+
+b, b, b" penwidth=1.0]
+	B -> A [label=a color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'B', Name in discipline 'A'
+
+a, a, a" penwidth=1.0]
+	B -> J [label=n color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'B', Name in discipline 'J'
+
+n, n, n" penwidth=1.0]
+	C -> B [label=c color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'C', Name in discipline 'B'
+
+c, c, c" penwidth=1.0]
+	C -> E [label=e color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'C', Name in discipline 'E'
+
+e, e, e" penwidth=1.0]
+	D -> C [label=d color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D', Name in discipline 'C'
+
+d, d, d" penwidth=1.0]
+	D -> F [label=g color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D', Name in discipline 'F'
+
+g, g, g" penwidth=1.0]
+	E -> D [label=f color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'E', Name in discipline 'D'
+
+f, f, f" penwidth=1.0]
+	E -> G [label=h color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'E', Name in discipline 'G'
+
+h, h, h" penwidth=1.0]
+	E -> J [label=o color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'E', Name in discipline 'J'
+
+o, o, o" penwidth=1.0]
+	F -> G [label=i color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'F', Name in discipline 'G'
+
+i, i, i" penwidth=1.0]
+	G -> H [label=k color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'G', Name in discipline 'H'
+
+k, k, k" penwidth=1.0]
+	G -> I [label=l color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'G', Name in discipline 'I'
+
+l, l, l" penwidth=1.0]
+	H -> F [label=j color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'H', Name in discipline 'F'
+
+j, j, j" penwidth=1.0]
+	I -> H [label=m color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'I', Name in discipline 'H'
+
+m, m, m" penwidth=1.0]
+	I -> L [label=w color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'I', Name in discipline 'L'
+
+w, w, w" penwidth=1.0]
+	J -> M [label=p color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'J', Name in discipline 'M'
+
+p, p, p" penwidth=1.0]
+	J -> O [label=q color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'J', Name in discipline 'O'
+
+q, q, q" penwidth=1.0]
+	K -> L [label=x color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'K', Name in discipline 'L'
+
+x, x, x" penwidth=1.0]
+	L -> K [label=y color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'L', Name in discipline 'K'
+
+y, y, y" penwidth=1.0]
+	L -> P [label=z color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'L', Name in discipline 'P'
+
+z, z, z" penwidth=1.0]
+	M -> N [label=r color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'M', Name in discipline 'N'
+
+r, r, r" penwidth=1.0]
+	N -> O [label=t color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'N', Name in discipline 'O'
+
+t, t, t" penwidth=1.0]
+	N -> P [label=u color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'N', Name in discipline 'P'
+
+u, u, u" penwidth=1.0]
+	O -> M [label=s color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'O', Name in discipline 'M'
+
+s, s, s" penwidth=1.0]
+	O -> P [label=v color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'O', Name in discipline 'P'
+
+v, v, v" penwidth=1.0]
+	P -> _P [label=obj color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'P'
+
+obj, obj" penwidth=1.0]
 	_P [style=invis]
 }

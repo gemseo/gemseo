@@ -17,19 +17,16 @@
 from __future__ import annotations
 
 from numpy import pi
-from strenum import StrEnum
 
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.problems.uncertainty.utils import UniformDistribution
 
 
 class IshigamiSpace(ParameterSpace):
     r"""The uncertain space used in the Ishigami use case."""
 
-    class UniformDistribution(StrEnum):
-        """The name of the class implementing the uniform distribution."""
-
-        OPENTURNS = "OTUniformDistribution"
-        SCIPY = "SPUniformDistribution"
+    UniformDistribution = UniformDistribution
+    """The name of the class implementing the uniform distribution."""
 
     def __init__(
         self, uniform_distribution_name: UniformDistribution = UniformDistribution.SCIPY

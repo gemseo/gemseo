@@ -27,8 +27,10 @@ from typing import Union
 import pytest
 from matplotlib.figure import Figure
 from numpy import array
+from numpy import isnan
 from numpy import ndarray
 from numpy import pi
+from numpy import sign
 from numpy import sin
 from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
@@ -408,9 +410,13 @@ def test_unscale_indices(sobol, use_variance, order) -> None:
             output_name: [
                 {
                     input_name: (
-                        {k: v**0.5 for k, v in sobol_index.items()}
+                        {
+                            k: sign(v) * (sign(v) * v) ** 0.5
+                            for k, v in sobol_index.items()
+                        }
                         if is_second_order
-                        else sobol_index**0.5
+                        else sign(sobol_index)
+                        * (sign(sobol_index) * sobol_index) ** 0.5
                     )
                     for input_name, sobol_index in output_value.items()
                 }
@@ -421,10 +427,18 @@ def test_unscale_indices(sobol, use_variance, order) -> None:
 
     unscaled_indices = sobol.unscale_indices(indices, use_variance=use_variance)
     for output_name, output_values in expected.items():
+        unscaled_indices_ = unscaled_indices[output_name]
         for output_index, output_value in enumerate(output_values):
             assert compare_dict_of_arrays(
-                unscaled_indices[output_name][output_index], output_value, tolerance=0.1
+                unscaled_indices_[output_index], output_value, tolerance=0.1
             )
+
+
+def test_unscale_index_with_negative_values(sobol):
+    """Check that negative estimates do not include nan."""
+    f = sobol._SobolAnalysis__unscale_index
+    assert not any(isnan(f(array([0.23, -0.87]), "y", 0, False)))
+    assert not any(isnan(f({"foo": array([0.23, -0.87])}, "y", 0, False)["foo"]))
 
 
 def test_compute_indices_output_names(sobol) -> None:

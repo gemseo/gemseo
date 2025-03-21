@@ -16,18 +16,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # Noqa: TCH003
-from typing import ClassVar  # Noqa: TCH003
+from collections.abc import Sequence  # Noqa: TC003
+from typing import ClassVar  # Noqa: TC003
 
 from pydantic import Field
 
-from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TCH001
-from gemseo.mda.base_mda_settings import BaseMDASettings  # noqa: TCH001
-from gemseo.mda.base_parallel_mda_settings import (
-    BaseParallelMDASettings,  # Noqa: TCH001
-)
+from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TC001
+from gemseo.mda.base_mda_settings import BaseMDASettings  # noqa: TC001
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings  # Noqa: TC001
 from gemseo.mda.composed_mda_settings import ComposedMDASettings
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 
 class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
@@ -70,7 +68,7 @@ execution.""",
     )
 
     sub_coupling_structures: Sequence[CouplingStructure] = Field(
-        default_factory=list,
+        default=(),
         description="""The coupling structures to be used by the inner MDAs.
 
 If empty, they are created from ``disciplines``.""",

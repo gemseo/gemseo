@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.utils.discipline import DummyBaseDiscipline
 from gemseo.utils.discipline import DummyDiscipline
 
 if TYPE_CHECKING:
@@ -61,16 +62,16 @@ def _replace_strongly_coupled(
             if len(group) > 1 or (
                 len(group) == 1 and coupling_structure.is_self_coupled(group[0])
             ):
-                disc_merged = DummyDiscipline(str(uuid.uuid4()))
+                disc_merged = DummyBaseDiscipline(str(uuid.uuid4()))
                 for disc in group:
                     disciplines_with_group.remove(disc)
                     # The strong couplings are not real dependencies of the MDA for
                     # derivatives computation.
-                    disc_merged.input_grammar.update_from_names(
-                        set(disc.input_grammar.names) - strong_c
+                    disc_merged.io.input_grammar.update_from_names(
+                        set(disc.io.input_grammar) - strong_c
                     )
-                    disc_merged.output_grammar.update_from_names(
-                        disc.output_grammar.names
+                    disc_merged.io.output_grammar.update_from_names(
+                        disc.io.output_grammar
                     )
 
                 all_disc_with_red.append(disc_merged)
@@ -133,7 +134,7 @@ def traverse_add_diff_io_mda(
                 # And we add all strong input couplings
                 # Finally we keep only the discipline inputs.
                 diff_in = diff_red_in.union(strong_couplings).intersection(
-                    disc.input_grammar.names
+                    disc.io.input_grammar
                 )
                 disc.add_differentiated_inputs(diff_in)
 
@@ -141,7 +142,7 @@ def traverse_add_diff_io_mda(
                 # are the ones from the MDA.
 
                 diff_out = diff_red_out.union(strong_couplings).intersection(
-                    disc.output_grammar.names
+                    disc.io.output_grammar
                 )
                 disc.add_differentiated_outputs(diff_out)
 

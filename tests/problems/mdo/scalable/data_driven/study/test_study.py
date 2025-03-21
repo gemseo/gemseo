@@ -61,9 +61,9 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
             hdf_file_path=file_name,
         )
         discipline_names.append(discipline.name)
-        objective_name = next(iter(discipline.output_grammar.keys()))
+        objective_name = next(iter(discipline.io.output_grammar))
         design_space = SellarDesignSpace()
-        input_names = set(design_space) & discipline.input_grammar.keys()
+        input_names = set(design_space) & discipline.io.input_grammar.keys()
         design_space = design_space.filter(input_names)
         scenario = DOEScenario(
             [discipline],
@@ -147,8 +147,8 @@ def test_scalabilitystudy1(sellar_use_case) -> None:
 
     post = PostScalabilityStudy("study_1")
     post.labelize_exec_time("exec_time")
-    post.labelize_n_calls("n_calls")
-    post.labelize_n_calls_linearize("n_calls_linearize")
+    post.labelize_n_calls("n_executions")
+    post.labelize_n_calls_linearize("n_linearizations")
     post.labelize_status("status")
     post.labelize_is_feasible("is_feasible")
     post.labelize_scaling_strategy("scaling_strategy")

@@ -140,23 +140,26 @@ class MDAGaussSeidel(BaseMDASolver):
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
         if self.settings.max_mda_iter == 0:
-            del self.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        for discipline in self.disciplines:
-            self.input_grammar.update(
-                discipline.input_grammar, excluded_names=self.output_grammar.keys()
+        for discipline in self._disciplines:
+            self.io.input_grammar.update(
+                discipline.io.input_grammar,
+                excluded_names=self.io.output_grammar,
             )
-            self.output_grammar.update(discipline.output_grammar)
+            self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
     ) -> None:
         input_data = input_data or self.io.data
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             discipline.execute(input_data)
             self.io.data.update(discipline.io.get_output_data())
+
+        self._compute_names_to_slices()
 
     def _execute(self) -> None:
         super()._execute()
@@ -169,7 +172,7 @@ class MDAGaussSeidel(BaseMDASolver):
             self._execute_disciplines_and_update_local_data()
             self._compute_residuals(local_data_before_execution)
 
-            if self._stop_criterion_is_reached:
+            if self._check_stopping_criteria():
                 break
 
             updated_couplings = self._sequence_transformer.compute_transformed_iterate(

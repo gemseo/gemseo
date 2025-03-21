@@ -21,10 +21,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
 from numpy import array
+from numpy import inf
 from numpy import isclose
 
 from gemseo.core.chains.parallel_chain import MDOParallelChain
@@ -37,6 +39,7 @@ from gemseo.mda.mda_chain import MDAChain
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 from .test_mda import analytic_disciplines_from_desc
@@ -190,10 +193,10 @@ def test_16_disc_parallel() -> None:
 def test_simple_grammar_type(in_gtype) -> None:
     disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines)
-    assert isinstance(mda.input_grammar, SimpleGrammar)
-    assert isinstance(mda.mdo_chain.input_grammar, SimpleGrammar)
+    assert isinstance(mda.io.input_grammar, SimpleGrammar)
+    assert isinstance(mda.mdo_chain.io.input_grammar, SimpleGrammar)
     for inner_mda in mda.inner_mdas:
-        assert isinstance(inner_mda.input_grammar, SimpleGrammar)
+        assert isinstance(inner_mda.io.input_grammar, SimpleGrammar)
 
 
 @pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
@@ -387,7 +390,7 @@ def test_initialize_defaults() -> None:
     ])
     del disciplines[0].default_input_data["y"]
     chain = MDAChain(disciplines, initialize_defaults=False)
-    with pytest.raises(InvalidDataError, match="Missing required names: y."):
+    with pytest.raises(InvalidDataError, match=re.escape("Missing required names: y.")):
         chain.execute()
 
     MDAChain(disciplines, initialize_defaults=True).execute()
@@ -396,14 +399,50 @@ def test_initialize_defaults() -> None:
     chain = MDAChain(disciplines, initialize_defaults=True)
     with pytest.raises(
         ValueError,
-        match="Cannot compute the inputs a, x, y, z, "
-        "for the following disciplines A, B.",
+        match=re.escape(
+            "Cannot compute the inputs a, x, y, z, for the following disciplines A, B."
+        ),
     ):
         chain.execute()
 
     chain = MDAChain(disciplines, initialize_defaults=True)
-    assert "z" not in chain.default_input_data
+    assert "z" not in chain.io.input_grammar.defaults
     chain.execute({"z": array([0])})
     # Tests that the default inputs are well udapted
-    assert "z" in chain.default_input_data
+    assert "z" in chain.io.input_grammar.defaults
     chain.execute({"z": array([2])})
+
+
+def test_set_bounds():
+    """Test that bounds are properly dispatched to inner-MDAs."""
+    mda = MDAChain([
+        LinearDiscipline("A", ["x", "b"], ["a"]),
+        LinearDiscipline("B", ["a"], ["b", "y"]),
+        LinearDiscipline("C", ["b", "d"], ["c"]),
+        LinearDiscipline("D", ["c"], ["d", "z"]),
+    ])
+
+    lower_bound = -array([1.0])
+    upper_bound = array([1.0])
+
+    mda.set_bounds({
+        "a": (lower_bound, None),
+        "c": (2.0 * lower_bound, None),
+        "d": (-lower_bound, 4.0 * upper_bound),
+    })
+
+    mda.execute()
+
+    mda_1 = mda.inner_mdas[0]
+    assert (mda_1.lower_bound_vector == array([-1.0, -inf])).all()
+    assert (mda_1.upper_bound_vector == array([+inf, +inf])).all()
+
+    assert (mda_1._sequence_transformer.lower_bound == array([-1.0, -inf])).all()
+    assert (mda_1._sequence_transformer.upper_bound == array([+inf, +inf])).all()
+
+    mda_2 = mda.inner_mdas[1]
+    assert (mda_2.lower_bound_vector == array([-2.0, 1.0])).all()
+    assert (mda_2.upper_bound_vector == array([+inf, 4.0])).all()
+
+    assert (mda_2._sequence_transformer.lower_bound == array([-2.0, 1.0])).all()
+    assert (mda_2._sequence_transformer.upper_bound == array([+inf, 4.0])).all()

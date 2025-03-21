@@ -22,102 +22,119 @@
 Polynomial regression
 =====================
 
-We want to approximate a discipline with two inputs and two outputs:
+A :class:`.PolynomialRegressor` is a polynomial regression model
+based on a :class:`.LinearRegressor`.
+This design choice was made
+because a polynomial regression model is a generalized linear model
+whose basis functions are monomials.
+Thus,
+a :class:`.PolynomialRegressor` benefits
+from the same settings as :class:`.LinearRegressor`:
+offset can be set to zero and regularization techniques can be used.
 
-- :math:`y_1=1+2x_1+3x_2`
-- :math:`y_2=-1-2x_1-3x_2`
-
-over the unit hypercube :math:`[0,1]\\times[0,1]`.
+.. seealso::
+   You will find more information about these settings
+   in :ref:`the example about the linear regression model <sphx_glr_examples_mlearning_regression_model_plot_polynomial_regression.py>`.
 """
 
 from __future__ import annotations
 
+from matplotlib import pyplot as plt
 from numpy import array
 
 from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import sample_disciplines
 from gemseo.mlearning import create_regression_model
 
 configure_logger()
 
-
 # %%
-# Create the discipline to learn
-# ------------------------------
-# We can implement this analytic discipline by means of the
-# :class:`.AnalyticDiscipline` class.
-expressions = {
-    "y_1": "1 + 2*x_1 + 3*x_2 + x_1**2",
-    "y_2": "-1 - 2*x_1 + x_1*x_2 - 3*x_2**2",
-}
+# Problem
+# -------
+# In this example,
+# we represent the function :math:`f(x)=(6x-2)^2\sin(12x-4)` :cite:`forrester2008`
+# by the :class:`.AnalyticDiscipline`
 discipline = create_discipline(
-    "AnalyticDiscipline", name="func", expressions=expressions
+    "AnalyticDiscipline",
+    name="f",
+    expressions={"y": "(6*x-2)**2*sin(12*x-4)"},
+)
+# %%
+# and seek to approximate it over the input space
+input_space = create_design_space()
+input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+
+# %%
+# To do this,
+# we create a training dataset with 6 equispaced points:
+training_dataset = sample_disciplines(
+    [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
 
 # %%
-# Create the input sampling space
-# -------------------------------
-# We create the input sampling space by adding the variables one by one.
-design_space = create_design_space()
-design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
-design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-
-# %%
-# Create the learning set
-# -----------------------
-# We can build a learning set by means of a
-# :class:`.DOEScenario` with a full factorial design of
-# experiments. The number of samples can be equal to 9 for example.
-scenario = create_scenario(
-    [discipline],
-    "y_1",
-    design_space,
-    scenario_type="DOE",
-    formulation_name="DisciplinaryOpt",
-)
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
-
-# %%
-# Create the regression model
-# ---------------------------
-# Then, we build the linear regression model from the database and
-# displays this model.
-dataset = scenario.to_dataset(opt_naming=False)
-model = create_regression_model(
-    "PolynomialRegressor", dataset, degree=2, transformer={}
-)
+# Basics
+# ------
+# Training
+# ~~~~~~~~
+# Then,
+# we train a polynomial regression model with a degree of 2 (default)
+# from these samples:
+model = create_regression_model("PolynomialRegressor", training_dataset)
 model.learn()
-model
 
 # %%
-# Predict output
-# --------------
-# Once it is built, we can use it for prediction.
-input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
+# Prediction
+# ~~~~~~~~~~
+# Once it is built,
+# we can predict the output value of :math:`f` at a new input point:
+input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
 
 # %%
-# Predict Jacobian
-# ----------------
-# We can also use it to predict the jacobian of the discipline.
+# as well as its Jacobian value:
 jacobian_value = model.predict_jacobian(input_value)
 jacobian_value
 
 # %%
-# Get intercept
-# -------------
-# In addition, it is possible to access the intercept of the model,
-# either directly or by means of a method returning either a dictionary
-# (default option) or an array.
-model.intercept, model.get_intercept()
+# Plotting
+# ~~~~~~~~
+# Of course,
+# you can see that the quadratic model is no good at all here:
+test_dataset = sample_disciplines(
+    [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=100
+)
+input_data = test_dataset.get_view(variable_names=model.input_names).to_numpy()
+reference_output_data = test_dataset.get_view(variable_names="y").to_numpy().ravel()
+predicted_output_data = model.predict(input_data).ravel()
+plt.plot(input_data.ravel(), reference_output_data, label="Reference")
+plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
+plt.grid()
+plt.legend()
+plt.show()
 
 # %%
-# Get coefficients
-# ----------------
-# In addition, it is possible to access the coefficients of the model,
-# either directly or by means of a method returning either a dictionary
-# (default option) or an array.
-model.coefficients
+# Settings
+# --------
+# The :class:`.PolynomialRegressor` has many options
+# defined in the :class:`.PolynomialRegressor_Settings` Pydantic model.
+# Most of them are presented
+# in :ref:`the example about the linear regression model <sphx_glr_examples_mlearning_regression_model_plot_polynomial_regression.py>`.
+#
+# The only one we will look at here is the degree of the polynomial regression model.
+# This information can be set with the ``degree`` keyword.
+# For example,
+# we can use a cubic regression model instead of a quadratic one:
+model = create_regression_model("PolynomialRegressor", training_dataset, degree=3)
+model.learn()
+# %%
+# and see that this model seems to be better:
+predicted_output_data_ = model.predict(input_data).ravel()
+plt.plot(input_data.ravel(), reference_output_data, label="Reference")
+plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
+plt.plot(input_data.ravel(), predicted_output_data_, label="Regression - Degree(3)")
+plt.grid()
+plt.legend()
+plt.show()

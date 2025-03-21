@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -70,13 +71,15 @@ def test_variable_influence_doe(tmp_wd) -> None:
     """
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
-    inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
+    inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario(
         [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
     )
     doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
-    with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
+    with pytest.raises(
+        ValueError, match=re.escape("No gradients to plot at current iteration.")
+    ):
         doe_scenario.post_process(
             post_name="VariableInfluence",
             file_path="doe",

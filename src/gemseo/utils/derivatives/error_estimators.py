@@ -51,7 +51,7 @@ def compute_cancellation_error(
 ) -> ndarray:
     r"""Compute the cancellation error.
 
-    This is the round-off when doing :math:`f(x+\\delta_x)-f(x)`.
+    This is the round-off when doing :math:`f(x+\delta_x)-f(x)`.
 
     Args:
         f_x: The value of the function at the current step :math:`x`.
@@ -73,11 +73,11 @@ def compute_hessian_approximation(
     r"""Compute the second-order approximation of the Hessian matrix :math:`d^2f/dx^2`.
 
     Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
+        f_p: The value of the function :math:`f` at the next step :math:`x+\delta_x`.
         f_x: The value of the function :math:`f` at the current step :math:`x`.
         f_m: The value of the function :math:`f` at the previous step
-            :math:`x-\\delta_x`.
-        step: The differentiation step :math:`\\delta_x`.
+            :math:`x-\delta_x`.
+        step: The differentiation step :math:`\delta_x`.
 
     Returns:
         The approximation of the Hessian matrix at the current step :math:`x`.
@@ -101,7 +101,7 @@ def compute_best_step(
     The optimal step is reached when the truncation error
     (cut in the Taylor development),
     and the numerical cancellation errors
-    (round-off when doing :math:`f(x+step)-f(x))` are equal.
+    (round-off when doing :math:`f(x+\delta_x)-f(x))` are equal.
 
     See Also:
         https://en.wikipedia.org/wiki/Numerical_differentiation
@@ -109,11 +109,11 @@ def compute_best_step(
         Knut Morken, Chapter 11, "Numerical Differenciation"
 
     Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\\delta_x`.
+        f_p: The value of the function :math:`f` at the next step :math:`x+\delta_x`.
         f_x: The value of the function :math:`f` at the current step :math:`x`.
         f_m: The value of the function :math:`f` at the previous step
-            :math:`x-\\delta_x`.
-        step: The differentiation step :math:`\\delta_x`.
+            :math:`x-\delta_x`.
+        step: The differentiation step :math:`\delta_x`.
         epsilon_mach: The machine epsilon.
 
     Returns:

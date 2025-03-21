@@ -56,7 +56,7 @@ It attempts to detect infeasibility, unboundedness or problem simplifications.""
         description="""Whether to remove linearly dependent equality-constraints.""",
     )
 
-    rr_method: Literal["SVD", "pivot", "ID", None] = Field(
+    rr_method: Literal["SVD", "pivot", "ID"] | None = Field(
         default=None,
         description="""The method to remove redundancy, either 'SVD', 'pivot' or 'ID'.
 

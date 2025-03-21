@@ -67,12 +67,11 @@ The :class:`.ParameterSpace` also provides the following methods:
 
 from __future__ import annotations
 
-import collections
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
+from prettytable import PrettyTable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -90,18 +89,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-
-RandomVariable = collections.namedtuple(  # noqa: PYI024
-    "RandomVariable",
-    ["distribution", "size", "parameters"],
-    defaults=(1, {}),
-)
-
-RandomVector = collections.namedtuple(  # noqa: PYI024
-    "RandomVector",
-    ["distribution", "size", "parameters"],
-    defaults=(1, {}),
-)
+from gemseo.utils.string_tools import _format_value_in_pretty_table_16
 
 LOGGER = logging.getLogger(__name__)
 
@@ -208,8 +196,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
-            For instance,
+            the same identifier. For instance,
             one cannot mix a random vector
             using a :class:`.OTUniformDistribution` with identifier ``"OT"``
             and a random vector
@@ -472,8 +459,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
-            For instance,
+            the same identifier. For instance,
             one cannot mix a random variable
             distributed as an :class:`.OTUniformDistribution` with identifier ``"OT"``
             and a random variable
@@ -659,7 +645,7 @@ class ParameterSpace(DesignSpace):
             )
         else:
             table = PrettyTable(["Name" if capitalize else "name"])
-            table.float_format = "%.16g"
+            table.custom_format = _format_value_in_pretty_table_16
             for name, variable in self._variables.items():
                 name_template = f"{name}"
                 if with_index and variable.size > 1:
@@ -955,7 +941,7 @@ class ParameterSpace(DesignSpace):
         Args:
             dataset: The dataset used for the initialization.
             groups: The groups of the dataset to be considered.
-                If ``None``, consider all the groups.
+                If empty, consider all the groups.
             uncertain: Whether the variables should be uncertain or not.
             copula: A name of copula defining the dependency between random variables.
         """
@@ -964,7 +950,7 @@ class ParameterSpace(DesignSpace):
         if uncertain is None:
             uncertain = {}
 
-        if groups is None:
+        if not groups:
             groups = dataset.group_names
         for group in groups:
             for name in dataset.get_variable_names(group):
@@ -1022,10 +1008,10 @@ class ParameterSpace(DesignSpace):
         if current_name in self.uncertain_variables:
             position = self.uncertain_variables.index(current_name)
             self.uncertain_variables[position] = new_name
-            _dict = self.__uncertain_variables_to_definitions
-            _dict[new_name] = _dict.pop(current_name)
-            _dict = self.distributions
-            _dict[new_name] = _dict.pop(current_name)
+            dict_ = self.__uncertain_variables_to_definitions
+            dict_[new_name] = dict_.pop(current_name)
+            dict_ = self.distributions
+            dict_[new_name] = dict_.pop(current_name)
 
     def add_variables_from(self, space: DesignSpace, *names: str) -> None:  # noqa: D102
         if not isinstance(space, ParameterSpace):

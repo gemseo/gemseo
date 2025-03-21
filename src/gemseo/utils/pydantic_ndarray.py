@@ -34,7 +34,6 @@ except (ModuleNotFoundError, ImportError):  # pragma: no cover
     _DType_co = TypeVar("_DType_co", covariant=True, bound=dtype[Any])  # type: ignore[misc] # mypy seems to ignore the except block.
     _ScalarType_co = TypeVar("_ScalarType_co", bound=generic, covariant=True)  # type: ignore[misc] # mypy seems to ignore the except block.
 
-from numpy.typing import NDArray
 from pydantic_core import CoreSchema
 from pydantic_core import core_schema
 from typing_extensions import get_args
@@ -44,6 +43,7 @@ from typing_extensions import get_args
 _ShapeType = TypeVar("_ShapeType", bound=Any)
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pydantic import GetCoreSchemaHandler
 
 
@@ -56,13 +56,13 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
-        _source_type: Any,
+        source_type: Any,
         _handler: GetCoreSchemaHandler,
     ) -> CoreSchema:  # noqa: D102
-        if _source_type is cls:
+        if source_type is cls:
             return core_schema.is_instance_schema(ndarray)
 
-        dtype_ = get_args(get_args(_source_type)[1])[0]
+        dtype_ = get_args(get_args(source_type)[1])[0]
         if dtype_ is _ScalarType_co:
             # No dtype has been defined.
             return core_schema.is_instance_schema(ndarray)
@@ -70,13 +70,13 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
         return core_schema.chain_schema([
             core_schema.is_instance_schema(ndarray),
             core_schema.no_info_plain_validator_function(
-                cls.__get_validator(_source_type)
+                cls.__get_validator(source_type)
             ),
         ])
 
     @staticmethod
     def __get_validator(
-        _source_type: Any,
+        source_type: Any,
     ) -> Callable[[NDArray[Any]], NDArray[Any]]:
         """Return a function that can validate NumPy array types.
 
@@ -87,7 +87,7 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
             The validator function.
         """
         # The dtype is located at X in ndarray[Any, dtype[X]]
-        dtype_ = get_args(get_args(_source_type)[1])[0]
+        dtype_ = get_args(get_args(source_type)[1])[0]
 
         def validate(data: Any) -> NDArray[Any]:
             """Validate a NumPy array.
@@ -113,7 +113,7 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
                 )
                 raise ValueError(msg)
 
-            return cast(NDArray[Any], data)
+            return cast("NDArray[Any]", data)
 
         return validate
 

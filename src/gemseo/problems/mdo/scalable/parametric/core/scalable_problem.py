@@ -28,6 +28,7 @@ from typing import Final
 from numpy import concatenate
 from numpy import eye
 from numpy import full
+from numpy import hstack
 from numpy import newaxis
 from numpy import ones
 from numpy import quantile
@@ -72,7 +73,7 @@ from gemseo.utils.string_tools import MultiLineString
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class ScalableProblem:
@@ -106,10 +107,10 @@ class ScalableProblem:
     __N_SAMPLES: Final[int] = 100000
     """The number of samples to estimate the quantile-based constraint threshold."""
 
-    __alpha: NDArray[float]
+    __alpha: RealArray
     r"""The matrix :math:`\alpha` to compute :math:`y=\alpha+\beta x."""
 
-    __beta: NDArray[float]
+    __beta: RealArray
     r"""The matrix :math:`\beta` to compute :math:`y=\alpha+\beta x."""
 
     def __init__(
@@ -155,22 +156,22 @@ class ScalableProblem:
         all_discipline_indices = set(range(N))
         for i, i_th_disc_settings in enumerate(discipline_settings):
             other_discipline_indices = all_discipline_indices - {i}
-            _p_i = i_th_disc_settings.p_i
-            D_i0.append(rng.random((_p_i, d_0)))
-            D_ii.append(rng.random((_p_i, i_th_disc_settings.d_i)))
+            p_i_ = i_th_disc_settings.p_i
+            D_i0.append(rng.random((p_i_, d_0)))
+            D_ii.append(rng.random((p_i_, i_th_disc_settings.d_i)))
             C_ij.append({
-                get_coupling_name(j + 1): rng.random((_p_i, discipline_settings[j].p_i))
+                get_coupling_name(j + 1): rng.random((p_i_, discipline_settings[j].p_i))
                 for j in other_discipline_indices
             })
-            a_i.append(rng.random(_p_i))
+            a_i.append(rng.random(p_i_))
 
         # Define the matrix C and compute its inverse.
         C = eye(self._p)  # noqa: N806
         row_start = 0
-        for i, _p_i in enumerate(p_i):
+        for i, p_i_ in enumerate(p_i):
             C_ij_i = C_ij[i]  # noqa: N806
             col_start = 0
-            row_end = row_start + _p_i
+            row_end = row_start + p_i_
             for j, _p_j in enumerate(p_i):
                 col_end = col_start + _p_j
                 if j != i:
@@ -187,8 +188,8 @@ class ScalableProblem:
         D = zeros((self._p, d))  # noqa: N806
         row_start = 0
         col_start = d_0
-        for i, _p_i in enumerate(p_i):
-            row_end = row_start + _p_i
+        for i, p_i_ in enumerate(p_i):
+            row_end = row_start + p_i_
             col_end = col_start + d_i[i]
             D[row_start:row_end, 0:d_0] = D_i0[i]
             D[row_start:row_end, col_start:col_end] = D_ii[i]
@@ -271,18 +272,29 @@ class ScalableProblem:
 
         self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
 
-    def compute_y(
-        self, x: NDArray[float], u: NDArray[float] | None = None
-    ) -> NDArray[float]:
+    def differentiate_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
+        r"""Compute the derivatives of the coupling output :math:`y`.
+
+        Args:
+            x: The design point at which to compute :math:`y`.
+            u: The uncertain point at which to compute :math:`y`, if any.
+
+        Returns:
+            The derivatives of the coupling output :math:`y`
+            at the design point :math:`x` and the uncertain point :math:`u`.
+        """
+        return self.__beta if u is None else hstack((self.__beta, self._inv_C))
+
+    def compute_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
         r"""Compute the coupling vector :math:`y`.
 
         Args:
-            x: A design point.
-            u: An uncertain point, if any.
+            x: The design point at which to compute :math:`y`.
+            u: The uncertain point at which to compute :math:`y`, if any.
 
         Returns:
-            The coupling vector associated with the design point :math:`x`
-            and the uncertain vector :math:`U` if any.
+            The coupling vector :math:`y`
+            at the design point :math:`x` and the uncertain point :math:`u`.
         """
         y = self.__alpha + self.__beta @ x
         if u is not None:

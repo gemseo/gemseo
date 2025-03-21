@@ -17,20 +17,24 @@
 from __future__ import annotations
 
 from pathlib import Path
+from pickle import HIGHEST_PROTOCOL
 from pickle import Pickler
 from pickle import Unpickler
 from typing import Any
 
 
-def to_pickle(obj: Any, file_path: str | Path) -> None:
+def to_pickle(
+    obj: Any, file_path: str | Path, protocol: int = HIGHEST_PROTOCOL
+) -> None:
     """Save the pickled representation of an object on the disk.
 
     Args:
         obj: An object.
         file_path: The path to the file to store the pickled representation.
+        protocol: The protocol to use for pickling.
     """
     with Path(file_path).open("wb") as f:
-        pickler = Pickler(f, protocol=2)
+        pickler = Pickler(f, protocol=protocol)
         pickler.dump(obj)
 
 

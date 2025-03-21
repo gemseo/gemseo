@@ -30,9 +30,11 @@ from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.sequential_mda_settings import MDASequential_Settings
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
+    from gemseo.typing import RealArray
 
 
 class MDASequential(BaseMDA):
@@ -40,6 +42,9 @@ class MDASequential(BaseMDA):
 
     Settings: ClassVar[type[MDASequential_Settings]] = MDASequential_Settings
     """The pydantic model for the settings."""
+
+    mda_sequence: Sequence[BaseMDA]
+    """The sequence of MDAs."""
 
     settings: MDASequential_Settings
     """The settings of the MDA"""
@@ -56,22 +61,14 @@ class MDASequential(BaseMDA):
             mda_sequence: The sequence of MDAs.
         """  # noqa:D205 D212 D415
         super().__init__(disciplines, settings_model=settings_model, **settings)
-        self._compute_input_coupling_names()
-        self._init_mda_sequence(mda_sequence)
 
-    def _init_mda_sequence(self, mda_sequence: Sequence[BaseMDA]) -> None:
-        """Initialize the MDA sequence.
-
-        Args:
-           mda_sequence: The sequence of MDAs to chain.
-        """
         self.mda_sequence = mda_sequence
         self.settings._sub_mdas = self.mda_sequence
 
-        log_convergence = self.settings.log_convergence
         for mda in self.mda_sequence:
             mda.reset_history_each_run = True
-            log_convergence = log_convergence or mda.settings.log_convergence
+
+        self._compute_input_coupling_names()
 
     @BaseMDA.scaling.setter
     def scaling(self, scaling: BaseMDA.ResidualScaling) -> None:  # noqa: D102
@@ -85,13 +82,21 @@ class MDASequential(BaseMDA):
         if self.reset_history_each_run:
             self.residual_history = []
 
-        # Execute the MDAs in sequence
         for mda in self.mda_sequence:
-            # Execute the i-th MDA
             self.io.data = mda.execute(self.io.data)
 
-            # Extend the residual history
             self.residual_history += mda.residual_history
+            self.normed_residual = mda.normed_residual
+            self._current_iter += mda._current_iter
 
             if mda.normed_residual < self.settings.tolerance:
                 break
+
+    def set_bounds(  # noqa: D102
+        self,
+        variable_names_to_bounds: Mapping[
+            str, tuple[RealArray | None, RealArray | None]
+        ],
+    ) -> None:
+        for inner_mda in self.mda_sequence:
+            inner_mda.set_bounds(variable_names_to_bounds)

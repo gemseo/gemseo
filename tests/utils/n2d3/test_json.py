@@ -47,9 +47,9 @@ def n2_json() -> N2JSON:
         input_d = dict.fromkeys(desc[1], data)
         output_d = dict.fromkeys(desc[2], data)
         disc = DummyDiscipline(name)
-        disc.input_grammar.update_from_data(input_d)
-        disc.output_grammar.update_from_data(output_d)
-        disc.default_input_data.update(desc[3])
+        disc.io.input_grammar.update_from_data(input_d)
+        disc.io.output_grammar.update_from_data(output_d)
+        disc.io.input_grammar.defaults.update(desc[3])
         disciplines.append(disc)
     return N2JSON(DependencyGraph(disciplines))
 

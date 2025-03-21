@@ -34,6 +34,7 @@ We use a BiLevel formulation in order to only compute the Pareto-optimal points.
 # and to configure the logger.
 from __future__ import annotations
 
+from copy import deepcopy
 from logging import WARNING
 
 from numpy import array
@@ -42,6 +43,7 @@ from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo import execute_post
 
 configure_logger()
 
@@ -148,6 +150,23 @@ system_scenario = create_scenario(
 )
 
 # %%
+# .. tip::
+#
+#    When running BiLevel scenarios, it is interesting to access the optimization
+#    history of the sub-scenarios for each system iteration. By default, the setting
+#    ``keep_opt_history`` is set to ``True``. This allows you to store in memory the
+#    databases of the sub-scenarios (see the last section of this example for more
+#    details).
+#    In some cases, storing the databases in memory can take up too much space and cause
+#    performance issues. In these cases, set ``keep_opt_history=False`` and save the
+#    databases to the disk using ``save_opt_history=True``. If your sub-scenarios are
+#    running in parallel, and you are saving the optimization histories to the disk, set
+#    the ``naming`` setting to ``"UUID"``, which is multiprocessing-safe.
+#    The setting ``keep_opt_history`` will not work if the sub-scenarios are running in
+#    parallel because the databases are not copied from the sub-processes to the main
+#    process. In this case you shall always save the optimization history to the disk.
+
+# %%
 # Add the system-level constraint and observables
 # -----------------------------------------------
 # Here, we add the constraint on the `obj1_target`, this way we make sure that the
@@ -168,3 +187,18 @@ system_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=50)
 system_scenario.post_process(
     post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )
+
+# %%
+# Plot the sub-scenario histories of the 2 first system iterations
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The code below will not work if you ran the system scenario with ``n_processes`` > 1.
+# Indeed, parallel execution of sub-scenarios prevents us to save the databases from
+# each sub-process to the main process. If you ran the system scenario with many
+# processes, you can still save the databases to the disk with
+# ``save_opt_history=True`` and ``naming="UUID"``. Refer to the formulation settings for
+# more information.
+sub_scenario_databases = system_scenario.formulation.scenario_adapters[0].databases
+for database in sub_scenario_databases[:2]:
+    opt_problem = deepcopy(sub_scenario.formulation.optimization_problem)
+    opt_problem.database = database
+    execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)

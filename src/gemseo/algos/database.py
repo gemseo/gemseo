@@ -29,6 +29,7 @@ from ast import literal_eval
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
+from copy import deepcopy
 from itertools import chain
 from itertools import islice
 from typing import TYPE_CHECKING
@@ -196,7 +197,11 @@ class Database(Mapping):
     @property
     def last_item(self) -> DatabaseValueType:
         """The last item of the database."""
-        return next(reversed(self.__data.values()))
+        items = self.__data.values()
+        if not items:
+            return {}
+
+        return next(reversed(items))
 
     @staticmethod
     def get_hashable_ndarray(
@@ -466,8 +471,8 @@ class Database(Mapping):
             x = x.wrapped_array
 
         for db_input_value, db_output_names_to_values in self.items():
-            _db_in_value = db_input_value.wrapped_array
-            if norm(_db_in_value - x) <= tolerance * norm(_db_in_value):
+            db_in_value = db_input_value.wrapped_array
+            if norm(db_in_value - x) <= tolerance * norm(db_in_value):
                 return db_output_names_to_values
 
         return None
@@ -1029,8 +1034,8 @@ class Database(Mapping):
         positions = []
         offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
         for input_value in input_values:
-            _positions = ((input_history == input_value).all(axis=1)).nonzero()[0]
-            positions.extend((_positions + offset).tolist())
+            positions_ = ((input_history == input_value).all(axis=1)).nonzero()[0]
+            positions.extend((positions_ + offset).tolist())
 
         data = [input_history.real]
         columns = [
@@ -1040,9 +1045,7 @@ class Database(Mapping):
         ]
 
         # Add database outputs
-        variable_names = self.get_function_names()
-        output_names = [name for name in variable_names if name not in input_space]
-
+        output_names = self.get_function_names()
         self.__update_data_and_columns_for_dataset(
             data,
             columns,
@@ -1073,6 +1076,9 @@ class Database(Mapping):
                 names=dataset_class.COLUMN_LEVEL_NAMES,
             ),
         ).get_view(indices=positions)
+        # In case of any future modification of self.input_space,
+        # we use a copy of its current value.
+        dataset.misc["input_space"] = deepcopy(self.input_space)
 
         names_to_types_without_int = {
             k: v for k, v in names_to_types.items() if not issubdtype(v, integer)
@@ -1132,9 +1138,9 @@ class Database(Mapping):
                 .real
             )
             data.append(history)
-            _columns = [(group, function_name, i) for i in range(history.shape[1])]
-            columns.extend(_columns)
-            names_to_types.update(dict.fromkeys(_columns, atleast_1d(history).dtype))
+            columns_ = [(group, function_name, i) for i in range(history.shape[1])]
+            columns.extend(columns_)
+            names_to_types.update(dict.fromkeys(columns_, atleast_1d(history).dtype))
 
     @staticmethod
     def __replace_missing_values(

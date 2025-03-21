@@ -62,7 +62,7 @@ model = create_regression_model("MOERegressor", dataset, hard=False)
 # we add two clustering algorithms
 # with different numbers of clusters (called *components* for the Gaussian Mixture)
 # and set the :class:`.SilhouetteMeasure` as clustering measure
-# to be evaluated from the learning set.
+# to be evaluated from the training dataset.
 # During the learning stage,
 # the mixture of experts will select the clustering algorithm
 # and the number of clusters
@@ -77,7 +77,7 @@ model.add_clusterer_candidate("GaussianMixture", n_clusters=[3, 4, 5])
 # We also add classification algorithms
 # with different settings
 # and set the :class:`.F1Measure` as classification measure
-# to be evaluated from the learning set.
+# to be evaluated from the training dataset.
 # During the learning stage,
 # the mixture of experts will select the classification algorithm and the settings
 # minimizing this measure.
@@ -90,7 +90,7 @@ model.add_classifier_candidate("RandomForestClassifier", n_estimators=[100])
 # ----------
 # We also add regression algorithms
 # and set the :class:`.MSEMeasure` as regression measure
-# to be evaluated from the learning set.
+# to be evaluated from the training dataset.
 # During the learning stage, for each cluster,
 # the mixture of experts will select the regression algorithm minimizing this measure.
 model.set_regression_measure(MSEMeasure)

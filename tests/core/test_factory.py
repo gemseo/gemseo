@@ -79,7 +79,7 @@ def test_print_configuration(reset_factory) -> None:
         assert re.findall(pattern, line)
 
     # check table body
-    formulations = ["BiLevel", "DisciplinaryOpt", "IDF", "MDF"]
+    formulations = ["BiLevel", "BiLevelBCD", "DisciplinaryOpt", "IDF", "MDF"]
 
     for formulation in formulations:
         pattern = f"\\|\\s+{formulation}\\s+\\|\\s+Yes\\s+\\|.+\\|"
@@ -120,8 +120,8 @@ def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
     grammar = factory.get_options_grammar(formulation_name, write_schema=True)
     file_name = f"{grammar.name}.json"
     assert (
-        Path(DATA / file_name).read_text().split()
-        == Path(file_name).read_text().split()
+        Path(file_name).read_text().split()
+        == Path(DATA / file_name).read_text().split()
     )
 
     grammar.validate(opt_vals)

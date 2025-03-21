@@ -35,10 +35,12 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 from openturns import FunctionalChaosRandomVector
 
+from gemseo import sample_disciplines
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.regression.algos.pce import CleaningOptions
 from gemseo.mlearning.regression.algos.pce import PCERegressor
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
@@ -49,7 +51,10 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 @pytest.fixture(scope="module")
 def discipline() -> AnalyticDiscipline:
     """A linear discipline with two outputs."""
-    return AnalyticDiscipline({"y1": "1+2*x1+3*x2", "y2": "-1-2*x1-3*x2"})
+    disc = AnalyticDiscipline({"y1": "1+a1*x1+a2*x2", "y2": "-1-a1*x1-a2*x2"})
+    disc.io.input_grammar.defaults["a1"] = array([2.0])
+    disc.io.input_grammar.defaults["a2"] = array([3.0])
+    return disc
 
 
 @pytest.fixture(scope="module")
@@ -64,12 +69,15 @@ def probability_space() -> ParameterSpace:
 @pytest.fixture(scope="module")
 def dataset(discipline, probability_space) -> IODataset:
     """The learning dataset associated with the linear discipline."""
-    scenario = DOEScenario(
-        [discipline], "y1", probability_space, formulation_name="DisciplinaryOpt"
+    dataset = sample_disciplines(
+        [discipline],
+        probability_space,
+        ["y1", "y2"],
+        algo_name="PYDOE_FULLFACT",
+        n_samples=9,
+        formulation_settings={"differentiated_input_names_substitute": ("a1", "a2")},
+        eval_jac=True,
     )
-    scenario.add_observable("y2")
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
-    dataset = scenario.to_dataset(opt_naming=False)
     dataset.add_variable("weight", 1)
     return dataset
 
@@ -93,14 +101,21 @@ def ishigami_probability_space() -> ParameterSpace:
 @pytest.fixture(scope="module")
 def ishigami_dataset(ishigami_discipline, ishigami_probability_space) -> IODataset:
     """The learning dataset associated with the Ishigami discipline."""
-    scenario = DOEScenario(
+    return sample_disciplines(
         [ishigami_discipline],
-        "y",
         ishigami_probability_space,
-        formulation_name="DisciplinaryOpt",
+        "y",
+        algo_name="PYDOE_FULLFACT",
+        n_samples=125,
     )
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=125)
-    return scenario.to_dataset(opt_naming=False)
+
+
+@pytest.fixture(scope="module")
+def ishigami_pce(ishigami_dataset, ishigami_probability_space) -> PCERegressor:
+    """A PCERegressor approximating the Ishigami function."""
+    pce = PCERegressor(ishigami_dataset, probability_space=ishigami_probability_space)
+    pce.learn()
+    return pce
 
 
 @pytest.fixture(scope="module")
@@ -233,7 +248,7 @@ def test_missing_random_variables(dataset) -> None:
 def test_transformer(dataset, probability_space, key) -> None:
     """Check that transforming the input data raises an error."""
     with pytest.raises(
-        ValueError, match="PCERegressor does not support input transformers."
+        ValueError, match=re.escape("PCERegressor does not support input transformers.")
     ):
         PCERegressor(
             dataset,
@@ -249,7 +264,7 @@ def test_ot_distribution(dataset) -> None:
     probability_space.add_random_variable("x2", "SPUniformDistribution")
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "The probability distributions of the random variables x1, x2 "
             "are not instances of OTJointDistribution."
         ),
@@ -693,3 +708,71 @@ def test_multidimensional_variables() -> None:
         reference_total_sobol_indices["x2"],
     ]
     assert total_sobol_indices["b"] == reference_total_sobol_indices["x3"]
+
+
+def test_differentiation_wrt_special_variables(pce):
+    """Check that a PCE can be differentiated with respect to special variables."""
+    jacobian = pce.predict_jacobian_wrt_special_variables(array([1.0, 2.0]))
+    assert_almost_equal(jacobian, array([[1.0, 2.0], [-1.0, -2.0]]))
+    assert_almost_equal(
+        pce.mean_jacobian_wrt_special_variables, array([[0.5, 0.5], [-0.5, -0.5]])
+    )
+    assert_almost_equal(
+        pce.variance_jacobian_wrt_special_variables,
+        array([[1 / 3, 1 / 2], [1 / 3, 1 / 2]]),
+    )
+    assert_almost_equal(
+        pce.standard_deviation_jacobian_wrt_special_variables,
+        pce.variance_jacobian_wrt_special_variables / 2 / pce.standard_deviation,
+    )
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "mean_jacobian_wrt_special_variables",
+        "predict_jacobian_wrt_special_variables",
+        "standard_deviation_jacobian_wrt_special_variables",
+        "variance_jacobian_wrt_special_variables",
+    ],
+)
+def test_differentiation_wrt_special_variables_error(ishigami_pce, name):
+    """Check that an error is raised when Jacobian data is missing."""
+    with pytest.raises(  # noqa: PT012
+        ValueError,
+        match=re.escape(
+            f"You cannot use {name} "
+            "because the training dataset does not include gradient information."
+        ),
+    ):
+        attr = getattr(ishigami_pce, name)
+        if name == "predict_jacobian_wrt_special_variables":
+            attr(array([1.0, 1.0]))
+
+
+def test_differentiation_wrt_special_variables_error_not_implement_error(dataset):
+    """Check that a NotImplementedError is raised when
+    predict_jacobian_wrt_special_variables is not implemented."""
+    model = LinearRegressor(dataset)
+    model.learn()
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(
+            "LinearRegressor does not implement differentiation "
+            "with respect to special variables."
+        ),
+    ):
+        model.predict_jacobian_wrt_special_variables(array([1.0, 1.0]))
+
+
+def test_differentiation_wrt_special_variable_sub_samples(dataset, probability_space):
+    """Check differentiation wrt special variables when learning specific samples.
+
+    In the issue #1374,
+    this test fails
+    because PCERegressor.learn uses the whole PCERegressor._jacobian_data matrix
+    instead of the sub-matrix corresponding to the samples [0, 2, 3, 4, 7].
+    """
+    pce = PCERegressor(dataset, probability_space=probability_space)
+    pce.learn(samples=[0, 2, 3, 4, 7])
+    assert pce.standard_deviation_jacobian_wrt_special_variables.shape == (2, 2)

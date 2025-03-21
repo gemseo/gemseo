@@ -31,32 +31,14 @@ Glossary
     BLISS
         Bi-Level Integrated System Synthesis,
 
-    BLISS98
-        Bi-Level Integrated System Synthesis, original BLISS variant from 1998 paper using coupled derivatives
-
-    BLISS2000
-        Bi-Level Integrated System Synthesis, BLISS variant from 2000 paper, using surrogate models
-
     CO
         Collaborative Optimization
-
-    ANN
-        Artificial Neural Network
 
     CSSO
         Concurrent Subspaces Optimization
 
-    MDOIS
-        MDO of Independent Subspaces
-
-    AAO
-        All At Once
-
     ASO
         Asymmetric Subspace Optimization
-
-    SAND
-        Simultaneous Analysis and Design
 
     ATC
         Analytical Target Cascading
@@ -64,26 +46,14 @@ Glossary
     WORMS
         Workflow Management System
 
-    eWORMS
-        eclipse Workflow Management System
-
     CFD
         Computational Fluid Dynamics
 
     CSM
         Computational Structure Mechanics
 
-    EA
-        Evolutionary Algorithm
-
-    SBO
-        Surrogate Based Optimization
-
     XDSM
         eXtended Design Structure Matrix
-
-    LP
-        Linear Programming
 
     LHS
         Latin Hypercube Sampling
@@ -97,9 +67,6 @@ Glossary
     COTS
         Commercial Off The Shelf
 
-    SRS
-        Software Requirements Specification
-
     HPC
         High Performance Computing
 
@@ -108,12 +75,6 @@ Glossary
 
     IRT
         Institut de Recherche Technologique Saint Exupéry
-
-    DFO
-        Derivative-Free Optimization
-
-    ANR
-        Agence Nationale de la Recherche
 
     KKT
         Karun Kuhn Tucker
@@ -142,20 +103,8 @@ Glossary
     SLSQP
         Sequential Least Squares Quadratic Programming
 
-    FPO
-        Future Projects Office
-
     HTML
         Hypertext Markup Language
-
-    SWIG
-        Simplified Wrapper and Interface Generator
-
-    PIDO
-        Process Integration and Design Optimization
-
-    SLM
-        Simulation Life Cycle Management
 
     DOE
         Design Of Experiments
@@ -390,3 +339,9 @@ Glossary
 
     Newton-Raphson method
         A :term:`root finding` method that uses successive linear approximations of the function of interest
+
+    ODE
+        Ordinary Differential Equation
+
+    IVP
+        Initial Value Problem

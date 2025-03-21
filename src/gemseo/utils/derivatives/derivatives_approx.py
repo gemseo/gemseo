@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from numpy import atleast_1d
 from scipy.sparse import hstack as sparse_hstack
 
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
@@ -134,21 +135,27 @@ class DisciplineJacApprox:
         self,
         output_names: Sequence[str],
         input_names: Sequence[str],
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Create the Jacobian approximation class.
 
         Args:
             input_names: The names of the inputs used to differentiate the outputs.
             output_names: The names of the outputs to be differentiated.
+            input_data: The input data for the Jacobian approximation.
 
         Raises:
             ValueError: If the Jacobian approximation method is unknown.
         """
-        self.func = self.generator.get_function(input_names, output_names)
+        self.func = self.generator.get_function(
+            input_names,
+            output_names,
+            input_data or None,
+        )
         self.approximator = GradientApproximatorFactory().create(
             self.approx_method,
             self.func.evaluate,
-            step=self.step,
+            step=atleast_1d(self.step),
             parallel=self.__parallel,
             **self.__par_args,
         )
@@ -193,7 +200,9 @@ class DisciplineJacApprox:
         with self.__set_zero_cache_tol():
             compute_opt_step = self.approximator.compute_optimal_step
 
-        x_vect = self._prepare_xvect(input_names, self.discipline.default_input_data)
+        x_vect = self._prepare_xvect(
+            input_names, self.discipline.io.input_grammar.defaults
+        )
         steps_opt, errors = compute_opt_step(x_vect, numerical_error=numerical_error)
 
         if print_errors:
@@ -203,16 +212,16 @@ class DisciplineJacApprox:
             )
             LOGGER.info(errors)
 
-        data = self.discipline.default_input_data or self.discipline.io.data
+        data = self.discipline.io.input_grammar.defaults or self.discipline.io.data
         names_to_slices = (
-            self.discipline.input_grammar.data_converter.compute_names_to_slices(
+            self.discipline.io.input_grammar.data_converter.compute_names_to_slices(
                 input_names,
                 data,
             )[0]
         )
 
         self.auto_steps = (
-            self.discipline.input_grammar.data_converter.convert_array_to_data(
+            self.discipline.io.input_grammar.data_converter.convert_array_to_data(
                 steps_opt, names_to_slices
             )
         )
@@ -248,7 +257,7 @@ class DisciplineJacApprox:
         if not data:
             data = self.discipline.io.data
 
-        return self.discipline.input_grammar.data_converter.convert_data_to_array(
+        return self.discipline.io.input_grammar.data_converter.convert_data_to_array(
             input_names,
             data,
         )
@@ -258,6 +267,7 @@ class DisciplineJacApprox:
         output_names: Iterable[str],
         input_names: Iterable[str],
         x_indices: Sequence[int] = (),
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> dict[str, dict[str, ndarray]]:
         """Approximate the Jacobian.
 
@@ -267,16 +277,21 @@ class DisciplineJacApprox:
             x_indices: The components of the input vector
                 to be used for the differentiation.
                 If empty, use all the components.
+            input_data: The input data needed to approximate the Jacobian
+                according to the discipline input grammar.
+                If empty, use the :attr:`.Discipline.default_input_data`.
 
         Returns:
             The approximated Jacobian.
         """
-        self._create_approximator(output_names, input_names)
+        self._create_approximator(output_names, input_names, input_data)
 
         if self.auto_steps and all(key in self.auto_steps for key in input_names):
-            step = self.discipline.input_grammar.data_converter.convert_data_to_array(
-                input_names,
-                self.auto_steps,
+            step = (
+                self.discipline.io.input_grammar.data_converter.convert_data_to_array(
+                    input_names,
+                    self.auto_steps,
+                )
             )
         else:
             step = self.step
@@ -293,13 +308,13 @@ class DisciplineJacApprox:
             )
 
         data_names_to_sizes = (
-            self.discipline.output_grammar.data_converter.compute_names_to_sizes(
+            self.discipline.io.output_grammar.data_converter.compute_names_to_sizes(
                 output_names,
                 self.discipline.io.data,
             )
         )
         input_names_to_sizes = (
-            self.discipline.input_grammar.data_converter.compute_names_to_sizes(
+            self.discipline.io.input_grammar.data_converter.compute_names_to_sizes(
                 input_names,
                 self.discipline.io.data,
             )
@@ -336,6 +351,7 @@ class DisciplineJacApprox:
         indices: Mapping[
             str, int | Sequence[int] | Ellipsis | slice
         ] = READ_ONLY_EMPTY_DICT,
+        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
@@ -377,6 +393,9 @@ class DisciplineJacApprox:
                 If a variable name is missing, consider all its components.
                 If ``None``,
                 consider all the components of all the ``inputs`` and ``outputs``.
+            input_data: The input data needed to execute the discipline
+                according to the discipline input grammar.
+                If empty, use the :attr:`.Discipline.default_input_data`.
 
         Returns:
             Whether the analytical Jacobian is correct.
@@ -388,9 +407,9 @@ class DisciplineJacApprox:
             input_indices, input_names_to_indices = self._compute_variable_indices(
                 indices,
                 input_names,
-                self.discipline.input_grammar.data_converter.compute_names_to_sizes(
+                self.discipline.io.input_grammar.data_converter.compute_names_to_sizes(
                     input_names,
-                    self.discipline.default_input_data,
+                    self.discipline.io.input_grammar.defaults,
                 ),
             )
 
@@ -400,8 +419,11 @@ class DisciplineJacApprox:
         analytic_jacobian = analytic_jacobian or self.discipline.jac
 
         if not reference_jacobian_path or save_reference_jacobian:
+            for input_name in tuple(input_data):
+                if input_name not in self.discipline.input_grammar.names:
+                    del input_data[input_name]
             approximated_jacobian = self.compute_approx_jac(
-                output_names, input_names, input_indices
+                output_names, input_names, input_indices, input_data
             )
         else:
             with Path(reference_jacobian_path).open("rb") as infile:
@@ -565,8 +587,8 @@ class DisciplineJacApprox:
             and the names of the output components
             corresponding to the columns of ``sub_jacobian``.
         """
-        _approx_jacobian = {}
-        _analytic_jacobian = {}
+        approx_jacobian = {}
+        analytic_jacobian_ = {}
         jacobian = analytic_jacobian[next(iter(analytic_jacobian))]
         input_names = list(jacobian.keys())
         input_component_names = [
@@ -575,7 +597,7 @@ class DisciplineJacApprox:
             for i in range(jacobian[input_name].shape[1])
         ]
         for output_name, output_approximated_jacobian in approximated_jacobian.items():
-            _output_approx_jacobian = concatenate(
+            output_approx_jacobian = concatenate(
                 [
                     output_approximated_jacobian[input_name]
                     for input_name in input_names
@@ -590,31 +612,31 @@ class DisciplineJacApprox:
             )
 
             if contains_sparse:
-                _output_analytic_jacobian = sparse_hstack(
+                output_analytic_jacobian = sparse_hstack(
                     [analytic_jacobian_out[input_name] for input_name in input_names],
                 ).tocsr()
             else:
-                _output_analytic_jacobian = concatenate(
+                output_analytic_jacobian = concatenate(
                     [analytic_jacobian_out[input_name] for input_name in input_names],
                     axis=1,
                 )
 
-            n_f = len(_output_approx_jacobian)
+            n_f = len(output_approx_jacobian)
 
             if n_f == 1:
-                _approx_jacobian[output_name] = _output_approx_jacobian.flatten()
+                approx_jacobian[output_name] = output_approx_jacobian.flatten()
 
                 if contains_sparse:
-                    _output_analytic_jacobian = _output_analytic_jacobian.toarray()
+                    output_analytic_jacobian = output_analytic_jacobian.toarray()
 
-                _analytic_jacobian[output_name] = _output_analytic_jacobian.flatten()
+                analytic_jacobian_[output_name] = output_analytic_jacobian.flatten()
             else:
                 for i in range(n_f):
                     output_name = f"{output_name}_{i}"
-                    _approx_jacobian[output_name] = _output_approx_jacobian[i, :]
-                    _analytic_jacobian[output_name] = _output_analytic_jacobian[i, :]
+                    approx_jacobian[output_name] = output_approx_jacobian[i, :]
+                    analytic_jacobian_[output_name] = output_analytic_jacobian[i, :]
 
-        return _analytic_jacobian, _approx_jacobian, input_component_names
+        return analytic_jacobian_, approx_jacobian, input_component_names
 
     def plot_jac_errors(
         self,

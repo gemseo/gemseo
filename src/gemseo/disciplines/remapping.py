@@ -69,30 +69,30 @@ class RemappingDiscipline(Discipline):
         Raises:
             ValueError: When the original discipline has no default input values.
         """  # noqa: D205, D212, D415
-        if not discipline.default_input_data:
+        if not discipline.io.input_grammar.defaults:
             msg = "The original discipline has no default input values."
             raise ValueError(msg)
 
         self._discipline = discipline
         self._empty_original_input_data = {
             k: empty(v.shape, dtype=v.dtype)
-            for k, v in discipline.default_input_data.items()
+            for k, v in discipline.io.input_grammar.defaults.items()
         }
-        original_input_grammar = discipline.input_grammar
-        original_output_grammar = discipline.output_grammar
+        original_input_grammar = discipline.io.input_grammar
+        original_output_grammar = discipline.io.output_grammar
         input_mapping = input_mapping or {n: n for n in original_input_grammar}
         output_mapping = output_mapping or {n: n for n in original_output_grammar}
         self._input_mapping = self.__format_mapping(
-            input_mapping, discipline.input_grammar
+            input_mapping, discipline.io.input_grammar
         )
         self._output_mapping = self.__format_mapping(
-            output_mapping, discipline.output_grammar
+            output_mapping, discipline.io.output_grammar
         )
         super().__init__(name=self._discipline.name)
-        self.input_grammar.update_from_names(input_mapping.keys())
-        self.output_grammar.update_from_names(output_mapping.keys())
-        self.default_input_data = self.__convert_from_origin(
-            discipline.default_input_data, self._input_mapping
+        self.io.input_grammar.update_from_names(input_mapping.keys())
+        self.io.output_grammar.update_from_names(output_mapping.keys())
+        self.io.input_grammar.defaults = self.__convert_from_origin(
+            discipline.io.input_grammar.defaults, self._input_mapping
         )
         self.add_differentiated_inputs(
             self.__get_new_data_names(

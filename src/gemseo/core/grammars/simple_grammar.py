@@ -17,12 +17,14 @@
 from __future__ import annotations
 
 import collections
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
 from numpy import ndarray
 
+from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.core.grammars.base_grammar import BaseGrammar
 
 if TYPE_CHECKING:
@@ -89,7 +91,7 @@ class SimpleGrammar(BaseGrammar):
         del self.__names_to_types[name]
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
-        grammar.__names_to_types = self.__names_to_types.copy()
+        grammar.__names_to_types = deepcopy(self.__names_to_types)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)
@@ -233,5 +235,5 @@ class SimpleGrammar(BaseGrammar):
     def _check_name(self, *names: str) -> None:
         for name in names:
             if name not in self.__names_to_types:
-                msg = f"The name {name} is not in the grammar."
+                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
                 raise KeyError(msg)

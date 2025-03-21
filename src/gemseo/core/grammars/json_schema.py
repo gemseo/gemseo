@@ -33,6 +33,7 @@ from genson.schema.strategies import Object
 from numpy import float64
 from numpy import int64
 
+from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.typing import StrKeyMapping
 
 if TYPE_CHECKING:
@@ -181,7 +182,7 @@ class MutableMappingSchemaBuilder(
         """
         try:
             return cast(
-                SchemaBuilderProperties,
+                "SchemaBuilderProperties",
                 self._root_node._active_strategies[0]._properties,
             )
         except (AttributeError, IndexError):
@@ -200,7 +201,7 @@ class MutableMappingSchemaBuilder(
             return set()
         if required is None:
             return set()
-        return cast(set[str], required)
+        return cast("set[str]", required)
 
     def check_property_names(self, *names: str) -> None:
         """Check that the names are existing properties.
@@ -213,7 +214,7 @@ class MutableMappingSchemaBuilder(
         """
         for name in names:
             if name not in self.properties:
-                msg = f"The name {name} is not in the grammar."
+                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
                 raise KeyError(msg)
 
     def add_schema(self, schema: Schema, update: bool) -> None:

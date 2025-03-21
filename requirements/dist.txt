@@ -2,63 +2,62 @@
 #    uv pip compile requirements/dist.in -o requirements/dist.txt
 annotated-types==0.7.0
     # via pydantic
-attrs==24.2.0
+attrs==25.3.0
     # via check-wheel-contents
 build==1.2.2.post1
     # via -r requirements/dist.in
-certifi==2024.8.30
+certifi==2025.1.31
     # via requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
-check-wheel-contents==0.6.0
+check-wheel-contents==0.6.1
     # via -r requirements/dist.in
-click==8.1.7
+click==8.1.8
     # via check-wheel-contents
-cryptography==43.0.3
+cryptography==44.0.2
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
+id==1.5.0
+    # via twine
 idna==3.10
     # via requests
-importlib-metadata==8.5.0
-    # via twine
 jaraco-classes==3.4.0
     # via keyring
 jaraco-context==6.0.1
     # via keyring
 jaraco-functools==4.1.0
     # via keyring
-jeepney==0.8.0
+jeepney==0.9.0
     # via
     #   keyring
     #   secretstorage
-keyring==25.5.0
+keyring==25.6.0
     # via twine
 markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-more-itertools==10.5.0
+more-itertools==10.6.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-nh3==0.2.18
+nh3==0.2.21
     # via readme-renderer
-packaging==24.1
+packaging==24.2
     # via
     #   build
     #   check-wheel-contents
-pkginfo==1.10.0
-    # via twine
+    #   twine
 pycparser==2.22
     # via cffi
-pydantic==2.9.2
+pydantic==2.10.6
     # via check-wheel-contents
-pydantic-core==2.23.4
+pydantic-core==2.27.2
     # via pydantic
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   readme-renderer
     #   rich
@@ -68,6 +67,7 @@ readme-renderer==44.0
     # via twine
 requests==2.32.3
     # via
+    #   id
     #   requests-toolbelt
     #   twine
 requests-toolbelt==1.0.0
@@ -78,17 +78,15 @@ rich==13.9.4
     # via twine
 secretstorage==3.3.3
     # via keyring
-twine==5.1.1
+twine==6.1.0
     # via -r requirements/dist.in
 typing-extensions==4.12.2
     # via
     #   pydantic
     #   pydantic-core
-urllib3==2.2.3
+urllib3==2.3.0
     # via
     #   requests
     #   twine
-wheel-filename==1.4.1
+wheel-filename==1.4.2
     # via check-wheel-contents
-zipp==3.20.2
-    # via importlib-metadata

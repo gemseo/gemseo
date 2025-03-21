@@ -15,6 +15,7 @@
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Isabelle Santos
+#        :author: Giulio Gargantini
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Tests for the SciPy ODE solver wrapper."""
 
@@ -28,7 +29,6 @@ from numpy import allclose
 from numpy import arange
 from numpy import arctan
 from numpy import array
-from numpy import concatenate
 from numpy import cos
 from numpy import exp
 from numpy import isclose
@@ -36,16 +36,14 @@ from numpy import linspace
 from numpy import sin
 from numpy import sqrt
 from numpy import sum as np_sum
-from numpy import zeros
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.ode_problem import ODEResult
-from gemseo.algos.ode.rhs_jacobian_checking import RHSJacobianChecking
 from gemseo.algos.ode.scipy_ode.scipy_ode import ScipyODEAlgos
 
 if TYPE_CHECKING:
-    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
 
 parametrized_algo_names = pytest.mark.parametrize(
     "algo_name",
@@ -72,8 +70,8 @@ def test_scipy_ode_algos(algo_name) -> None:
     assert algo_name in ScipyODEAlgos.ALGORITHM_INFOS
 
 
-@pytest.mark.parametrize("times", [None, arange(0, 1, 0.1)])
-def test_ode_problem_1d(times) -> None:
+@pytest.mark.parametrize("times_eval", [None, arange(0, 1, 0.1)])
+def test_ode_problem_1d(times_eval) -> None:
     r"""Test the definition and resolution of an ODE problem.
 
     Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
@@ -82,21 +80,22 @@ def test_ode_problem_1d(times) -> None:
     bewteen analytical and     approximated solutions should be small.
     """
 
-    def _func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def _func(time: float, state: RealArray) -> RealArray:  # noqa:U100
         return array(state)
 
-    def _jac_wrt_state(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def _jac_wrt_state(time: float, state: RealArray) -> RealArray:  # noqa:U100
         return array(1)
 
-    _initial_state = array([1])
-    _initial_time = 0
-    _final_time = 1
+    initial_state = array([1])
+    initial_time = 0
+    final_time = 1
 
     problem = ODEProblem(
         _func,
-        jac_wrt_state=_jac_wrt_state,
-        initial_state=_initial_state,
-        times=array([_initial_time, _final_time]),
+        jac_function_wrt_state=_jac_wrt_state,
+        initial_state=initial_state,
+        times=array([initial_time, final_time]),
+        solve_at_algorithm_times=True,
     )
     assert not problem.result.algorithm_has_converged
     assert problem.result.n_func_evaluations == 0
@@ -117,9 +116,9 @@ def test_ode_problem_1d(times) -> None:
     assert sqrt(np_sum(difference**2)) < 1e-6
 
     assert problem.rhs_function == _func
-    assert problem.jac.state == _jac_wrt_state
+    assert problem.jac_function_wrt_state == _jac_wrt_state
     assert len(problem.initial_state) == 1
-    assert problem.initial_state == _initial_state
+    assert problem.initial_state == initial_state
     assert problem.result.state_trajectories.size != 0
     assert problem.result.state_trajectories.size == problem.result.times.size
     assert problem.result.algorithm_name == algo_name
@@ -128,7 +127,7 @@ def test_ode_problem_1d(times) -> None:
         == "The solver successfully reached the end of the integration interval."
     )
     assert problem.result.algorithm_has_converged
-    assert problem.time_interval == (_initial_time, _final_time)
+    assert problem.time_interval == (initial_time, final_time)
     assert problem.result.n_func_evaluations > 0
 
 
@@ -139,20 +138,19 @@ def test_ode_problem_2d() -> None:
     :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def func(time: float, state: RealArray) -> RealArray:  # noqa:U100
         return state
 
-    def jac_wrt_state(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def jac_wrt_state(time: float, state: RealArray) -> RealArray:  # noqa:U100
         return array([[1, 0], [0, 1]])
 
     problem = ODEProblem(
         func,
-        jac_wrt_state=jac_wrt_state,
+        jac_function_wrt_state=jac_wrt_state,
         initial_state=array([1, 1]),
         times=arange(0, 1, 0.1),
     )
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    checking.function_of_state.check_grad(array([0.0, 1.0]))
+    problem.check_jacobian(array([0.0, 1.0]))
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
@@ -173,53 +171,17 @@ def test_ode_problem_2d_array_jacobian() -> None:
     :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def func(time: float, state: RealArray) -> RealArray:  # noqa:U100
         return state
 
     problem = ODEProblem(
         func,
-        jac_wrt_time_state=array([[0, 1, 0], [0, 0, 1]]),
-        jac_wrt_state=array([[1, 0], [0, 1]]),
+        jac_function_wrt_state=array([[1, 0], [0, 1]]),
         initial_state=array([1, 1]),
         times=arange(0, 1, 0.1),
     )
 
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
-    checking.function_of_state.check_grad(array([0.0, 1.0]))
-    algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
-    assert problem.result.algorithm_has_converged
-    assert problem.result.algorithm_name == algo_name
-    assert problem.result.state_trajectories is not None
-
-    analytical_solution = exp(problem.result.times)
-    assert (
-        sqrt(sum((problem.result.state_trajectories[0] - analytical_solution) ** 2))
-        < 1e-6
-    )
-
-
-def test_ode_problem_2d_array_time_state_jacobian() -> None:
-    r"""Test the definition and resolution of an ODE problem.
-
-    Define and solve the problem :math:`f'(t, s(t)) = s(t)` with the initial state
-    :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
-    """
-
-    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
-        return state
-
-    problem = ODEProblem(
-        func,
-        jac_wrt_time_state=array([[0, 1, 0], [0, 0, 1]]),
-        initial_state=array([1, 1]),
-        times=arange(0, 1, 0.1),
-    )
-
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    checking.function_of_state.check_grad(array([0.0, 1.0]))
-    checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
+    problem.check_jacobian(array([0.0, 1.0]))
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
@@ -244,22 +206,20 @@ def test_ode_problem_2d_array_time_state_callable_jacobian() -> None:
         .
     """
 
-    def func(time: float, state: NumberArray) -> NumberArray:  # noqa:U100
+    def func(time: float, state: RealArray) -> RealArray:  # noqa:U100
         return cos(state) ** 2
 
-    def jacobian_wrt_time_state(time: float, state: NumberArray) -> NumberArray:
-        return concatenate((zeros(state.shape), -sin(2 * state))).reshape((2, -1)).T
+    def jacobian_wrt_state(time: float, state: RealArray) -> RealArray:
+        return (-sin(2 * state)).reshape((1, -1))
 
     problem = ODEProblem(
         func,
-        jac_wrt_time_state=jacobian_wrt_time_state,
+        jac_function_wrt_state=jacobian_wrt_state,
         initial_state=array([0]),
         times=arange(0, 1, 0.1),
     )
 
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    checking.function_of_state.check_grad(array([1.0]), error_max=1e-6)
-    checking.function_of_time_and_state.check_grad(array([0.0, 1.0]), error_max=1e-6)
+    problem.check_jacobian(array([1.0]), error_max=1e-6)
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
     assert problem.result.algorithm_has_converged
@@ -285,15 +245,14 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
 
     problem = ODEProblem(
         _func,
-        jac_wrt_state=_jac,
+        jac_function_wrt_state=_jac,
         initial_state=array([1, 1]),
         times=arange(0, 1, 0.1),
     )
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
     try:
-        checking.function_of_state.check_grad(array([0.0, 1.0]))
+        problem.check_jacobian(array([0.0, 1.0]))
     except ValueError:
         pass
     else:
@@ -315,16 +274,12 @@ def test_ode_problem_without_jacobian() -> None:
     )
     algo_name = "DOP853"
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
-    checking = RHSJacobianChecking(problem.rhs_function, problem.jac)
-    with pytest.raises(
-        ValueError, match=re.escape("The function jac.time_state is not available.")
-    ):
-        checking.function_of_time_and_state.check_grad(array([0.0, 0.0, 1.0]))
 
     with pytest.raises(
-        ValueError, match=re.escape("The function jac.state is not available.")
+        AttributeError,
+        match=re.escape("The function jac_function_wrt_state is not available."),
     ):
-        checking.function_of_state.check_grad(array([0.0, 1.0]))
+        problem.check_jacobian(array([1.0]))
 
 
 def test_unconverged(caplog) -> None:
@@ -356,10 +311,18 @@ def test_problem_without_given_time_interval():
 
     algo_name = "RK45"
 
+    array([1])
+    time_interval = array([0.0, 1.0])
+
     def _func(time, state):
         return state
 
-    problem = ODEProblem(_func, array([1]), array([0.0, 1.0]))
+    problem = ODEProblem(
+        func=_func,
+        initial_state=array([1]),
+        times=time_interval,
+        solve_at_algorithm_times=True,
+    )
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
 
     reference_sol = exp(problem.result.times)
@@ -374,10 +337,10 @@ def test_inconsistent_space_and_time_shapes():
         return state
 
     problem = ODEProblem(_func, initial_state=array([1]), times=linspace(0.0, 0.5, 10))
-    _times_2 = linspace(0.0, 0.5, 3)
+    times_2 = linspace(0.0, 0.5, 3)
     ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
 
-    problem.result.times = _times_2
+    problem.result.times = times_2
 
     with pytest.raises(ValueError) as error_info:
         problem.check()
@@ -391,7 +354,7 @@ def test_terminating_event() -> None:
     gravity_acceleration = -9.81
     initial_height = 10
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -407,8 +370,8 @@ def test_terminating_event() -> None:
     problem = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
-        jac_wrt_state=jac_wrt_state,
+        times=times,
+        jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
     )
 
@@ -416,7 +379,7 @@ def test_terminating_event() -> None:
 
     reference_sol = exact_solution(problem.result.times)
     assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
-    assert isclose(problem.result.state_trajectories[0, -1], 0.0, atol=1e-3)
+    assert isclose(problem.result.final_state[0], 0.0, atol=1e-3)
 
 
 def test_terminating_event_fixed_times() -> None:
@@ -424,14 +387,12 @@ def test_terminating_event_fixed_times() -> None:
     gravity_acceleration = -9.81
     initial_height = 10
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
 
-    def terminating_impact(
-        time: float | NumberArray, state: NumberArray
-    ) -> NumberArray:
+    def terminating_impact(time: float, state: RealArray) -> RealArray:
         return state[0]
 
     def exact_solution(times):
@@ -442,8 +403,8 @@ def test_terminating_event_fixed_times() -> None:
     problem = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
-        jac_wrt_state=jac_wrt_state,
+        times=times,
+        jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
         solve_at_algorithm_times=False,
     )
@@ -453,7 +414,7 @@ def test_terminating_event_fixed_times() -> None:
     reference_sol = exact_solution(problem.result.times)
     impact_instant = sqrt(-2 * initial_height / gravity_acceleration)
     assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
-    assert isclose(impact_instant, problem.result.terminal_event_time, atol=1e-6)
+    assert isclose(impact_instant, problem.result.termination_time, atol=1e-6)
 
 
 def test_terminating_event_outside_time_interval() -> None:
@@ -461,7 +422,7 @@ def test_terminating_event_outside_time_interval() -> None:
     gravity_acceleration = -9.81
     initial_height = 500
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -477,8 +438,8 @@ def test_terminating_event_outside_time_interval() -> None:
     problem = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
-        jac_wrt_state=jac_wrt_state,
+        times=times,
+        jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
         solve_at_algorithm_times=False,
     )
@@ -495,7 +456,7 @@ def test_multiple_terminating_events() -> None:
     gravity_acceleration = -9.81
     initial_height = 10
     t_max = 4
-    _times = linspace(0.0, t_max, 30)
+    times = linspace(0.0, t_max, 30)
 
     def _func(time, state):
         return array([state[1], gravity_acceleration])
@@ -514,16 +475,16 @@ def test_multiple_terminating_events() -> None:
     problem_1 = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
-        jac_wrt_state=jac_wrt_state,
+        times=times,
+        jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact_floor, terminating_impact_ceiling),
     )
 
     problem_2 = ODEProblem(
         _func,
         initial_state=array([initial_height, 0]),
-        times=_times,
-        jac_wrt_state=jac_wrt_state,
+        times=times,
+        jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact_ceiling, terminating_impact_floor),
     )
 
@@ -534,5 +495,25 @@ def test_multiple_terminating_events() -> None:
 
     assert allclose(reference_sol, problem_1.result.state_trajectories[0, :], atol=1e-6)
     assert allclose(reference_sol, problem_2.result.state_trajectories[0, :], atol=1e-6)
-    assert isclose(problem_1.result.state_trajectories[0, -1], 0.0, atol=1e-3)
-    assert isclose(problem_2.result.state_trajectories[0, -1], 0.0, atol=1e-3)
+    assert isclose(problem_1.result.final_state[0], 0.0, atol=1e-3)
+    assert isclose(problem_2.result.final_state[0], 0.0, atol=1e-3)
+
+
+def test_order_initial_and_final_times():
+    initial_height = 10
+    t_max = 4
+    new_t_max = -1
+    times = linspace(0.0, t_max, 30)
+
+    def _func(time, state):
+        return array([state[1], 1.0])
+
+    problem = ODEProblem(
+        _func,
+        initial_state=array([initial_height, 0]),
+        times=times,
+    )
+
+    msg = "The initial time must be lower than the final time."
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        problem.update_times(final_time=new_t_max)

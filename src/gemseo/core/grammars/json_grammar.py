@@ -27,8 +27,8 @@ from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
 from contextlib import contextmanager
-from copy import copy
 from copy import deepcopy
+from numbers import Complex
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -44,7 +44,6 @@ from numpy import ndarray
 
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
-from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -54,6 +53,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_schema import Properties
     from gemseo.core.grammars.json_schema import Property
     from gemseo.core.grammars.json_schema import Schema
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -96,7 +96,10 @@ class JSONGrammar(BaseGrammar):
         "string": str,
         "integer": int,
         "boolean": bool,
-        "number": complex,
+        # As opposed to the complex type, Complex follows sub-typing,
+        # such that a float number is a sub-type of complex number.
+        # This is especially important when converting to SimpleGrammar.
+        "number": Complex,
     }
     """The mapping from JSON types to Python types."""
 
@@ -128,16 +131,16 @@ class JSONGrammar(BaseGrammar):
         """
         Args:
             file_path: The path to a JSON schema file.
-                If ``None``, do not initialize the grammar from a JSON schema file.
+                If empty, do not initialize the grammar from a JSON schema file.
             descriptions: The descriptions of the elements read from ``file_path``,
                 in the form: ``{element_name: element_meaning}``.
-                If ``None``, use the descriptions available in the JSON schema if any.
+                If empty, use the descriptions available in the JSON schema if any.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         if file_path:
             self.update_from_file(file_path)
-            self.set_descriptions(descriptions)
+            self._descriptions.update(descriptions)
 
     def __getitem__(self, name: str) -> Any:
         return self.__schema_builder[name]
@@ -155,8 +158,6 @@ class JSONGrammar(BaseGrammar):
     def _copy(self, grammar: Self) -> None:
         # Updating is much faster than deep copying a schema builder.
         grammar.__schema_builder.add_schema(self.__schema_builder, True)
-        grammar.__schema = self.__schema.copy()
-        grammar.__validator = copy(self.__validator)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
         self.__schema_builder.properties[new_name] = (
@@ -325,6 +326,17 @@ class JSONGrammar(BaseGrammar):
         self.__init_dependencies()
         self._required_names |= self.__schema_builder.required
         self.__schema_builder.required.clear()
+        for (
+            property_name,
+            property_schema,
+        ) in self.__schema_builder.properties.items():
+            schema = property_schema.to_schema()
+            schemas = schema.get("anyOf", (schema,))
+            for _schema in schemas:
+                if description := _schema.get("description"):
+                    # We use the first description.
+                    self._descriptions[property_name] = description
+                    break
 
     def to_file(self, path: Path | str = "") -> None:
         """Write the grammar ,schema to a json file.
@@ -336,7 +348,7 @@ class JSONGrammar(BaseGrammar):
         """
         path = Path(self.name).with_suffix(".json") if not path else Path(path)
         with self.__sync_required_names():
-            path.write_text(self.__schema_builder.to_json(indent=2), encoding="utf-8")
+            path.write_text(json.dumps(self.schema, indent=2), encoding="utf-8")
 
     def to_json(self, *args: Any, **kwargs: Any) -> str:
         """Return the JSON representation of the grammar schema.
@@ -349,7 +361,7 @@ class JSONGrammar(BaseGrammar):
             The JSON representation of the schema.
         """
         with self.__sync_required_names():
-            return cast(str, self.__schema_builder.to_json(*args, **kwargs))
+            return cast("str", json.dumps(self.schema, *args, **kwargs))
 
     @contextmanager
     def __sync_required_names(self) -> Iterator[None]:
@@ -364,6 +376,17 @@ class JSONGrammar(BaseGrammar):
         if not self.__schema:
             with self.__sync_required_names():
                 self.__schema = self.__schema_builder.to_schema()
+
+            descriptions = self._descriptions
+            for (
+                property_name,
+                property_schema,
+            ) in self.__schema.get("properties", {}).items():
+                if description := descriptions.get(property_name):
+                    schemas = property_schema.get("anyOf", (property_schema,))
+                    for schema in schemas:
+                        schema["description"] = description
+
         return self.__schema
 
     def _create_validator(self) -> None:
@@ -372,6 +395,12 @@ class JSONGrammar(BaseGrammar):
         self.schema.pop("required", None)
         self.__validator = compile_schema(self.schema)
 
+    @BaseGrammar.descriptions.setter
+    def descriptions(self, data: StrKeyMapping) -> None:  # noqa: D102
+        BaseGrammar.descriptions.fset(self, data)
+        self.__init_dependencies()
+
+    # TODO: API: remove this deprecated method.
     def set_descriptions(self, descriptions: Mapping[str, str]) -> None:
         """Set the properties descriptions.
 
@@ -382,17 +411,7 @@ class JSONGrammar(BaseGrammar):
         if not descriptions:
             return
 
-        for property_name, property_schema in self.__schema_builder.properties.items():
-            description = descriptions.get(property_name)
-            if description:
-                schema = property_schema.to_schema()
-                if "anyOf" in schema:
-                    for sub_schema in schema["anyOf"]:
-                        sub_schema["description"] = description
-                else:
-                    schema["description"] = description
-                property_schema.add_schema(schema)
-
+        self._descriptions.update(descriptions)
         self.__init_dependencies()
 
     @classmethod
@@ -405,11 +424,11 @@ class JSONGrammar(BaseGrammar):
         Returns:
             The original mapping cast to a JSON-interpretable object.
         """
-        _data_dict = dict(data)
+        data_dict = dict(data)
         for key, value in data.items():
-            _data_dict[key] = cls.__cast_value(value)
+            data_dict[key] = cls.__cast_value(value)
 
-        return _data_dict
+        return data_dict
 
     @classmethod
     def __cast_value(cls, value: Any) -> Any:
@@ -541,4 +560,4 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.add_schema(
             state[f"_{self.__class__.__name__}__schema"], True
         )
-        self._defaults.update(cast(StrKeyMapping, state.pop("defaults")))
+        self._defaults.update(cast("StrKeyMapping", state.pop("defaults")))

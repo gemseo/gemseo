@@ -21,18 +21,18 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.utils import check_disciplines_consistency
-from gemseo.disciplines.utils import get_all_inputs
-from gemseo.disciplines.utils import get_all_outputs
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.discipline import check_disciplines_consistency
+from gemseo.utils.discipline import get_all_inputs
+from gemseo.utils.discipline import get_all_outputs
 
 
 class MyDiscipline(DummyDiscipline):
     def __init__(self, input_name: str, output_name: str, discipline_name: str) -> None:
         super().__init__(discipline_name)
-        self.input_grammar.update_from_names([input_name])
-        self.output_grammar.update_from_names([output_name])
+        self.io.input_grammar.update_from_names([input_name])
+        self.io.output_grammar.update_from_names([output_name])
 
 
 @pytest.fixture(scope="module")

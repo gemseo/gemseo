@@ -51,24 +51,21 @@ class ComplexStep(BaseGradientApproximator):
 
     .. math::
 
-        \frac{df(x)}{dx} \approx Im\left( \frac{f(x+j*\\delta x)}{\\delta x} \right)
+        \frac{df(x)}{dx} \approx \text{Im}\left( \frac{f(x+j*\delta x)}{\delta x} \right)
 
     See
     Martins, Joaquim RRA, Peter Sturdza, and Juan J. Alonso.
     "The complex-step derivative approximation."
     ACM Transactions on Mathematical Software (TOMS) 29.3 (2003): 245-262.
-    """
+    """  # noqa: E501
 
     _APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP
 
-    _DEFAULT_STEP: ClassVar[complex] = 1e-20
+    _DEFAULT_STEP: ClassVar[float] = 1e-20
 
     @BaseGradientApproximator.step.setter
     def step(self, value) -> None:  # noqa:D102
-        if value.imag != 0:
-            self._step = value.imag
-        else:
-            self._step = value
+        self._step = value.imag or value.real
 
     def f_gradient(  # noqa:D102
         self,

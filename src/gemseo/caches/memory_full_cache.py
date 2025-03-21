@@ -29,7 +29,6 @@ from typing import cast
 from typing import overload
 
 from gemseo.caches.base_full_cache import BaseFullCache
-from gemseo.typing import JacobianData
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import RLock as RLockType
 
+    from gemseo.typing import JacobianData
     from gemseo.typing import StrKeyMapping
 
 
@@ -124,7 +124,7 @@ class MemoryFullCache(BaseFullCache):
         data = self.__data[index].get(group, {})
         if group == self.Group.JACOBIAN and data:
             return nest_flat_bilevel_dict(
-                cast(JacobianData, data), separator=self._JACOBIAN_SEPARATOR
+                cast("JacobianData", data), separator=self._JACOBIAN_SEPARATOR
             )
         return data
 

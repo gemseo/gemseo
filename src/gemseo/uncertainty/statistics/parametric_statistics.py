@@ -91,7 +91,6 @@ Additional ones are:
 from __future__ import annotations
 
 import logging
-from itertools import starmap
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import NamedTuple
@@ -100,11 +99,12 @@ from typing import Union
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy import linspace
+from prettytable import PrettyTable
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.uncertainty.distributions.openturns.fitting import MeasureType
-from gemseo.uncertainty.distributions.openturns.fitting import OTDistributionFitter
+from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
+    OTDistributionFitter,
+)
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
@@ -126,6 +126,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
+    from gemseo.uncertainty.distributions.base_distribution_fitter import MeasureType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -434,10 +435,7 @@ class ParametricStatistics(BaseStatistics):
                 )
 
             self.__distributions[variable] = list(
-                starmap(
-                    _Distribution,
-                    zip(selected_distribution_names, marginal_distributions),
-                )
+                map(_Distribution, selected_distribution_names, marginal_distributions)
             )
             if len(marginal_distributions) == 1:
                 distributions[variable] = self.__distributions[variable][0]

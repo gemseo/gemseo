@@ -188,7 +188,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
         """
         ndv = hessian.shape[0]
         ncols = int(np.sqrt(ndv)) + 1
-        nrows = int(ceil(float(ndv) / ncols))
+        nrows = ceil(float(ndv) / ncols)
 
         xn_vars = np.arange(-1.0, 1.0, 0.01)
         lower_bounds = self.optimization_problem.design_space.get_lower_bounds()

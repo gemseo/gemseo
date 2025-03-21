@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -234,7 +235,7 @@ def test_filter_non_feasible_exception() -> None:
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
 
-    with pytest.raises(ValueError, match="No feasible points were found."):
+    with pytest.raises(ValueError, match=re.escape("No feasible points were found.")):
         factory.execute(
             problem,
             post_name="ScatterPlotMatrix",

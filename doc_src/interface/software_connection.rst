@@ -141,7 +141,7 @@ etc.
    describes the validity of the data.
    This is a much more advanced and much more powerful description.
    JSON is a web standard supported by
-   many languages: `JSON Schema <http://json-schema.org/implementations.html>`_.
+   many languages: `JSON Schema <https://json-schema.org/tools?query=&sortBy=name&sortOrder=ascending&groupBy=languages&licenses=&languages=&drafts=&toolingTypes=&environments=&showObsolete=false>`_.
    Please
    read `Understanding JSON Schema <http://spacetelescope.github.io/understanding-json-schema/index.html>`_
    for details on :term:`JSON schema`.

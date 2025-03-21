@@ -30,29 +30,13 @@
 .. _pyperf: https://pyperf.readthedocs.io
 .. _profiler: https://docs.python.org/3/library/profile.html
 .. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
-.. _commitizen: https://commitizen-tools.github.io/commitizen
-.. _develop branch: https://gitlab.com/gemseo/dev/gemseo/-/tree/develop
 .. _develop documentation: https://gemseo.readthedocs.io/en/develop/index.html
-.. _editable mode: https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs
-.. _gitflow: https://nvie.com/posts/a-successful-git-branching-model
-.. _gitlab: https://gitlab.com/gemseo/dev/gemseo
 .. _graphviz: https://graphviz.org/download
-.. _mypy: http://mypy-lang.org
-.. _pep8: https://pep8.org
 .. _pre-commit: https://pre-commit.com
-.. _profiler: https://docs.python.org/3/library/profile.html
 .. _PyCharm: https://www.jetbrains.com/pycharm
-.. _pyperf: https://pyperf.readthedocs.io
-.. _pytest: https://docs.pytest.org
-.. _pytest-cov: https://pytest-cov.readthedocs.io
-.. _ruff: https://docs.astral.sh/ruff
-.. _semantic line feeds: https://rhodesmill.org/brandon/2012/one-sentence-per-line
-.. _semantic versioning: https://semver.org
-.. _standard duck typing: https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html?highlight=Sequence#standard-duck-types
-.. _sphinx: https://www.sphinx-doc.org
-.. _tox: https://tox.readthedocs.io
 .. _uv: https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
 .. _vscode: https://code.visualstudio.com/
+.. _plantuml.jar: https://plantuml.com/download
 
 .. _dev:
 
@@ -325,11 +309,7 @@ Initial setup
 
   * :command:`git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git`
 
-* Get access to the IRT CI:
-
-  * from your account on gitlab.com,
-  * go to **Settings > CI/CD** and expand the **Runners** section,
-  * under **Specific runners**, copy the **registration token** and send it to a maintainer.
+* Get access to the IRT CI by contacting a maintainer.
 
 Working on a new feature
 ************************
@@ -376,7 +356,7 @@ Finishing a feature
   for instance :file:`123.fixed.rst`,
   in :file:`changelog/fragments`.
 * `MR basic information
-  <https://docs.gitlab.com/ee/user/project/merge_requests/getting_started.html>`_.
+  <https://docs.gitlab.com/user/project/merge_requests/>`_.
 * How to `create a MR
   <https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html#new-merge-request-from-a-fork>`_.
 * Assign the MR to a maintainer (AntoineD by default)
@@ -508,7 +488,7 @@ Install it with:
 
 .. code-block:: console
 
-   pip install commitizen --user
+   uv tool install commitizen
 
 Run it and and let it drive you through with:
 
@@ -667,6 +647,20 @@ Run the tests for several Python versions with for instance (on Linux):
 
    tox run -e py39,py310,py311
 
+To speed up the execution of the tests,
+you may execute exclusively or
+skip some of them by using the following pytest marks:
+- ``post``: tests that post processing compare images
+- ``slow``: tests that are slow
+- ``integration``: integration tests
+
+For instance,
+skip all the post with
+
+.. code-block:: console
+
+   tox run -e py39 -- -m 'not post'
+
 Tests coverage
 ++++++++++++++
 
@@ -701,6 +695,12 @@ for instance:
 .. code-block:: console
 
    tox run -e doc -- -vv -j2
+
+.. warning::
+
+   In order to build UML diagrams,
+   set the environment variable ``PLANTUML_DIR`` pointing to the directory
+   that contains `plantuml.jar`_.
 
 Writing guidelines
 ++++++++++++++++++

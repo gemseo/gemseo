@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import pickle
+import re
 from pathlib import Path
 from unittest import mock
 
@@ -92,7 +93,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     """
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
-    inputs = [name for name in disc.io.input_grammar.names if not name.startswith("c_")]
+    inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = DOEScenario(
         [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
@@ -109,7 +110,9 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     )
     doe_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
 
-    with pytest.raises(ValueError, match="No gradients to plot at current iteration."):
+    with pytest.raises(
+        ValueError, match=re.escape("No gradients to plot at current iteration.")
+    ):
         doe_scenario2.post_process(
             post_name="GradientSensitivity",
             file_path="grad_sens",
@@ -255,7 +258,7 @@ def test_compute_missing_gradients(
 
     if opt_problem == SOBIESKI_MISSING_GRADIENTS:
         with pytest.raises(
-            ValueError, match="No gradients to plot at current iteration."
+            ValueError, match=re.escape("No gradients to plot at current iteration.")
         ):
             factory.execute(
                 problem,

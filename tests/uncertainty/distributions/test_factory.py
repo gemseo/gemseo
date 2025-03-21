@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from gemseo.uncertainty.distributions.factory import DistributionFactory
@@ -72,7 +74,7 @@ def test_create_joint_distribution_with_different_identifiers(
     uniform = distribution_factory.create("SPUniformDistribution")
     with pytest.raises(
         ValueError,
-        match=(
+        match=re.escape(
             "A joint probability distribution cannot mix distributions "
             "with different identifiers; got OT, SP."
         ),

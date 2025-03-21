@@ -22,7 +22,7 @@
 The :mod:`~gemseo.problems.mdo.scalable.data_driven.discipline`
 implements the concept of scalable discipline.
 This is a particular discipline
-built from an input-output learning dataset associated with a function
+built from an input-output training dataset associated with a function
 and generalizing its behavior to a new user-defined problem dimension,
 that is to say new user-defined input and output dimensions.
 
@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class ScalableDiscipline(Discipline):
+class DataDrivenScalableDiscipline(Discipline):
     """A scalable discipline."""
 
     _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union(["scalable_model"])
@@ -82,7 +82,7 @@ class ScalableDiscipline(Discipline):
         """
         Args:
             name: The name of the class of the scalable model.
-            data: The learning dataset.
+            data: The training dataset.
             sizes: The sizes of the input and output variables.
                 If empty, use the original sizes.
             **parameters: The parameters for the model.
@@ -92,18 +92,20 @@ class ScalableDiscipline(Discipline):
         )
         super().__init__(self.scalable_model.name)
         self._initialize_grammars(data)
-        self.default_input_data = self.scalable_model.default_input_data
-        self.add_differentiated_inputs(self.io.input_grammar.names)
-        self.add_differentiated_outputs(self.io.output_grammar.names)
+        self.io.input_grammar.defaults = self.scalable_model.default_input_data
+        self.add_differentiated_inputs(self.io.input_grammar)
+        self.add_differentiated_outputs(self.io.output_grammar)
 
     def _initialize_grammars(self, data: IODataset) -> None:
         """Initialize input and output grammars from data names.
 
         Args:
-            data: The learning dataset.
+            data: The training dataset.
         """
-        self.input_grammar.update_from_names(data.get_variable_names(data.INPUT_GROUP))
-        self.output_grammar.update_from_names(
+        self.io.input_grammar.update_from_names(
+            data.get_variable_names(data.INPUT_GROUP)
+        )
+        self.io.output_grammar.update_from_names(
             data.get_variable_names(data.OUTPUT_GROUP)
         )
 
@@ -130,6 +132,6 @@ class ScalableDiscipline(Discipline):
             fname: split_array_to_dict_of_arrays(
                 jac[fname], self.scalable_model.sizes, input_names
             )
-            for fname in self.io.output_grammar.names
+            for fname in self.io.output_grammar
         }
         self.jac = jac

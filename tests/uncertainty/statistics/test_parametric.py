@@ -271,7 +271,7 @@ def test_plot_criteria_images(
 
 
 @pytest.mark.parametrize("coverage", [-0.5, 1.5])
-def test_tolerance_interval_wrong_coverage(statistics, dataset, coverage) -> None:
+def test_tolerance_interval_wrong_coverage(statistics, coverage) -> None:
     """Check tolerance_interval() with a wrong coverage."""
     with pytest.raises(
         ValueError,
@@ -281,7 +281,7 @@ def test_tolerance_interval_wrong_coverage(statistics, dataset, coverage) -> Non
 
 
 @pytest.mark.parametrize("confidence", [-0.5, 1.5])
-def test_tolerance_interval_wrong_confidence(statistics, dataset, confidence) -> None:
+def test_tolerance_interval_wrong_confidence(statistics, confidence) -> None:
     """Check tolerance_interval() with a wrong confidence."""
     with pytest.raises(
         ValueError,

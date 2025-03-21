@@ -251,26 +251,25 @@ class DiscFromExe(_BaseDiscFromExe):
 
         self._input_data, self._in_pos = parse_template(self._in_lines, True)
         input_names = self._input_data.keys()
-        self.input_grammar.update_from_names(input_names)
+        self.io.input_grammar.update_from_names(input_names)
 
         names_to_values, self._out_pos = parse_template(self._out_lines, False)
         output_names = names_to_values.keys()
-        self.output_grammar.update_from_names(output_names)
+        self.io.output_grammar.update_from_names(output_names)
         LOGGER.debug(
             "Initialize discipline from template. Input grammar: %s", input_names
         )
         LOGGER.debug(
             "Initialize discipline from template. Output grammar: %s", output_names
         )
-        self.default_input_data = {
+        self.io.input_grammar.defaults = {
             k: array([literal_eval(v)]) for k, v in self._input_data.items()
         }
 
-    def _create_inputs(self) -> None:
-        """Write the input file."""
+    def _create_inputs(self, input_data: StrKeyMapping) -> None:
         self.write_input_file(
             self._executable_runner.working_directory / self.input_filename,
-            self.io.data,
+            input_data,
             self._in_pos,
             self._in_lines,
         )

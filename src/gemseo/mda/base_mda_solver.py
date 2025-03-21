@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -26,7 +27,9 @@ from typing import ClassVar
 from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
+from numpy import inf
 from numpy import ndarray
+from numpy import ones
 from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
@@ -36,13 +39,14 @@ from gemseo.mda.base_mda import BaseMDA
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-    from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.core.discipline import Discipline
     from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
     from gemseo.typing import MutableStrKeyMapping
+    from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -56,18 +60,28 @@ class BaseMDASolver(BaseMDA):
     settings: BaseMDASolverSettings
     """The settings of the MDA."""
 
+    _current_residuals: dict[str, ndarray]
+    """The mapping from residual names to current values."""
+
     _sequence_transformer: RelaxationAcceleration
     """The sequence transformer aimed at improving the convergence rate.
 
     The transformation applies a relaxation followed by an acceleration.
     """
 
-    __resolved_variable_names_to_slices: dict[BaseDataConverter, dict[str, slice]]
-    """The mapping from names to slices for converting array to data structures.
+    __lower_bound_vector: RealArray | None
+    """The vector of lower bounds."""
 
-    Since the coupling data may have inputs and / or outputs, there is one mapping per
-    converter because a converter is bound to a grammar.
-    """
+    __upper_bound_vector: RealArray | None
+    """The vector of upper bounds."""
+
+    __resolved_variable_names_to_bounds: dict[
+        str, tuple[RealArray | None, RealArray | None]
+    ]
+    """The mapping from variable names to lower/upper bounds."""
+
+    __resolved_variable_names_to_slices: dict[str, slice]
+    """The mapping from names to slices for converting array to data structures."""
 
     __resolved_variable_names: tuple[str, ...]
     """The names of the resolved variables.
@@ -75,13 +89,6 @@ class BaseMDASolver(BaseMDA):
     Resolved variables are coupling and state variables (for disciplines that does not
     solve their own residuals). These variables are modified by the MDA so as to make
     the corresponding residuals converge towards 0.
-    """
-
-    __resolved_residual_names_to_slices: dict[BaseDataConverter, dict[str, slice]]
-    """The mapping from residual names to slices for converting array to data structure.
-
-    Since the resolved residual data may have inputs and/or outputs, there is one
-    mapping per converter because a converter is bound to a grammar.
     """
 
     __resolved_residual_names: tuple[str, ...]
@@ -92,8 +99,8 @@ class BaseMDASolver(BaseMDA):
     MDA is meant to bring these residuals towards zero.
     """
 
-    _current_residuals: dict[str, ndarray]
-    """The mapping from residual names to current value."""
+    __n_consecutive_unsuccessful_iterations: int
+    """The number of consecutive unsuccessful iterations."""
 
     def __init__(  # noqa: D107
         self,
@@ -111,10 +118,14 @@ class BaseMDASolver(BaseMDA):
         self.__resolved_variable_names_to_slices = {}
         self.__resolved_variable_names = ()
 
-        self.__resolved_residual_names_to_slices = {}
         self.__resolved_residual_names = ()
 
         self._current_residuals = {}
+        self.__n_consecutive_unsuccessful_iterations = 0
+
+        self.__lower_bound_vector = None
+        self.__upper_bound_vector = None
+        self.__resolved_variable_names_to_bounds = {}
 
     @property
     def acceleration_method(self) -> AccelerationMethod:
@@ -135,6 +146,16 @@ class BaseMDASolver(BaseMDA):
         self._sequence_transformer.over_relaxation_factor = over_relaxation_factor
 
     @property
+    def lower_bound_vector(self) -> RealArray | None:
+        """The vector of resolved variables lower bound."""
+        return self.__lower_bound_vector
+
+    @property
+    def upper_bound_vector(self) -> RealArray | None:
+        """The vector of resolved variables upper bound."""
+        return self.__upper_bound_vector
+
+    @property
     def _resolved_variable_names(self) -> tuple[str, ...]:
         """The names of the variables (couplings and state) the MDA is solving."""
         return self.__resolved_variable_names
@@ -146,75 +167,81 @@ class BaseMDASolver(BaseMDA):
 
     def get_current_resolved_variables_vector(self) -> ndarray:
         """Return the vector of resolved variables (couplings and state variables)."""
-        if not self.__resolved_variable_names:
-            return array([])
-
-        self.__compute_names_to_slices()
-
-        arrays = []
-
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_variable_names_to_slices.items():
-            if couplings_names_to_slices:
-                arrays += [
-                    converter.convert_data_to_array(
-                        couplings_names_to_slices,
-                        self.io.data,
-                    )
-                ]
-
-        return concatenate(arrays)
+        return concatenate([
+            self.io.input_grammar.data_converter.convert_data_to_array(
+                self.__resolved_variable_names,
+                self.io.data,
+            )
+        ])
 
     def get_current_resolved_residual_vector(self) -> ndarray:
         """Return the vector of residuals."""
-        if not self.__resolved_residual_names:
-            return array([])
+        return concatenate([
+            self.io.output_grammar.data_converter.convert_data_to_array(
+                self.__resolved_residual_names,
+                self._current_residuals,
+            )
+        ])
 
-        self.__compute_names_to_slices()
+    def set_bounds(
+        self,
+        variable_names_to_bounds: Mapping[
+            str, tuple[RealArray | None, RealArray | None]
+        ],
+    ) -> None:
+        """Set the bounds for the resolved variables.
 
-        arrays = []
+        Args:
+            variable_names_to_bounds: The mapping from variable names to bounds.
+        """
+        self.__resolved_variable_names_to_bounds |= {
+            name: bounds
+            for name, bounds in variable_names_to_bounds.items()
+            if name in self._resolved_variable_names
+        }
 
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_residual_names_to_slices.items():
-            if couplings_names_to_slices:
-                arrays += [
-                    converter.convert_data_to_array(
-                        couplings_names_to_slices,
-                        self._current_residuals,
-                    )
-                ]
+        self.__update_bounds_vectors()
 
-        return concatenate(arrays)
+    def _check_stopping_criteria(self, update_iteration_metrics: bool = True) -> bool:
+        """Check whether a stopping criterion has been reached.
 
-    def _warn_convergence_criteria(self) -> tuple[bool, bool]:
-        """Log a warning if max_iter is reached and if max residuals is above tolerance.
+        Args:
+            update_iteration_metrics: Whether to update the iteration metrics before
+                checking the stopping criteria.
 
         Returns:
-            * Whether the normed residual is lower than the tolerance.
-            * Whether the maximum number of iterations is reached.
+            Whether a stopping criterion has been reached.
         """
-        residual_is_small = self.normed_residual <= self.settings.tolerance
-        max_iter_is_reached = self.settings.max_mda_iter <= self._current_iter
-        if max_iter_is_reached and not residual_is_small:
-            msg = (
-                "%s has reached its maximum number of iterations "
-                "but the normed residual %s is still above the tolerance %s."
-            )
-            LOGGER.warning(
-                msg, self.name, self.normed_residual, self.settings.tolerance
-            )
-        return residual_is_small, max_iter_is_reached
+        if update_iteration_metrics:
+            self.__update_iteration_metrics()
 
-    @property
-    def _stop_criterion_is_reached(self) -> bool:
-        """Whether a stop criterion is reached."""
-        self._compute_normalized_residual_norm()
-        residual_is_small, max_iter_is_reached = self._warn_convergence_criteria()
-        return residual_is_small or max_iter_is_reached
+        if self.normed_residual <= self.settings.tolerance:
+            return True
+
+        if self._current_iter >= self.settings.max_mda_iter:
+            LOGGER.warning(
+                "%s has reached its maximum number of iterations, "
+                "but the normalized residual norm %s is still above the tolerance %s.",
+                self.name,
+                self.normed_residual,
+                self.settings.tolerance,
+            )
+            return True
+
+        if (
+            self.__n_consecutive_unsuccessful_iterations
+            >= self.settings.max_consecutive_unsuccessful_iterations
+        ):
+            LOGGER.warning(
+                "%s has reached its maximum number of unsuccessful iterations, "
+                "but the normalized residual norm %s is still above the tolerance %s.",
+                self.name,
+                self.normed_residual,
+                self.settings.tolerance,
+            )
+            return True
+
+        return False
 
     def _set_resolved_variables(self, resolved_couplings: Iterable[str]) -> None:
         """Set the resolved variables and associated residuals.
@@ -230,7 +257,7 @@ class BaseMDASolver(BaseMDA):
         """
         # Aggregate the residual variables from disciplines
         residual_variables = {}
-        for discipline in self.disciplines:
+        for discipline in self._disciplines:
             if discipline.io.state_equations_are_solved:
                 continue
 
@@ -250,7 +277,7 @@ class BaseMDASolver(BaseMDA):
 
         self.__resolved_residual_names = tuple(residuals)
 
-    def __compute_names_to_slices(self) -> None:
+    def _compute_names_to_slices(self) -> None:
         """Compute the mapping of variable names to slices for converting data to array.
 
         Two mappings are computed, one for the resolved variables (couplings and state
@@ -263,54 +290,23 @@ class BaseMDASolver(BaseMDA):
         if self.__resolved_variable_names_to_slices:
             return
 
-        resolved_coupling_names = set(self._resolved_variable_names)
+        self.__resolved_variable_names_to_slices = (
+            self.io.input_grammar.data_converter.compute_names_to_slices(
+                self._resolved_variable_names,
+                self.io.data,
+            )[0]
+        )
 
-        if resolved_coupling_names.issubset(self.input_grammar.keys()):
-            input_coupling_names = self._resolved_variable_names
-            output_coupling_names = ()
-        elif resolved_coupling_names.issubset(self.output_grammar.keys()):
-            input_coupling_names = ()
-            output_coupling_names = self._resolved_variable_names
-        else:
-            input_coupling_names = sorted(
-                resolved_coupling_names.intersection(self.input_grammar.keys())
-            )
-            output_coupling_names = sorted(
-                resolved_coupling_names.difference(input_coupling_names)
-            )
+        # Initialize the vectors of bounds once the variable sizes are known.
+        total_size = sum(
+            slice_.stop - slice_.start
+            for slice_ in self.__resolved_variable_names_to_slices.values()
+        )
 
-        if input_coupling_names:
-            converter = self.input_grammar.data_converter
-            self.__resolved_variable_names_to_slices[converter] = (
-                converter.compute_names_to_slices(input_coupling_names, self.io.data)[0]
-            )
+        self.__lower_bound_vector = -inf * ones(total_size)
+        self.__upper_bound_vector = +inf * ones(total_size)
 
-        if output_coupling_names:
-            converter = self.output_grammar.data_converter
-            self.__resolved_variable_names_to_slices[converter] = (
-                converter.compute_names_to_slices(
-                    output_coupling_names,
-                    self.io.data,
-                )[0]
-            )
-
-        self.__resolved_residual_names_to_slices = {}
-        for (
-            converter,
-            names_to_slices,
-        ) in self.__resolved_variable_names_to_slices.items():
-            self.__resolved_residual_names_to_slices[converter] = {}
-
-            for name, slice_ in names_to_slices.items():
-                if name in self.__resolved_residual_names:
-                    self.__resolved_residual_names_to_slices[converter][name] = slice_
-                else:
-                    residual = self.__resolved_residual_names[
-                        self.__resolved_variable_names.index(name)
-                    ]
-                    self.__resolved_residual_names_to_slices[converter][residual] = (
-                        slice_
-                    )
+        self.__update_bounds_vectors()
 
     def _update_local_data_from_array(self, array_: ndarray) -> None:
         """Update the local data from an array.
@@ -318,31 +314,21 @@ class BaseMDASolver(BaseMDA):
         Args:
             array_: An array.
         """
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_variable_names_to_slices.items():
-            self.io.data.update(
-                converter.convert_array_to_data(array_, couplings_names_to_slices)
-            )
+        self.io.data |= self.io.output_grammar.data_converter.convert_array_to_data(
+            array_,
+            self.__resolved_variable_names_to_slices,
+        )
 
-    def _compute_normalized_residual_norm(self, store_it: bool = True) -> float:
+    def _compute_normalized_residual_norm(self) -> float:
         """Compute the normalized residual norm at the current point.
 
-        Args:
-            store_it: Whether to store the normed residual.
-
         Returns:
-            The normed residual.
+            The normalized residual norm.
         """
-        if self._current_iter == 0 and self.reset_history_each_run:
-            self.residual_history = []
-            self._starting_indices = []
-
         residual = self.get_current_resolved_residual_vector()
 
         scaling = self.scaling
-        _scaling_data = self._scaling_data
+        scaling_data = self._scaling_data
         ResidualScaling = self.ResidualScaling  # noqa: N806
 
         if scaling == ResidualScaling.NO_SCALING:
@@ -351,78 +337,56 @@ class BaseMDASolver(BaseMDA):
         elif scaling == ResidualScaling.INITIAL_RESIDUAL_NORM:
             normed_residual = float(norm(residual))
 
-            if _scaling_data is None:
-                _scaling_data = normed_residual if normed_residual != 0 else 1.0
+            if scaling_data is None:
+                scaling_data = normed_residual if normed_residual != 0 else 1.0
 
-            normed_residual /= _scaling_data
+            normed_residual /= scaling_data
 
         elif scaling == ResidualScaling.N_COUPLING_VARIABLES:
-            if _scaling_data is None:
-                _scaling_data = residual.size**0.5
-            normed_residual = norm(residual) / _scaling_data
+            if scaling_data is None:
+                scaling_data = residual.size**0.5
+            normed_residual = norm(residual) / scaling_data
 
         elif scaling == ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
-            if _scaling_data is None:
-                _scaling_data = []
-
-                for (
-                    coupling_names_to_slices
-                ) in self.__resolved_variable_names_to_slices.values():
-                    for slice_ in coupling_names_to_slices.values():
-                        initial_norm = float(norm(residual[slice_]))
-                        initial_norm = initial_norm if initial_norm != 0.0 else 1.0
-                        _scaling_data.append((slice_, initial_norm))
+            if scaling_data is None:
+                scaling_data = []
+                for slice_ in self.__resolved_variable_names_to_slices.values():
+                    initial_norm = float(norm(residual[slice_]))
+                    initial_norm = initial_norm if initial_norm != 0.0 else 1.0
+                    scaling_data.append((slice_, initial_norm))
 
             normalized_norms = []
-            for current_slice, initial_norm in _scaling_data:
+            for current_slice, initial_norm in scaling_data:
                 normalized_norms.append(norm(residual[current_slice]) / initial_norm)
 
             normed_residual = max(normalized_norms)
 
         elif scaling == ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
-            if _scaling_data is None:
-                _scaling_data = residual + (residual == 0)
+            if scaling_data is None:
+                scaling_data = residual + (residual == 0)
 
-            normed_residual = np_abs(residual / _scaling_data).max()
+            normed_residual = np_abs(residual / scaling_data).max()
 
         elif scaling == ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
-            if _scaling_data is None:
-                _scaling_data = residual + (residual == 0)
+            if scaling_data is None:
+                scaling_data = residual + (residual == 0)
 
-            normed_residual = float(norm(residual / _scaling_data))
+            normed_residual = float(norm(residual / scaling_data))
             normed_residual /= residual.size**0.5
 
         else:
             # Use the StrEnum casting to raise an explicit error.
             ResidualScaling(scaling)
 
-        self.normed_residual = normed_residual
-        self._scaling_data = _scaling_data
+        self._scaling_data = scaling_data
 
-        if self.settings.log_convergence:
-            LOGGER.info(
-                "%s running... Normed residual = %s (iter. %s)",
-                self.name,
-                f"{self.normed_residual:.2e}",
-                self._current_iter,
-            )
-
-        if store_it:
-            if self._current_iter == 0:
-                self._starting_indices.append(len(self.residual_history))
-            self.residual_history.append(self.normed_residual)
-            self._current_iter += 1
-
-        self.io.update_output_data({
-            self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
-        })
-
-        return self.normed_residual
+        return normed_residual
 
     @abstractmethod
     def _execute(self) -> None:  # noqa:D103
         super()._execute()
         self._sequence_transformer.clear()
+        self.__n_consecutive_unsuccessful_iterations = 0
 
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:
         """Compute the residual vector.
@@ -437,19 +401,64 @@ class BaseMDASolver(BaseMDA):
         Args:
             input_data: The input data to compute residual of coupling variables.
         """
-        self.__compute_names_to_slices()
+        convert_data_to_array = (
+            self.io.output_grammar.data_converter.convert_data_to_array
+        )
 
-        for (
-            converter,
-            couplings_names_to_slices,
-        ) in self.__resolved_residual_names_to_slices.items():
-            for name in couplings_names_to_slices:
-                local_data_array = converter.convert_data_to_array([name], self.io.data)
-                if name in self._resolved_variable_names:
-                    input_data_array = converter.convert_data_to_array(
-                        [name], input_data
-                    )
-                    residual = local_data_array - input_data_array
-                else:
-                    residual = local_data_array
-                self._current_residuals[name] = residual
+        for residual_name in self._resolved_residual_names:
+            residual = convert_data_to_array([residual_name], self.io.data)
+            if residual_name in self._resolved_variable_names:
+                # No -= assignment to avoid possible casting problems.
+                residual = residual - convert_data_to_array([residual_name], input_data)
+
+            self._current_residuals[residual_name] = residual
+
+    def __update_bounds_vectors(self) -> None:
+        """Set the bounds of the sequence transformer."""
+        if self.__lower_bound_vector is None or self.__upper_bound_vector is None:
+            return
+
+        for name, (
+            lower_bound,
+            upper_bound,
+        ) in self.__resolved_variable_names_to_bounds.items():
+            slice_ = self.__resolved_variable_names_to_slices[name]
+            self.__lower_bound_vector[slice_] = (
+                lower_bound if lower_bound is not None else -inf
+            )
+            self.__upper_bound_vector[slice_] = (
+                upper_bound if upper_bound is not None else +inf
+            )
+
+        self._sequence_transformer.lower_bound = self.__lower_bound_vector
+        self._sequence_transformer.upper_bound = self.__upper_bound_vector
+
+    def __update_iteration_metrics(self) -> None:
+        """Update the iteration metrics."""
+        if self._current_iter == 0:
+            self._starting_indices.append(len(self.residual_history))
+
+            if self.reset_history_each_run:
+                self._starting_indices.clear()
+                self.residual_history.clear()
+
+        old_normalized_residual_norm = copy(self.normed_residual)
+        self.normed_residual = self._compute_normalized_residual_norm()
+
+        if self.normed_residual >= old_normalized_residual_norm:
+            self.__n_consecutive_unsuccessful_iterations += 1
+        else:
+            self.__n_consecutive_unsuccessful_iterations = 0
+
+        self.residual_history.append(self.normed_residual)
+        self._current_iter += 1
+
+        self.io.update_output_data({
+            self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
+        })
+
+        if self.settings.log_convergence:
+            msg = "{} running... Normalized residual norm = {} (iter. {})"
+            LOGGER.info(
+                msg.format(self.name, f"{self.normed_residual:.2e}", self._current_iter)
+            )

@@ -40,7 +40,7 @@ def test_invalid_algo() -> None:
     with pytest.raises(
         ValueError,
         match=(
-            "No algorithm named unknown_algo is available; available algorithms are .+"
+            r"No algorithm named unknown_algo is available; available algorithms are .+"
         ),
     ):
         execute_problem(

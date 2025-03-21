@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
+from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -29,7 +30,6 @@ from typing import cast
 from numpy import array as np_array
 from numpy import concatenate
 
-from gemseo.typing import NumberArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
 
     ValueType = Union[int, float, complex, NumberArray]
@@ -81,7 +82,7 @@ class BaseDataConverter(ABC, Generic[T]):
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, str)
+    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, Complex, str)
     """The base types that are not arrays like."""
 
     _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
@@ -113,7 +114,7 @@ class BaseDataConverter(ABC, Generic[T]):
         """
         if isinstance(value, self._NON_ARRAY_TYPES):
             return np_array([value])
-        return cast(NumberArray, value)
+        return cast("NumberArray", value)
 
     def convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
         """Convert a NumPy array to a data value.
@@ -143,7 +144,7 @@ class BaseDataConverter(ABC, Generic[T]):
         """
         if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
-        return cast(NumberArray, value).size
+        return cast("NumberArray", value).size
 
     def compute_names_to_slices(
         self,

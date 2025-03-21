@@ -19,15 +19,15 @@
 #        :author: Syver Doving Agdestein, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Random forest classification
-============================
+Random forest
+=============
+
+A :class:`.RandomForestClassifier` is a random forest model
+based on `scikit-learn <https://scikit-learn.org/>`__.
 
 We want to classify the Iris dataset using a Random Forest classifier.
 """
 
-# %%
-# Import
-# ------
 from __future__ import annotations
 
 from numpy import array
@@ -47,7 +47,7 @@ iris = create_benchmark_dataset("IrisDataset", as_io=True)
 # %%
 # Create the classification model
 # -------------------------------
-# Then, we build the linear regression model from the discipline cache and
+# Then, we build the random forest classification model from the discipline cache and
 # displays this model.
 model = create_classification_model("RandomForestClassifier", data=iris)
 model.learn()

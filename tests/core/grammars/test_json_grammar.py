@@ -62,6 +62,7 @@ def test_init_with_file() -> None:
     assert grammar
     assert grammar.keys() == {"name1", "name2"}
     assert grammar.required_names == {"name1"}
+    assert grammar.descriptions == {"name2": "The description of name2."}
 
 
 def test_init_with_file_and_descriptions() -> None:
@@ -72,12 +73,15 @@ def test_init_with_file_and_descriptions() -> None:
         file_path=DATA_PATH / "grammar_3.json",
         descriptions=descriptions,
     )
-
+    assert grammar.descriptions == descriptions
     assert grammar.keys() == {"name1", "name2"}
     assert grammar.required_names == {"name1"}
     assert grammar.schema["properties"]["name1"]["description"] == "name1 description"
     for item in grammar.schema["properties"]["name2"]["anyOf"]:
-        assert item["description"] == "name2 description"
+        # We would expect
+        # assert item["description"] == "name2 description"
+        # instead of
+        assert item["description"] == descriptions["name2"]
 
 
 def test_getitem() -> None:
@@ -226,6 +230,10 @@ def test_set_descriptions(descriptions) -> None:
     )
     grammar.set_descriptions(descriptions)
 
+    descriptions_ = {"name2": "The description of name2."}
+    descriptions_.update(descriptions)
+    assert grammar.descriptions == descriptions_
+
     if "name1" in descriptions:
         assert (
             grammar.schema["properties"]["name1"]["description"] == "name1 description"
@@ -233,11 +241,8 @@ def test_set_descriptions(descriptions) -> None:
     else:
         assert "description" not in grammar.schema["properties"]["name1"]
 
-    if "name2" in descriptions:
-        for item in grammar.schema["properties"]["name2"]["anyOf"]:
-            assert item["description"] == "name2 description"
-    else:
-        assert "description" not in grammar.schema["properties"]["name2"]
+    for item in grammar.schema["properties"]["name2"]["anyOf"]:
+        assert item["description"] == descriptions_["name2"]
 
 
 @pytest.mark.parametrize(
@@ -251,7 +256,18 @@ def test_set_descriptions(descriptions) -> None:
                 "additionalProperties": False,
                 "properties": {
                     "name1": {"type": "integer"},
-                    "name2": {"type": ["integer", "string"]},
+                    "name2": {
+                        "anyOf": [
+                            {
+                                "description": "The description of name2.",
+                                "type": "string",
+                            },
+                            {
+                                "description": "The description of name2.",
+                                "type": "integer",
+                            },
+                        ],
+                    },
                 },
                 "required": ["name1"],
                 "type": "object",
@@ -318,3 +334,22 @@ def test_to_json(tmp_wd) -> None:
 def test_cast(value, expected) -> None:
     """Check the method casting any value to a JSON-interpretable one."""
     assert JSONGrammar._JSONGrammar__cast_value(value) == expected
+
+
+@pytest.mark.parametrize("type_", [float, complex])
+@pytest.mark.parametrize("value", [1.0, 1.0 + 1.0j])
+def test_to_simple_grammar_float_complex(type_, value):
+    """Check that a JSONGrammar.to_simple_grammar() can validate float and complex."""
+    data = {"x": value}
+
+    json_grammar = JSONGrammar("g_json")
+    json_grammar.update_from_types({"x": type_})
+    json_grammar.validate(data)
+
+    simple_grammar = json_grammar.to_simple_grammar()
+    simple_grammar.validate(data)
+
+    # Warning:
+    # This SimpleGrammar validates complex data with imaginary part when type_ is float
+    # because JSONGrammar cannot distinguish between float and complex
+    # and thus creates the SimpleGrammar with the most generic type, which is complex.

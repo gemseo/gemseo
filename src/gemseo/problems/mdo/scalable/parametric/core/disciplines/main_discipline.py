@@ -43,7 +43,7 @@ from gemseo.problems.mdo.scalable.parametric.core.variable_names import (
 )
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class MainDiscipline(BaseDiscipline):
@@ -62,13 +62,13 @@ class MainDiscipline(BaseDiscipline):
     __c_i_names: list[str]
     r"""The names of the constraint variables :math:`c_1,\ldots,c_N`."""
 
-    __t_i: tuple[NDArray[float]]
+    __t_i: tuple[RealArray]
     r"""The threshold vectors :math:`t_1,\ldots,t_N`."""
 
     def __init__(
         self,
-        *t_i: NDArray[float],
-        **default_input_values: NDArray[float],
+        *t_i: RealArray,
+        **default_input_values: RealArray,
     ) -> None:
         r"""
         Args:
@@ -105,10 +105,10 @@ class MainDiscipline(BaseDiscipline):
 
     def __call__(
         self,
-        x_0: NDArray[float] | None = None,
+        x_0: RealArray | None = None,
         compute_jacobian: bool = False,
-        **y_i: NDArray[float],
-    ) -> dict[str, NDArray[float] | dict[str, NDArray[float]]]:
+        **y_i: RealArray,
+    ) -> dict[str, RealArray | dict[str, RealArray]]:
         r"""Compute objective and constraints or their derivatives.
 
         Args:
@@ -125,8 +125,8 @@ class MainDiscipline(BaseDiscipline):
         if x_0 is None:
             x_0 = self.input_names_to_default_values[SHARED_DESIGN_VARIABLE_NAME]
 
-        _y_i = self.__y_i_names_to_default_values.copy()
-        _y_i.update(y_i)
+        y_i_ = self.__y_i_names_to_default_values.copy()
+        y_i_.update(y_i)
 
         if compute_jacobian:
             jacobian = {}
@@ -141,17 +141,17 @@ class MainDiscipline(BaseDiscipline):
 
             jacobian[OBJECTIVE_NAME][SHARED_DESIGN_VARIABLE_NAME] = 2 * x_0[newaxis, :]
             for y_i_name, c_i_name in zip(self.__y_i_names, self.__c_i_names):
-                jacobian[OBJECTIVE_NAME][y_i_name] = 2 * _y_i[y_i_name][newaxis, :]
+                jacobian[OBJECTIVE_NAME][y_i_name] = 2 * y_i_[y_i_name][newaxis, :]
                 jacobian[c_i_name][y_i_name] = -eye(self.names_to_sizes[y_i_name])
 
             return jacobian
 
         output_names_to_values = {
             OBJECTIVE_NAME: array([
-                sum((__y_i**2).sum() for __y_i in _y_i.values()) + (x_0**2).sum()
+                sum((__y_i**2).sum() for __y_i in y_i_.values()) + (x_0**2).sum()
             ])
         }
-        for c_i_name, __y_i, t_i in zip(self.__c_i_names, _y_i.values(), self.__t_i):
+        for c_i_name, __y_i, t_i in zip(self.__c_i_names, y_i_.values(), self.__t_i):
             output_names_to_values[c_i_name] = t_i - __y_i
 
         return output_names_to_values

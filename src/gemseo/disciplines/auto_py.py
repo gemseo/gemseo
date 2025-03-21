@@ -41,6 +41,8 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.source_parsing import get_callable_argument_defaults
+from gemseo.utils.source_parsing import get_options_doc
+from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -56,41 +58,66 @@ class AutoPyDiscipline(Discipline):
     """Wrap a Python function into a discipline.
 
     A simplified and straightforward way of integrating a discipline
-    from a Python function.
+    from a Python function that:
 
-    The Python function can take and return only numbers and NumPy arrays.
+    - returns variables,
+      e.g. ``return x`` or ``return x, y``,
+      but no expression like ``return a+b`` or ``return a+b, y``,
+    - must have a default value per argument
+      if the :class:`.AutoPyDiscipline` is used by an ``MDA``
+      (deriving from :class:`.BaseMDA`),
+      as in the case of :class:`.MDF` and :class:`.BiLevel` formulations,
+      in the presence of strong couplings.
 
-    The Python function may or may not include default values for input arguments,
-    however, if the resulting :class:`.AutoPyDiscipline` is going to be placed inside
-    an :class:`.MDF`, a :class:`.BiLevel` formulation or a :class:`.BaseMDA`
-    with strong couplings, then the Python function **must** assign default values for
-    its input arguments.
+    The input names of the discipline are the names of the Python function arguments
+    and the output names are the names of the variable listed in the return statement.
 
-    Examples:
-        >>> from gemseo.disciplines.auto_py import AutoPyDiscipline
-        >>> from numpy import array
-        >>> def my_function(x=0., y=0.):
-        >>>     z1 = x + 2*y
-        >>>     z2 = x + 2*y + 1
-        >>>     return z1, z2
-        >>>
-        >>> discipline = AutoPyDiscipline(my_function)
-        >>> discipline.execute()
-        {'x': array([0.]), 'y': array([0.]), 'z1': array([0.]), 'z2': array([1.])}
-        >>> discipline.execute({"x": array([1.0]), "y": array([-3.2])})
-        {'x': array([1.]), 'y': array([-3.2]), 'z1': array([-5.4]), 'z2': array([-4.4])}
+    By default,
+    the arguments and returned variables are assumed to be
+    either scalars
+    or NumPy arrays of length greater than 1.
+    When ``use_arrays`` is ``True``,
+    the scalar arguments are assumed to be NumPy arrays of length equal to 1.
+    When *all* the arguments and returned variables have type hints,
+    these types are used by the input and output grammars.
+
+    The default input values are the default values of the Python function arguments,
+    if any.
+
+    :ref:`This example <sphx_glr_examples_disciplines_types_plot_auto_py_discipline.py>`
+    from the documentation
+    illustrates this feature.
     """
 
-    py_func: Callable
+    __input_names: tuple[str, ...]
+    """The names of the input variables."""
+
+    __input_names_with_namespaces: tuple[str, ...]
+    """The namespaced names of the input variables."""
+
+    __jac_shape: tuple[int, int]
+    """The shape of the Jacobian matrix."""
+
+    __output_names: tuple[str, ...]
+    """The names of the output variables."""
+
+    __output_names_with_namespaces: tuple[str, ...]
+    """The namespaced names of the output variables."""
+
+    __py_func: Callable
     """The Python function to compute the outputs from the inputs."""
 
-    py_jac: Callable | None
+    __py_jac: Callable | None
     """The Python function to compute the Jacobian from the inputs."""
 
-    sizes: dict[str, int]
+    __sizes: dict[str, int]
     """The sizes of the input and output variables."""
 
-    __LOG_PREFIX: Final[str] = "Discipline %s: py_func has"
+    __LOG_PREFIX: Final[str] = "The py_func of the AutoPyDiscipline '%s' has"
+
+    __LOG_SUFFIX: Final[str] = (
+        "The grammars of this discipline will not use the type hints at all."
+    )
 
     def __init__(
         self,
@@ -107,14 +134,18 @@ class AutoPyDiscipline(Discipline):
                 with rows corresponding to the outputs and columns to the inputs.
             name: The name of the discipline.
                 If empty, use the name of the Python function.
-            use_arrays: Whether the function is expected
+            use_arrays: Whether the function ``py_func`` is expected
                 to take arrays as inputs and give outputs as arrays.
+
+        Raises:
+            ValueError: Either when the function returns an expression
+                or when two return statements use different variables.
         """  # noqa: D205 D212 D415
         super().__init__(name=name or py_func.__name__)
-        self.py_func = py_func
-        self.py_jac = py_jac
-        self.input_names = list(signature(self.py_func).parameters)
-        self.output_names = self.__create_output_names()
+        self.__py_func = py_func
+        self.__py_jac = py_jac
+        self.__input_names = tuple(signature(self.__py_func).parameters)
+        self.__output_names = self.__create_output_names()
         have_type_hints = self.__create_grammars()
 
         if not have_type_hints and not use_arrays:
@@ -122,13 +153,35 @@ class AutoPyDiscipline(Discipline):
             # by the grammars.
             self.io.data_processor = AutoDiscDataProcessor()
 
-        if self.py_jac is None:
+        if self.__py_jac is None:
             self.set_jacobian_approximation()
 
         self.__sizes = {}
-        self.__jac_shape = []
-        self.__input_names_with_namespaces = []
-        self.__output_names_with_namespaces = []
+        self.__jac_shape = (0, 0)
+        self.__input_names_with_namespaces = ()
+        self.__output_names_with_namespaces = ()
+
+    # TODO: API: remove and use self.io.input_grammar.names instead.
+    @property
+    def input_names(self) -> list[str]:
+        """The names of the input variables."""
+        return list(self.__input_names)
+
+    # TODO: API: remove and use self.io.output_grammar.names instead.
+    @property
+    def output_names(self) -> list[str]:
+        """The names of the output variables."""
+        return list(self.__output_names)
+
+    @property
+    def py_func(self) -> Callable:
+        """The Python function to compute the outputs from the inputs."""
+        return self.__py_func
+
+    @property
+    def py_jac(self) -> Callable:
+        """The Python function to compute the Jacobian from the inputs."""
+        return self.__py_jac
 
     def __create_grammars(self) -> bool:
         """Create the grammars.
@@ -140,18 +193,25 @@ class AutoPyDiscipline(Discipline):
         Returns:
             Whether type hints are used.
         """
-        type_hints = get_type_hints(self.py_func)
+        type_hints = get_type_hints(self.__py_func)
         return_type = type_hints.pop("return", None)
 
         # First, determine if both the inputs and outputs have type hints, otherwise
         # that would make things complicated for no good reason.
         names_to_input_types = {}
+        raise_if_inconsistency = True
 
         if type_hints:
-            missing_args_types = set(self.input_names).difference(type_hints.keys())
+            missing_args_types = set(self.__input_names).difference(type_hints.keys())
             if missing_args_types:
-                msg = f"{self.__LOG_PREFIX} missing type hints for the arguments: %s."
-                LOGGER.warning(msg, self.name, ",".join(missing_args_types))
+                msg = (
+                    f"{self.__LOG_PREFIX} missing type hints for the arguments %s."
+                    f"{self.__LOG_SUFFIX}"
+                )
+                LOGGER.warning(
+                    msg, self.name, pretty_repr(missing_args_types, use_and=True)
+                )
+                raise_if_inconsistency = False
             else:
                 names_to_input_types = type_hints
 
@@ -160,58 +220,71 @@ class AutoPyDiscipline(Discipline):
         if return_type is not None:
             # There could be only one return value of type tuple, or multiple return
             # values that would also be type hinted with tuple.
-            if len(self.output_names) == 1:
-                names_to_output_types = {self.output_names[0]: return_type}
+            if len(self.__output_names) == 1:
+                names_to_output_types = {self.__output_names[0]: return_type}
             else:
                 origin = get_origin(return_type)
                 if origin is not tuple:
                     msg = (
                         f"{self.__LOG_PREFIX} bad return type hints: "
                         "expecting a tuple of types, got %s."
+                        f"{self.__LOG_SUFFIX}"
                     )
                     LOGGER.warning(msg, self.name, return_type)
+                    raise_if_inconsistency = False
                 else:
                     type_args = get_args(return_type)
                     n_type_args = len(type_args)
-                    n_output_names = len(self.output_names)
+                    n_output_names = len(self.__output_names)
                     if n_type_args != n_output_names:
                         msg = (
                             f"{self.__LOG_PREFIX} bad return type hints: "
-                            "the number of return values and return types shall be "
-                            "equal: "
-                            "%i return values but %i return type hints."
+                            "the number of return values (%i) and return types (%i) "
+                            "shall be equal. "
+                            f"{self.__LOG_SUFFIX}"
                         )
                         LOGGER.warning(msg, self.name, n_output_names, n_type_args)
+                        raise_if_inconsistency = False
                     else:
-                        names_to_output_types = dict(zip(self.output_names, type_args))
+                        names_to_output_types = dict(
+                            zip(self.__output_names, type_args)
+                        )
 
-        defaults = get_callable_argument_defaults(self.py_func)
+        defaults = get_callable_argument_defaults(self.__py_func)
+
+        try:
+            input_descriptions = get_options_doc(self.__py_func)
+        except ValueError:
+            input_descriptions = {}
 
         # Second, create the grammar according to the pre-processing above.
         if names_to_input_types and names_to_output_types:
-            self.input_grammar.update_from_types(names_to_input_types)
-            self.input_grammar.defaults = defaults
-            self.output_grammar.update_from_types(names_to_output_types)
+            self.io.input_grammar.update_from_types(names_to_input_types)
+            self.io.input_grammar.defaults = defaults
+            self.io.input_grammar.descriptions.update(input_descriptions)
+            self.io.output_grammar.update_from_types(names_to_output_types)
             return True
 
-        msg = (
-            f"{self.__LOG_PREFIX} inconsistent type hints: "
-            "either both the signature arguments and the return values shall have "
-            "type hints or none. "
-            "The grammars will not use the type hints at all."
-        )
-        LOGGER.warning(msg, self.name)
-        self.input_grammar.update_from_names(self.input_names)
+        if raise_if_inconsistency and (names_to_input_types or names_to_output_types):
+            msg = (
+                f"{self.__LOG_PREFIX} inconsistent type hints: "
+                "either both the signature arguments and the return values shall have "
+                "type hints or none. "
+                f"{self.__LOG_SUFFIX}"
+            )
+            LOGGER.warning(msg, self.name)
 
+        self.io.input_grammar.update_from_names(self.__input_names)
         for key, value in defaults.items():
             if not isinstance(value, ndarray):
                 defaults[key] = array([value])
-        self.input_grammar.defaults = defaults
+        self.io.input_grammar.defaults = defaults
+        self.io.input_grammar.descriptions.update(input_descriptions)
 
-        self.output_grammar.update_from_names(self.output_names)
+        self.io.output_grammar.update_from_names(self.__output_names)
         return False
 
-    def __create_output_names(self) -> list[str]:
+    def __create_output_names(self) -> tuple[str, ...]:
         """Create the names of the outputs.
 
         Returns:
@@ -219,16 +292,24 @@ class AutoPyDiscipline(Discipline):
         """
         output_names = []
 
-        for node in ast.walk(ast.parse(getsource(self.py_func).strip())):
+        for node in ast.walk(ast.parse(getsource(self.__py_func).strip())):
             if not isinstance(node, ast.Return):
                 continue
 
             value = node.value
+            elements = value.elts if isinstance(value, ast.Tuple) else [value]
+            temp_output_names = []
+            for element in elements:
+                if hasattr(element, "id"):
+                    temp_output_names.append(element.id)
+                    continue
 
-            if isinstance(value, ast.Tuple):
-                temp_output_names = [elt.id for elt in value.elts]
-            else:
-                temp_output_names = [value.id]
+                msg = (
+                    "The function must return one or more variables, "
+                    "e.g. 'return x' or 'return x, y',"
+                    "but no expression like 'return a+b' or 'return a+b, y'."
+                )
+                raise ValueError(msg)
 
             if output_names and output_names != temp_output_names:
                 msg = (
@@ -239,14 +320,14 @@ class AutoPyDiscipline(Discipline):
 
             output_names = temp_output_names
 
-        return output_names
+        return tuple(output_names)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        output_values = self.py_func(**input_data)
-        if len(self.output_names) == 1:
-            output_values = {self.output_names[0]: output_values}
+        output_values = self.__py_func(**input_data)
+        if len(self.__output_names) == 1:
+            output_values = {self.__output_names[0]: output_values}
         else:
-            output_values = dict(zip(self.output_names, output_values))
+            output_values = dict(zip(self.__output_names, output_values))
         return output_values
 
     def _compute_jacobian(
@@ -259,27 +340,28 @@ class AutoPyDiscipline(Discipline):
             RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
             ValueError: When the Jacobian shape is inconsistent.
         """  # noqa: D205 D212 D415
-        if self.py_jac is None:
+        if self.__py_jac is None:
             msg = "The analytic Jacobian is missing."
             raise RuntimeError(msg)
 
         if not self.__sizes:
             for name, value in self.io.data.items():
-                if name in self.input_grammar:
-                    converter = self.input_grammar.data_converter
+                if name in self.io.input_grammar:
+                    converter = self.io.input_grammar.data_converter
                 else:
-                    converter = self.output_grammar.data_converter
+                    converter = self.io.output_grammar.data_converter
                 self.__sizes[name] = converter.get_value_size(name, value)
 
-            in_to_ns = self.input_grammar.to_namespaced
-            self.__input_names_with_namespaces = [
-                in_to_ns.get(input_name, input_name) for input_name in self.input_names
-            ]
-            out_to_ns = self.output_grammar.to_namespaced
-            self.__output_names_with_namespaces = [
+            in_to_ns = self.io.input_grammar.to_namespaced
+            self.__input_names_with_namespaces = tuple(
+                in_to_ns.get(input_name, input_name)
+                for input_name in self.__input_names
+            )
+            out_to_ns = self.io.output_grammar.to_namespaced
+            self.__output_names_with_namespaces = tuple(
                 out_to_ns.get(output_name, output_name)
-                for output_name in self.output_names
-            ]
+                for output_name in self.__output_names
+            )
             self.__jac_shape = (
                 sum(
                     self.__sizes[output_name]
@@ -291,7 +373,7 @@ class AutoPyDiscipline(Discipline):
                 ),
             )
 
-        func_jac = self.py_jac(**self.io.get_input_data(with_namespaces=False))
+        func_jac = self.__py_jac(**self.io.get_input_data(with_namespaces=False))
         if len(func_jac.shape) < 2:
             func_jac = atleast_2d(func_jac)
         if func_jac.shape != self.__jac_shape:

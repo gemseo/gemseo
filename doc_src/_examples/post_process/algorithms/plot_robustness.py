@@ -24,93 +24,24 @@ Robustness
 
 In this example, we illustrate the use of the :class:`.Robustness` plot
 on the Sobieski's SSBJ problem.
+
+The :class:`.Robustness` post-processing plots the robustness of the optimum in a box
+plot. Using the quadratic approximations of all the output functions, we propagate
+analytically a normal distribution with 1% standard deviation on all the design
+variables, assuming no cross-correlations of inputs, to obtain the mean and standard
+deviation of the resulting normal distribution. A series of samples are randomly
+generated from the resulting distribution, whose quartiles are plotted, relatively to
+the values of the function at the optimum. For each function (in abscissa), the plot
+shows the extreme values encountered in the samples (top and bottom bars). Then, 95% of
+the values are within the blue boxes. The average is given by the red bar.
 """
 
 from __future__ import annotations
 
-from gemseo import configure_logger
-from gemseo import create_discipline
-from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo import execute_post
+from gemseo.settings.post import Robustness_Settings
 
-# %%
-# Import
-# ------
-# The first step is to import some high-level functions
-# and a method to get the design space.
-
-configure_logger()
-
-# %%
-# Description
-# -----------
-#
-# In the :class:`.Robustness` post-processing,
-# the robustness of the optimum is represented by a box plot. Using the
-# quadratic approximations of all the output functions, we
-# propagate analytically a normal distribution with 1% standard deviation
-# on all the design variables, assuming no cross-correlations of inputs,
-# to obtain the mean and standard deviation of the resulting normal
-# distribution. A series of samples are randomly generated from the resulting
-# distribution, whose quartiles are plotted, relatively to the values of
-# the function at the optimum. For each function (in abscissa), the plot
-# shows the extreme values encountered in the samples (top and bottom
-# bars). Then, 95% of the values are within the blue boxes. The average is
-# given by the red bar.
-
-# %%
-# Create disciplines
-# ------------------
-# At this point, we instantiate the disciplines of Sobieski's SSBJ problem:
-# Propulsion, Aerodynamics, Structure and Mission
-disciplines = create_discipline([
-    "SobieskiPropulsion",
-    "SobieskiAerodynamics",
-    "SobieskiStructure",
-    "SobieskiMission",
-])
-
-# %%
-# Create design space
-# -------------------
-# We also create the :class:`.SobieskiDesignSpace`.
-design_space = SobieskiDesignSpace()
-
-# %%
-# Create and execute scenario
-# ---------------------------
-# The next step is to build an MDO scenario in order to maximize the range,
-# encoded 'y_4', with respect to the design parameters, while satisfying the
-# inequality constraints 'g_1', 'g_2' and 'g_3'. We can use the MDF formulation,
-# the SLSQP optimization algorithm
-# and a maximum number of iterations equal to 100.
-scenario = create_scenario(
-    disciplines,
-    "y_4",
-    design_space,
-    formulation_name="MDF",
-    maximize_objective=True,
+execute_post(
+    "sobieski_mdf_scenario.h5",
+    settings_model=Robustness_Settings(save=False, show=True),
 )
-scenario.set_differentiation_method()
-for constraint in ["g_1", "g_2", "g_3"]:
-    scenario.add_constraint(constraint, constraint_type="ineq")
-scenario.execute(algo_name="SLSQP", max_iter=10)
-
-# %%
-# Post-process scenario
-# ---------------------
-# Lastly, we post-process the scenario by means of the :class:`.Robustness`
-# which plots any of the constraint or
-# objective functions w.r.t. the optimization iterations or sampling snapshots.
-
-# %%
-# .. tip::
-#
-#    Each post-processing method requires different inputs and offers a variety
-#    of customization options. Use the high-level function
-#    :func:`.get_post_processing_options_schema` to print a table with
-#    the options for any post-processing algorithm.
-#    Or refer to our dedicated page:
-#    :ref:`gen_post_algos`.
-
-scenario.post_process(post_name="Robustness", save=False, show=True)

@@ -37,8 +37,8 @@ from gemseo import get_discipline_options_defaults
 from gemseo import get_discipline_options_schema
 from gemseo import get_discipline_outputs_schema
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.utils import get_all_inputs
-from gemseo.disciplines.utils import get_all_outputs
+from gemseo.utils.discipline import get_all_inputs
+from gemseo.utils.discipline import get_all_outputs
 
 configure_logger()
 

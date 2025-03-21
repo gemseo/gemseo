@@ -20,7 +20,7 @@ from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.algos.opt.nlopt.settings.base_nlopt_settings import BaseNLoptSettings
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
 class BaseGradientFreeNLoptSettings(BaseNLoptSettings):

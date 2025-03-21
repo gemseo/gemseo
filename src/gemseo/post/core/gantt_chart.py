@@ -92,8 +92,8 @@ def create_gantt_chart(
     ax.set_ylim(5, 10 * len(disc_names) + 15)
     ax.set_yticks([5 + (i + 1) * 10 for i in range(len(disc_names))])
     ax.set_yticklabels(disc_names)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Disciplines")
+    ax.set_xlabel("Time (s)")
+    ax.set_title("Execution (blue) and linearization (red) of the disciplines")
     ax.grid(True)
 
     # Minimum time as a reference

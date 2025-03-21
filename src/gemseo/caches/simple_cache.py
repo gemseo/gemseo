@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.caches.base_cache import DATA_COMPARATOR
 from gemseo.caches.base_cache import BaseCache
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
@@ -80,7 +79,7 @@ class SimpleCache(BaseCache):
         Returns:
             Whether the input data is cached.
         """
-        return len(self.__inputs) != 0 and DATA_COMPARATOR(
+        return len(self.__inputs) != 0 and self.compare_dict_of_arrays(
             input_data, self.__inputs, self._tolerance
         )
 

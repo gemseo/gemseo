@@ -79,25 +79,25 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
         self.__dir = self.__FORWARD if is_directed else self.__NONE
 
     def node(  # noqa:D102
-        self, name: str, label: str | None = None, _attributes=None, **attrs: str
+        self, name: str, label: str | None = None, attributes=None, **attrs: str
     ) -> None:
         new_attrs = asdict(self.DefaultNodeAttributeValues())
         new_attrs.update(attrs)
-        super().node(name, label=label, _attributes=_attributes, **new_attrs)
+        super().node(name, label=label, _attributes=attributes, **new_attrs)
 
     def edge(  # noqa:D102
         self,
         tail_name: str,
         head_name: str,
         label: str | None = None,
-        _attributes=None,
+        attributes=None,
         **attrs: str,
     ) -> None:
         new_attrs = asdict(self.DefaultEdgeAttributeValues())
         new_attrs.update(attrs)
         new_attrs.setdefault(self.__DIR, self.__dir)
         super().edge(
-            tail_name, head_name, label=label, _attributes=_attributes, **new_attrs
+            tail_name, head_name, label=label, _attributes=attributes, **new_attrs
         )
 
     def hide_node(self, name: str) -> None:

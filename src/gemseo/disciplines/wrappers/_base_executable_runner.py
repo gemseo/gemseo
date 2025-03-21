@@ -20,6 +20,7 @@ import logging
 import subprocess
 from pathlib import Path
 from shutil import copy2
+from shutil import copytree
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -45,8 +46,8 @@ class _BaseExecutableRunner(Serializable):
     command_line: str
     """The command line to run the executable."""
 
-    _files: Iterable[str | Path]
-    """The files to copy into the execution directory."""
+    _data_paths: Iterable[Path]
+    """The directories and files to copy into the execution directory."""
 
     _working_directory: str | Path
     """The directory within to execute the command line."""
@@ -62,7 +63,7 @@ class _BaseExecutableRunner(Serializable):
         command_line: str,
         root_directory: str | Path = "",
         directory_naming_method: DirectoryNamingMethod = DirectoryNamingMethod.UUID,
-        files: Iterable[str | Path] = (),
+        data_paths: Iterable[str | Path] = (),
         working_directory: str | Path = "",
         **subprocess_run_options: Any,
     ) -> None:
@@ -74,7 +75,8 @@ class _BaseExecutableRunner(Serializable):
                 wherein unique directories will be created at each execution.
                 If empty, use the current working directory.
             directory_naming_method: The method to create the execution directories.
-            files: The files to copy into the execution directory.
+            data_paths: The directories and files to copy into the execution
+                directory.
             working_directory: The directory within to execute the command line.
                 If empty, execute the command line into the unique generated directory.
             **subprocess_run_options: The options of the ``subprocess.run`` method.
@@ -84,7 +86,7 @@ class _BaseExecutableRunner(Serializable):
             directory_naming_method=directory_naming_method,
         )
         self.command_line = command_line
-        self._files = files
+        self._data_paths = list(map(Path, data_paths))
         self._working_directory = working_directory
         self.__set_subprocess_run_options(subprocess_run_options)
 
@@ -113,15 +115,23 @@ class _BaseExecutableRunner(Serializable):
             raise KeyError(msg)
         self.__subprocess_run_options.update(subprocess_run_options)
 
-    def __copy_files(self) -> None:
-        """Copy the files into the working directory."""
+    def __copy_data_paths(self) -> None:
+        """Copy the directories and files into the working directory."""
         working_directory = self.working_directory
         if working_directory:
-            for file_ in self._files:
-                copy2(
-                    file_,
-                    working_directory / Path(file_).name,
-                )
+            for path in self._data_paths:
+                dst = working_directory / path.name
+                if path.is_file():
+                    copy2(path, dst)
+                elif path.is_dir():
+                    copytree(path, dst)
+
+                else:
+                    msg = (
+                        f"Can't copy {path} into {working_directory} "
+                        "since it is neither a file nor a directory."
+                    )
+                    LOGGER.warning(msg)
 
     @property
     def working_directory(self) -> Path | None:
@@ -135,7 +145,7 @@ class _BaseExecutableRunner(Serializable):
         """Execute the command line."""
         working_directory = self.working_directory
 
-        self.__copy_files()
+        self.__copy_data_paths()
 
         self._pre_processing()
 

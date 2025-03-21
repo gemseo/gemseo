@@ -55,6 +55,7 @@ def test_common_scenario(
         assert Path(output_file).exists()
 
 
+@pytest.mark.slow
 def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
     """Check Animation with objective, standardized or not."""
     opt = Animation(large_common_problem)

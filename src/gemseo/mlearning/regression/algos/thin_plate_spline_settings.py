@@ -20,14 +20,14 @@ from typing import Literal
 
 from pydantic import Field
 
-from gemseo.mlearning.regression.algos.rbf_settings import Function
+from gemseo.mlearning.regression.algos.rbf_settings import RBF
 from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressor_Settings
 
 
 class TPSRegressor_Settings(RBFRegressor_Settings):  # noqa: N801
     """The settings of the thin plate spline (TPS) regressor."""
 
-    function: Literal[Function.THIN_PLATE] = Field(
-        default=Function.THIN_PLATE,
+    function: Literal[RBF.THIN_PLATE] = Field(
+        default=RBF.THIN_PLATE,
         description=r"The thin plate radial basis function for :math:`r^2\log(r)`.",
     )

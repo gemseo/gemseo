@@ -36,7 +36,6 @@ from typing import Final
 from numpy import array
 from numpy import dtype
 from numpy import hstack
-from numpy import int32
 from numpy import where
 
 from gemseo.algos.base_driver_library import BaseDriverLibrary
@@ -116,20 +115,12 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
 
-    __compute_jacobians: bool
-    """Whether to compute the Jacobians."""
-
     __output_functions: list[MDOFunction] | None
     """The functions to compute the outputs, if any."""
 
     __jacobian_functions: list[MDOFunction] | None
     """The functions to compute the Jacobians, if any."""
 
-    # TODO: use DesignSpace enum once there are hashable.
-    __DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE: Final[dict[str, type]] = {
-        "float": float,
-        "integer": int32,
-    }
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"lock"}
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
@@ -163,6 +154,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         problem.stop_if_nan = False
 
         design_space = problem.design_space
+        integer_normalization_enabled = self.__enable_integer_variables_normalization(
+            design_space
+        )
         self.__check_unnormalization_capability(design_space)
 
         # Filter settings to get only the ones of the global optimizer
@@ -179,6 +173,9 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             *self.unit_samples.shape,
         )
         self.samples = self.__convert_unit_samples_to_samples(problem)
+        self.__reset_integer_variables_normalization(
+            design_space, integer_normalization_enabled
+        )
         self._init_iter_observer(problem, len(self.unit_samples))
 
     def __convert_unit_samples_to_samples(
@@ -204,7 +201,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             # We record the integer variables types to later be able to restore the
             # proper data type.
             python_var_types = {
-                name: self.__DESIGN_VARIABLE_TYPE_TO_PYTHON_TYPE[type_]
+                name: DesignSpace.VARIABLE_TYPES_TO_DTYPES[type_]
                 for name, type_ in variable_types.items()
                 if type_ != DesignSpace.DesignVariableType.FLOAT
             }
@@ -229,6 +226,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def _run(
         self,
         problem: EvaluationProblem,
+        eval_func: bool = True,
         eval_jac: bool = False,
         n_processes: int = 1,
         wait_time_between_samples: float = 0.0,
@@ -238,7 +236,8 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     ) -> None:
         """
         Args:
-            eval_jac: Whether to evaluate the Jacobian function.
+            eval_func: Whether to sample the functions computing the output data.
+            eval_jac: Whether to sample the functions computing the Jacobian data.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
             wait_time_between_samples: The time to wait between each sample
@@ -254,12 +253,12 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             it is therefore necessary to protect its execution with an
             ``if __name__ == '__main__':`` statement when working on Windows.
         """  # noqa: D205, D212
-        self.__compute_jacobians = eval_jac
         output_functions, jacobian_functions = self._problem.get_functions(
-            jacobian_names=() if self.__compute_jacobians else None,
-            observable_names=(),
+            jacobian_names=() if eval_jac else None, observable_names=()
         )
-        self.__output_functions = output_functions or None
+        self.__output_functions = (
+            output_functions if eval_func and output_functions else None
+        )
         self.__jacobian_functions = jacobian_functions or None
         callbacks = list(callbacks)
         if n_processes > 1:
@@ -406,6 +405,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         """
         design_space = self.__get_design_space(variables_space)
         if not unit_sampling:
+            if isinstance(design_space, DesignSpace):
+                integer_normalization_enabled = (
+                    self.__enable_integer_variables_normalization(design_space)
+                )
+
             self.__check_unnormalization_capability(design_space)
 
         # Validate and filter the settings
@@ -418,7 +422,13 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         if unit_sampling:
             return unit_samples
 
-        return design_space.untransform_vect(unit_samples, no_check=True)
+        samples = design_space.untransform_vect(unit_samples, no_check=True)
+        if isinstance(design_space, DesignSpace):
+            self.__reset_integer_variables_normalization(
+                design_space, integer_normalization_enabled
+            )
+
+        return samples
 
     @singledispatchmethod
     def __get_design_space(self, design_space):
@@ -462,3 +472,34 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             "x", size=design_space, lower_bound=0.0, upper_bound=1.0
         )
         return design_space_
+
+    @staticmethod
+    def __enable_integer_variables_normalization(design_space: DesignSpace) -> bool:
+        """Enable the normalization of the integer variables, if disabled.
+
+        Args:
+            design_space: The design space.
+
+        Returns:
+            Whether the normalization of the integer variables had to be enabled.
+
+        """
+        enabled = not design_space.enable_integer_variables_normalization
+        if enabled:
+            design_space.enable_integer_variables_normalization = True
+
+        return enabled
+
+    @staticmethod
+    def __reset_integer_variables_normalization(
+        design_space: DesignSpace, enabled: bool
+    ) -> None:
+        """Reset the normalization of the integer variables to its initial state.
+
+        Args:
+            design_space: The design space.
+            enabled: Whether the normalization of the integer variables
+                had to be enabled.
+        """
+        if enabled:
+            design_space.enable_integer_variables_normalization = False

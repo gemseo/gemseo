@@ -19,19 +19,17 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-API
-===
+High-level functions
+====================
 
-Here are some examples of the machine learning API
-applied to regression models.
+The :mod:`gemseo.mlearning` package includes high-level functions
+to create regression models from model class names.
 """
 
 from __future__ import annotations
 
 from gemseo import configure_logger
-from gemseo import create_design_space
-from gemseo import create_discipline
-from gemseo import create_scenario
+from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning import get_regression_models
 from gemseo.mlearning import get_regression_options
@@ -40,37 +38,36 @@ configure_logger()
 
 
 # %%
-# Get available regression models
-# -------------------------------
+# Available models
+# ----------------
+# Use the :func:`.get_regression_models`
+# to list the available model class names:
 get_regression_models()
 
 # %%
-# Get regression model options
-# ----------------------------
-get_regression_options("GaussianProcessRegressor")
+# Available model options
+# -----------------------
+# Use the :func:`.get_regression_options`
+# to get the options of a model
+# from its class name:
+get_regression_options("GaussianProcessRegressor", pretty_print=False)
 
 # %%
-# Create regression model
-# -----------------------
-expressions = {"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"}
-discipline = create_discipline(
-    "AnalyticDiscipline", name="func", expressions=expressions
-)
-
-design_space = create_design_space()
-design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
-design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-
-scenario = create_scenario(
-    [discipline],
-    "y_1",
-    design_space,
-    scenario_type="DOE",
-    formulation_name="DisciplinaryOpt",
-)
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=9)
-
-dataset = scenario.to_dataset(opt_naming=False)
-model = create_regression_model("LinearRegressor", data=dataset)
+#
+# .. seealso::
+#    The functions
+#    :func:`.get_regression_models` and :func:`.get_regression_options`
+#    can be very useful for the developers.
+#    As a user,
+#    it may be easier to consult :ref:`this page <gen_regression_algos>`
+#    to find out about the different algorithms and their options.
+#
+# Creation
+# --------
+# Given a training dataset, *e.g.*
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
+# %%
+# use the :func:`.create_regression_model` function
+# to create a clustering model from its class name and settings:
+model = create_regression_model("RBFRegressor", data=dataset)
 model.learn()
-model

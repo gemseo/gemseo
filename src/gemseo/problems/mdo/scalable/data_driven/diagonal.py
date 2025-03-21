@@ -291,7 +291,7 @@ class ScalableDiagonalModel(ScalableModel):
         if add_levels and not is_binary_matrix:
             for i in range(dependency_matrix.shape[0]):
                 for j in range(dependency_matrix.shape[1]):
-                    val = int(round(dependency_matrix[i, j] * 100))
+                    val = round(dependency_matrix[i, j] * 100)
                     med = median(dependency_matrix[:, j] * 100)
                     col = "white" if val > med else "black"
                     ax.text(j, i, val, ha="center", va="center", color=col)
@@ -308,7 +308,7 @@ class ScalableDiagonalModel(ScalableModel):
         save: bool = False,
         show: bool = False,
         step: float = 0.01,
-        varnames: Sequence[str] | None = None,
+        varnames: Sequence[str] = (),
         directory: str = ".",
         png: bool = False,
     ) -> list[str]:
@@ -317,7 +317,7 @@ class ScalableDiagonalModel(ScalableModel):
         A basis function is a mono dimensional function
         interpolating the samples of a given output component
         over the input sampling line
-        :math:`t\in[0,1]\mapsto \\underline{x}+t(\overline{x}-\\underline{x})`.
+        :math:`t\in[0,1]\mapsto \underline{x}+t(\overline{x}-\underline{x})`.
 
         There are as many basis functions
         as there are output components from the discipline.
@@ -340,7 +340,7 @@ class ScalableDiagonalModel(ScalableModel):
             show: Whether to display the figure.
             step: The step to evaluate the 1d interpolation function.
             varnames: The names of the variable to plot.
-                If ``None``, all the variables are plotted.
+                If empty, all the variables are plotted.
             directory: The directory path.
             png: Whether to use PNG file format instead of PDF.
 

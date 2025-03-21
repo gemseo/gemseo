@@ -27,10 +27,12 @@ from numpy import zeros
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
+from gemseo.core._discipline_class_injector import ClassInjector
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.enumeration import merge_enums
@@ -57,7 +59,7 @@ def _default_dict_factory() -> dict:
     return defaultdict(None)
 
 
-class Discipline(BaseDiscipline):
+class Discipline(BaseDiscipline, metaclass=ClassInjector):
     """The base class for disciplines.
 
     The :meth:`.execute` method is used to do compute output data from input data.
@@ -84,7 +86,9 @@ class Discipline(BaseDiscipline):
         SPARSE = "sparse"
         """Initialized as SciPy CSR arrays filled with zeros."""
 
-    ApproximationMode: EnumType = ApproximationMode
+    ApproximationMode: EnumType = merge_enums(
+        "ApproximationMode", StrEnum, ApproximationMode, HybridApproximationMode
+    )
 
     LinearizationMode: EnumType = merge_enums(
         "LinearizationMode",
@@ -116,6 +120,20 @@ class Discipline(BaseDiscipline):
 
     _linearization_mode: LinearizationMode
     """The linearization mode."""
+
+    __input_names: Iterable[str]
+    """The input names used for handling execution status and statistics."""
+
+    __output_names: Iterable[str]
+    """The output names used for handling execution status and statistics."""
+
+    __hybrid_approximation_name_to_mode: ClassVar[
+        Mapping[ApproximationMode, ApproximationMode]
+    ] = {
+        ApproximationMode.HYBRID_FINITE_DIFFERENCES: ApproximationMode.FINITE_DIFFERENCES,  # noqa: E501
+        ApproximationMode.HYBRID_CENTERED_DIFFERENCES: ApproximationMode.CENTERED_DIFFERENCES,  # noqa: E501
+        ApproximationMode.HYBRID_COMPLEX_STEP: ApproximationMode.COMPLEX_STEP,
+    }
 
     def __init__(  # noqa: D107
         self,
@@ -163,7 +181,7 @@ class Discipline(BaseDiscipline):
                 Otherwise,
                 set the output variables to differentiate
                 with :meth:`.add_differentiated_outputs`
-                and the input variables against which to differentiate them
+                and the input variables with respect to which to differentiate them
                 with :meth:`.add_differentiated_inputs`.
             execute: Whether to start by executing the discipline
                 to ensure that the discipline was executed
@@ -214,16 +232,13 @@ class Discipline(BaseDiscipline):
             else:
                 return self.jac
 
-        with (
-            self.execution_statistics.record(linearize=True),
-            self.execution_status.linearize(),
-        ):
-            if self._linearization_mode in set(self.ApproximationMode):
-                self.jac = self._jac_approx.compute_approx_jac(
-                    output_names, input_names
-                )
-            else:
-                self._compute_jacobian(input_names, output_names)
+        self.__input_names = input_names
+        self.__output_names = output_names
+        self.execution_status.handle(
+            self.execution_status.Status.LINEARIZING,
+            self.execution_statistics.record_linearization,
+            self.__compute_jacobian,
+        )
 
         if not compute_all_jacobians:
             for output_name in tuple(self.jac.keys()):
@@ -244,6 +259,18 @@ class Discipline(BaseDiscipline):
             self.cache.cache_jacobian(input_data, self.jac)
 
         return self.jac
+
+    def __compute_jacobian(self):
+        """Callable used for handling execution status and statistics."""
+        if self._linearization_mode in set(self.ApproximationMode):
+            if self._linearization_mode in set(HybridApproximationMode):
+                self._compose_hybrid_jacobian(self.__output_names, self.__input_names)
+            else:
+                self.jac = self._jac_approx.compute_approx_jac(
+                    self.__output_names, self.__input_names
+                )
+        else:
+            self._compute_jacobian(self.__input_names, self.__output_names)
 
     def set_jacobian_approximation(
         self,
@@ -276,10 +303,15 @@ class Discipline(BaseDiscipline):
             jac_approx_wait_time: The time waited between two forks
                 of the process / thread.
         """
+        approx_method = (
+            self.__hybrid_approximation_name_to_mode[jac_approx_type]
+            if jac_approx_type in set(HybridApproximationMode)
+            else jac_approx_type
+        )
         self._jac_approx = DisciplineJacApprox(
             # TODO: pass the bare minimum instead of self.
             self,
-            approx_method=jac_approx_type,
+            approx_method=approx_method,
             step=jax_approx_step,
             parallel=jac_approx_n_processes > 1,
             n_processes=jac_approx_n_processes,
@@ -328,7 +360,8 @@ class Discipline(BaseDiscipline):
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
-                set the input variables against which to differentiate the output ones
+                set the input variables
+                with respect to which to differentiate the output ones
                 with :meth:`.add_differentiated_inputs`
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
@@ -450,7 +483,7 @@ class Discipline(BaseDiscipline):
         """Initialize the Jacobian dictionary :attr:`.jac`.
 
         Args:
-            input_names: The inputs against which to differentiate the outputs.
+            input_names: The inputs with respect to which to differentiate the outputs.
                 If empty, use all the inputs.
             output_names: The outputs to be differentiated.
                 If empty, use all the outputs.
@@ -460,7 +493,7 @@ class Discipline(BaseDiscipline):
 
         Returns:
             The names of the input variables
-            against which to differentiate the output ones,
+            with respect to which to differentiate the output ones,
             and these output variables.
         """
         if init_type == self.InitJacobianType.EMPTY:
@@ -517,9 +550,9 @@ class Discipline(BaseDiscipline):
         output_names: Iterable[str],
     ) -> tuple[Iterable[str], Iterable[str]]:
         if not input_names:
-            input_names = self.io.input_grammar.keys()
+            input_names = self.io.input_grammar
         if not output_names:
-            output_names = self.io.output_grammar.keys()
+            output_names = self.io.output_grammar
         return input_names, output_names
 
     def check_jacobian(
@@ -565,7 +598,7 @@ class Discipline(BaseDiscipline):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If ``None``, use the :attr:`.Discipline.default_input_data`.
+                If ``None``, use the :attr:`.Discipline.io.input_grammar.defaults`.
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -653,6 +686,7 @@ class Discipline(BaseDiscipline):
             reference_jacobian_path=reference_jacobian_path,
             save_reference_jacobian=save_reference_jacobian,
             indices=indices,
+            input_data=input_data,
         )
 
     def _get_differentiated_io(
@@ -665,15 +699,16 @@ class Discipline(BaseDiscipline):
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
-                set the input variables against which to differentiate the output ones
+                set the input variables
+                with respect to which to differentiate the output ones
                 with :meth:`.add_differentiated_inputs`
                 and set these output variables to differentiate
                 with :meth:`.add_differentiated_outputs`.
         """
         if compute_all_jacobians:
             return (
-                tuple(self.io.input_grammar.keys()),
-                tuple(self.io.output_grammar.keys()),
+                tuple(self.io.input_grammar),
+                tuple(self.io.output_grammar),
             )
 
         return tuple(self._differentiated_input_names), tuple(
@@ -684,12 +719,13 @@ class Discipline(BaseDiscipline):
         self,
         input_names: Iterable[str] = (),
     ) -> None:
-        """Add the inputs against which to differentiate the outputs.
+        """Add the inputs with respect to which to differentiate the outputs.
 
         The inputs that do not represent continuous numbers are filtered out.
 
         Args:
-            input_names: The input variables against which to differentiate the outputs.
+            input_names: The input variables
+                with respect to which to differentiate the outputs.
                 If empty, use all the inputs.
 
         Raises:
@@ -701,12 +737,12 @@ class Discipline(BaseDiscipline):
             msg = (
                 f"Cannot differentiate the discipline {self.name} w.r.t. the inputs "
                 "that are not among the discipline inputs: "
-                f"{list(input_grammar.keys())}."
+                f"{list(input_grammar)}."
             )
             raise ValueError(msg)
 
         if not input_names:
-            input_names = input_grammar.keys()
+            input_names = input_grammar
 
         self._differentiated_input_names = list(
             set(self._differentiated_input_names).union(
@@ -735,12 +771,12 @@ class Discipline(BaseDiscipline):
             msg = (
                 f"Cannot differentiate the discipline {self.name} for variables "
                 "that are not among the discipline outputs: "
-                f"{list(output_grammar.keys())}."
+                f"{list(output_grammar)}."
             )
             raise ValueError(msg)
 
         if not output_names:
-            output_names = output_grammar.keys()
+            output_names = output_grammar
 
         self._differentiated_output_names = list(
             set(self._differentiated_output_names).union(
@@ -784,8 +820,66 @@ class Discipline(BaseDiscipline):
         as a dictionary ``{output_name: {input_name: jacobian_matrix}}``.
 
         Args:
-            input_names: The names of the inputs against which to differentiate the
-                outputs. If empty, use all the inputs.
+            input_names: The names of the inputs
+                with respect to which to differentiate the outputs.
+                If empty, use all the inputs.
             output_names: The names of the outputs to be differentiated.
                 If empty, use all the outputs.
         """
+
+    def _compose_hybrid_jacobian(
+        self,
+        output_names: Iterable[str] = (),
+        input_names: Iterable[str] = (),
+    ) -> None:
+        """Compose a hybrid Jacobian using analytical and approximated expressions.
+
+        This method allows to complete a given Jacobian for which not all
+        inputs-outputs have been defined by using approximation methods.
+
+        Args:
+            input_names: The names of the input wrt the ``output_names`` are
+                linearized.
+            output_names: The names  of the output to be linearized.
+        """
+        analytical_jacobian = self.jac
+
+        self.set_jacobian_approximation(self._linearization_mode)
+
+        approximated_jac = {}
+        outputs_names_to_approximate = []
+        input_names_to_approximate = []
+
+        for output_name in output_names:
+            if output_name not in analytical_jacobian:
+                analytical_jacobian[output_name] = {}
+            for input_name in input_names:
+                if input_name not in analytical_jacobian[output_name]:
+                    approximated_jac[output_name] = {}
+                    # Map the outputs to be differentiated wrt the corresponding inputs.
+                    outputs_names_to_approximate.append(output_name)
+                    input_names_to_approximate.append(input_name)
+
+        # Compute approximated Jacobian elements.
+        for output_name, input_name in zip(
+            outputs_names_to_approximate, input_names_to_approximate
+        ):
+            jac_input_output = self._jac_approx.compute_approx_jac(
+                [output_name], [input_name]
+            )
+            approximated_jac[output_name][input_name] = jac_input_output[output_name][
+                input_name
+            ]
+
+        # Fill in missing inputs of the Jacobian.
+        for output_name in output_names:
+            analytical_jacobian_out = analytical_jacobian[output_name]
+            approximated_jac_out = approximated_jac[output_name]
+            for input_name in input_names:
+                if input_name not in analytical_jacobian_out:
+                    analytical_jacobian_out[input_name] = approximated_jac_out[
+                        input_name
+                    ]
+
+        # Recover analytical Jacobian data.
+        self.jac = analytical_jacobian

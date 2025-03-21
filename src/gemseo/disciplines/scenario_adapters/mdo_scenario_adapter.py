@@ -42,6 +42,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
 from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
+from gemseo.utils.name_generator import NameGenerator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -51,7 +52,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core._process_flow.execution_sequences import LoopExecSequence
+    from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.scenarios.base_scenario import BaseScenario
 
@@ -83,23 +84,37 @@ class MDOScenarioAdapter(ProcessDiscipline):
     discipline outputs.
     """
 
-    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
-
-    scenario: BaseScenario
-    """The scenario to be adapted."""
-
-    post_optimal_analysis: PostOptimalAnalysis
-    """The post-optimal analysis."""
+    databases: list[Database]
+    """The copies of the scenario databases after execution."""
 
     keep_opt_history: bool
     """Whether to keep databases copies after each execution."""
 
-    databases: list[Database]
-    """The copies of the scenario databases after execution."""
+    post_optimal_analysis: PostOptimalAnalysis
+    """The post-optimal analysis."""
 
-    LOWER_BND_SUFFIX = "_lower_bnd"
-    UPPER_BND_SUFFIX = "_upper_bnd"
-    MULTIPLIER_SUFFIX = "_multiplier"
+    save_opt_history: bool
+    """Whether to save the optimization history after each execution."""
+
+    scenario: BaseScenario
+    """The scenario to be adapted."""
+
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
+    LOWER_BND_SUFFIX: ClassVar[str] = "_lower_bnd"
+    UPPER_BND_SUFFIX: ClassVar[str] = "_upper_bnd"
+    MULTIPLIER_SUFFIX: ClassVar[str] = "_multiplier"
+    DEFAULT_DATABASE_FILE_PREFIX: ClassVar[str] = "database"
+
+    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
+        "_MDOScenarioAdapter__name_generator"
+    ])
+
+    __name_generator: NameGenerator
+    """A name generator used to get unique file names when exporting databases."""
+
+    __naming: NameGenerator.Naming
+    """The way of naming the files when exporting databases."""
 
     __scenario_log_level: int | None
     """The level of the root logger during the scenario execution.
@@ -118,8 +133,10 @@ class MDOScenarioAdapter(ProcessDiscipline):
         output_multipliers: bool = False,
         name: str = "",
         keep_opt_history: bool = False,
+        save_opt_history: bool = False,
         opt_history_file_prefix: str = "",
         scenario_log_level: int | None = None,
+        naming: NameGenerator.Naming = NameGenerator.Naming.NUMBERED,
     ) -> None:
         """
         Args:
@@ -138,17 +155,27 @@ class MDOScenarioAdapter(ProcessDiscipline):
             name: The name of the scenario adapter.
                 If empty,
                 use the name of the scenario adapter suffixed by ``"_adapter"``.
-            keep_opt_history: Whether to keep databases copies after each execution.
+            keep_opt_history: Whether to keep database copies after each execution.
+                Depending on the size of the databases
+                and the number of consecutive executions,
+                this can be very memory consuming. If the adapter will be executed in
+                parallel, the databases will not be saved to the main process by the
+                sub-processes, so this argument should be set to ``False`` to avoid
+                unnecessary memory use in the sub-processes.
+            save_opt_history: Whether to save the optimization history
+                to an HDF5 file after each execution.
             opt_history_file_prefix: The base name for the databases to be exported.
                 The full names of the databases are built from
-                the provided base name suffixed by ``"_i.h5"``
-                where ``i`` is replaced by the execution number,
-                i.e the number of stored databases.
-                If empty, the databases are not exported.
-                The databases can be exported only is ``keep_opt_history=True``.
+                the provided base name suffixed by ``"_identifier.h5"``
+                where ``identifier`` is replaced by an identifier according to the
+                ``naming_method``.
+                If empty, use :attr:`.DEFAULT_DATABASE_FILE_PREFIX`.
             scenario_log_level: The level of the root logger
                 during the scenario execution.
                 If ``None``, do not change the level of the root logger.
+            naming: The way of naming the database files.
+                When the adapter will be executed in parallel, this method shall be set
+                to ``UUID`` because this method is multiprocess-safe.
 
         Raises:
             ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
@@ -163,9 +190,13 @@ class MDOScenarioAdapter(ProcessDiscipline):
         self._output_names = output_names
         self._reset_x0_before_opt = reset_x0_before_opt
         self._output_multipliers = output_multipliers
+        self.__naming = naming
         self.keep_opt_history = keep_opt_history
+        self.save_opt_history = save_opt_history
         self.databases = []
-        self.__opt_history_file_prefix = opt_history_file_prefix
+        self.__opt_history_file_prefix = (
+            opt_history_file_prefix or self.DEFAULT_DATABASE_FILE_PREFIX
+        )
 
         name = name or f"{scenario.name}_adapter"
         super().__init__((), name=name)
@@ -190,7 +221,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 (upper_bounds, upper_suffix),
             ]:
                 bounds = {name + suffix: val for name, val in bounds.items()}
-                self.default_input_data.update(bounds)
+                self.io.input_grammar.defaults.update(bounds)
                 self._bound_names.extend(bounds.keys())
 
         # Optimization functions are redefined at each run
@@ -204,6 +235,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         )
         self.post_optimal_analysis = None
         self.__scenario_log_level = scenario_log_level
+        self._init_shared_memory_attrs_after()
 
     def _update_grammars(self) -> None:
         """Update the input and output grammars.
@@ -216,19 +248,19 @@ class MDOScenarioAdapter(ProcessDiscipline):
         opt_problem = formulation.optimization_problem
         top_leveld = formulation.get_top_level_disciplines()
         for disc in top_leveld:
-            self.input_grammar.update(disc.input_grammar)
-            self.output_grammar.update(disc.output_grammar)
+            self.io.input_grammar.update(disc.io.input_grammar)
+            self.io.output_grammar.update(disc.io.output_grammar)
             # The output may also be the optimum value of the design
             # variables, so the output grammar may contain inputs
             # of the disciplines. All grammars are filtered just after
             # this loop
-            self.output_grammar.update(disc.input_grammar)
-            self.default_input_data.update(disc.default_input_data)
+            self.io.output_grammar.update(disc.io.input_grammar)
+            self.io.input_grammar.defaults.update(disc.io.input_grammar.defaults)
 
         try:
-            self.input_grammar.restrict_to(self._input_names)
+            self.io.input_grammar.restrict_to(self._input_names)
         except KeyError:
-            missing_inputs = set(self._input_names) - set(self.input_grammar.keys())
+            missing_inputs = set(self._input_names) - set(self.io.input_grammar)
 
             if missing_inputs:
                 msg = "Can't compute inputs from scenarios: {}.".format(
@@ -247,22 +279,22 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 names_to_values.update({k + suffix: v for k, v in current_x.items()})
             bounds_grammar = JSONGrammar("bounds")
             bounds_grammar.update_from_data(names_to_values)
-            self.input_grammar.update(bounds_grammar)
+            self.io.input_grammar.update(bounds_grammar)
 
         # If a DV is not an input of the top level disciplines:
-        missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
+        missing_outputs = set(self._output_names) - set(self.io.output_grammar)
 
         if missing_outputs:
             miss_dvs = set(missing_outputs).intersection(opt_problem.design_space)
             if miss_dvs:
                 dv_gram = JSONGrammar("dvs")
                 dv_gram.update_from_names(miss_dvs)
-                self.output_grammar.update(dv_gram)
+                self.io.output_grammar.update(dv_gram)
 
         try:
-            self.output_grammar.restrict_to(self._output_names)
+            self.io.output_grammar.restrict_to(self._output_names)
         except KeyError:
-            missing_outputs = set(self._output_names) - set(self.output_grammar.keys())
+            missing_outputs = set(self._output_names) - set(self.io.output_grammar)
 
             if missing_outputs:
                 msg = "Can't compute outputs from scenarios: {}.".format(
@@ -298,7 +330,10 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # Update the output grammar
         multipliers_grammar = JSONGrammar("multipliers")
         multipliers_grammar.update_from_data(base_dict)
-        self.output_grammar.update(multipliers_grammar)
+        self.io.output_grammar.update(multipliers_grammar)
+
+    def _init_shared_memory_attrs_after(self) -> None:
+        self.__name_generator = NameGenerator(naming_method=self.__naming)
 
     @staticmethod
     def get_bnd_mult_name(
@@ -351,7 +386,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         for indata in self._input_names:
             for disc in top_leveld:
                 if indata in disc.io.input_grammar:
-                    disc.default_input_data[indata] = self.io.data[indata]
+                    disc.io.input_grammar.defaults[indata] = self.io.data[indata]
 
         self._reset_optimization_problem()
 
@@ -384,20 +419,21 @@ class MDOScenarioAdapter(ProcessDiscipline):
         opt_problem = formulation.optimization_problem
         design_space = opt_problem.design_space
 
-        if self.keep_opt_history and opt_problem.solution is not None:
-            self.databases.append(deepcopy(opt_problem.database))
-            if self.__opt_history_file_prefix:
-                self.databases[-1].to_hdf(
-                    f"{self.__opt_history_file_prefix}_{len(self.databases)}.h5"
-                )
+        database = opt_problem.database
+        if self.keep_opt_history:
+            self.databases.append(deepcopy(database))
+        if self.save_opt_history:
+            database.to_hdf(
+                f"{self.__opt_history_file_prefix}_{self.__name_generator.generate_name()}.h5"
+            )
 
         # Test if the last evaluation is the optimum
         x_opt = design_space.get_current_value()
-        last_x = opt_problem.database.get_x_vect(-1)
+        last_x = database.get_x_vect(-1)
         last_eval_not_opt = norm(x_opt - last_x) / (1.0 + norm(last_x)) > 1e-14
         if last_eval_not_opt:
             # Revaluate all functions at optimum
-            # To re execute all disciplines and get the right data
+            # To re-execute all disciplines and get the right data
             output_functions, jacobian_functions = opt_problem.get_functions(
                 no_db_no_norm=True
             )
@@ -547,13 +583,13 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # Fill the Jacobian blocks w.r.t. bounds with zeros
         for output_derivatives in self.jac.values():
             for bound_input_name in bound_inputs:
-                bound_input_size = self.default_input_data[bound_input_name].size
+                bound_input_size = self.io.input_grammar.defaults[bound_input_name].size
                 output_derivatives[bound_input_name] = zeros((1, bound_input_size))
 
     def _compute_auxiliary_jacobians(
         self,
         input_names: Iterable[str],
-        func_names: Iterable[str] | None = None,
+        func_names: Iterable[str] = (),
         use_threading: bool = True,
     ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobians of the optimization functions.
@@ -561,7 +597,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         Args:
             input_names: The names of the inputs w.r.t. which differentiate.
             func_names: The names of the functions to differentiate
-                If ``None``, then all the optimizations functions are differentiated.
+                If empty, then all the optimizations functions are differentiated.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -575,7 +611,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         """
         # Gather the names of the functions to differentiate
         opt_problem = self.scenario.formulation.optimization_problem
-        if func_names is None:
+        if not func_names:
             func_names = opt_problem.objective.output_names + [
                 output_name
                 for constraint in opt_problem.constraints
@@ -593,8 +629,8 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # Linearize the required disciplines
         unique_disciplines = list(set(disciplines.values()))
         for discipline in unique_disciplines:
-            diff_inputs = set(discipline.io.input_grammar.names) & set(input_names)
-            diff_outputs = set(discipline.io.output_grammar.names) & set(func_names)
+            diff_inputs = set(discipline.io.input_grammar) & set(input_names)
+            diff_outputs = set(discipline.io.output_grammar) & set(func_names)
             if diff_inputs and diff_outputs:
                 discipline.add_differentiated_inputs(list(diff_inputs))
                 discipline.add_differentiated_outputs(list(diff_outputs))

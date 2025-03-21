@@ -9,10 +9,6 @@ task-tags = ["TODO"]
 ignore = [
   # Shadowing a Python builtin module.
   "A005",
-  # Missing type annotation for `self` in method.
-  "ANN101",
-  # Missing type annotation for `cls` in classmethod.
-  "ANN102",
   # Dynamically typed expressions (typing.Any) are disallowed.
   "ANN401",
   # Checks for undocumented magic method definitions.
@@ -43,8 +39,6 @@ ignore = [
   "PLW3201",
   # Object does not implement `__hash__` method.
   "PLW1641",
-  # Fixture does not return anything, add leading underscore.
-  "PT004",
   # Checks for noqa directives that are no longer applicable.
   "RUF100",
   # Checks for long exception messages that are not defined in the exception class itself.
@@ -126,6 +120,7 @@ convention = "google"
   "A001",
   "RET504",
   "INP001",
+  "FURB113",
 ]
 "src/gemseo/utils/testing/opt_lib_test_base.py" = ["D"]
 "src/gemseo/problems/scalable/data_driven/*" = ["D"]

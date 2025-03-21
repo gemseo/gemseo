@@ -23,9 +23,9 @@ The mean squared error (MSE) is defined by
 
 .. math::
 
-    \\operatorname{MSE}(\\hat{y})=\\frac{1}{n}\\sum_{i=1}^n(\\hat{y}_i-y_i)^2,
+    \operatorname{MSE}(\hat{y})=\frac{1}{n}\sum_{i=1}^n(\hat{y}_i-y_i)^2,
 
-where :math:`\\hat{y}` are the predictions and :math:`y` are the data points.
+where :math:`\hat{y}` are the predictions and :math:`y` are the data points.
 """
 
 from __future__ import annotations

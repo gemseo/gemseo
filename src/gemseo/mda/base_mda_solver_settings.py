@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from pydantic import ConfigDict
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TCH002
+from pydantic import NonNegativeFloat  # noqa: TC002
 from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory

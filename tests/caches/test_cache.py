@@ -40,6 +40,7 @@ from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.factory import CacheFactory
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.caches.simple_cache import SimpleCache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
 from gemseo.core.chains.parallel_chain import MDOParallelChain
@@ -280,7 +281,7 @@ def test_det_hash(tmp_wd, hdf_name, inputs, expected) -> None:
     disc.set_cache("HDF5Cache", hdf_file_path=hdf_name)
     out = disc.execute({"x": inputs})
 
-    assert disc.execution_statistics.n_calls == 0
+    assert disc.execution_statistics.n_executions == 0
     assert out["y"].all() == expected.all()
 
 
@@ -421,16 +422,16 @@ def test_multithreading(memory_cache, sellar_disciplines) -> None:
     options = {"algo_name": "PYDOE_FULLFACT", "n_samples": 10, "n_processes": 4}
     scen.execute(**options)
 
-    nexec_1 = s_1.execution_statistics.n_calls
-    nexec_2 = s_s.execution_statistics.n_calls
+    nexec_1 = s_1.execution_statistics.n_executions
+    nexec_2 = s_s.execution_statistics.n_executions
 
     scen = create_scenario(
         par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
     )
     scen.execute(**options)
 
-    assert nexec_1 == s_1.execution_statistics.n_calls
-    assert nexec_2 == s_s.execution_statistics.n_calls
+    assert nexec_1 == s_1.execution_statistics.n_executions
+    assert nexec_2 == s_s.execution_statistics.n_executions
 
 
 def test_copy(memory_full_cache) -> None:
@@ -683,3 +684,17 @@ def test_names_to_sizes(simple_cache, data) -> None:
     """Verify the ``names_to_sizes`` attribute."""
     simple_cache.cache_outputs({"index": 1}, {"o": data})
     assert simple_cache.names_to_sizes == {"index": 1, "o": 2}
+
+
+def _compare_dict_of_arrays(*args, **kwargs):
+    """Dummy dict comparator that just raises when called."""
+    raise RuntimeError
+
+
+def test_dict_comparator():
+    """Verify that a different dict comparator can be injected."""
+    cache = SimpleCache()
+    cache.compare_dict_of_arrays = _compare_dict_of_arrays
+    cache.cache_outputs({"i": arange(1)}, {"o": arange(1)})
+    with pytest.raises(RuntimeError):
+        cache.get("i")

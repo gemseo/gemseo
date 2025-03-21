@@ -117,11 +117,11 @@ class CenteredDifferences(BaseGradientApproximator):
 
         Args:
             f_p: The value of the function :math:`f`
-                 at the next step :math:`x+\\delta_x`.
+                 at the next step :math:`x+\delta_x`.
             f_0: The value of the function :math:`f`
                  at the current step :math:`x`.
             f_m: The value of the function :math:`f`
-                 at the previous step :math:`x-\\delta_x`.
+                 at the previous step :math:`x-\delta_x`.
             numerical_error: The numerical error
                 associated to the calculation of :math:`f`.
                 By default, Machine epsilon (appx 1e-16),

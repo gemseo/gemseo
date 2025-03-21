@@ -43,11 +43,9 @@ def discipline(linear_combination, input_data) -> TaylorDiscipline:
 
 def test_io_names(linear_combination, discipline) -> None:
     """Test the input and output names."""
-    assert set(linear_combination.io.input_grammar.names) == set(
-        discipline.io.input_grammar.names
-    )
-    assert set(linear_combination.io.output_grammar.names) == set(
-        discipline.io.output_grammar.names
+    assert set(linear_combination.io.input_grammar) == set(discipline.io.input_grammar)
+    assert set(linear_combination.io.output_grammar) == set(
+        discipline.io.output_grammar
     )
 
 
@@ -76,12 +74,12 @@ def test_linearize(linear_combination, discipline) -> None:
 )
 def test_raises_wrong_instantiation(linear_combination, input_data, default_input_data):
     """Tests that TaylorDiscipline requires either input data or default inputs."""
-    linear_combination.default_input_data = default_input_data
+    linear_combination.io.input_grammar.defaults = default_input_data
     with pytest.raises(
         ValueError,
         match=re.escape(
             "All the discipline input values must be specified either in input_data or "
-            "in discipline.default_input_data."
+            "in discipline.io.input_grammar.defaults."
         ),
     ):
         return TaylorDiscipline(linear_combination, input_data=input_data)

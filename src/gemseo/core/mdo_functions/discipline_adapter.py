@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.grammars.defaults import Defaults
+    from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.typing import JacobianData
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
@@ -54,7 +54,7 @@ class DisciplineAdapter(MDOFunction):
     """The input variable dimension, needed for linear candidates."""
 
     differentiated_input_names_substitute: Sequence[str]
-    """The names of the inputs against which to differentiate the functions.
+    """The names of the inputs with respect to which to differentiate the functions.
 
     If empty, consider the variables of their input space.
     """
@@ -63,7 +63,7 @@ class DisciplineAdapter(MDOFunction):
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_input_data: Defaults,
+        default_input_data: GrammarProperties,
         discipline: Discipline,
         names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
         differentiated_input_names_substitute: Sequence[str] = (),
@@ -82,7 +82,7 @@ class DisciplineAdapter(MDOFunction):
                 If empty, determine them from the default inputs and local data
                 of the discipline :class:`.Discipline`.
             differentiated_input_names_substitute: The names of the inputs
-                against which to differentiate the functions.
+                with respect to which to differentiate the functions.
                 If empty, consider the variables of their input space.
         """  # noqa: D205, D212, D415
         super().__init__(
@@ -110,7 +110,7 @@ class DisciplineAdapter(MDOFunction):
         )
         self.__input_dimension = self.__compute_input_dimension(default_input_data)
         self.__convert_array_to_data = (
-            discipline.input_grammar.data_converter.convert_array_to_data
+            discipline.io.input_grammar.data_converter.convert_array_to_data
         )
 
     @property
@@ -123,7 +123,7 @@ class DisciplineAdapter(MDOFunction):
 
     def __compute_input_dimension(
         self,
-        default_input_data: Defaults,
+        default_input_data: GrammarProperties,
     ) -> int | None:
         """Compute the input dimension.
 
@@ -137,7 +137,9 @@ class DisciplineAdapter(MDOFunction):
         Returns:
             The input dimension.
         """
-        get_value_size = self.__discipline.input_grammar.data_converter.get_value_size
+        get_value_size = (
+            self.__discipline.io.input_grammar.data_converter.get_value_size
+        )
 
         if default_input_data and all(
             name in default_input_data for name in self.input_names
@@ -150,7 +152,7 @@ class DisciplineAdapter(MDOFunction):
         if len(self.__input_names_to_sizes) > 0:
             return sum(self.__input_names_to_sizes.values())
 
-        default_input_data = self.__discipline.default_input_data
+        default_input_data = self.__discipline.io.input_grammar.defaults
 
         if all(name in default_input_data for name in self.input_names):
             return sum(
@@ -206,7 +208,7 @@ class DisciplineAdapter(MDOFunction):
             The vector or scalar of output data.
         """
         output_vector = (
-            self.__discipline.output_grammar.data_converter.convert_data_to_array(
+            self.__discipline.io.output_grammar.data_converter.convert_data_to_array(
                 self.output_names, output_data
             )
         )
@@ -289,9 +291,9 @@ class DisciplineAdapter(MDOFunction):
             ValueError: When a discipline input has no default value.
         """
         input_data = self.__discipline.io.get_input_data()
-        input_data.update(self.__discipline.default_input_data)
+        input_data.update(self.__discipline.io.input_grammar.defaults)
         self.__input_names_to_sizes.update(
-            self.__discipline.input_grammar.data_converter.compute_names_to_sizes(
+            self.__discipline.io.input_grammar.data_converter.compute_names_to_sizes(
                 input_data.keys(), input_data
             )
         )
@@ -313,13 +315,13 @@ class DisciplineAdapter(MDOFunction):
         (
             self.__input_names_to_slices,
             self.__input_size,
-        ) = self.__discipline.input_grammar.data_converter.compute_names_to_slices(
+        ) = self.__discipline.io.input_grammar.data_converter.compute_names_to_slices(
             self.input_names, input_data, self.__input_names_to_sizes
         )
         (
             self.__differentiated_input_names_to_slices,
             self.__differentiated_input_size,
-        ) = self.__discipline.input_grammar.data_converter.compute_names_to_slices(
+        ) = self.__discipline.io.input_grammar.data_converter.compute_names_to_slices(
             self.differentiated_input_names_substitute,
             input_data,
             self.__input_names_to_sizes,
@@ -341,13 +343,13 @@ class DisciplineAdapter(MDOFunction):
             The input data of the discipline.
         """
         if self.__default_inputs:
-            self.__discipline.default_input_data.update(self.__default_inputs)
+            self.__discipline.io.input_grammar.defaults.update(self.__default_inputs)
 
         if not self.__input_names_to_slices:
             self.__create_input_names_to_slices()
 
         input_data = (
-            self.__discipline.input_grammar.data_converter.convert_array_to_data(
+            self.__discipline.io.input_grammar.data_converter.convert_array_to_data(
                 x_vect, self.__input_names_to_slices
             )
         )

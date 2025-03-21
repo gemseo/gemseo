@@ -16,18 +16,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable  # noqa: TCH003
+from collections.abc import Callable  # noqa: TC003
 from typing import Annotated
 
-from numpy import ndarray  # noqa: TCH002
+from numpy import ndarray  # noqa: TC002
 from pydantic import AliasChoices
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 from pydantic import WithJsonSchema
-from scipy.sparse import sparray  # noqa: TCH002
-from scipy.sparse.linalg import LinearOperator  # noqa: TCH002
+from scipy.sparse import sparray  # noqa: TC002
+from scipy.sparse.linalg import LinearOperator  # noqa: TC002
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
@@ -49,6 +49,7 @@ Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
 
     if SCIPY_LOWER_THAN_1_12:
         tol: PositiveFloat = Field(
+            alias="rtol",
             default=1e-12,
             description="""The relative tolerance.
 

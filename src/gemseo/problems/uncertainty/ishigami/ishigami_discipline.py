@@ -36,10 +36,10 @@ class IshigamiDiscipline(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
-        self.input_grammar.update_from_names(["x1", "x2", "x3"])
-        self.output_grammar.update_from_names(["y"])
-        self.default_input_data.update({
-            name: array([0.0]) for name in self.input_grammar.names
+        self.io.input_grammar.update_from_names(["x1", "x2", "x3"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults.update({
+            name: array([0.0]) for name in self.io.input_grammar
         })
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -56,7 +56,7 @@ class IshigamiDiscipline(Discipline):
             "y": {
                 input_name: array([[derivative]])
                 for input_name, derivative in zip(
-                    self.io.input_grammar.names,
+                    self.io.input_grammar,
                     compute_gradient(inputs_array),
                 )
             }

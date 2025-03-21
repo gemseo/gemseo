@@ -13,13 +13,12 @@
 Dependencies
 ------------
 
-|g| depends on the packages listed below,
+|g| depends on external packages,
 some of them are optional.
-
 You may use more recent versions of these packages,
 but we cannot guarantee the backward compatibility.
 However,
-we provide a large set of tests with a high code
+we have a large set of tests with a high code
 coverage so that you can fully check your configuration.
 
 .. seealso::
@@ -42,8 +41,7 @@ Full features
 *************
 
 Some packages are not required to execute basic scenarios,
-but provide additional features,
-they are listed below.
+but provide additional features.
 The dependencies are independent,
 and can be installed one by one to activate
 the dependent features of listed in the same table.

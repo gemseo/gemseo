@@ -82,8 +82,8 @@ class PostScalabilityStudy:
     NOMENCLATURE: ClassVar[dict[str, str]] = {
         "exec_time": "Execution time (s)",
         "original_exec_time": "Pseudo-original execution time",
-        "n_calls": "Number of discipline evaluations",
-        "n_calls_linearize": "Number of gradient evaluations",
+        "n_executions": "Number of discipline evaluations",
+        "n_linearizations": "Number of gradient evaluations",
         "status": "Optimizatin status",
         "is_feasible": "Feasibility of the solution (0 or 1)",
         "scaling_strategy": "Scaling strategy index",
@@ -158,7 +158,7 @@ class PostScalabilityStudy:
         Args:
             description: The description.
         """
-        self._update_descriptions("n_calls", description)
+        self._update_descriptions("n_executions", description)
 
     def labelize_n_calls_linearize(self, description: str) -> None:
         """Change the description of number of calls for linearization.
@@ -166,7 +166,7 @@ class PostScalabilityStudy:
         Args:
             description: The description.
         """
-        self._update_descriptions("n_calls_linearize", description)
+        self._update_descriptions("n_linearizations", description)
 
     def labelize_status(self, description: str) -> None:
         """Change the description of status.
@@ -559,13 +559,13 @@ class PostScalabilityStudy:
             if self.cost_function:
                 original_exec_time.append(ycoord["original_exec_time"])
             tmp = [
-                list(ycoord["n_calls"][idx].values())
-                for idx in range(len(ycoord["n_calls"]))
+                list(ycoord["n_executions"][idx].values())
+                for idx in range(len(ycoord["n_executions"]))
             ]
             n_calls.append(tmp)
             tmp = [
-                list(ycoord["n_calls_linearize"][idx].values())
-                for idx in range(len(ycoord["n_calls_linearize"]))
+                list(ycoord["n_linearizations"][idx].values())
+                for idx in range(len(ycoord["n_linearizations"]))
             ]
             n_calls_linearize.append(tmp)
             status.append(ycoord["status"])
@@ -575,8 +575,8 @@ class PostScalabilityStudy:
         values = {"exec_time": array(exec_time).T}  # (n_scal, n_rep)
         if self.cost_function:
             values["original_exec_time"] = array(original_exec_time).T  # (n_s, n_r)
-        values["n_calls"] = array(n_calls).T  # (n_d, n_s, n_rep)
-        values["n_calls_linearize"] = array(n_calls_linearize).T  # (n_d, n_s, n_r)
+        values["n_executions"] = array(n_calls).T  # (n_d, n_s, n_rep)
+        values["n_linearizations"] = array(n_calls_linearize).T  # (n_d, n_s, n_r)
         values["total_calls"] = array(total_calls).T  # (n_scal, n_rep)
         values["is_feasible"] = array(is_feasible).T  # (n_scal, n_rep)
         return scaling_levels, values
@@ -617,8 +617,8 @@ class PostScalabilityStudy:
         values = {
             "exec_time": exec_time,
             "total_calls": total_calls,
-            "n_calls": n_calls,
-            "n_calls_linearize": n_calls_linearize,
+            "n_executions": n_calls,
+            "n_linearizations": n_calls_linearize,
             "status": status,
             "is_feasible": is_feasible,
             "scaling": scaling,

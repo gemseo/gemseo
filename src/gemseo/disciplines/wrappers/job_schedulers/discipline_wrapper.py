@@ -46,6 +46,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
     launched, it will set up the environment, deserialize the discipline and its inputs,
     execute it and serialize the outputs. Finally, the deserialized outputs are returned
     by the wrapper.
+
+    .. warning::
+        See :ref:`platform-paths` to handle paths for cross-platforms.
     """
 
     DISC_PICKLE_FILE_NAME: ClassVar[str] = "discipline.pckl"
@@ -77,7 +80,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         workdir_path: Path,
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.srun",
-        job_template_path: Path | str | None = None,
+        job_template_path: Path | str = "",
         use_template: bool = True,
         setup_cmd: str = "",
         **options,
@@ -101,18 +104,24 @@ class JobSchedulerDisciplineWrapper(Discipline):
         super().__init__(discipline.name)
         self._discipline = discipline
         self._use_template = use_template
-        self._job_template_path = job_template_path
-        if job_template_path is not None and not isinstance(job_template_path, Path):
-            self._job_template_path = Path(self._job_template_path)
+        if isinstance(job_template_path, Path):
+            self._job_template_path = job_template_path
+        else:
+            if job_template_path:
+                self._job_template_path = Path(job_template_path)
+            else:
+                self._job_template_path = (
+                    self.TEMPLATES_DIR_PATH / self.__class__.__name__
+                )
 
         self._scheduler_run_command = scheduler_run_command
         self._job_out_filename = job_out_filename
         self._setup_cmd = setup_cmd
         self._options = options
 
-        self.input_grammar = self._discipline.input_grammar
-        self.output_grammar = self._discipline.output_grammar
-        self.default_input_data = self._discipline.default_input_data
+        self.io.input_grammar = self._discipline.io.input_grammar
+        self.io.output_grammar = self._discipline.io.output_grammar
+        self.io.input_grammar.defaults = self._discipline.io.input_grammar.defaults
         self._workdir_path = workdir_path
         self.pickled_discipline = pickle.dumps(self._discipline)
         self.job_file_template = None
@@ -130,8 +139,6 @@ class JobSchedulerDisciplineWrapper(Discipline):
         Raises:
             FileNotFoundError: If ``job_template_path`` does not exist.
         """
-        if self._job_template_path is None:
-            self._job_template_path = self.TEMPLATES_DIR_PATH / self.__class__.__name__
         if not self._job_template_path.exists():
             msg = (
                 f"Job scheduler template file {self._job_template_path} does not exist."

@@ -39,9 +39,9 @@ class PathDiscipline(Discipline):
             tmp_path: any path.
         """
         super().__init__()
-        self.input_grammar.update_from_types({"x": Path})
-        self.output_grammar.update_from_types({"y": int})
-        self.default_input_data["x"] = tmp_path
+        self.io.input_grammar.update_from_types({"x": Path})
+        self.io.output_grammar.update_from_types({"y": int})
+        self.io.input_grammar.defaults["x"] = tmp_path
         self.local_path = tmp_path
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

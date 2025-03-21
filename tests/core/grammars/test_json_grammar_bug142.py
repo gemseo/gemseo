@@ -38,8 +38,8 @@ class _MyDisciplineA(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_names(["A"])
-        self.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
+        self.io.input_grammar.update_from_names(["A"])
+        self.io.output_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
 
     def _run(self, input_data: StrKeyMapping):
         pass
@@ -50,8 +50,8 @@ class _MyDisciplineB(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        self.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
-        self.output_grammar.update_from_names(["B"])
+        self.io.input_grammar.update_from_file(TEST_PATH / "grammar_test_bug142.json")
+        self.io.output_grammar.update_from_names(["B"])
 
     def _run(self, input_data: StrKeyMapping):
         pass

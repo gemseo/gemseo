@@ -24,7 +24,9 @@ from numpy import array
 from numpy import newaxis
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.mdo.scalable.data_driven.discipline import ScalableDiscipline
+from gemseo.problems.mdo.scalable.data_driven.discipline import (
+    DataDrivenScalableDiscipline,
+)
 
 
 @pytest.fixture
@@ -38,4 +40,4 @@ def dataset():
 
 
 def test_constructor(dataset) -> None:
-    ScalableDiscipline("ScalableDiagonalModel", dataset)
+    DataDrivenScalableDiscipline("ScalableDiagonalModel", dataset)

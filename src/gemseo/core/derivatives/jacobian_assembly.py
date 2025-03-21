@@ -275,14 +275,14 @@ class JacobianAssembly:
         unknown_outs = set(functions)
 
         for discipline in self.coupling_structure.disciplines:
-            inputs = set(discipline.io.input_grammar.names)
-            outputs = set(discipline.io.output_grammar.names)
+            inputs = set(discipline.io.input_grammar)
+            outputs = set(discipline.io.output_grammar)
             unknown_outs -= outputs
             unknown_dvars -= inputs
 
         if unknown_dvars:
             possible_inputs = [
-                list(disc.io.input_grammar.names)
+                list(disc.io.input_grammar)
                 for disc in self.coupling_structure.disciplines
             ]
             msg = (
@@ -300,7 +300,7 @@ class JacobianAssembly:
                 + str(unknown_outs)
                 + " available outputs are: "
                 + str([
-                    list(disc.io.output_grammar.names)
+                    list(disc.io.output_grammar)
                     for disc in self.coupling_structure.disciplines
                 ])
             )
@@ -358,7 +358,7 @@ class JacobianAssembly:
             self.disciplines[output] = discipline
             # get an arbitrary Jacobian and compute the number of rows
             self.sizes[output] = (
-                discipline.output_grammar.data_converter.get_value_size(
+                discipline.io.output_grammar.data_converter.get_value_size(
                     output, discipline.io.data[output]
                 )
             )
@@ -503,7 +503,7 @@ class JacobianAssembly:
         function_sizes = [self.sizes[function_name] for function_name in functions]
 
         # Initialize the block Jacobian with the appropriate structure
-        total_jacobian: list[list[None | csr_matrix]] = [
+        total_jacobian: list[list[csr_matrix | None]] = [
             [None for _ in variables] for _ in functions
         ]
 
@@ -682,11 +682,12 @@ class JacobianAssembly:
         # Exclude the non-numeric couplings from the coupling minimal list
         for discipline in self.coupling_structure.disciplines:
             inputs_couplings = couplings_minimal.intersection(
-                discipline.io.input_grammar.names
+                discipline.io.input_grammar
             )
             couplings_minimal.difference_update(
                 itertools.filterfalse(
-                    discipline.input_grammar.data_converter.is_numeric, inputs_couplings
+                    discipline.io.input_grammar.data_converter.is_numeric,
+                    inputs_couplings,
                 )
             )
 
@@ -810,12 +811,8 @@ class JacobianAssembly:
             couplings: The coupling variables.
         """
         for disc in self.coupling_structure.disciplines:
-            inputs_to_linearize = set(disc.io.input_grammar.names).intersection(
-                couplings
-            )
-            outputs_to_linearize = set(disc.io.output_grammar.names).intersection(
-                couplings
-            )
+            inputs_to_linearize = set(disc.io.input_grammar).intersection(couplings)
+            outputs_to_linearize = set(disc.io.output_grammar).intersection(couplings)
 
             # If outputs and inputs to linearize not empty, then linearize
             if inputs_to_linearize and outputs_to_linearize:
@@ -898,10 +895,8 @@ class JacobianAssembly:
         # Build rows blocks
         for name in var_names:
             for discipline in self.coupling_structure.disciplines:
-                if name in discipline.output_grammar:
-                    to_array = (
-                        discipline.output_grammar.data_converter.convert_value_to_array
-                    )
+                if name in discipline.io.output_grammar:
+                    to_array = discipline.io.output_grammar.data_converter.convert_value_to_array  # noqa: E501
                     local_data_array = to_array(name, discipline.io.data[name])
                     in_data_array = to_array(name, in_data[name])
                     residuals.append(local_data_array - in_data_array)

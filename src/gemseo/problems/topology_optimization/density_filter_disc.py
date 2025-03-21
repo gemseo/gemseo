@@ -66,9 +66,9 @@ class DensityFilter(Discipline):
         self.min_member_size = min_member_size
         self.filter_matrix = None
         self._create_filter_matrix()
-        self.input_grammar.update_from_names(["x"])
-        self.output_grammar.update_from_names(["xPhys"])
-        self.default_input_data = {"x": ones((n_x * n_y,))}
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["xPhys"])
+        self.io.input_grammar.defaults = {"x": ones((n_x * n_y,))}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         x = input_data["x"][:, newaxis]

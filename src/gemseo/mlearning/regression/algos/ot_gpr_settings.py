@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence  # noqa: TCH003
+from collections.abc import Sequence  # noqa: TC003
 from typing import Final
 from typing import Union
 
@@ -27,12 +27,12 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 from strenum import StrEnum
 
-from gemseo.algos.design_space import DesignSpace  # noqa: TCH001
+from gemseo.algos.design_space import DesignSpace  # noqa: TC001
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.mlearning.regression.algos.base_regressor_settings import (
     BaseRegressorSettings,
 )
-from gemseo.typing import StrKeyMapping  # noqa: TCH001
+from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 DOEAlgorithmName = StrEnum("DOEAlgorithmName", DOELibraryFactory().algorithms)
 """The name of a DOE algorithm."""

@@ -24,7 +24,7 @@
 
    .. code-block:: python
 
-      function(..., settings_model: Base | None = None, **settings: Any)
+      function(..., settings_model: AlgorithmSettings | None = None, **settings: Any)
 
    either one by one:
 
@@ -32,12 +32,12 @@
 
       function(..., setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
 
-   or using the argument name ``"settings"`` and the Pydantic model associated with the algorithm:
+   or using the argument name ``"settings_model"`` and the Pydantic model associated with the algorithm:
 
    .. code-block:: python
 
-      settings = AlgorithmSettings(setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
-      function(..., settings_model=settings)
+      settings_model = AlgorithmSettings(setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+      function(..., settings_model=settings_model)
 
 {% endif %}
 
@@ -46,95 +46,137 @@
    You can find more information about this family of algorithms in :ref:`the user guide <{{user_guide_anchor}}>`.
 {% endif %}
 
+{% if features is not none %}
 .. raw:: html
 
+    <h2>Overview</h2>
     <style>
     th {
       cursor: pointer;
+    }
+
+    tr:hover {
+      border: 1pt solid var(--pst-color-secondary);
     }
 
     th, td {
       text-align: center;
     }
 
-    tr:hover {
-        border: 1px solid black;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f2f2f2
+    .hidden-row {
+        display: none;
     }
     </style>
-
-    <script>
-    function sortTable(n) {
-      var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-      table = document.getElementById("myTable");
-      switching = true;
-      dir = "asc";
-      while (switching) {
-        switching = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-          shouldSwitch = false;
-          x = rows[i].getElementsByTagName("TD")[n];
-          y = rows[i + 1].getElementsByTagName("TD")[n];
-          if (dir == "asc") {
-            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-              shouldSwitch= true;
-              break;
-            }
-          } else if (dir == "desc") {
-            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-              shouldSwitch = true;
-              break;
-            }
-          }
-        }
-        if (shouldSwitch) {
-          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-          switching = true;
-          switchcount ++;
-        } else {
-          if (switchcount == 0 && dir == "asc") {
-            dir = "desc";
-            switching = true;
-          }
-        }
-      }
-    }
-    </script>
-{% if features is not none %}
+    Display in the table the optimization algorithms that
+    <ul>
+    <li><label>support equality constraints <input type="checkbox" id="handleEqualityConstraintsCheckbox"></label></li>
+    <li><label>support inequality constraints <input type="checkbox" id="handleInequalityConstraintsCheckbox"></label></li>
+    <li><label>support float variables <input type="checkbox" id="handleFloatVariablesCheckbox" checked></label></li>
+    <li><label>support integer variables <input type="checkbox" id="handleIntegerVariablesCheckbox"></label></li>
+    <li><label>support multiple objective <input type="checkbox" id="handleMultiObjectiveCheckbox"></label></li>
+    <li><label>require gradient evaluations <input type="checkbox" id="requireGradientCheckbox"></label></li>
+    </ul>
     <table id="myTable">
-      <tr>
-        <th onclick="sortTable(0)">Algorithm<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(1)">Library<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(2)">Name in GEMSEO<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(3)">Package<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(4)">Handle equality constraints<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(5)">Handle inequality constraints<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(6)">Handle float variables<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(7)">Handle integer variables<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(8)">Handle multi-objective<br/>&#x25B2;&#x25BC;</th>
-        <th onclick="sortTable(9)">Require gradient<br/>&#x25B2;&#x25BC;</th>
-      </tr>
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Algorithm<br/>&#x25B2;&#x25BC;</th>
+                <th onclick="sortTable(1)">Library<br/>&#x25B2;&#x25BC;</th>
+                <th onclick="sortTable(2)">Name in GEMSEO<br/>&#x25B2;&#x25BC;</th>
+                <th onclick="sortTable(3)">Package<br/>&#x25B2;&#x25BC;</th>
+            </tr>
+        </thead>
+        <tbody>
 {% for algo in algos %}
 {% set algo_features = features[algo] %}
-      <tr>
-         <td>{{algo_features.algorithm_name}}</td>
-         <td>{{algo_features.library_name}}</td>
-         <td><a href="#{{ algo|lower|replace('_', '-') }}">{{algo}}</a></td>
-         <td><a href="https://gitlab.com/gemseo/dev/{{ algo_features.root_package_name.replace('_', '-') }}">{{algo_features.root_package_name}}</a></td>
-         <td>{% if algo_features.handle_equality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
-         <td>{% if algo_features.handle_inequality_constraints %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
-         <td>{% if algo_features.handle_float_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
-         <td>{% if algo_features.handle_integer_variables %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
-         <td>{% if algo_features.handle_multiobjective %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
-         <td>{% if algo_features.require_gradient %}<span style="color:green;font-weight: bold;text-align: center;">&#x2713;</span>{% else %}<span style="color:red;font-weight: bold;">&#x2717;</span>{% endif %}</td>
-      </tr>
+        <tr class="{% if algo_features.handle_equality_constraints %}handleEqualityConstraints {% endif %}{% if algo_features.handle_inequality_constraints %}handleInequalityConstraints {% endif %}{% if algo_features.handle_float_variables %}handleFloatVariables {% endif %}{% if algo_features.handle_integer_variables %}handleIntegerVariables {% endif %}{% if algo_features.handle_multiobjective %}handleMultiObjective {% endif %}{% if algo_features.require_gradient %}requireGradient{% endif %}">
+            <td>{{algo_features.algorithm_name}}</td>
+            <td>{{algo_features.library_name}}</td>
+            <td><a href="#{{ algo|lower|replace('_', '-') }}">{{algo}}</a></td>
+            <td><a href="https://gitlab.com/gemseo/dev/{{ algo_features.root_package_name.replace('_', '-') }}">{{algo_features.root_package_name}}</a></td>
+        </tr>
 {% endfor %}
+        </tbody>
     </table>
     <br/>
+    <script>
+        function sortTable(n) {
+          var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+          table = document.getElementById("myTable");
+          switching = true;
+          dir = "asc";
+          while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+              shouldSwitch = false;
+              x = rows[i].getElementsByTagName("TD")[n];
+              y = rows[i + 1].getElementsByTagName("TD")[n];
+              if (dir == "asc") {
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                  shouldSwitch= true;
+                  break;
+                }
+              } else if (dir == "desc") {
+                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                  shouldSwitch = true;
+                  break;
+                }
+              }
+            }
+            if (shouldSwitch) {
+              rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+              switching = true;
+              switchcount ++;
+            } else {
+              if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+              }
+            }
+          }
+        }
+
+        const handleEqualityConstraintsCheckbox = document.getElementById('handleEqualityConstraintsCheckbox');
+        const handleInequalityConstraintsCheckbox = document.getElementById('handleInequalityConstraintsCheckbox');
+        const handleFloatVariablesCheckbox = document.getElementById('handleFloatVariablesCheckbox');
+        const handleIntegerVariablesCheckbox = document.getElementById('handleIntegerVariablesCheckbox');
+        const handleMultiObjectiveCheckbox = document.getElementById('handleMultiObjectiveCheckbox');
+        const requireGradientCheckbox = document.getElementById('requireGradientCheckbox');
+        const rows = document.querySelectorAll('tbody tr');
+
+        function filterRows() {
+            rows.forEach(row => {
+                const hasClasshandleEqualityConstraints = row.classList.contains('handleEqualityConstraints');
+                const hasClasshandleInequalityConstraints = row.classList.contains('handleInequalityConstraints');
+                const hasClasshandleFloatVariables = row.classList.contains('handleFloatVariables');
+                const hasClasshandleIntegerVariables = row.classList.contains('handleIntegerVariables');
+                const hasClasshandleMultiObjective = row.classList.contains('handleMultiObjective');
+                const hasClassrequireGradient = row.classList.contains('requireGradient');
+
+                if (
+                       (!handleEqualityConstraintsCheckbox.checked && !handleInequalityConstraintsCheckbox.checked && !handleFloatVariablesCheckbox.checked && !handleIntegerVariablesCheckbox.checked && !handleMultiObjectiveCheckbox.checked && !requireGradientCheckbox.checked)
+                       || (handleEqualityConstraintsCheckbox.checked && !hasClasshandleEqualityConstraints)
+                       || (handleInequalityConstraintsCheckbox.checked && !hasClasshandleInequalityConstraints)
+                       || (handleFloatVariablesCheckbox.checked && !hasClasshandleFloatVariables)
+                       || (handleIntegerVariablesCheckbox.checked && !hasClasshandleIntegerVariables)
+                       || (handleMultiObjectiveCheckbox.checked && !hasClasshandleMultiObjective)
+                       || (requireGradientCheckbox.checked && !hasClassrequireGradient)
+                )
+                {
+                    row.classList.add('hidden-row');
+                } else {
+                    row.classList.remove('hidden-row');
+                }
+            });
+        }
+        handleEqualityConstraintsCheckbox.addEventListener('change', filterRows);
+        handleInequalityConstraintsCheckbox.addEventListener('change', filterRows);
+        handleFloatVariablesCheckbox.addEventListener('change', filterRows);
+        handleIntegerVariablesCheckbox.addEventListener('change', filterRows);
+        handleMultiObjectiveCheckbox.addEventListener('change', filterRows);
+        requireGradientCheckbox.addEventListener('change', filterRows);
+        filterRows();
+    </script>
 {% endif %}
 
 {% for algo in algos %}
@@ -150,12 +192,16 @@
 
 Module: :class:`{{modules[algo]}}`
 
-{% if pydantic_model_imports[algo] %}
-:code:`{{pydantic_model_imports[algo]}}`
-{% endif %}
-
 {% if descriptions[algo] %}
 {{descriptions[algo]}}
+{% endif %}
+
+{% if pydantic_model_imports[algo] %}
+.. code-block:: python
+   :caption: Pydantic model of the settings for {{algo}}
+
+   {{pydantic_model_imports[algo]}}
+
 {% endif %}
 
 {% if websites[algo] %}

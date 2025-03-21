@@ -17,11 +17,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 from sphinx.ext.autodoc.mock import mock
 
 from . import authors_template
-from . import generate_algos_doc
 from . import plugins_template
 
 
@@ -36,8 +36,17 @@ def setup(app):
 
 def builder_inited(app) -> None:
     gen_opts_path = Path(app.srcdir) / "algorithms" / "gen_opts"
-    with mock(app.config.autodoc_mock_imports):
+    with (
         # Mock the dependencies that are optional and the ones from the plugins.
+        mock(app.config.autodoc_mock_imports),
+        # Mock the classes used in Pydantic models.
+        patch("smt.surrogate_models.surrogate_model.SurrogateModel"),
+        patch("pymoo.core.selection.Selection"),
+        patch("pymoo.core.mutation.Mutation"),
+        patch("pymoo.core.crossover.Crossover"),
+    ):
+        from . import generate_algos_doc
+
         generate_algos_doc.main(gen_opts_path)
 
     root_path = Path(app.srcdir)

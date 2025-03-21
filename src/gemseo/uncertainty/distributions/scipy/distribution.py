@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
 import scipy.stats as scipy_stats
@@ -77,7 +78,7 @@ class SPDistribution(
     def __init__(  # noqa: D107
         self,
         interfaced_distribution: str = "uniform",
-        parameters: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        parameters: StrKeyMapping | tuple[Any, ...] = READ_ONLY_EMPTY_DICT,
         standard_parameters: StandardParametersType = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
@@ -116,7 +117,7 @@ class SPDistribution(
     def compute_samples(  # noqa: D102
         self,
         n_samples: int = 1,
-        random_state: None | int | Generator | RandomState = None,
+        random_state: int | Generator | RandomState | None = None,
     ) -> RealArray:
         """
         Args:

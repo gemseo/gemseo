@@ -103,7 +103,9 @@ def test_wrong_boundaries(
     """Test the instantiation with ``upper_bound`` lower than ``lower_bound``."""
     with pytest.raises(
         ValueError,
-        match="The upper bounds must be greater than or equal to the lower bounds.",
+        match=re.escape(
+            "The upper bounds must be greater than or equal to the lower bounds."
+        ),
     ):
         Variable(
             size=size, type=type_, lower_bound=lower_bound, upper_bound=upper_bound
@@ -120,7 +122,9 @@ def test_invalid_lower_bound_assignment(variable) -> None:
     """Check the handling of an invalid lower bound assignment."""
     with pytest.raises(
         ValueError,
-        match="The upper bounds must be greater than or equal to the lower bounds.",
+        match=re.escape(
+            "The upper bounds must be greater than or equal to the lower bounds."
+        ),
     ):
         variable.lower_bound = 5
 
@@ -129,6 +133,8 @@ def test_invalid_upper_bound_assignment(variable) -> None:
     """Check the handling of an invalid upper bound assignment."""
     with pytest.raises(
         ValueError,
-        match="The upper bounds must be greater than or equal to the lower bounds.",
+        match=re.escape(
+            "The upper bounds must be greater than or equal to the lower bounds."
+        ),
     ):
         variable.upper_bound = -1

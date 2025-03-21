@@ -17,8 +17,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from collections.abc import Sequence  # noqa: TCH003
-from pathlib import Path  # noqa: TCH003
+from collections.abc import Sequence  # noqa: TC003
+from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -27,7 +27,7 @@ from pydantic import NonNegativeInt
 from pydantic import model_validator
 
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TCH001
+from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 if TYPE_CHECKING:
     from typing_extensions import Self

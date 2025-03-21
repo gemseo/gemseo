@@ -47,13 +47,13 @@ from strenum import StrEnum
 from gemseo import sample_disciplines
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.utils import get_all_outputs
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.typing import RealArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import convert_strings_to_iterable
@@ -171,8 +171,16 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             self._input_names = []
             self._output_names = []
         else:
-            self._input_names = samples.input_names
-            self._output_names = samples.output_names
+            self._input_names = list(
+                samples.get_view(group_names=samples.INPUT_GROUP)
+                .columns.get_level_values(1)
+                .unique()
+            )
+            self._output_names = list(
+                samples.get_view(group_names=samples.OUTPUT_GROUP)
+                .columns.get_level_values(1)
+                .unique()
+            )
         self._indices = self.SensitivityIndices()
 
     def compute_samples(
@@ -276,7 +284,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         the sensitivity index which is a 1D NumPy array can be accessed through
         ``main_indices[output_name][output_component][input_name]``.
         """
-        return getattr(self.indices, str(self.main_method).lower())
+        return getattr(self.indices, str(self.main_method).lower().replace("-", "_"))
 
     def sort_input_variables(self, output: VariableType) -> list[str]:
         """Return the input variables sorted in descending order.
@@ -490,8 +498,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A bar chart representing the sensitivity indices.
         """
-        _options = {"n_digits": 2}
-        _options.update(settings)
+        options = {"n_digits": 2}
+        options.update(settings)
         bar_plot = BarPlot(
             self.__create_dataset_to_plot(
                 input_names,
@@ -500,7 +508,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 sort,
                 sorting_output,
             ),
-            **_options,
+            **options,
         )
         bar_plot.title = title
         bar_plot.execute(

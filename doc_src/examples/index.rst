@@ -12,14 +12,10 @@
 Examples
 ========
 
-This page gathers examples illustrating the features of |g|.
+This page contains examples illustrating GEMSEO's functionalities.
 
-All of them can be exported to Python format
-or `Jupyter notebook <https://jupyter.org/>`_ in order to continue
-the exercise by executing the script sequentially or modifying the inputs.
-
-If you are interested in the combination of these features to solve a design
-problem, :ref:`please refer to the tutorials <tutorials_sg>`.
+Each example can be exported as a Python script or a `Jupyter notebook <https://jupyter.org/>`_,
+so you can replay it locally or modify it to suit your needs.
 
 .. toctree::
    :glob:

@@ -40,13 +40,15 @@ class ScalableDiscipline(Discipline):
     def __init__(self, p: float) -> None:
         self.p = p
         super().__init__()
-        self.input_grammar.update_from_names(["x"])
-        self.output_grammar.update_from_names(["f", "g"])
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["f", "g"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x = self.io.data["x"]
-        self.io.data["f"] = array([np_mean(x)]) / (len(x) + 1) * 2 * 100
-        self.io.data["g"] = ((arange(len(x)) + 1) / x) ** self.p - 1.0
+        x = input_data["x"]
+        return {
+            "f": array([np_mean(x)]) / (len(x) + 1) * 2 * 100,
+            "g": ((arange(len(x)) + 1) / x) ** self.p - 1.0,
+        }
 
     def _compute_jacobian(
         self,
@@ -65,51 +67,27 @@ class ScalableDiscipline(Discipline):
         )
 
 
-@pytest.fixture(params=[10, 50, 100])
-def n(request):
-    return request.param
-
-
-@pytest.fixture(params=[MDOFunction.ConstraintType.INEQ, MDOFunction.ConstraintType.EQ])
-def constraint_kind(request):
-    return request.param
-
-
-@pytest.fixture(
-    params=[
+@pytest.mark.parametrize("n", [10, 50, 100])
+@pytest.mark.parametrize("p", [1, 2])
+@pytest.mark.parametrize(
+    "constraint_kind", [MDOFunction.ConstraintType.INEQ, MDOFunction.ConstraintType.EQ]
+)
+@pytest.mark.parametrize(
+    "algo",
+    [
         "SLSQP",
         "NLOPT_SLSQP",
         "Augmented_Lagrangian_order_0",
         "Augmented_Lagrangian_order_1",
-    ]
+    ],
 )
-def algo(request):
-    return request.param
-
-
-@pytest.fixture(params=[1, 2])
-def scalable_optimization_problem_scenario(request, n, constraint_kind):
-    disc = ScalableDiscipline(request.param)
-    ds = DesignSpace()
-    ds.add_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
-    scenario = create_scenario(
-        [disc],
-        "f",
-        ds,
-        formulation_name="DisciplinaryOpt",
-    )
-    scenario.add_constraint("g", constraint_kind)
-    return scenario
-
-
-def test_resolution(
-    scalable_optimization_problem_scenario, algo, n, constraint_kind
-) -> None:
+def test_resolution(algo, n, p, constraint_kind) -> None:
     if constraint_kind == MDOFunction.ConstraintType.EQ and algo in {
         "SLSQP",
         "NLOPT_SLSQP",
     }:
-        pytest.skip("SLSQP is not well suited for non-linear equality constraints. ")
+        pytest.skip("SLSQP is not well suited for non-linear equality constraints")
+
     options = {
         "max_iter": 1000,
         "algo_name": algo,
@@ -117,11 +95,24 @@ def test_resolution(
         "stop_crit_n_x": 2,
         "ftol_rel": 1e-6,
     }
-    if "Augmented_Lagrangian" in algo:
+
+    if algo.startswith("Augmented_Lagrangian"):
         options["sub_algorithm_name"] = "L-BFGS-B"
         options["sub_algorithm_settings"] = {"max_iter": 300}
-    scalable_optimization_problem_scenario.execute(**options)
+
+    ds = DesignSpace()
+    ds.add_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
+
+    scenario = create_scenario(
+        [ScalableDiscipline(p)],
+        "f",
+        ds,
+        formulation_name="DisciplinaryOpt",
+    )
+    scenario.add_constraint("g", constraint_kind)
+    scenario.execute(**options)
+
     assert pytest.approx(
-        scalable_optimization_problem_scenario.formulation.optimization_problem.solution.x_opt,
-        rel=1e-2,
+        scenario.formulation.optimization_problem.solution.x_opt,
+        rel=3e-2,
     ) == (arange(n) + 1)

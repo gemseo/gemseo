@@ -51,43 +51,43 @@ def test_default_state(reset):
 
 
 def test_n_calls(execution_statistics: ExecutionStatistics):
-    """Verify n_calls."""
-    assert execution_statistics.n_calls == 0
-    execution_statistics.n_calls = 1
-    assert execution_statistics.n_calls == 1
+    """Verify n_executions."""
+    assert execution_statistics.n_executions == 0
+    execution_statistics.n_executions = 1
+    assert execution_statistics.n_executions == 1
 
     ExecutionStatistics.is_enabled = False
 
-    assert execution_statistics.n_calls is None
+    assert execution_statistics.n_executions is None
 
     match = "The execution statistics of the object named dummy are disabled."
     with pytest.raises(RuntimeError, match=match):
-        execution_statistics.n_calls = 1
+        execution_statistics.n_executions = 1
 
     # Re-enable to access the kept results.
     ExecutionStatistics.is_enabled = True
 
-    assert execution_statistics.n_calls == 1
+    assert execution_statistics.n_executions == 1
 
 
 def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
-    """Verify n_calls_linearize."""
-    assert execution_statistics.n_calls_linearize == 0
-    execution_statistics.n_calls_linearize = 1
-    assert execution_statistics.n_calls_linearize == 1
+    """Verify n_linearizations."""
+    assert execution_statistics.n_linearizations == 0
+    execution_statistics.n_linearizations = 1
+    assert execution_statistics.n_linearizations == 1
 
     ExecutionStatistics.is_enabled = False
 
-    assert execution_statistics.n_calls_linearize is None
+    assert execution_statistics.n_linearizations is None
 
     match = "The execution statistics of the object named dummy are disabled."
     with pytest.raises(RuntimeError, match=match):
-        execution_statistics.n_calls_linearize = 1
+        execution_statistics.n_linearizations = 1
 
     # Re-enable to access the kept results.
     ExecutionStatistics.is_enabled = True
 
-    assert execution_statistics.n_calls_linearize == 1
+    assert execution_statistics.n_linearizations == 1
 
 
 def test_duration(execution_statistics: ExecutionStatistics):
@@ -110,24 +110,27 @@ def test_duration(execution_statistics: ExecutionStatistics):
     assert execution_statistics.duration == 1.0
 
 
+def _sleep() -> None:
+    """Argument-less sleep function."""
+    sleep(SLEEP_TIME)
+
+
 def test_record(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify record."""
     monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
     # Without linearization.
 
-    with execution_statistics.record():
-        sleep(SLEEP_TIME)
+    execution_statistics.record_execution(_sleep)
 
-    assert execution_statistics.n_calls == 1
-    assert execution_statistics.n_calls_linearize == 0
+    assert execution_statistics.n_executions == 1
+    assert execution_statistics.n_linearizations == 0
     assert execution_statistics.duration == pytest.approx(0.1)
 
     # With linearization.
-    with execution_statistics.record(linearize=True):
-        sleep(SLEEP_TIME)
+    execution_statistics.record_linearization(_sleep)
 
-    assert execution_statistics.n_calls == 1
-    assert execution_statistics.n_calls_linearize == 1
+    assert execution_statistics.n_executions == 1
+    assert execution_statistics.n_linearizations == 1
     assert execution_statistics.duration == pytest.approx(0.2)
 
     reference_duration = execution_statistics.duration
@@ -135,17 +138,14 @@ def test_record(execution_statistics: ExecutionStatistics, monkeypatch):
     # Disable the statistics: the recorded results shall be kept.
     ExecutionStatistics.is_enabled = False
 
-    with execution_statistics.record():
-        sleep(SLEEP_TIME)
-
-    with execution_statistics.record(linearize=True):
-        sleep(SLEEP_TIME)
+    execution_statistics.record_execution(_sleep)
+    execution_statistics.record_linearization(_sleep)
 
     # Re-enable to access the kept results.
     ExecutionStatistics.is_enabled = True
 
-    assert execution_statistics.n_calls == 1
-    assert execution_statistics.n_calls_linearize == 1
+    assert execution_statistics.n_executions == 1
+    assert execution_statistics.n_linearizations == 1
     assert execution_statistics.duration == reference_duration
 
 
@@ -159,11 +159,8 @@ def test_time_stamps(execution_statistics: ExecutionStatistics, monkeypatch):
     assert not ExecutionStatistics.time_stamps
     assert ExecutionStatistics.time_stamps is not None
 
-    with execution_statistics.record():
-        sleep(SLEEP_TIME)
-
-    with execution_statistics.record(linearize=True):
-        sleep(SLEEP_TIME)
+    execution_statistics.record_execution(_sleep)
+    execution_statistics.record_linearization(_sleep)
 
     assert ExecutionStatistics.time_stamps.keys() == ["dummy"]
     all_values = tuple(next(iter(ExecutionStatistics.time_stamps.values())))

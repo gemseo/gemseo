@@ -35,7 +35,7 @@ class ProcessDiscipline(Discipline):
 
     default_grammar_type = Discipline.GrammarType.SIMPLER
 
-    __disciplines: tuple[BaseDiscipline, ...]
+    _disciplines: tuple[BaseDiscipline, ...]
     """The disciplines."""
 
     def __init__(  # noqa: D107
@@ -43,19 +43,19 @@ class ProcessDiscipline(Discipline):
         disciplines: Sequence[BaseDiscipline],
         name: str = "",
     ) -> None:
-        Discipline.__init__(self, name)
-        self.__disciplines = tuple(disciplines)
+        super().__init__(name)
+        self._disciplines = tuple(disciplines)
         if self.cache is not None:
             self.cache._post_set_tolerance = self._post_set_cache_tolerance
 
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
         """The disciplines."""
-        return self.__disciplines
+        return self._disciplines
 
     def _post_set_cache_tolerance(self) -> None:
         """Propagate a cache tolerance change to the sub-disciplines."""
-        for discipline in self.__disciplines:
+        for discipline in self._disciplines:
             if discipline.cache is not None:
                 discipline.cache.tolerance = self.cache.tolerance
 

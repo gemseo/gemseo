@@ -84,7 +84,7 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
                 == self.MultiProcessingStartMethod.SPAWN
                 and ExecutionStatistics.is_enabled
             ):
-                self._disciplines[0].execution_statistics.n_calls += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                self._disciplines[0].execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
             for disc, output in zip(self._disciplines, ordered_outputs):
                 # When the discipline in the worker failed, output is None.

@@ -30,6 +30,7 @@ import pytest
 from numpy import array
 from numpy import inf
 from numpy import ndarray
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 
@@ -162,9 +163,9 @@ def test_evaluate_samples_multiproc_with_observables() -> None:
     # Without leveraging the cache mechanism,
     # the discipline shall be called 8 times.
     if platform == "win32":
-        assert disc.execution_statistics.n_calls == 0
+        assert disc.execution_statistics.n_executions == 0
     else:
-        assert disc.execution_statistics.n_calls == 8
+        assert disc.execution_statistics.n_executions == 8
 
 
 @pytest.fixture(scope="module")
@@ -239,7 +240,14 @@ def test_transformation(doe_database, var) -> None:
     For the uncertain variables, the transformation is probabilistic, based on inverse
     transformation sampling.
     """
-    assert doe_database[array([var])]["func"] == array([var])
+    # We test with a certain tolerance
+    # due to the sensitivity of probabilistic normalization
+    # in the case var=-2 when updating openturns to v1.24
+    assert_almost_equal(
+        doe_database.get_function_value("func", array([var]), tolerance=1e-15),
+        array([var]),
+        decimal=15,
+    )
 
 
 def test_pre_run_debug(lhs, caplog) -> None:
@@ -327,8 +335,8 @@ def test_variable_types(var_type1, var_type2) -> None:
     class Disc(DummyDiscipline):
         def __init__(self) -> None:
             super().__init__("foo")
-            self.input_grammar.update_from_names(("x", "y"))
-            self.output_grammar.update_from_names(("z",))
+            self.io.input_grammar.update_from_names(("x", "y"))
+            self.io.output_grammar.update_from_names(("z",))
 
         def execute(self, input_data):
             assert (
@@ -457,9 +465,9 @@ class _DummyDisc(Discipline):
 
     def __init__(self) -> None:
         super().__init__("foo")
-        self.input_grammar.update_from_names("x")
-        self.output_grammar.update_from_names(("z", "t"))
-        self.output_grammar.update_from_types({
+        self.io.input_grammar.update_from_names("x")
+        self.io.output_grammar.update_from_names(("z", "t"))
+        self.io.output_grammar.update_from_types({
             "s1": float,
             "s2": float,
             "z": ndarray,
@@ -515,3 +523,21 @@ def test_parallel_doe_db(tmp_wd):
         f_s = db_ser.get_function_history(func, with_x_vect=False)
         f_p = db_par.get_function_history(func, with_x_vect=False)
         assert_array_equal(f_p, f_s, strict=True)
+
+
+@pytest.mark.parametrize("eval_func", [False, True])
+@pytest.mark.parametrize("eval_jac", [False, True])
+def test_eval_func_and_eval_jac(eval_func, eval_jac):
+    """Check eval_func and eval_jac."""
+    problem = Power2()
+    SciPyDOE("MC").execute(
+        problem,
+        n_samples=1,
+        eval_jac=eval_jac,
+        eval_func=eval_func,
+    )
+    database = problem.database
+    last_item = database.last_item
+    name = "pow2"
+    assert (name in last_item) is eval_func
+    assert (database.get_gradient_name(name) in last_item) is eval_jac

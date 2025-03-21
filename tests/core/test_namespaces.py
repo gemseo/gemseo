@@ -12,20 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Copyright 2022 IRT Saint Exupéry, https://www.irt-saintexupery.com
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License version 3 as published by the Free Software Foundation.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
@@ -99,12 +85,12 @@ def test_analytic_disc_ns(grammar_type, use_defaults) -> None:
     disc_ns = create_discipline("AutoPyDiscipline", py_func=func_1)
 
     disc_ns.add_namespace_to_input("x", "ns")
-    assert sorted(disc_ns.io.input_grammar.names) == ["ns:x", "u"]
+    assert sorted(disc_ns.io.input_grammar) == ["ns:x", "u"]
     assert sorted(disc_ns.io.input_grammar.names_without_namespace) == ["u", "x"]
 
     outs_ref = disc.execute({"x": array([1.0])})
     if use_defaults:
-        assert "ns:x" in disc_ns.default_input_data
+        assert "ns:x" in disc_ns.io.input_grammar.defaults
         outs_ns = disc_ns.execute()
     else:
         outs_ns = disc_ns.execute({"ns:x": array([1.0])})
@@ -123,8 +109,8 @@ def test_chain_disc_ns(grammar_type) -> None:
 
     chain = MDOChain([disc_1, disc_2])
 
-    assert sorted(chain.io.input_grammar.names) == ["a", "ns_in:x", "u"]
-    assert sorted(remove_prefix(chain.io.input_grammar.names)) == [
+    assert sorted(chain.io.input_grammar) == ["a", "ns_in:x", "u"]
+    assert sorted(remove_prefix(chain.io.input_grammar)) == [
         "a",
         "u",
         "x",
@@ -134,7 +120,7 @@ def test_chain_disc_ns(grammar_type) -> None:
         "u",
         "x",
     ]
-    assert sorted(chain.io.output_grammar.names) == ["ns_out:y", "z"]
+    assert sorted(chain.io.output_grammar) == ["ns_out:y", "z"]
 
     out = chain.execute({"ns_in:x": array([3.0]), "u": array([4.0])})
     assert out["ns_out:y"] == array([10.0])
@@ -155,8 +141,8 @@ def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
 
     chain = chain_type([disc_1, disc_2])
 
-    assert sorted(chain.io.input_grammar.names) == sorted(["ns2:x", "ns1:x", "u"])
-    assert sorted(chain.io.output_grammar.names) == sorted(["ns2:y", "ns1:y"])
+    assert sorted(chain.io.input_grammar) == sorted(["ns2:x", "ns1:x", "u"])
+    assert sorted(chain.io.output_grammar) == sorted(["ns2:y", "ns1:y"])
 
     assert sorted(chain.io.input_grammar.names_without_namespace) == sorted([
         "x",

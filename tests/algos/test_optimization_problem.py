@@ -39,6 +39,7 @@ from numpy import ones
 from numpy import sin
 from numpy import zeros
 from numpy.testing import assert_equal
+from pandas import MultiIndex
 from pandas.testing import assert_frame_equal
 from scipy.linalg import norm
 from scipy.optimize import rosen
@@ -435,23 +436,11 @@ def _test_check_bounds(pow2_problem) -> None:
         problem.check()
 
 
-def test_differentiation_method(pow2_problem) -> None:
-    problem = pow2_problem
-    problem.differentiation_method = problem.ApproximationMode.COMPLEX_STEP
-    problem.differentiation_step = 0.0
-    with pytest.raises(ValueError):
-        problem.check()
-    problem.differentiation_step = 1e-7 + 1j * 1.0e-7
-    problem.check()
-    problem.differentiation_step = 1j * 1.0e-7
-    problem.check()
-
-    problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
-    problem.differentiation_step = 0.0
-    with pytest.raises(ValueError):
-        problem.check()
-    problem.differentiation_step = 1e-7 + 1j * 1.0e-7
-    problem.check()
+def test_invalid_differentiation_method(pow2_problem) -> None:
+    """Check the error raised when using an invalid differentiation method."""
+    pow2_problem.differentiation_method = "foo"
+    with pytest.raises(ImportError, match=r"The class foo is not available"):
+        pow2_problem.preprocess_functions()
 
 
 def test_get_dv_names() -> None:
@@ -925,7 +914,7 @@ def test_grad_normalization(pow2_problem) -> None:
 def test_2d_objective() -> None:
     disc = SobieskiStructure()
     design_space = SobieskiDesignSpace()
-    inputs = disc.io.input_grammar.names
+    inputs = disc.io.input_grammar
     design_space.filter([name for name in inputs if not name.startswith("c_")])
     doe_scenario = DOEScenario(
         [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
@@ -1236,7 +1225,7 @@ def test_get_functions_dimensions(constrained_problem, names, dimensions) -> Non
 
 
 parametrize_unsatisfied_constraints = pytest.mark.parametrize(
-    ["design", "n_unsatisfied"],
+    ("design", "n_unsatisfied"),
     [
         (array([0.0, 0.0]), 0),
         (array([-1.0, 0.0]), 1),
@@ -1457,7 +1446,9 @@ def test_get_function_dimension(constrained_problem, name, dimension) -> None:
 
 def test_get_function_dimension_unknown(constrained_problem) -> None:
     """Check the output dimension of an unknown problem function."""
-    with pytest.raises(ValueError, match="The problem has no function named unknown."):
+    with pytest.raises(
+        ValueError, match=re.escape("The problem has no function named unknown.")
+    ):
         constrained_problem.get_function_dimension("unknown")
 
 
@@ -1614,7 +1605,8 @@ def test_jabobian_in_database(
     problem_for_eval_obs_jac, options, eval_obs_jac, store_jacobian
 ) -> None:
     """Check Jacobian matrices in database in function of eval_obs_jac and
-    store_jacobian options."""
+    store_jacobian options.
+    """
     problem_for_eval_obs_jac.reset()
     execute_algo(
         problem_for_eval_obs_jac,
@@ -1632,7 +1624,8 @@ def test_jabobian_in_database(
 
 def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     """Check if the observables can be retrieved in an HDF file after export and
-    import."""
+    import.
+    """
     # Add observables to the optimization problem.
     obs1 = MDOFunction(norm, "design norm")
     pow2_problem.add_observable(obs1)
@@ -1675,6 +1668,10 @@ def test_export_to_dataset(input_values, expected) -> None:
     algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
 
     dataset = problem.to_dataset(input_values=input_values)
+
+    assert dataset.misc["input_space"] == design_space
+    assert id(dataset.misc["input_space"]) != id(design_space)
+
     assert_equal(dataset.get_view(variable_names="dv").to_numpy(), expected)
     assert_equal(dataset.get_view(variable_names="obj").to_numpy(), expected * 2)
     assert_equal(dataset.get_view(variable_names="cstr").to_numpy(), expected * 3)
@@ -1969,7 +1966,7 @@ def test_is_multi_objective() -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: array([x, x]), "two")
     with pytest.raises(
-        ValueError, match="Cannot determine the dimension of the objective."
+        ValueError, match=re.escape("Cannot determine the dimension of the objective.")
     ):
         problem.is_mono_objective  # noqa: B018
 
@@ -1978,7 +1975,7 @@ def test_is_multi_objective() -> None:
 
     problem.objective.dim = 0
     with pytest.raises(
-        ValueError, match="Cannot determine the dimension of the objective."
+        ValueError, match=re.escape("Cannot determine the dimension of the objective.")
     ):
         problem.is_mono_objective  # noqa: B018
 
@@ -1996,6 +1993,26 @@ def test_optimization_result_save_nested_dict(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf("problem.hdf5")
     assert compare_dict_of_arrays(x_0_as_dict, problem.solution.x_0_as_dict)
     assert compare_dict_of_arrays(x_opt_as_dict, problem.solution.x_opt_as_dict)
+
+
+@pytest.mark.parametrize(
+    ("hdf_node_path", "expected"), [("", ""), ("node_name", " at node node_name")]
+)
+def test_to_from_hdf_log(pow2_problem, caplog, tmp_wd, hdf_node_path, expected):
+    """Check log when using to_hdf and from_hdf."""
+    file_path = "problem.hdf5"
+    pow2_problem.to_hdf(file_path, hdf_node_path=hdf_node_path)
+    pow2_problem.from_hdf(file_path, hdf_node_path=hdf_node_path)
+    assert caplog.record_tuples[0] == (
+        "gemseo.algos.optimization_problem",
+        20,
+        "Exporting the optimization problem to the file problem.hdf5" + expected,
+    )
+    assert caplog.record_tuples[1] == (
+        "gemseo.algos.optimization_problem",
+        20,
+        "Importing the optimization problem from the file problem.hdf5" + expected,
+    )
 
 
 def test_hdf_node_path(pow2_problem, tmp_wd):
@@ -2169,12 +2186,13 @@ def test_observables_setters():
     assert problem.new_iter_observables._functions == functions
 
 
-def test_evaluation_problem_to_dataset():
+@pytest.mark.parametrize("output_name", ["x", "f"])
+def test_evaluation_problem_to_dataset(output_name):
     """Check EvaluationProblem.to_dataset."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(lambda x: 2 * x, "f"))
+    problem.add_observable(MDOFunction(lambda x: 2 * x, output_name))
     problem.preprocess_functions()
     output_functions = problem.get_functions(observable_names=())[0]
     problem.evaluate_functions(
@@ -2190,12 +2208,19 @@ def test_evaluation_problem_to_dataset():
 
     dataset = IODataset()
     dataset.add_input_variable("x", array([[1.0], [2.0]]))
-    dataset.add_output_variable("f", array([[2.0], [4.0]]))
+    dataset.add_output_variable(output_name, array([[2.0], [4.0]]))
     assert_frame_equal(problem.to_dataset(), dataset)
 
     dataset = Dataset()
-    dataset.add_variable("x", array([[1.0], [2.0]]))
-    dataset.add_variable("f", array([[2.0], [4.0]]))
+    if output_name == "f":
+        dataset.add_variable("x", array([[1.0], [2.0]]))
+        dataset.add_variable(output_name, array([[2.0], [4.0]]))
+    else:
+        dataset.add_variable("x", array([[1.0, 2.0], [2.0, 4.0]]))
+        dataset.columns = MultiIndex.from_tuples(
+            [("parameters", "x", 0), ("parameters", "x", 0)],
+            names=["GROUP", "VARIABLE", "COMPONENT"],
+        )
     assert_frame_equal(problem.to_dataset(categorize=False), dataset)
 
 

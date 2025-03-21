@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -39,7 +40,7 @@ class SimpleGrammarDataConverter(BaseDataConverter["SimpleGrammar"]):
         differentiate. You may use another type of grammar if the distinction is needed.
     """
 
-    _IS_CONTINUOUS_TYPES: ClassVar[tuple[type, ...]] = (float, complex)
+    _IS_CONTINUOUS_TYPES: ClassVar[tuple[type, ...]] = (float, complex, Complex)
     _IS_NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (int, *_IS_CONTINUOUS_TYPES)
 
     def _has_type(self, name: str, types: tuple[type, ...]) -> bool:  # noqa: D102

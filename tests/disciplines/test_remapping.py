@@ -16,6 +16,7 @@
 #     Matthias De Lozzo
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -46,13 +47,13 @@ class NewDiscipline(Discipline):
             "in_2": array([2.0, 3.0]),
             "in_3": array(["zero"]),
         }
-        self.input_grammar.update_from_data(default_input_data)
-        self.output_grammar.update_from_data({
+        self.io.input_grammar.update_from_data(default_input_data)
+        self.io.output_grammar.update_from_data({
             "out_1": array([2.0]),
             "out_2": array([1.0, 2.0]),
             "out_3": array(["zero plus one"]),
         })
-        self.default_input_data = default_input_data
+        self.io.input_grammar.defaults = default_input_data
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["out_1"] = self.io.data["in_1"] + 1
@@ -114,7 +115,8 @@ def test_original_discipline(discipline) -> None:
 def test_with_discipline_wo_default_values() -> None:
     """Check that the wrapped discipline must have default input values."""
     with pytest.raises(
-        ValueError, match="The original discipline has no default input values."
+        ValueError,
+        match=re.escape("The original discipline has no default input values."),
     ):
         RemappingDiscipline(DummyDiscipline(), {}, {})
 
@@ -126,8 +128,8 @@ def test_discipline_name(discipline) -> None:
 
 def test_io_names(discipline) -> None:
     """Check the input and output names."""
-    assert discipline.io.input_grammar.names == input_mapping.keys()
-    assert discipline.io.output_grammar.names == output_mapping.keys()
+    assert discipline.io.input_grammar.keys() == input_mapping.keys()
+    assert discipline.io.output_grammar.keys() == output_mapping.keys()
 
 
 def test_default_inputs(discipline) -> None:
@@ -139,7 +141,7 @@ def test_default_inputs(discipline) -> None:
             "new_in_3": array([3.0]),
             "new_in_4": array(["zero"]),
         },
-        discipline.default_input_data,
+        discipline.io.input_grammar.defaults,
     )
 
 
@@ -222,7 +224,7 @@ def test_format_mapping(mapping, expected, grammar) -> None:
 
 def test_input_grammar(discipline):
     """Check the input grammar of the remapping discipline."""
-    assert discipline.input_grammar._validate(
+    assert discipline.io.input_grammar._validate(
         {
             "new_in_1": array([1.0]),
             "new_in_2": array([2.0]),
@@ -235,7 +237,7 @@ def test_input_grammar(discipline):
 
 def test_output_grammar(discipline):
     """Check the output grammar of the remapping discipline."""
-    assert discipline.output_grammar._validate(
+    assert discipline.io.output_grammar._validate(
         {
             "new_out_1": array([2.0]),
             "new_out_2": array([1.0, 2.0]),
@@ -249,8 +251,14 @@ def test_no_mapping():
     """Check the remapping discipline without remapping."""
     original_discipline = NewDiscipline()
     discipline = RemappingDiscipline(original_discipline)
-    assert discipline.input_grammar.names == original_discipline.input_grammar.names
-    assert discipline.output_grammar.names == original_discipline.output_grammar.names
+    assert (
+        discipline.io.input_grammar.keys()
+        == original_discipline.io.input_grammar.keys()
+    )
+    assert (
+        discipline.io.output_grammar.keys()
+        == original_discipline.io.output_grammar.keys()
+    )
     assert discipline._input_mapping == {
         f"in_{i}": (f"in_{i}", slice(None)) for i in range(1, 4)
     }

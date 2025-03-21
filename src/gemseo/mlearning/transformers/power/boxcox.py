@@ -23,7 +23,7 @@ Transform a variable :math:`x` as:
 
 .. math::
 
-   y    & = (x^\lambda - 1) / \lambda,  \text{for } \lambda \neq  0 \\\\
+   y    & = (x^\lambda - 1) / \lambda,  \text{for } \lambda \neq  0 \\
         & = \log(x), \text{for } \lambda = 0
 
 Dependence

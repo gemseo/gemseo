@@ -65,7 +65,7 @@ def test_create_from_unknown_name(factory) -> None:
     with pytest.raises(
         ValueError,
         match=(
-            "No algorithm named unknown_name is available; available algorithms are .+"
+            r"No algorithm named unknown_name is available; available algorithms are .+"
         ),
     ):
         factory.create("unknown_name")

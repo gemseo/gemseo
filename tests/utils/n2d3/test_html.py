@@ -42,8 +42,8 @@ def graph() -> DependencyGraph:
         input_d = dict.fromkeys(desc[1], data)
         output_d = dict.fromkeys(desc[2], data)
         disc = DummyDiscipline(name)
-        disc.input_grammar.update_from_data(input_d)
-        disc.output_grammar.update_from_data(output_d)
+        disc.io.input_grammar.update_from_data(input_d)
+        disc.io.output_grammar.update_from_data(output_d)
         disciplines.append(disc)
     return DependencyGraph(disciplines)
 

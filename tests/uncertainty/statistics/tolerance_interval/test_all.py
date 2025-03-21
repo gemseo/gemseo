@@ -21,10 +21,17 @@
 
 from __future__ import annotations
 
-import pytest
+import re
 
+import pytest
+from numpy.random import RandomState
+
+from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
+)
+from gemseo.uncertainty.statistics.tolerance_interval.empirical import (
+    EmpiricalToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.exponential import (
     ExponentialToleranceInterval,
@@ -42,12 +49,20 @@ from gemseo.uncertainty.statistics.tolerance_interval.weibull import (
     WeibullToleranceInterval,
 )
 
+dataset = Dataset.from_array(
+    RandomState(0).weibull(1.5, size=1000),
+    ["x_1"],
+    {"x_1": 1},
+)
+
+
 DISTRIBUTIONS = {
     "Weibull": WeibullToleranceInterval(10, scale=1.0, shape=2.0, location=0.0),
     "Normal": NormalToleranceInterval(10, mean=0.0, std=1),
     "LogNormal": LogNormalToleranceInterval(10, mean=0.0, std=1, location=0.0),
     "Exponential": ExponentialToleranceInterval(10, rate=1.0, location=0.0),
     "Uniform": UniformToleranceInterval(10, minimum=0.0, maximum=1.0),
+    "Order": EmpiricalToleranceInterval(dataset.get_view().to_numpy().ravel()),
 }
 
 
@@ -114,6 +129,6 @@ def test_tolerance_interval_confidence_upper(side, distribution) -> None:
 def test_tolerance_interval_incorrect_side(distribution_name) -> None:
     """Check that an error is raised if the type of tolerance interval is incorrect."""
     with pytest.raises(
-        ValueError, match="The type of tolerance interval is incorrect."
+        ValueError, match=re.escape("The type of tolerance interval is incorrect.")
     ):
         DISTRIBUTIONS[distribution_name].compute(0.9, side="incorrect_side")

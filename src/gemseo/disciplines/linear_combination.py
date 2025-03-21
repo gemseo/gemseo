@@ -22,9 +22,11 @@ from numpy import zeros
 from scipy.sparse import eye
 
 from gemseo.core.discipline import Discipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
 
     from gemseo.typing import StrKeyMapping
 
@@ -72,39 +74,49 @@ class LinearCombination(Discipline):
         self,
         input_names: Iterable[str],
         output_name: str,
-        input_coefficients: dict[str, float] | None = None,
+        input_coefficients: Mapping[str, float] = READ_ONLY_EMPTY_DICT,
         offset: float = 0.0,
-        input_size: int | None = None,
+        input_size: int = 1,
+        average: bool = False,
     ) -> None:
         """
         Args:
-            input_names: The names of input variables.
+            input_names: The names of the input variables.
             output_name: The name of the output variable.
             input_coefficients: The coefficients related to the input variables.
-                If ``None``, use 1 for all the input variables.
+                If empty,
+                use 1 for all the :math:`d` input variables
+                when ``average`` is ``False``.
+                or :math:`1/d` when ``average`` is ``True``.
             offset: The output value when all the input variables are equal to zero.
             input_size: The size of the inputs.
-                If ``None``, the default inputs are initialized with size 1 arrays.
+            average: Whether to average the inputs
+                when ``input_coefficients`` is empty,
         """  # noqa: D205, D212, D415
         super().__init__()
-        self.input_grammar.update_from_names(input_names)
-        self.output_grammar.update_from_names([output_name])
+        input_grammar = self.io.input_grammar
+        input_grammar.update_from_names(input_names)
+        self.io.output_grammar.update_from_names((output_name,))
 
+        # TODO: API: remove this line in GEMSEO v7.
         default_size = 1 if input_size is None else input_size
-        self.default_input_data.update({
+        input_grammar.defaults.update({
             input_name: zeros(default_size) for input_name in input_names
         })
 
-        self.__coefficients = dict.fromkeys(input_names, 1.0)
         if input_coefficients:
+            self.__coefficients = dict.fromkeys(input_names, 1.0)
             self.__coefficients.update(input_coefficients)
+        elif average:
+            self.__coefficients = dict.fromkeys(input_names, 1.0 / len(input_grammar))
+        else:
+            self.__coefficients = dict.fromkeys(input_names, 1.0)
 
         self.__offset = offset
         self.__output_name = output_name
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        output_data = {}
-        output_data[self.__output_name] = self.__offset
+        output_data = {self.__output_name: self.__offset}
         for input_name, input_value in input_data.items():
             output_data[self.__output_name] += (
                 self.__coefficients[input_name] * input_value
@@ -122,5 +134,5 @@ class LinearCombination(Discipline):
         identity = eye(self.io.data[self.__output_name].size, format="csr")
 
         jac = self.jac[self.__output_name]
-        for input_name in self.io.input_grammar.names:
+        for input_name in self.io.input_grammar:
             jac[input_name] = self.__coefficients[input_name] * identity

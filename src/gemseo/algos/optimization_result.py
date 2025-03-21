@@ -237,6 +237,8 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The optimization result associated with the optimization problem.
         """
+        if problem.solution and not hasattr(problem.objective, "n_calls"):
+            problem.objective.n_calls = problem.solution.n_obj_call
         if not problem.database:
             return cls(n_obj_call=0, **fields_)
 

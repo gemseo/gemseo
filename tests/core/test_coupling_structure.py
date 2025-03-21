@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 import unittest
 from os.path import exists
 from random import shuffle
@@ -45,10 +46,10 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
-from .test_dependency_graph import create_disciplines_from_desc
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -112,17 +113,17 @@ class TestCouplingStructure(unittest.TestCase):
 
         coupling_structure = CouplingStructure([disciplines[0]])
         with pytest.raises(
-            ValueError, match="N2 diagrams need at least two disciplines."
+            ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
         ):
             coupling_structure.plot_n2_chart("n2_3.png", False)
 
     def test_n2_many_io(self) -> None:
         a = DummyDiscipline("a")
         b = DummyDiscipline("b")
-        a.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
-        a.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
-        b.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
-        b.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
+        a.io.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
+        a.io.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
+        b.io.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
+        b.io.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
 
         cpl = CouplingStructure([a, b])
         cpl.plot_n2_chart()
@@ -142,9 +143,9 @@ class TestCouplingStructure(unittest.TestCase):
 class SelfCoupledDisc(Discipline):
     def __init__(self) -> None:
         Discipline.__init__(self)
-        self.input_grammar.update_from_names(["y"])
-        self.output_grammar.update_from_names(["y"])
-        self.default_input_data["y"] = array([0.2])
+        self.io.input_grammar.update_from_names(["y"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults["y"] = array([0.2])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.io.data["y"] = 1.0 - self.io.data["y"]

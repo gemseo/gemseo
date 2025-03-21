@@ -34,9 +34,9 @@ from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
 
+from prettytable import PrettyTable
 from typing_extensions import NamedTuple
 
-from gemseo.third_party.prettytable.prettytable import PrettyTable
 from gemseo.utils.base_multiton import BaseABCMultiton
 from gemseo.utils.compatibility.python import entry_points
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -241,7 +241,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             name: The name of the module or package to be imported.
             error: The exception object raised while importing the module or package.
         """
-        LOGGER.debug("Failed to import module: %s", name, exc_info=True)
+        LOGGER.debug("Failed to import module: %s", name)
         self.failed_imports[name] = str(error)
 
     def __get_sub_classes(self, cls: type[T]) -> dict[str, type[T]]:
@@ -397,7 +397,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             name: The name of the class.
             write_schema: If ``True``, write the JSON schema to a file.
             schema_path: The path to the JSON schema file.
-                If ``None``, the file is saved in the current directory in a file named
+                If empty, the file is saved in the current directory in a file named
                 after the name of the class.
 
         Returns:

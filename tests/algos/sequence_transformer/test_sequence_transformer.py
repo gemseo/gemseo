@@ -107,19 +107,17 @@ def compute_reference_n_iter():
 )
 def test_sequence_transformer(compute_reference_n_iter, transformer) -> None:
     """Tests that the sequence transform reduces the number of iterations."""
-    _transformer = factory.create(transformer)
+    transformer_ = factory.create(transformer)
 
     n_iter_ref = compute_reference_n_iter
-    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=_transformer)
+    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=transformer_)
 
     assert n_iter <= n_iter_ref
 
 
 def test_clear() -> None:
     """Tests the clear mechanism of the double-ended queue."""
-    transformer = SequenceTransformerFactory().create(
-        AccelerationMethod.ALTERNATE_2_DELTA
-    )
+    transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
 
     assert len(transformer._iterates) == 0
     assert len(transformer._residuals) == 0
@@ -140,13 +138,69 @@ def test_composite(compute_reference_n_iter) -> None:
     aitken = factory.create(AccelerationMethod.AITKEN)
     relaxation = factory.create("OverRelaxation", factor=0.8)
 
-    _transformer = factory.create(
+    transformer = factory.create(
         "CompositeSequenceTransformer", sequence_transformers=[aitken, relaxation]
     )
 
     n_iter_ref = compute_reference_n_iter
-    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=_transformer)
+    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=transformer)
 
     assert n_iter <= n_iter_ref
 
-    _transformer.clear()
+    transformer.clear()
+
+
+def test_bounds():
+    """Test the projection of the iterate onto specified bounds."""
+    lower_bound = 2 * ones(2)
+    upper_bound = 3 * ones(2)
+
+    transformer = factory.create(AccelerationMethod.SECANT)
+
+    transformer.lower_bound = lower_bound
+    transformer.upper_bound = upper_bound
+
+    iterate = 4 * ones(2)
+    projected_iterate = transformer.compute_transformed_iterate(iterate, iterate)
+    assert (projected_iterate == upper_bound).all()
+    transformer.clear()
+
+    iterate = -1 * ones(2)
+    projected_iterate = transformer.compute_transformed_iterate(iterate, iterate)
+    assert (projected_iterate == lower_bound).all()
+    transformer.clear()
+
+    iterate = 2.5 * ones(2)
+    projected_iterate = transformer.compute_transformed_iterate(iterate, iterate)
+    assert (projected_iterate == iterate).all()
+
+
+def test_bounds_with_composite():
+    """Test the projection of the iterate onto specified bounds with composite."""
+    lower_bound = 2 * ones(2)
+    upper_bound = 3 * ones(2)
+
+    transformer = factory.create(
+        "CompositeSequenceTransformer",
+        [
+            factory.create(AccelerationMethod.AITKEN),
+            factory.create("OverRelaxation", factor=0.8),
+        ],
+    )
+
+    transformer.lower_bound = lower_bound
+    transformer.upper_bound = upper_bound
+
+    iterate = 4 * ones(2)
+    projected_iterate = transformer.compute_transformed_iterate(iterate, iterate)
+    assert (projected_iterate == upper_bound).all()
+    transformer.clear()
+
+    iterate = -1 * ones(2)
+    projected_iterate = transformer.compute_transformed_iterate(iterate, iterate)
+    assert (projected_iterate == lower_bound).all()
+    transformer.clear()
+
+    iterate = 2.5 * ones(2)
+    projected_iterate = transformer.compute_transformed_iterate(iterate, iterate)
+    assert (projected_iterate == iterate).all()

@@ -42,7 +42,7 @@ from gemseo.problems.mdo.scalable.parametric.core.variable_names import get_x_lo
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from numpy.typing import NDArray
+    from gemseo.typing import RealArray
 
 
 class Coefficients(NamedTuple):
@@ -52,16 +52,16 @@ class Coefficients(NamedTuple):
     :math:`y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^NC_{i,j}y_j`.
     """
 
-    a_i: NDArray[float]
+    a_i: RealArray
     r"""The coefficient vector :math:`a_i`."""
 
-    D_i0: NDArray[float]
+    D_i0: RealArray
     r"""The coefficient matrix :math:`D_{i,0}` to multiply :math:`x_0`."""
 
-    D_ii: NDArray[float]
+    D_ii: RealArray
     r"""The coefficient matrix :math:`D_{i,i}` to multiply :math:`x_i`."""
 
-    C_ij: Mapping[str, NDArray[float]]
+    C_ij: Mapping[str, RealArray]
     r"""The coefficient matrix :math:`C_{i,j}` to multiply :math:`y_j`."""
 
 
@@ -93,11 +93,11 @@ class ScalableDiscipline(BaseDiscipline):
     def __init__(
         self,
         index: int,
-        a_i: NDArray[float],
-        D_i0: NDArray[float],  # noqa: N803
-        D_ii: NDArray[float],  # noqa: N803
-        C_ij: Mapping[str, NDArray[float]],  # noqa: N803
-        **default_input_values: NDArray[float],
+        a_i: RealArray,
+        D_i0: RealArray,  # noqa: N803
+        D_ii: RealArray,  # noqa: N803
+        C_ij: Mapping[str, RealArray],  # noqa: N803
+        **default_input_values: RealArray,
     ) -> None:
         r"""
         Args:
@@ -131,12 +131,12 @@ class ScalableDiscipline(BaseDiscipline):
 
     def __call__(
         self,
-        x_0: NDArray[float] | None = None,
-        x_i: NDArray[float] | None = None,
-        u_i: NDArray[float] | None = None,
+        x_0: RealArray | None = None,
+        x_i: RealArray | None = None,
+        u_i: RealArray | None = None,
         compute_jacobian: bool = False,
-        **y_j: NDArray[float],
-    ) -> dict[str, NDArray[float] | dict[str, NDArray[float]]]:
+        **y_j: RealArray,
+    ) -> dict[str, RealArray | dict[str, RealArray]]:
         r"""Compute the coupling variable :math:`y_i` or its derivatives.
 
         Args:
@@ -165,11 +165,11 @@ class ScalableDiscipline(BaseDiscipline):
         if u_i is None:
             u_i = self.input_names_to_default_values.get(self.__u_i_name, 0.0)
 
-        _y_j = {
+        y_j_ = {
             name: self.input_names_to_default_values[name]
             for name in self.coefficients.C_ij
         }
-        _y_j.update(y_j)
+        y_j_.update(y_j)
 
         if compute_jacobian:
             jacobian = {}
@@ -197,6 +197,6 @@ class ScalableDiscipline(BaseDiscipline):
             - self.coefficients.D_ii @ x_i
         )
         for y_j_name, _C_ij in self.coefficients.C_ij.items():  # noqa: N806
-            y_i += _C_ij @ _y_j[y_j_name]
+            y_i += _C_ij @ y_j_[y_j_name]
 
         return {self.output_names[0]: y_i + u_i}

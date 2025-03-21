@@ -25,4 +25,4 @@ from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressor_Se
 class PolynomialRegressor_Settings(LinearRegressor_Settings):  # noqa: N801
     """The settings of the polynomial regressor."""
 
-    degree: PositiveInt = Field(default=True, description="The polynomial degree.")
+    degree: PositiveInt = Field(default=2, description="The polynomial degree.")

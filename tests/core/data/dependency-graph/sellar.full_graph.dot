@@ -1,8 +1,20 @@
 digraph {
-	Sellar1 -> Sellar2 [label=y_1 color=black dir=forward fontcolor=black penwidth=1.0]
-	Sellar1 -> SellarSystem [label=y_1 color=black dir=forward fontcolor=black penwidth=1.0]
-	Sellar2 -> Sellar1 [label=y_2 color=black dir=forward fontcolor=black penwidth=1.0]
-	Sellar2 -> SellarSystem [label=y_2 color=black dir=forward fontcolor=black penwidth=1.0]
-	SellarSystem -> _SellarSystem [label="c_1,c_2,obj" color=black dir=forward fontcolor=black penwidth=1.0]
+	Sellar1 -> Sellar2 [label=y_1 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'Sellar2'
+
+y_1, y_1, y_1" penwidth=1.0]
+	Sellar1 -> SellarSystem [label=y_1 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'Sellar1', Name in discipline 'SellarSystem'
+
+y_1, y_1, y_1" penwidth=1.0]
+	Sellar2 -> Sellar1 [label=y_2 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'Sellar1'
+
+y_2, y_2, y_2" penwidth=1.0]
+	Sellar2 -> SellarSystem [label=y_2 color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'Sellar2', Name in discipline 'SellarSystem'
+
+y_2, y_2, y_2" penwidth=1.0]
+	SellarSystem -> _SellarSystem [label="c_1, c_2, obj" color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'SellarSystem'
+
+obj, obj
+c_1, c_1
+c_2, c_2" penwidth=1.0]
 	_SellarSystem [style=invis]
 }

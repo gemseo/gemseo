@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import os
 import pickle
+import re
 import unittest
 from itertools import permutations
 from typing import TYPE_CHECKING
@@ -94,7 +95,7 @@ class Testmdochain(unittest.TestCase):
                 )
                 chain.linearize(compute_all_jacobians=True)
                 ok = chain.check_jacobian(
-                    chain.default_input_data,
+                    chain.io.input_grammar.defaults,
                     derr_approx="complex_step",
                     step=1e-30,
                     threshold=1e-6,
@@ -109,7 +110,7 @@ class Testmdochain(unittest.TestCase):
             disciplines = self.get_disciplines_list(perm)
             chain = MDOParallelChain(disciplines, use_threading=False)
             ok = chain.check_jacobian(
-                chain.default_input_data,
+                chain.io.input_grammar.defaults,
                 derr_approx="complex_step",
                 step=1e-30,
                 threshold=1e-6,
@@ -196,7 +197,8 @@ def test_warm_started_mdo_chain_jac() -> None:
     """Test that the Jacobian of an MDOWarmStartedChain raises an exception."""
     chain = MDOWarmStartedChain([SobieskiMission()], variable_names_to_warm_start=[])
     with pytest.raises(
-        NotImplementedError, match="MDOWarmStartedChain cannot be linearized."
+        NotImplementedError,
+        match=re.escape("MDOWarmStartedChain cannot be linearized."),
     ):
         chain.check_jacobian()
 
@@ -224,16 +226,16 @@ def two_virtual_disciplines() -> list[Discipline]:
         The two disciplines.
     """
     disc_1 = DummyDiscipline("d1")
-    disc_1.input_grammar.update_from_names(["x"])
-    disc_1.output_grammar.update_from_names(["y"])
-    disc_1.default_input_data = {"x": array([1.0])}
+    disc_1.io.input_grammar.update_from_names(["x"])
+    disc_1.io.output_grammar.update_from_names(["y"])
+    disc_1.io.input_grammar.defaults = {"x": array([1.0])}
     disc_1.default_output_data = {"y": array([2.0])}
     disc_1.virtual_execution = True
 
     disc_2 = DummyDiscipline("d2")
-    disc_2.input_grammar.update_from_names(["y"])
-    disc_2.output_grammar.update_from_names(["z"])
-    disc_2.default_input_data = {"y": array([3.0])}
+    disc_2.io.input_grammar.update_from_names(["y"])
+    disc_2.io.output_grammar.update_from_names(["z"])
+    disc_2.io.input_grammar.defaults = {"y": array([3.0])}
     disc_2.default_output_data = {"z": array([4.0])}
     disc_2.virtual_execution = True
 
@@ -266,9 +268,9 @@ def test_non_ndarray_inputs():
 
         def __init__(self):  # noqa: D107
             super().__init__()
-            self.input_grammar.update_from_types({"in": str})
-            self.output_grammar.update_from_types({"out": str})
-            self.default_input_data["in"] = "foo"
+            self.io.input_grammar.update_from_types({"in": str})
+            self.io.output_grammar.update_from_types({"out": str})
+            self.io.input_grammar.defaults["in"] = "foo"
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["out"] = self.io.data["in"] * 2

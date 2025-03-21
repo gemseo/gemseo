@@ -52,7 +52,7 @@ class DisciplineFactory(BaseFactory):
         self.__base_grammar = JSONGrammar("Discipline_options")
         base_gram_path = Path(discipline.__file__).parent / "Discipline_options.json"
         self.__base_grammar.update_from_file(base_gram_path)
-        self.__base_grammar_names = self.__base_grammar.keys()
+        self.__base_grammar_names = self.__base_grammar
 
     def create(self, discipline_name: str, **options):
         """Create an :class:`.Discipline` from its name.
@@ -123,13 +123,13 @@ class DisciplineFactory(BaseFactory):
         return common_options, specific_options
 
     def get_options_grammar(
-        self, name: str, write_schema: bool = False, schema_path: str | None = None
+        self, name: str, write_schema: bool = False, schema_path: str = ""
     ) -> JSONGrammar:
         """Get the options default values for the given class name.
 
         Args:
             name: The name of the class.
-            schema_path: the output json file path. If ``None``: input.json or
+            schema_path: the output json file path. If empty: input.json or
                 output.json depending on grammar type.
             write_schema: Whether to write the schema files
 

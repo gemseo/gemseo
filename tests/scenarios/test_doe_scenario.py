@@ -224,7 +224,7 @@ def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None
     )
     scenario.execute(algo_name="CustomDOE", samples=array([[0.0, 0.0, -10.0, 0.0]]))
 
-    assert sellar_disciplines[2].execution_statistics.n_calls == 0
+    assert sellar_disciplines[2].execution_statistics.n_executions == 0
     assert "Undefined" in caplog.text
 
 
@@ -366,7 +366,7 @@ def test_scenario_without_initial_design_value() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     discipline = AnalyticDiscipline({"y": "x"})
-    discipline.default_input_data = {}
+    discipline.io.input_grammar.defaults = {}
     scenario = DOEScenario([discipline], "y", design_space, formulation_name="MDF")
     scenario.execute(algo_name="LHS", n_samples=3)
     assert len(scenario.formulation.optimization_problem.database) == 3

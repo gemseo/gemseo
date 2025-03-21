@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import pytest
 from numpy import array
 from numpy import zeros
 
@@ -25,6 +26,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
+from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 
@@ -48,7 +50,7 @@ def test_linear_combination_execution2points(linear_combination) -> None:
 
 def test_check_gradient(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
-    linear_combination.default_input_data = {
+    linear_combination.io.input_grammar.defaults = {
         "alpha": array([1.0]),
         "beta": array([1.0]),
     }
@@ -57,7 +59,7 @@ def test_check_gradient(linear_combination) -> None:
 
 def test_check_gradient2points(linear_combination) -> None:
     """Test jacobian computation by finite differences."""
-    linear_combination.default_input_data = {
+    linear_combination.io.input_grammar.defaults = {
         "alpha": array([1.0, 0.0]),
         "beta": array([1.0, -1.0]),
     }
@@ -92,7 +94,7 @@ def test_parallel_doe_execution(linear_combination) -> None:
 def test_default_values(linear_combination) -> None:
     """Check that all the input variables have zero as default value."""
     assert compare_dict_of_arrays(
-        linear_combination.default_input_data,
+        linear_combination.io.input_grammar.defaults,
         {"alpha": zeros(1), "beta": zeros(1)},
     )
 
@@ -102,3 +104,22 @@ def test_linearization_after_execution_cache_none(linear_combination):
     input_data = {"alpha": array([1.0]), "beta": array([1.0])}
     linear_combination.execute(input_data)
     assert not linear_combination.linearize(input_data)
+
+
+@pytest.mark.parametrize(
+    ("average", "input_coefficients", "expected"),
+    [
+        (False, {}, {"alpha": 1.0, "beta": 1.0}),
+        (True, {}, {"alpha": 0.5, "beta": 0.5}),
+        (True, {"alpha": 0.3}, {"alpha": 0.3, "beta": 1.0}),
+    ],
+)
+def test_average(average, input_coefficients, expected):
+    """Check average."""
+    linear_combination = LinearCombination(
+        input_names=["alpha", "beta"],
+        output_name="delta",
+        input_coefficients=input_coefficients,
+        average=average,
+    )
+    assert linear_combination._LinearCombination__coefficients == expected
