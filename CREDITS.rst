@@ -49,14 +49,23 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `OpenTURNS <https://github.com/openturns/openturns>`_
     GNU LGPL v3.0
 
+`OpenPyXL <https://openpyxl.readthedocs.io>`_
+    MIT
+
+`packaging <https://packaging.pypa.io/>`_
+    BSD & Apache v2.0
+
 `Pandas <https://pandas.pydata.org/>`_
     BSD 3-Clause
 
-`Pillow <https://python-pillow.org/>`_
+`Pillow <https://python-pillow.github.io/>`_
     HPND
 
 `Plotly <https://plotly.com/python/>`_
     MIT
+
+`prettytable <https://github.com/kxxoling/PTable>`_
+    BSD 3-Clause
 
 `pyDOE3 <https://github.com/relf/pyDOE3>`_
     BSD 3-Clause
@@ -76,8 +85,14 @@ GEMSEO depends on software with compatible licenses that are listed below.
 `scipy <https://www.scipy.org/>`_
     BSD 3-Clause
 
+`StrEnum <https://github.com/irgeek/StrEnum>`_
+    MIT
+
 `SymPy <https://www.sympy.org/>`_
     BSD 3-Clause
+
+`tqdm <https://tqdm.github.io/>`_
+    MIT $ Mozilla Public License 2.0
 
 `typing-extensions <https://pypi.org/project/typing-extensions>`_
     Python Software License
@@ -98,9 +113,6 @@ GEMSEO source code includes software with compatible licenses that are listed be
 
 colormap
     CC0 1.0
-
-`prettytable <https://github.com/kxxoling/PTable>`_
-    BSD 3-Clause
 
 `Reorder.js <https://github.com/jdfekete/reorder.js>`_
     BSD 3-Clause

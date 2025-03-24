@@ -138,6 +138,7 @@ discipline.linearize(input_data={"x": array([1.0])}, compute_all_jacobians=True)
 discipline.jac
 
 
+# %%
 # Use custom types
 # ----------------
 # By default,
@@ -160,7 +161,7 @@ def copy_array(a):
 discipline = create_discipline("AutoPyDiscipline", py_func=copy_array, use_arrays=True)
 discipline.execute({"a": array([1.0])})
 
-
+# %%
 # User types
 # ~~~~~~~~~~
 # We can also define specific types for each argument and return variable.

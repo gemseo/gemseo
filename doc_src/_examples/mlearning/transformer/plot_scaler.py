@@ -70,7 +70,7 @@ scaled_data = custom_scaler.fit_transform(data)
 min_max_scaled_data = min_max_scaler.fit_transform(data)
 standard_scaled_data = standard_scaler.fit_transform(data)
 
-#
+# %%
 # We can plot the transformed data versus the original one:
 plt.plot(data, default_scaler.fit_transform(data), label="Default scaler")
 plt.plot(data, custom_scaler.fit_transform(data), label="Custom scaler")

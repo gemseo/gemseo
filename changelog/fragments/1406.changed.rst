@@ -1,2 +1,0 @@
-- BREAKING CHANGE: ``NameMapping`` is no longer compatible with the way of implementing the ``Discipline._run`` method before |g| 6,
-  i.e. getting input data from the ``local_data`` and writing output data in the ``local_data``.

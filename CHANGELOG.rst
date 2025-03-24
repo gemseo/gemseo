@@ -27,10 +27,268 @@ and this project adheres to
 
 .. towncrier release notes start
 
-Version 6.0.0 (2024-11-08)
+Version 6.1.0 (2025-03-17)
 **************************
 
+Added
+-----
 
+- The Gantt chart created by the ``create_gantt_chart`` function displays the time unit and the legend for the blue and red areas.
+  `#216 <https://gitlab.com/gemseo/dev/gemseo/-/issues/216>`_
+- The ``BiLevel`` formulation and its derived classes now include settings for the scenario adapters used to
+  run the sub-scenarios. These settings are:
+
+  - ``keep_opt_history``: To control whether the databases of the sub-scenarios are be kept in memory after each execution.
+  - ``save_opt_history``: To control whether the databases of the sub-scenarios are saved to the disk after each execution. The database files use the ``Scenario.name`` attribute of each sub-scenario to prefix the name of the files. Use this setting if the sub-scenarios are running in parallel.
+  - ``naming``: To select the id to append to the prefix of each database file when ``save_opt_history=True``. See ``NameGenerator.Naming`` for more details.
+  `#839 <https://gitlab.com/gemseo/dev/gemseo/-/issues/839>`_
+- In ``LinearCombination``, the inputs are averaged when ``input_coefficients`` is empty and the new argument ``average`` is ``True`` (default: ``False``).
+  `#924 <https://gitlab.com/gemseo/dev/gemseo/-/issues/924>`_
+- New discipline RetryDiscipline: it wraps a discipline to retry the execution several times. It tries to execute the discipline, if it raises an exception then it retries up to a maximum number of attempts. It can pass a tuple of exceptions that, if one of them raised, do not retry the execution.
+  `#927 <https://gitlab.com/gemseo/dev/gemseo/-/issues/927>`_
+- The normalization of integer design variables can be switched on and off
+  thanks to the property ``DesignSpace.normalize_integer_variables``.
+  `#1000 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1000>`_
+- The ``VariableRenamer`` class can be used to create translators,
+  which are translation dictionaries
+  of the form ``{discipline_name: {variable_name: new_variable_name}}``
+  from tuples, dictionaries, CSV files and spreadsheets.
+  These dictionaries can then be used
+  to create a ``RemappingDiscipline`` or a ``NameMapping`` data processor.
+  `#1005 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1005>`_
+- Jacobian can be approximated hybridly by defining certain elements of the Jacobian within the discipline and then calling the ``linearize`` method and passing one of the hybrid Approximation modes: ``HYBRID_FINITE_DIFFERENCES``, ``HYBRID_CENTERED_DIFFERENCES``, ``HYBRID_COMPLEX_STEP``
+  `#1166 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1166>`_
+- The ``compare_dict_of_arrays`` function now handles ``NaNs`` via the ``nan_are_equal`` argument. By default, ``nan_are_equal=False`` that is ``NaN != NaN`` in the component-wise comparison.
+  `#1167 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1167>`_
+- ``PCERegressor.predict_jacobian_against_substitute`` can predict the Jacobian
+  with respect to inputs substitute at a given input point
+  when the learning dataset includes gradient information;
+  similar attributes are available for the Jacobian of the mean, standard deviation and variance.
+  `#1285 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1285>`_
+- Documentation and examples about the classes ``ODEDiscipline`` and ``ODEProblem``.
+  `#1302 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1302>`_
+- The ``SequenceTransformer`` class now has a ``set_bounds`` method which allows to set lower and/or upper bounds for the computed transformed iterates.
+  When components of the iterates fall outside of the bounds, they are projected onto the appropriate bound.
+  The bounds must be provided has NumPy arrays with same size as the iterates.
+  The ``BaseMDASolver``, ``MDAChain`` and ``MDASequential`` classes now have a ``set_bounds`` method which allows to set lower and/or upper bound for each resolved variables (coupling or state).
+  The bounds must be provided as a mapping from variable names to tuple of the form ``(lower_bound, upper_bound)``, where ``lower_bound`` and/or ``upper_bound`` must be NumPy arrays with the same size as the resolved variable.
+  `#1358 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1358>`_
+- So far,
+  the methods ``BaseScenario.to_dataset``, ``EvaluationProblem.to_dataset`` and ``Database.to_dataset``
+  export the ``Database`` to a ``Dataset``.
+  Now,
+  they also store at the key ``"input_space"`` of the dictionary ``Dataset.misc``
+  the input space (of type ``DesignSpace``) used to generate the data.
+  `#1373 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1373>`_
+- The mNBI example on the Binh-Korn problem now illustrates the user defined refinement of the Pareto front.
+  `#1379 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1379>`_
+- The DOE algorithms have a new option,
+  named ``"eval_func"`` (default: ``True``),
+  to sample the functions computing output data.
+  By deactivating it,
+  only functions calculating Jacobian data are sampled
+  if ``eval_jac`` is ``True`` (default: ``False``).
+  `#1380 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1380>`_
+- MDA now has a new setting ``max_consecutive_unsuccessful_iterations`` and corresponding stopping criteria that allows to break the MDA loop when a given number of consecutive unsuccessful iterations is reached.
+  An iteration is unsuccessful if the normalized residual norm has increased.
+  The default value is 8.
+  `#1381 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1381>`_
+- ``EmpiricalToleranceInterval`` allows to estimate tolerance intervals from samples without any distribution assumption.
+- ``EmpiricalStatistics.compute_tolerance_interval``, ``EmpiricalStatistics.compute_a_value`` and ``EmpiricalStatistics.compute_b_value`` are now implemented.
+  `#1382 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1382>`_
+- The ``OptAsMDOScenario`` can make a mono-disciplinary optimization problem multi-disciplinary.
+  `#1399 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1399>`_
+- The function ``rename_discipline_variables`` can be used to rename some discipline variables.
+  `#1422 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1422>`_
+- The grammars have a new dictionary-like attribute, called ``descriptions``, to set the descriptions of the elements.
+  `#1424 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1424>`_
+- ``MDOScenario`` supports DOE algorithms, making it possible to use a DOE and an optimizer with the same scenario.
+  `#1436 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1436>`_
+- Add an example to create multi-point processes using namespaces.
+  `#1448 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1448>`_
+- The ``get_discipline_variable_properties`` function returns the properties of the input and output discipline variables, such as the original name, the current name, and the current name without namespace.
+- The module ``gemseo.disciplines.utils`` has been merged into ``gemseo.utils.discipline``.
+  `#1458 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1458>`_
+- Added a ``protocol`` argument to the ``to_pickle`` function and to the ``deserialize_and_run`` command line for specifying the pickling protocol.
+  `#1467 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1467>`_
+- The ``MDOScenarioAdapter`` now includes the argument ``save_opt_history``
+  (default: ``False``)
+  to save the optimization history of each run to the disk.
+  This setting is also accessible via the attribute of the same name.
+  `#1470 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1470>`_
+- ``BaseDistributionFitter`` is the base class to fit a probability distribution to data, from which the ``OTDistributionFitter`` class using the OpenTURNS library is derived.
+- ``SPDistributionFitter`` is the class to fit a probability distribution to data using the SciPy library; the fitting criteria are the following statistical significance tests: Anderson-Darling, Cramer-von Mises, Filliben and Kolmogorov-Smirnov.
+  `#1471 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1471>`_
+- The class ``NameGenerator`` generates unique names based on the given ``NameGenerator.Naming`` through the
+  ``generate_name()`` method.
+  `#1472 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1472>`_
+- The wing weight problem has been added to benchmark and illustrate UQ algorithms; see ``gemseo.problems.uncertainty.wing_weight``.
+  `#1473 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1473>`_
+- "BiLevelBCD" is a formulation derived from "BiLevel" that uses the Block Coordinate Descent algorithm to solve the lower-optimization problem.
+  `#1538 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1538>`_
+- The function ``get_class_name`` returns the name of a class whose settings are defined from a Pydantic model.
+- The SVG version of a *full* coupling graph displays the original and current names of the coupling variables when hovered over.
+
+Fixed
+-----
+
+- The ``save_data_arrays_to_xml`` function of the ``ggobi_export`` module no longer inverts input names when the tags
+  have a return to line.
+  `#649 <https://gitlab.com/gemseo/dev/gemseo/-/issues/649>`_
+- ``BaseScenario.to_dataset`` can export the ``Database`` to a ``Dataset`` in presence of homonymous inputs and outputs.
+  `#1352 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1352>`_
+- Missing information for handling UML diagrams when building the documentation.
+  `#1360 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1360>`_
+- Normalizing a vector, relative to a design space of integer variables,
+  using an integer NumPy array as value of the ``out`` argument of ``DesignSpace.normalize_vect``
+  no longer crashes.
+  `#1362 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1362>`_
+- ``Discipline.check_jacobian`` now correctly uses the ``input_data`` argument for the approximate Jacobian when provided.
+  `#1369 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1369>`_
+- The return value of ``DesignSpace.get_current_value``
+  when accessing an integer design variable has now integer data type.
+- A self-explanatory exception is raised when trying to access the current value
+  of a design variable that has none.
+  `#1370 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1370>`_
+- ``PCERegressor.learn`` works properly when its argument ``samples`` is not empty and the learning dataset includes gradient information.
+  `#1374 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1374>`_
+- The ``log_convergence`` attribute of ``MDASequential`` is cascaded to the sub-MDAs.
+  `#1375 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1375>`_
+- ``TaylorDiscipline`` uses the same order of input variables as the original discipline.
+  `#1377 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1377>`_
+- The attributes ``input_names`` and ``output_names`` of ``AutoPyDiscipline``, which were supposed to be non-modifiable, are now read-only and will be removed in the next major release.
+- The attributes ``py_func`` and ``py_jac`` of ``AutoPyDiscipline``, which were supposed to be non-modifiable, are now read-only.
+- The attribute ``sizes`` appearing in the documentation of ``AutoPyDiscipline`` has been removed as it was not used (not even initialized).
+- ``AutoPyDiscipline`` no longer logs a warning message when ``py_func`` has no type hints, neither for arguments nor return variables.
+  `#1386 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1386>`_
+- Data processors are now compatible with namespaces and ``NameMapping``.
+- ``NameMapping`` is now compatible with the new way of implementing the ``Discipline._run`` method since |g| 6,
+  i.e. using input data passed as a dictionary and returning output data as a dictionary.
+  `#1406 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1406>`_
+- The methods ``plot_boxplot``, ``plot_cdf`` and ``plot_pdf`` of ``EmpiricalStatistics`` save one figure per variable,
+  instead of the figure for the last variable only.
+  For ``plot_foo``, the file name for the variable called ``"bar"`` is ``"foo_bar"``.
+  `#1413 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1413>`_
+- A broken example, relying on an older implementation of ``ODEDiscipline`` and no longer functional, has been removed from the documentation.
+  `#1426 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1426>`_
+- ``ODEDiscipline`` is insensitive to the order of state variable names passed to the argument ``state_names``.
+  `#1427 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1427>`_
+- ``HSICAnalysis.sort_input_variables`` now correctly returns the input parameters sorted by order of influence.
+  `#1429 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1429>`_
+- The ``BiLevel`` and ``BiLevelBCD`` formulations no longer include
+  a system-level variable in the warm-starting mechanism even if
+  the variable is an output of the MDA1, the MDA2, or the sub-scenarios.
+  `#1434 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1434>`_
+- ``TaylorDiscipline`` is now deterministic (independent of the Python hash seed).
+  `#1437 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1437>`_
+- The ``copy`` method of a grammar was partly returning a shallow copy which did not have a consistent state.
+  It now returns a deep copy.
+  `#1438 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1438>`_
+- The method ``OptimizationResult.from_optimization_problem()`` properly returns an ``OptimizationResult`` object when giving an ``OptimizationProblem`` as an argument.
+  `#1450 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1450>`_
+- A ``SimpleGrammar`` built from a ``JSONGrammar``, which validates float data, validates in turn float data.
+  `#1455 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1455>`_
+- The ``BaseSensitivityAnalysis`` now uses the same order for I/O names when it is instantiated from a dataset.
+  `#1459 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1459>`_
+- The ``MDOScenarioAdapter`` now includes the argument ``naming`` which allows to decide whether to use
+  integers or uuid's for database names when exporting them to the disk. The ``"UUID"`` strategy is the only
+  multiprocessing-safe option and it shall always be used when running the adapter inside a parallel execution context.
+  Before this change, different sub-processes would overwrite the database files and the data from some runs would be
+  lost.
+  `#1472 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1472>`_
+- The documentation has been updated to inform the end-user
+  not to use ``namespaces_separator`` (default: ``":"``) in discipline variable names,
+  as |g| uses this special character  to separate the original names from the namespace associated with these variables.
+  The end-user must never add the namespaces by hand
+  but always use the dedicated methods
+  such as ``Discipline.add_namespace_to_input``, ``Discipline.add_namespace_to_output`` and ``BaseGrammar.add_namespace``.
+  `#1476 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1476>`_
+- The method ``SobolAnalysis.unscale_indices`` supports negative estimates of Sobol' indices.
+  `#1488 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1488>`_
+- The ``DesignSpace.__eq__`` operator is now symmetrical.
+  `#1696 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1696>`_
+- Warnings issued from some pydantic models.
+- ``PolynomialRegressor_Settings``: the default value of ``degree`` is a positive integer.
+- The minimum required versions of the dependencies of the |g| packages were not up to date.
+
+Changed
+-------
+
+- BREAKING CHANGES:
+
+  - It is no longer necessary to set the option ``keep_opt_history`` to ``True``
+    to save the optimization database to the disk after each execution of the ``MDOScenarioAdapter``.
+    If you wish to save the optimization database to the disk, use the option ``save_opt_history`` instead. Concerning
+    ``keep_opt_history``, you may set it to ``False`` if you are not interested in accessing the databases in memory or to
+    ``True`` otherwise. This setting will not affect the saving of the optimization database to the disk. Storing many
+    databases in memory can lead to high memory consumption.
+    From now on,
+    the option ``opt_history_file_prefix`` only sets the prefix of the files to be saved and no longer controls whether the
+    optimization databases are saved to the disk or not. You shall set the option ``save_opt_history`` to ``True`` if you
+    wish to save the optimization database to the disk.
+    If it is not provided,
+    the default prefix is ``MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX``.
+    `#1470 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1470>`_
+  - ``NameMapping`` is no longer compatible with the way of implementing the ``Discipline._run`` method before |g| 6,
+    i.e. getting input data from the ``local_data`` and writing output data in the ``local_data``.
+    `#1406 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1406>`_
+- In ``LinearCombination``, the default value of the ``input_size`` argument is ``1`` rather than ``None``, which in practice does not change the definition of the discipline.
+- In ``LinearCombination``, the default value of the ``input_coefficients`` argument is an empty dictionary rather than ``None``, which in practice does not change the definition of the discipline.
+  `#924 <https://gitlab.com/gemseo/dev/gemseo/-/issues/924>`_
+- Integer design variables are no longer normalized by default.
+  `#1000 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1000>`_
+- API change: In ``gemseo.problems.mdo.scalable.data_driven.discipline``, rename ``ScalableDiscipline`` into ``DataDrivenScalableDiscipline``.
+  `#1092 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1092>`_
+- Added documentation about ODEDiscipline and ODEProblem.
+  `#1302 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1302>`_
+- Changed input and output names of ODEDiscipline
+  `#1353 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1353>`_
+- ``PCERegressor`` uses a probability space of type ``ParameterSpace`` to define the input random variables.
+  Now,
+  this probability space can be passed to the argument ``data`` of type ``IODataset``,
+  by means of its dictionary attribute ``misc``, *e.g.* ``io_dataset.misc["input_space"] = probability_space``.
+  When the ``IODataset`` is the result of sampling on the ``ParameterSpace``,
+  using the ``sample_disciplines`` function or the ``DOEScenario`` with its ``to_dataset`` method for example,
+  this ``ParameterSpace``  is automatically stored in ``io_dataset.misc["input_space"]``.
+  `#1373 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1373>`_
+- The signature of the ``MDAGSNewton`` constructor is now the same as all the other MDA classes.
+  The ``MDAGSNewton_Settings`` settings model has two new fields, namely ``gauss_seidel_settings`` and ``newton_settings``, to provide the settings of the ``MDAGaussSeidel`` and ``MDANewtonRaphson`` respectively.
+  These settings can be provided either as key/value pairs or with the appropriate settings model.
+  `#1375 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1375>`_
+- The data processor ``NameMapping`` can be used to rename only certain input and output variables.
+  `#1407 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1407>`_
+- The ``BiLevel`` and ``BiLevelBCD`` formulations now log a warning when
+  a coupling variable is removed from the design space.
+  `#1434 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1434>`_
+- At the end of its execution,
+  a scenario logs its time execution calculated from its ``execution_statistics.duration``,
+  to be consistent with its ``execution_statistics``.
+  If these ``execution_statistics`` are disabled,
+  the time execution is not logged.
+  `#1445 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1445>`_
+- Updated the default protocol for the ``to_pickle`` function to ``HIGHEST_PROTOCOL``.
+  `#1467 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1467>`_
+- The class ``DirectoryCreator`` now inherits from ``NameGenerator``. Its argument ``directory_naming_method`` will be
+  deprecated in the next major release of GEMSEO in favor of ``naming``.
+  The class ``DirectoryNamingMethod`` is now an alias for ``NameGenerator.Naming``. It will be deprecated in
+  the next major release of GEMSEO in favor of ``NameGenerator.Naming``.
+  `#1472 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1472>`_
+- The ``BiLevel`` formulation has been refactored in order to
+  simplify the ``BiLevelBCD`` integration or any other formulation
+  that may inherit from it.
+  `#1794 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1794>`_
+- ``ExecutionStatistics.record``: now use ``ExecutionStatistics.record_execution`` and ``ExecutionStatistics.record_linearization``.
+- ``ExecutionStatistics.n_calls``:  now use ``ExecutionStatistics.n_executions``.
+- ``ExecutionStatistics.n_calls_linearize``: now use ``ExecutionStatistics.n_linearizations``.
+- ``ExecutionStatus.run``: now use  ``ExecutionStatistics.handle``.
+- ``ExecutionStatus.linearize``: now use ``ExecutionStatistics.handle``.
+- The integer type of a design variable is now ``int64`` instead of ``int32``,
+  this matches the type of python ``int`` and the default type of integer in NumPy 2 which we will support later.
+- ``base_cache.DATA_COMPARATOR``: now use ``BaseCache.compare_dict_of_arrays``.
+- ``PolynomialRegressor``: specifying the ``degree`` is no longer mandatory; the default value is ``2``.
+
+Version 6.0.0 (2024-11-08)
+**************************
 
 Added
 -----

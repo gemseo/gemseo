@@ -1,1 +1,0 @@
-The ``BaseSensitivityAnalysis`` now uses the same order for I/O names when it is instantiated from a dataset.

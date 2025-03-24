@@ -31,7 +31,10 @@ class FileDefinition(NamedTuple):
     """The definition of a file name."""
 
     name: str
+    """The name of the file."""
+
     extension: str
+    """The extension of the file."""
 
 
 class FilePathManager:

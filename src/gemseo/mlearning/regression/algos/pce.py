@@ -19,16 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Polynomial chaos expansion model.
 
-.. _FunctionalChaosAlgorithm:
-https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated
-/openturns.FunctionalChaosAlgorithm.html
-.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual
-/response_surface/_generated/openturns.CleaningStrategy.html
-.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling
-/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
-.. _hyperbolic and anisotropic enumerate function:
-https://openturns.github.io/openturns/latest/user_manual/_generated/openturns
-.HyperbolicAnisotropicEnumerateFunction.html
+.. _FunctionalChaosAlgorithm: https://openturns.github.io/
+openturns/latest/user_manual/response_surface/response_surface.html
+.. _CleaningStrategy: https://openturns.github.io/
+openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
+.. _LARS: https://openturns.github.io/
+openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html
+.. _hyperbolic and anisotropic enumerate function: https://openturns.github.io/
+openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html
 
 The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal

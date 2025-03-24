@@ -1,5 +1,0 @@
-At the end of its execution,
-a scenario logs its time execution calculated from its ``execution_statistics.duration``,
-to be consistent with its ``execution_statistics``.
-If these ``execution_statistics`` are disabled,
-the time execution is not logged.

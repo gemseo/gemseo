@@ -67,7 +67,6 @@ The :class:`.ParameterSpace` also provides the following methods:
 
 from __future__ import annotations
 
-import collections
 import logging
 from typing import TYPE_CHECKING
 from typing import Any
@@ -91,18 +90,6 @@ from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import _format_value_in_pretty_table_16
-
-RandomVariable = collections.namedtuple(  # noqa: PYI024
-    "RandomVariable",
-    ["distribution", "size", "parameters"],
-    defaults=(1, {}),
-)
-
-RandomVector = collections.namedtuple(  # noqa: PYI024
-    "RandomVector",
-    ["distribution", "size", "parameters"],
-    defaults=(1, {}),
-)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -209,8 +196,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
-            For instance,
+            the same identifier. For instance,
             one cannot mix a random vector
             using a :class:`.OTUniformDistribution` with identifier ``"OT"``
             and a random vector
@@ -473,8 +459,7 @@ class ParameterSpace(DesignSpace):
 
         Warnings:
             The probability distributions must have
-            the same :class:`~.BaseDistribution.DISTRIBUTION_FAMILY_ID`.
-            For instance,
+            the same identifier. For instance,
             one cannot mix a random variable
             distributed as an :class:`.OTUniformDistribution` with identifier ``"OT"``
             and a random variable

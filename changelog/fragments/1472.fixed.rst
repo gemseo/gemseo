@@ -1,5 +1,0 @@
-The ``MDOScenarioAdapter`` now includes the argument ``naming`` which allows to decide whether to use
-integers or uuid's for database names when exporting them to the disk. The ``"UUID"`` strategy is the only
-multiprocessing-safe option and it shall always be used when running the adapter inside a parallel execution context.
-Before this change, different sub-processes would overwrite the database files and the data from some runs would be
-lost.

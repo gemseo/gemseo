@@ -1,1 +1,0 @@
-A broken example, relying on an older implementation of ``ODEDiscipline`` and no longer functional, has been removed from the documentation.

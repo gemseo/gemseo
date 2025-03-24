@@ -49,6 +49,7 @@ Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
 
     if SCIPY_LOWER_THAN_1_12:
         tol: PositiveFloat = Field(
+            alias="rtol",
             default=1e-12,
             description="""The relative tolerance.
 

@@ -13,7 +13,7 @@
 
 
 ODEProblem and ODEResult
-========================
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Examples concerning the classes :class:`.ODEProblem` and :class:`.ODEResult`
 for the solution of initial value problems.

@@ -1,1 +1,0 @@
-``TaylorDiscipline`` uses the same order of input variables as the original discipline.

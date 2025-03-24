@@ -1,2 +1,0 @@
-- ``EmpiricalToleranceInterval`` allows to estimate tolerance intervals from samples without any distribution assumption.
-- ``EmpiricalStatistics.compute_tolerance_interval``, ``EmpiricalStatistics.compute_a_value`` and ``EmpiricalStatistics.compute_b_value`` are now implemented.

@@ -6,15 +6,15 @@ mypy==1.15.0
     # via -r requirements/check-types.in
 mypy-extensions==1.0.0
     # via mypy
-numpy==2.2.3
+numpy==2.2.4
     # via pandas-stubs
-pandas-stubs==2.2.3.241126
+pandas-stubs==2.2.3.250308
     # via -r requirements/check-types.in
 types-pytz==2025.1.0.20250204
     # via pandas-stubs
-types-requests==2.32.0.20241016
+types-requests==2.32.0.20250306
     # via types-tqdm
-types-tqdm==4.67.0.20241221
+types-tqdm==4.67.0.20250301
     # via -r requirements/check-types.in
 typing-extensions==4.12.2
     # via mypy

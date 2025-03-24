@@ -1,1 +1,0 @@
-The ``OptAsMDOScenario`` can make a monodisciplinary optimization problem multidisciplinary.

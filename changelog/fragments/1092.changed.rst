@@ -1,1 +1,0 @@
-API change: In ``gemseo.problems.mdo.scalable.data_driven.discipline``, rename ``ScalableDiscipline`` into ``DataDrivenScalableDiscipline``.

@@ -1,1 +1,0 @@
-The data processor ``NameMapping`` can be used to rename only certain input and output variables.

@@ -1,6 +1,0 @@
-The DOE algorithms have a new option,
-named ``"eval_func"`` (default: ``True``),
-to sample the functions computing output data.
-By deactivating it,
-only functions calculating Jacobian data are sampled
-if ``eval_jac`` is ``True`` (default: ``False``).

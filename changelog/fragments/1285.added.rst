@@ -1,4 +1,0 @@
-``PCERegressor.predict_jacobian_against_substitute`` can predict the Jacobian
-with respect to inputs substitute at a given input point
-when the learning dataset includes gradient information;
-similar attributes are available for the Jacobian of the mean, standard deviation and variance.

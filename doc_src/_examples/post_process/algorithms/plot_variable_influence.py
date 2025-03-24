@@ -18,7 +18,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""
+r"""
 Variables influence
 ===================
 
@@ -28,8 +28,9 @@ on the Sobieski's SSBJ problem.
 The :class:`.VariableInfluence` post-processing performs first-order variable
 influence analysis.
 
-The method computes :math:`\frac{d f}{d x_i} \\cdot \\left(x_{i_*} -
-x_{initial_design}\right)`, where :math:`x_{initial_design}` is the initial value of the
+The method computes
+:math:`\frac{d f}{d x_i} \cdot \left(x_{i_*} - x_{initial_design}\right)`, where
+:math:`x_{initial_design}` is the initial value of the
 variable and :math:`x_{i_*}` is the optimal value of the variable.
 """
 
