@@ -1086,6 +1086,15 @@ class Database(Mapping):
         names_to_types_without_int.update({
             k: float for k, v in names_to_types.items() if issubdtype(v, integer)
         })
+
+        # The type for integers must be "pandas.Int64Dtype()"
+        # to manage NaN with integers.
+        # It's a Pandas experimental feature.
+        # See https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html
+        names_to_types.update({
+            k: "Int64" for k, v in names_to_types.items() if issubdtype(v, integer)
+        })
+
         # "0.0" cannot be cast to int directly (try int("0.0")).
         # So
         # 1) we cast the str-like int to float
@@ -1128,6 +1137,10 @@ class Database(Mapping):
             history, input_history = self.get_function_history(
                 function_name=function_name, with_x_vect=True
             )
+            # The history data type may change if data is incomplete.
+            # In that case, we insert NaNs and convert ``history`` into float.
+            # Thus, the initial data type is kept for future data type conversion.
+            history_dtype = atleast_1d(history).real.dtype
             history = (
                 self.__replace_missing_values(
                     history,
@@ -1140,7 +1153,7 @@ class Database(Mapping):
             data.append(history)
             columns_ = [(group, function_name, i) for i in range(history.shape[1])]
             columns.extend(columns_)
-            names_to_types.update(dict.fromkeys(columns_, atleast_1d(history).dtype))
+            names_to_types.update(dict.fromkeys(columns_, history_dtype))
 
     @staticmethod
     def __replace_missing_values(
@@ -1165,6 +1178,7 @@ class Database(Mapping):
             # Add NaN values at the missing input data.
             # N.B. the input data are assumed to be in the same order.
             index = 0
+            output_history = output_history.astype(float)
             for input_data in input_history:
                 while not array_equal(input_data, full_input_history[index]):
                     output_history = insert(output_history, index, nan, 0)
