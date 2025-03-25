@@ -31,12 +31,14 @@ from numpy import ones
 from numpy.linalg import norm
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
+from pandas import NA
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
 from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.datasets.dataset import Dataset
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
@@ -718,3 +720,24 @@ def test_store_twice(tmp_wd) -> None:
     path = Path("foo.hdf5")
     database.to_hdf(path)
     assert len(Database.from_hdf(path)) == 1
+
+
+def test_to_dataset_with_missing_integer() -> None:
+    """Test the dataset export when there is an integer missing."""
+    database = Database()
+    database.store(array([1.0]), {"foo": 0, "toto": 1.0})
+    database.store(array([0.0]), {"toto": 3.0})
+    dataset = database.to_dataset()
+
+    expected_dataset = Dataset()
+    expected_dataset.add_variable("input", array([1.0, 0.0]))
+    expected_dataset.add_variable(
+        "foo",
+        array([0, NA]),
+    )
+    expected_dataset.add_variable("toto", array([1.0, 3.0]))
+    expected_dataset["parameters", "foo", 0] = expected_dataset[
+        "parameters", "foo", 0
+    ].astype("Int64")
+
+    assert dataset.equals(expected_dataset)
