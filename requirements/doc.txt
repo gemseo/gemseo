@@ -144,7 +144,7 @@ pygments==2.19.1
     #   accessible-pygments
     #   pydata-sphinx-theme
     #   sphinx
-pyparsing==3.2.1
+pyparsing==3.2.2
     # via matplotlib
 python-dateutil==2.9.0.post0
     # via
@@ -172,7 +172,7 @@ scipy==1.15.2
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-setuptools==77.0.3
+setuptools==78.0.2
     # via
     #   gemseo (pyproject.toml)
     #   pbr
