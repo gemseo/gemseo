@@ -106,7 +106,7 @@ pydantic-core==2.27.2
     # via pydantic
 pydoe3==1.0.4
     # via gemseo (pyproject.toml)
-pyparsing==3.2.2
+pyparsing==3.2.3
     # via matplotlib
 pytest==8.3.5
     # via
@@ -121,7 +121,7 @@ python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
-pytz==2025.1
+pytz==2025.2
     # via pandas
 pyxdsm==2.3.1
     # via gemseo (pyproject.toml)
