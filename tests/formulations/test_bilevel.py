@@ -527,3 +527,26 @@ def test_save_opt_history(
         assert (
             len(list(tmp_wd.rglob(f"{path_propulsion.name}_*.h5"))) == 2
         ) is save_opt_history
+
+
+@pytest.mark.parametrize(
+    "scenario", [sobieski_bilevel_scenario, sobieski_bilevel_bcd_scenario]
+)
+@pytest.mark.parametrize("include_sub_formulations", [False, True])
+def test_get_top_level_disciplines(scenario, request, include_sub_formulations) -> None:
+    """Test the get_top_level_disciplines method."""
+    scenario = request.getfixturevalue(scenario.__name__)()
+    bilevel = scenario.formulation
+    top_level_disciplines = bilevel.get_top_level_disciplines(
+        include_sub_formulations=include_sub_formulations
+    )
+    if include_sub_formulations:
+        adapters = bilevel.scenario_adapters
+        assert top_level_disciplines == (
+            bilevel.chain,
+            adapters[0].scenario.formulation.get_top_level_disciplines()[0],
+            adapters[1].scenario.formulation.get_top_level_disciplines()[0],
+            adapters[2].scenario.formulation.get_top_level_disciplines()[0],
+        )
+    else:
+        assert top_level_disciplines == (bilevel.chain,)
