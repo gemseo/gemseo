@@ -154,7 +154,7 @@ tqdm==4.67.1
     # via gemseo (pyproject.toml)
 typeguard==4.4.2
     # via pandera
-typing-extensions==4.12.2
+typing-extensions==4.13.0
     # via
     #   gemseo (pyproject.toml)
     #   pydantic
