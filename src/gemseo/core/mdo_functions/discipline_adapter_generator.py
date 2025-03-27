@@ -158,15 +158,15 @@ class DisciplineAdapterGenerator:
             ValueError: When a variable name is not defined in the grammar.
         """
         if names:
-            wrong_names = set(names) - grammar.names
+            wrong_names = set(names).difference(grammar)
             if wrong_names:
                 msg = (
                     f"{sorted(wrong_names)} are not names of {group_name} "
                     f"in the discipline {self.discipline.name}; "
-                    f"expected names among {sorted(grammar.names)}."
+                    f"expected names among {sorted(grammar)}."
                 )
                 raise ValueError(msg)
 
             return names
 
-        return list(grammar.names)
+        return list(grammar)
