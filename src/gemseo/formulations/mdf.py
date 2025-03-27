@@ -85,7 +85,9 @@ class MDF(BaseMDOFormulation):
         self._update_design_space()
         self._build_objective_from_disc(objective_name, discipline=self.mda)
 
-    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:  # noqa:D102
+    def get_top_level_disciplines(  # noqa:D102
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
         return (self.mda,)
 
     @classmethod

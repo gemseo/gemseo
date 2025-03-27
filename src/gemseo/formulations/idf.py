@@ -137,7 +137,9 @@ class IDF(BaseMDOFormulation):
             raise ValueError(msg)
         self._set_default_input_values_from_design_space()
 
-    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:  # noqa:D102
+    def get_top_level_disciplines(  # noqa:D102
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
         # All functions and constraints are built from the top level disc
         # If we are in parallel mode: return the parallel execution
         if self._parallel_exec is not None:

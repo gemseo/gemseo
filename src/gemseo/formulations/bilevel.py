@@ -449,7 +449,21 @@ class BiLevel(BaseMDOFormulation):
                     )
                     design_space.remove_variable(coupling)
 
-    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
+    def get_top_level_disciplines(  # noqa:D102
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
+        if include_sub_formulations:
+            return (
+                self.chain,
+                *(
+                    discipline
+                    for scenario_adapter in self._scenario_adapters
+                    for discipline in scenario_adapter.scenario.formulation.get_top_level_disciplines(  # noqa: E501
+                        include_sub_formulations=include_sub_formulations
+                    )
+                ),
+            )
+
         return (self.chain,)
 
     def add_constraint(

@@ -209,17 +209,26 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @abstractmethod
-    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:
-        """Return the disciplines which inputs are required to run the scenario.
+    def get_top_level_disciplines(
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
+        """Return the top level disciplines that are executed in the foreground.
 
-        A formulation seeks to
-        compute the objective and constraints from the input variables.
-        It structures the optimization problem into multiple levels of disciplines.
-        The disciplines directly depending on these inputs
-        are called top level disciplines.
+        A formulation structures the optimization problem
+        into multiple levels of disciplines.
+        The top level disciplines map
+        from the :attr:`.design_space`
+        to the objective, constraint and observable spaces.
+        They can be composed of
+        both user disciplines and process disciplines added by the formulation,
+        e.g. :class:`.MDOChain`.
+        These process disciplines may also include
+        both user disciplines and process disciplines,
+        and so on.
 
-        By default, this method returns all disciplines.
-        This method can be overloaded by subclasses.
+        Args:
+            include_sub_formulations: Whether to include the top level disciplines
+                of the formulations that make up the current one.
 
         Returns:
             The top level disciplines.
