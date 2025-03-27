@@ -191,7 +191,7 @@ class ODEDiscipline(Discipline):
             if isinstance(state_names, Mapping):
                 state_names = {
                     input_name: state_names[input_name]
-                    for input_name in rhs_discipline.io.input_grammar.names
+                    for input_name in rhs_discipline.io.input_grammar
                     if input_name in state_names
                 }
                 self.__state_names = state_names.keys()
@@ -208,17 +208,15 @@ class ODEDiscipline(Discipline):
             else:
                 self.__state_names = tuple(
                     input_name
-                    for input_name in rhs_discipline.io.input_grammar.names
+                    for input_name in rhs_discipline.io.input_grammar
                     if input_name in state_names
                 )
-                state_dot_names = rhs_discipline.io.output_grammar.names
+                state_dot_names = rhs_discipline.io.output_grammar
         else:
             self.__state_names = tuple(
-                name
-                for name in rhs_discipline.io.input_grammar.names
-                if name != time_name
+                name for name in rhs_discipline.io.input_grammar if name != time_name
             )
-            state_dot_names = rhs_discipline.io.output_grammar.names
+            state_dot_names = rhs_discipline.io.output_grammar
 
         excluded_names = [self.__time_name, *self.__state_names]
         self.__design_variables_names = tuple(
