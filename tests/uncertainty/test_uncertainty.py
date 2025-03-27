@@ -106,7 +106,7 @@ def test_create_statistics() -> None:
     assert isinstance(stat, ParametricStatistics)
 
 
-def test_io_names(analysis: MorrisAnalysis):
+def test_io_names(tmp_wd, analysis: MorrisAnalysis):
     analysis.dataset.to_pickle("dataset.pkl")
     input_names = analysis._input_names
     output_names = analysis._output_names
