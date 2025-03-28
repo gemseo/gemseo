@@ -121,11 +121,16 @@ if TYPE_CHECKING:
 class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A toolbox to compute statistics.
 
-    Unless otherwise stated, the statistics are computed *variable-wise* and
-    *component-wise*, i.e. variable-by-variable and component-by-component. So, for the
-    sake of readability, the methods named as :meth:`.compute_statistic` return
-    ``dict[str, RealArray]`` objects whose values are the names of the variables and the
-    values are the statistic estimated for the different component.
+    Note:
+        Unless otherwise stated,
+        the statistics are computed
+        *variable-wise* and *component-wise*,
+        i.e. variable-by-variable and component-by-component.
+        So, for the sake of readability,
+        the methods named as :meth:`compute_statistic`
+        return ``dict[str, RealArray]`` objects
+        whose values are the names of the variables
+        and the values are the statistic estimated for the different component.
     """
 
     dataset: Dataset
