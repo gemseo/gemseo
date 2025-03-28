@@ -55,6 +55,10 @@ class SPDistributionFitter(BaseDistributionFitter[SPDistribution]):
         FILLIBEN = "Filliben"
         KOLMOGOROV_SMIRNOV = "KolmogorovSmirnov"
 
+    default_fitting_criterion: ClassVar[FittingCriterion] = (
+        FittingCriterion.ANDERSON_DARLING
+    )
+
     _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[dict[FittingCriterion, str]] = {
         FittingCriterion.ANDERSON_DARLING: "ad",
         FittingCriterion.CRAMER_VON_MISES: "cvm",

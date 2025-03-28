@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import contextlib
 import numbers
 import re
 from unittest import mock
@@ -36,10 +37,21 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
     ScalarDistributionMixin,
 )
+from gemseo.uncertainty.distributions.scipy import distribution_fitter
+from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
+    SPDistributionFitter,
+)
+from gemseo.uncertainty.statistics.ot_parametric_statistics import (
+    OTParametricStatistics,
+)
 from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
+from gemseo.uncertainty.statistics.sp_parametric_statistics import (
+    SPParametricStatistics,
+)
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
 )
+from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -63,15 +75,41 @@ def dataset() -> Dataset:
 
 
 @pytest.fixture(scope="module")
+def sp_dataset() -> Dataset:
+    """This fixture is a random sample of four random variables distributed according to
+    the uniform, normal, weibull and exponential probability distributions."""
+    # This dataset is the same as the previous one,
+    # but on the windows CI,
+    # using the same fixture caused problems
+    # with test_sp_statistics and test_sp_statistics_custom.
+    n_samples = 100
+    rng = RandomState(0)
+    uniform_rand = rng.random(n_samples)
+    normal_rand = rng.normal(size=n_samples)
+    weibull_rand = rng.weibull(1.5, size=n_samples)
+    exponential_rand = rng.exponential(size=n_samples)
+    return Dataset.from_array(
+        vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T,
+        ["x_1", "x_2", "x_3"],
+        {"x_1": 1, "x_2": 1, "x_3": 2},
+    )
+
+
+@pytest.fixture(scope="module")
+def statistics(dataset, tested_distributions) -> OTParametricStatistics:
+    """OpenTURNS statistics associated with the dataset and tested distributions."""
+    return OTParametricStatistics(dataset, tested_distributions)
+
+
+@pytest.fixture(scope="module")
 def tested_distributions() -> list[str]:
     """The tested distributions."""
     return ["Exponential", "Normal", "Uniform"]
 
 
-@pytest.fixture(scope="module")
-def statistics(dataset, tested_distributions) -> ParametricStatistics:
-    """The statistics associated with the dataset and tested distributions."""
-    return ParametricStatistics(dataset, tested_distributions)
+def test_parametric_statistics():
+    """Check that ParametricStatistics is OTParametricStatistics."""
+    assert ParametricStatistics is OTParametricStatistics
 
 
 @image_comparison(["pdf_cdf_x_1", "pdf_cdf_x_2", "pdf_cdf_x_3_0", "pdf_cdf_x_3_1"])
@@ -89,7 +127,7 @@ def test_repr(statistics) -> None:
         repr(statistics)
         == str(statistics)
         == (
-            "ParametricStatistics(Dataset)\n"
+            "OTParametricStatistics(Dataset)\n"
             "   n_samples: 100\n"
             "   n_variables: 3\n"
             "   variables: x_1, x_2, x_3"
@@ -100,7 +138,7 @@ def test_repr(statistics) -> None:
 def test_repr_html_(statistics) -> None:
     """Check _repr_html_."""
     assert statistics._repr_html_() == REPR_HTML_WRAPPER.format(
-        "ParametricStatistics(Dataset)<br/>"
+        "OTParametricStatistics(Dataset)<br/>"
         "<ul>"
         "<li>n_samples: 100</li>"
         "<li>n_variables: 3</li>"
@@ -110,12 +148,12 @@ def test_repr_html_(statistics) -> None:
 
 
 def test_n_samples(dataset, statistics) -> None:
-    """Check n_samples."""
+    """Verify that n_samples corresponds to the number of samples in the dataset."""
     assert statistics.n_samples == len(dataset)
 
 
 def test_n_variables(dataset, statistics) -> None:
-    """Check n_variables."""
+    """Verify that n_variables corresponds to the variable names in the dataset."""
     assert statistics.n_variables == len(dataset.variable_names)
 
 
@@ -126,8 +164,8 @@ def test_n_variables(dataset, statistics) -> None:
 def test_get_criteria(
     dataset, statistics, tested_distributions, expected_is_pvalue, kwargs
 ) -> None:
-    """Check get_criteria()."""
-    statistics = ParametricStatistics(dataset, tested_distributions, **kwargs)
+    """Verify the results returned by get_criteria."""
+    statistics = OTParametricStatistics(dataset, tested_distributions, **kwargs)
     criteria, is_pvalue = statistics.get_criteria("x_1")
     assert is_pvalue == expected_is_pvalue
     for distribution, criterion in criteria.items():
@@ -223,7 +261,7 @@ def test_statistics(
 
 
 def test_compute_margin(statistics) -> None:
-    """Check compute_margin()."""
+    """Verify that compute_margin and compute_mean_std compute the same quantity."""
     margin = statistics.compute_margin(3.0)
     mean_std = statistics.compute_mean_std(3.0)
     for name, value in margin.items():
@@ -244,7 +282,7 @@ def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions) -> Non
     ):
         statistics.plot_criteria("dummy", save=True, show=False)
 
-    stats = ParametricStatistics(
+    stats = OTParametricStatistics(
         dataset, tested_distributions, fitting_criterion="Kolmogorov"
     )
     stats.plot_criteria("x_2", save=True, show=False)
@@ -262,7 +300,8 @@ def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions) -> Non
 def test_plot_criteria_images(
     baseline_images, dataset, fitting_criterion, title
 ) -> None:
-    statistics = ParametricStatistics(
+    """Verify that the images generated by plot_criteria are correct."""
+    statistics = OTParametricStatistics(
         dataset,
         ["Exponential", "Normal", "Uniform"],
         fitting_criterion=fitting_criterion,
@@ -272,7 +311,7 @@ def test_plot_criteria_images(
 
 @pytest.mark.parametrize("coverage", [-0.5, 1.5])
 def test_tolerance_interval_wrong_coverage(statistics, coverage) -> None:
-    """Check tolerance_interval() with a wrong coverage."""
+    """Verify that compute_tolerance_interval raises an error if wrong coverage."""
     with pytest.raises(
         ValueError,
         match=re.escape("The argument 'coverage' must be a number in [0,1]."),
@@ -282,7 +321,7 @@ def test_tolerance_interval_wrong_coverage(statistics, coverage) -> None:
 
 @pytest.mark.parametrize("confidence", [-0.5, 1.5])
 def test_tolerance_interval_wrong_confidence(statistics, confidence) -> None:
-    """Check tolerance_interval() with a wrong confidence."""
+    """Verify that compute_tolerance_interval raises an error if wrong confidence."""
     with pytest.raises(
         ValueError,
         match=re.escape("The argument 'confidence' must be a number in [0,1]."),
@@ -303,7 +342,7 @@ def test_tolerance_interval_wrong_confidence(statistics, confidence) -> None:
 def test_tolerance_interval(generate_samples, distribution) -> None:
     """Check compute_tolerance_intervals() with different distributions."""
     dataset = Dataset.from_array(generate_samples(100).reshape((-1, 1)))
-    statistics = ParametricStatistics(dataset, [distribution])
+    statistics = OTParametricStatistics(dataset, [distribution])
     tolerance_interval = statistics.compute_tolerance_interval(
         0.1, side=BaseToleranceInterval.ToleranceIntervalSide.BOTH
     )
@@ -332,12 +371,13 @@ def test_tolerance_interval(generate_samples, distribution) -> None:
 def test_abvalue_normal() -> None:
     """Check that A-value is lower than B-value."""
     dataset = Dataset.from_array(RNG.normal(size=(100, 1)))
-    stats = ParametricStatistics(dataset, ["Normal"])
+    stats = OTParametricStatistics(dataset, ["Normal"])
     assert stats.compute_a_value()["x_0"][0] <= stats.compute_b_value()["x_0"][0]
 
 
 def test_available(statistics) -> None:
-    assert "Normal" in ParametricStatistics.DistributionName.__members__
+    """Verify that Normal is a DistributionName and a key of the fitting matrix."""
+    assert "Normal" in OTParametricStatistics.DistributionName.__members__
     assert "Normal" in statistics.get_fitting_matrix()
 
 
@@ -387,7 +427,7 @@ def test_available(statistics) -> None:
 )
 def test_expression(name, options, expression) -> None:
     """Check the string expression of a statistic applied to a variable."""
-    assert ParametricStatistics.compute_expression("X", name, **options) == expression
+    assert OTParametricStatistics.compute_expression("X", name, **options) == expression
 
 
 def test_plot_args(statistics) -> None:
@@ -403,3 +443,52 @@ def test_plot_args(statistics) -> None:
         "directory_path": 3,
         "file_extension": 4,
     }
+
+
+def test_sp_statistics(sp_dataset):
+    """Check SPParametricStatistics with default settings."""
+    statistics = SPParametricStatistics(sp_dataset, ("expon", "norm", "uniform"))
+    assert compare_dict_of_arrays(
+        statistics.compute_mean(),
+        {
+            "x_1": array([0.47279384]),
+            "x_2": array([0.19233434]),
+            "x_3": array([0.87316603, 0.98482981]),
+        },
+        tolerance=0.1,
+    )
+
+
+def test_sp_statistics_custom(sp_dataset):
+    """Check SPParametricStatistics with custom settings."""
+    statistics = SPParametricStatistics(
+        sp_dataset,
+        ("expon", "norm", "uniform"),
+        fitting_criterion=SPParametricStatistics.FittingCriterion.FILLIBEN,
+        level=0.1,
+        selection_criterion=SPParametricStatistics.SelectionCriterion.FIRST,
+    )
+    assert compare_dict_of_arrays(
+        statistics.compute_mean(),
+        {
+            "x_1": array([0.49653466]),
+            "x_2": array([0.41918684]),
+            "x_3": array([0.87316603, 0.98482981]),
+        },
+        tolerance=0.1,
+    )
+
+
+@pytest.mark.parametrize("fitting_criterion", SPParametricStatistics.FittingCriterion)
+def test_sp_fitting_criteria(sp_dataset, fitting_criterion):
+    """Verify that fitting_criterion is passed to scipy.stats.goodness_of_fit."""
+    with mock.patch.object(distribution_fitter, "goodness_of_fit") as goodness_of_fit:  # noqa: SIM117
+        with contextlib.suppress(TypeError):
+            SPParametricStatistics(
+                sp_dataset, ("expon", "norm"), fitting_criterion=fitting_criterion
+            )
+
+    assert (
+        goodness_of_fit.call_args.kwargs["statistic"]
+        == SPDistributionFitter._CRITERIA_TO_WRAPPED_OBJECTS[fitting_criterion]
+    )

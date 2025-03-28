@@ -64,9 +64,6 @@ def _get_ot_distribution_factories() -> dict[str, type[DistributionFactory]]:
 class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
     """Fit a probability distribution to data using the OpenTURNS library."""
 
-    variable: str
-    """The name of the variable."""
-
     _OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES: Final[
         dict[str, type[DistributionFactory]]
     ] = _get_ot_distribution_factories()
@@ -78,6 +75,8 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
     FittingCriterion: ClassVar[StrEnum] = StrEnum(
         "FittingCriterion", "BIC ChiSquared Kolmogorov"
     )
+
+    default_fitting_criterion: ClassVar[FittingCriterion] = FittingCriterion.BIC
 
     _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[dict[FittingCriterion, FittingTest]] = {
         FittingCriterion.BIC: FittingTest.BIC,
@@ -92,19 +91,6 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
     _FITTING_CRITERIA_TO_MINIMIZE: ClassVar[set[FittingCriterion]] = {
         FittingCriterion.BIC
     }
-
-    def __init__(
-        self,
-        # TODO: API: rename to variable_name or remove it because useless.
-        variable: str,
-        data: RealArray,
-    ) -> None:
-        """
-        Args:
-            variable: The name of the variable.
-        """  # noqa: D205,D212,D415
-        self.variable = variable
-        super().__init__(data)
 
     @BaseDistributionFitter.data.setter
     def data(self, data_: RealArray) -> None:  # noqa: D102

@@ -87,15 +87,6 @@ if TYPE_CHECKING:
 class EmpiricalStatistics(BaseStatistics):
     """A toolbox to compute statistics empirically.
 
-    Unless otherwise stated,
-    the statistics are computed *variable-wise* and *component-wise*,
-    i.e. variable-by-variable and component-by-component.
-    So, for the sake of readability,
-    the methods named as :meth:`compute_statistic`
-    return ``dict[str, RealArray]`` objects
-    whose values are the names of the variables
-    and the values are the statistic estimated for the different component.
-
     Examples:
         >>> from gemseo import (
         ...     create_discipline,

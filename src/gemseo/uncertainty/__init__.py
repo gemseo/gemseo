@@ -61,6 +61,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
+    OTDistributionFitter as OTDistributionFitter,
+)
 from gemseo.utils.pickle import from_pickle as from_pickle
 
 if TYPE_CHECKING:
@@ -145,35 +148,43 @@ def create_statistics(
     dataset: Dataset,
     variable_names: Iterable[str] = (),
     tested_distributions: Sequence[str] = (),
-    fitting_criterion: str = "BIC",
+    fitting_criterion: str = "",
     selection_criterion: str = "best",
     level: float = 0.05,
     name: str = "",
 ) -> BaseStatistics:
-    """Create a statistics toolbox, either parametric or empirical.
+    """Create a toolbox to estimate statistics, either empirically or parametrically.
 
-    If parametric, the toolbox selects a distribution from candidates,
-    based on a fitting criterion and on a selection strategy.
+    If parametrically,
+    the toolbox selects a distribution from candidates,
+    based on a goodness-of-fit criterion and on a selection strategy.
 
     Args:
         dataset: A dataset.
-        variable_names: The variables of interest.
-            If empty, consider all the variables from dataset.
-        tested_distributions: The names of
-            the tested distributions.
+        variable_names: The names of the variables of interest.
+            If empty, consider all the variables of the dataset.
+        tested_distributions: The names of the probability distributions
+            to be used as candidates.
+            Either SciPy class names or OpenTURNS class names.
+            Do not mix SciPy and OpenTURNS class names.
         fitting_criterion: The name of a goodness-of-fit criterion,
-            measuring how the distribution fits the data.
-            Use :meth:`.ParametricStatistics.get_criteria`
-            to get the available criteria.
+            measuring how a distribution fits the data.
+            If empty,
+            use :attr:`.OTDistributionFitter.default_fitting_criterion``
+            or :attr:`.SPDistributionFitter.default_fitting_criterion``
+            according to the type of ``tested_distributions``.
         selection_criterion: The name of a selection criterion
-            to select a distribution from candidates.
-            Either 'first' or 'best'.
+            to select a distribution from ``tested_distributions``.
+            Either ``"first"``
+            (select the first distribution satisfying a fitting criterion)
+            or ``"best"``
+            (select the distribution that best satisfies a fitting criterion).
         level: A test level,
             i.e. the risk of committing a Type 1 error,
             that is an incorrect rejection of a true null hypothesis,
             for criteria based on a test hypothesis.
-        name: A name for the statistics toolbox instance.
-            If empty, use the concatenation of class and dataset names.
+        name: A name for the statistics toolbox.
+            If empty, concatenate the statistics class name and the dataset name.
 
     Returns:
         A statistics toolbox.
@@ -213,18 +224,30 @@ def create_statistics(
         >>> statistics = create_statistics(dataset)
         >>> mean = statistics.compute_mean()
     """
+    import openturns as ot
+
     from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-    from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
+    from gemseo.uncertainty.statistics.ot_parametric_statistics import (
+        OTParametricStatistics,
+    )
+    from gemseo.uncertainty.statistics.sp_parametric_statistics import (
+        SPParametricStatistics,
+    )
 
     if tested_distributions:
-        statistical_analysis = ParametricStatistics(
+        cls = (
+            OTParametricStatistics
+            if hasattr(ot, tested_distributions[0])
+            else SPParametricStatistics
+        )
+        statistical_analysis = cls(
             dataset,
             tested_distributions,
-            variable_names,
-            fitting_criterion,
-            level,
-            selection_criterion,
-            name,
+            variable_names=variable_names,
+            fitting_criterion=fitting_criterion,
+            level=level,
+            selection_criterion=selection_criterion,
+            name=name,
         )
     else:
         statistical_analysis = EmpiricalStatistics(dataset, variable_names, name)
