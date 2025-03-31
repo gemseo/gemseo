@@ -183,7 +183,7 @@ html_theme_options = {
     "icon_links_label": "Icon Links",
     "icon_links": [
         {
-            "name": "GitHub",
+            "name": "GitLab",
             "url": "https://gitlab.com/gemseo/dev/gemseo",
             "icon": "fa-brands fa-square-gitlab",
             "type": "fontawesome",
