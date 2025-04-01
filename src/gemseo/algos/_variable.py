@@ -45,11 +45,11 @@ if TYPE_CHECKING:
 
 ScalarBoundType = Union[int, float]
 BoundType = Union[
-    ScalarBoundType,
-    list[ScalarBoundType],
-    tuple[ScalarBoundType],
     NDArrayPydantic[int],
     NDArrayPydantic[float],
+    list[ScalarBoundType],
+    tuple[ScalarBoundType],
+    ScalarBoundType,
 ]
 BoundArray = Union[IntegerArray, RealArray]
 
