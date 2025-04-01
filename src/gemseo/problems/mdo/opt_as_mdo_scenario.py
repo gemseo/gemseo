@@ -390,8 +390,8 @@ def create_disciplines(
         Iterable[Discipline, ...],
         Callable[[RealArray], RealArray],
         Callable[[RealArray], RealArray],
-    ],
-    link_discipline_class: type[BaseLinkDiscipline],
+    ] = (),
+    link_discipline_class: type[BaseLinkDiscipline] = LinearLinkDiscipline,
 ) -> tuple[Discipline, BaseLinkDiscipline, Discipline]:
     r"""Create the disciplines to make an optimization problem multidisciplinary.
 
