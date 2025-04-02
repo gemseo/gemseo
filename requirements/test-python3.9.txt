@@ -123,7 +123,7 @@ pytest==8.3.5
     #   gemseo (pyproject.toml)
     #   pytest-cov
     #   pytest-xdist
-pytest-cov==6.0.0
+pytest-cov==6.1.0
     # via gemseo (pyproject.toml)
 pytest-xdist==3.6.1
     # via gemseo (pyproject.toml)
