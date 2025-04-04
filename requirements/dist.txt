@@ -53,9 +53,9 @@ packaging==24.2
     #   twine
 pycparser==2.22
     # via cffi
-pydantic==2.11.1
+pydantic==2.11.2
     # via check-wheel-contents
-pydantic-core==2.33.0
+pydantic-core==2.33.1
     # via pydantic
 pygments==2.19.1
     # via
@@ -80,7 +80,7 @@ secretstorage==3.3.3
     # via keyring
 twine==6.1.0
     # via -r requirements/dist.in
-typing-extensions==4.13.0
+typing-extensions==4.13.1
     # via
     #   pydantic
     #   pydantic-core
