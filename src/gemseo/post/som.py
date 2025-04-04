@@ -149,7 +149,7 @@ class SOM(BasePost[SOM_Settings]):
             if isinstance(f_hist[0][3], ndarray):
                 for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(
-                        [f_h[0:3] + [f_h[3][k]] for f_h in f_hist],
+                        [[*f_h[0:3], f_h[3][k]] for f_h in f_hist],
                         f"{criterion}[{k}]",
                         index + 1,
                         grid_size_x=grid_size_x,
