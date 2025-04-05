@@ -168,7 +168,7 @@ def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
         # See https://docs.xlwings.org/en/stable/whatsnew.html#v0-24-3-jul-15-2021
         with xlwings.App(visible=False) as app:  # noqa: F841
             pass
-    except:  # noqa: E722,B001
+    except:  # noqa: E722
         return False
     else:
         return True

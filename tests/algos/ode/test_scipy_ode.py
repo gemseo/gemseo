@@ -80,10 +80,10 @@ def test_ode_problem_1d(times_eval) -> None:
     bewteen analytical and     approximated solutions should be small.
     """
 
-    def _func(time: float, state: RealArray) -> RealArray:  # noqa:U100
+    def _func(time: float, state: RealArray) -> RealArray:
         return array(state)
 
-    def _jac_wrt_state(time: float, state: RealArray) -> RealArray:  # noqa:U100
+    def _jac_wrt_state(time: float, state: RealArray) -> RealArray:
         return array(1)
 
     initial_state = array([1])
@@ -138,10 +138,10 @@ def test_ode_problem_2d() -> None:
     :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def func(time: float, state: RealArray) -> RealArray:  # noqa:U100
+    def func(time: float, state: RealArray) -> RealArray:
         return state
 
-    def jac_wrt_state(time: float, state: RealArray) -> RealArray:  # noqa:U100
+    def jac_wrt_state(time: float, state: RealArray) -> RealArray:
         return array([[1, 0], [0, 1]])
 
     problem = ODEProblem(
@@ -171,7 +171,7 @@ def test_ode_problem_2d_array_jacobian() -> None:
     :math:`f(0, 0) = 1`. The jacobian of this problem is the identity matrix.
     """
 
-    def func(time: float, state: RealArray) -> RealArray:  # noqa:U100
+    def func(time: float, state: RealArray) -> RealArray:
         return state
 
     problem = ODEProblem(
@@ -206,7 +206,7 @@ def test_ode_problem_2d_array_time_state_callable_jacobian() -> None:
         .
     """
 
-    def func(time: float, state: RealArray) -> RealArray:  # noqa:U100
+    def func(time: float, state: RealArray) -> RealArray:
         return cos(state) ** 2
 
     def jacobian_wrt_state(time: float, state: RealArray) -> RealArray:
@@ -237,10 +237,10 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
     :math:`f(0, 0) = 1`.
     """
 
-    def _func(time, state):  # noqa:U100
+    def _func(time, state):
         return array(state)
 
-    def _jac(time, state):  # noqa:U100
+    def _jac(time, state):
         return array([[1.1, 0.0], [0.0, 1.0]])
 
     problem = ODEProblem(
@@ -264,7 +264,7 @@ def test_ode_problem_without_jacobian() -> None:
     r"""Test that check_jacobian raises an error when the jacobian is not given, but it
     asked to be tested."""
 
-    def _func(time, state):  # noqa:U100
+    def _func(time, state):
         return array(state)
 
     problem = ODEProblem(
