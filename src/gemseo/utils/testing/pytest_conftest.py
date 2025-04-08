@@ -163,14 +163,14 @@ def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
     """
     xlwings = import_or_skip_xlwings
 
-    try:
+    try:  # pragma: no cover
         # Launch xlwings from a context manager to ensure it closes immediately.
         # See https://docs.xlwings.org/en/stable/whatsnew.html#v0-24-3-jul-15-2021
         with xlwings.App(visible=False) as app:  # noqa: F841
             pass
-    except:  # noqa: E722,B001
+    except:  # noqa: E722  # pragma: no cover
         return False
-    else:
+    else:  # pragma: no cover
         return True
 
 
