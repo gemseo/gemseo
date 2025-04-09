@@ -1,0 +1,3 @@
+API CHANGE: The output ``final_time`` of ``ODEDiscipline`` is now a float instead of a NumPy array.
+The wrapper ``ScipyODEAlgos`` for the solution of ODEs by Scipy casts
+the argument ``termination_time`` of ``ODEResult`` as a float.
