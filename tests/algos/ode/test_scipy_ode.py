@@ -282,6 +282,23 @@ def test_ode_problem_without_jacobian() -> None:
         problem.check_jacobian(array([1.0]))
 
 
+def test_final_time_type() -> None:
+    """Test that `ODEProblem.result.termination_time` is a float instance."""
+
+    def _func(time, state):
+        return array(state)
+
+    problem = ODEProblem(
+        _func,
+        initial_state=array([1, 1]),
+        times=arange(0, 1, 0.1),
+    )
+    algo_name = "RK45"
+    ODESolverLibraryFactory().execute(problem, algo_name=algo_name)
+
+    assert type(problem.result.termination_time) is float
+
+
 def test_unconverged(caplog) -> None:
     r"""Test solver behavior when it doesn't converge.
 

@@ -309,14 +309,15 @@ class ODEDiscipline(Discipline):
         self.io.input_grammar.update_from_data(mapping_inputs)
         self.default_input_data = mapping_inputs
 
-        output_names = [
-            *self.__final_state_names,
-            self.__TERMINATION_TIME,
-        ]
+        names_to_types = dict.fromkeys(self.__final_state_names, type(initial_state))
+        names_to_types[self.__TERMINATION_TIME] = float
+
         if return_trajectories:
-            output_names.append(self.__TIMES)
-            output_names.extend(self.__trajectory_state_names)
-        self.io.output_grammar.update_from_names(output_names)
+            names_to_types[self.__TIMES] = type(times)
+            names_to_types.update(
+                dict.fromkeys(self.__trajectory_state_names, type(initial_state))
+            )
+        self.io.output_grammar.update_from_types(names_to_types)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         mapping_parameters = {

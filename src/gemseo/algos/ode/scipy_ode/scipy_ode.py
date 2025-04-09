@@ -159,10 +159,10 @@ class ScipyODEAlgos(BaseODESolverLibrary):
 
         problem.result.terminal_event_index = index
         if problem.event_functions and index is not None:
-            problem.result.termination_time = solution.t_events[index]
+            problem.result.termination_time = float(solution.t_events[index])
             problem.result.final_state = solution.y_events[index][0][:, newaxis]
         else:
-            problem.result.termination_time = solution.t[-1:]
+            problem.result.termination_time = float(solution.t[-1])
             problem.result.final_state = solution.y[:, -1][:, newaxis]
 
     def _get_result(self, problem: ODEProblem) -> ODEResult:
