@@ -80,14 +80,14 @@ secretstorage==3.3.3
     # via keyring
 twine==6.1.0
     # via -r requirements/dist.in
-typing-extensions==4.13.1
+typing-extensions==4.13.2
     # via
     #   pydantic
     #   pydantic-core
     #   typing-inspection
 typing-inspection==0.4.0
     # via pydantic
-urllib3==2.3.0
+urllib3==2.4.0
     # via
     #   requests
     #   twine
