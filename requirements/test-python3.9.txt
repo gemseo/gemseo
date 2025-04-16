@@ -16,7 +16,7 @@ coverage==7.8.0
     #   pytest-cov
 cycler==0.12.1
     # via matplotlib
-dill==0.3.9
+dill==0.4.0
     # via openturns
 docstring-inheritance==2.2.2
     # via gemseo (pyproject.toml)
