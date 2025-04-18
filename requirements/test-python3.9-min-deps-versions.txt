@@ -127,7 +127,7 @@ pytz==2025.2
     # via pandas
 pyxdsm==2.2.1
     # via gemseo (pyproject.toml)
-requests==0.2.0
+requests==2.32.2
     # via gemseo (pyproject.toml)
 schema==0.7.7
     # via pandera
