@@ -2,7 +2,7 @@
 #    uv pip compile --extra all --extra test -o requirements/test-python3.11.txt --python-version 3.11 pyproject.toml
 annotated-types==0.7.0
     # via pydantic
-certifi==2025.1.31
+certifi==2025.4.26
     # via requests
 charset-normalizer==3.4.1
     # via requests
