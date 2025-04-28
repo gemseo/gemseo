@@ -13,51 +13,61 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Bars
-====
+Interactive visualization using plotly
+======================================
 
+By default,
+|g| uses `matplotlib <https://matplotlib.org/>`__ for data visualization.
+However,
+for web-based interactive visualizations,
+`plotly <https://plotly.com/python/>`__ can be appreciated.
+For this reason,
+|g| proposes plotly versions of some visualizations
+which can be generated using the option ``file_format="html"``
+of the method :meth:`.DatasetPlot.execute`.
+In that case,
+this method returns a list of plotly figures.
+When ``save=True`` (default), the figures are saved on the disk.
+When ``show=True``, the figures are displayed in the web browser.
 """
 
 from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 
-configure_logger()
-
-
 # %%
-# Build a dataset
-# ---------------
-# Let us consider two series of values for the variables *x1*, *x2* and *x3*
-# which we arrange in rows in a :class:`.Dataset`:
+# In this example,
+# we create a simple dataset:
 dataset = Dataset()
 dataset.add_variable("x1", array([[0.25, 0.35], [0.75, 0.85]]))
 dataset.add_variable("x2", array([[0.5], [0.5]]))
 dataset.add_variable("x3", array([[0.75], [0.25]]))
 dataset.index = ["series_1", "series_2"]
-dataset
 
 # %%
-# Plot the two series on a bar chart
-# ----------------------------------
-# We can use the :class:`.BarPlot` to display these series,
-# with one color per series and the values grouped by variable name:
+# then,
+# we create a :class:`.BarPlot`:
 plot = BarPlot(dataset, n_digits=2)
 plot.colormap = "PiYG"
-plot.execute(save=False, show=True)
 
 # %%
-# .. tip::
+# generate the plotly figure:
+plotly_figure = plot.execute(save=False, file_format="html")[0]
+
+# %%
+# and visualize it:
+plotly_figure
+
+# %%
+# .. warning::
 #
-#    :class:`.BarPlot` can use plotly to generate an interactive web-based figure.
-#    Just set the execution option ``file_format`` to ``"html"``.
+#    The plotly figures can be truncated both at the bottom and on the right
+#    in the web documentation.
+#    This an issue related to the documentation plugin. The problem is
+#    solved by resizing the window.
+#    Alternatively, setting ``show=True`` will display the figure in a
+#    new tab of your web browser.
