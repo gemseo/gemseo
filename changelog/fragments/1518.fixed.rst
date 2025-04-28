@@ -1,0 +1,2 @@
+Fixed an issue with the ``aggregate`` function that caused it to generate the same names for different groups of
+constraints when the argument ``groups`` was used.

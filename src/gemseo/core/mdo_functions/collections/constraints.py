@@ -57,7 +57,7 @@ class Constraints(Functions):
 
     AggregationFunction = ConstraintAggregation.EvaluationFunction
 
-    _AGGREGATION_FUNCTION_MAP: Final[str] = {
+    _AGGREGATION_FUNCTION_MAP: Final[Mapping[str, Callable[[RealArray], float]]] = {
         AggregationFunction.IKS: aggregate_iks,
         AggregationFunction.LOWER_BOUND_KS: aggregate_lower_bound_ks,
         AggregationFunction.UPPER_BOUND_KS: aggregate_upper_bound_ks,
@@ -119,7 +119,10 @@ class Constraints(Functions):
                 ``"upper_bound_KS"``or ``"IKS"``.
             groups: The groups of components of the constraint to aggregate
                 to produce one aggregation constraint per group of components;
-                if empty, a single aggregation constraint is produced.
+                if empty, a single aggregation constraint is produced. If more than one
+                group is given, the aggregated constraints include a suffix of the form
+                ``_group_i``, where i is an integer starting at 1 for the first group of
+                constraints and ending at ``n`` groups.
             **options: The options of the aggregation method.
 
         Raises:
@@ -143,8 +146,13 @@ class Constraints(Functions):
         del self[constraint_index]
         if groups:
             aggregated_constraints = [
-                aggregate_constraints(constraint, indices, **options)
-                for indices in groups
+                aggregate_constraints(
+                    constraint,
+                    indices,
+                    output_suffix=f"_group_{group_index + 1}",
+                    **options,
+                )
+                for group_index, indices in enumerate(groups)
             ]
             self[constraint_index:constraint_index] = aggregated_constraints
             self.__aggregated_constraint_indices.extend(

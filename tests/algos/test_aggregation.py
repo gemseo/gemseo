@@ -153,11 +153,17 @@ def test_groups(sellar_problem, method) -> None:
     """Test groups aggregation."""
     if method in {"upper_bound_KS", "lower_bound_KS", "IKS"}:
         sellar_problem.constraints.aggregate(
-            0, method=method, rho=300.0, scale=1.0, groups=(0, 1)
+            0, method=method, rho=300.0, scale=1.0, groups=[[0], [1]]
         )
     else:
-        sellar_problem.constraints.aggregate(0, method=method, scale=1.0, groups=(0, 1))
+        sellar_problem.constraints.aggregate(
+            0, method=method, scale=1.0, groups=[[0], [1]]
+        )
     assert len(sellar_problem.constraints) == 3
+    assert (
+        sellar_problem.constraints[0].output_names
+        != sellar_problem.constraints[1].output_names
+    )
 
 
 def test_max_aggreg(sellar_problem) -> None:
