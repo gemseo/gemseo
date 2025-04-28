@@ -57,3 +57,9 @@ dataset.add_variable("y2", outputs_2, "outputs")
 plot = Lines(dataset, variables=["y1", "y2"])
 plot.linestyle = ["--", "-"]
 plot.execute(save=False, show=True)
+
+# %%
+# .. tip::
+#
+#    :class:`.Lines` can use plotly to generate an interactive web-based figure.
+#    Just set the execution option ``file_format`` to ``"html"``.

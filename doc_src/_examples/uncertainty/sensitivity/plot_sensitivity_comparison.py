@@ -78,3 +78,9 @@ morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=Tru
 # %%
 # or a radar plot:
 morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=True)
+
+# %%
+# .. tip::
+#
+#    The comparison method can use plotly to generate an interactive web-based figure.
+#    Just set the execution option ``file_format`` to ``"html"``.
