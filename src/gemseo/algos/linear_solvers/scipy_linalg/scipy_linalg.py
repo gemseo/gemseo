@@ -90,10 +90,10 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
     file_path: str
     """The path to the file where the problem is saved when it is not converged.
 
-    This will be set only if the optio, `save_when_fail` is set to `True`.
+    This will be set only if the option ``save_when_fail`` is set to ``True``.
     """
 
-    __BASE_INFO_MSG: ClassVar[str] = "SciPy linear solver algorithm stop info: "
+    __BASE_INFO_MSG: ClassVar[str] = "SciPy linear solver algorithm stop info"
 
     __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
         "BICG": bicg,
@@ -218,7 +218,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
     def _get_result(self, problem: LinearProblem) -> NumberArray:
         return problem.solution
 
-    def __store_residuals(self, current_x: NumberArray) -> NumberArray:
+    def __store_residuals(self, current_x: NumberArray) -> None:
         """Store the current iteration residuals.
 
         Args:
@@ -250,7 +250,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         if info > 0:
             if self._problem.solution is not None:
                 LOGGER.warning(
-                    "%s, residual = %s",
+                    "%s: residual = %s",
                     self.__BASE_INFO_MSG,
                     self._problem.compute_residuals(True),
                 )
@@ -259,10 +259,11 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
 
         # check the dimensions
         if info < 0:
-            raise RuntimeError(
-                self.__BASE_INFO_MSG + "illegal input or breakdown, options = %s",
-                options,
+            msg = (
+                f"{self.__BASE_INFO_MSG}: illegal input or breakdown, "
+                f"options = {options}."
             )
+            raise RuntimeError(msg)
 
         return True
 
