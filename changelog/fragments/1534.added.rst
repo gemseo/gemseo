@@ -1,0 +1,1 @@
+The entering and exiting timestamps of a ``Timer`` context are now accessible.

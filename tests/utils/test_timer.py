@@ -53,6 +53,13 @@ def test_elapsed_time(timer) -> None:
     assert timer.elapsed_time == pytest.approx(1.0, abs=0.1)
 
 
+def test_timestamps(timer) -> None:
+    """Check the entering_timestamp and exiting_timestamp attributes."""
+    assert (
+        timer.exiting_timestamp - timer.entering_timestamp
+    ).total_seconds() == round(timer.elapsed_time, 6)
+
+
 def test_str(timer) -> None:
     """Check the string representation of the timer."""
     assert re.compile(r"Elapsed time: .* s\.").match(str(timer))

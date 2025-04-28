@@ -31,6 +31,8 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
+from datetime import timedelta
 from time import perf_counter
 from typing import TYPE_CHECKING
 
@@ -52,11 +54,17 @@ class Timer:
         elapsed_time = timer.elapsed_time
     """
 
-    __log_level: int | None
-    """The logging level, ``None`` means no logging."""
-
     __elapsed_time: float
     """The elapsed time in seconds."""
+
+    __entering_timestamp: datetime.datetime
+    """The entering timestamp."""
+
+    __exiting_timestamp: datetime.datetime
+    """The exiting timestamp."""
+
+    __log_level: int | None
+    """The logging level, ``None`` means no logging."""
 
     def __init__(self, log_level: int | None = None) -> None:
         """
@@ -64,16 +72,30 @@ class Timer:
             log_level: The level of the logger.
                 If ``None``, do not log the elapsed time.
         """  # noqa:D205 D212 D415
-        self.__log_level = log_level
         self.__elapsed_time = 0.0
+        now = datetime.now()
+        self.__entering_timestamp = now
+        self.__exiting_timestamp = now
+        self.__log_level = log_level
 
     @property
     def elapsed_time(self) -> float:
         """The time spent within the ``with`` statement."""
         return self.__elapsed_time
 
+    @property
+    def entering_timestamp(self) -> datetime:
+        """The entering timestamp of the ``with`` statement."""
+        return self.__entering_timestamp
+
+    @property
+    def exiting_timestamp(self) -> datetime:
+        """The exiting timestamp of the ``with`` statement."""
+        return self.__exiting_timestamp
+
     def __enter__(self) -> Self:
         self.__elapsed_time = perf_counter()
+        self.__entering_timestamp = datetime.now()
         return self
 
     def __exit__(
@@ -83,6 +105,9 @@ class Timer:
         traceback: TracebackType | None,
     ) -> None:
         self.__elapsed_time = perf_counter() - self.__elapsed_time
+        self.__exiting_timestamp = self.__entering_timestamp + timedelta(
+            seconds=self.__elapsed_time
+        )
         if self.__log_level is not None:
             LOGGER.log(self.__log_level, str(self))
 
