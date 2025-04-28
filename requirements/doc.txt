@@ -172,7 +172,7 @@ scipy==1.15.2
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-setuptools==79.0.1
+setuptools==80.0.0
     # via
     #   gemseo (pyproject.toml)
     #   pbr
