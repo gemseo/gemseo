@@ -102,7 +102,7 @@ if TYPE_CHECKING:
     )
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
-    from gemseo.utils.xdsm import XDSM
+    from gemseo.utils.xdsm.xdsm import XDSM
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -1943,7 +1943,7 @@ def generate_xdsm(
     Returns:
         The XDSM diagram of the discipline.
     """
-    from gemseo.utils.xdsmizer import XDSMizer
+    from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
     return XDSMizer(discipline).run(
         directory_path=directory_path,

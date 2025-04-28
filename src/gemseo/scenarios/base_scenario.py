@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
-    from gemseo.utils.xdsm import XDSM
+    from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
@@ -743,7 +743,7 @@ class BaseScenario(BaseMonitoredProcess):
         Returns:
             A view of the XDSM if ``monitor`` is ``False``.
         """
-        from gemseo.utils.xdsmizer import XDSMizer
+        from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
         if log_workflow_status:
             monitor = True

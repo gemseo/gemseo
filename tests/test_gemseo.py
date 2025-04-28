@@ -108,8 +108,8 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
-from gemseo.utils.xdsm import XDSM
-from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsm.xdsm import XDSM
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
 if TYPE_CHECKING:
     from gemseo.scenarios.mdo_scenario import MDOScenario

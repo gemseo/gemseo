@@ -31,7 +31,7 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.scenarios.mdo_scenario import MDOScenario
-from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
 from .formulations_basetest import FormulationsBaseTest
 
