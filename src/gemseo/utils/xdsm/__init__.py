@@ -12,9 +12,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Creation of a XDSM diagram from a scenario."""
+"""XDSM (eXtended Design Structure Matrix)."""
 
 from __future__ import annotations
 
-# TODO: API: remove this import.
-from gemseo.utils.xdsm.xdsmizer import *  # noqa: F403
+# TODO: API: remove this module.
+from gemseo.utils.xdsm.xdsm import *  # noqa: F403

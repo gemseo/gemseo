@@ -22,8 +22,13 @@ from unittest import mock
 
 import pytest
 
-import gemseo.utils.xdsm as xdsm_module
-from gemseo.utils.xdsm import XDSM
+import gemseo.utils.xdsm.xdsm as xdsm_module
+from gemseo.utils.xdsm import XDSM as XDSM_
+from gemseo.utils.xdsm.xdsm import XDSM
+from gemseo.utils.xdsm.xdsm_to_pdf import XDSMToPDFConverter
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
+from gemseo.utils.xdsm_to_pdf import XDSMToPDFConverter as XDSMToPDFConverter_
+from gemseo.utils.xdsmizer import XDSMizer as XDSMizer_
 
 
 @pytest.fixture
@@ -79,3 +84,12 @@ def test__repr_html_(xdsm) -> None:
         + "<div class='xdsm-toolbar'></div><div class='xdsm2'></div>"
     )
     assert html == expected
+
+
+@pytest.mark.parametrize(
+    ("cls_", "cls"),
+    [(XDSM_, XDSM), (XDSMToPDFConverter_, XDSMToPDFConverter), (XDSMizer_, XDSMizer)],
+)
+def test_aliases(cls_, cls):
+    """Check aliases related to deprecated modules."""
+    assert cls_ == cls

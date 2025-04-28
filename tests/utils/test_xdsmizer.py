@@ -62,11 +62,11 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import concretize_classes
-from gemseo.utils.xdsm_to_pdf import XDSM
-from gemseo.utils.xdsmizer import EdgeType
-from gemseo.utils.xdsmizer import NodeType
-from gemseo.utils.xdsmizer import XDSMizer
-from gemseo.utils.xdsmizer import expand
+from gemseo.utils.xdsm.xdsm_to_pdf import XDSM
+from gemseo.utils.xdsm.xdsmizer import EdgeType
+from gemseo.utils.xdsm.xdsmizer import NodeType
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
+from gemseo.utils.xdsm.xdsmizer import expand
 
 from ..mda.test_mda import analytic_disciplines_from_desc
 
