@@ -489,6 +489,11 @@ class BaseGrammar(
     def to_simple_grammar(self) -> SimpleGrammar:
         """Convert the grammar to a :class:`.SimpleGrammar`.
 
+        .. warning::
+            Types in simple grammars are not as precise as for other grammars.
+            Thus data that are invalid with a given grammar may be valid
+            with a simple grammar obtained from the current method.
+
         Returns:
             A :class:`.SimpleGrammar` version of the current grammar.
         """
