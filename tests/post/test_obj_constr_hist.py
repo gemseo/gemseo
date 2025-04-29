@@ -40,6 +40,6 @@ def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check ObjConstrHist."""
-    opt = ObjConstrHist(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
+    opt = ObjConstrHist(common_problem)
     opt.execute(constraint_names=["eq", "neg", "pos"], save=False)

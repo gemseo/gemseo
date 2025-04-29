@@ -69,15 +69,25 @@ class Correlations(BasePost[Correlations_Settings]):
         coeff_limit = settings.coeff_limit
         n_plots_x = settings.n_plots_x
         n_plots_y = settings.n_plots_y
-        problem = self.optimization_problem
+        optimization_metadata = self._optimization_metadata
 
-        all_func_names = [func.name for func in problem.functions]
+        all_func_names = optimization_metadata.function_names
         if not func_names:
             func_names = all_func_names
 
-        func_names = problem.get_function_names(func_names)
-        if not problem.minimize_objective and self._obj_name in func_names:
-            func_names[func_names.index(self._obj_name)] = self._standardized_obj_name
+        dict_ = optimization_metadata.original_to_current_names
+        func_names = [
+            names
+            for func_name in func_names
+            for names in dict_.get(func_name, [func_name])
+        ]
+        if (
+            not optimization_metadata.minimize_objective
+            and optimization_metadata.objective_name in func_names
+        ):
+            func_names[func_names.index(optimization_metadata.objective_name)] = (
+                optimization_metadata.standardized_objective_name
+            )
 
         not_func_names = set(func_names) - set(all_func_names)
         if not_func_names:
@@ -92,10 +102,15 @@ class Correlations(BasePost[Correlations_Settings]):
         )
         variable_names = self.__sort_variable_names(variable_names, func_names)
 
-        if self._standardized_obj_name in variable_names and self._change_obj:
-            obj_index = variable_names.index(self._standardized_obj_name)
+        if (
+            optimization_metadata.standardized_objective_name in variable_names
+            and self._change_obj
+        ):
+            obj_index = variable_names.index(
+                optimization_metadata.standardized_objective_name
+            )
             variable_history[:, obj_index] = -variable_history[:, obj_index]
-            variable_names[obj_index] = self._obj_name
+            variable_names[obj_index] = optimization_metadata.objective_name
 
         correlation_coefficients = self.__compute_correlations(variable_history)
         i_corr, j_corr = (

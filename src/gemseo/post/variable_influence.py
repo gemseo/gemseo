@@ -75,8 +75,8 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         log_scale = settings.log_scale
         save_var_files = settings.save_var_files
 
-        function_names = self.optimization_problem.function_names
-        _, x_opt, _, _, _ = self.optimization_problem.optimum
+        function_names = self._optimization_metadata.function_names
+        _, x_opt, _, _, _ = self._optimization_metadata.optimum
         x_0 = self.database.get_x_vect(1)
         absolute_value = log_scale or absolute_value
 
@@ -91,7 +91,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             f_opt = evaluate(function_name, x_opt)
             if self._change_obj and function_name == self._neg_obj_name:
                 grad = -grad
-                function_name = self._obj_name
+                function_name = self._optimization_metadata.objective_name
 
             if len(grad.shape) == 1:
                 sensitivity = grad * (x_opt - x_0)
@@ -156,14 +156,10 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             pretty_str([x_names[i] for i in influential_variables]),
         )
         if save:
+            input_space = self._dataset.misc["input_space"]
             names = [
-                [
-                    f"{name}${i}"
-                    for i in range(
-                        self.optimization_problem.design_space.get_size(name)
-                    )
-                ]
-                for name in self.optimization_problem.design_space  # noqa: E501
+                [f"{name}${i}" for i in range(input_space.get_size(name))]
+                for name in input_space
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"

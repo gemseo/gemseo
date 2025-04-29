@@ -261,6 +261,6 @@ def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check ScatterPlotMatrix with objective, standardized or not."""
-    opt = ScatterPlotMatrix(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
+    opt = ScatterPlotMatrix(common_problem)
     opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)

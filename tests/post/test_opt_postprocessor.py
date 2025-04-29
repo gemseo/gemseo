@@ -18,10 +18,17 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from dataclasses import fields
+
 import matplotlib.pyplot as plt
 import pytest
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.datasets.optimization_metadata import OptimizationMetadata
 from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -67,3 +74,43 @@ def test_settings_as_pydantic_model(problem):
     figure = post.execute(settings_model=settings)["my_figure"]
     assert figure.get_figwidth() == 10.0
     assert figure.get_figheight() == 20.0
+
+
+def test_dataset_as_input_for_post(problem):
+    """Test the execution of base post when a dataset is given as an input."""
+    dataset = problem.to_dataset()
+    post = NewBasePost(dataset)
+
+    assert isinstance(post._dataset, OptimizationDataset)
+    assert post.database is None
+
+
+def test_execute_error_with_no_dataset():
+    """Tests that an error is raised when executing a post without a dataset."""
+
+    problem = OptimizationProblem(DesignSpace())
+    problem.objective = MDOFunction(lambda x: x, "f")
+    with pytest.raises(
+        ValueError,
+        match=r"The post-processor NewBasePost cannot"
+        r" be created because there is no dataset "
+        r"to plot.",
+    ):
+        NewBasePost(problem)
+
+
+def test_execute_error_with_empty_dataset():
+    """Tests that an error is raised when executing a post with an empty dataset."""
+    dataset = OptimizationDataset()
+    dataset.misc["optimization_metadata"] = OptimizationMetadata(**{
+        field.name: None for field in fields(OptimizationMetadata)
+    })
+    post = NewBasePost(dataset)
+
+    with pytest.raises(
+        ValueError,
+        match=r"The post-processor NewBasePost cannot "
+        r"be solved because the optimization problem "
+        r"was not solved.",
+    ):
+        post.execute()

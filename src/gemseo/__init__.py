@@ -449,15 +449,10 @@ def get_post_processing_options_schema(
         >>> schema = get_post_processing_options_schema('OptHistoryView',
         >>>                                             pretty_print=True)
     """
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.post.factory import PostFactory
 
-    problem = OptimizationProblem(DesignSpace())
-    problem.objective = MDOFunction(lambda x: x, "f")
-    post_proc = PostFactory().create(post_proc_name, problem)
-    return _get_json_schema_from_settings(post_proc.Settings, output_json, pretty_print)
+    cls = PostFactory().get_class(post_proc_name)
+    return _get_json_schema_from_settings(cls.Settings, output_json, pretty_print)
 
 
 def get_formulation_options_schema(

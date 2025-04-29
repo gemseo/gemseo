@@ -65,6 +65,7 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from gemseo.datasets.optimization_metadata import OptimizationMetadata
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
@@ -998,6 +999,7 @@ class Database(Mapping):
         input_group: str = Dataset.DEFAULT_GROUP,
         output_group: str = Dataset.DEFAULT_GROUP,
         gradient_group: str = Dataset.GRADIENT_GROUP,
+        optimization_metadata: OptimizationMetadata | None = None,
     ) -> Dataset:
         """Export the database to a :class:`.Dataset`.
 
@@ -1078,6 +1080,7 @@ class Database(Mapping):
         ).get_view(indices=positions)
         # In case of any future modification of self.input_space,
         # we use a copy of its current value.
+        dataset.misc["optimization_metadata"] = optimization_metadata
         dataset.misc["input_space"] = deepcopy(self.input_space)
 
         names_to_types_without_int = {

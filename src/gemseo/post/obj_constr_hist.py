@@ -73,12 +73,16 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
 
         # 1. Plot the objective history versus the iterations with a curve.
         problem = self.optimization_problem
-        objective_name = problem.standardized_objective_name
+        optimization_metadata = self._optimization_metadata
+        objective_name = optimization_metadata.standardized_objective_name
         obj_history, x_history = self.database.get_function_history(
             objective_name, with_x_vect=True
         )
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
-        if not problem.minimize_objective and not problem.use_standardized_objective:
+        if not (
+            optimization_metadata.minimize_objective
+            or optimization_metadata.use_standardized_objective
+        ):
             # Use the opposite of the standardized history.
             obj_history = -obj_history
             # Remove the minus sign prefixing the objective name.

@@ -53,10 +53,9 @@ class Robustness(BasePost[Robustness_Settings]):
 
     def _plot(self, settings: Robustness_Settings) -> None:
         standard_deviation = settings.stddev
-        problem = self.optimization_problem
-        design_space = problem.design_space
+        design_space = self._dataset.misc["input_space"]
         bounds_range = design_space.get_upper_bounds() - design_space.get_lower_bounds()
-        n_x = problem.design_space.dimension
+        n_x = design_space.dimension
         cov = zeros((n_x, n_x))
         cov[range(n_x), range(n_x)] = (standard_deviation * bounds_range) ** 2
 
@@ -66,7 +65,7 @@ class Robustness(BasePost[Robustness_Settings]):
         for func in self.optimization_problem.functions:
             func_name = database_func_name = func.name
             if self._change_obj and func_name == self._neg_obj_name:
-                func_name = self._obj_name
+                func_name = self._optimization_metadata.objective_name
 
             dim = func.dim
             at_most_niter = int(1.5 * n_x)

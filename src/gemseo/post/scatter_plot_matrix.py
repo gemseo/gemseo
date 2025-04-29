@@ -51,13 +51,19 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
         filter_non_feasible = settings.filter_non_feasible
 
         problem = self.optimization_problem
+        optimization_metadata = self._optimization_metadata
         add_design_variables = False
-        all_function_names = problem.function_names
-        all_design_names = problem.design_space.variable_names
+        all_function_names = optimization_metadata.function_names
+        all_design_names = self._dataset.misc["input_space"].variable_names
 
-        if not problem.minimize_objective and self._obj_name in variable_names:
-            obj_index = variable_names.index(self._obj_name)
-            variable_names[obj_index] = self._standardized_obj_name
+        if (
+            not optimization_metadata.minimize_objective
+            and optimization_metadata.objective_name in variable_names
+        ):
+            obj_index = variable_names.index(optimization_metadata.objective_name)
+            variable_names[obj_index] = (
+                optimization_metadata.standardized_objective_name
+            )
 
         variable_names.sort()
         if not variable_names:
@@ -79,7 +85,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     variable_name not in all_function_names
                     and variable_name not in all_design_names
                     and variable_name
-                    not in problem.constraints.original_to_current_names
+                    not in optimization_metadata.original_to_current_names
                 ):
                     msg = (
                         "Cannot build scatter plot matrix: "
@@ -89,12 +95,12 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     )
                     raise ValueError(msg)
 
-                if variable_name in problem.design_space:
+                if variable_name in self._dataset.misc["input_space"]:
                     add_design_variables = True
                     design_names.append(variable_name)
-                elif variable_name in problem.constraints.original_to_current_names:
+                elif variable_name in optimization_metadata.original_to_current_names:
                     function_names.extend(
-                        problem.constraints.original_to_current_names[variable_name]
+                        optimization_metadata.original_to_current_names[variable_name]
                     )
                 else:
                     function_names.append(variable_name)
@@ -130,12 +136,14 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
             )
 
         if (
-            self._standardized_obj_name in variable_labels
-            and not problem.minimize_objective
-            and not problem.use_standardized_objective
+            optimization_metadata.standardized_objective_name in variable_labels
+            and not optimization_metadata.minimize_objective
+            and not optimization_metadata.use_standardized_objective
         ):
-            index = variable_labels.index(self._standardized_obj_name)
-            variable_labels[index] = self._obj_name
+            index = variable_labels.index(
+                optimization_metadata.standardized_objective_name
+            )
+            variable_labels[index] = optimization_metadata.objective_name
             variable_values[:, index] *= -1
 
         if filter_non_feasible and not np_any(variable_values):
