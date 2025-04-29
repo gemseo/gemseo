@@ -26,7 +26,6 @@ from numpy import array
 from numpy import complex128
 from numpy import float64
 from numpy import int64
-from numpy import ndarray
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -192,26 +191,6 @@ def test_convert_to_simple_grammar_not_convertible_type() -> None:
     g1 = new_grammar(DATA_PATH / "grammar_1.json")
     g2 = g1.to_simple_grammar()
     assert g2["name"] is None
-
-
-def test_convert_to_simple_grammar_warnings(caplog) -> None:
-    """Verify grammar conversion warnings."""
-    g1 = new_grammar(
-        DATA_PATH / "grammar_conversion_to_simple_grammar_warn_for_array.json"
-    )
-    g2 = g1.to_simple_grammar()
-    assert len(g2) == 1
-    assert g2["name"] == ndarray
-    assert caplog.records[0].levelname == "WARNING"
-    assert caplog.messages[0] == (
-        "Unsupported type 'string' in JSONGrammar 'g' for property 'name' in "
-        "conversion to SimpleGrammar."
-    )
-    assert caplog.records[1].levelname == "WARNING"
-    assert caplog.messages[1] == (
-        "Unsupported feature 'contains' in JSONGrammar 'g' for property 'name' in "
-        "conversion to SimpleGrammar."
-    )
 
 
 @pytest.mark.parametrize(

@@ -51,7 +51,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Properties
-    from gemseo.core.grammars.json_schema import Property
     from gemseo.core.grammars.json_schema import Schema
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
@@ -466,68 +465,15 @@ class JSONGrammar(BaseGrammar):
         names_to_types = {}
 
         for property_name, property_description in properties.items():
-            property_json_type = property_description["type"]
-
-            self.__warn_for_array(
-                property_name, property_json_type, property_description
-            )
-            self.__warn_for_items(property_name, property_description)
-
-            if property_json_type not in self.__JSON_TO_PYTHON_TYPES:
+            if property_description["type"] not in self.__JSON_TO_PYTHON_TYPES:
                 property_type = None
             else:
                 property_type = self.__JSON_TO_PYTHON_TYPES[
                     property_description["type"]
                 ]
-
             names_to_types[property_name] = property_type
 
         return names_to_types
-
-    def __warn_for_array(
-        self,
-        property_name: str,
-        property_json_type: str,
-        property_description: Property,
-    ) -> None:
-        """Log a warning when an array has unsupported types.
-
-        Args:
-            property_name: The name of the property.
-            property_json_type: The json type of the property.
-            property_description: The description of the property.
-        """
-        if property_json_type == "array" and "items" in property_description:
-            property_json_sub_type = property_description["items"].get("type")
-            if property_json_sub_type not in {"number", "integer", None}:
-                LOGGER.warning(
-                    self.__WARNING_TEMPLATE,
-                    "type",
-                    property_json_sub_type,
-                    self.name,
-                    property_name,
-                )
-
-    def __warn_for_items(
-        self,
-        property_name: str,
-        property_description: Iterable[str],
-    ) -> None:
-        """Log a warning when an item has unsupported descriptions.
-
-        Args:
-            property_name: The name of the property.
-            property_description: The description of the property.
-        """
-        for feature in ["minItems", "maxItems", "additionalItems", "contains"]:
-            if feature in property_description:
-                LOGGER.warning(
-                    self.__WARNING_TEMPLATE,
-                    "feature",
-                    feature,
-                    self.name,
-                    property_name,
-                )
 
     def __init_dependencies(self) -> None:
         """Resets the validator and schema dict."""
