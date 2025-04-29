@@ -106,6 +106,15 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
 
             :octicon:`plug` Plugins
 
+    .. grid-item::
+
+        .. button-link:: rss.html
+            :color: secondary
+            :shadow:
+            :align: center
+
+            :octicon:`rss`
+
 
 .. raw:: html
 

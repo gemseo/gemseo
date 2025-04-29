@@ -23,6 +23,7 @@ from sphinx.ext.autodoc.mock import mock
 
 from . import authors_template
 from . import plugins_template
+from . import rss_template
 
 
 def setup(app):
@@ -51,4 +52,5 @@ def builder_inited(app) -> None:
 
     root_path = Path(app.srcdir)
     plugins_template.create_plugins_page(app.config.html_context["plugins"], root_path)
+    rss_template.create_rss_page(app.config.html_context["plugins"], root_path)
     authors_template.create_authors_page(root_path)
