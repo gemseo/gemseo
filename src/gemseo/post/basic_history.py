@@ -47,21 +47,26 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
     """
 
     def _plot(self, settings: BasicHistory_Settings) -> None:  # noqa: D205, D212, D415
-        problem = self.optimization_problem
-        dataset = problem.to_dataset(opt_naming=False)
+        optimization_metadata = self._optimization_metadata
+        dataset = self._dataset.copy()
         dataset.add_variable(
             self.__ITERATION_NAME, arange(1, len(dataset) + 1)[:, newaxis]
         )
 
         variable_names = list(settings.variable_names)
-        if self._obj_name in variable_names:
-            if problem.use_standardized_objective and not problem.minimize_objective:
-                obj_index = variable_names.index(self._obj_name)
+        if optimization_metadata.objective_name in variable_names:
+            if (
+                optimization_metadata.use_standardized_objective
+                and not optimization_metadata.minimize_objective
+            ):
+                obj_index = variable_names.index(optimization_metadata.objective_name)
                 variable_names[obj_index] = self._neg_obj_name
 
             if self._change_obj:
                 dataset.transform_data(operator.neg, variable_names=self._neg_obj_name)
-                dataset.rename_variable(self._neg_obj_name, self._obj_name)
+                dataset.rename_variable(
+                    self._neg_obj_name, optimization_metadata.objective_name
+                )
 
         if settings.normalize:
             dataset = dataset.get_normalized()
@@ -69,7 +74,15 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
         plot = Lines(
             dataset,
             abscissa_variable=self.__ITERATION_NAME,
-            variables=problem.get_function_names(variable_names),
+            variables=[
+                names
+                for variable_name in variable_names
+                for names in (
+                    optimization_metadata.original_to_current_names.get(
+                        variable_name, [variable_name]
+                    )
+                )
+            ],
             use_integer_xticks=True,
         )
         plot.font_size = 12

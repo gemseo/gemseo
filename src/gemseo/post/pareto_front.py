@@ -67,7 +67,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
             objectives = list(settings.objectives)
 
         all_funcs = self.optimization_problem.function_names
-        all_dv_names = self.optimization_problem.design_space.variable_names
+        all_dv_names = self._dataset.misc["input_space"].variable_names
 
         all_labels: Sequence[str]
         sample_values, all_labels = self.__compute_names_and_values(
@@ -170,7 +170,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
         """
         if func not in all_funcs and func not in all_dv_names:
             min_f = "-" + func == self.optimization_problem.objective.name
-            if min_f and not self.optimization_problem.minimize_objective:
+            if min_f and not self._optimization_metadata.minimize_objective:
                 objectives[objectives.index(func)] = "-" + func
             else:
                 msg = (
@@ -198,7 +198,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
              func: The function name.
              objectives: The objectives names.
         """
-        if func in self.optimization_problem.design_space:
+        if func in self._dataset.misc["input_space"]:
             objectives.remove(func)
             design_variables.append(func)
 

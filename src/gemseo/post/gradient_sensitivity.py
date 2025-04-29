@@ -57,7 +57,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         compute_missing_gradients = settings.compute_missing_gradients
 
         if settings.iteration is None:
-            design_value = self.optimization_problem.solution.x_opt
+            design_value = self._optimization_metadata.result.x_opt
         else:
             design_value = self.optimization_problem.database.get_x_vect(
                 settings.iteration
@@ -126,8 +126,8 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     "callable functions cannot be computed."
                 )
 
-        function_names = self.optimization_problem.function_names
-        scale_gradient = self.optimization_problem.design_space.unnormalize_vect
+        function_names = self._optimization_metadata.function_names
+        scale_gradient = self._dataset.misc["input_space"].unnormalize_vect
         function_names_to_gradients = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:
@@ -188,7 +188,9 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
 
         abscissa = arange(len(design_value))
         if self._change_obj:
-            gradients[self._obj_name] = -gradients.pop(self._standardized_obj_name)
+            gradients[self._optimization_metadata.objective_name] = -gradients.pop(
+                self._optimization_metadata.standardized_objective_name
+            )
 
         i = j = 0
         font_size = 12

@@ -40,8 +40,8 @@ def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check Robustness with objective, standardized or not."""
-    opt = Robustness(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
+    opt = Robustness(common_problem)
     opt.execute(save=False)
 
 

@@ -49,7 +49,9 @@ class HessianHistory(BasePost):
 
     def _plot(self, settings: HessianHistory_Settings) -> None:
         if self.database.check_output_history_is_empty(
-            self.database.get_gradient_name(self._standardized_obj_name)
+            self.database.get_gradient_name(
+                self._optimization_metadata.standardized_objective_name
+            )
         ):
             msg = (
                 "The HessianHistory cannot be plotted "
@@ -58,7 +60,8 @@ class HessianHistory(BasePost):
             raise ValueError(msg)
 
         diag = SR1Approx(self.database).build_approximation(
-            funcname=self._standardized_obj_name, save_diag=True
+            funcname=self._optimization_metadata.standardized_objective_name,
+            save_diag=True,
         )[1]
 
         if isnan(diag).any():
@@ -76,9 +79,7 @@ class HessianHistory(BasePost):
         variable_names = settings.variable_names
         if variable_names:
             diag = diag[
-                self.optimization_problem.design_space.get_variables_indexes(
-                    variable_names
-                ),
+                self._dataset.misc["input_space"].get_variables_indexes(variable_names),
                 :,
             ]
 

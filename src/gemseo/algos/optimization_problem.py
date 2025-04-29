@@ -98,6 +98,7 @@ from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.datasets.optimization_metadata import OptimizationMetadata
 from gemseo.typing import RealArray
 from gemseo.utils.hdf5 import convert_h5_group_to_dict
 from gemseo.utils.hdf5 import get_hdf5_group
@@ -872,6 +873,7 @@ class OptimizationProblem(EvaluationProblem):
             input_group=input_group,
             output_group=output_group,
             gradient_group=gradient_group,
+            optimization_metadata=self._get_optimization_metadata(),
         )
 
     @property
@@ -987,4 +989,30 @@ class OptimizationProblem(EvaluationProblem):
             design_space=design_space,
             function_calls=function_calls,
             preprocessing=preprocessing,
+        )
+
+    def _get_optimization_metadata(self) -> OptimizationMetadata:
+        """Return the optimization metadata.
+
+        Returns:
+            The optimization metadata.
+        """
+        return OptimizationMetadata(
+            objective_name=self.objective_name,
+            standardized_objective_name=self.standardized_objective_name,
+            minimize_objective=self.minimize_objective,
+            use_standardized_objective=self.use_standardized_objective,
+            tolerances=self.tolerances,
+            function_names=self.function_names,
+            inequality_constraints_names=[
+                constraint.name
+                for constraint in self.constraints.get_inequality_constraints()
+            ],
+            equality_constraints_names=[
+                constraint.name
+                for constraint in self.constraints.get_equality_constraints()
+            ],
+            optimum=(self.history.optimum if self.database else None),
+            original_to_current_names=self.constraints.original_to_current_names,
+            result=self.solution,
         )

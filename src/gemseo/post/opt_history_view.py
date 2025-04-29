@@ -99,12 +99,12 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         variable_names = settings.variable_names
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
-            self._standardized_obj_name, variable_names
+            self._optimization_metadata.standardized_objective_name, variable_names
         )
-        normalize = self.optimization_problem.design_space.normalize_vect
+        normalize = self._dataset.misc["input_space"].normalize_vect
         x_xstar = norm(
             normalize(x_history)
-            - normalize(self.optimization_problem.history.optimum.design),
+            - normalize(self._optimization_metadata.optimum.design),
             axis=1,
         )
 
@@ -126,16 +126,16 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         for constraints, constraint_type in [
             (
-                self.optimization_problem.constraints.get_inequality_constraints(),
+                self._optimization_metadata.inequality_constraints_names,
                 MDOFunction.ConstraintType.INEQ,
             ),
             (
-                self.optimization_problem.constraints.get_equality_constraints(),
+                self._optimization_metadata.equality_constraints_names,
                 MDOFunction.ConstraintType.EQ,
             ),
         ]:
             if constraints:
-                constraint_names = [constraint.name for constraint in constraints]
+                constraint_names = constraints
                 self._create_cstr_plot(
                     self.__get_constraint_history(constraint_names),
                     constraint_type,
@@ -173,9 +173,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             indices = [
                 index
                 for name in variable_names
-                for index in self.optimization_problem.design_space.names_to_indices[
-                    name
-                ]
+                for index in self._dataset.misc["input_space"].names_to_indices[name]
             ]
             x_hist_to_display = complete_x_hist[:, indices]
 
@@ -225,7 +223,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         if n_iterations < 2:
             return
 
-        design_space = self.optimization_problem.design_space
+        design_space = self._dataset.misc["input_space"]
         lower_bounds = design_space.get_lower_bounds(variable_names)
         upper_bounds = design_space.get_upper_bounds(variable_names)
         norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
@@ -361,9 +359,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         fig = plt.figure(figsize=fig_size)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
-        normalize = self.optimization_problem.design_space.normalize_vect
+        normalize = self._dataset.misc["input_space"].normalize_vect
         x_xstar = norm(
-            normalize(x_history) - normalize(self.optimization_problem.optimum[1]),
+            normalize(x_history) - normalize(self._optimization_metadata.optimum[1]),
             axis=1,
         )
 

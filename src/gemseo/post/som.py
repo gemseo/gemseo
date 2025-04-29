@@ -106,8 +106,8 @@ class SOM(BasePost[SOM_Settings]):
         annotate = settings.annotate
 
         criteria = [
-            self.optimization_problem.standardized_objective_name,
-            *self.optimization_problem.constraints.get_names(),
+            self._optimization_metadata.standardized_objective_name,
+            *(name for name in self._optimization_metadata.original_to_current_names),
         ]
         all_data = self.database.get_function_names()
         # Ensure that the data is available in the database
