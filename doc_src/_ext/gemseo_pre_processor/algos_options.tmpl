@@ -67,14 +67,16 @@
         display: none;
     }
     </style>
-    Display in the table the optimization algorithms that
+    Display <label>all the optimization algorithms <input type="checkbox" id="displayAllAlgorithmsCheckbox" checked></label></li>.
+    <br/>
+    Otherwise, display the optimization algorithms that
     <ul>
     <li><label>support equality constraints <input type="checkbox" id="handleEqualityConstraintsCheckbox"></label></li>
     <li><label>support inequality constraints <input type="checkbox" id="handleInequalityConstraintsCheckbox"></label></li>
     <li><label>support float variables <input type="checkbox" id="handleFloatVariablesCheckbox" checked></label></li>
     <li><label>support integer variables <input type="checkbox" id="handleIntegerVariablesCheckbox"></label></li>
     <li><label>support multiple objective <input type="checkbox" id="handleMultiObjectiveCheckbox"></label></li>
-    <li><label>require gradient evaluations <input type="checkbox" id="requireGradientCheckbox"></label></li>
+    <li><label>require gradient evaluations <input type="checkbox" id="requireGradientCheckbox" checked></label></li>
     </ul>
     <table id="myTable">
         <thead>
@@ -136,6 +138,7 @@
           }
         }
 
+        const displayAllAlgorithmsCheckbox = document.getElementById('displayAllAlgorithmsCheckbox');
         const handleEqualityConstraintsCheckbox = document.getElementById('handleEqualityConstraintsCheckbox');
         const handleInequalityConstraintsCheckbox = document.getElementById('handleInequalityConstraintsCheckbox');
         const handleFloatVariablesCheckbox = document.getElementById('handleFloatVariablesCheckbox');
@@ -145,30 +148,31 @@
         const rows = document.querySelectorAll('tbody tr');
 
         function filterRows() {
-            rows.forEach(row => {
-                const hasClasshandleEqualityConstraints = row.classList.contains('handleEqualityConstraints');
-                const hasClasshandleInequalityConstraints = row.classList.contains('handleInequalityConstraints');
-                const hasClasshandleFloatVariables = row.classList.contains('handleFloatVariables');
-                const hasClasshandleIntegerVariables = row.classList.contains('handleIntegerVariables');
-                const hasClasshandleMultiObjective = row.classList.contains('handleMultiObjective');
-                const hasClassrequireGradient = row.classList.contains('requireGradient');
-
-                if (
-                       (!handleEqualityConstraintsCheckbox.checked && !handleInequalityConstraintsCheckbox.checked && !handleFloatVariablesCheckbox.checked && !handleIntegerVariablesCheckbox.checked && !handleMultiObjectiveCheckbox.checked && !requireGradientCheckbox.checked)
-                       || (handleEqualityConstraintsCheckbox.checked && !hasClasshandleEqualityConstraints)
-                       || (handleInequalityConstraintsCheckbox.checked && !hasClasshandleInequalityConstraints)
-                       || (handleFloatVariablesCheckbox.checked && !hasClasshandleFloatVariables)
-                       || (handleIntegerVariablesCheckbox.checked && !hasClasshandleIntegerVariables)
-                       || (handleMultiObjectiveCheckbox.checked && !hasClasshandleMultiObjective)
-                       || (requireGradientCheckbox.checked && !hasClassrequireGradient)
-                )
-                {
-                    row.classList.add('hidden-row');
-                } else {
+            if (displayAllAlgorithmsCheckbox.checked) {
+                rows.forEach(row => {
                     row.classList.remove('hidden-row');
-                }
-            });
+                });
+            } else {
+                rows.forEach(row => {
+                    if (
+                          (handleEqualityConstraintsCheckbox.checked && !row.classList.contains('handleEqualityConstraints'))
+                       || (handleInequalityConstraintsCheckbox.checked && !row.classList.contains('handleInequalityConstraints'))
+                       || (handleFloatVariablesCheckbox.checked && !row.classList.contains('handleFloatVariables'))
+                       || (handleIntegerVariablesCheckbox.checked && !row.classList.contains('handleIntegerVariables'))
+                       || (handleMultiObjectiveCheckbox.checked && !row.classList.contains('handleMultiObjective'))
+                       || (requireGradientCheckbox.checked && !row.classList.contains('requireGradient'))
+                       || (!requireGradientCheckbox.checked && row.classList.contains('requireGradient'))
+                    )
+                    {
+                        row.classList.add('hidden-row');
+                    } else {
+                        row.classList.remove('hidden-row');
+                    }
+                });
+            }
         }
+
+        displayAllAlgorithmsCheckbox.addEventListener('change', filterRows);
         handleEqualityConstraintsCheckbox.addEventListener('change', filterRows);
         handleInequalityConstraintsCheckbox.addEventListener('change', filterRows);
         handleFloatVariablesCheckbox.addEventListener('change', filterRows);

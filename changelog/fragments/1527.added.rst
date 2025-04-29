@@ -1,0 +1,1 @@
+Documentation (optimization algorithms): a button to display all the optimization algorithms instead of filtering them.
