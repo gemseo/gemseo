@@ -40,7 +40,9 @@ def factory(reset_factory) -> MDOFormulationFactory:
 
 @pytest.fixture
 def non_mdo_formulations(monkeypatch):
-    monkeypatch.setenv("GEMSEO_PATH", Path(__file__).parent / "not_mdo_formulations")
+    monkeypatch.setenv(
+        "GEMSEO_PATH", str(Path(__file__).parent / "not_mdo_formulations")
+    )
 
 
 def test_is_available(non_mdo_formulations, factory) -> None:

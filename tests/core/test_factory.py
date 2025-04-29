@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -162,14 +163,14 @@ assert 'DummyBiLevel' in MDOFormulationFactory().class_names
 
 def test_ext_plugin_gemseo_path(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
-    monkeypatch.setenv("GEMSEO_PATH", DATA)
+    monkeypatch.setenv("GEMSEO_PATH", f"{DATA}{os.pathsep}dummy-path")
     # There could be more classes available with the plugins
     assert MDOFormulationFactory().is_available("DummyBiLevel")
 
 
 def test_ext_plugin_gemseo_path_bad_package(monkeypatch, reset_factory) -> None:
     """Verify that plugins are discovered from the GEMSEO_PATH env variable."""
-    monkeypatch.setenv("GEMSEO_PATH", DATA / "gemseo_dummy_plugins")
+    monkeypatch.setenv("GEMSEO_PATH", str(DATA / "gemseo_dummy_plugins"))
     assert MDOFormulationFactory().failed_imports["bad"] == "division by zero"
 
 
