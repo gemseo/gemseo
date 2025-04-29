@@ -45,7 +45,7 @@ from gemseo.problems.mdo.sellar.variables import Y_2
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
-GEMSEO_PATH = Path(__file__).parent
+GEMSEO_PATH = str(Path(__file__).parent)
 
 
 @pytest.fixture
