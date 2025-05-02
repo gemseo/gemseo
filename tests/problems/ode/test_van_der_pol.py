@@ -19,19 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import unittest
-
 import pytest
 from numpy import array
 from numpy.linalg import norm
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.problems.ode.van_der_pol import VanDerPol
-
-
-class TestVanDerPol(unittest.TestCase):
-    """Test the VanDerPol class."""
-
 
 parametrized_algo_names = pytest.mark.parametrize(
     "algo_name",

@@ -334,7 +334,7 @@ class CouplingStructure:
             if output in discipline.io.output_grammar:
                 return discipline
 
-        msg = f"{output} is not the output of a discipline."
+        msg = f"There is no discipline with an output variable named {output!r}."
         raise ValueError(msg)
 
     def __draw_n2_chart(
