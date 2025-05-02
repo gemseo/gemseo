@@ -22,15 +22,18 @@
 
 from __future__ import annotations
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
+from abc import abstractmethod
+
 from numpy import divide
 from numpy import maximum
 from numpy import minimum
 from numpy import multiply
 from numpy import ndarray
 
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
-class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
+
+class TrustUpdater(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Updater of a trust parameter."""
 
     def __init__(
@@ -61,10 +64,11 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
         self._param_multipliers = multipliers
         self._param_bound = bound
 
+    @abstractmethod
     def _check(self) -> None:
         """Check the consistency of the attributes."""
-        raise NotImplementedError
 
+    @abstractmethod
     def update(self, ratio: float, parameter: float) -> tuple[float, bool]:
         """Update the trust parameter relative to the decrease ratio value.
 
@@ -77,7 +81,6 @@ class TrustUpdater(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The new trust parameter, the iteration success.
         """
-        raise NotImplementedError
 
 
 class PenaltyUpdater(TrustUpdater):
