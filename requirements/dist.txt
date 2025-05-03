@@ -10,13 +10,13 @@ certifi==2025.4.26
     # via requests
 cffi==1.17.1
     # via cryptography
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
 check-wheel-contents==0.6.1
     # via -r requirements/dist.in
 click==8.1.8
     # via check-wheel-contents
-cryptography==44.0.2
+cryptography==44.0.3
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
