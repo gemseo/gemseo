@@ -44,7 +44,7 @@ iniconfig==2.1.0
     # via pytest
 jinja2==3.0.0
     # via gemseo (pyproject.toml)
-joblib==1.4.2
+joblib==1.5.0
     # via scikit-learn
 kiwisolver==1.4.7
     # via matplotlib
