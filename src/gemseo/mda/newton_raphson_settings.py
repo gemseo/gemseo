@@ -16,7 +16,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
+
 from pydantic import Field
+from pydantic import model_validator
 from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
@@ -27,11 +31,16 @@ from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 from gemseo.utils.pydantic import copy_field
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
 class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for :class:`.MDANewtonRaphson`."""
+
+    _TARGET_CLASS_NAME = "MDANewtonRaphson"
 
     execute_before_linearizing: bool = copy_field(
         "execute_before_linearizing",
@@ -41,10 +50,30 @@ class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
 
     newton_linear_solver_name: LinearSolver = Field(
         default=LinearSolver.DEFAULT,
-        description="""The name of the linear solver for the Newton method.""",
+        description="""The name of the linear solver for the Newton method.
+
+This field is ignored when ``newton_linear_solver_settings`` is a Pydantic model.""",
     )
 
     newton_linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(
         default_factory=dict,
         description="""The settings for the Newton linear solver.""",
     )
+
+    @model_validator(mode="after")
+    def __newton_linear_solver_settings_to_pydantic_model(self) -> Self:
+        """Convert MDA settings into a Pydantic model."""
+        if isinstance(self.newton_linear_solver_settings, Mapping):
+            factory = LinearSolverLibraryFactory()
+            library_name = factory.algo_names_to_libraries[
+                self.newton_linear_solver_name
+            ]
+            settings_model = (
+                factory.get_class(library_name)
+                .ALGORITHM_INFOS[self.newton_linear_solver_name]
+                .Settings
+            )
+            self.newton_linear_solver_settings = settings_model(
+                **self.newton_linear_solver_settings
+            )
+        return self

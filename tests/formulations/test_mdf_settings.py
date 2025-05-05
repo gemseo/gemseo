@@ -12,22 +12,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for MDAJacobi."""
-
 from __future__ import annotations
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-from gemseo.utils.pydantic import copy_field
+from gemseo.formulations.mdf_settings import MDF_Settings
 
 
-class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
-    """The settings for :class:`.MDAJacobi`."""
-
-    _TARGET_CLASS_NAME = "MDAJacobi"
-
-    acceleration_method: AccelerationMethod = copy_field(
-        "acceleration_method",
-        BaseParallelMDASettings,
-        default=AccelerationMethod.ALTERNATE_2_DELTA,
-    )
+def test_mdf_settings():
+    """Verify that MDF_Settings can handle MDA settings passed as a mapping."""
+    log_convergence = not MDF_Settings().main_mda_settings.log_convergence
+    settings = MDF_Settings(main_mda_settings={"log_convergence": log_convergence})
+    assert settings.main_mda_settings.log_convergence is log_convergence

@@ -30,8 +30,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.doe import PYDOE_LHS_Settings
 
 configure_logger()
 

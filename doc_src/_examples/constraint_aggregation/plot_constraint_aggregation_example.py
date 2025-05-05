@@ -25,9 +25,9 @@ from copy import deepcopy
 from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
+from gemseo.settings.opt import NLOPT_MMA_Settings
 
 configure_logger()
 # %%

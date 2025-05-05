@@ -32,6 +32,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.opt import SLSQP_Settings
 
@@ -143,14 +144,13 @@ system_scenario = create_scenario(
     apply_cstr_tosub_scenarios=False,
     parallel_scenarios=False,
     multithread_scenarios=True,
-    main_mda_name="MDAGaussSeidel",
-    main_mda_settings={
-        "tolerance": 1e-14,
-        "max_mda_iter": 50,
-        "warm_start": True,
-        "use_lu_fact": False,
-        "linear_solver_tolerance": 1e-14,
-    },
+    main_mda_settings=MDAGaussSeidel_Settings(
+        tolerance=1e-14,
+        max_mda_iter=50,
+        warm_start=True,
+        use_lu_fact=False,
+        linear_solver_tolerance=1e-14,
+    ),
     maximize_objective=True,
     sub_scenarios_log_level=WARNING,
     formulation_name="BiLevel",

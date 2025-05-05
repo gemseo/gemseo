@@ -64,6 +64,7 @@ from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_SLSQP_Settings
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.discipline import get_all_outputs
@@ -162,20 +163,19 @@ get_all_inputs(disciplines)
 # MDF formulations. The MDF formulation includes an MDA, and thus one of the settings of
 # the formulation is ``main_mda_settings``, which configures the solver for the strong
 # couplings.
-main_mda_settings = {
-    "tolerance": 1e-14,
-    "max_mda_iter": 50,
-    "warm_start": True,
-    "use_lu_fact": False,
-    "linear_solver_tolerance": 1e-14,
-}
+main_mda_settings = MDAGaussSeidel_Settings(
+    tolerance=1e-14,
+    max_mda_iter=50,
+    warm_start=True,
+    use_lu_fact=False,
+    linear_solver_tolerance=1e-14,
+)
 scenario = create_scenario(
     disciplines,
     "y_4",
     design_space,
     formulation_name="MDF",
     maximize_objective=True,
-    main_mda_name="MDAGaussSeidel",
     main_mda_settings=main_mda_settings,
 )
 # %%

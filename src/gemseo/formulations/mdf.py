@@ -78,7 +78,7 @@ class MDF(BaseMDOFormulation):
             **settings,
         )
         self.mda = self.__mda_factory.create(
-            self._settings.main_mda_name,
+            self._settings.main_mda_settings._TARGET_CLASS_NAME,
             self.disciplines,
             settings_model=self._settings.main_mda_settings,
         )

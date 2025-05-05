@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from functools import partial
 
-import pytest
 from numpy.testing import assert_allclose
 
 from gemseo.formulations.mdf import MDF
@@ -146,19 +145,8 @@ def test_mda_settings():
     assert isinstance(mdf.mda, MDAGaussSeidel)
     assert mdf.mda.settings.max_mda_iter == 13
     mdf = create_sellar_mdf(
-        main_mda_name="MDAGaussSeidel",
         main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
     )
 
     assert isinstance(mdf.mda, MDAGaussSeidel)
     assert mdf.mda.settings.max_mda_iter == 13
-
-    msg = (
-        "The MDANewtonRaphson settings model has the wrong type: "
-        "expected MDANewtonRaphson_Settings, got MDAGaussSeidel_Settings."
-    )
-    with pytest.raises(TypeError, match=msg):
-        mdf = create_sellar_mdf(
-            main_mda_name="MDANewtonRaphson",
-            main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
-        )

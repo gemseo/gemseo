@@ -1,0 +1,1 @@
+The field ``linear_solver_settings`` of ``BaseMDASettings`` can be a Pydantic model of type ``BaseLinearSolverSettings``, e.g. ``LGMRES_Settings``.
