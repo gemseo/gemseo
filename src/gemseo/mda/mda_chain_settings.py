@@ -16,20 +16,29 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from collections.abc import Sequence  # Noqa: TC003
+from typing import TYPE_CHECKING
 from typing import ClassVar  # Noqa: TC003
 
 from pydantic import Field
+from pydantic import model_validator
 
 from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TC001
 from gemseo.mda.base_mda_settings import BaseMDASettings  # noqa: TC001
 from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings  # Noqa: TC001
 from gemseo.mda.composed_mda_settings import ComposedMDASettings
+from gemseo.mda.factory import MDAFactory
 from gemseo.typing import StrKeyMapping  # noqa: TC001
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
     """The settings for :class:`.MDAChain`."""
+
+    _TARGET_CLASS_NAME = "MDAChain"
 
     chain_linearize: bool = Field(
         default=False,
@@ -43,7 +52,9 @@ while in direct mode, linearizing the chain may be cheaper.""",
 
     inner_mda_name: str = Field(
         default="MDAJacobi",
-        description="""The class name of the inner-MDA.""",
+        description="""The class name of the inner-MDA.
+
+This field is ignored when ``inner_mda_settings`` is a Pydantic model.""",
     )
 
     inner_mda_settings: StrKeyMapping | BaseMDASettings = Field(
@@ -80,3 +91,11 @@ If empty, they are created from ``disciplines``.""",
         "log_convergence",
     ]
     """The settings that must be cascaded to the inner MDAs."""
+
+    @model_validator(mode="after")
+    def __inner_mda_settings_to_pydantic_model(self) -> Self:
+        """Convert the inner MDA settings into a Pydantic model."""
+        if isinstance(self.inner_mda_settings, Mapping):
+            settings_model = MDAFactory().get_class(self.inner_mda_name).Settings
+            self.inner_mda_settings = settings_model(**self.inner_mda_settings)
+        return self

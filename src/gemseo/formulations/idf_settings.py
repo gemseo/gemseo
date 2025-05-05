@@ -77,11 +77,11 @@ See detailed settings in :class:`.MDAChain`.""",
     )
 
     @model_validator(mode="after")
-    def __validate_mda_settings(self) -> Self:
-        """Validate the MDA chain settings."""
-        mda_settings = self.mda_chain_settings_for_start_at_equilibrium
-        if isinstance(mda_settings, Mapping):
+    def __mda_chain_settings_to_pydantic_model(self) -> Self:
+        """Convert the MDA chain settings into a Pydantic model."""
+        mda_chain_settings = self.mda_chain_settings_for_start_at_equilibrium
+        if isinstance(mda_chain_settings, Mapping):
             self.mda_chain_settings_for_start_at_equilibrium = MDAChain.Settings(
-                **mda_settings
+                **mda_chain_settings
             )
         return self

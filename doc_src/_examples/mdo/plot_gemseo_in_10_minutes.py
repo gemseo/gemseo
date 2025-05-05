@@ -48,6 +48,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.settings.mda import MDAChain_Settings
 
 # %%
 # These imports are needed to compute mathematical expressions and to
@@ -191,7 +192,7 @@ scenario = create_scenario(
     "obj",
     design_space,
     formulation_name="MDF",
-    main_mda_settings={"inner_mda_name": "MDAGaussSeidel"},
+    main_mda_settings=MDAChain_Settings(inner_mda_name="MDAGaussSeidel"),
 )
 
 # %%

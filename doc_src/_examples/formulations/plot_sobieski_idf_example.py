@@ -28,8 +28,8 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.opt import SLSQP_Settings
 
 configure_logger()
 

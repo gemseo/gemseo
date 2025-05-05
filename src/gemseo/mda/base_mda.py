@@ -268,7 +268,6 @@ class BaseMDA(ProcessDiscipline):
         self._initialize_grammars()
         self.io.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
         self._check_consistency()
-        self.__check_linear_solver_settings()
         self._check_coupling_types()
 
     @property
@@ -286,23 +285,6 @@ class BaseMDA(ProcessDiscipline):
         for discipline in self._disciplines:
             self.io.input_grammar.update(discipline.io.input_grammar)
             self.io.output_grammar.update(discipline.io.output_grammar)
-
-    def __check_linear_solver_settings(self) -> None:
-        """Check the linear solver options.
-
-        The linear solver tolerance cannot be set
-        using the linear solver option dictionary,
-        as it is set using the linear_solver_tolerance keyword argument.
-
-        Raises:
-            ValueError: If the ``rtol`` keyword is in :attr:`.linear_solver_settings`.
-        """
-        if "rtol" in self.settings.linear_solver_settings:
-            msg = (
-                "The linear solver tolerance shall be set"
-                " using the linear_solver_tolerance argument."
-            )
-            raise ValueError(msg)
 
     def _check_consistency(self) -> None:
         """Check if there are not more than one equation per variable.
@@ -433,7 +415,6 @@ class BaseMDA(ProcessDiscipline):
         # have changed at convergence, therefore the cache is not exactly
         # the same as the current value
         exec_cache_tol = self.lin_cache_tol_fact * self.settings.tolerance
-        self.__check_linear_solver_settings()
         residual_variables = {}
         for disc in self._disciplines:
             residual_variables.update(disc.io.residual_to_state_variable)
@@ -453,20 +434,20 @@ class BaseMDA(ProcessDiscipline):
             set(input_names).difference(self._non_numeric_array_variables)
         )
 
+        linear_solver_settings = self.settings.linear_solver_settings.model_dump()
+        linear_solver_settings["rtol"] = self.settings.linear_solver_tolerance
         self.jac = self.assembly.total_derivatives(
             self.io.data,
             output_names,
             input_names,
             couplings_adjoint,
-            rtol=self.settings.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
             use_lu_fact=self.settings.use_lu_fact,
             exec_cache_tol=exec_cache_tol,
             execute=exec_cache_tol == 0.0,
-            linear_solver=self.settings.linear_solver,
             residual_variables=residual_variables,
-            **self.settings.linear_solver_settings,
+            **linear_solver_settings,
         )
 
     def _prepare_io_for_check_jacobian(

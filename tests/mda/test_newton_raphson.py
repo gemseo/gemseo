@@ -30,6 +30,7 @@ from numpy import linalg
 from numpy.testing import assert_equal
 
 from gemseo import create_mda
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -332,10 +333,13 @@ def test_pass_dedicated_newton_options(
     mda.execute()
     newton_step_args = mda.assembly.compute_newton_step.call_args
     assert mda.settings.linear_solver == mda_linear_solver
-    if mda_linear_solver_settings is None:
-        assert mda.settings.linear_solver_settings == {}
-    else:
-        assert mda.settings.linear_solver_settings == mda_linear_solver_settings
+    factory = LinearSolverLibraryFactory()
+    library_name = factory.algo_names_to_libraries[mda_linear_solver]
+    settings_model = (
+        factory.get_class(library_name).ALGORITHM_INFOS[mda_linear_solver].Settings
+    )
+    mda_linear_solver_settings = settings_model(**mda_linear_solver_settings)
+    assert mda.settings.linear_solver_settings == mda_linear_solver_settings
     assert newton_step_args.args[2] == newton_linear_solver_name
     del newton_step_args.kwargs["matrix_type"]
     if "atol" in newton_linear_solver_settings:

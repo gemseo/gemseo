@@ -29,6 +29,7 @@ from numpy import array
 from numpy import inf
 from numpy import isclose
 
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
@@ -85,59 +86,17 @@ def test_set_solver(sellar_disciplines) -> None:
         linear_solver_tolerance=1e-6,
         use_lu_fact=True,
         linear_solver="LGMRES",
-        linear_solver_settings={"restart": 5},
+        linear_solver_settings={"inner_m": 5},
     )
+    linear_solver_settings = LGMRES_Settings(inner_m=5)
     assert mda_chain.settings.linear_solver == "LGMRES"
     assert mda_chain.settings.use_lu_fact
-    assert mda_chain.settings.linear_solver_settings == {"restart": 5}
+    assert mda_chain.settings.linear_solver_settings == linear_solver_settings
 
     sub_mda1_settings = mda_chain.mdo_chain.disciplines[0].settings
     assert sub_mda1_settings.linear_solver == "LGMRES"
     assert sub_mda1_settings.use_lu_fact
-    assert sub_mda1_settings.linear_solver_settings == {"restart": 5}
-
-
-def test_set_linear_solver_tolerance_from_options_constructor(
-    sellar_disciplines,
-) -> None:
-    """Test that the tolerance cannot be set from the linear_solver_settings dictionary.
-
-    In this test, we check that an exception is raised at the MDA instantiation.
-    """
-    linear_solver_settings = {"rtol": 1e-6}
-    msg = (
-        "The linear solver tolerance shall be set"
-        " using the linear_solver_tolerance argument."
-    )
-    with pytest.raises(ValueError, match=msg):
-        MDAChain(
-            sellar_disciplines,
-            tolerance=1e-12,
-            linear_solver_settings=linear_solver_settings,
-        )
-
-
-def test_set_linear_solver_tolerance_from_options_set_attribute(
-    sellar_disciplines,
-) -> None:
-    """Test that the tolerance cannot be set from the linear_solver_settings dictionary.
-
-    In this test, we check that the exception is raised when linearizing the MDA.
-    """
-    linear_solver_settings = {"rtol": 1e-6}
-    mda_chain = MDAChain(sellar_disciplines, tolerance=1e-12)
-    mda_chain.settings.linear_solver_settings = linear_solver_settings
-    input_data = get_initial_data()
-    inputs = ["x_1", "x_shared"]
-    outputs = ["obj", "c_1", "c_2"]
-    mda_chain.add_differentiated_inputs(inputs)
-    mda_chain.add_differentiated_outputs(outputs)
-    msg = (
-        "The linear solver tolerance shall be set"
-        " using the linear_solver_tolerance argument."
-    )
-    with pytest.raises(ValueError, match=msg):
-        mda_chain.linearize(input_data)
+    assert sub_mda1_settings.linear_solver_settings == linear_solver_settings
 
 
 def test_sellar(tmp_wd, sellar_disciplines) -> None:

@@ -1,0 +1,4 @@
+- The field ``main_mda_name`` of ``MDF_Settings`` is ignored when the field ``main_mda_settings`` is a Pydantic model.
+- The field ``inner_mda_name`` of ``MDAChain_Settings`` is ignored when the field ``inner_mda_settings`` is a Pydantic model.
+- The field ``linear_solver`` of ``BaseMDASettings``, e.g. ``MDAJacobi_Settings``, is ignored when the field ``linear_solver_settings`` is a Pydantic model.
+- The field ``newton_linear_solver_name`` of ``BaseMDASettings``, e.g. ``MDANewtonRaphson_Settings``, is ignored when the field ``newton_linear_solver_settings`` is a Pydantic model.

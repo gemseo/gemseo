@@ -16,13 +16,17 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
+
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TC002
 from pydantic import NonNegativeInt  # noqa: TC002
+from pydantic import model_validator
 from strenum import StrEnum
 
+from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TC001
     BaseLinearSolverSettings,
 )
@@ -30,10 +34,12 @@ from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
-class BaseMDASettings(BaseModel):
+class BaseMDASettings(BaseAlgorithmSettings):
     """The base settings class for MDA algorithms."""
 
     model_config = ConfigDict(
@@ -50,19 +56,19 @@ If ``None``, the coupling structure is created from the disciplines.""",
     )
 
     linear_solver: LinearSolver = Field(
-        default=LinearSolver.DEFAULT, description="""The name of the linear solver."""
+        default=LinearSolver.DEFAULT,
+        description="""The name of the linear solver.
+
+This field is ignored when ``linear_solver_settings`` is a Pydantic model.""",
     )
 
     linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(
         default_factory=dict,
-        description="""The settings passed to the linear solver factory.""",
+        description="""The settings of the linear solver.""",
     )
 
     linear_solver_tolerance: NonNegativeFloat = Field(
-        default=1e-12,
-        description="""The linear solver tolerance.
-
-Linear solvers are used to compute the total derivatives.""",
+        default=1e-12, description="""The linear solver tolerance."""
     )
 
     log_convergence: bool = Field(
@@ -119,3 +125,18 @@ The warm start strategy consists in using the last cached values for the
 coupling variables as an initial guess. This is expected to reduce the number
 of iteration of the MDA algorithm required to reach convergence.""",
     )
+
+    @model_validator(mode="after")
+    def __linear_solver_settings_to_pydantic_model(self) -> Self:
+        """Convert the linear solver settings into a Pydantic model."""
+        if isinstance(self.linear_solver_settings, Mapping):
+            factory = LinearSolverLibraryFactory()
+            library_name = factory.algo_names_to_libraries[self.linear_solver]
+            settings_model = (
+                factory.get_class(library_name)
+                .ALGORITHM_INFOS[self.linear_solver]
+                .Settings
+            )
+            self.linear_solver_settings = settings_model(**self.linear_solver_settings)
+
+        return self

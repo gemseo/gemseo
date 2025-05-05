@@ -35,17 +35,17 @@ from copy import deepcopy
 
 from gemseo import configure_logger
 from gemseo import execute_post
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.settings.formulations import BiLevel_BCD_Settings
+from gemseo.settings.formulations import MDF_Settings
+from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.settings.opt import NLOPT_COBYLA_Settings
+from gemseo.settings.opt import SLSQP_Settings
 
 configure_logger()
 

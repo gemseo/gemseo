@@ -42,7 +42,9 @@ class MDF_Settings(BaseFormulationSettings):  # noqa: N801
         description="""The name of the class of the main MDA.
 
 Typically the :class:`.MDAChain`,
-but one can force to use :class:`.MDAGaussSeidel` for instance.""",
+but one can force to use :class:`.MDAGaussSeidel` for instance.
+
+This field is ignored when ``main_mda_settings`` is a Pydantic model.""",
     )
 
     main_mda_settings: StrKeyMapping | BaseMDASettings = Field(
@@ -53,16 +55,9 @@ These settings may include those of the inner-MDA.""",
     )
 
     @model_validator(mode="after")
-    def __validate_mda_settings(self) -> Self:
-        """Validate the main MDA settings using the appropriate Pydantic model."""
-        settings_model = MDAFactory().get_class(self.main_mda_name).Settings
+    def __mda_settings_to_pydantic_model(self) -> Self:
+        """Convert MDA settings into a Pydantic model."""
         if isinstance(self.main_mda_settings, Mapping):
+            settings_model = MDAFactory().get_class(self.main_mda_name).Settings
             self.main_mda_settings = settings_model(**self.main_mda_settings)
-        if not isinstance(self.main_mda_settings, settings_model):
-            msg = (
-                f"The {self.main_mda_name} settings model has the wrong type: "
-                f"expected {settings_model.__name__}, "
-                f"got {self.main_mda_settings.__class__.__name__}."
-            )
-            raise TypeError(msg)
         return self

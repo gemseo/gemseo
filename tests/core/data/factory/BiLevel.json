@@ -8,7 +8,7 @@
     },
     "main_mda_name": {
       "type": "string",
-      "description": "The name of the class of the main MDA.  Typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance."
+      "description": "The name of the class of the main MDA.  Typically the :class:`.MDAChain`, but one can force to use :class:`.MDAGaussSeidel` for instance. This field is ignored when ``main_mda_settings`` is a Pydantic model."
     },
     "main_mda_settings": {
       "type": "object",

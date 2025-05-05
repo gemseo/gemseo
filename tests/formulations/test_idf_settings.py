@@ -12,22 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for MDAJacobi."""
-
 from __future__ import annotations
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-from gemseo.utils.pydantic import copy_field
+import pytest
+
+from gemseo.formulations.idf_settings import IDF_Settings
+from gemseo.mda.mda_chain_settings import MDAChain_Settings
 
 
-class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
-    """The settings for :class:`.MDAJacobi`."""
-
-    _TARGET_CLASS_NAME = "MDAJacobi"
-
-    acceleration_method: AccelerationMethod = copy_field(
-        "acceleration_method",
-        BaseParallelMDASettings,
-        default=AccelerationMethod.ALTERNATE_2_DELTA,
+@pytest.mark.parametrize("as_mapping", [False, True])
+def test_idf_settings(as_mapping):
+    """Verify that IDF_Settings can handle MDA settings passed as a mapping."""
+    chain_linearize = not (
+        IDF_Settings().mda_chain_settings_for_start_at_equilibrium.chain_linearize
+    )
+    if as_mapping:
+        value = {"chain_linearize": chain_linearize}
+    else:
+        value = MDAChain_Settings(chain_linearize=chain_linearize)
+    settings = IDF_Settings(mda_chain_settings_for_start_at_equilibrium=value)
+    assert (
+        settings.mda_chain_settings_for_start_at_equilibrium.chain_linearize
+        is chain_linearize
     )
