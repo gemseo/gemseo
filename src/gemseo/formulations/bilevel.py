@@ -33,6 +33,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -338,14 +339,18 @@ class BiLevel(BaseMDOFormulation):
         strongly_coupled_disciplines = (
             self.coupling_structure.strongly_coupled_disciplines
         )
+        main_mda_settings = self._settings.main_mda_settings
+        if isinstance(main_mda_settings, BaseMDASettings):
+            main_mda_name = main_mda_settings._TARGET_CLASS_NAME
+        else:
+            main_mda_name = self._settings.main_mda_name
         if len(strongly_coupled_disciplines) > 0:
             mda1 = self.__mda_factory.create(
-                self._settings.main_mda_name,
+                main_mda_name,
                 strongly_coupled_disciplines,
-                settings_model=self._settings.main_mda_settings,
+                settings_model=main_mda_settings,
             )
             mda1.settings.warm_start = True
-
         else:
             LOGGER.warning(
                 "No strongly coupled disciplines detected, "
@@ -353,9 +358,9 @@ class BiLevel(BaseMDOFormulation):
             )
 
         mda2 = self.__mda_factory.create(
-            self._settings.main_mda_name,
+            main_mda_name,
             get_sub_disciplines(self.disciplines),
-            settings_model=self._settings.main_mda_settings,
+            settings_model=main_mda_settings,
         )
         mda2.settings.warm_start = False
 

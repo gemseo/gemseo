@@ -31,6 +31,8 @@ from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd import BiLevelBCD
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -550,3 +552,32 @@ def test_get_top_level_disciplines(scenario, request, include_sub_formulations) 
         )
     else:
         assert top_level_disciplines == (bilevel.chain,)
+
+
+@pytest.mark.parametrize(
+    "main_mda",
+    [
+        {"main_mda_settings": MDAGaussSeidel_Settings()},
+        {"main_mda_name": "MDAGaussSeidel", "main_mda_settings": {"max_mda_iter": 10}},
+    ],
+)
+def test_main_mda_settings(main_mda):
+    """Tests that BiLevel supports main_mda_settings as dict and Pydantic model."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    sub_scenario = MDOScenario(
+        [AnalyticDiscipline({"z": "(x+y)**2"})],
+        "z",
+        design_space.filter(["y"], copy=True),
+        formulation_name="DisciplinaryOpt",
+    )
+    sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+    scenario = MDOScenario(
+        [sub_scenario],
+        "z",
+        design_space.filter(["x"]),
+        formulation_name="BiLevel",
+        **main_mda,
+    )
+    assert isinstance(scenario.formulation.mda2, MDAGaussSeidel)
