@@ -1,0 +1,2 @@
+- The log of the ``OptimizationProblem`` distinguishes between equality and inequality constraints.
+- The log of the ``OptimizationProblem`` writes equality constraints as ``c(x) = 0``, for consistency with mathematical writing.

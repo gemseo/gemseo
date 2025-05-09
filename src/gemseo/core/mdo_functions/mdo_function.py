@@ -390,7 +390,7 @@ class MDOFunction:
                 else:
                     left = f"{name}"
 
-            sign = "==" if self.f_type == self.ConstraintType.EQ else "<="
+            sign = "=" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
         if self.input_names:
