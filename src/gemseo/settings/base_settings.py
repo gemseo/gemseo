@@ -12,13 +12,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the algorithms."""
+"""Base settings."""
 
 from __future__ import annotations
 
-from gemseo.settings.base_settings import BaseSettings
+from typing import ClassVar
+
+from pydantic import BaseModel
 
 
-# TODO: API: remove
-class BaseAlgorithmSettings(BaseSettings):
-    """The settings common to all the algorithms."""
+class BaseSettings(
+    BaseModel,
+    extra="forbid",
+    arbitrary_types_allowed=True,
+):
+    """The base settings class."""
+
+    _TARGET_CLASS_NAME: ClassVar[str]
+    """The name of the class using these settings."""

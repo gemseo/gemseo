@@ -22,6 +22,12 @@ from numpy import zeros
 
 from gemseo import execute_algo
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
+from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings import (  # noqa: E501
+    Augmented_Lagrangian_order_0_Settings,
+)
+from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings import (  # noqa: E501
+    Augmented_Lagrangian_order_1_Settings,
+)
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -53,48 +59,37 @@ def test_kkt_norm_correctly_stored(problem) -> None:
     assert pytest.approx(problem.get_solution()[1], abs=1e-2) == problem.solution.f_opt
 
 
-parametrized_options = pytest.mark.parametrize(
-    "options",
-    [
-        {
-            "max_iter": 50,
-            "kkt_tol_abs": 1e-4,
-            "sub_algorithm_name": "SLSQP",
-            "sub_algorithm_settings": {"max_iter": 50},
-        },
-        {
-            "max_iter": 50,
-            "sub_algorithm_name": "SLSQP",
-            "sub_algorithm_settings": {"max_iter": 50},
-        },
-    ],
-)
 parametrized_reformulate = pytest.mark.parametrize(
     "reformulate_constraints_with_slack_var", [True, False]
 )
-parametrized_algo = pytest.mark.parametrize(
-    "algo",
+parametrized_settings_model = pytest.mark.parametrize(
+    "settings_model",
     [
-        "Augmented_Lagrangian_order_0",
-        "Augmented_Lagrangian_order_1",
+        Augmented_Lagrangian_order_0_Settings(
+            max_iter=50,
+            sub_algorithm_name="SLSQP",
+            sub_algorithm_settings={"max_iter": 50},
+        ),
+        Augmented_Lagrangian_order_1_Settings(
+            max_iter=50,
+            sub_algorithm_name="SLSQP",
+            sub_algorithm_settings={"max_iter": 50},
+            kkt_tol_abs=1e-4,
+        ),
     ],
 )
 
 
-@parametrized_options
-@parametrized_algo
+@parametrized_settings_model
 @parametrized_reformulate
 def test_2d_ineq(
-    analytical_test_2d_ineq, options, algo, reformulate_constraints_with_slack_var
+    analytical_test_2d_ineq, settings_model, reformulate_constraints_with_slack_var
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    if algo == "Augmented_Lagrangian_order_0" and "kkt_tol_abs" in options:
-        options.pop("kkt_tol_abs")
-
     problem = analytical_test_2d_ineq.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_name=algo, algo_type="opt", **options.copy())
+    execute_algo(problem, settings_model=settings_model, algo_type="opt")
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:
@@ -114,11 +109,10 @@ def test_2d_ineq(
     assert pytest.approx(lag[lag_kind][1], coef2 * epsilon) == array([1.0])
 
 
-@parametrized_options
-@parametrized_algo
-def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
+@parametrized_settings_model
+def test_2d_eq(analytical_test_2d_eq, settings_model) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d_eq.execute(algo_name=algo, **options.copy())
+    analytical_test_2d_eq.execute(settings_model)
     problem = analytical_test_2d_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -129,11 +123,10 @@ def test_2d_eq(analytical_test_2d_eq, options, algo) -> None:
     assert pytest.approx(lag["equality"][1], 10 * epsilon) == array([-1.0])
 
 
-@parametrized_options
-@parametrized_algo
-def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
+@parametrized_settings_model
+def test_2d_multiple_eq(analytical_test_2d__multiple_eq, settings_model) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    analytical_test_2d__multiple_eq.execute(algo_name=algo, **options.copy())
+    analytical_test_2d__multiple_eq.execute(settings_model)
     problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -153,24 +146,21 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo) -> None:
         ["g", "h"],
     ],
 )
-@parametrized_options
-@parametrized_algo
 @parametrized_reformulate
+@parametrized_settings_model
 def test_2d_mixed(
     analytical_test_2d_mixed_rank_deficient,
-    options,
-    algo,
+    settings_model,
     reformulate_constraints_with_slack_var,
     subsolver_constraints,
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    opt = options.copy()
-    opt["sub_problem_constraints"] = subsolver_constraints
-    opt["ftol_rel"] = 1e-3
+    settings_model.sub_problem_constraints = subsolver_constraints
+    settings_model.ftol_rel = 1e-3
     problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_name=algo, algo_type="opt", **opt)
+    execute_algo(problem, algo_type="opt", settings_model=settings_model)
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:
