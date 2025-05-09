@@ -16,7 +16,8 @@
 
 from __future__ import annotations
 
-from numpy import inf
+from math import inf
+
 from pydantic import Field
 from pydantic import PositiveFloat  # noqa: TC002
 
