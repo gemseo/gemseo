@@ -254,7 +254,7 @@ class Constraints(Functions):
             str_repr += f"({arguments})"
 
         if constraint_type == MDOFunction.ConstraintType.EQ:
-            sign = " == "
+            sign = " = "
         elif positive:
             sign = " >= "
         else:

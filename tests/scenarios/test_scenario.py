@@ -754,41 +754,41 @@ def identity_scenario() -> MDOScenario:
 @pytest.mark.parametrize(
     ("constraint_type", "constraint_name", "value", "positive", "expected"),
     [
-        ("eq", "", 0.0, False, ["y", "", "y(x) == 0.0", "y(x) == 0.0"]),
+        ("eq", "", 0.0, False, ["y", "", "y(x) = 0.0", "y(x) = 0.0"]),
         (
             "eq",
             "cstr",
             0.0,
             False,
-            ["cstr", "", "y(x) == 0.0", "cstr: y(x) == 0.0"],
+            ["cstr", "", "y(x) = 0.0", "cstr: y(x) = 0.0"],
         ),
         (
             "eq",
             "",
             1.0,
             False,
-            ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 == 0.0", "y(x) == 1.0"],
+            ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 = 0.0", "y(x) = 1.0"],
         ),
         (
             "eq",
             "",
             -1.0,
             False,
-            ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 == 0.0", "y(x) == -1.0"],
+            ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 = 0.0", "y(x) = -1.0"],
         ),
         (
             "eq",
             "cstr",
             1.0,
             False,
-            ["cstr", "y(x)-1.0", "y(x)-1.0 == 0.0", "cstr: y(x) == 1.0"],
+            ["cstr", "y(x)-1.0", "y(x)-1.0 = 0.0", "cstr: y(x) = 1.0"],
         ),
         (
             "eq",
             "cstr",
             -1.0,
             False,
-            ["cstr", "y(x)+1.0", "y(x)+1.0 == 0.0", "cstr: y(x) == -1.0"],
+            ["cstr", "y(x)+1.0", "y(x)+1.0 = 0.0", "cstr: y(x) = -1.0"],
         ),
         ("ineq", "", 0.0, False, ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"]),
         (

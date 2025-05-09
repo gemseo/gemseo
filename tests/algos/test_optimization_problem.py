@@ -296,7 +296,7 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
         input_names=["x"],
     )
     problem.add_constraint(eq_std)
-    expected.append("eq_std(x): cstr + cst == 0.0")
+    expected.append("eq_std(x): cstr + cst = 0.0")
 
     eq_posval = MDOFunction(
         Power2.ineq_constraint1,
@@ -306,7 +306,7 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
         input_names=["x"],
     )
     problem.add_constraint(eq_posval, value=1.0)
-    expected.append("eq_posval(x): cstr + cst == 1.0")
+    expected.append("eq_posval(x): cstr + cst = 1.0")
     eq_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_negval",
@@ -315,7 +315,7 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
         input_names=["x"],
     )
     problem.add_constraint(eq_negval, value=-1.0)
-    expected.append("eq_negval(x): cstr + cst == -1.0")
+    expected.append("eq_negval(x): cstr + cst = -1.0")
 
     msg = str(problem)
     for elem in expected:
@@ -1864,7 +1864,7 @@ def test_repr_constraint_linear_lower_ineq() -> None:
         """Optimization problem:
    minimize f(x[0], x[1]) = x[0] + 2.00e+00*x[1]
    with respect to x
-   subject to constraints:
+   under the inequality constraints
       g(x[0], x[1]): [ 0.00e+00  1.00e+00][x[0]] + [ 6.00e+00] >= 0.0
                      [ 2.00e+00  3.00e+00][x[1]]   [ 7.00e+00]
                      [ 4.00e+00  5.00e+00]         [ 8.00e+00]"""
@@ -2063,20 +2063,26 @@ def test_repr_html():
         == """Optimization problem:
    minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2
    with respect to x
-   subject to constraints:
+   under the equality constraints
+      eq(x): 0.9 - x[2]**3 = 0.0
+   under the inequality constraints
       ineq1(x): 0.5 - x[0]**3 <= 0.0
-      ineq2(x): 0.5 - x[1]**3 <= 0.0
-      eq(x): 0.9 - x[2]**3 == 0.0"""
+      ineq2(x): 0.5 - x[1]**3 <= 0.0"""
     )
     assert problem._repr_html_() == REPR_HTML_WRAPPER.format(
         "Optimization problem:<br/>"
         "<ul>"
         "<li>minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2</li>"
-        "<li>with respect to x</li><li>subject to constraints:"
+        "<li>with respect to x</li>"
+        "<li>under the equality constraints"
+        "<ul>"
+        "<li>eq(x): 0.9 - x[2]**3 = 0.0</li>"
+        "</ul>"
+        "</li>"
+        "<li>under the inequality constraints"
         "<ul>"
         "<li>ineq1(x): 0.5 - x[0]**3 &lt;= 0.0</li>"
         "<li>ineq2(x): 0.5 - x[1]**3 &lt;= 0.0</li>"
-        "<li>eq(x): 0.9 - x[2]**3 == 0.0</li>"
         "</ul>"
         "</li>"
         "</ul>"

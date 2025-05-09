@@ -629,16 +629,18 @@ class OptimizationProblem(EvaluationProblem):
         # variables representation
         mls.add("with respect to {}", pretty_str(self.design_space))
         if self.__constraints:
-            mls.add("subject to constraints:")
-            mls.indent()
-            for functions in [
-                self.constraints.get_inequality_constraints(),
-                self.constraints.get_equality_constraints(),
+            for type_, functions in [
+                ("equality", tuple(self.constraints.get_equality_constraints())),
+                ("inequality", tuple(self.constraints.get_inequality_constraints())),
             ]:
-                for constraint in functions:
-                    constraint = [c_i for c_i in str(constraint).split("\n") if c_i]
-                    for constraint_i in constraint:
-                        mls.add(constraint_i)
+                if functions:
+                    mls.add(f"under the {type_} constraints")
+                    mls.indent()
+                    for constraint in functions:
+                        constraint = [c_i for c_i in str(constraint).split("\n") if c_i]
+                        for constraint_i in constraint:
+                            mls.add(constraint_i)
+                    mls.dedent()
 
         return mls
 
