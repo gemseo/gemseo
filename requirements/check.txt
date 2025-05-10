@@ -16,7 +16,7 @@ pre-commit==4.2.0
     # via -r requirements/check.in
 pyyaml==6.0.2
     # via pre-commit
-ruff==0.11.8
+ruff==0.11.9
     # via -r requirements/check.in
 virtualenv==20.31.2
     # via pre-commit
