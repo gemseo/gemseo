@@ -22,13 +22,13 @@ docstring-inheritance==2.2.2
     # via gemseo (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
-exceptiongroup==1.2.2
+exceptiongroup==1.3.0
     # via pytest
 execnet==2.1.1
     # via pytest-xdist
 fastjsonschema==2.21.1
     # via gemseo (pyproject.toml)
-fonttools==4.57.0
+fonttools==4.58.0
     # via matplotlib
 genson==1.3.0
     # via gemseo (pyproject.toml)
@@ -157,6 +157,7 @@ typeguard==4.4.2
 typing-extensions==4.13.2
     # via
     #   gemseo (pyproject.toml)
+    #   exceptiongroup
     #   pydantic
     #   pydantic-core
     #   typeguard
