@@ -12,7 +12,7 @@ cffi==1.17.1
     # via cryptography
 charset-normalizer==3.4.2
     # via requests
-check-wheel-contents==0.6.1
+check-wheel-contents==0.6.2
     # via -r requirements/dist.in
 click==8.2.0
     # via check-wheel-contents
