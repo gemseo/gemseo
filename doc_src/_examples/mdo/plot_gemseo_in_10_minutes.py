@@ -83,7 +83,17 @@ configure_logger()
 
 
 def f_sellar_system(x_local=1.0, x_shared_2=3.0, y_1=1.0, y_2=1.0):
-    """Objective function."""
+    """Compute the values of the objective and constraints.
+
+    Args:
+        x_local: The value of the local design variable.
+        x_shared_2: The value of the second shared design variable.
+        y_1: The value of the first coupling variable.
+        y_2: The value of the second coupling variable.
+
+    Returns:
+        The values of the objective and constraints.
+    """
     obj = x_local**2 + x_shared_2 + y_1**2 + exp(-y_2)
     c_1 = 3.16 - y_1**2
     c_2 = y_2 - 24.0
@@ -91,13 +101,32 @@ def f_sellar_system(x_local=1.0, x_shared_2=3.0, y_1=1.0, y_2=1.0):
 
 
 def f_sellar_1(x_local=1.0, y_2=1.0, x_shared_1=1.0, x_shared_2=3.0):
-    """Function for discipline 1."""
+    """Compute the value of the first coupling variable.
+
+    Args:
+        x_local: The value of the local design variable.
+        y_2: The value of the second coupling variable.
+        x_shared_1: The value of the first shared design variable.
+        x_shared_2: The value of the second shared design variable.
+
+    Returns:
+        The value of the first coupling variable.
+    """
     y_1 = (x_shared_1**2 + x_shared_2 + x_local - 0.2 * y_2) ** 0.5
     return y_1
 
 
 def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
-    """Function for discipline 2."""
+    """Compute the value of the second coupling variable.
+
+    Args:
+        y_1: The value of the first coupling variable.
+        x_shared_1: The value of the first shared design variable.
+        x_shared_2: The value of the second shared design variable.
+
+    Returns:
+        The value of the second coupling variable.
+    """
     y_2 = abs(y_1) + x_shared_1 + x_shared_2
     return y_2
 
