@@ -1,0 +1,1 @@
+The ``timeout`` handling is now faster when using a thread instead of a process.
