@@ -522,7 +522,6 @@ UPDATE_DATA = {
     "optional_name2": ARRAY,
     "new_name": ARRAY,
 }
-UPDATE_TYPES = {name: type(value) for name, value in UPDATE_DATA.items()}
 
 
 def powerset(iterable) -> Iterator[tuple[Any, ...]]:
@@ -596,9 +595,11 @@ def test_update_from_types(grammar, merge) -> None:
     grammar.update_from_types({}, merge=merge)
     assert grammar.names == names_before
 
+    update_types = {name: type(value) for name, value in UPDATE_DATA.items()}
+
     # Update from non-empty.
     with check_update_raise(grammar, merge):
-        grammar.update_from_types(UPDATE_TYPES, merge=merge)
+        grammar.update_from_types(update_types, merge=merge)
         assert_updated(grammar, merge=merge)
 
 

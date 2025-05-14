@@ -136,7 +136,7 @@ def test_mda_jacobi_parallel() -> None:
     assert_equal(mda_seq_local_data, mda_parallel_local_data)
 
 
-def test_jacobi_sellar(sellar_disciplines) -> None:
+def test_jacobi_sellar(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test the execution of Jacobi on Sobieski."""
     mda = MDAJacobi(sellar_disciplines)
     mda.execute()
@@ -227,7 +227,7 @@ def test_self_coupled() -> None:
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
 
 
-def test_log_convergence(sellar_disciplines) -> None:
+def test_log_convergence(sellar_with_2d_array, sellar_disciplines) -> None:
     """Check that the boolean log_convergence is correctly set."""
     mda = MDAJacobi(sellar_disciplines)
     assert not mda.settings.log_convergence

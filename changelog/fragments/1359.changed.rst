@@ -1,0 +1,4 @@
+For grammars of type ``JSONGrammar``, a grammar item defined only with the type ``ndarray``
+and no type for the array elements will now consider that the elements are of type ``number``,
+i.e. ``float`` or ``complex``.
+This convention was implicit throughout |g|, it is now made explicit.

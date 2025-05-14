@@ -1800,7 +1800,7 @@ def test_original_to_current_names_with_aggregation() -> None:
             assert problem.constraints.original_to_current_names[name] == [name]
 
 
-def test_observables_normalization(sellar_disciplines) -> None:
+def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that the observables are called at each iteration."""
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))

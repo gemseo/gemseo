@@ -39,6 +39,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.typing import IntegerArray  # noqa: TC001
 from gemseo.typing import RealArray  # noqa: TC001
@@ -437,8 +438,7 @@ def compute_y_1(
     Returns:
         The value of the coupling variable :math:`y_1`.
     """
-    if x_shared.ndim != 1:
-        # This handles running the test suite for checking data conversion.
+    if WITH_2D_ARRAY:
         x_shared = x_shared.flatten()
     y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_1[0] - 0.2 * y_2[0]))
     return y_1  # noqa: RET504
@@ -450,8 +450,7 @@ def compute_jacobian_1(
     y_2: ndarray,
 ) -> ndarray:
     jac = ones((1, 4))
-    if x_shared.ndim != 1:
-        # This handles running the test suite for checking data conversion.
+    if WITH_2D_ARRAY:
         x_shared = x_shared.flatten()
     inv_denom = 1.0 / compute_y_1(x_1, x_shared, y_2)
     jac[0][0] = 0.5 * inv_denom
@@ -474,8 +473,7 @@ def compute_y_2(
     Returns:
         The value of the coupling variable :math:`y_2`.
     """
-    if x_shared.ndim != 1:
-        # This handles running the test suite for checking data conversion.
+    if WITH_2D_ARRAY:
         x_shared = x_shared.flatten()
     out = x_shared[0] + x_shared[1]
     y_2 = array([y_1 + out])
@@ -493,7 +491,7 @@ def compute_jacobian_2(
 @pytest.mark.parametrize(
     "mda_name", ["MDAGaussSeidel", "MDAJacobi", "MDANewtonRaphson", "MDAQuasiNewton"]
 )
-def test_mda(x_1, mda_name, sellar_disciplines) -> None:
+def test_mda(x_1, mda_name, sellar_with_2d_array, sellar_disciplines) -> None:
     """Verify MDA."""
     input_data_ref = get_initial_data()
     mda_ref = create_mda(mda_name, sellar_disciplines[:-1])
@@ -506,6 +504,22 @@ def test_mda(x_1, mda_name, sellar_disciplines) -> None:
 
     sellar_1 = AutoPyDiscipline(compute_y_1, py_jac=compute_jacobian_1)
     sellar_2 = AutoPyDiscipline(compute_y_2, py_jac=compute_jacobian_2)
+    if WITH_2D_ARRAY:
+        schema = {
+            "properties": {
+                "x_shared": {
+                    "items": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                    },
+                    "type": "array",
+                }
+            }
+        }
+        for disc in (sellar_1, sellar_2):
+            del disc.input_grammar["x_shared"]
+            disc.input_grammar.update_from_schema(schema)
+
     mda = create_mda(mda_name, [sellar_1, sellar_2])
     outputs = mda.execute(input_data)
 

@@ -134,7 +134,7 @@ def test_scatter_plot(baseline_images, variables) -> None:
     )
 
 
-def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
+def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> None:
     """Test if the method identifies maximized objectives properly.
 
     Args:

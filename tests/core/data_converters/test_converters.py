@@ -14,20 +14,24 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import operator
 from typing import TYPE_CHECKING
+from typing import Any
 
 import pytest
 from numpy import array
 from numpy import ndarray
 from numpy.testing import assert_array_equal
 
+from gemseo import set_data_converters
+from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 if TYPE_CHECKING:
-    from gemseo.core.data_converters.base import BaseDataConverter
+    from collections.abc import Generator
 
 
 def create_converters() -> list[BaseDataConverter]:
@@ -57,6 +61,15 @@ def converter(request) -> BaseDataConverter:
     return request.param
 
 
+@pytest.fixture
+def reset_converters() -> Generator[None, Any, None]:
+    """Fixture that reset the user converters."""
+    yield
+    BaseDataConverter.value_to_array_converters.clear()
+    BaseDataConverter.array_to_value_converters.clear()
+    BaseDataConverter.value_size_getters.clear()
+
+
 def test_is_numeric(converter) -> None:
     """Verify is_numeric."""
     for name in ("a_bool",):
@@ -73,16 +86,16 @@ def test_can_differentiate(converter) -> None:
         assert converter.is_continuous(name)
 
 
-@pytest.mark.parametrize(
-    ("name", "value", "expected"),
-    [
-        ("a_str", "0", array(["0"])),
-        ("a_float", 0.0, array([0.0])),
-        ("a_int", 0, array([0])),
-        ("a_complex", 1j, array([1j])),
-        ("a_ndarray", array([0.0]), array([0.0])),
-    ],
-)
+VALUE_TO_ARRAY_DATA = [
+    ("a_str", "0", array(["0"])),
+    ("a_float", 0.0, array([0.0])),
+    ("a_int", 0, array([0])),
+    ("a_complex", 1j, array([1j])),
+    ("a_ndarray", array([0.0]), array([0.0])),
+]
+
+
+@pytest.mark.parametrize(("name", "value", "expected"), VALUE_TO_ARRAY_DATA)
 def test_convert_value_to_array(converter, name, value, expected) -> None:
     """Verify convert_value_to_array."""
     assert_array_equal(converter.convert_value_to_array(name, value), expected)
@@ -91,12 +104,35 @@ def test_convert_value_to_array(converter, name, value, expected) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
-        ("a_float", array([0.0]), 0.0),
-        ("a_int", array([0]), 0),
-        ("a_complex", array([1j]), 1j),
-        ("a_ndarray", array([0.0]), array([0.0])),
+        *VALUE_TO_ARRAY_DATA,
+        ("a_dict", {"dummy": 1j}, array([1j])),
+        ("a_2d_ndarray", array([[0.0]]), array([0.0])),
     ],
 )
+def test_convert_value_to_array_user(
+    reset_converters, converter, name, value, expected
+) -> None:
+    """Verify convert_value_to_array with user converters."""
+    set_data_converters(
+        {
+            "a_dict": operator.itemgetter("dummy"),
+            "a_2d_ndarray": operator.itemgetter(0),
+        },
+        {},
+        {},
+    )
+    assert_array_equal(converter.convert_value_to_array(name, value), expected)
+
+
+ARRAY_TO_VALUE_DATA = [
+    ("a_float", array([0.0]), 0.0),
+    ("a_int", array([0]), 0),
+    ("a_complex", array([1j]), 1j),
+    ("a_ndarray", array([0.0]), array([0.0])),
+]
+
+
+@pytest.mark.parametrize(("name", "value", "expected"), ARRAY_TO_VALUE_DATA)
 def test_convert_array_to_value(converter, name, value, expected) -> None:
     """Verify convert_array_to_value."""
     assert converter.convert_array_to_value(name, value) == expected
@@ -105,15 +141,59 @@ def test_convert_array_to_value(converter, name, value, expected) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
-        ("a_str", "0", 1),
-        ("a_float", 0.0, 1),
-        ("a_int", 0, 1),
-        ("a_complex", 1j, 1),
-        ("a_ndarray", array([0.0] * 2), 2),
+        *ARRAY_TO_VALUE_DATA,
+        ("a_dict", array([1j]), {"dummy": 1j}),
+        ("a_2d_ndarray", array([0.0]), array([[0.0]])),
     ],
 )
+def test_convert_array_to_value_user(
+    reset_converters, converter, name, value, expected
+) -> None:
+    """Verify convert_array_to_value with user converters."""
+    set_data_converters(
+        {},
+        {
+            "a_dict": lambda a: {"dummy": a},
+            "a_2d_ndarray": lambda a: array([a]),
+        },
+        {},
+    )
+    assert converter.convert_array_to_value(name, value) == expected
+
+
+VALUE_SIZE_DATA = [
+    ("a_str", "0", 1),
+    ("a_float", 0.0, 1),
+    ("a_int", 0, 1),
+    ("a_complex", 1j, 1),
+    ("a_ndarray", array([0.0] * 2), 2),
+]
+
+
+@pytest.mark.parametrize(("name", "value", "expected"), VALUE_SIZE_DATA)
 def test_get_value_size(converter, name, value, expected) -> None:
     """Verify get_value_size."""
+    assert converter.get_value_size(name, value) == expected
+
+
+@pytest.mark.parametrize(
+    ("name", "value", "expected"),
+    [
+        *VALUE_SIZE_DATA,
+        ("a_dict", {"dummy": array(1)}, 1),
+    ],
+)
+def test_get_value_sizes_user(
+    reset_converters, converter, name, value, expected
+) -> None:
+    """Verify get_value_size with user converters."""
+    set_data_converters(
+        {},
+        {},
+        {
+            "a_dict": lambda v: v["dummy"].size,
+        },
+    )
     assert converter.get_value_size(name, value) == expected
 
 
@@ -190,3 +270,16 @@ def test_convert_data_to_array(converter) -> None:
     # No data.
     array_ = converter.convert_data_to_array((), DATA)
     assert len(array_) == 0
+
+
+def test_str_ndarray() -> None:
+    """Verify the behavior for ndarray of strings."""
+    grammar = JSONGrammar("g")
+    name = "a_str_ndarray"
+    grammar.update_from_types({name: ndarray})
+    prop = grammar.schema.get("properties").get(name)
+    sub_prop = prop.get("items", prop)
+    sub_prop["type"] = "string"
+    converter = grammar.data_converter
+    # They should only be used to check if they are numeric.
+    assert not converter.is_numeric(name)

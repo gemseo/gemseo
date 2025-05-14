@@ -66,7 +66,7 @@ DISC_DESCR_16D = [
 ]
 
 
-def test_set_tolerances(sellar_disciplines) -> None:
+def test_set_tolerances(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
         sellar_disciplines, tolerance=1e-3, linear_solver_tolerance=1e-6
@@ -78,7 +78,7 @@ def test_set_tolerances(sellar_disciplines) -> None:
     assert mda_chain.mdo_chain.disciplines[0].settings.linear_solver_tolerance == 1e-6
 
 
-def test_set_solver(sellar_disciplines) -> None:
+def test_set_solver(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that the MDA tolerances can be set at the object instantiation."""
     mda_chain = MDAChain(
         sellar_disciplines,
@@ -99,7 +99,7 @@ def test_set_solver(sellar_disciplines) -> None:
     assert sub_mda1_settings.linear_solver_settings == linear_solver_settings
 
 
-def test_sellar(tmp_wd, sellar_disciplines) -> None:
+def test_sellar(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> None:
     """"""
     mda_chain = MDAChain(
         sellar_disciplines, inner_mda_name="MDAJacobi", tolerance=1e-12
@@ -119,7 +119,7 @@ def test_sellar(tmp_wd, sellar_disciplines) -> None:
     assert Path(res_file).exists()
 
 
-def test_sellar_chain_linearize(sellar_disciplines) -> None:
+def test_sellar_chain_linearize(sellar_with_2d_array, sellar_disciplines) -> None:
     inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
     mda_chain = MDAChain(
@@ -189,7 +189,7 @@ def test_no_coupling_jac() -> None:
     assert mda.check_jacobian(input_names=["x"], output_names=["obj"])
 
 
-def test_sub_coupling_structures(sellar_disciplines) -> None:
+def test_sub_coupling_structures(sellar_with_2d_array, sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = CouplingStructure(sellar_disciplines)
     sub_coupling_structures = [CouplingStructure(sellar_disciplines)]
@@ -205,7 +205,7 @@ def test_sub_coupling_structures(sellar_disciplines) -> None:
     )
 
 
-def test_log_convergence(sellar_disciplines) -> None:
+def test_log_convergence(sellar_with_2d_array, sellar_disciplines) -> None:
     mda_chain = MDAChain(sellar_disciplines)
     assert not mda_chain.settings.log_convergence
     for mda in mda_chain.inner_mdas:
@@ -307,7 +307,7 @@ def test_mdachain_parallelmdochain_options(parallel_options) -> None:
     assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
 
 
-def test_max_mda_iter(sellar_disciplines) -> None:
+def test_max_mda_iter(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that changing the max_mda_iter of a chain modifies all the inner mdas."""
     mda_chain = MDAChain(
         sellar_disciplines,
@@ -326,7 +326,7 @@ def test_max_mda_iter(sellar_disciplines) -> None:
         assert mda.settings.max_mda_iter == 10
 
 
-def test_scaling(sellar_disciplines) -> None:
+def test_scaling(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that changing the scaling of a chain modifies all the inner mdas."""
     mda_chain = MDAChain(
         sellar_disciplines,

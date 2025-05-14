@@ -16,18 +16,27 @@
 
 from __future__ import annotations
 
+import operator
+from collections.abc import Generator
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import NamedTuple
 
 import pytest
+from numpy import array
 
+from gemseo import set_data_converters
+from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.utils import set_data_converter
+from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from typing import Any
+
     from gemseo import Discipline
 
 DOC_EXAMPLE_MARK = "doc_examples"
@@ -63,6 +72,19 @@ def sellar_disciplines() -> SellarDisciplines:
         * A Sellar2 discipline.
         * A SellarSystem discipline.
     """
-    # This handles running the test suite for checking data conversion.
-    with set_data_converter():
-        yield SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())
+    return SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())
+
+
+@pytest.fixture
+def sellar_with_2d_array() -> Generator[None, Any, None]:
+    """Change the data-converter temporary for sellar with 2d x_shared array."""
+    if WITH_2D_ARRAY:  # pragma: no cover
+        set_data_converters(
+            {X_SHARED: operator.itemgetter(0)},
+            {X_SHARED: lambda a: array([a])},
+            {},
+        )
+        yield
+        set_data_converters({}, {}, {})
+    else:
+        yield

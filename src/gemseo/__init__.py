@@ -44,6 +44,7 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 
 from numpy import ndarray
 
@@ -100,6 +101,7 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario_results.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
+    from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.utils.xdsm.xdsm import XDSM
@@ -1951,3 +1953,34 @@ def generate_xdsm(
         pdf_cleanup=pdf_cleanup,
         pdf_batchmode=pdf_batchmode,
     )
+
+
+def set_data_converters(
+    to_array: dict[str, Callable[[Any], NumberArray]],
+    from_array: dict[str, Callable[[NumberArray], Any]],
+    to_size: dict[str, Callable[[Any], int]],
+) -> None:
+    """Set data converters for custom disciplines variable types.
+
+    Natively, |g| supports disciplines that have the following variable types:
+    ``int``, ``float``, ``complex``, ``str`` and 1D NumPy array.
+    Using custom variable types may require to add converters to transform the value of
+    a variable to a 1D NumPy array back and forth, as well as to provide the size of the
+    expected 1D NumPy array.
+
+    See this
+    :ref:`example <sphx_glr_examples_disciplines_grammars_plot_data_converters.py>`.
+
+    Args:
+        to_array: The mapping from disciplines variable names
+            to functions converting a variable value to an array.
+        from_array: The mapping from discipline variable names
+            to functions converting an array to a variable value.
+        to_size: The mapping from disciplines variable names
+            to functions returning the size of a variable value.
+    """
+    from gemseo.core.data_converters.base import BaseDataConverter
+
+    BaseDataConverter.value_to_array_converters = to_array
+    BaseDataConverter.array_to_value_converters = from_array
+    BaseDataConverter.value_size_getters = to_size

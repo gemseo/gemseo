@@ -101,7 +101,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         self.assertRaises(ValueError, MDF.get_default_sub_option_values)
 
 
-def test_reset():
+def test_reset(sellar_with_2d_array):
     """Check that the optimization problem can be reset.
 
     See https://gitlab.com/gemseo/dev/gemseo/-/issues/1179.
