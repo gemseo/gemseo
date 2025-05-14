@@ -12,27 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+
+"""Provide type conversions from python to json."""
+
 from __future__ import annotations
 
-from gemseo.mda.factory import MDAFactory
-from gemseo.mda.jacobi import MDAJacobi
+from numbers import Complex
 
+from numpy import ndarray
 
-def test_create(sellar_with_2d_array, sellar_disciplines) -> None:
-    """Test the factory create."""
-    mda = MDAFactory().create("MDAJacobi", sellar_disciplines, max_mda_iter=2)
-    assert isinstance(mda, MDAJacobi)
-
-
-def test_is_available() -> None:
-    factory = MDAFactory()
-    avail = factory.class_names
-    assert len(avail) > 2
-
-    for mda in avail:
-        assert factory.is_available(mda)
+PYTHON_TO_JSON_TYPES = {
+    ndarray: "array",
+    list: "array",
+    tuple: "array",
+    str: "string",
+    int: "integer",
+    bool: "boolean",
+    complex: "number",
+    Complex: "number",
+    float: "number",
+}

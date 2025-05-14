@@ -60,7 +60,7 @@ class BaseMDASolver(BaseMDA):
     settings: BaseMDASolverSettings
     """The settings of the MDA."""
 
-    _current_residuals: dict[str, ndarray]
+    __current_residuals: dict[str, ndarray]
     """The mapping from residual names to current values."""
 
     _sequence_transformer: RelaxationAcceleration
@@ -120,7 +120,7 @@ class BaseMDASolver(BaseMDA):
 
         self.__resolved_residual_names = ()
 
-        self._current_residuals = {}
+        self.__current_residuals = {}
         self.__n_consecutive_unsuccessful_iterations = 0
 
         self.__lower_bound_vector = None
@@ -176,12 +176,12 @@ class BaseMDASolver(BaseMDA):
 
     def get_current_resolved_residual_vector(self) -> ndarray:
         """Return the vector of residuals."""
-        return concatenate([
-            self.io.output_grammar.data_converter.convert_data_to_array(
-                self.__resolved_residual_names,
-                self._current_residuals,
-            )
-        ])
+        if not self._resolved_residual_names:
+            return array([])
+        current_residuals = self.__current_residuals
+        return concatenate(
+            tuple(current_residuals[name] for name in self._resolved_residual_names)
+        )
 
     def set_bounds(
         self,
@@ -412,17 +412,16 @@ class BaseMDASolver(BaseMDA):
         Args:
             input_data: The input data to compute residual of coupling variables.
         """
-        convert_data_to_array = (
-            self.io.output_grammar.data_converter.convert_data_to_array
-        )
+        to_array = self.io.output_grammar.data_converter.convert_value_to_array
+        data = self.io.data
 
         for residual_name in self._resolved_residual_names:
-            residual = convert_data_to_array([residual_name], self.io.data)
+            residual = to_array(residual_name, data[residual_name])
             if residual_name in self._resolved_variable_names:
                 # No -= assignment to avoid possible casting problems.
-                residual = residual - convert_data_to_array([residual_name], input_data)
+                residual = residual - to_array(residual_name, input_data[residual_name])
 
-            self._current_residuals[residual_name] = residual
+            self.__current_residuals[residual_name] = residual
 
     def __update_bounds_vectors(self) -> None:
         """Set the bounds of the sequence transformer."""

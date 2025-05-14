@@ -155,7 +155,9 @@ def test_lagrangian_validation_ineq_normalize() -> None:
 
 
 @pytest.mark.parametrize("constraint_type", ["eq", "ineq"])
-def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
+def test_lagrangian_constraint(
+    constraint_type, sellar_with_2d_array, sellar_disciplines
+) -> None:
     scenario = create_scenario(
         sellar_disciplines,
         "obj",

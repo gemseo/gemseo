@@ -407,7 +407,7 @@ def memory_cache(memory_full_cache, memory_full_cache_loc, request) -> MemoryFul
     return (memory_full_cache, memory_full_cache_loc)[request.param]
 
 
-def test_multithreading(memory_cache, sellar_disciplines) -> None:
+def test_multithreading(memory_cache, sellar_with_2d_array, sellar_disciplines) -> None:
     s_1 = sellar_disciplines.sellar1
     s_s = sellar_disciplines.sellar_system
     s_1.cache = memory_cache

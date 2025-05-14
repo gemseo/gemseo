@@ -72,7 +72,7 @@ DIRNAME = os.path.dirname(__file__)
 
 
 @pytest.fixture
-def sellar_mda(sellar_disciplines):
+def sellar_mda(sellar_with_2d_array, sellar_disciplines):
     return MDAGaussSeidel(sellar_disciplines)
 
 
@@ -83,7 +83,7 @@ def sellar_inputs():
 
 
 @pytest.fixture
-def base_mda_solver(sellar_disciplines) -> BaseMDASolver:
+def base_mda_solver(sellar_with_2d_array, sellar_disciplines) -> BaseMDASolver:
     """A concretized BaseMDASolver instance with the Sellar's disciplines."""
     with concretize_classes(BaseMDASolver):
         BaseMDASolver.Settings = BaseMDASolverSettings
@@ -285,7 +285,7 @@ def test_stopping_criteria(base_mda_solver, caplog) -> None:
     assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
 
-def test_coupling_structure(sellar_disciplines) -> None:
+def test_coupling_structure(sellar_with_2d_array, sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = CouplingStructure(sellar_disciplines)
     mda_sellar = MDAGaussSeidel(

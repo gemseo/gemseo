@@ -26,6 +26,7 @@ from numpy import array
 from numpy import complex128
 from numpy import float64
 from numpy import int64
+from numpy import ndarray
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -332,3 +333,60 @@ def test_to_simple_grammar_float_complex(type_, value):
     # This SimpleGrammar validates complex data with imaginary part when type_ is float
     # because JSONGrammar cannot distinguish between float and complex
     # and thus creates the SimpleGrammar with the most generic type, which is complex.
+
+
+def test_update_from_types():
+    """Verify that a JSONGrammar can be updated from types."""
+    grammar = JSONGrammar("g")
+    grammar.update_from_types({
+        "ndarray": ndarray,
+        "list": list,
+        "tuple": tuple,
+        "str": str,
+        "int": int,
+        "bool": bool,
+        "complex": complex,
+        "Complex": complex,
+        "float": float,
+        "None": None,
+    })
+
+    assert grammar.schema["properties"] == {
+        "None": {},
+        "bool": {
+            "type": "boolean",
+        },
+        "Complex": {
+            "type": "number",
+        },
+        "complex": {
+            "type": "number",
+        },
+        "float": {
+            "type": "number",
+        },
+        "int": {
+            "type": "integer",
+        },
+        "list": {
+            "type": "array",
+        },
+        "ndarray": {
+            "type": "array",
+            "items": {"type": "number"},
+        },
+        "str": {
+            "type": "string",
+        },
+        "tuple": {
+            "type": "array",
+        },
+    }
+
+
+def test_update_from_types_error():
+    """Verify error when updated from a bad type."""
+    grammar = JSONGrammar("g")
+    match = "Unsupported python type for a JSON Grammar: <class 'set'>"
+    with pytest.raises(KeyError, match=match):
+        grammar.update_from_types({"x": set})

@@ -146,6 +146,8 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         self._linearization_mode = self.LinearizationMode.AUTO
         self._has_jacobian = False
         self.jac = {}
+        self.__input_names = ()
+        self.__output_names = ()
 
     @property
     def linearization_mode(self) -> LinearizationMode:

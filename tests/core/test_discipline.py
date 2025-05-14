@@ -51,6 +51,7 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.variables import X_1
 from gemseo.problems.mdo.sellar.variables import X_SHARED
@@ -544,11 +545,13 @@ def test_check_jacobian_2() -> None:
         disc.linearize({"x": x}, compute_all_jacobians=True)
 
 
-def test_check_jacobian_input_data() -> None:
+def test_check_jacobian_input_data(sellar_with_2d_array) -> None:
     sellar_1 = create_discipline("Sellar1")
+    value = array([[3.0, 3.0]]) if WITH_2D_ARRAY else array([3.0, 3.0])
+
     input_data = {
         X_1: array([3.0]),
-        X_SHARED: array([3.0, 3.0]),
+        X_SHARED: value,
         Y_2: array([3.0]),
     }
     sellar_1.check_jacobian(

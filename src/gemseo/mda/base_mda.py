@@ -262,7 +262,7 @@ class BaseMDA(ProcessDiscipline):
         self._input_couplings = []
         self._non_numeric_array_variables = []
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
-        # By default don't use an approximate cache for linearization
+        # By default, don't use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
@@ -569,15 +569,15 @@ class BaseMDA(ProcessDiscipline):
         if not cached_outputs:
             return
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
+        if isinstance(self.cache, SimpleCache):
+            self.io.data.update(dict(self.__get_cached_outputs(cached_outputs)))
+        else:
+            # Non simple caches require NumPy arrays.
             to_value = self.io.input_grammar.data_converter.convert_array_to_value
             for input_name, input_value in self.__get_cached_outputs(cached_outputs):
                 self.io.update_output_data({
                     input_name: to_value(input_name, input_value)
                 })
-        else:
-            self.io.data.update(dict(self.__get_cached_outputs(cached_outputs)))
 
     def __get_cached_outputs(self, cached_outputs) -> Iterator[Any]:
         """Return an iterator over the input couplings names and value in cache.

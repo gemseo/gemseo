@@ -1,0 +1,1 @@
+Data converters for custom discipline variable types are now easier to set thanks to the ``set_data_converter`` function.

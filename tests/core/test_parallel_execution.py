@@ -155,7 +155,7 @@ def test_disc_parallel_doe_scenario() -> None:
     )
 
 
-def test_disc_parallel_doe(sellar_disciplines) -> None:
+def test_disc_parallel_doe(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test the execution of disciplines in parallel."""
     s_1 = sellar_disciplines.sellar1
     n = 10
@@ -223,7 +223,7 @@ def test_parallel_lin() -> None:
                 assert (dfdx == outs[i][f][x]).all()
 
 
-def test_disc_parallel_threading_proc(sellar_disciplines) -> None:
+def test_disc_parallel_threading_proc(sellar_with_2d_array, sellar_disciplines) -> None:
     disciplines = copy(sellar_disciplines)
     parallel_execution = DiscParallelExecution(
         disciplines, n_processes=2, use_threading=True

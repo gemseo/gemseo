@@ -48,5 +48,5 @@ def test_integer_casting(base_mda_solver):
 
     base_mda_solver._compute_residuals({"y_1": array([1.0]), "y_2": array([1.0])})
 
-    assert base_mda_solver._current_residuals["y_1"] == array([1.0])
-    assert base_mda_solver._current_residuals["y_2"] == array([1.0])
+    assert base_mda_solver._BaseMDASolver__current_residuals["y_1"] == array([1.0])
+    assert base_mda_solver._BaseMDASolver__current_residuals["y_2"] == array([1.0])

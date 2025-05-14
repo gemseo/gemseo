@@ -50,7 +50,7 @@ def idf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):
 
 
 @pytest.fixture
-def sellar_use_case(tmp_wd, sellar_disciplines):
+def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
     n_samples = 20
     os.mkdir("data")
     file_name = "data/sellar.h5"
