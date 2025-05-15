@@ -827,8 +827,10 @@ class Database(Mapping):
             function_names: The names of the functions
                 whose output values must be returned.
                 If empty, use all the functions.
-            input_names: The names of the input variables.
-                If empty, use :attr:`.input_names`.
+            input_names: The names of the input variables to name the columns of the
+                ``x_vect`` when ``with_x_vect`` is ``True``. These names must match the
+                dimension of the design vector.
+                If empty, the i-th column is named ``"x_i"``.
             add_missing_tag: If ``True``,
                 add the tag specified in ``missing_tag``
                 for data that are not available.
@@ -836,6 +838,10 @@ class Database(Mapping):
             with_x_vect: If ``True``,
                 the input variables are returned in the history
                 as ``np.hstack((get_output_history, x_vect_history))``.
+
+        Raises:
+            ValueError: If the number of names does not match the dimension of the
+                design vector.
 
         Returns:
             The history as an 2D array
@@ -858,9 +864,14 @@ class Database(Mapping):
             f_history = array(f_flat_values, dtype=object).real
         if with_x_vect:
             if not input_names:
-                x_names = [f"x_{i + 1}" for i in range(len(self))]
+                x_names = [f"x_{i}" for i in range(1, self.input_space.dimension + 1)]
             else:
                 x_names = convert_strings_to_iterable(input_names)
+                if (n := len(list(x_names))) != (
+                    expected_n := self.input_space.dimension
+                ):
+                    msg = f"Expected {expected_n} names, got {n}."
+                    raise ValueError(msg)
 
             x_flat_names, x_flat_values = self.__split_history(x_history, x_names)
             variables_flat_names = f_flat_names + x_flat_names
