@@ -37,6 +37,7 @@ from scipy.optimize import rosen_der
 
 from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
+from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.datasets.dataset import Dataset
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -74,6 +75,29 @@ def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
 def problem(problem_and_result) -> Rosenbrock:
     """The Rosenbrock problem solved with L-BFGS-B."""
     return problem_and_result[0]
+
+
+@pytest.fixture(scope="module")
+def simple_database_with_large_x_vect() -> Database:
+    """A database with a single element."""
+    design_space = DesignSpace()
+    design_space.add_variable("variable_1")
+    design_space.add_variable("foo_bar", size=3)
+    design_space.add_variable("tata", size=2)
+    database = Database(input_space=design_space)
+    database.store(
+        array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0]),
+        {"w": 1.0, "x": [2], "y": array([3.0]), "z": array([4.0, 5.0])},
+    )
+    database.store(
+        array([5.0, 4.0, 3.0, 2.0, 1.0, 0.0]),
+        {"w": 5.0, "x": [4], "y": array([3.0]), "z": array([2.0, 1.0])},
+    )
+    database.store(
+        array([2.0, 4.0, 6.0, 8.0, 10.0, 12.0]),
+        {"w": 2.0, "x": [4], "y": array([6.0]), "z": array([8.0, 10.0])},
+    )
+    return database
 
 
 def test_correct_store_unstore(problem) -> None:
@@ -272,12 +296,130 @@ def test_get_history_array(problem) -> None:
     """Tests history extraction into an array."""
     database = problem.database
     values_array, _, _ = database.get_history_array(input_names=["x_1", "x_2"])
-    values_array, _, _ = database.get_history_array(input_names="x_1")
     assert_almost_equal(values_array[-1, 1], 1)
     # Test special case with only one iteration:
     database = Database()
     database.store(array([1.0, 1.0]), {"Rosenbrock": 0.0})
-    database.get_history_array()
+    values_array, values_array_names, function_names = database.get_history_array()
+    assert_array_equal(values_array, array([[0.0, 1.0, 1.0]]))
+    assert values_array_names == ["Rosenbrock", "x_1", "x_2"]
+    assert function_names == ["Rosenbrock"]
+
+
+@pytest.mark.parametrize("input_names", ["label_1", ["label_1"]])
+def test_get_history_array_wrong_dimension(
+    simple_database_with_large_x_vect, input_names
+) -> None:
+    """Check the exception raised when the input names have the wrong dimension."""
+    with pytest.raises(ValueError, match="Expected 6 names, got 1\\."):
+        simple_database_with_large_x_vect.get_history_array(input_names=input_names)
+
+
+@pytest.mark.parametrize(
+    (
+        "function_names",
+        "input_names",
+        "expected_values_array",
+        "expected_values_array_names",
+        "expected_function_names",
+    ),
+    [
+        (
+            "z",
+            (),
+            array([
+                [4.0, 5.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+                [2.0, 1.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0],
+                [8.0, 10.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0],
+            ]),
+            ["z[0]", "z[1]", "x_1", "x_2", "x_3", "x_4", "x_5", "x_6"],
+            "z",
+        ),
+        (
+            "z",
+            (
+                "variable_1",
+                "foo_bar[0]",
+                "foo_bar[1]",
+                "foo_bar[2]",
+                "tata[0]",
+                "tata[1]",
+            ),
+            array([
+                [4.0, 5.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+                [2.0, 1.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0],
+                [8.0, 10.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0],
+            ]),
+            [
+                "z[0]",
+                "z[1]",
+                "variable_1",
+                "foo_bar[0]",
+                "foo_bar[1]",
+                "foo_bar[2]",
+                "tata[0]",
+                "tata[1]",
+            ],
+            "z",
+        ),
+        (
+            ("z", "w"),
+            (),
+            array([
+                [4.0, 5.0, 1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+                [2.0, 1.0, 5.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0],
+                [8.0, 10.0, 2.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0],
+            ]),
+            ["z[0]", "z[1]", "w", "x_1", "x_2", "x_3", "x_4", "x_5", "x_6"],
+            ("z", "w"),
+        ),
+        (
+            ("z", "w"),
+            (
+                "variable_1",
+                "foo_bar[0]",
+                "foo_bar[1]",
+                "foo_bar[2]",
+                "tata[0]",
+                "tata[1]",
+            ),
+            array([
+                [4.0, 5.0, 1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0],
+                [2.0, 1.0, 5.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0],
+                [8.0, 10.0, 2.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0],
+            ]),
+            [
+                "z[0]",
+                "z[1]",
+                "w",
+                "variable_1",
+                "foo_bar[0]",
+                "foo_bar[1]",
+                "foo_bar[2]",
+                "tata[0]",
+                "tata[1]",
+            ],
+            ("z", "w"),
+        ),
+    ],
+)
+def test_get_history_array_names(
+    simple_database_with_large_x_vect,
+    function_names,
+    input_names,
+    expected_values_array,
+    expected_values_array_names,
+    expected_function_names,
+) -> None:
+    """Check that get_history_array works with input names."""
+    values_array, values_array_names, function_names = (
+        simple_database_with_large_x_vect.get_history_array(
+            function_names=function_names, input_names=input_names
+        )
+    )
+    assert_array_equal(values_array, expected_values_array)
+    assert values_array_names == expected_values_array_names
+    assert function_names == expected_function_names
 
 
 def test_get_history_array_wrong_f_name(problem) -> None:
