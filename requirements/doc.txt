@@ -80,7 +80,6 @@ numpy==1.26.4
     #   matplotlib
     #   nlopt
     #   pandas
-    #   pandera
     #   pydoe3
     #   pyxdsm
     #   scikit-learn
@@ -97,10 +96,8 @@ packaging==24.2
     #   plotly
     #   sphinx
 pandas==2.2.3
-    # via
-    #   gemseo (pyproject.toml)
-    #   pandera
-pandera==0.23.1
+    # via gemseo (pyproject.toml)
+pandera==0.24.0
     # via gemseo (pyproject.toml)
 pbr==6.1.1
     # via sphinxcontrib-apidoc
@@ -172,7 +169,7 @@ scipy==1.15.2
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
-setuptools==80.6.0
+setuptools==80.7.1
     # via
     #   gemseo (pyproject.toml)
     #   pbr
@@ -237,6 +234,7 @@ typing-extensions==4.13.2
     # via
     #   gemseo (pyproject.toml)
     #   beautifulsoup4
+    #   pandera
     #   pydantic
     #   pydantic-core
     #   pydata-sphinx-theme

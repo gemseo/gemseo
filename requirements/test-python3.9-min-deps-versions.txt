@@ -92,7 +92,7 @@ pillow==9.5.0
     #   matplotlib
 plotly==5.7.0
     # via gemseo (pyproject.toml)
-pluggy==1.5.0
+pluggy==1.6.0
     # via pytest
 prettytable==2.3.0
     # via gemseo (pyproject.toml)
