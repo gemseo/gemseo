@@ -96,7 +96,7 @@ The DOE algorithm is ``'DiagonalDOE'`` and use a sampling of size ``n_samples=30
    from gemseo import create_scenario
 
    sellar.set_cache(cache_type='HDF5_cache', cache_tolerance=1e-6, cache_hdf_file='sellar.hdf5')
-   output = sellar.get_output_data_names()[0]
+   output = list(sellar.output_grammar.names)[0]
    scenario = create_scenario([sellar], 'DisciplinaryOpt', output,
                               design_space, scenario_type='DOE')
    scenario.execute(algo_name='DiagonalDOE', n_samples=30)
@@ -115,7 +115,7 @@ A scalable discipline is a discipline version for which inputs and outputs can t
    # - Number of n_y = number_of_outputs*variable_sizes
    variable_sizes = 5
    input_names = sellar.get_input_data_names()
-   output_names = sellar.get_output_data_names()
+   output_names = list(sellar.output_grammar.names)
    sizes = {name: variable_sizes for name in input_names + output_names}
 
 The ``sizes`` of the inputs are specified in a dictionary at the construction of the :class:`.DataDrivenScalableDiscipline` instance.
