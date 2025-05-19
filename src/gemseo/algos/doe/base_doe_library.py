@@ -292,10 +292,6 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
         else:
             # Sequential execution
-            if wait_time_between_samples != 0:
-                LOGGER.warning(
-                    "Wait time between samples option is ignored in sequential run."
-                )
             for index, input_value in enumerate(self.samples):
                 try:
                     output_value, jacobian_value = self._evaluate_functions(input_value)
