@@ -132,12 +132,12 @@ to_array = {
 
 
 # This one shall return the value of a variable in the type expected by the discipline from a 1D array.
-def get_dict(array):
-    return {"dummy": array}
+def get_dict(array_):
+    return {"dummy": array_}
 
 
-def get_2d_array(array):
-    return array([array])
+def get_2d_array(array_):
+    return array([array_])
 
 
 from_array = {

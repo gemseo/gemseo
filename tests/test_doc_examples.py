@@ -14,14 +14,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import runpy
 from pathlib import Path
 from re import findall
 from shutil import copytree
+from subprocess import run
 
 import pytest
-
-from gemseo.core.data_converters.base import BaseDataConverter
 
 EXAMPLE_PATHS = [
     path
@@ -41,8 +39,4 @@ def test_script_execution(example_path: Path, tmp_wd: Path, monkeypatch) -> None
     dir_path = example_path.parent.name
     copytree(example_path.parent, dir_path)
     monkeypatch.chdir(dir_path)
-    runpy.run_path(example_path.name)
-
-    # Reset the data converters that may be changed.
-    BaseDataConverter.value_to_array_converters.clear()
-    BaseDataConverter.array_to_value_converters.clear()
+    run(f"python {example_path.name}".split(), check=True)
