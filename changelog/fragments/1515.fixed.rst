@@ -1,0 +1,1 @@
+A Discipline executed remotely now correctly reports all errors happening remotely.
