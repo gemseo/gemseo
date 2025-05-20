@@ -249,15 +249,14 @@ class XDSMizer:
             show_html: Whether to open the web browser and display the XDSM.
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
-            save_pdf: Whether to save the XDSM as a PDF file;
-                use ``save_pdf=True`` and ``pdf_build=False``
-                to generate the ``file_name.tex`` and ``file_name.tikz`` files
-                without building the PDF file.
-            pdf_build: Whether to generate the PDF file when ``save_pdf`` is ``True``.
-            pdf_cleanup: Whether to clean up the intermediate files
-                (``file_name.tex``, ``file_name.tikz`` and built files)
-                used to build the PDF file.
-            pdf_batchmode: Whether pdflatex is run in `batchmode`.
+            save_pdf: Whether to save the XDSM as
+                a TikZ file ``"{file_name}.tikz"`` containing its definition and
+                a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+                The LaTeX file can be compiled to a PDF file.
+            pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+                to a PDF file using pdflatex.
+            pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
+            pdf_batchmode: Whether to suppress compilation logs.
 
         Returns:
             A XDSM diagram.

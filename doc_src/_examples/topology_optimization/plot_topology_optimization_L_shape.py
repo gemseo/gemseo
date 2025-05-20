@@ -89,7 +89,7 @@ scenario.add_constraint(
 
 # %%
 # Generate the XDSM
-scenario.xdsmize(save_html=False, pdf_build=False)
+scenario.xdsmize(save_html=False)
 
 # %%
 # Execute the scenario
