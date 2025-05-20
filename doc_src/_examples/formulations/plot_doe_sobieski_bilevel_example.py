@@ -165,7 +165,7 @@ for sub_sc in sub_disciplines[0:3]:
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False, pdf_build=False)
+system_scenario.xdsmize(save_html=False)
 
 # %%
 # Multiprocessing

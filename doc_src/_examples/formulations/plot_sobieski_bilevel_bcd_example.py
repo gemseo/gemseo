@@ -210,7 +210,7 @@ system_scenario.add_constraint("g_3", constraint_type="ineq")
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False, pdf_build=False)
+system_scenario.xdsmize(save_html=False)
 
 # %%
 # Execute the main scenario

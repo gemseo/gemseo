@@ -734,11 +734,14 @@ class BaseScenario(BaseMonitoredProcess):
             show_html: Whether to open the web browser and display the XDSM.
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
-            save_pdf: Whether to save the XDSM as a PDF file.
-            pdf_build: Whether the standalone pdf of the XDSM will be built.
-            pdf_cleanup: Whether pdflatex built files will be cleaned up
-                after build is complete.
-            pdf_batchmode: Whether pdflatex is run in `batchmode`.
+            save_pdf: Whether to save the XDSM as
+                a TikZ file ``"{file_name}.tikz"`` containing its definition and
+                a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+                The LaTeX file can be compiled to a PDF file.
+            pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+                to a PDF file using pdflatex.
+            pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
+            pdf_batchmode: Whether to suppress compilation logs.
 
         Returns:
             A view of the XDSM if ``monitor`` is ``False``.

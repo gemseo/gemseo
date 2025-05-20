@@ -265,9 +265,11 @@ and
 .. figure:: xdsm.png
    :scale: 65 %
 
-Moreover, you can export a static version of the XDSM in both TIKZ, LaTeX and PDF files
-by means of the ``save_pdf`` boolean argument of the
-:meth:`.BaseScenario.xdsmize` method:
+Moreover,
+you can save the XDSM into a PDF file
+by setting the argument ``save_pdf`` of the :meth:`.BaseScenario.xdsmize` method to ``True``
+and leaving the argument ``pdf_build`` to ``True``
+(if ``pdf_build`` is ``False``, only the TikZ and LaTeX files will be generated and it will be up to you to compile the LaTeX file):
 
 .. code::
 

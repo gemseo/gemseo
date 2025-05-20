@@ -53,11 +53,9 @@ class XDSMToPDFConverter:
             directory_path: The path to the output directory where the pdf is generated.
             file_name: The name of the output file.
             scenario: The name of the scenario.
-            build: Whether the standalone pdf of the XDSM will be built.
-            cleanup: Whether the intermediate files
-                (``file_name.tex``, ``file_name.tikz`` and built files)
-                will be cleaned up after the PDF is created.
-            batchmode: Whether pdflatex is run in `batchmode`.
+            build: Whether to compile the LaTeX file to a PDF file using pdflatex.
+            cleanup: Whether to clean up the pdflatex built files after compilation.
+            batchmode: Whether to suppress compilation logs.
         """
         workflow = xdsm_data[scenario]["workflow"][1]
         numbers = {}
@@ -280,18 +278,21 @@ def xdsm_data_to_pdf(
     pdf_cleanup: bool = True,
     pdf_batchmode: bool = True,
 ) -> None:
-    """Convert a dictionary representation of a XDSM to a pdf.
+    """Convert a dictionary representation of a XDSM to a PDF file.
+
+    This method generates
+    a TikZ file ``"{file_name}.tikz"`` containing the definition of the XDSM
+    and a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+    The LaTeX file can be compiled to a PDF file.
 
     Args:
         xdsm_data: The XDSM representation.
         directory_path: The output directory where the pdf is generated.
         file_name: The output file name (without extension).
         scenario: The name of the scenario name.
-        pdf_build: Whether the standalone PDF of the XDSM will be built.
-        pdf_cleanup: Whether intermediate files
-            (``file_name.tex``, ``file_name.tikz`` and built files)
-            will be cleaned up after build is complete.
-        pdf_batchmode: Whether pdflatex is run in `batchmode`.
+        pdf_build: Whether to compile the LaTeX file to a PDF file using pdflatex.
+        pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
+        pdf_batchmode: Whether to suppress compilation logs.
     """
     converter = XDSMToPDFConverter()
     converter.convert(

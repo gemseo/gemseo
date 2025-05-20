@@ -255,7 +255,7 @@ outer_scenario.add_constraint("g", constraint_type="ineq", value=2)
 
 # %%
 # Show an xDSM of the process, including the outer and inner scenarios.
-outer_scenario.xdsmize(save_html=False, pdf_build=False)
+outer_scenario.xdsmize(save_html=False)
 
 # %%
 # Execute the outer scenario (which contains the inner scenario) and solve the whole
