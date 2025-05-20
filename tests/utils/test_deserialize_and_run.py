@@ -15,229 +15,246 @@
 from __future__ import annotations
 
 import pickle
-import subprocess
+import re
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo import create_discipline
+from gemseo import from_pickle
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.deserialize_and_run import _parse_inputs
-from gemseo.utils.deserialize_and_run import _run_discipline_save_outputs
+from gemseo.utils.compatibility.python import PYTHON_VERSION
 from gemseo.utils.deserialize_and_run import main
-from gemseo.utils.path_discipline import PathDiscipline
 from gemseo.utils.pickle import to_pickle
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from pytest import CaptureFixture  # noqa: PT013
+    from pytest import MonkeyPatch  # noqa: PT013
+
+    from gemseo.core.discipline.discipline_data import DisciplineData
 
 
-@pytest.mark.parametrize("protocol", [pickle.DEFAULT_PROTOCOL, pickle.HIGHEST_PROTOCOL])
-def discipline_and_data(protocol, tmp_wd):
-    path_to_discipline = tmp_wd / "discipline.pckl"
-    discipline = create_discipline("SobieskiMission")
-    to_pickle(discipline, path_to_discipline)
-    path_to_outputs = tmp_wd / "outputs.pckl"
-    path_to_input_data = tmp_wd / "inputs.pckl"
-    with path_to_input_data.open("wb") as outf:
-        pickler = pickle.Pickler(outf, protocol=protocol)
-        pickler.dump((discipline.io.input_grammar.defaults, (), ()))
-    return path_to_discipline, path_to_outputs, path_to_input_data, discipline
-
-
-@pytest.fixture
-def sys_argv(discipline_and_data):
-    (
-        path_to_discipline,
-        path_to_outputs,
-        path_to_input_data,
-        _,
-    ) = discipline_and_data
-    return [
-        str(path_to_discipline),
-        str(path_to_input_data),
-        str(path_to_outputs),
-    ]
-
-
-@pytest.fixture
-def test_parse_inputs(discipline_and_data, sys_argv) -> None:
-    """Test the input parsing for the deserialize_and_run executable."""
-    (
-        path_to_discipline,
-        path_to_outputs,
-        path_to_input_data,
-        _,
-    ) = discipline_and_data
-    (
-        serialized_disc_path,
-        input_data_path,
-        outputs_path,
-        linearize,
-        execute_at_linearize,
-    ) = _parse_inputs(sys_argv)
-    assert serialized_disc_path == path_to_discipline
-    assert input_data_path == path_to_input_data
-    assert outputs_path == path_to_outputs
-    assert not linearize
-    assert not execute_at_linearize
-
-    sys_argv.append("--linearize")
-    outs = _parse_inputs(sys_argv)
-
-    assert outs[-2]
-
-
-@pytest.fixture(params=[pickle.DEFAULT_PROTOCOL, pickle.HIGHEST_PROTOCOL])
-def test_parse_inputs_with_protocol(discipline_and_data, sys_argv, request) -> None:
-    protocol = request.param
-    """Test the input with a specific pickle protocol."""
-    (
-        path_to_discipline,
-        path_to_outputs,
-        path_to_input_data,
-        _,
-    ) = discipline_and_data
-    sys_argv.append(f"--protocol={protocol}")
-    (
-        serialized_disc_path,
-        input_data_path,
-        outputs_path,
-        linearize,
-        execute_at_linearize,
-        parsed_protocol,
-    ) = _parse_inputs(sys_argv)
-    assert serialized_disc_path == path_to_discipline
-    assert input_data_path == path_to_input_data
-    assert outputs_path == path_to_outputs
-    assert not linearize
-    assert not execute_at_linearize
-    assert parsed_protocol == protocol
-
-
-def test_parse_inputs_fail(tmp_wd) -> None:
-    """Test the input parsing failure handling."""
-    with pytest.raises(SystemExit):
-        _parse_inputs(["1"])
-
-    idontexist_path = str(tmp_wd / "idontexist")
-    i_exit_path = tmp_wd / "dummy.txt"
-    i_exit_path.write_text("a", encoding="utf8")
-    i_exist = str(i_exit_path)
-
-    with pytest.raises(SystemExit):
-        _parse_inputs([idontexist_path, i_exist, i_exist])
-
-    with pytest.raises(SystemExit):
-        _parse_inputs([i_exist, idontexist_path, i_exist])
-
-    _parse_inputs([i_exist, i_exist, i_exist])
-
-
-@pytest.fixture
-def test_run_discipline_save_outputs(discipline_and_data) -> None:
-    """Test the run and save outputs."""
-    (
-        _path_to_discipline,
-        _,
-        _,
-        discipline,
-    ) = discipline_and_data
-    outputs_path = Path("outputs.pckl")
-    _run_discipline_save_outputs(
-        discipline,
-        discipline.io.input_grammar.defaults,
-        outputs_path,
-        False,
-        False,
-        (),
-        (),
+def set_cli_args(monkeypatch: MonkeyPatch, args: str) -> None:
+    """Monkey patch the sys.argv to simulate a command line call."""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            # The program name.
+            "dummy-name",
+            *args.split(),
+        ],
     )
-    assert outputs_path.exists()
-    with open(outputs_path, "rb") as infile:
-        outputs, _ = pickle.load(infile)
-    assert compare_dict_of_arrays(outputs, discipline.execute())
 
 
-@pytest.fixture
-def test_run_discipline_save_outputs_errors(discipline_and_data) -> None:
-    """Test the outputs saving error handling."""
-    error_message = "I failed"
-
-    class SM(SobieskiMission):
-        def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            raise ValueError(error_message)
-
-    (
-        _path_to_discipline,
-        _,
-        _,
-        discipline,
-    ) = discipline_and_data
-    discipline = SM()
-
-    outputs_path = Path("outputs.pckl")
-    return_code = _run_discipline_save_outputs(
-        discipline,
-        discipline.io.input_grammar.defaults,
-        outputs_path,
-        False,
-        False,
-        (),
-        (),
-    )
-    assert return_code == 1
-    with outputs_path.open("rb") as discipline_file:
-        error, _ = pickle.load(discipline_file)
-        assert isinstance(error, ValueError)
-        assert error.args[0] == error_message
-
-
-def test_main() -> None:
-    """Test the main entry point."""
-    with pytest.raises(SystemExit):
+def check_main_error(
+    capsys: CaptureFixture[str],
+    error_msg: str,
+) -> None:
+    """Check that the main function exits with an error code and
+    gives the expected message."""
+    with pytest.raises(SystemExit, match="2"):
         main()
+    assert capsys.readouterr().err.strip().endswith(error_msg)
 
 
-def test_cli_options_error(tmp_wd):
-    """Verify that linearize options are consistent."""
-    Path("dummy").touch()
-    # --execute-at-linearize must be used with --linearize
-    match = "The option --execute-at-linearize cannot be used without --linearize"
-    with pytest.raises(ValueError, match=match):
-        _parse_inputs((
-            "dummy",
-            "dummy",
-            "dummy",
-            "--execute-at-linearize",
-        ))
+@pytest.mark.parametrize(
+    ("arg_name", "args"),
+    [
+        (
+            "discipline_path",
+            "dummy1",
+        ),
+        (
+            "inputs_path",
+            "dummy1 dummy2",
+        ),
+    ],
+)
+def test_cli_input_file_error(
+    tmp_wd: Path,
+    monkeypatch: MonkeyPatch,
+    capsys: CaptureFixture[str],
+    arg_name: str,
+    args: str,
+):
+    """Verify the cli error related to file existence."""
+    # Create dummy files but for the first one, which will be missing.
+    for file_ in args.split()[:-1]:
+        Path(file_).touch()
 
-
-@pytest.mark.parametrize("protocol", [pickle.DEFAULT_PROTOCOL, pickle.HIGHEST_PROTOCOL])
-def test_path_serialization(tmp_wd, protocol):
-    """Test the execution of a serialized discipline that contains Paths."""
-    path_to_discipline = "discipline.pckl"
-    discipline = PathDiscipline(tmp_wd)
-    to_pickle(discipline, path_to_discipline)
-    path_to_outputs = "outputs.pckl"
-    path_to_input_data = "inputs.pckl"
-
-    with open(path_to_input_data, "wb") as outf:
-        pickler = pickle.Pickler(outf, protocol=protocol)
-        pickler.dump((discipline.io.input_grammar.defaults, (), ()))
-
-    completed = subprocess.run(
-        f"gemseo-deserialize-run {path_to_discipline} "
-        f"{path_to_input_data} {path_to_outputs}",
-        shell=True,
-        capture_output=True,
-        cwd=tmp_wd,
+    bad_file_name = args.split()[-1]
+    error_msg = (
+        f"dummy-name: error: argument {arg_name}: can't open '{bad_file_name}': "
+        f"[Errno 2] No such file or directory: '{bad_file_name}'"
     )
 
-    assert completed.returncode == 0
+    set_cli_args(monkeypatch, args)
+    check_main_error(capsys, error_msg)
 
-    out = discipline.execute()
-    assert out["y"] == 1
-    assert out["y"] == 1
+
+protocol_999 = "999" if PYTHON_VERSION < (3, 11) else "'999'"
+
+
+@pytest.mark.parametrize(
+    ("args", "error"),
+    [
+        (
+            "--execute-at-linearize",
+            "The option --execute-at-linearize cannot be used without --linearize",
+        ),
+        (
+            "--protocol dummy",
+            "error: argument --protocol: invalid int value: 'dummy'",
+        ),
+        (
+            "--protocol 999",
+            f"error: argument --protocol: invalid choice: {protocol_999} "
+            "(choose from 0, 1, 2, 3, 4, 5)",
+        ),
+    ],
+)
+def test_cli_protocol_error(
+    tmp_wd: Path,
+    monkeypatch: MonkeyPatch,
+    capsys: CaptureFixture[str],
+    args: str,
+    error: str,
+):
+    """Verify the cli errors."""
+    # Create a dummy file to pass the checks on the input files.
+    Path("dummy").touch()
+    set_cli_args(monkeypatch, "dummy dummy dummy " + args)
+    check_main_error(capsys, error)
+
+
+@pytest.mark.parametrize(
+    "linearize",
+    [
+        "",
+        "--linearize",
+        "--linearize --execute-at-linearize",
+    ],
+)
+@pytest.mark.parametrize(
+    "protocol",
+    [
+        "",
+        f"--protocol {pickle.DEFAULT_PROTOCOL}",
+        f"--protocol {pickle.HIGHEST_PROTOCOL}",
+    ],
+)
+def test_main(
+    monkeypatch: MonkeyPatch,
+    tmp_wd: Path,
+    linearize: str,
+    protocol: str,
+) -> None:
+    """Test main."""
+    disc_path = tmp_wd / "discipline.pickle"
+    inputs_path = tmp_wd / "inputs.pickle"
+    outputs_path = tmp_wd / "outputs.pickle"
+
+    set_cli_args(
+        monkeypatch,
+        f"{disc_path!s} {inputs_path!s} {outputs_path!s} {linearize} {protocol}",
+    )
+
+    # Create the test data.
+    disc = SobieskiMission()
+    input_data = disc.io.input_grammar.defaults
+    differentiated_inputs = ()
+    differentiated_outputs = ()
+    kwargs = {"protocol": int(protocol.split()[-1])} if protocol else {}
+    to_pickle(disc, disc_path, **kwargs)
+    to_pickle(
+        (input_data, differentiated_inputs, differentiated_outputs),
+        inputs_path,
+        **kwargs,
+    )
+
+    # Execute the main entry point.
+    assert not main()
+
+    # Create the reference data.
+    disc = SobieskiMission()
+
+    if not linearize:
+        ref_data = disc.execute(input_data)
+        ref_jac = {}
+    else:
+        disc.add_differentiated_inputs(differentiated_inputs)
+        disc.add_differentiated_outputs(differentiated_outputs)
+        ref_jac = disc.linearize(
+            input_data,
+            execute="--execute-at-linearize" in linearize,
+        )
+        ref_data = disc.io.data
+
+    # Compare the outputs.
+    data, jac = from_pickle(outputs_path)
+    assert compare_dict_of_arrays(ref_data, data)
+    assert compare_dict_of_arrays(ref_jac, jac)
+
+
+class CrashingDiscipline(SobieskiMission):
+    error_message = "This discipline is crashing"
+
+    def _run(self, input_data: DisciplineData) -> None:
+        raise ValueError(self.error_message)
+
+
+def test_discipline_exception(tmp_wd: Path, monkeypatch: MonkeyPatch) -> None:
+    """Test the outputs saving error handling."""
+    disc = CrashingDiscipline()
+
+    disc_path = tmp_wd / "discipline.pickle"
+    inputs_path = tmp_wd / "inputs.pickle"
+    outputs_path = tmp_wd / "outputs.pickle"
+
+    to_pickle(disc, disc_path)
+    to_pickle(
+        (disc.io.input_grammar.defaults, (), ()),
+        inputs_path,
+    )
+
+    set_cli_args(
+        monkeypatch,
+        f"{disc_path!s} {inputs_path!s} {outputs_path!s}",
+    )
+
+    assert main() == 1
+
+    error, tb = from_pickle(outputs_path)
+
+    assert isinstance(error, ValueError)
+    assert str(error) == disc.error_message
+
+    ref_tb = r"""
+Traceback \(most recent call last\):
+  File ".+deserialize_and_run.py", line \d+, in main
+    data, jac = _execute_discipline\(parsed_args\)(\n\s+\^+)?
+  File ".+deserialize_and_run\.py", line \d+, in _execute_discipline
+    data = discipline\.execute\(input_data\)(\n\s+\^+)?
+  File ".+discipline\.py", line \d+, in execute
+    return super\(\)\.execute\(input_data\)(\n\s+\^+)?
+  File ".+base_discipline\.py", line \d+, in execute
+    self\._execute_monitored\(\)
+  File ".+_base_monitored_process\.py", line \d+, in _execute_monitored
+    self\.execution_status\.handle\(
+  File ".+execution_status\.py", line \d+, in handle
+    function\(\*args\)
+  File ".+execution_statistics\.py", line \d+, in record_execution
+    self\.__record_call\(function, False\)
+  File ".+execution_statistics\.py", line \d+, in __record_call
+    function\(\)
+  File ".+base_discipline\.py", line \d+, in _execute
+    output_data = self\._run\(input_data=input_data\)(\n\s+\^+)?
+  File ".+test_deserialize_and_run\.py", line \d+, in _run
+    raise ValueError\(self\.error_message\)
+ValueError: This discipline is crashing
+""".strip()
+
+    assert re.match(ref_tb, tb, re.MULTILINE)

@@ -88,9 +88,9 @@ def test_write_inputs_to_disk(discipline, tmp_wd) -> None:
     assert path_to_input_data.parent == tmp_wd
 
 
-def test_generate_job_template(discipline) -> None:
+def test_generate_job_template(tmp_wd, discipline) -> None:
     """Test the job scheduler template creation."""
-    current_workdir = discipline._create_current_workdir()
+    current_workdir = tmp_wd
     path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
         current_workdir, (), ()
     )
@@ -150,13 +150,6 @@ def test_handle_outputs_errors(
 
     with pytest.raises(ValueError, match=re.escape("An error.")):
         discipline._handle_outputs(tmp_wd, outputs_path)
-
-
-def test_create_current_workdir(discipline) -> None:
-    """Test the creation of the workdir."""
-    current_workdir = discipline._create_current_workdir()
-    assert current_workdir.exists()
-    assert current_workdir.parent == discipline._workdir_path
 
 
 def test_execution(discipline_mocked_js) -> None:

@@ -25,9 +25,10 @@ from subprocess import run as subprocess_run
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from uuid import uuid1
 
+from gemseo import from_pickle
 from gemseo.core.discipline import Discipline
+from gemseo.utils.directory_creator import DirectoryCreator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -47,32 +48,50 @@ class JobSchedulerDisciplineWrapper(Discipline):
     execute it and serialize the outputs. Finally, the deserialized outputs are returned
     by the wrapper.
 
+    Each execution of the wrapped discipline is done in a unique directory within the
+    ``workdir_path`` directory passed when instantiating this class.
+
     .. warning::
         See :ref:`platform-paths` to handle paths for cross-platforms.
     """
 
     DISC_PICKLE_FILE_NAME: ClassVar[str] = "discipline.pckl"
+    """The name of the pickle file for the discipline."""
+
     DISC_INPUT_FILE_NAME: ClassVar[str] = "input_data.pckl"
+    """The name of the pickle file for the discipline inputs."""
+
     DISC_OUTPUT_FILE_NAME: ClassVar[str] = "output_data.pckl"
+    """The name of the pickle file for the discipline outputs."""
+
+    # TODO: API: rename to JOB_TEMPLATES_DIR_PATH
     TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
+    """The path to the directory with the job templates."""
 
     _discipline: Discipline
     """The discipline to wrap in the job scheduler."""
+
     _job_template_path: Path
     """The path to the template to be used to make a submission to the job scheduler
     command."""
-    _workdir_path: Path
-    """The path to the workdir where the files will be generated."""
+
     _scheduler_run_command: str
     """The command to call the job scheduler and submit the generated script."""
+
     _job_out_filename: str
     """The output job file name."""
+
     _options: dict[str, Any]
     """The job scheduler specific options."""
+
     _setup_cmd: str
     """The environment command to be used before running."""
+
     _execute_at_linearize: bool
     """Whether to execute the discipline when linearizing."""
+
+    __directory_creator: DirectoryCreator
+    """The temporary directory creator."""
 
     def __init__(
         self,
@@ -122,7 +141,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self.io.input_grammar = self._discipline.io.input_grammar
         self.io.output_grammar = self._discipline.io.output_grammar
         self.io.input_grammar.defaults = self._discipline.io.input_grammar.defaults
-        self._workdir_path = workdir_path
+        self.__directory_creator = DirectoryCreator(
+            workdir_path, DirectoryCreator.Naming.UUID
+        )
         self.pickled_discipline = pickle.dumps(self._discipline)
         self.job_file_template = None
         self._execute_at_linearize = True
@@ -275,43 +296,28 @@ class JobSchedulerDisciplineWrapper(Discipline):
             )
             raise FileNotFoundError(msg)
 
-        with outputs_path.open("rb") as output_file:
-            output = pickle.load(output_file)
+        output = from_pickle(outputs_path)
 
-            if isinstance(output[0], BaseException):
-                error, trace = output
-                LOGGER.error(
-                    "Discipline %s execution failed in %s",
-                    self._discipline.name,
-                    current_workdir,
-                )
-
-                LOGGER.error(trace)
-                raise error
-
-            LOGGER.debug(
-                "Discipline %s execution succeeded in %s",
+        if isinstance(output[0], BaseException):
+            error, trace = output
+            LOGGER.error(
+                "Discipline %s execution failed in %s",
                 self._discipline.name,
                 current_workdir,
             )
 
-            self.io.data.update(output[0])
-            if output[1]:
-                self.jac = output[1]
+            LOGGER.error(trace)
+            raise error
 
-    def _create_current_workdir(self) -> Path:
-        """Create the current working directory.
+        LOGGER.debug(
+            "Discipline %s execution succeeded in %s",
+            self._discipline.name,
+            current_workdir,
+        )
 
-        Returns:
-            The path to the working directory.
-        """
-        # This generates a unique random and thread safe working directory name.
-        # We do not use tempdir from the standard python library because it is a
-        # permanent run directory.
-        loc_id = str(uuid1()).split("-")[0]
-        current_workdir = Path(self._workdir_path / loc_id)
-        current_workdir.mkdir()
-        return current_workdir
+        self.io.data.update(output[0])
+        if output[1]:
+            self.jac = output[1]
 
     def _write_inputs_to_disk(
         self,
@@ -366,7 +372,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
             differentiated_outputs: If the linearization is performed, the
                 outputs that define the columns of the jacobian.
         """
-        current_workdir = self._create_current_workdir()
+        current_workdir = self.__directory_creator.create()
         outputs_path = current_workdir / self.DISC_OUTPUT_FILE_NAME
         log_path = current_workdir / f"{self._discipline.name}.log"
         discipline_path, inputs_path = self._write_inputs_to_disk(
