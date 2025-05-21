@@ -69,6 +69,32 @@ def test_build_func_from_disc() -> None:
 @pytest.mark.parametrize(
     ("options", "expected_feasible"),
     [
+        # Without weak coupling targets
+        (
+            {
+                "linearize": False,
+                "dtype": "complex128",
+                "normalize_cstr": True,
+                "eq_tolerance": 1e-4,
+                "ineq_tolerance": 1e-4,
+                "max_iter": 50,
+                "include_weak_coupling_targets": False,
+            },
+            True,
+        ),
+        (
+            {
+                "linearize": True,
+                "dtype": "float64",
+                "normalize_cstr": True,
+                "eq_tolerance": 1e-3,
+                "ineq_tolerance": 1e-3,
+                "max_iter": 50,
+                "include_weak_coupling_targets": False,
+            },
+            True,
+        ),
+        # With weak coupling targets
         (
             {
                 "linearize": False,
@@ -150,7 +176,8 @@ def test_idf_execution(
 
     assert is_feasible == expected_feasible
 
-    if (n_processes := options["n_processes"]) > 1:
+    include_weak_coupling_targets = options.get("include_weak_coupling_targets", True)
+    if include_weak_coupling_targets and (n_processes := options["n_processes"]) > 1:
         assert (
             f"IDF formulation: running in parallel on {n_processes} processes."
             in caplog.text

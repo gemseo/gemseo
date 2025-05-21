@@ -19,12 +19,12 @@
 \matrix[MatrixSetup]{
 %Row 0
 \node [Optimization] (Opt) {$\text{1,6-2:Caller}$};&
-\node [DataInter] (Opt-Dis1) {$gamma,  x\_1..., (6)$};&
-\node [DataInter] (Opt-Dis2) {$gamma,  x\_1..., (4)$};&
-\node [DataInter] (Opt-Dis3) {$x\_2,  x\_shared..., (3)$};&
-\node [DataInter] (Opt-Dis4) {$alpha,  beta..., (7)$};\\
+\node [DataInter] (Opt-Dis1) {$gamma,  x\_1, ... (6)$};&
+\node [DataInter] (Opt-Dis2) {$gamma,  x\_1, ... (4)$};&
+\node [DataInter] (Opt-Dis3) {$x\_2,  x\_shared, ... (3)$};&
+\node [DataInter] (Opt-Dis4) {$alpha,  beta, ... (7)$};\\
 %Row 1
-\node [DataInter] (Dis1-Opt) {$MDA residuals norm,  y\_1..., (3)$};&
+\node [DataInter] (Dis1-Opt) {$MDA residuals norm,  y\_1, ... (3)$};&
 \node [MDA] (Dis1) {$\text{2,4-3:MDAJacobi}$};&
 \node [DataInter] (Dis1-Dis2) {$y\_2$};&
 \node [DataInter] (Dis1-Dis3) {$y\_1$};&
@@ -42,7 +42,7 @@
 \node [Function] (Dis3) {$\text{3:Sellar2}$};&
 \\
 %Row 4
-\node [DataInter] (Dis4-Opt) {$obj,  c\_1..., (3)$};&
+\node [DataInter] (Dis4-Opt) {$obj,  c\_1, ... (3)$};&
 &
 &
 &

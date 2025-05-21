@@ -120,7 +120,7 @@ class DependencyGraph:
         """The disciplines data graph."""
         return self.__graph
 
-    def get_execution_sequence(self) -> list[list[tuple[Discipline, ...]]]:
+    def get_execution_sequence(self) -> ExecutionSequence:
         """Compute the execution sequence of the disciplines.
 
         Returns:
@@ -144,7 +144,7 @@ class DependencyGraph:
                 )
                 for node_id in leaves
             ]
-            execution_sequence += [parallel_tasks]
+            execution_sequence.append(parallel_tasks)
             condensed_graph.remove_nodes_from(leaves)
 
         return list(reversed(execution_sequence))

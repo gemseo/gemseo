@@ -89,7 +89,7 @@ existence of an equilibrium for any values of the design variables
 .. figure:: /_images/mdo_formulations/MDF_process.png
    :scale: 65 %
 
-   A process based on the MDF formulation
+   A process based on the MDF formulation.
 
 
 Gradient-based optimization algorithms require the computation of the
@@ -111,35 +111,64 @@ An example of an MDO study using an MDF formulation can be found in the :ref:`Se
 IDF
 ---
 
-:term:`IDF` handles the disciplines in a decoupled fashion: all disciplinary
-analysis are performed independently and possibly in parallel. Coupling
-variables :math:`y^t` (called targets) are driven by the optimization
-algorithm and are inputs of all disciplinary analyses :math:`y_i(x_i, z,
-y_{j \neq i}^t), \forall i \in \{1, \ldots, N\}`. In comparison, handles
-the disciplines in a coupled manner: the inputs of the disciplines are
-outputs of the other disciplines.
+:term:`IDF` stands for individual discipline feasible.
+This MDO formulation expresses the MDO problem as
 
 .. math::
 
    \begin{aligned}
    & \underset{x,z,y^t}{\text{min}} & & f(x, z, y^t) \\
    & \text{subject to}     & & g(x, z, y^t) \le 0 \\
-   &                       & & y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0, \quad \forall i \in \{1,
-   \ldots, N\}
+   &                       & & h(x, z, y^t) = 0 \\
+   &                       & & y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0,
+                               \quad \forall i \in \{1,\ldots, N\}
    \end{aligned}
-   \label{eq:idf-problem}
 
-Additional consistency constraints
-:math:`y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0,
-\forall i \in \{1, \ldots, N\}` ensure that the couplings computed by
-the disciplinary analysis coincide with the corresponding inputs
-:math:`y^t` of the other disciplines. This guarantees an equilibrium
-between all disciplines at convergence.
+where :math:`y^t=(y_1^t,y_2^t,\ldots,y_N^t)` are additional optimization variables, called *targets* or *coupling targets*,
+used as input coupling variables of the disciplines.
+The additional constraints :math:`y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0, \forall i \in \{1, \ldots, N\}`, called *consistency* constraints,
+ensure that the output coupling variables computed by the disciplines :math:`y` coincide with the targets.
+
+The use of coupling targets allows the disciplines to be run in a decoupled way
+while the use of consistency constraints guarantees a multidisciplinary feasible solution at convergence of the optimizer.
+Thus,
+the iterations are less costly than those of MDF, as they do not use an MDA algorithm,
+but IF does not allow early stopping with the guarantee of a multidisciplinary feasible solution, unlike MDF.
 
 .. figure:: /_images/mdo_formulations/IDF_process.png
    :scale: 65 %
 
-   A process based on the IDF formulation
+   A process based on the IDF formulation.
+
+Note that the targets can include either all the couplings or the strong couplings only.
+If all couplings,
+then all disciplines are executed in parallel,
+and all couplings (weak and strong) are set as target variables in the design space.
+This maximizes the exploitation of the parallelism but leads to a larger design space,
+so usually more iterations by the optimizer.
+
+.. figure:: /_images/mdo_formulations/xdsm_sobieski_idf_all.png
+   :scale: 65 %
+
+   The XDSM of the IDF formulation for the Sobieski's SSBJ problem,
+   considering all the coupling targets.
+
+If the strong couplings only,
+then the coupling graph is analyzed
+and the disciplines are chained in sequence and in parallel to solve all weak couplings.
+In this case,
+the size of the optimization problem is reduced,
+so usually leads to less iterations.
+The best option depends on the number of strong vs weak couplings,
+the availability of gradients,
+the availability of CPUs versus the number of disciplines,
+so it is very context dependant.
+
+.. figure:: /_images/mdo_formulations/xdsm_sobieski_idf_strong.png
+   :scale: 65 %
+
+   The XDSM of the IDF formulation for the Sobieski's SSBJ problem,
+   considering the strong coupling targets only.
 
 
 .. _bilevel_formulation:
@@ -166,7 +195,7 @@ This formulation was invented in the MDA-MDO project at IRT Saint Exupery :cite:
 .. figure:: /_images/mdo_formulations/bilevel_process.png
    :scale: 55 %
 
-   A process based on a Bi-level formulation
+   A process based on a Bi-level formulation.
 
 .. warning::
 
@@ -185,7 +214,7 @@ The figure below shows an example of such visualization.
 .. figure:: /_images/bilevel_ssbj.png
    :scale: 80 %
 
-   An XDSM visualization generated with |g|
+   An XDSM visualization generated with |g|.
 
 The rendering is handled by the visualization library `XDSMjs <https://github.com/OneraHub/XDSMjs>`_.
 |g| provides a utility class :class:`.XDSMizer` to export the given MDO scenario as a suitable
@@ -206,7 +235,7 @@ XDSM visualization shows:
 
    .. figure:: /_images/xdsmjs_demo.gif
 
-      |g| XDSM visualization of the Sobiesky example solved with MDF formulation
+      |g| XDSM visualization of the Sobiesky example solved with MDF formulation.
 
 Installation
 ^^^^^^^^^^^^

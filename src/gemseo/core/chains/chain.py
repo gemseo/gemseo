@@ -51,14 +51,28 @@ class _ProcessFlow(BaseProcessFlow):
         self,
     ) -> list[tuple[Discipline, Discipline, list[str]]]:
         disciplines = self.get_disciplines_in_data_flow()
-        graph = DependencyGraph(disciplines)
-        disciplines_couplings = graph.get_disciplines_couplings()
+        disciplines_couplings = self._get_disciplines_couplings(disciplines)
 
         # Add discipline inner couplings (ex. MDA case)
         for discipline in disciplines:
             disciplines_couplings.extend(discipline.get_process_flow().get_data_flow())
 
         return disciplines_couplings
+
+    def _get_disciplines_couplings(
+        self, disciplines: Sequence[Discipline]
+    ) -> list[tuple[Discipline, Discipline, list[str]]]:
+        """Return the couplings between the disciplines.
+
+        Args:
+            disciplines: The disciplines.
+
+        Returns:
+            The disciplines couplings, a coupling is
+            composed of a discipline, one of its successor and the sorted
+            variables names.
+        """
+        return DependencyGraph(disciplines).get_disciplines_couplings()
 
 
 class MDOChain(ProcessDiscipline):

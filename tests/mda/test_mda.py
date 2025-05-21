@@ -560,28 +560,28 @@ class DiscWithNonNumericInputs3(Discipline):
 
 
 @pytest.mark.parametrize(
-    ("mda_class", "include_weak_couplings"),
+    ("mda_class", "include_weak_coupling_targets"),
     [(MDAJacobi, True), (MDAGaussSeidel, True), (MDANewtonRaphson, False)],
 )
-def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
+def test_mda_with_non_numeric_couplings(mda_class, include_weak_coupling_targets):
     """Test that MDAs can handle non-numeric couplings.
 
     Args:
         mda_class: The specific MDA to be tested.
-        include_weak_couplings: Whether to include weak couplings in the MDA. The Newton
-            method does not support weak couplings.
+        include_weak_coupling_targets: Whether to include weak couplings in the MDA.
+            The Newton method does not support weak couplings.
     """
     disciplines = [
         DiscWithNonNumericInputs1(),
         DiscWithNonNumericInputs2(),
     ]
 
-    if include_weak_couplings:
+    if include_weak_coupling_targets:
         disciplines.append(DiscWithNonNumericInputs3())
 
     mda = mda_class(disciplines)
     mda.add_differentiated_inputs(["a"])
-    mda.add_differentiated_outputs(["obj"] if include_weak_couplings else ["b"])
+    mda.add_differentiated_outputs(["obj"] if include_weak_coupling_targets else ["b"])
 
     inputs = {
         "a_file": "test",
@@ -589,7 +589,7 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
     }
     mda_output = mda.execute(inputs)
 
-    if include_weak_couplings:
+    if include_weak_coupling_targets:
         assert_almost_equal(mda_output["obj"], 0.0, decimal=5)
     else:
         assert_almost_equal(mda_output["b"], 1.0, decimal=5)
@@ -597,7 +597,7 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
     assert mda.check_jacobian(
         input_data=inputs,
         input_names=["a"],
-        output_names=["obj"] if include_weak_couplings else ["b"],
+        output_names=["obj"] if include_weak_coupling_targets else ["b"],
         linearization_mode="adjoint",
         threshold=1e-3,
     )

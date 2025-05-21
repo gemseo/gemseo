@@ -78,7 +78,7 @@ if TYPE_CHECKING:
 
 
 def build_sobieski_scenario(
-    formulation_name: str = "MDF", **formulation_settings: dict[str, Any]
+    formulation_name: str = "MDF", **formulation_settings: Any
 ) -> MDOScenario:
     """Scenario based on Sobieski case.
 
@@ -190,6 +190,11 @@ def test_xdsmize_idf(options) -> None:
     for c_name in ["g_1", "g_2", "g_3"]:
         scenario.add_constraint(c_name, "ineq")
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_idf"))
+
+    scenario = build_sobieski_scenario("IDF", include_weak_coupling_targets=False)
+    for c_name in ["g_1", "g_2", "g_3"]:
+        scenario.add_constraint(c_name, "ineq")
+    assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_idf_no_weak"))
 
 
 def test_xdsmize_bilevel(options) -> None:
@@ -654,7 +659,7 @@ def assert_xdsm_equal(expected: dict[str, Any], generated: dict[str, Any]) -> No
         expected: The expected XDSM structure to be compared with.
         generated: The generated XDSM structure.
     """
-    assert sorted(expected.keys()) == sorted(generated.keys())
+    assert sorted(generated.keys()) == sorted(expected.keys())
 
     for key in expected:
         assert_level_xdsm_equal(expected[key], generated[key])
@@ -670,14 +675,14 @@ def assert_level_xdsm_equal(
         expected: The expected data to be compared with.
         generated: The generated data.
     """
-    assert len(expected["nodes"]) == len(generated["nodes"])
+    assert len(generated["nodes"]) == len(expected["nodes"])
 
     for expected_node in expected["nodes"]:
         found = False
         for node in generated["nodes"]:
             if node["id"] == expected_node["id"]:
-                assert expected_node["name"] == node["name"]
-                assert expected_node["type"] == node["type"]
+                assert node["name"] == expected_node["name"]
+                assert node["type"] == expected_node["type"]
                 found = True
         assert found, f"Node {expected_node!s} not found."
 
@@ -688,12 +693,13 @@ def assert_level_xdsm_equal(
                 edge["from"] == expected_edge["from"]
                 and edge["to"] == expected_edge["to"]
             ):
-                assert set(expected_edge["name"].split(", ")) == set(
-                    edge["name"].split(", ")
+                assert set(edge["name"].split(", ")) == set(
+                    expected_edge["name"].split(", ")
                 )
                 found = True
         assert found, f"Edge {expected_edge!s} not found."
-    assert expected["workflow"] == generated["workflow"]
+
+    assert generated["workflow"] == expected["workflow"]
 
 
 def test_xdsmize_mdf_mdoparallelchain(options) -> None:

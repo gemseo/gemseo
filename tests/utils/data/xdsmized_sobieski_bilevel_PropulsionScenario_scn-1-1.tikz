@@ -28,7 +28,7 @@
 \node [DataInter] (Opt-Dis1) {$x\_3$};&
 \\
 %Row 2
-\node [DataIO] (left_output_Dis1) {$y\_32^*,  y\_31^*..., (3)$};&
+\node [DataIO] (left_output_Dis1) {$y\_32^*,  y\_31^*, ... (3)$};&
 \node [DataInter] (Dis1-Opt) {$g\_3,  y\_34$};&
 \node [Function] (Dis1) {$\text{2:SobieskiPropulsion}$};&
 \\

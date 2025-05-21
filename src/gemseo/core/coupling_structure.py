@@ -282,12 +282,12 @@ class CouplingStructure:
         discipline: Discipline,
         strong: bool = True,
     ) -> list[str]:
-        """Compute the output coupling variables of a discipline, either strong or weak.
+        """Return the names of the output coupling variables.
 
         Args:
             discipline: The discipline.
-            strong: If ``True``,
-                consider the strong couplings. Otherwise, the weak ones.
+            strong: Whether to return the names of the strong coupling variables only.
+                Otherwise, return the names of all coupling variables.
 
         Returns:
             The names of the output coupling variables.

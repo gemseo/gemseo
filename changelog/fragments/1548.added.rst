@@ -1,0 +1,4 @@
+The boolean option ``include_weak_coupling_targets`` of ``IDF_Settings``
+makes ``IDF`` include both the strong couplings and the weak couplings in the optimization problem,
+in the form of optimization variables supplemented by consistency constraints (default).
+Otherwise, this MDO formulation includes the strong couplings only.
