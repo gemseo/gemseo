@@ -14,7 +14,7 @@ charset-normalizer==3.4.2
     # via requests
 check-wheel-contents==0.6.2
     # via -r requirements/dist.in
-click==8.2.0
+click==8.2.1
     # via check-wheel-contents
 cryptography==45.0.2
     # via secretstorage
