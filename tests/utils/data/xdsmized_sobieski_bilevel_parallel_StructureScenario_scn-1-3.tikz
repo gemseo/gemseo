@@ -28,7 +28,7 @@
 \node [DataInter] (Opt-Dis1) {$x\_1$};&
 \\
 %Row 2
-\node [DataIO] (left_output_Dis1) {$y\_1^*,  y\_14^*..., (3)$};&
+\node [DataIO] (left_output_Dis1) {$y\_1^*,  y\_14^*, ... (3)$};&
 \node [DataInter] (Dis1-Opt) {$y\_11,  g\_1$};&
 \node [Function] (Dis1) {$\text{2:SobieskiStructure}$};&
 \\

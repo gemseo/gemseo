@@ -31,10 +31,10 @@ from numpy import zeros
 
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.idf_chain import IDFChain
 from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.mda.mda_chain import MDAChain
 from gemseo.utils.string_tools import pretty_repr
@@ -46,6 +46,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
+    from gemseo.core.process_discipline import ProcessDiscipline
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
@@ -103,8 +104,13 @@ class IDF(BaseMDOFormulation):
     __coupling_structure: CouplingStructure
     """The coupling structure of the disciplines."""
 
-    _parallel_exec: MDOParallelChain | None
-    """The process to execute the disciplines in parallel, if parallelization."""
+    _process_discipline: ProcessDiscipline | None
+    """The process to execute the disciplines.
+
+    This argument is used
+    when ``include_weak_coupling_targets`` is ``False``
+    or when ``n_processes > 1``.
+    """
 
     def __init__(  # noqa: D107
         self,
@@ -121,25 +127,37 @@ class IDF(BaseMDOFormulation):
             settings_model=settings_model,
             **settings,
         )
-        if (n_processes := self._settings.n_processes) > 1:
+        self.__coupling_structure = CouplingStructure(disciplines)
+        if not self._settings.include_weak_coupling_targets:
+            self._process_discipline = IDFChain(
+                self.__coupling_structure.sequence,
+                self._settings.n_processes,
+                self._settings.use_threading,
+            )
+        elif (n_processes := self._settings.n_processes) > 1:
             LOGGER.info(
                 "IDF formulation: running in parallel on %s processes.",
                 n_processes,
             )
-            self._parallel_exec = MDOParallelChain(
+            self._process_discipline = MDOParallelChain(
                 self.disciplines,
                 use_threading=self._settings.use_threading,
                 n_processes=n_processes,
             )
         else:
-            self._parallel_exec = None
+            self._process_discipline = None
 
-        self.__coupling_structure = CouplingStructure(disciplines)
         self._update_top_level_disciplines()
         self._build_constraints()
         self._build_objective_from_disc(objective_name)
         if self._settings.start_at_equilibrium:
             self._compute_equilibrium()
+
+        strong_couplings = self.__coupling_structure.strong_couplings
+        if not self._settings.include_weak_coupling_targets:
+            for coupling in self.__coupling_structure.all_couplings:
+                if coupling in design_space and coupling not in strong_couplings:
+                    design_space.remove_variable(coupling)
 
     @property
     def all_couplings(self) -> list[str]:
@@ -180,10 +198,14 @@ class IDF(BaseMDOFormulation):
         Raises:
             ValueError: When a coupling variable is not defined in the design space.
         """
-        strong_couplings = set(self.__coupling_structure.all_couplings)
+        couplings = set(
+            self.__coupling_structure.all_couplings
+            if self._settings.include_weak_coupling_targets
+            else self.__coupling_structure.strong_couplings
+        )
         variable_names = self.optimization_problem.design_space
-        if not strong_couplings.issubset(variable_names):
-            missing_variables = strong_couplings.difference(variable_names)
+        if not couplings.issubset(variable_names):
+            missing_variables = couplings.difference(variable_names)
             msg = (
                 "IDF formulation: "
                 f"the variables {pretty_repr(missing_variables, use_and=True)} "
@@ -195,10 +217,10 @@ class IDF(BaseMDOFormulation):
     def get_top_level_disciplines(  # noqa:D102
         self, include_sub_formulations: bool = False
     ) -> tuple[Discipline, ...]:
-        if self._parallel_exec is None:
+        if self._process_discipline is None:
             return self.disciplines
 
-        return (self._parallel_exec,)
+        return (self._process_discipline,)
 
     def _get_normalization_factor(
         self,
@@ -227,8 +249,11 @@ class IDF(BaseMDOFormulation):
         The consistency constraints are equality constraints of the form "y = y_copy".
         """
         get_output_couplings = self.__coupling_structure.get_output_couplings
+        return_strong_couplings_only = not self._settings.include_weak_coupling_targets
         for discipline in self.disciplines:
-            if couplings := get_output_couplings(discipline, strong=False):
+            if couplings := get_output_couplings(
+                discipline, strong=return_strong_couplings_only
+            ):
                 constraint = ConsistencyConstraint(couplings, self)
                 discipline_adapter = constraint.coupling_function.discipline_adapter
                 if discipline_adapter.is_linear:

@@ -257,7 +257,7 @@ class XDSMToPDFConverter:
             ]
 
             if len(names) > 2:
-                names = f"{', '.join(names[:2])}..., ({len(names)})"
+                names = f"{', '.join(names[:2])}, ... ({len(names)})"
             else:
                 names = ", ".join(names)
 

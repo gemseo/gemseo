@@ -19,7 +19,7 @@
 \matrix[MatrixSetup]{
 %Row 0
 \node [Optimization] (Opt) {$\text{1,3-2:Caller}$};&
-\node [DataInter] (Opt-Dis1) {$gamma,  x\_1..., (4)$};\\
+\node [DataInter] (Opt-Dis1) {$gamma,  x\_1, ... (4)$};\\
 %Row 1
 \node [DataInter] (Dis1-Opt) {$y\_1$};&
 \node [Function] (Dis1) {$\text{2:Sellar1}$};\\
