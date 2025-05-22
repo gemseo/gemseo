@@ -84,7 +84,7 @@ if not os.environ.get("DOC_WITHOUT_GALLERY"):
         "within_subsection_order": ExampleTitleSortKey,
         "filename_pattern": r"plot_\w+\.py$",
         "ignore_pattern": r"run\.py",
-        "parallel": 2,
+        "abort_on_example_error": True,
         "nested_sections": False,
         # directory where function/class granular galleries are stored
         "backreferences_dir": "gen_modules/backreferences",

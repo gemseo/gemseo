@@ -181,3 +181,8 @@ scenario.execute(
     algo_name="NLOPT_COBYLA",
     max_iter=10,
 )
+
+# Reset the data converters to remove the custom converters.
+# This should only be needed if the type of the variables y_1 and y_2 are no longer
+# custom type afterward.
+set_data_converters({}, {}, {})
