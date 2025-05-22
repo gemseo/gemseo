@@ -1,0 +1,1 @@
+``inf`` values are now converted to ``null`` during the JSON serialization of algorithm settings, addressing a limitation of the JSON standard which does not support infinity values.
