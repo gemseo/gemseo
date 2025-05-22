@@ -14,10 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import runpy
 from pathlib import Path
 from re import findall
 from shutil import copytree
-from subprocess import run
 
 import pytest
 
@@ -39,4 +39,4 @@ def test_script_execution(example_path: Path, tmp_wd: Path, monkeypatch) -> None
     dir_path = example_path.parent.name
     copytree(example_path.parent, dir_path)
     monkeypatch.chdir(dir_path)
-    run(f"python {example_path.name}".split(), check=True)
+    runpy.run_path(example_path.name)
