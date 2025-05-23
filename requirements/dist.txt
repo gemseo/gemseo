@@ -53,7 +53,7 @@ packaging==25.0
     #   twine
 pycparser==2.22
     # via cffi
-pydantic==2.11.4
+pydantic==2.11.5
     # via check-wheel-contents
 pydantic-core==2.33.2
     # via pydantic
@@ -85,7 +85,7 @@ typing-extensions==4.13.2
     #   pydantic
     #   pydantic-core
     #   typing-inspection
-typing-inspection==0.4.0
+typing-inspection==0.4.1
     # via pydantic
 urllib3==2.4.0
     # via
