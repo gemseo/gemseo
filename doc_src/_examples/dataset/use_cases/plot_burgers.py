@@ -37,7 +37,7 @@ configure_logger()
 # Load Burgers' dataset
 # -----------------------
 # We can easily load this dataset
-# by means of the high-level function :func:`~gemseo.create_benchmark_dataset`:
+# by means of the high-level function :func:`.create_benchmark_dataset`:
 dataset = create_benchmark_dataset("BurgersDataset")
 dataset
 

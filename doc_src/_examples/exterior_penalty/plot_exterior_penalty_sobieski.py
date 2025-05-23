@@ -25,10 +25,11 @@ Example for exterior penalty applied to the Sobieski test case.
 # .. seealso::
 #
 #    To start with a simpler MDO problem, and for a detailed description
-#    of how to plug a test case into |g|, see :ref:`sellar_mdo`.
+#    of how to plug a test case into |g|, see
+#    :ref:`sphx_glr_examples_mdo_plot_sellar.py`.
 #
 #
-# .. _sobieski_use_case:
+# .. _sobieski_exterior_penalty:
 #
 # Solving with an :ref:`MDF formulation <mdf_formulation>`
 # --------------------------------------------------------
@@ -148,7 +149,7 @@ get_available_formulations()
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
 # %%
-# From these :class:`~gemseo.core.discipline.Discipline`, design space,
+# From these :class:`.Discipline`, design space,
 # :ref:`MDO formulation <mdo_formulations>` name and objective function name,
 # we build the scenario:
 scenario = create_scenario(

@@ -67,7 +67,7 @@ data
 
 # %%
 # Create a :class:`.OTParametricStatistics` object
-# ----------------------------------------------
+# ------------------------------------------------
 # We create a :class:`.OTParametricStatistics` object
 # from this data encapsulated in a :class:`.Dataset`:
 

@@ -18,8 +18,8 @@
 #        :author: Fabian Castañeda
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-BiLevel BCD-based MDO on the Sobieski SSBJ test case
-================================================
+BiLevel BCD-based MDO on the Sobieski SSBJ test case.
+=====================================================
 """
 
 # %%

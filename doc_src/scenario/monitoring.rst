@@ -15,7 +15,8 @@
 Monitoring the execution of a scenario
 ======================================
 
-When a scenario is executed (see :ref:`sellar_mdo` for building a scenario), |g| logs the last computed value of the objective
+When a scenario is executed (see :ref:`sphx_glr_examples_mdo_plot_sellar.py` for building a scenario),
+|g| logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
 In a situation like this, the current execution status of the :class:`.Discipline` is useful as well.
 

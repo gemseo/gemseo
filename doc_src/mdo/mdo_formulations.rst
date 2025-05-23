@@ -42,8 +42,8 @@ These implement the classical formulations:
 
 In the following, general concepts about the formulations are given. The :ref:`mdf_formulation` and :ref:`idf_formulation` text is integrally taken from the paper :cite:`Vanaret2017`.
 
-To see how to setup practical test cases with such formulations, please see :ref:`sellar_mdo` and
-:ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`.
+To see how to setup practical test cases with such formulations, please see
+:ref:`sphx_glr_examples_mdo_plot_sellar.py` and :ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`.
 
 .. seealso::
 
@@ -99,7 +99,8 @@ z\}`.
 
 For details on the MDAs and coupled derivatives, see :ref:`mda` and :ref:`jacobian_assembly`.
 
-An example of an MDO study using an MDF formulation can be found in the :ref:`Sellar MDO tutorial <sellar_mdo>`
+An example of an MDO study using an MDF formulation can be found in the :ref:`sphx_glr_examples_mdo_plot_sellar.py`
+example.
 
 .. warning::
 

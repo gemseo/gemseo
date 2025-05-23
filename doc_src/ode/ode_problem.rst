@@ -76,6 +76,7 @@ An instance of :class:`.ODEProblem` is used to represent an IVP.
 In order to solve it, it is necessary to instantiate an :class:`.ODESolverLibraryFactory` and execute it:
 
 .. code::
+
     ODESolverLibraryFactory().execute(problem=problem, algo_name=algo_name, **kwargs)
 
 The method ``execute`` of :class:`ODESolverLibraryFactory` takes as arguments the :class:`.ODEProblem`
