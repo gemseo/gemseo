@@ -29,7 +29,7 @@ Application: Sobieski's Super-Sonic Business Jet (MDO)
 # .. seealso::
 #
 #    To begin with a more simple MDO problem, and have a detailed description
-#    of how to plug a test case to |g|, see :ref:`sellar_mdo`.
+#    of how to plug a test case to |g|, see :ref:`sphx_glr_examples_mdo_plot_sellar.py`.
 #
 #
 # .. _sobieski_use_case:

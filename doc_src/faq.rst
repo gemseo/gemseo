@@ -36,7 +36,7 @@ This means that you must specify an objective function.
 The :term:`DOE` won't try to minimize it
 but it will be set as an objective in the visualizations.
 
-.. seealso:: For more details, we invite you to read our tutorial :ref:`sobieski_doe`.
+.. seealso:: For more details, we invite you to read our example :ref:`sphx_glr_examples_formulations_plot_doe_sobieski_mdf_example.py`.
 
 Create a simple optimization on a single discipline
 ---------------------------------------------------
@@ -67,7 +67,7 @@ Coupling a simulation software to |g|
 
 See :ref:`Interfacing simulation software <software_connection>`.
 
-.. seealso:: We invite you to discover all the steps in this tutorial :ref:`sellar_mdo`.
+.. seealso:: We invite you to discover all the steps in this example :ref:`sphx_glr_examples_mdo_plot_sellar.py`.
 
 Extend |g| features
 -------------------

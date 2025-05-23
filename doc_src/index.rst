@@ -408,7 +408,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
    :maxdepth: 2
 
    User guide <user_guide>
-   Examples <examples_and_tutorials>
+   Examples <examples>
    API documentation <modules/gemseo>
    Cheat sheets <cheat_sheets/index>
    About us <aboutus>

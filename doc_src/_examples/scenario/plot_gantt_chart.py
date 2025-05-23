@@ -52,7 +52,7 @@ configure_logger()
 
 # %%
 # Create the scenario
-# ------------------
+# -------------------
 # First, we define the Sobieski's SSBJ problem as a scenario.
 #
 # For this,

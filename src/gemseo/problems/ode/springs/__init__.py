@@ -15,7 +15,7 @@
 
 r"""A problem illustrating how to couple instances of :class:`.ODEDiscipline`.
 
-Consider a system of :math:`n` point masses with masses :math:`m_1$, :math:`m_2$,...
+Consider a system of :math:`n` point masses with masses :math:`m_1`, :math:`m_2`,...
 :math:`m_n` connected in series by springs. The displacement of the point masses
 relative to the position at rest are denoted by :math:`x_1`, :math:`x_2`,...
 :math:`x_n`. Each spring has stiffness :math:`k_1`, :math:`k_2`,... :math:`k_{n+1}`.
@@ -28,7 +28,7 @@ The extremities of the first and last spring are fixed. This means that by conve
 
 For :math:`n=2`, the system is as follows:
 
-.. asciiart::
+.. code::
 
     |                                                                                 |
     |        k1           ________          k2           ________          k3         |

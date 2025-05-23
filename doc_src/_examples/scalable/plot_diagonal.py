@@ -23,7 +23,7 @@ Scalable diagonal discipline
 ============================
 
 Let us consider the
-:class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics` discipline.
+:class:`.SobieskiAerodynamics` discipline.
 We want to build its :class:`.DataDrivenScalableDiscipline` counterpart,
 using a :class:`.ScalableDiagonalModel`
 

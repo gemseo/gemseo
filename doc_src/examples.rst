@@ -6,23 +6,16 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-
 ..
    Contributors:
           :author: Matthias De Lozzo
 
-:parenttoc: True
+.. _examples:
 
-.. _tutorials_sg:
-
-Tutorials
-=========
+Examples
+========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   Solve an optimization problem <basics_of_optimization/simple_opt_example>
-   Solve an MDO problem <sellar/nutshell>
-   Carry out a trade-off study <ssbj/doe_scenarios_construction>
-   Build a scalable model (Sellar) <scalable/scalable>
-   Build a scalable model (Aerostructure) <aerostruct/aerostruct_toy_example>
+   examples/index.rst

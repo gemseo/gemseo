@@ -13,9 +13,9 @@
 Sobieski's SSBJ test case
 -------------------------
 
-The Sobieski's SSBJ test case is considered in the different tutorials:
+The Sobieski's SSBJ test case is considered in the different examples:
 
-- :ref:`sobieski_doe`
+- :ref:`sphx_glr_examples_formulations_plot_doe_sobieski_mdf_example.py`
 - :ref:`sphx_glr_examples_mdo_plot_sobieski_use_case.py`
 
 .. start_description
@@ -73,12 +73,12 @@ an output of the discipline no. *i* and an input of the discipline no. *j*.
 Input variables
 ~~~~~~~~~~~~~~~
 
-.. figure:: /tutorials/ssbj/figs/SSBJ.png
+.. figure:: /problems/sobieski_figures/SSBJ.png
    :scale: 100 %
 
    The planform variables
 
-.. figure:: /tutorials/ssbj/figs/SupersonicAirfoil.png
+.. figure:: /problems/sobieski_figures/SupersonicAirfoil.png
    :scale: 100 %
 
    The airfoils variables
