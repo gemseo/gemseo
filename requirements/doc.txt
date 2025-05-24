@@ -54,7 +54,7 @@ jinja2==3.1.6
     # via
     #   gemseo (pyproject.toml)
     #   sphinx
-joblib==1.5.0
+joblib==1.5.1
     # via scikit-learn
 kiwisolver==1.4.8
     # via matplotlib
