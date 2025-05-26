@@ -61,9 +61,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
-    OTDistributionFitter as OTDistributionFitter,
-)
 from gemseo.utils.pickle import from_pickle as from_pickle
 
 if TYPE_CHECKING:
@@ -71,8 +68,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from gemseo.algos.parameter_space import ParameterSpace as ParameterSpace
-    from gemseo.core.discipline import Discipline as Discipline
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset as IODataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
