@@ -286,10 +286,7 @@ class DependencyGraph:
         return output_names & input_names
 
     def __render_graph(
-        self,
-        graph: DiGraph,
-        file_path: str | Path,
-        is_full: bool,
+        self, graph: DiGraph, file_path: str | Path, is_full: bool, clean_up: bool
     ) -> GraphView | None:
         """Render the graph when graphviz is installed.
 
@@ -298,6 +295,7 @@ class DependencyGraph:
             file_path: The file path to save the graphical representation of the graph.
                 If empty, the graphical representation is not saved.
             is_full: Whether the graph is full.
+            clean_up: Whether to remove the DOT source file.
 
         Returns:
             Either the graph or ``None`` when graphviz is not installed.
@@ -394,7 +392,7 @@ class DependencyGraph:
 
         if file_path:
             # 4. Write the dot and target files.
-            graph_view.visualize(show=False, file_path=file_path, clean_up=False)
+            graph_view.visualize(show=False, file_path=file_path, clean_up=clean_up)
 
         return graph_view
 
@@ -464,31 +462,39 @@ class DependencyGraph:
         if hide_head:
             graph_view.hide_node(head_name)
 
-    def render_full_graph(self, file_path: str | Path) -> GraphView | None:
+    def render_full_graph(
+        self, file_path: str | Path, clean_up: bool = True
+    ) -> GraphView | None:
         """Render the full graph.
 
         Args:
             file_path: The file path
                 to save the graphical representation of the full graph.
                 If empty, the graphical representation is not saved.
+            clean_up: Whether to remove the DOT source file.
 
         Returns:
             Either the full graph or ``None`` when graphviz is not installed.
         """
-        return self.__render_graph(self.__graph, file_path, True)
+        return self.__render_graph(self.__graph, file_path, True, clean_up)
 
-    def render_condensed_graph(self, file_path: str | Path) -> GraphView | None:
+    def render_condensed_graph(
+        self, file_path: str | Path, clean_up: bool = True
+    ) -> GraphView | None:
         """Render the condensed graph.
 
         Args:
             file_path: The file path
                 to save the graphical representation of the condensed graph.
                 If empty, the graphical representation is not saved.
+            clean_up: Whether to remove the DOT source file.
 
         Returns:
             Either the condensed graph or ``None`` when graphviz is not installed.
         """
-        return self.__render_graph(self.__create_condensed_graph(), file_path, False)
+        return self.__render_graph(
+            self.__create_condensed_graph(), file_path, False, clean_up
+        )
 
     @staticmethod
     def __get_leaves(graph: DiGraph) -> list[Discipline] | list[int]:
