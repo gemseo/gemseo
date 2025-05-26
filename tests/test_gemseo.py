@@ -159,14 +159,18 @@ def test_generate_n2_plot(tmp_wd, sobieski_disciplines) -> None:
 
 
 @pytest.mark.parametrize("full", [False, True])
-def test_generate_coupling_graph(tmp_wd, full, sobieski_disciplines) -> None:
+@pytest.mark.parametrize("clean_up", [None, False, True])
+def test_generate_coupling_graph(tmp_wd, full, sobieski_disciplines, clean_up) -> None:
     """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
+    clean_up = True if clean_up is None else clean_up
     file_path = "coupl.pdf"
-    graph_view = generate_coupling_graph(sobieski_disciplines, file_path, full)
+    graph_view = generate_coupling_graph(
+        sobieski_disciplines, file_path=file_path, full=full, clean_up=clean_up
+    )
     assert isinstance(graph_view, GraphView)
     assert Path(file_path).exists()
-    assert Path("coupl.dot").exists()
+    assert Path("coupl.dot").exists() is not clean_up
 
 
 @pytest.mark.parametrize("full", [False, True])

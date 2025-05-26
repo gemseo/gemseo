@@ -122,7 +122,7 @@ def test_render_full_graph(tmp_wd, name_and_graph) -> None:
     """
     name, graph = name_and_graph
     file_name = f"{name}.full_graph.pdf"
-    graph.render_full_graph(file_name)
+    graph.render_full_graph(file_name, clean_up=False)
     assert_dot_file(file_name)
 
 
@@ -142,7 +142,7 @@ def test_render_condensed_graph(tmp_wd, name_and_graph) -> None:
     """
     name, graph = name_and_graph
     file_name = f"{name}.condensed_graph.pdf"
-    graph.render_condensed_graph(file_name)
+    graph.render_condensed_graph(file_name, clean_up=False)
     assert_dot_file(file_name)
 
 
@@ -202,7 +202,7 @@ def test_coupling_structure_plot(
     tmp_wd, graph_with_self_coupling, file_path, method
 ) -> None:
     """Check the rendering of the coupling graph with a self-coupled discipline."""
-    getattr(graph_with_self_coupling, method)(file_path)
+    getattr(graph_with_self_coupling, method)(file_path, clean_up=False)
     assert_dot_file(Path(file_path))
 
 
@@ -235,5 +235,5 @@ def test_homonymous_disciplines(tmp_wd) -> None:
         AnalyticDiscipline({"d": "c"}),
     ])
     file_path = Path("homonymous_disciplines.pdf")
-    graph.render_full_graph(file_path)
+    graph.render_full_graph(file_path, clean_up=False)
     assert re.match(regex, file_path.with_suffix(".dot").read_text().strip())

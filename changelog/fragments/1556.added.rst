@@ -1,0 +1,1 @@
+``generate_coupling_graph`` has an option ``clean_up`` to remove the DOT source file (default: ``True``).

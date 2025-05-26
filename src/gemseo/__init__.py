@@ -168,6 +168,7 @@ def generate_coupling_graph(
     disciplines: Sequence[Discipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
+    clean_up: bool = True,
 ) -> GraphView | None:
     """Generate a graph of the couplings between disciplines.
 
@@ -177,6 +178,7 @@ def generate_coupling_graph(
             If empty, the figure is not saved.
         full: Whether to generate the full coupling graph.
             Otherwise, the condensed coupling graph is generated.
+        clean_up: Whether to remove the DOT source file.
 
     Returns:
         Either the graph of the couplings between disciplines
@@ -191,8 +193,8 @@ def generate_coupling_graph(
 
     coupling_structure = CouplingStructure(disciplines)
     if full:
-        return coupling_structure.graph.render_full_graph(file_path)
-    return coupling_structure.graph.render_condensed_graph(file_path)
+        return coupling_structure.graph.render_full_graph(file_path, clean_up=clean_up)
+    return coupling_structure.graph.render_condensed_graph(file_path, clean_up)
 
 
 def get_available_formulations() -> list[str]:
