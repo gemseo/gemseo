@@ -64,6 +64,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
@@ -1675,6 +1676,35 @@ def test_export_to_dataset(input_values, expected) -> None:
     assert_equal(dataset.get_view(variable_names="dv").to_numpy(), expected)
     assert_equal(dataset.get_view(variable_names="obj").to_numpy(), expected * 2)
     assert_equal(dataset.get_view(variable_names="cstr").to_numpy(), expected * 3)
+
+
+def test_export_to_dataset_with_grouped_functions():
+    """Check that functions are properly grouped when the option is true."""
+    problem = Power2()
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    dataset = problem.to_dataset(group_functions=True)
+
+    groups = [
+        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP,
+        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP,
+        OptimizationDataset.OBJECTIVE_GROUP,
+        OptimizationDataset.DESIGN_GROUP,
+    ]
+
+    assert groups.sort() == dataset.group_names.sort()
+
+    assert "ineq1" in dataset.get_variable_names(
+        group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+    )
+    assert "ineq2" in dataset.get_variable_names(
+        group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+    )
+    assert "eq" in dataset.get_variable_names(
+        group_name=OptimizationDataset.EQUALITY_CONSTRAINT_GROUP
+    )
+    assert "pow2" in dataset.get_variable_names(
+        group_name=OptimizationDataset.OBJECTIVE_GROUP
+    )
 
 
 @pytest.mark.skip("Input names are sorted.")

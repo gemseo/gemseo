@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import arange
@@ -24,25 +25,49 @@ from gemseo.datasets.dataset import ComponentType
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.dataset import DataType
 from gemseo.datasets.dataset import StrColumnType
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 
 class OptimizationDataset(Dataset):
     """A :class:`.Dataset` to store optimization histories."""
 
     DESIGN_GROUP: Final[str] = "designs"
-    """The group name for the design variables of an :class:`.OptimizationProblem`."""
+    """The group name for the design variables."""
 
+    # TODO: API: Remove this group name.
     FUNCTION_GROUP: Final[str] = "functions"
-    """The group name for the functions of an :class:`.OptimizationProblem`."""
+    """The group name for the functions.
+
+    This group name is deprecated in favour of
+    :attr:`.EQUALITY_CONSTRAINT_GROUP`,
+    :attr:`.INEQUALITY_CONSTRAINT_GROUP`,
+    :attr:`.OBJECTIVE_GROUP` and
+    :attr:`.OBSERVABLE_GROUP`.
+    """
 
     OBJECTIVE_GROUP: Final[str] = "objectives"
-    """The group name for the objectives of an :class:`.OptimizationProblem`."""
+    """The group name for the objectives."""
 
+    # TODO: API: Remove this group name.
     CONSTRAINT_GROUP: Final[str] = "constraints"
-    """The group name for the constraints of an :class:`.OptimizationProblem`."""
+    """The group name for the constraints.
+
+    This group name is deprecated in favour of
+    :attr:`.EQUALITY_CONSTRAINT_GROUP` and
+    :attr:`.INEQUALITY_CONSTRAINT_GROUP`.
+    """
+
+    INEQUALITY_CONSTRAINT_GROUP: Final[str] = "inequality_constraints"
+    """The group name for the inequality constraints."""
+
+    EQUALITY_CONSTRAINT_GROUP: Final[str] = "equality_constraints"
+    """The group name for the equality constraints."""
 
     OBSERVABLE_GROUP: Final[str] = "observables"
-    """The group name for the observables of an :class:`.OptimizationProblem`."""
+    """The group name for the observables."""
 
     @property
     def _constructor(self) -> type[OptimizationDataset]:
@@ -77,6 +102,24 @@ class OptimizationDataset(Dataset):
         return self.get_variable_names(self.CONSTRAINT_GROUP)
 
     @property
+    def equality_constraint_names(self) -> list[str]:
+        """The names of the equality constraints.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
+        return self.get_variable_names(self.EQUALITY_CONSTRAINT_GROUP)
+
+    @property
+    def inequality_constraint_names(self) -> list[str]:
+        """The names of the inequality constraints.
+
+        Warnings:
+            The names are sorted with the Python function ``sorted``.
+        """
+        return self.get_variable_names(self.INEQUALITY_CONSTRAINT_GROUP)
+
+    @property
     def objective_names(self) -> list[str]:
         """The names of the objectives.
 
@@ -103,6 +146,16 @@ class OptimizationDataset(Dataset):
     def constraint_dataset(self) -> OptimizationDataset:
         """The view of the constraint dataset."""
         return self.get_view(group_names=self.CONSTRAINT_GROUP)
+
+    @property
+    def equality_constraint_dataset(self) -> OptimizationDataset:
+        """The view of the equality constraint dataset."""
+        return self.get_view(group_names=self.EQUALITY_CONSTRAINT_GROUP)
+
+    @property
+    def inequality_constraint_dataset(self) -> OptimizationDataset:
+        """The view of the inequality constraint dataset."""
+        return self.get_view(group_names=self.INEQUALITY_CONSTRAINT_GROUP)
 
     @property
     def objective_dataset(self) -> OptimizationDataset:
@@ -137,6 +190,58 @@ class OptimizationDataset(Dataset):
             variable_name,
             data,
             group_name=self.CONSTRAINT_GROUP,
+            components=components,
+        )
+
+    def add_equality_constraint_variable(
+        self,
+        variable_name: str,
+        data: DataType,
+        components: ComponentType = (),
+    ) -> None:
+        """Add data related to an equality constraint.
+
+        Args:
+            variable_name: The name of the variable.
+            data: The data,
+                either an array shaped as ``(n_entries, n_features)``,
+                an array shaped as ``(n_entries,)``
+                that will be reshaped as ``(n_entries, 1)``
+                or a scalar that will be converted into an array
+                shaped as ``(n_entries, 1)``.
+            components: The components considered.
+               If empty, use ``[0, ..., n_features]``.
+        """
+        self.add_variable(
+            variable_name,
+            data,
+            group_name=self.EQUALITY_CONSTRAINT_GROUP,
+            components=components,
+        )
+
+    def add_inequality_constraint_variable(
+        self,
+        variable_name: str,
+        data: DataType,
+        components: ComponentType = (),
+    ) -> None:
+        """Add data related to an inequality constraint.
+
+        Args:
+            variable_name: The name of the variable.
+            data: The data,
+                either an array shaped as ``(n_entries, n_features)``,
+                an array shaped as ``(n_entries,)``
+                that will be reshaped as ``(n_entries, 1)``
+                or a scalar that will be converted into an array
+                shaped as ``(n_entries, 1)``.
+            components: The components considered.
+               If empty, use ``[0, ..., n_features]``.
+        """
+        self.add_variable(
+            variable_name,
+            data,
+            group_name=self.INEQUALITY_CONSTRAINT_GROUP,
             components=components,
         )
 
@@ -238,6 +343,56 @@ class OptimizationDataset(Dataset):
         """
         self.add_group(
             self.CONSTRAINT_GROUP,
+            data,
+            variable_names=variable_names,
+            variable_names_to_n_components=variable_names_to_n_components,
+        )
+
+    def add_equality_constraint_group(
+        self,
+        data: DataType,
+        variable_names: StrColumnType = "c",
+        variable_names_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+    ) -> None:
+        """Add the data related to the equality constraint group.
+
+        Args:
+            data: The data.
+            variable_names: The names of the variables.
+                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+            variable_names_to_n_components: The number of components of the variables.
+                If ``variable_names`` is empty,
+                this argument is not considered.
+                If ``None``,
+                assume that all the variables have a single component.
+        """
+        self.add_group(
+            self.EQUALITY_CONSTRAINT_GROUP,
+            data,
+            variable_names=variable_names,
+            variable_names_to_n_components=variable_names_to_n_components,
+        )
+
+    def add_inequality_constraint_group(
+        self,
+        data: DataType,
+        variable_names: StrColumnType = "c",
+        variable_names_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+    ) -> None:
+        """Add the data related to the inequality constraint group.
+
+        Args:
+            data: The data.
+            variable_names: The names of the variables.
+                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+            variable_names_to_n_components: The number of components of the variables.
+                If ``variable_names`` is empty,
+                this argument is not considered.
+                If ``None``,
+                assume that all the variables have a single component.
+        """
+        self.add_group(
+            self.INEQUALITY_CONSTRAINT_GROUP,
             data,
             variable_names=variable_names,
             variable_names_to_n_components=variable_names_to_n_components,

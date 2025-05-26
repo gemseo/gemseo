@@ -21,9 +21,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.constraint_tolerances import ConstraintTolerances
-    from gemseo.algos.optimization_history import OptimizationHistory
-    from gemseo.algos.optimization_result import OptimizationResult
 
 
 @dataclass(frozen=True)
@@ -52,20 +52,11 @@ class OptimizationMetadata:
     tolerances: ConstraintTolerances
     """The equality and inequality constraint tolerances."""
 
-    function_names: list[str]
-    """The names of all the functions."""
+    output_names_to_constraint_names: Mapping[str, list[str]]
+    """The mapping from the output names to the constraint names."""
 
-    inequality_constraints_names: list[str]
-    """The names of the inequality constraints."""
+    feasible_iterations: list[int]
+    """The iterations of the feasible points."""
 
-    equality_constraints_names: list[str]
-    """The names of the equality constraints."""
-
-    original_to_current_names: dict[str, list[str]]
-    """The mapping from the current constraint names to the original ones."""
-
-    optimum: OptimizationHistory.Solution | None
-    """The optimum solution, if any."""
-
-    result: OptimizationResult | None
-    """The results of the optimization."""
+    optimum_iteration: int
+    """The iteration of the optimum solution, if any."""

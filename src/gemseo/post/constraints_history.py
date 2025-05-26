@@ -74,7 +74,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
         line_style = settings.line_style
         add_points = settings.add_points
         all_constraint_names = (
-            self._optimization_metadata.original_to_current_names.keys()
+            self._optimization_metadata.output_names_to_constraint_names.keys()
         )
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
@@ -88,13 +88,14 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
             item
             for variable in constraint_names
             for item in (
-                self._optimization_metadata.original_to_current_names[variable]
+                self._optimization_metadata.output_names_to_constraint_names[variable]
             )
         ]
 
-        constraint_histories, constraint_names, _ = self.database.get_history_array(
-            function_names=constraint_names, with_x_vect=False
-        )
+        constraint_histories = self._dataset.get_view(
+            variable_names=constraint_names
+        ).to_numpy()
+        constraint_names = self._dataset.get_columns(constraint_names)
 
         # harmonization of tables format because constraints can be vectorial
         # or scalars. *vals.shape[0] = iteration, *vals.shape[1] = cstr values
@@ -116,7 +117,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
 
         iterations = arange(len(constraint_histories))
         n_iterations = len(iterations)
-        eq_constraint_names = self._optimization_metadata.equality_constraints_names
+        eq_constraint_names = self._dataset.equality_constraint_names
 
         # for each subplot
         for constraint_history, constraint_name, ax in zip(

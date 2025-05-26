@@ -1,0 +1,1 @@
+The methods ``OptimizationProblem.to_dataset`` and ``Database.to_dataset`` will group functions accordingly to their optimization role with the arguments ``group_functions`` for the ``OptimizationProblem`` class and ``group_variables`` for the ``Database`` class.

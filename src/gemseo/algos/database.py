@@ -57,6 +57,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_repr
@@ -1011,6 +1012,7 @@ class Database(Mapping):
         output_group: str = Dataset.DEFAULT_GROUP,
         gradient_group: str = Dataset.GRADIENT_GROUP,
         optimization_metadata: OptimizationMetadata | None = None,
+        groups_to_variables: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
         """Export the database to a :class:`.Dataset`.
 
@@ -1025,13 +1027,15 @@ class Database(Mapping):
             dataset_class: The dataset class.
             input_group: The name of the group to store the input values.
             output_group: The name of the group to store the output values.
+                This argument is ignored when ``groups_to_variables`` is defined.
             gradient_group: The name of the group to store the gradient values.
+            groups_to_variables: The variable names
+                mapped to their corresponding group to be stored in.
 
         Returns:
             A dataset built from the database.
         """
         dataset_name = name or self.name
-
         # Add database inputs
         input_history = array(self.get_x_vect_history())
         input_space = self.input_space
@@ -1056,21 +1060,24 @@ class Database(Mapping):
             for name in input_space
             for index in range(names_to_sizes[name])
         ]
-
         # Add database outputs
-        output_names = self.get_function_names()
-        self.__update_data_and_columns_for_dataset(
-            data,
-            columns,
-            names_to_types,
-            output_names,
-            n_samples,
-            output_group,
-            False,
-        )
+        if not groups_to_variables:
+            groups_to_variables = {output_group: self.get_function_names()}
+
+        for group_name, variable_names in groups_to_variables.items():
+            self.__update_data_and_columns_for_dataset(
+                data,
+                columns,
+                names_to_types,
+                variable_names,
+                n_samples,
+                group_name,
+                False,
+            )
 
         # Add database output gradients
         if export_gradients:
+            output_names = self.get_function_names()
             self.__update_data_and_columns_for_dataset(
                 data,
                 columns,

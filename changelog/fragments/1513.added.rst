@@ -1,0 +1,1 @@
+All post-processors are based on the ``OptimizationDataset`` class, and can be initiated with it by passing the attribute ``misc['optimization_metadata']`` using the ``OptimizationMetadata`` class. The post-processor ``GradientSensitivity`` still requires the ``OptimizationProblem`` class if the option ``compute_missing_gradient`` is set to true.

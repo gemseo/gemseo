@@ -60,12 +60,18 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
                 and not optimization_metadata.minimize_objective
             ):
                 obj_index = variable_names.index(optimization_metadata.objective_name)
-                variable_names[obj_index] = self._neg_obj_name
+                variable_names[obj_index] = (
+                    optimization_metadata.standardized_objective_name
+                )
 
             if self._change_obj:
-                dataset.transform_data(operator.neg, variable_names=self._neg_obj_name)
+                dataset.transform_data(
+                    operator.neg,
+                    variable_names=optimization_metadata.standardized_objective_name,
+                )
                 dataset.rename_variable(
-                    self._neg_obj_name, optimization_metadata.objective_name
+                    optimization_metadata.standardized_objective_name,
+                    optimization_metadata.objective_name,
                 )
 
         if settings.normalize:
@@ -78,7 +84,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
                 names
                 for variable_name in variable_names
                 for names in (
-                    optimization_metadata.original_to_current_names.get(
+                    optimization_metadata.output_names_to_constraint_names.get(
                         variable_name, [variable_name]
                     )
                 )
