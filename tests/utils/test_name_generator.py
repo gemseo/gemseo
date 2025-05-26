@@ -22,6 +22,9 @@ from re import match
 
 import pytest
 
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.utils.base_name_generator import BaseNameGenerator
 from gemseo.utils.name_generator import NameGenerator
 
@@ -48,3 +51,18 @@ def test_generate_name(naming) -> None:
     else:
         assert name_1 is None
         assert name_2 is None
+
+
+def f(_):
+    """Helper function to use ine CallableParallelExecution."""
+    return NameGenerator(naming_method=NameGenerator.Naming.UUID).generate_name()
+
+
+def test_unique_directory_name_in_multiprocessing():
+    """Test of _generate_unique_directory_name in multiprocessing.
+
+    Reproducer of bug #7 when using UUID1, leading to frequent UUID collisions.
+    """
+    parallel_execution = CallableParallelExecution([f], n_processes=5)
+    out = parallel_execution.execute([None] * 100)
+    assert len(set(out)) == 100
