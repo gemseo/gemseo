@@ -838,6 +838,7 @@ class OptimizationProblem(EvaluationProblem):
         export_gradients: bool = False,
         input_values: Iterable[RealArray] = (),
         opt_naming: bool = True,
+        group_functions: bool = False,
     ) -> Dataset:
         """
         Args:
@@ -852,13 +853,39 @@ class OptimizationProblem(EvaluationProblem):
                 put the design variables in the :attr:`.IODataset.INPUT_GROUP`
                 and the functions and their derivatives in the
                 :attr:`.IODataset.OUTPUT_GROUP`.
+            group_functions: Whether to group the functions by category
+                (:attr:`~.OptimizationDataset.OBJECTIVE_GROUP`,
+                :attr:`~.OptimizationDataset.EQ_CONSTRAINT_GROUP`,
+                :attr:`~.OptimizationDataset.INEQ_CONSTRAINT_GROUP`,
+                :attr:`~.OptimizationDataset.OBSERVABLE_GROUP`).
         """  # noqa: D205, D212
+        groups_to_variables = {}
         if categorize:
             gradient_group = Dataset.GRADIENT_GROUP
             if opt_naming:
                 dataset_class = OptimizationDataset
                 input_group = OptimizationDataset.DESIGN_GROUP
                 output_group = OptimizationDataset.FUNCTION_GROUP
+                if group_functions:
+                    groups_to_variables = {
+                        OptimizationDataset.OBJECTIVE_GROUP: [
+                            self.standardized_objective_name
+                            if self.use_standardized_objective is True
+                            else self.objective.name
+                        ],
+                        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP: [
+                            constraint.name
+                            for constraint in self.constraints.get_equality_constraints()  # noqa: E501
+                        ],
+                        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP: [
+                            constraint.name
+                            for constraint in self.constraints.get_inequality_constraints()  # noqa: E501
+                        ],
+                        OptimizationDataset.OBSERVABLE_GROUP: [
+                            observable.name for observable in self.observables
+                        ],
+                    }
+
             else:
                 dataset_class = IODataset
                 input_group = IODataset.INPUT_GROUP
@@ -876,6 +903,7 @@ class OptimizationProblem(EvaluationProblem):
             output_group=output_group,
             gradient_group=gradient_group,
             optimization_metadata=self._get_optimization_metadata(),
+            groups_to_variables=groups_to_variables,
         )
 
     @property
@@ -999,22 +1027,24 @@ class OptimizationProblem(EvaluationProblem):
         Returns:
             The optimization metadata.
         """
+        feasible_points_x_hist = self.history.feasible_points[0]
+        feasible_iterations = [
+            self.database.get_iteration(feasible_point)
+            for feasible_point in feasible_points_x_hist
+        ]
+        optimum_iteration = (
+            self.database.get_iteration(self.history.optimum.design)
+            if self.database
+            else None
+        )
+
         return OptimizationMetadata(
             objective_name=self.objective_name,
             standardized_objective_name=self.standardized_objective_name,
             minimize_objective=self.minimize_objective,
             use_standardized_objective=self.use_standardized_objective,
             tolerances=self.tolerances,
-            function_names=self.function_names,
-            inequality_constraints_names=[
-                constraint.name
-                for constraint in self.constraints.get_inequality_constraints()
-            ],
-            equality_constraints_names=[
-                constraint.name
-                for constraint in self.constraints.get_equality_constraints()
-            ],
-            optimum=(self.history.optimum if self.database else None),
-            original_to_current_names=self.constraints.original_to_current_names,
-            result=self.solution,
+            output_names_to_constraint_names=self.constraints.original_to_current_names,
+            feasible_iterations=feasible_iterations,
+            optimum_iteration=optimum_iteration,
         )

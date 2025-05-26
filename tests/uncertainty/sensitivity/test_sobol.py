@@ -21,14 +21,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import Union
 
 import pytest
 from matplotlib.figure import Figure
 from numpy import array
 from numpy import isnan
-from numpy import ndarray
 from numpy import pi
 from numpy import sign
 from numpy import sin
@@ -56,24 +54,16 @@ StatisticsType = tuple[
 ]
 
 
-@pytest.fixture(scope="module")
-def py_func() -> Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]:
-    """The Ishigami function."""
-
-    def ishigami(x1, x23):
-        y = array([sin(x1[0]) + 7 * sin(x23[0]) ** 2 + 0.1 * x23[1] ** 4 * sin(x1[0])])
-        z = array([y[0], y[0]])
-        return y, z
-
-    return ishigami
+def ishigami(x1, x23):
+    y = array([sin(x1[0]) + 7 * sin(x23[0]) ** 2 + 0.1 * x23[1] ** 4 * sin(x1[0])])
+    z = array([y[0], y[0]])
+    return y, z
 
 
 @pytest.fixture(scope="module")
-def discipline(
-    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]],
-) -> AutoPyDiscipline:
+def discipline() -> AutoPyDiscipline:
     """The discipline of interest."""
-    return AutoPyDiscipline(py_func=py_func, use_arrays=True)
+    return AutoPyDiscipline(py_func=ishigami, use_arrays=True)
 
 
 @pytest.fixture(scope="module")
@@ -617,7 +607,7 @@ def test_from_samples(sobol, tmp_wd):
 
 
 def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_wd):
-    """Check the instantiation from samples with control variates.."""
+    """Check the instantiation from samples with control variates."""
     file_path = Path("samples.pkl")
     sobol_cv.dataset.to_pickle(file_path)
     new_sobol_cv = SobolAnalysis(samples=file_path)

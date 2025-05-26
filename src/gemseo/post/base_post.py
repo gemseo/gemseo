@@ -88,6 +88,10 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     __figures: dict[str, Figure | DatasetPlot]
     """The mapping from figure names or nameless figure counters to figures."""
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = False
+    """Whether to export the jacobian data to the dataset if an ``OptimizationProblem``
+    is passed as an input."""
+
     def __init__(
         self,
         opt_problem: OptimizationProblem | OptimizationDataset,
@@ -102,7 +106,9 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             isinstance(opt_problem, OptimizationProblem)
             and len(opt_problem.database) > 0
         ):
-            self._dataset = opt_problem.to_dataset()
+            self._dataset = opt_problem.to_dataset(
+                export_gradients=self._USE_JACOBIAN_DATA, group_functions=True
+            )
             self.database = opt_problem.database
         elif isinstance(opt_problem, OptimizationDataset):
             self._dataset = opt_problem
@@ -115,8 +121,6 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             raise ValueError(msg)
 
         self._optimization_metadata = self._dataset.misc["optimization_metadata"]
-
-        self._neg_obj_name = f"-{self._optimization_metadata.objective_name}"
 
         # The data required to eventually rebuild the plot in another framework.
         self.materials_for_plotting = {}

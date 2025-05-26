@@ -36,6 +36,7 @@ from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ones_like
 
+from gemseo.algos.database import Database
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.hessians import SR1Approx
@@ -47,19 +48,22 @@ class HessianHistory(BasePost):
 
     Settings: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+
     def _plot(self, settings: HessianHistory_Settings) -> None:
-        if self.database.check_output_history_is_empty(
-            self.database.get_gradient_name(
-                self._optimization_metadata.standardized_objective_name
-            )
-        ):
+        obj_grad_name = Database.get_gradient_name(
+            self._optimization_metadata.standardized_objective_name
+        )
+        try:
+            self._dataset.get_view(variable_names=obj_grad_name)
+        except KeyError:
             msg = (
                 "The HessianHistory cannot be plotted "
                 "because the history of the gradient of the objective is empty."
             )
-            raise ValueError(msg)
+            raise ValueError(msg) from None
 
-        diag = SR1Approx(self.database).build_approximation(
+        diag = SR1Approx(self._dataset).build_approximation(
             funcname=self._optimization_metadata.standardized_objective_name,
             save_diag=True,
         )[1]
@@ -90,7 +94,7 @@ class HessianHistory(BasePost):
         ax.set_yticklabels(
             self._get_design_variable_names(variable_names, simplify=True)
         )
-        n_iterations = len(self.database)
+        n_iterations = len(self._dataset)
         ax.set_xticks(range(n_iterations))
         ax.set_xticklabels(range(1, n_iterations + 1))
         ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))

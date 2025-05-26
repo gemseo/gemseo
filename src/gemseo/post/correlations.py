@@ -33,6 +33,7 @@ from matplotlib import pyplot as plt
 from matplotlib import ticker
 from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
+from numpy.core.shape_base import hstack
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.correlations_settings import Correlations_Settings
@@ -71,11 +72,16 @@ class Correlations(BasePost[Correlations_Settings]):
         n_plots_y = settings.n_plots_y
         optimization_metadata = self._optimization_metadata
 
-        all_func_names = optimization_metadata.function_names
+        all_func_names = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
         if not func_names:
             func_names = all_func_names
 
-        dict_ = optimization_metadata.original_to_current_names
+        dict_ = optimization_metadata.output_names_to_constraint_names
         func_names = [
             names
             for func_name in func_names
@@ -97,9 +103,16 @@ class Correlations(BasePost[Correlations_Settings]):
             )
             raise ValueError(msg)
 
-        variable_history, variable_names, _ = self.database.get_history_array(
-            function_names=func_names, add_missing_tag=True, missing_tag=0.0
+        dataset = self._dataset
+        variable_history = dataset.get_view(variable_names=func_names).to_numpy()
+        variable_history[np.isnan(variable_history)] = 0.0
+        x_history = dataset.design_dataset.to_numpy()
+        variable_history = hstack((variable_history, x_history))
+        x_names = dataset.get_columns(
+            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
         )
+        variable_names = dataset.get_columns(func_names)
+        variable_names.extend(x_names)
         variable_names = self.__sort_variable_names(variable_names, func_names)
 
         if (

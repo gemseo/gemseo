@@ -70,7 +70,7 @@ def test_function_error(problem) -> None:
         ValueError,
         match=(
             r"The names \[.?'foo'\] are not names of constraints "
-            r"stored in the database\."
+            r"stored in the dataset\."
         ),
     ):
         post.execute(save=False, constraint_names=["foo"])

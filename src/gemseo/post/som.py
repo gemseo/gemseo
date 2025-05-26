@@ -27,7 +27,9 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
+import minisom
 from matplotlib import pyplot as plt
+from minisom import MiniSom
 from numpy import array
 from numpy import bincount
 from numpy import float64
@@ -46,7 +48,6 @@ from numpy import zeros
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.som_settings import SOM_Settings
-from gemseo.third_party import sompy
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -69,19 +70,18 @@ class SOM(BasePost[SOM_Settings]):
 
     @staticmethod
     def __build_som_from_vars(
-        x_vars: RealArray,
+        data: RealArray,
         som_grid_nx: int = 5,
         som_grid_ny: int = 5,
-        initmethod: str = "pca",
-        verbose: str = "off",
-    ) -> sompy.SOM:
+        n_iterations: int = 1000,
+        verbose: bool = False,
+    ) -> minisom.MiniSom:
         """Builds the SOM from the design variables history.
 
         Args:
-            x_vars: The design variables history (n_iter,n_dv).
+            data: The data history (n_iter,n_dv).
             som_grid_nx: The number of neurons in the x direction.
             som_grid_ny: The number of neurons in the y direction.
-            initmethod: The initialization method for the SOM.
             verbose: The verbose for SOM training.
 
         Returns:
@@ -90,14 +90,11 @@ class SOM(BasePost[SOM_Settings]):
         LOGGER.info("Building Self Organizing Map from optimization history:")
         LOGGER.info("    Number of neurons in x direction = %s", str(som_grid_nx))
         LOGGER.info("    Number of neurons in y direction = %s", str(som_grid_ny))
-        var_som = sompy.SOM(
-            "som",
-            x_vars,
-            mapsize=[som_grid_ny + 1, som_grid_nx + 1],
-            initmethod=initmethod,
-        )
-        var_som.init_map()
-        var_som.train(verbose=verbose)
+
+        var_som = MiniSom(som_grid_nx + 1, som_grid_ny + 1, data.shape[1])
+        var_som.pca_weights_init(data)
+        var_som.train(data, n_iterations, verbose=verbose)
+
         return var_som
 
     def _plot(self, settings: SOM_Settings) -> None:
@@ -107,10 +104,19 @@ class SOM(BasePost[SOM_Settings]):
 
         criteria = [
             self._optimization_metadata.standardized_objective_name,
-            *(name for name in self._optimization_metadata.original_to_current_names),
+            *(
+                name
+                for name in self._optimization_metadata.output_names_to_constraint_names
+            ),
         ]
-        all_data = self.database.get_function_names()
-        # Ensure that the data is available in the database
+        # all_data = self.database.get_function_names()
+        all_data = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        # Ensure that the data is available in the dataset
         for criterion in tuple(criteria):
             if criterion not in all_data:
                 criteria.remove(criterion)
@@ -119,12 +125,17 @@ class SOM(BasePost[SOM_Settings]):
         subplot_number = 0
         self.__compute(n_x, n_y)
         for criterion in criteria:
-            f_hist, _ = self.database.get_history([
-                "SOM_i",
-                "SOM_j",
-                "SOM_indx",
-                criterion,
-            ])
+            f_hist = self._dataset.get_view(
+                variable_names=[
+                    "SOM_i",
+                    "SOM_j",
+                    "SOM_indx",
+                    criterion,
+                ]
+            )
+
+            f_hist = [list(element) for element in f_hist.to_numpy(dtype=object)]
+
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
                 for _ in range(dim_val):
@@ -140,12 +151,17 @@ class SOM(BasePost[SOM_Settings]):
 
         index = 0
         for criterion in criteria:
-            f_hist, _ = self.database.get_history([
-                "SOM_i",
-                "SOM_j",
-                "SOM_indx",
-                criterion,
-            ])
+            f_hist = list(
+                self._dataset.get_view(
+                    variable_names=[
+                        "SOM_i",
+                        "SOM_j",
+                        "SOM_indx",
+                        criterion,
+                    ]
+                ).to_numpy(dtype=object)
+            )
+
             if isinstance(f_hist[0][3], ndarray):
                 for k in range(f_hist[0][3].size):
                     self.__plot_som_from_scalar_data(
@@ -223,7 +239,7 @@ class SOM(BasePost[SOM_Settings]):
         if annotate:
             crit_format = "%1.2g"
             for i in range(mat_ij.shape[0]):
-                for j in range(mat_ij.shape[0]):
+                for j in range(mat_ij.shape[1]):
                     _ = ax.text(
                         j,
                         i,
@@ -231,7 +247,7 @@ class SOM(BasePost[SOM_Settings]):
                         ha="center",
                         va="center",
                         color="w",
-                        fontsize=7,
+                        fontsize=12,
                     )
 
         ax.set_title(criteria, fontsize=12)
@@ -251,25 +267,47 @@ class SOM(BasePost[SOM_Settings]):
             som_grid_nx: The number of neurons in the x direction.
             som_grid_ny: The number of neurons in the y direction.
         """
-        x_history = self.database.get_x_vect_history()
-        x_vars = array(x_history).real
-        som = self.__build_som_from_vars(x_vars, som_grid_nx, som_grid_ny)
-        som_cluster_index = som.project_data(x_vars)
-        som_cluster_xy = som.ind_to_xy(som_cluster_index)
-        som_coord = array(som_cluster_xy, dtype=int32)
-        coord_2d_offset = self.__coord2d_to_coords_offsets(som_coord)
+        function_names = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        design_names = self._dataset.design_variable_names
+        data = self._dataset.get_view(
+            variable_names=design_names + function_names
+        ).to_numpy()
+        som = self.__build_som_from_vars(data, som_grid_nx, som_grid_ny)
+        bmu_coords = array([som.winner(datapoint) for datapoint in data])
+        som_shape = som.get_weights().shape[:2]
+        cluster_indices = array([x * som_shape[1] + y for x, y in bmu_coords])
+        coord_2d_offset = self.__coord2d_to_coords_offsets(bmu_coords)
         self.materials_for_plotting["SOM"] = coord_2d_offset
-        for i, x_vars in enumerate(x_history):
-            self.database.store(
-                x_vars,
-                {
-                    "SOM_indx": som_cluster_index[i],
-                    "SOM_i": som_coord[i, 0],
-                    "SOM_j": som_coord[i, 1],
-                    "SOM_x": coord_2d_offset[i, 0],
-                    "SOM_y": coord_2d_offset[i, 1],
-                },
-            )
+        self._dataset.add_variable(
+            variable_name="SOM_indx",
+            data=cluster_indices,
+            group_name=self._dataset.FUNCTION_GROUP,
+        )
+        self._dataset.add_variable(
+            variable_name="SOM_i",
+            data=bmu_coords[:, 0],
+            group_name=self._dataset.FUNCTION_GROUP,
+        )
+        self._dataset.add_variable(
+            variable_name="SOM_j",
+            data=bmu_coords[:, 1],
+            group_name=self._dataset.FUNCTION_GROUP,
+        )
+        self._dataset.add_variable(
+            variable_name="SOM_x",
+            data=coord_2d_offset[:, 0],
+            group_name=self._dataset.FUNCTION_GROUP,
+        )
+        self._dataset.add_variable(
+            variable_name="SOM_y",
+            data=coord_2d_offset[:, 1],
+            group_name=self._dataset.FUNCTION_GROUP,
+        )
 
     @staticmethod
     def __coord2d_to_coords_offsets(

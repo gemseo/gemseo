@@ -28,6 +28,7 @@ import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from numpy import array
+from numpy import hstack
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
@@ -52,9 +53,25 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
     def _plot(self, settings: ParallelCoordinates_Settings) -> None:
         optimization_metadata = self._optimization_metadata
         input_space = self._dataset.misc["input_space"]
-        variable_history, variable_names, _ = self.database.get_history_array(
-            function_names=optimization_metadata.function_names
+        dataset = self._dataset
+        all_function_names = (
+            dataset.equality_constraint_names
+            + dataset.inequality_constraint_names
+            + dataset.objective_names
+            + dataset.observable_names
         )
+        variable_history = dataset.get_view(
+            variable_names=all_function_names
+        ).to_numpy()
+        x_history = dataset.design_dataset.to_numpy()
+        variable_history = hstack((variable_history, x_history))
+        variable_names = dataset.get_columns(all_function_names)
+        x_names = dataset.get_columns(
+            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
+        )
+        # x_names should be the actual names of the designs.
+        x_names = [f"x_{i + 1}" for i in range(len(x_names))]
+        variable_names.extend(x_names)
         names_to_sizes = input_space.variable_sizes
         design_names = [
             repr_variable(name, i, names_to_sizes[name])

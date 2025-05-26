@@ -36,10 +36,8 @@ from gemseo.post.core.colormaps import RG_SEISMIC
 from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
 
 
@@ -61,10 +59,10 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
 
     def _plot(self, settings: ObjConstrHist_Settings) -> None:
         constraint_names = settings.constraint_names
-
+        dataset = self._dataset
         # 0. Initialize the figure.
         fig, ax1 = plt.subplots(1, 1, figsize=settings.fig_size)
-        n_iterations = len(self.database)
+        n_iterations = len(dataset)
         ax1.set_xticks(range(n_iterations))
         ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
         mng = plt.get_current_fig_manager()
@@ -72,12 +70,12 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         mng.resize(700, 1000)
 
         # 1. Plot the objective history versus the iterations with a curve.
-        problem = self.optimization_problem
         optimization_metadata = self._optimization_metadata
         objective_name = optimization_metadata.standardized_objective_name
-        obj_history, x_history = self.database.get_function_history(
-            objective_name, with_x_vect=True
+        obj_history = (
+            dataset.get_view(variable_names=objective_name).to_numpy().squeeze()
         )
+        x_history = dataset.design_dataset
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
         if not (
             optimization_metadata.minimize_objective
@@ -101,10 +99,10 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         #    with green-white-red color map.
         # 2.a. Get inequality and equality constraint histories.
         ineq_history, ineq_names = self.__get_constraints(
-            problem.constraints.get_inequality_constraints(), constraint_names
+            dataset.inequality_constraint_names, constraint_names
         )
         eq_history, eq_names = self.__get_constraints(
-            problem.constraints.get_equality_constraints(), constraint_names
+            dataset.equality_constraint_names, constraint_names
         )
         # 2.b. Concatenate the inequality and equality constraint histories.
         #      NB: Take absolute values of equality constraints for color map.
@@ -157,7 +155,7 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
 
     def __get_constraints(
         self,
-        constraints: Iterable[MDOFunction],
+        constraints: Sequence[str],
         all_constraint_names: Sequence[str],
     ) -> tuple[NumberArray, list[str]]:
         """Return the constraints with formatted shape.
@@ -170,15 +168,18 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         Returns:
             The history and the names of constraints.
         """
-        constraint_names = []
-        for constraint in constraints:
-            if not all_constraint_names or constraint.name in all_constraint_names:
-                constraint_names.append(constraint.name)  # noqa: PERF401
+        constraint_names = [
+            constraint
+            for constraint in constraints
+            if not all_constraint_names or constraint in all_constraint_names
+        ]
 
         if constraint_names:
-            constraint_history, constraint_names, _ = self.database.get_history_array(
-                function_names=constraint_names, with_x_vect=False
-            )
+            constraint_history = self._dataset.get_view(
+                variable_names=constraint_names
+            ).to_numpy()
+            constraint_names = self._dataset.get_columns(constraint_names)
+
         else:
             constraint_history, constraint_names = np.array([]), []
 

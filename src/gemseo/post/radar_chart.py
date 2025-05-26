@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Pierre-Jean Barjhoux
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Plot the constraints on a radar chart at a given database index."""
+"""Plot the constraints on a radar chart at a given dataset index."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from gemseo.post.radar_chart_settings import RadarChart_Settings
 
 
 class RadarChart(BasePost[RadarChart_Settings]):
-    """Plot the constraints on a radar chart at a given database index."""
+    """Plot the constraints on a radar chart at a given dataset index."""
 
     Settings: ClassVar[type[RadarChart_Settings]] = RadarChart_Settings
 
@@ -40,39 +40,55 @@ class RadarChart(BasePost[RadarChart_Settings]):
         """
         Raises:
             ValueError: When a requested name is not a constraint
-                or when the requested iteration is neither a database index
+                or when the requested iteration is neither a dataset index
                 nor the tag ``"opt"``.
         """  # noqa: D205, D212, D415
         constraint_names = settings.constraint_names
+        constraint_names = (
+            list(constraint_names)
+            if not isinstance(constraint_names, list)
+            else constraint_names
+        )
         iteration = settings.iteration
+        constraint_names_mapping = (
+            self._optimization_metadata.output_names_to_constraint_names
+        )
 
         if constraint_names:
-            constraint_names = self.optimization_problem.get_function_names(
-                constraint_names
-            )
+            names = []
+            for constraint_name in constraint_names:
+                if constraint_name in constraint_names_mapping:
+                    names.extend(constraint_names_mapping[constraint_name])
+                else:
+                    names.append(constraint_name)
+            constraint_names = names
             invalid_names = sorted(
                 set(constraint_names)
-                - set(self.optimization_problem.constraints.get_names())
+                - set(
+                    self._dataset.inequality_constraint_names
+                    + self._dataset.equality_constraint_names
+                )
             )
             if invalid_names:
                 msg = (
                     f"The names {invalid_names} are not names of constraints "
-                    "stored in the database."
+                    "stored in the dataset."
                 )
                 raise ValueError(msg)
         else:
-            constraint_names = self.optimization_problem.constraints.get_names()
-
+            constraint_names = (
+                self._dataset.equality_constraint_names
+                + self._dataset.inequality_constraint_names
+            )
         # optimum_index is the zero-based position of the optimum.
         # while an iteration is a one-based position.
-        assert self.optimization_problem.solution is not None
-        assert self.optimization_problem.solution.optimum_index is not None
-        optimum_iteration = self.optimization_problem.solution.optimum_index + 1
+        assert self._optimization_metadata.optimum_iteration is not None
+        optimum_iteration = self._optimization_metadata.optimum_iteration
         if iteration is None:
             iteration = optimum_iteration
         is_optimum = iteration == optimum_iteration
-
-        n_iterations = len(self.database)
+        dataset = self._dataset
+        n_iterations = len(dataset)
         if abs(iteration) not in range(1, n_iterations + 1):
             msg = (
                 f"The requested iteration {iteration} is neither "
@@ -84,9 +100,9 @@ class RadarChart(BasePost[RadarChart_Settings]):
         if iteration < 0:
             iteration = n_iterations + iteration + 1
 
-        constraint_values, constraint_names, _ = self.database.get_history_array(
-            function_names=constraint_names, with_x_vect=False
-        )
+        constraint_values = dataset.get_view(variable_names=constraint_names).to_numpy()
+        constraint_names = dataset.get_columns(constraint_names)
+
         # "-1" because ndarray uses zero-based indexing and iteration is one-based.
         constraint_values = constraint_values[iteration - 1, :].ravel()
 

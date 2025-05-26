@@ -55,6 +55,8 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
 
     Settings: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+
     def _plot(self, settings: QuadApprox_Settings) -> None:
         function = settings.function
         func_index = settings.func_index
@@ -72,8 +74,10 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
                 b_mat *= -1
                 function = optimization_metadata.standardized_objective_name
         else:
-            if function in optimization_metadata.original_to_current_names:
-                function = optimization_metadata.original_to_current_names[function][0]
+            if function in optimization_metadata.output_names_to_constraint_names:
+                function = optimization_metadata.output_names_to_constraint_names[
+                    function
+                ][0]
 
             b_mat, grad_opt = self.__build_approx(function, func_index)
 
@@ -103,7 +107,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
              The approximation.
         """
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
-        b_mat, _, _, grad_opt = SR1Approx(self.database).build_approximation(
+        b_mat, _, _, grad_opt = SR1Approx(self._dataset).build_approximation(
             function,
             at_most_niter=int(1.5 * self._dataset.misc["input_space"].dimension),
             return_x_grad=True,

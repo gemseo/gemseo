@@ -37,8 +37,8 @@ SELLAR_PATH = Path(__file__).parent / "modified_sellar_opt_pb.h5"
 TEST_PARAMETERS = {
     "SOM_Power2_annotated": (True, POWER2_PATH, ["SOM_Power2_annotated"]),
     "SOM_Power2_not_annotated": (False, POWER2_PATH, ["SOM_Power2_not_annotated"]),
-    "SOM_Sellar_annotated": (False, SELLAR_PATH, ["SOM_Sellar_not_annotated"]),
-    "SOM_Sellar_not_annotated": (False, SELLAR_PATH, ["SOM_Sellar_annotated"]),
+    "SOM_Sellar_annotated": (True, SELLAR_PATH, ["SOM_Sellar_annotated"]),
+    "SOM_Sellar_not_annotated": (False, SELLAR_PATH, ["SOM_Sellar_not_annotated"]),
 }
 
 

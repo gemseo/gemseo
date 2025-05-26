@@ -45,6 +45,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+import numpy as np
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import atleast_2d
@@ -65,11 +66,13 @@ from numpy.linalg import inv
 from numpy.linalg import norm
 from scipy.optimize import leastsq
 
+from gemseo.algos.database import Database
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.datasets.optimization_dataset import OptimizationDataset
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,7 +80,7 @@ LOGGER = logging.getLogger(__name__)
 class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
     r"""Approximation of the Hessian matrix from an optimization history."""
 
-    history: Database
+    history: Database | OptimizationDataset
     """The optimization history containing input values, output values and Jacobian
     values."""
 
@@ -103,7 +106,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        history: Database,
+        history: Database | OptimizationDataset,
     ) -> None:
         """
         Args:
@@ -159,9 +162,23 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 is not consistent with the shape of the history of the gradient
                 or the optimization history size is insufficient.
         """
-        grad_hist, x_hist = self.history.get_gradient_history(
-            funcname, with_x_vect=True
-        )
+        if isinstance(self.history, Database):
+            grad_hist, x_hist = self.history.get_gradient_history(
+                funcname, with_x_vect=True
+            )
+        else:
+            x_hist = self.history.get_view(
+                group_names=self.history.DESIGN_GROUP
+            ).to_numpy()
+            grad_name = Database.get_gradient_name(funcname)
+            grad_hist = self.history.get_view(variable_names=grad_name).to_numpy()
+            if grad_hist.shape != x_hist.shape:
+                shape = (grad_hist.shape[1] - x_hist.shape[1], len(x_hist), -1)
+                grad_hist = grad_hist.reshape(shape)
+            valid_mask = ~np.isnan(grad_hist).any(axis=tuple(range(1, grad_hist.ndim)))
+
+            grad_hist = grad_hist[valid_mask]
+            x_hist = x_hist[valid_mask]
         if normalize_design_space:
             (
                 x_hist,
@@ -236,7 +253,14 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
 
         self.x_ref = x_hist[-1]
         self.fgrad_ref = grad_hist[-1]
-        self.f_ref = array(self.history.get_function_history(funcname))[:last_iter][-1]
+        if isinstance(self.history, Database):
+            self.f_ref = array(self.history.get_function_history(funcname))[:last_iter][
+                -1
+            ]
+        else:
+            self.f_ref = self.history.get_view(variable_names=funcname).to_numpy()[
+                :last_iter
+            ][-1]
         return x_hist, grad_hist, n_iterations, input_dimension
 
     @staticmethod
