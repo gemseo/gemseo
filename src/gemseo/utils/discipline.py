@@ -643,3 +643,21 @@ def get_discipline_variable_properties(
             )
 
     return input_names_to_properties, output_names_to_properties
+
+
+def update_default_input_values(
+    disciplines: Iterable[Discipline],
+    input_names_to_default_values: StrKeyMapping,
+) -> None:
+    """Update the default values of certain inputs of given disciplines.
+
+    Args:
+        disciplines: The disciplines.
+        input_names_to_default_values: The mapping
+            between the names of the input variables and their default input values.
+    """
+    input_names = set(input_names_to_default_values)
+    for discipline in disciplines:
+        defaults = discipline.io.input_grammar.defaults
+        for input_name in set(discipline.io.input_grammar).intersection(input_names):
+            defaults[input_name] = input_names_to_default_values[input_name]
