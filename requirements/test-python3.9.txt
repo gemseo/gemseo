@@ -124,7 +124,7 @@ pytest==8.3.5
     #   pytest-xdist
 pytest-cov==6.1.1
     # via gemseo (pyproject.toml)
-pytest-xdist==3.6.1
+pytest-xdist==3.7.0
     # via gemseo (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
@@ -182,7 +182,7 @@ xdsmjs==2.0.0
     # via gemseo (pyproject.toml)
 xxhash==3.5.0
     # via gemseo (pyproject.toml)
-zipp==3.21.0
+zipp==3.22.0
     # via
     #   importlib-metadata
     #   importlib-resources
