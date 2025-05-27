@@ -172,5 +172,5 @@ xdsmjs==1.0.0
     # via gemseo (pyproject.toml)
 xxhash==3.0.0
     # via gemseo (pyproject.toml)
-zipp==3.21.0
+zipp==3.22.0
     # via importlib-metadata
