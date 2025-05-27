@@ -10,6 +10,7 @@ RUN  dnf -y update \
                     python311 \
                     python312 \
                     graphviz \
+                    git \
   && dnf clean all \
   && rm -rf /var/cache/dnf
 
