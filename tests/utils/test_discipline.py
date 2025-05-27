@@ -30,6 +30,7 @@ from gemseo.utils.discipline import VariableRenamer
 from gemseo.utils.discipline import VariableTranslation
 from gemseo.utils.discipline import get_discipline_variable_properties
 from gemseo.utils.discipline import rename_discipline_variables
+from gemseo.utils.discipline import update_default_input_values
 
 
 @pytest.fixture(scope="module")
@@ -340,3 +341,12 @@ def test_get_discipline_variable_properties():
             current_name_without_namespace="baz",
             description="",
         )
+
+
+def test_update_default_input_values():
+    """Check that update_default_input_values works correctly."""
+    discipline_1 = AnalyticDiscipline({"y1": "a+b"})
+    discipline_2 = AnalyticDiscipline({"y2": "a+b+c"})
+    update_default_input_values([discipline_1, discipline_2], {"a": 1.0, "c": 2.0})
+    assert discipline_1.io.input_grammar.defaults == {"a": 1.0, "b": 0.0}
+    assert discipline_2.io.input_grammar.defaults == {"a": 1.0, "b": 0.0, "c": 2.0}
