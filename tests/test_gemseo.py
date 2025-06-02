@@ -499,6 +499,13 @@ def test_create_discipline() -> None:
         create_discipline("SobieskiMission", **options_fail)
 
 
+def test_create_discipline_with_positional_arguments():
+    """Test create_discipline for disciplines with positional arguments."""
+    discipline = create_discipline("AnalyticDiscipline", {"y": "2*x"})
+    discipline.execute({"x": array([3.0])})
+    assert discipline.io.data["y"] == 6.0
+
+
 def test_create_surrogate() -> None:
     """Test the creation of a surrogate discipline."""
     disc = SobieskiMission()

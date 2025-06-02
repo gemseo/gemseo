@@ -1,0 +1,1 @@
+``create_discipline`` and ``DisciplineFactory.create`` accept positional arguments, which makes it possible to create disciplines with positional arguments according to their signatures, e.g. ``create_discipline("AnalyticDiscipline", {"y": "2*x"})``.
