@@ -938,14 +938,19 @@ def configure_logger(
 # TODO: rename to create_disciplines (plural)
 def create_discipline(
     discipline_name: str | Iterable[str],
-    **options: Any,
+    *args: Any,
+    **kwargs: Any,
 ) -> Discipline | list[Discipline]:
     """Instantiate one or more disciplines.
 
     Args:
-        discipline_name: Either the name of a discipline
-            or the names of several disciplines.
-        **options: The options to be passed to the disciplines constructors.
+        discipline_name: Either the class name of a discipline
+            or the class names of several disciplines.
+        *args: The required arguments of the disciplines' constructors.
+        **kwargs: The keyword arguments,
+            including
+            both the keyword arguments to be passed to the disciplines' constructors
+            and the keyword arguments that are generic to all the disciplines.
 
     Returns:
         The disciplines.
@@ -963,9 +968,9 @@ def create_discipline(
 
     factory = DisciplineFactory()
     if isinstance(discipline_name, str):
-        return factory.create(discipline_name, **options)
+        return factory.create(discipline_name, *args, **kwargs)
 
-    return [factory.create(d_name, **options) for d_name in discipline_name]
+    return [factory.create(d_name, *args, **kwargs) for d_name in discipline_name]
 
 
 def import_discipline(
