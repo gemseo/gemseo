@@ -33,12 +33,19 @@ pytestmark = pytest.mark.skipif(
 
 POWER2_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SELLAR_PATH = Path(__file__).parent / "modified_sellar_opt_pb.h5"
+SOBIESKI_PATH = Path(__file__).parent / "sobieski_all_gradients.h5"
 
 TEST_PARAMETERS = {
     "SOM_Power2_annotated": (True, POWER2_PATH, ["SOM_Power2_annotated"]),
     "SOM_Power2_not_annotated": (False, POWER2_PATH, ["SOM_Power2_not_annotated"]),
     "SOM_Sellar_annotated": (True, SELLAR_PATH, ["SOM_Sellar_annotated"]),
     "SOM_Sellar_not_annotated": (False, SELLAR_PATH, ["SOM_Sellar_not_annotated"]),
+    "SOM_Sobieski_annotated": (True, SOBIESKI_PATH, ["SOM_Sobieski_annotated"]),
+    "SOM_Sobieski_not_annotated": (
+        False,
+        SOBIESKI_PATH,
+        ["SOM_Sobieski_not_annotated"],
+    ),
 }
 
 

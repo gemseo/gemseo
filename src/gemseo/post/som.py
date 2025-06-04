@@ -28,6 +28,7 @@ from typing import ClassVar
 from typing import Final
 
 import minisom
+import numpy as np
 from matplotlib import pyplot as plt
 from minisom import MiniSom
 from numpy import array
@@ -125,16 +126,23 @@ class SOM(BasePost[SOM_Settings]):
         subplot_number = 0
         self.__compute(n_x, n_y)
         for criterion in criteria:
-            f_hist = self._dataset.get_view(
-                variable_names=[
-                    "SOM_i",
-                    "SOM_j",
-                    "SOM_indx",
-                    criterion,
-                ]
+            f_hist = list(
+                self._dataset.get_view(
+                    variable_names=[
+                        "SOM_i",
+                        "SOM_j",
+                        "SOM_indx",
+                        criterion,
+                    ]
+                ).to_numpy(dtype=object)
             )
 
-            f_hist = [list(element) for element in f_hist.to_numpy(dtype=object)]
+            if len(f_hist[0]) > 4:
+                for i in range(len(f_hist)):
+                    f_hist[i] = np.array(
+                        [f_hist[i][0], f_hist[i][1], f_hist[i][2], f_hist[i][3:]],
+                        dtype=object,
+                    )
 
             if isinstance(f_hist[0][3], ndarray):
                 dim_val = f_hist[0][3].size
@@ -161,6 +169,12 @@ class SOM(BasePost[SOM_Settings]):
                     ]
                 ).to_numpy(dtype=object)
             )
+            if len(f_hist[0]) > 4:
+                for i in range(len(f_hist)):
+                    f_hist[i] = np.array(
+                        [f_hist[i][0], f_hist[i][1], f_hist[i][2], f_hist[i][3:]],
+                        dtype=object,
+                    )
 
             if isinstance(f_hist[0][3], ndarray):
                 for k in range(f_hist[0][3].size):
