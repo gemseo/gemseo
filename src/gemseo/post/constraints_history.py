@@ -92,9 +92,9 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
             )
         ]
 
-        constraint_histories = self._dataset.get_view(
-            variable_names=constraint_names
-        ).to_numpy()
+        constraint_histories = (
+            self._dataset.get_view(variable_names=constraint_names).dropna().to_numpy()
+        )
         constraint_names = self._dataset.get_columns(constraint_names)
 
         # harmonization of tables format because constraints can be vectorial

@@ -1031,10 +1031,11 @@ class OptimizationProblem(EvaluationProblem):
         feasible_iterations = [
             self.database.get_iteration(feasible_point)
             for feasible_point in feasible_points_x_hist
+            if feasible_point in self.database
         ]
         optimum_iteration = (
             self.database.get_iteration(self.history.optimum.design)
-            if self.database
+            if self.database and self.history.optimum.design in self.database
             else None
         )
 

@@ -103,12 +103,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         )
         normalize = self._dataset.misc["input_space"].normalize_vect
         opt_design = self._dataset.design_dataset.loc[
-            self._optimization_metadata.optimum_iteration
-        ].values
-        x_xstar = norm(
-            normalize(x_history) - normalize(opt_design),
-            axis=1,
-        )
+            self._optimization_metadata.optimum_iteration or 1
+        ].to_numpy()
+        x_xstar = norm(normalize(x_history) - normalize(opt_design), axis=1)
 
         self._create_variables_plot(
             x_history_to_display, variable_names, settings.fig_size, x_xstar
@@ -166,7 +163,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         """
         dataset = self._dataset
         f_hist = dataset.get_view(variable_names=function_name).to_numpy().squeeze()
-        x_hist = dataset.design_dataset.to_numpy()
+        x_hist = dataset.design_dataset.to_numpy(dtype=float)
         f_hist = array(f_hist).real
         complete_x_hist = array(x_hist).real
 
@@ -363,8 +360,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
         normalize = self._dataset.misc["input_space"].normalize_vect
         opt_design = self._dataset.design_dataset.loc[
-            self._optimization_metadata.optimum_iteration
-        ].values
+            self._optimization_metadata.optimum_iteration or 1
+        ].to_numpy(dtype=float)
         x_xstar = norm(
             normalize(x_history) - normalize(opt_design),
             axis=1,
