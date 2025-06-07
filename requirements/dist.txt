@@ -80,7 +80,7 @@ secretstorage==3.3.3
     # via keyring
 twine==6.1.0
     # via -r requirements/dist.in
-typing-extensions==4.13.2
+typing-extensions==4.14.0
     # via
     #   pydantic
     #   pydantic-core
