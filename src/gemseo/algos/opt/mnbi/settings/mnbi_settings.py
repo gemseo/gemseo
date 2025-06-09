@@ -66,7 +66,7 @@ the number of objectives of the problem.""",
 
     sub_optim_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
-        description="""The settings for the sub optimization algorithm.""",
+        description="""The settings for the sub-optimization algorithm.""",
     )
 
     sub_optim_max_iter: NonNegativeInt = Field(
@@ -139,7 +139,7 @@ which the theoretical result has already been found.""",
         if normalize_design_space:
             message = (
                 "The mNBI algo does not allow to normalize the design space at "
-                "the top level, only the sub optimizations accept design space "
+                "the top level, only the sub-optimizations accept design space "
                 "normalization. To do this, pass the setting "
                 "``normalize_design_space`` to ``sub_optim_algo_settings``."
             )

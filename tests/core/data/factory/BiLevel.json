@@ -32,7 +32,11 @@
     },
     "reset_x0_before_opt": {
       "type": "boolean",
-      "description": "Whether to restart the sub optimizations from the initial guesses, otherwise warm start them."
+      "description": "Whether to restart the sub-optimizations from the initial guesses, otherwise warm start them."
+    },
+    "set_x0_before_opt": {
+      "type": "boolean",
+      "description": "Whether to warm start the sub-optimizations from the disciplines' data, otherwise from the design space."
     },
     "sub_scenarios_log_level": {
       "type": "null",

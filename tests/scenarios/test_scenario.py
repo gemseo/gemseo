@@ -379,13 +379,13 @@ def test_adapter_error(idf_scenario) -> None:
 
     with pytest.raises(
         ValueError,
-        match=re.escape("Can't compute inputs from scenarios: missing_input."),
+        match=re.escape("Cannot compute inputs from scenarios: 'missing_input'."),
     ):
         MDOScenarioAdapter(idf_scenario, [*inputs, "missing_input"], outputs)
 
     with pytest.raises(
         ValueError,
-        match=re.escape("Can't compute outputs from scenarios: missing_output."),
+        match=re.escape("Cannot compute outputs from scenarios: 'missing_output'."),
     ):
         MDOScenarioAdapter(idf_scenario, inputs, [*outputs, "missing_output"])
 

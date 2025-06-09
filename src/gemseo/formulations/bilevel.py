@@ -146,6 +146,7 @@ class BiLevel(BaseMDOFormulation):
 
         self._create_scenario_adapters(
             reset_x0_before_opt=self._settings.reset_x0_before_opt,
+            set_x0_before_opt=self._settings.set_x0_before_opt,
             keep_opt_history=self._settings.keep_opt_history,
             save_opt_history=self._settings.save_opt_history,
             scenario_log_level=self._settings.sub_scenarios_log_level,
