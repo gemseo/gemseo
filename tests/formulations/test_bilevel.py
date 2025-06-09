@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 
 import pytest
@@ -31,6 +32,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd import BiLevelBCD
+from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
@@ -581,3 +583,28 @@ def test_main_mda_settings(main_mda):
         **main_mda,
     )
     assert isinstance(scenario.formulation.mda2, MDAGaussSeidel)
+
+
+def test_bilevel_settings_error():
+    """Check the error when reset_x0_before_opt and set_x0_before_opt are both True."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The options reset_x0_before_opt and set_x0_before_opt of BiLevel "
+            "cannot both be True"
+        ),
+    ):
+        BiLevel_Settings(reset_x0_before_opt=True, set_x0_before_opt=True)
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"set_x0_before_opt": False}, {"set_x0_before_opt": True}, {}]
+)
+def test_set_x0_before_opt(sobieski_bilevel_scenario, kwargs):
+    """Verify that set_x0_before_opt is passed to MDOScenarioAdapter"""
+    set_x0_before_opt = kwargs.get("set_x0_before_opt", False)
+    scenario = sobieski_bilevel_scenario(**kwargs)
+    scenario_adapters = scenario.formulation._scenario_adapters
+    assert scenario_adapters[0]._set_x0_before_opt is set_x0_before_opt
+    assert scenario_adapters[1]._set_x0_before_opt is set_x0_before_opt
+    assert scenario_adapters[2]._set_x0_before_opt is set_x0_before_opt

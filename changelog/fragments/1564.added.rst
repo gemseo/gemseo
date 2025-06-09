@@ -1,0 +1,1 @@
+``BiLevel`` has a new option ``set_x0_before_opt`` to warm start the sub-optimizations from the input data of the top-level disciplines.

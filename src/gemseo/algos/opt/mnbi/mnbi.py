@@ -92,7 +92,7 @@ MNBIOptionsType = Union[bool, int, float]
 
 
 class IndividualSubOptimOutput(NamedTuple):
-    """An output from a sub optimization."""
+    """An output from a sub-optimization."""
 
     f_min: RealArray
     """The value of f at the design value minimizing f_i."""
@@ -108,7 +108,7 @@ class IndividualSubOptimOutput(NamedTuple):
 
 
 class BetaSubOptimOutput(NamedTuple):
-    """An output from a beta sub optimization."""
+    """An output from a beta sub-optimization."""
 
     f_min: RealArray
     """The coordinates in the objective space of the sub-optimization result."""
@@ -707,7 +707,7 @@ class MNBI(BaseOptimizationLibrary):
                   objectives and no `custom_anchor_points` or `custom_phi_betas`
                   were given.
                 - If the name of one of the constraints of the problem coincides with
-                  the protected name for the sub optimization problems used by mNBI.
+                  the protected name for the sub-optimization problems used by mNBI.
                 - If the settings `custom_anchor_points` and `custom_phi_betas`
                   are both set.
                 - If the number of custom anchor points is not the same as the number of

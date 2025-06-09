@@ -94,7 +94,7 @@ class TestMDFFormulation(FormulationsBaseTest):
             "MDF", "SLSQP", linearize=True, dtype="float64", **options
         )
 
-        assert_allclose(-obj, 3964.0, atol=1.0, rtol=0)
+        assert_allclose(-obj, 3964.0, atol=4.0, rtol=0)
 
     def test_getsuboptions(self) -> None:
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)

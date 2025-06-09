@@ -35,14 +35,15 @@ from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.core.process_discipline import ProcessDiscipline
+from gemseo.utils.discipline import update_default_input_values
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import LoggingContext
 from gemseo.utils.name_generator import NameGenerator
+from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -51,7 +52,6 @@ if TYPE_CHECKING:
     from numpy.core.multiarray import ndarray
 
     from gemseo.algos.database import Database
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.scenarios.base_scenario import BaseScenario
@@ -77,11 +77,14 @@ class _ProcessFlow(BaseProcessFlow):
 
 
 class MDOScenarioAdapter(ProcessDiscipline):
-    """An adapter class for MDO Scenario.
+    """A discipline running an MDO scenario.
 
-    The specified input variables update the default input data of the top level
-    discipline while the output ones filter the output data from the top level
-    discipline outputs.
+    Its execution is in three stage:
+
+    1. update the default input data of the top-level disciplines of the MDO formulation
+       from its own input data,
+    2. run the MDO scenario,
+    3. update its output data from the output data of the top-level disciplines.
     """
 
     databases: list[Database]
@@ -141,17 +144,22 @@ class MDOScenarioAdapter(ProcessDiscipline):
         """
         Args:
             scenario: The scenario to adapt.
-            input_names: The inputs to overload at sub-scenario execution.
-            output_names: The outputs to get from the sub-scenario execution.
-            reset_x0_before_opt: If ``True``, reset the initial guess
-                before running the sub optimization.
-            set_x0_before_opt: If ``True``, set the initial guess of the sub-scenario.
+            input_names: The names of the inputs of the top-level disciplines
+                to overload before executing the scenario.
+                These are the adapter's input variables.
+            output_names: The names of the outputs of the top-level disciplines
+                to get after executing the scenario.
+                These are the adapter's output variables.
+            reset_x0_before_opt: Whether to reset the initial guess
+                of the optimization problem before executing the scenario.
+            set_x0_before_opt: Whether to set the initial guess
+                of the optimization problem before executing the scenario.
                 This is useful for multi-start optimization.
-            set_bounds_before_opt: If ``True``, set the bounds of the design space.
+            set_bounds_before_opt: Whether to set the bounds of the design space.
                 This is useful for trust regions.
-            output_multipliers: If ``True``,
-                the Lagrange multipliers of the scenario optimal solution are computed
-                and added to the outputs.
+            output_multipliers: Whether to compute
+                the Lagrange multipliers of the scenario optimal solution
+                and add them to the outputs.
             name: The name of the scenario adapter.
                 If empty,
                 use the name of the scenario adapter suffixed by ``"_adapter"``.
@@ -178,10 +186,14 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 to ``UUID`` because this method is multiprocess-safe.
 
         Raises:
-            ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt` are True.
+            ValueError: If both ``reset_x0_before_opt`` and ``set_x0_before_opt``
+                are ``True``.
         """  # noqa: D205, D212, D415
         if reset_x0_before_opt and set_x0_before_opt:
-            msg = "Inconsistent options for MDOScenarioAdapter."
+            msg = (
+                "The options reset_x0_before_opt and set_x0_before_opt "
+                "of MDOScenarioAdapter cannot both be True."
+            )
             raise ValueError(msg)
         self.scenario = scenario
         self._set_x0_before_opt = set_x0_before_opt
@@ -197,9 +209,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         self.__opt_history_file_prefix = (
             opt_history_file_prefix or self.DEFAULT_DATABASE_FILE_PREFIX
         )
-
-        name = name or f"{scenario.name}_adapter"
-        super().__init__((), name=name)
+        super().__init__((), name=name or f"{scenario.name}_adapter")
 
         self._update_grammars()
         self._dv_in_names = None
@@ -210,18 +220,21 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
         # Set the initial bounds as default bounds
         self._bound_names = []
+        design_space = scenario.design_space
         if set_bounds_before_opt:
-            dspace = scenario.design_space
-            lower_bounds = dspace.convert_array_to_dict(dspace.get_lower_bounds())
-            lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
-            upper_bounds = dspace.convert_array_to_dict(dspace.get_upper_bounds())
-            upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
+            defaults = self.io.input_grammar.defaults
             for bounds, suffix in [
-                (lower_bounds, lower_suffix),
-                (upper_bounds, upper_suffix),
+                (
+                    design_space.get_lower_bounds(as_dict=True),
+                    self.LOWER_BND_SUFFIX,
+                ),
+                (
+                    design_space.get_upper_bounds(as_dict=True),
+                    self.UPPER_BND_SUFFIX,
+                ),
             ]:
                 bounds = {name + suffix: val for name, val in bounds.items()}
-                self.io.input_grammar.defaults.update(bounds)
+                defaults.update(bounds)
                 self._bound_names.extend(bounds.keys())
 
         # Optimization functions are redefined at each run
@@ -230,9 +243,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # History must be erased otherwise the wrong values are retrieved
         # between two runs
         scenario.clear_history_before_execute = True
-        self._initial_x = deepcopy(
-            scenario.design_space.get_current_value(as_dict=True)
-        )
+        self._initial_x = deepcopy(design_space.get_current_value(as_dict=True))
         self.post_optimal_analysis = None
         self.__scenario_log_level = scenario_log_level
         self._init_shared_memory_attrs_after()
@@ -245,60 +256,62 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 or if a specified output is missing from the output grammar.
         """
         formulation = self.scenario.formulation
-        opt_problem = formulation.optimization_problem
-        top_leveld = formulation.get_top_level_disciplines()
-        for disc in top_leveld:
-            self.io.input_grammar.update(disc.io.input_grammar)
-            self.io.output_grammar.update(disc.io.output_grammar)
+        input_grammar = self.io.input_grammar
+        output_grammar = self.io.output_grammar
+        for discipline in formulation.get_top_level_disciplines():
+            input_grammar.update(discipline.io.input_grammar)
+            output_grammar.update(discipline.io.output_grammar)
             # The output may also be the optimum value of the design
             # variables, so the output grammar may contain inputs
             # of the disciplines. All grammars are filtered just after
             # this loop
-            self.io.output_grammar.update(disc.io.input_grammar)
-            self.io.input_grammar.defaults.update(disc.io.input_grammar.defaults)
+            output_grammar.update(discipline.io.input_grammar)
+            input_grammar.defaults.update(discipline.io.input_grammar.defaults)
 
         try:
-            self.io.input_grammar.restrict_to(self._input_names)
+            input_grammar.restrict_to(self._input_names)
         except KeyError:
-            missing_inputs = set(self._input_names) - set(self.io.input_grammar)
-
+            missing_inputs = set(self._input_names).difference(input_grammar)
             if missing_inputs:
-                msg = "Can't compute inputs from scenarios: {}.".format(
-                    ", ".join(sorted(missing_inputs))
+                msg = (
+                    "Cannot compute inputs from scenarios: "
+                    f"{pretty_repr(missing_inputs, use_and=True)}."
                 )
                 raise ValueError(msg) from None
 
         # Add the design variables bounds to the input grammar
         if self._set_bounds_before_opt:
-            current_x = self.scenario.design_space.get_current_value(as_dict=True)
-            names_to_values = {}
-            for suffix in [
-                MDOScenarioAdapter.LOWER_BND_SUFFIX,
-                MDOScenarioAdapter.UPPER_BND_SUFFIX,
-            ]:
-                names_to_values.update({k + suffix: v for k, v in current_x.items()})
-            bounds_grammar = JSONGrammar("bounds")
-            bounds_grammar.update_from_data(names_to_values)
-            self.io.input_grammar.update(bounds_grammar)
+            current_value = self.scenario.design_space.get_current_value(as_dict=True)
+            bounds_grammar = input_grammar.__class__("bounds")
+            bounds_grammar.update_from_data({
+                variable_name + suffix: variable_value
+                for variable_name, variable_value in current_value.items()
+                for suffix in {
+                    self.LOWER_BND_SUFFIX,
+                    self.UPPER_BND_SUFFIX,
+                }
+            })
+            input_grammar.update(bounds_grammar)
 
-        # If a DV is not an input of the top level disciplines:
-        missing_outputs = set(self._output_names) - set(self.io.output_grammar)
-
+        # If a design variable is not an input of the top-level disciplines:
+        missing_outputs = set(self._output_names).difference(output_grammar)
         if missing_outputs:
-            miss_dvs = set(missing_outputs).intersection(opt_problem.design_space)
-            if miss_dvs:
-                dv_gram = JSONGrammar("dvs")
-                dv_gram.update_from_names(miss_dvs)
-                self.io.output_grammar.update(dv_gram)
+            missing_design_variables = set(missing_outputs).intersection(
+                formulation.optimization_problem.design_space
+            )
+            if missing_design_variables:
+                dv_grammar = output_grammar.__class__("dvs")
+                dv_grammar.update_from_names(missing_design_variables)
+                output_grammar.update(dv_grammar)
 
         try:
-            self.io.output_grammar.restrict_to(self._output_names)
+            output_grammar.restrict_to(self._output_names)
         except KeyError:
-            missing_outputs = set(self._output_names) - set(self.io.output_grammar)
-
+            missing_outputs = set(self._output_names).difference(output_grammar)
             if missing_outputs:
-                msg = "Can't compute outputs from scenarios: {}.".format(
-                    ", ".join(sorted(missing_outputs))
+                msg = (
+                    "Cannot compute outputs from scenarios: "
+                    f"{pretty_repr(missing_outputs, use_and=True)}."
                 )
                 raise ValueError(msg) from None
 
@@ -309,34 +322,35 @@ class MDOScenarioAdapter(ProcessDiscipline):
     def _add_output_multipliers(self) -> None:
         """Add the Lagrange multipliers of the scenario optimal solution as outputs."""
         # Fill a dictionary with data of typical shapes
-        base_dict = {}
+        names_to_values = {}
         problem = self.scenario.formulation.optimization_problem
         # bound-constraints multipliers
-        current_x = problem.design_space.get_current_value(as_dict=True)
-        base_dict.update({
-            self.get_bnd_mult_name(var_name, False): val
-            for var_name, val in current_x.items()
+        current_value = problem.design_space.get_current_value(as_dict=True)
+        names_to_values.update({
+            self.get_bnd_mult_name(variable_name, False): variable_value
+            for variable_name, variable_value in current_value.items()
         })
-        base_dict.update({
-            self.get_bnd_mult_name(var_name, True): val
-            for var_name, val in current_x.items()
+        names_to_values.update({
+            self.get_bnd_mult_name(variable_name, True): variable_value
+            for variable_name, variable_value in current_value.items()
         })
         # equality- and inequality-constraints multipliers
-        base_dict.update({
-            self.get_cstr_mult_name(cstr_name): zeros(1)
-            for cstr_name in problem.constraints.get_names()
+        names_to_values.update({
+            self.get_cstr_mult_name(constraint_name): zeros(1)
+            for constraint_name in problem.constraints.get_names()
         })
 
         # Update the output grammar
-        multipliers_grammar = JSONGrammar("multipliers")
-        multipliers_grammar.update_from_data(base_dict)
+        multipliers_grammar = self.io.output_grammar.__class__("multipliers")
+        multipliers_grammar.update_from_data(names_to_values)
         self.io.output_grammar.update(multipliers_grammar)
 
     def _init_shared_memory_attrs_after(self) -> None:
         self.__name_generator = NameGenerator(naming_method=self.__naming)
 
-    @staticmethod
+    @classmethod
     def get_bnd_mult_name(
+        cls,
         variable_name: str,
         is_upper: bool,
     ) -> str:
@@ -350,13 +364,12 @@ class MDOScenarioAdapter(ProcessDiscipline):
         Returns:
             The name of a bound-constraint multiplier.
         """
-        mult_name = variable_name
-        mult_name += "_upp-bnd" if is_upper else "_low-bnd"
-        mult_name += MDOScenarioAdapter.MULTIPLIER_SUFFIX
-        return mult_name
+        upp_or_low = "upp" if is_upper else "low"
+        return f"{variable_name}_{upp_or_low}-bnd{cls.MULTIPLIER_SUFFIX}"
 
-    @staticmethod
+    @classmethod
     def get_cstr_mult_name(
+        cls,
         constraint_name: str,
     ) -> str:
         """Return the name of the multiplier of a constraint.
@@ -367,7 +380,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         Returns:
             The name of the multiplier.
         """
-        return constraint_name + MDOScenarioAdapter.MULTIPLIER_SUFFIX
+        return constraint_name + cls.MULTIPLIER_SUFFIX
 
     def _execute(self) -> None:
         self._pre_run()
@@ -377,35 +390,31 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _pre_run(self) -> None:
         """Pre-run the scenario."""
-        formulation = self.scenario.formulation
-        design_space: DesignSpace = formulation.optimization_problem.design_space
-        top_leveld = formulation.get_top_level_disciplines()
+        data = self.io.data
+        design_space = self.scenario.formulation.optimization_problem.design_space
 
         # Update the top level discipline default inputs with adapter inputs
         # This is the key role of the adapter
-        for indata in self._input_names:
-            for disc in top_leveld:
-                if indata in disc.io.input_grammar:
-                    disc.io.input_grammar.defaults[indata] = self.io.data[indata]
+        update_default_input_values(
+            self.scenario.formulation.get_top_level_disciplines(),
+            data,
+            self._input_names,
+        )
 
         self._reset_optimization_problem()
 
         # Set the starting point of the sub scenario with current dv names
         if self._set_x0_before_opt:
-            dv_values = {dv_n: self.io.data[dv_n] for dv_n in self._dv_in_names}
-            self.scenario.formulation.design_space.set_current_value(dv_values)
+            dv_values = {dv_name: data[dv_name] for dv_name in self._dv_in_names}
+            design_space.set_current_value(dv_values)
 
         # Set the bounds of the sub-scenario
         if self._set_bounds_before_opt:
+            lower_bound_suffix = self.LOWER_BND_SUFFIX
+            upper_bound_suffix = self.UPPER_BND_SUFFIX
             for name in design_space:
-                # Set the lower bound
-                lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
-                lower_bound = self.io.data[name + lower_suffix]
-                design_space.set_lower_bound(name, lower_bound)
-                # Set the upper bound
-                upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
-                upper_bound = self.io.data[name + upper_suffix]
-                design_space.set_upper_bound(name, upper_bound)
+                design_space.set_lower_bound(name, data[f"{name}{lower_bound_suffix}"])
+                design_space.set_upper_bound(name, data[f"{name}{upper_bound_suffix}"])
 
     def _reset_optimization_problem(self) -> None:
         """Reset the optimization problem."""
@@ -415,36 +424,32 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _post_run(self) -> None:
         """Post-process the scenario."""
-        formulation = self.scenario.formulation
-        opt_problem = formulation.optimization_problem
-        design_space = opt_problem.design_space
-
-        database = opt_problem.database
+        optimization_problem = self.scenario.formulation.optimization_problem
+        database = optimization_problem.database
         if self.keep_opt_history:
             self.databases.append(deepcopy(database))
+
         if self.save_opt_history:
             database.to_hdf(
                 f"{self.__opt_history_file_prefix}_{self.__name_generator.generate_name()}.h5"
             )
 
-        # Test if the last evaluation is the optimum
-        x_opt = design_space.get_current_value()
+        x_opt = optimization_problem.design_space.get_current_value()
         last_x = database.get_x_vect(-1)
-        last_eval_not_opt = norm(x_opt - last_x) / (1.0 + norm(last_x)) > 1e-14
-        if last_eval_not_opt:
-            # Revaluate all functions at optimum
-            # To re-execute all disciplines and get the right data
-            output_functions, jacobian_functions = opt_problem.get_functions(
+        if norm(x_opt - last_x) / (1.0 + norm(last_x)) > 1e-14:
+            # The last valuation is not the optimum.
+            # Revaluate all functions at the optimum
+            # to re-execute all disciplines and get the right data.
+            output_functions, jacobian_functions = optimization_problem.get_functions(
                 no_db_no_norm=True
             )
-            opt_problem.evaluate_functions(
+            optimization_problem.evaluate_functions(
                 design_vector=x_opt,
                 design_vector_is_normalized=False,
                 output_functions=output_functions or None,
                 jacobian_functions=jacobian_functions or None,
             )
 
-        # Retrieves top-level discipline outputs
         self._retrieve_top_level_outputs()
 
         # Compute the Lagrange multipliers and store them in the local data
@@ -457,19 +462,22 @@ class MDOScenarioAdapter(ProcessDiscipline):
         This method overwrites the adapter outputs with the top-level discipline outputs
         and the optimal design parameters.
         """
+        data = self.io.data
         formulation = self.scenario.formulation
         top_level_disciplines = formulation.get_top_level_disciplines()
-        current_x = formulation.optimization_problem.design_space.get_current_value(
+        current_value = formulation.optimization_problem.design_space.get_current_value(
             as_dict=True
         )
-        for name in self._output_names:
+        for output_name in self._output_names:
             for discipline in top_level_disciplines:
-                if name in discipline.io.output_grammar and name not in current_x:
-                    self.io.data[name] = discipline.io.data[name]
+                if (
+                    output_name in discipline.io.output_grammar
+                    and output_name not in current_value
+                ):
+                    data[output_name] = discipline.io.data[output_name]
 
-            output_value_in_current_x = current_x.get(name)
-            if output_value_in_current_x is not None:
-                self.io.data[name] = output_value_in_current_x
+            if (output_value := current_value.get(output_name)) is not None:
+                data[output_name] = output_value
 
     def _compute_lagrange_multipliers(self) -> None:
         """Compute the Lagrange multipliers for the optimal solution of the scenario.
@@ -521,44 +529,43 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 if a specified output is not an output of the adapter,
                 or if there is non-differentiable outputs.
         """
-        opt_problem = self.scenario.formulation.optimization_problem
-        objective_names = (
-            self.scenario.formulation.optimization_problem.objective.output_names
-        )
+        optimization_problem = self.scenario.formulation.optimization_problem
+        objective_names = optimization_problem.objective.output_names
         if len(objective_names) != 1:
             msg = "The objective must be single-valued."
             raise ValueError(msg)
 
         # Check the required inputs
-        if not input_names:
-            input_names = set(self._input_names + self._bound_names)
-        else:
-            not_inputs = (
+        if input_names:
+            if names := (
                 set(input_names) - set(self._input_names) - set(self._bound_names)
-            )
-            if not_inputs:
-                msg = "The following are not inputs of the adapter: {}.".format(
-                    ", ".join(sorted(not_inputs))
+            ):
+                msg = (
+                    "The following are not inputs of the adapter: "
+                    f"{pretty_repr(names, use_and=True)}."
                 )
                 raise ValueError(msg)
+        else:
+            input_names = set(self._input_names + self._bound_names)
+
         # N.B the adapter is assumed constant w.r.t. bounds
         bound_inputs = set(input_names) & set(self._bound_names)
 
         # Check the required outputs
-        if not output_names:
-            output_names = objective_names
-        else:
-            not_outputs = sorted(set(output_names) - set(self._output_names))
-            if not_outputs:
-                msg = "The following are not outputs of the adapter: {}.".format(
-                    ", ".join(not_outputs)
+        if output_names:
+            if names := (set(output_names).difference(self._output_names)):
+                msg = (
+                    "The following are not outputs of the adapter: "
+                    f"{pretty_repr(names, use_and=True)}."
                 )
                 raise ValueError(msg)
+        else:
+            output_names = objective_names
 
-        non_differentiable_outputs = sorted(set(output_names) - set(objective_names))
-        if non_differentiable_outputs:
-            msg = "Post-optimal Jacobians of {} cannot be computed.".format(
-                ", ".join(non_differentiable_outputs)
+        if names := (set(output_names).difference(objective_names)):
+            msg = (
+                f"The post-optimal Jacobians of {pretty_repr(names, use_and=True)} "
+                f"cannot be computed."
             )
             raise ValueError(msg)
 
@@ -573,17 +580,19 @@ class MDOScenarioAdapter(ProcessDiscipline):
         jacobians = self._compute_auxiliary_jacobians(diff_inputs)
 
         # Perform the post-optimal analysis
-        ineq_tolerance = opt_problem.tolerances.inequality
-        self.post_optimal_analysis = PostOptimalAnalysis(opt_problem, ineq_tolerance)
+        self.post_optimal_analysis = PostOptimalAnalysis(
+            optimization_problem, optimization_problem.tolerances.inequality
+        )
         post_opt_jac = self.post_optimal_analysis.execute(
             output_names, diff_inputs, jacobians
         )
         self.jac.update(post_opt_jac)
 
         # Fill the Jacobian blocks w.r.t. bounds with zeros
+        defaults = self.io.input_grammar.defaults
         for output_derivatives in self.jac.values():
             for bound_input_name in bound_inputs:
-                bound_input_size = self.io.input_grammar.defaults[bound_input_name].size
+                bound_input_size = defaults[bound_input_name].size
                 output_derivatives[bound_input_name] = zeros((1, bound_input_size))
 
     def _compute_auxiliary_jacobians(

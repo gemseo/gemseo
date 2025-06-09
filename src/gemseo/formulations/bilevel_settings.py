@@ -16,10 +16,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pydantic import Field
+from pydantic import model_validator
 
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.utils.name_generator import NameGenerator
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class BiLevel_Settings(MDF_Settings):  # noqa: N801
@@ -53,8 +59,14 @@ the constraint to the optimization problem of the system scenario.""",
 
     reset_x0_before_opt: bool = Field(
         default=False,
-        description="""Whether to restart the sub optimizations
+        description="""Whether to restart the sub-optimizations
 from the initial guesses, otherwise warm start them.""",
+    )
+
+    set_x0_before_opt: bool = Field(
+        default=False,
+        description="""Whether to warm start the sub-optimizations
+from the disciplines' data, otherwise from the design space.""",
     )
 
     sub_scenarios_log_level: int | None = Field(
@@ -87,3 +99,14 @@ to an HDF5 file after each execution.""",
 When the adapter will be executed in parallel, this method shall be set
 to ``UUID`` because this method is multiprocess-safe.""",
     )
+
+    @model_validator(mode="after")
+    def __validate(self) -> Self:
+        """Validate the options."""
+        if self.reset_x0_before_opt and self.set_x0_before_opt:
+            msg = (
+                "The options reset_x0_before_opt and set_x0_before_opt "
+                "of BiLevel cannot both be True."
+            )
+            raise ValueError(msg)
+        return self
