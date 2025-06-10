@@ -138,14 +138,13 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                     entry.create_dataset(self.HASH_TAG, data=data_hash)
 
                 for name, value in data.items():
-                    value = data.get(name)
-                    if value is not None:
-                        if value.dtype.type is str_:
-                            entry_group.create_dataset(name, data=value.astype("bytes"))
-                        elif isinstance(value, sparse_classes):
-                            self.__write_sparse_array(entry_group, name, value)
-                        else:
-                            entry_group.create_dataset(name, data=to_real(value))
+                    if value.dtype.type is str_:
+                        # See https://docs.h5py.org/en/stable/strings.html
+                        entry_group[name] = value.astype("bytes")
+                    elif isinstance(value, sparse_classes):
+                        self.__write_sparse_array(entry_group, name, value)
+                    else:
+                        entry_group[name] = to_real(value)
 
             # IOError and RuntimeError are for python 2.7
             except (RuntimeError, OSError, ValueError):
@@ -216,13 +215,12 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             data = {}
             for key, dataset in entry[group].items():
                 if dataset.attrs.get(self.__SparseMatricesAttribute.SPARSE):
-                    data[key] = self.__read_sparse_array(dataset)
+                    value = self.__read_sparse_array(dataset)
+                elif dataset.dtype.type == bytes_:
+                    value = array(dataset, dtype=str_)
                 else:
-                    data[key] = array(dataset)
-
-            for name, value in data.items():
-                if value.dtype.type is bytes_:
-                    data[name] = value.astype(str_)
+                    value = array(dataset)
+                data[key] = value
 
         return data
 

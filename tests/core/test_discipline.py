@@ -29,6 +29,7 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import pytest
 from numpy import array
@@ -43,6 +44,7 @@ from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.data_processor import ComplexDataProcessor
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
@@ -1267,3 +1269,86 @@ def test_create_cache_policy_to_none() -> None:
     assert isinstance(discipline.cache, SimpleCache)
     discipline.set_cache(discipline.CacheType.NONE)
     assert discipline.cache is None
+
+
+class StrNumDiscipline(Discipline):
+    """A discipline that has both string and numeric i/o.
+
+    Depending on the initialization parameter, it can either use ``str`` or
+    ``array([str])`` for the string variables.
+
+    """
+
+    with_str_array: ClassVar[bool]
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.input_grammar.update_from_data({
+            "x": ones(1),
+            "input_string": array(["some_string"])
+            if self.with_str_array
+            else "some_string",
+        })
+        self.output_grammar.update_from_data({
+            "y": ones(1),
+            "output_string": array(["another_string"])
+            if self.with_str_array
+            else "another_string",
+        })
+
+        self.default_input_data = {
+            "x": ones(1),
+            "input_string": array(["some_string"])
+            if self.with_str_array
+            else "some_string",
+        }
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = input_data["x"]
+        output_data = {}
+        output_data["y"] = x + 1
+        output_data["output_string"] = (
+            array([f"modified_string_{x}"])
+            if self.with_str_array
+            else f"modified_string_{x}"
+        )
+        return output_data
+
+
+@pytest.mark.parametrize(
+    "with_str_array",
+    [True, False],
+)
+@pytest.mark.parametrize("tolerance", [0, 0.01])
+@pytest.mark.parametrize(
+    "cache_type",
+    [
+        BaseDiscipline.CacheType.HDF5,
+        BaseDiscipline.CacheType.SIMPLE,
+        BaseDiscipline.CacheType.MEMORY_FULL,
+    ],
+)
+def test_caches_str_num(tmp_wd, with_str_array, tolerance, cache_type):
+    """Test the discipline caches with both str and numeric variables."""
+    StrNumDiscipline.with_str_array = with_str_array
+    discipline = StrNumDiscipline()
+    discipline.set_cache(cache_type=cache_type, tolerance=tolerance)
+    # Default inputs
+    discipline.execute()
+    discipline.execute()
+    # Change the numerical input
+    input_data = {
+        "x": 5 * ones(1),
+        "input_string": array(["some_string"]) if with_str_array else "some_string",
+    }
+    discipline.execute(input_data)
+    discipline.execute(input_data)
+    # Change the string input
+    input_data = {
+        "x": ones(1),
+        "input_string": array(["some_string_2"]) if with_str_array else "some_string_2",
+    }
+    discipline.execute(input_data)
+    discipline.execute(input_data)
+    assert discipline.execution_statistics.n_executions == 3

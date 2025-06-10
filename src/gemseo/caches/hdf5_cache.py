@@ -37,7 +37,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from multiprocessing.synchronize import RLock as RLockType
 
+    from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.typing import JacobianData
+    from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
@@ -45,7 +47,18 @@ LOGGER = logging.getLogger(__name__)
 
 
 class HDF5Cache(BaseFullCache):
-    """Cache using disk HDF5 file to store the data."""
+    """Cache using disk HDF5 file to store the data.
+
+    The data, either input or output, to be stored in the cache shall be
+    castable to a NumPy array. Otherwise, data converters shall be provided when
+    creating an instance.
+    """
+
+    __input_data_converter: BaseDataConverter | None
+    """The data converter used to convert input data."""
+
+    __output_data_converter: BaseDataConverter | None
+    """The data converter used to convert output data."""
 
     def __init__(
         self,
@@ -53,6 +66,8 @@ class HDF5Cache(BaseFullCache):
         name: str = "",
         hdf_file_path: str | Path = "cache.hdf5",
         hdf_node_path: str = "node",
+        input_data_converter: BaseDataConverter | None = None,
+        output_data_converter: BaseDataConverter | None = None,
     ) -> None:
         """
         Args:
@@ -64,6 +79,8 @@ class HDF5Cache(BaseFullCache):
                 with a lock.
             hdf_node_path: The name to the HDF node,
                 possibly passed as a path ``root_name/.../group_name/.../node_name``.
+            input_data_converter: The data converter to convert the input data.
+            output_data_converter: The data converter to convert the output data.
 
         Warnings:
             This class relies on some multiprocessing features, it is therefore
@@ -75,6 +92,8 @@ class HDF5Cache(BaseFullCache):
             :meth:`.DOEScenario.set_optimization_history_backup` is recommended as
             an alternative.
         """  # noqa: D205, D212, D415
+        self.__input_data_converter = input_data_converter
+        self.__output_data_converter = output_data_converter
         self.__hdf_node_path = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
         super().__init__(tolerance, name or hdf_node_path)
@@ -167,16 +186,35 @@ class HDF5Cache(BaseFullCache):
         group: BaseFullCache.Group,
     ) -> StrKeyMapping | JacobianData:
         data = self.__hdf_file.read_data(index, group, self.__hdf_node_path)
-        if group == self.Group.JACOBIAN and data:
+        if not data:
+            # Fast path to avoid converting empty data in the next conditional blocks.
+            return data
+        if self.__input_data_converter is not None and group == self.Group.INPUTS:
+            to_value = self.__input_data_converter.convert_array_to_value
+            for input_name, value in data.items():
+                data[input_name] = to_value(input_name, value)
+        elif self.__output_data_converter is not None and group == self.Group.OUTPUTS:
+            to_value = self.__output_data_converter.convert_array_to_value
+            for output_name, value in data.items():
+                data[output_name] = to_value(output_name, value)
+        elif group == self.Group.JACOBIAN:
             data = nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
         return data
 
     def _write_data(
         self,
-        values: StrKeyMapping,
+        values: MutableStrKeyMapping,
         group: BaseFullCache.Group,
         index: int,
     ) -> None:
+        if self.__input_data_converter is not None and group == self.Group.INPUTS:
+            to_array = self.__input_data_converter.convert_value_to_array
+            for input_name, value in values.items():
+                values[input_name] = to_array(input_name, value)
+        elif self.__output_data_converter is not None and group == self.Group.OUTPUTS:
+            to_array = self.__output_data_converter.convert_value_to_array
+            for name, value in values.items():
+                values[name] = to_array(name, value)
         self.__hdf_file.write_data(
             values,
             group,

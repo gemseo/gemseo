@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Test the comparisons module."""
+"""Test the comparisons' module."""
 
 from __future__ import annotations
 
@@ -47,8 +47,8 @@ def test_different_sizes(tolerance, other_dict):
         {"x": {"x": array([1.0])}},
     ],
 )
-def test_keys(tolerance, other_dict):
-    """Test comparison regarding the dictionnaries' keys."""
+def test_different_keys(tolerance, other_dict):
+    """Test comparison regarding the dictionaries' keys."""
     assert not compare_dict_of_arrays({"x": array([1.0])}, other_dict, tolerance)
 
 
@@ -109,3 +109,28 @@ def test_array_are_close(
         compare_dict_of_arrays(dict_1, dict_2, nan_are_equal=equal_nan, tolerance=1.0)
         is are_equal
     )
+
+
+@pytest.mark.parametrize(
+    ("data_1", "data_2", "are_equal"),
+    [
+        ("string", "string", True),
+        ("string", "bad", False),
+        (array(["string"]), array(["string"]), True),
+        (array(["string"]), array(["bad"]), False),
+        ("string", array(["string"]), False),
+    ],
+)
+def test_str(data_1, data_2, are_equal):
+    """Test equality comparison between arrays with strings."""
+    dict_1 = {"x": data_1}
+    dict_2 = {"x": data_2}
+
+    for nan_are_equal in [False, True]:
+        for tolerance in [0.0, 1.0]:
+            assert (
+                compare_dict_of_arrays(
+                    dict_1, dict_2, nan_are_equal=nan_are_equal, tolerance=tolerance
+                )
+                is are_equal
+            )

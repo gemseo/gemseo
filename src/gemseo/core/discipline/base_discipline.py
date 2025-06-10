@@ -25,9 +25,7 @@ from typing import ClassVar
 
 from strenum import StrEnum
 
-from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.factory import CacheFactory
-from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow
 from gemseo.core.discipline.io import IO
@@ -40,6 +38,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.caches.base_cache import BaseCache
+    from gemseo.caches.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.core.grammars.grammar_properties import GrammarProperties
@@ -186,12 +185,6 @@ class BaseDiscipline(BaseMonitoredProcess):
         for name in output_data.keys() - output_grammar:
             del output_data[name]
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            to_array = output_grammar.data_converter.convert_value_to_array
-            for name, value in output_data.items():
-                output_data[name] = to_array(name, value)
-
         self.cache.cache_outputs(input_data, output_data)  # type: ignore[union-attr]  # because cache is checked to be not None in the caller
 
     def __create_input_data_for_cache(
@@ -217,12 +210,6 @@ class BaseDiscipline(BaseMonitoredProcess):
             value = input_data.get(auto_coupled_name)
             if value is not None:
                 input_data_[auto_coupled_name] = deepcopy(value)
-
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            to_array = self.io.input_grammar.data_converter.convert_value_to_array
-            for input_name, value in input_data_.items():
-                input_data_[input_name] = to_array(input_name, value)
 
         return input_data_
 
@@ -251,22 +238,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not cache_entry.outputs:
             return False
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            # Do not modify the cache entry which is mutable.
-            cache_output = cache_entry.outputs.copy()
-            to_value = self.io.output_grammar.data_converter.convert_array_to_value
-            for output_name, value in cache_output.items():
-                cache_output[output_name] = to_value(output_name, value)
-        else:
-            cache_output = cache_entry.outputs
-
-        # TODO: Fix this workaround for input_data that does not match strictly
-        #  the cache one.
-        cache_entry = CacheEntry(input_data, cache_output, cache_entry.jacobian)
-
         self._set_data_from_cache(cache_entry)
-
         return True
 
     def set_cache(
@@ -317,6 +289,8 @@ class BaseDiscipline(BaseMonitoredProcess):
         ):
             if cache_type == self.CacheType.HDF5:
                 kwargs.setdefault("hdf_node_path", self.name)
+                kwargs["input_data_converter"] = self.io.input_grammar.data_converter
+                kwargs["output_data_converter"] = self.io.output_grammar.data_converter
             self.cache = _CACHE_FACTORY.create(
                 cache_type, tolerance=tolerance, **kwargs
             )
