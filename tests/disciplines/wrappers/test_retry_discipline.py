@@ -130,7 +130,7 @@ class SlowProcessDiscipline(Discipline):
         sleep(60)
 
 
-TIMEOUT = 5.0 if PLATFORM_IS_WINDOWS else 0.1
+TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
 
 
 @pytest.mark.parametrize("wait_time", [0.01, 0.1])
