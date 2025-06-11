@@ -16,7 +16,7 @@ check-wheel-contents==0.6.2
     # via -r requirements/dist.in
 click==8.2.1
     # via check-wheel-contents
-cryptography==45.0.3
+cryptography==45.0.4
     # via secretstorage
 docutils==0.21.2
     # via readme-renderer
@@ -65,7 +65,7 @@ pyproject-hooks==1.2.0
     # via build
 readme-renderer==44.0
     # via twine
-requests==2.32.3
+requests==2.32.4
     # via
     #   id
     #   requests-toolbelt
@@ -80,7 +80,7 @@ secretstorage==3.3.3
     # via keyring
 twine==6.1.0
     # via -r requirements/dist.in
-typing-extensions==4.13.2
+typing-extensions==4.14.0
     # via
     #   pydantic
     #   pydantic-core
