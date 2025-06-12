@@ -50,10 +50,13 @@ from numpy import ndarray
 
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets import DatasetClassName
+from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
+from gemseo.utils.constants import N_CPUS as N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
@@ -1669,6 +1672,7 @@ def configure(
     validate_input_data: bool = True,
     validate_output_data: bool = True,
     check_desvars_bounds: bool = True,
+    enable_parallel_execution: bool = True,
 ) -> None:
     """Update the configuration of |g| if needed.
 
@@ -1696,6 +1700,8 @@ def configure(
             after execution.
         check_desvars_bounds: Whether to check the membership of design variables
             in the bounds when evaluating the functions in OptimizationProblem.
+        enable_parallel_execution: Whether to let |g|
+            use parallelism (multi-processing or multi-threading) by default.
     """
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -1713,6 +1719,8 @@ def configure(
         else Discipline.CacheType.NONE
     )
     OptimizationProblem.check_bounds = check_desvars_bounds
+    default_n_processes = N_CPUS if enable_parallel_execution else 1
+    BaseParallelMDASettings.set_default_n_processes(default_n_processes)
 
 
 def wrap_discipline_in_job_scheduler(
