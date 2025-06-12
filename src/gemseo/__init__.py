@@ -50,6 +50,7 @@ from numpy import ndarray
 
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets import DatasetClassName
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
 from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
@@ -82,9 +83,6 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.datasets.optimization_dataset import (
-        OptimizationDataset as OptimizationDataset,
-    )
     from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
         JobSchedulerDisciplineWrapper,
@@ -1169,6 +1167,8 @@ def execute_post(
         opt_problem = to_post_proc
     elif isinstance(to_post_proc, (str, PathLike)):
         opt_problem = OptimizationProblem.from_hdf(to_post_proc)
+    elif isinstance(to_post_proc, OptimizationDataset):
+        opt_problem = to_post_proc
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
