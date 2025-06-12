@@ -96,6 +96,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -105,6 +106,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
@@ -833,6 +835,7 @@ def test_import_discipline(tmp_wd) -> None:
 @pytest.mark.parametrize("enable_discipline_cache", [False, True])
 @pytest.mark.parametrize("validate_input_data", [False, True])
 @pytest.mark.parametrize("validate_output_data", [False, True])
+@pytest.mark.parametrize("enable_parallel_execution", [False, True])
 def test_configure(
     enable_discipline_statistics,
     enable_function_statistics,
@@ -840,6 +843,7 @@ def test_configure(
     enable_discipline_cache,
     validate_input_data,
     validate_output_data,
+    enable_parallel_execution,
 ) -> None:
     """Check that the configuration of GEMSEO works correctly."""
     configure(
@@ -849,6 +853,7 @@ def test_configure(
         enable_discipline_cache=enable_discipline_cache,
         validate_input_data=validate_input_data,
         validate_output_data=validate_output_data,
+        enable_parallel_execution=enable_parallel_execution,
     )
     assert ProblemFunction.enable_statistics == enable_function_statistics
     assert ExecutionStatistics.is_enabled == enable_discipline_statistics
@@ -861,7 +866,11 @@ def test_configure(
     )
     assert BaseDriverLibrary.enable_progress_bar == enable_progress_bar
     assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
+    assert BaseParallelMDASettings().n_processes == (
+        N_CPUS if enable_parallel_execution else 1
+    )
     configure()
+    BaseParallelMDASettings.default_n_processes = N_CPUS
 
 
 def test_configure_default() -> None:
@@ -873,6 +882,7 @@ def test_configure_default() -> None:
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseDriverLibrary.enable_progress_bar is True
+    assert BaseParallelMDASettings().n_processes == N_CPUS
 
 
 def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
