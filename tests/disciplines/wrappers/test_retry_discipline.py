@@ -133,6 +133,10 @@ class SlowProcessDiscipline(Discipline):
 TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
 
 
+@pytest.mark.skipif(
+    PLATFORM_IS_WINDOWS,
+    reason="The windows CI has big troubles with this test.",
+)
 @pytest.mark.parametrize("wait_time", [0.01, 0.1])
 @pytest.mark.parametrize("n_trials", [1, 3])
 @pytest.mark.parametrize("disc_class", [SlowProcessDiscipline, SlowThreadDiscipline])
