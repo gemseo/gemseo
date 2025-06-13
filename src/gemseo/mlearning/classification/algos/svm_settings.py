@@ -33,6 +33,8 @@ from gemseo.utils.seeder import SEED
 class SVMClassifier_Settings(BaseClassifierSettings):  # noqa: N801
     """The settings of the SV classification algorithm."""
 
+    _TARGET_CLASS_NAME = "SVMClassifier"
+
     C: PositiveFloat = Field(
         default=1.0, description="The inverse L2 regularization parameter."
     )

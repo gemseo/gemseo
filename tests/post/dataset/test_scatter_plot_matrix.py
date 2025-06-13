@@ -39,6 +39,11 @@ TEST_PARAMETERS = {
     "with_size": ({"size": 50}, {}, ["ScatterMatrix_size"]),
     "with_marker": ({"marker": "+"}, {}, ["ScatterMatrix_marker"]),
     "with_classifier": ({"classifier": "c"}, {}, ["ScatterMatrix_classifier"]),
+    "with_classifier_and_exclude_classifier": (
+        {"classifier": "c", "exclude_classifier": False},
+        {},
+        ["ScatterMatrix_classifier_exclude"],
+    ),
     "with_names": ({"variable_names": ["x", "y"]}, {}, ["ScatterMatrix_names"]),
     "with_upper": ({"plot_lower": False}, {}, ["ScatterMatrix_lower"]),
     "with_lower": ({"plot_upper": False}, {}, ["ScatterMatrix_upper"]),

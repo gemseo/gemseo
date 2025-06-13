@@ -1,0 +1,2 @@
+- The argument ``validity_domain`` of ``BaseMLSupervisedAlgo`` is the hypercube defined by the lower and upper bounds of the input variables computed from the training dataset.
+- The ``SurrogateDiscipline`` logs a warning message when its execution or linearization is done at an input point outside the domain of validity of the surrogate.

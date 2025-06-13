@@ -30,6 +30,8 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 class SVMRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the SVM regressor."""
 
+    _TARGET_CLASS_NAME = "SVMRegressor"
+
     kernel: str | Annotated[Callable, WithJsonSchema({})] = Field(
         default="rbf",
         description="""The name of the kernel or a callable for the SVM.
