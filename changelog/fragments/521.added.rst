@@ -1,0 +1,1 @@
+The argument ``n_components`` of ``PCA`` can be either the number of components, the minimum amount of variance to be explained by the components, the constant ``"mle"`` to guess this number or ``None`` to define it as ``min(n_samples, n_features)``.

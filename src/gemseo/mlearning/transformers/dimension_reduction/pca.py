@@ -31,6 +31,7 @@ generated/sklearn.decomposition.PCA.html>`_.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Literal
 
 from numpy import sqrt
 from numpy import tile
@@ -53,12 +54,17 @@ class PCA(BaseDimensionReduction):
     def __init__(
         self,
         name: str = "",
-        n_components: int | None = None,
+        n_components: float | Literal["mle"] | None = None,
         scale: bool = False,
         **parameters: float | str | bool | None,
     ) -> None:
         """
         Args:
+            n_components: Either the number of components (a positive integer),
+                the minimum amount of variance to be explained by the components
+                (a float in :math:`]0,1[`),
+                the constant ``"mle"`` to guess this number
+                or ``None`` to define it as ``min(n_samples, n_features)``.
             scale: Whether to scale the data before applying the PCA.
             **parameters: The optional parameters for sklearn PCA constructor.
         """  # noqa: D205 D212

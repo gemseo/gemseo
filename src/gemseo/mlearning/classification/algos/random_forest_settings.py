@@ -29,6 +29,8 @@ from gemseo.utils.seeder import SEED
 class RandomForestClassifier_Settings(BaseClassifierSettings):  # noqa: N801
     """The settings of the random forest classification algorithm."""
 
+    _TARGET_CLASS_NAME = "RandomForestClassifier"
+
     n_estimators: PositiveInt = Field(
         default=100, description="The number of trees in the forest."
     )

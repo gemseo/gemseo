@@ -90,7 +90,10 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.mda.base_mda_settings import BaseMDASettings
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.mlearning.core.algos.ml_algo import TransformerType as TransformerType
+    from gemseo.mlearning.regression.algos.base_regressor_settings import (
+        BaseRegressorSettings,
+    )
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
@@ -1016,54 +1019,69 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate: str | BaseRegressor,
+    surrogate: str | BaseRegressor | BaseRegressorSettings,
     data: IODataset | None = None,
+    # TODO: API: remove in favor of settings or surrogate as BaseRegressorSettings.
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
+    # TODO: API: rename to name.
     disc_name: str = "",
     default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
-    input_names: Iterable[str] = (),
-    output_names: Iterable[str] = (),
-    **parameters: Any,
+    input_names: Sequence[str] = (),
+    output_names: Sequence[str] = (),
+    **settings: Any,
 ) -> SurrogateDiscipline:
-    """Create a surrogate discipline, either from a dataset or a regression model.
+    """Create a surrogate discipline.
 
     Args:
-            surrogate: Either the name of a subclass of :class:`.BaseRegressor`
-                or an instance of this subclass.
-            data: The training dataset to train the regression model.
-                If ``None``, the regression model is supposed to be trained.
-            transformer: The strategies to transform the variables.
-                This argument is ignored
-                when ``surrogate`` is a :class:`.BaseRegressor`;
-                in this case,
-                these strategies are defined
-                with the ``transformer`` argument of this :class:`.BaseRegressor`,
-                whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
-                which means no transformation.
-                In the other cases,
-                the values of the dictionary are instances of :class:`.BaseTransformer`
-                while the keys can be variable names,
-                the group name ``"inputs"``
-                or the group name ``"outputs"``.
-                If a group name is specified,
-                the :class:`.BaseTransformer` will be applied
-                to all the variables of this group.
-                If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
-                The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
-                the :class:`.MinMaxScaler` strategy for both input and output variables.
-            disc_name: The name to be given to the surrogate discipline.
-                If empty,
-                the name will be ``f"{surrogate.SHORT_ALGO_NAME}_{data.name}``.
-            default_input_data: The default values of the input variables.
-                If empty,
-                use the center of the learning input space.
-            input_names: The names of the input variables.
-                If empty,
-                consider all input variables mentioned in the training dataset.
-            output_names: The names of the output variables.
-                If empty,
-                consider all input variables mentioned in the training dataset.
-            **parameters: The parameters of the machine learning algorithm.
+        surrogate: Either a regressor class name,
+            a regressor instance or regressor settings.
+        data: The dataset to train the regression model.
+            If ``None``, the regression model is supposed to be trained.
+        transformer: The strategies to transform the variables.
+            This argument is ignored
+            when ``surrogate`` is a :class:`.BaseRegressor`;
+            in this case,
+            these strategies are defined
+            with the ``transformer`` argument of this :class:`.BaseRegressor`,
+            whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
+            which means no transformation.
+            In the other cases,
+            the values of the dictionary are instances of :class:`.BaseTransformer`
+            while the keys can be variable names,
+            the group name ``"inputs"``
+            or the group name ``"outputs"``.
+            If a group name is specified,
+            the :class:`.BaseTransformer` will be applied
+            to all the variables of this group.
+            If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
+            The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
+            the :class:`.MinMaxScaler` strategy for both input and output variables.
+            This argument is ignored
+            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
+        disc_name: The name of the discipline.
+            If empty,
+            the concatenation of the short name of the surrogate algorithm
+            and the name of the training dataset is used.
+        default_input_data: The default values of the input variables.
+            If empty,
+            the center of the learning input space is used.
+        input_names: The names of the input variables of the discipline.
+            If empty and ``surrogate`` is a regressor instance,
+            all input variables of the regressor are used.
+            If empty and ``surrogate`` is not a regressor instance,
+            all input variables mentioned in the training dataset are used.
+            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
+            ``surrogate.input_names`` is ignored and replaced by ``input_names``.
+        output_names: The names of the output variables of the discipline.
+            If empty and ``surrogate`` is a regressor instance,
+            all output variables of the regressor are used.
+            If empty and ``surrogate`` is not a regressor instance,
+            all output variables mentioned in the training dataset are used.
+            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
+            ``surrogate.output_names`` is ignored and replaced by ``output_names``.
+        **settings: The settings of the machine learning algorithm.
+            These arguments are ignored
+            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
@@ -1075,7 +1093,7 @@ def create_surrogate(
         default_input_data=default_input_data,
         input_names=input_names,
         output_names=output_names,
-        **parameters,
+        **settings,
     )
 
 

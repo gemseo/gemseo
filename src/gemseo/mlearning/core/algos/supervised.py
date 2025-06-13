@@ -81,6 +81,7 @@ from numpy import concatenate
 from numpy import hstack
 from numpy import ndarray
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 from gemseo.mlearning.core.algos.ml_algo import DataType
@@ -118,6 +119,13 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
 
     output_names: list[str]
     """The names of the output variables."""
+
+    validity_domain: DesignSpace
+    """The validity domain.
+
+    This is the hypercube defined by the lower and upper bounds of the input variables
+    computed from the training dataset.
+    """
 
     __input_dimension: int
     """The dimension of the input space."""
@@ -197,6 +205,17 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
         self._transform_output_group = (
             self.learning_set.OUTPUT_GROUP in self.transformer
         )
+        self.validity_domain = DesignSpace()
+        for input_name in self.input_names:
+            data = self.learning_set.get_view(
+                variable_names=input_name, group_names=self.learning_set.INPUT_GROUP
+            ).to_numpy()
+            self.validity_domain.add_variable(
+                input_name,
+                size=data.shape[1],
+                lower_bound=data.min(axis=0),
+                upper_bound=data.max(axis=0),
+            )
 
     @property
     def _reduced_input_dimension(self) -> int:

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 from typing import Callable
 
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import colormaps
 from pandas.plotting import scatter_matrix
 
 from gemseo.post.dataset._trend import TREND_FUNCTIONS
@@ -55,12 +56,14 @@ class ScatterMatrix(MatplotlibPlot):
         dataframe = self._common_dataset.get_view(variable_names=variable_names)
         kwargs = {}
         if classifier:
-            palette = dict(enumerate("bgrcmyk"))
-            groups = self._common_dataset.get_view(
+            values = self._common_dataset.get_view(
                 variable_names=[classifier]
-            ).to_numpy()[:, 0:1]
-            kwargs["color"] = [palette[group[0] % len(palette)] for group in groups]
-            dataframe = dataframe.drop(labels=classifier_column, axis=1)
+            ).to_numpy()[:, 0]
+            values = (values - values.min()) / values.ptp()
+            colormap = colormaps[self._specific_settings.colormap_name]
+            kwargs["color"] = [colormap(value) for value in values]
+            if self._specific_settings.exclude_classifier:
+                dataframe = dataframe.drop(labels=classifier_column, axis=1)
 
         dataframe.columns = self._get_variable_names(dataframe)
         n_cols = n_rows = dataframe.shape[1] if ax is None else 1

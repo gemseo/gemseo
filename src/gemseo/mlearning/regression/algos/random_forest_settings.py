@@ -29,6 +29,8 @@ from gemseo.utils.seeder import SEED
 class RandomForestRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the multiLayer perceptron (MLP)."""
 
+    _TARGET_CLASS_NAME = "RandomForestRegressor"
+
     n_estimators: PositiveInt = Field(
         default=100, description="The number of trees in the forest."
     )

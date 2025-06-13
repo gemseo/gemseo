@@ -23,3 +23,5 @@ from gemseo.mlearning.clustering.algos.base_clusterer_settings import (
 
 class GaussianMixture_Settings(BaseClustererSettings):  # noqa: N801
     """The settings of the Gaussian mixture model."""
+
+    _TARGET_CLASS_NAME = "GaussianMixture"
