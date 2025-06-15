@@ -53,7 +53,7 @@ packaging==25.0
     #   twine
 pycparser==2.22
     # via cffi
-pydantic==2.11.6
+pydantic==2.11.7
     # via check-wheel-contents
 pydantic-core==2.33.2
     # via pydantic
