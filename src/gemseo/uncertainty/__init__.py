@@ -259,8 +259,7 @@ def create_sensitivity_analysis(
         analysis: The name of a sensitivity analysis class.
         samples: The samples for the estimation of the sensitivity indices,
             either as an :class:`.IODataset`
-            or as a pickle file path generated from
-            the :class:`.IODataset.to_pickle` method.
+            or as a pickle file path generated from the :func:`.to_pickle` function.
             If empty, use :meth:`.compute_samples`.
 
     Returns:
