@@ -34,6 +34,7 @@ from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     FirstOrderIndicesType,
@@ -621,3 +622,31 @@ def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_wd):
     assert (
         new_sobol_cv.indices.first["y"][0]["x1"] == sobol_cv.indices.first["y"][0]["x1"]
     )
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {
+            "control_variates": SobolAnalysis.ControlVariate(
+                AnalyticDiscipline({"varying": "x1+x2", "constant": "1"})
+            )
+        },
+    ],
+)
+def test_constant_output(discipline_with_constant_output_and_space, kwargs):
+    """Check that SobolAnalysis supports constant outputs."""
+    discipline, uncertain_space = discipline_with_constant_output_and_space
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    indices = analysis.compute_indices(**kwargs)
+    assert indices.first["constant"][0] is None
+    assert indices.total["constant"][0] is None
+    if not kwargs:
+        assert indices.second["constant"][0] is None
+
+    assert indices.first["varying"][0]["x1"] is not None
+    assert indices.total["varying"][0]["x2"] is not None
+    if not kwargs:
+        assert indices.second["varying"][0] is not None

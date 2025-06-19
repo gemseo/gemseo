@@ -74,8 +74,8 @@ if TYPE_CHECKING:
     from gemseo.utils.string_tools import VariableType
 
 OutputsType = Union[str, tuple[str, int], Sequence[Union[str, tuple[str, int]]]]
-FirstOrderIndicesType = dict[str, list[dict[str, RealArray]]]
-SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]]]]
+FirstOrderIndicesType = dict[str, list[Union[dict[str, RealArray], None]]]
+SecondOrderIndicesType = dict[str, list[Union[dict[str, dict[str, RealArray]], None]]]
 
 
 class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -137,8 +137,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The sensitivity indices.
 
         Given a sensitivity method, an input variable and an output variable,
-        the sensitivity index which is a 1D NumPy array can be accessed through
+        the sensitivity index is a NumPy array that can be accessed through
         ``indices.method_name[output_name][output_component][input_name]``.
+
+        For constant output components,
+        ``indices.method_name[output_name][output_component]`` is ``None``.
         """
 
     _indices: SensitivityIndices
@@ -261,8 +264,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             The sensitivity indices.
 
             Given a sensitivity method, an input variable and an output variable,
-            the sensitivity index which is a 1D NumPy array can be accessed through
+            the sensitivity index is a NumPy array that can be accessed through
             ``indices.method_name[output_name][output_component][input_name]``.
+
+            For constant output components,
+            ``indices.method_name[output_name][output_component]`` is ``None``.
         """
 
     @property
@@ -270,8 +276,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The sensitivity indices.
 
         Given a sensitivity method, an input variable and an output variable,
-        the sensitivity index which is a 1D NumPy array can be accessed through
+        the sensitivity index is a NumPy array that can be accessed through
         ``indices.method_name[output_name][output_component][input_name]``.
+
+        For constant output components,
+        ``indices.method_name[output_name][output_component]`` is ``None``.
         """
         return self._indices
 
@@ -280,8 +289,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """The main sensitivity indices.
 
         Given an input variable and an output variable,
-        the sensitivity index which is a 1D NumPy array can be accessed through
-        ``main_indices[output_name][output_component][input_name]``.
+        the sensitivity index is a NumPy array that can be accessed through
+        ``indices.method_name[output_name][output_component][input_name]``.
+
+        For constant output components,
+        ``indices.method_name[output_name][output_component]`` is ``None``.
         """
         return getattr(self.indices, str(self.main_method).lower().replace("-", "_"))
 

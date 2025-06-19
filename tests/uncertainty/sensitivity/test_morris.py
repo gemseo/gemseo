@@ -351,3 +351,14 @@ def test_from_samples(morris, tmp_wd):
     new_morris = MorrisAnalysis(samples=file_path)
     new_morris.compute_indices()
     assert new_morris.indices == morris.indices
+
+
+@pytest.mark.parametrize("normalize", [False, True])
+def test_constant_output(discipline_with_constant_output_and_space, normalize):
+    """Check that MorrisAnalysis supports constant outputs."""
+    discipline, uncertain_space = discipline_with_constant_output_and_space
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 0)
+    indices = analysis.compute_indices(normalize=normalize)
+    assert indices.mu["constant"][0] is None
+    assert indices.mu["varying"][0] is not None

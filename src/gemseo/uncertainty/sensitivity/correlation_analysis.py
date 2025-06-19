@@ -182,11 +182,13 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             sizes = self.dataset.variable_names_to_n_components
             indices[str(method).lower()] = {
                 output_name: [
-                    split_array_to_dict_of_arrays(
+                    None
+                    if (data := output_component_samples[:, newaxis]).var() == 0.0
+                    else split_array_to_dict_of_arrays(
                         array(
                             get_indices(
                                 input_samples,
-                                Sample(output_component_samples[:, newaxis]),
+                                Sample(data),
                             )
                         ),
                         sizes,
