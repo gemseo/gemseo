@@ -120,6 +120,7 @@ from numpy import hstack
 from numpy import newaxis
 from numpy import sign
 from numpy import vstack
+from numpy import zeros
 from numpy.random import default_rng
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
@@ -483,6 +484,10 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             ).to_numpy()
             algos = output_names_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
+                if sub_output_data.var() == 0.0:
+                    algos.append(None)
+                    continue
+
                 ot_algo = algo_class(
                     input_data,
                     Sample(sub_output_data[:, newaxis]),
@@ -559,6 +564,11 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             ]
             algos = output_names_to_sobol_algos[output_name] = []
             for i, sub_output_data in enumerate(output_data.T):
+                if sub_output_data.var() == 0.0:
+                    algos.append(None)
+                    self.output_variances[output_name][i] = 0.0
+                    continue
+
                 sub_cvs_output_data = [
                     cv_output_data.T[i] for cv_output_data in cvs_output_data
                 ]
@@ -662,9 +672,16 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
         names_to_sizes = dataset.variable_names_to_n_components
         output_names_to_sobol_algos = dataset.misc["output_names_to_sobol_algos"]
+        total_input_size = sum(names_to_sizes[name] for name in self._input_names)
+        if method_name == self.__GET_SECOND_ORDER_INDICES:
+            zeros((total_input_size, total_input_size))
+        else:
+            zeros(total_input_size)
         indices = {
             output_name: [
-                split_array_to_dict_of_arrays(
+                None
+                if algorithm is None
+                else split_array_to_dict_of_arrays(
                     array(getattr(algorithm, method_name)()),
                     names_to_sizes,
                     self._input_names,
@@ -676,7 +693,9 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         if method_name == self.__GET_SECOND_ORDER_INDICES:
             return {
                 output_name: [
-                    {
+                    None
+                    if output_component_indices is None
+                    else {
                         k: split_array_to_dict_of_arrays(
                             v.T, names_to_sizes, self._input_names
                         )
