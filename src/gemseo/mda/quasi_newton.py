@@ -182,7 +182,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
                 iterate: The current iterate.
                 residual: The associated residual.
             """
-            self._compute_normalized_residual_norm()
+            self._check_stopping_criteria()
 
         return callback
 
@@ -231,7 +231,8 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             options=self.__get_options(),
         )
 
-        self._check_stopping_criteria()
+        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+            self._check_stopping_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 

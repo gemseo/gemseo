@@ -112,3 +112,14 @@ def test_methods_supporting_callbacks(method):
     assert (
         mda.NORMALIZED_RESIDUAL_NORM in mda.io.output_grammar
     ) is method_supports_callbacks
+
+
+@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
+def test_residual_history(sellar_disciplines, method):
+    """Test that method supporting callbacks update convergence metrics."""
+    mda = MDAQuasiNewton(sellar_disciplines, method=method)
+    mda.execute()
+
+    assert len(mda.residual_history) >= 7
+    assert len(mda.residual_history) == mda._current_iter
+    assert mda.residual_history[-1] <= mda.settings.tolerance
