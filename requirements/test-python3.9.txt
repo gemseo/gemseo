@@ -2,7 +2,7 @@
 #    uv pip compile --extra all --extra test -o requirements/test-python3.9.txt --python-version 3.9 pyproject.toml
 annotated-types==0.7.0
     # via pydantic
-certifi==2025.4.26
+certifi==2025.6.15
     # via requests
 charset-normalizer==3.4.2
     # via requests
@@ -117,11 +117,11 @@ pydantic-core==2.27.2
     # via pydantic
 pydoe3==1.0.4
     # via gemseo (pyproject.toml)
-pygments==2.19.1
+pygments==2.19.2
     # via pytest
 pyparsing==3.2.3
     # via matplotlib
-pytest==8.4.0
+pytest==8.4.1
     # via
     #   gemseo (pyproject.toml)
     #   pytest-cov
@@ -163,7 +163,7 @@ tomli==2.2.1
     #   pytest
 tqdm==4.67.1
     # via gemseo (pyproject.toml)
-typeguard==4.4.3
+typeguard==4.4.4
     # via pandera
 typing-extensions==4.14.0
     # via
@@ -178,7 +178,7 @@ typing-inspect==0.9.0
     # via pandera
 tzdata==2025.2
     # via pandas
-urllib3==2.4.0
+urllib3==2.5.0
     # via requests
 wcwidth==0.2.13
     # via prettytable
