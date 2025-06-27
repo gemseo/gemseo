@@ -16,12 +16,26 @@
 
 from __future__ import annotations
 
+from pydantic import Field
+from pydantic import NonNegativeInt
+
 from gemseo.algos.opt.nlopt.settings.base_gradient_free_nlopt_settings import (
     BaseGradientFreeNLoptSettings,
 )
+from gemseo.utils.seeder import SEED
 
 
 class NLOPT_COBYLA_Settings(BaseGradientFreeNLoptSettings):  # noqa: N801
     """The settings for the NLopt COBYLA algorithm."""
 
     _TARGET_CLASS_NAME = "NLOPT_COBYLA"
+
+    seed: NonNegativeInt | None = Field(
+        default=SEED,
+        description=(
+            """The seed for the pseudo-randomization of simplex steps.
+
+If ``None``, the seed is generated from the system time.
+"""
+        ),
+    )

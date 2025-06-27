@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from unittest import TestCase
+from unittest import mock
 
 import pytest
 from numpy import array
@@ -33,9 +34,11 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.nlopt.nlopt import Nlopt
+from gemseo.algos.opt.nlopt.nlopt import nlopt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 from .problems.x2 import X2
@@ -238,3 +241,24 @@ def test_bobyqa_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
         x2_problem, algo_name="NLOPT_BOBYQA", max_iter=100, stop_crit_n_x=3
     )
     assert res.n_obj_call == 6
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "seed"), [({}, SEED), ({"seed": None}, None), ({"seed": 123}, 123)]
+)
+def test_seed(kwargs, seed):
+    """Check the seed for pseudo-randomization."""
+    algo = Nlopt("NLOPT_COBYLA")
+    with mock.patch.object(nlopt, "srand") as srand:
+        algo.execute(X2(), max_iter=10, **kwargs)
+        if seed is None:
+            assert srand.call_args is None
+        else:
+            assert srand.call_args.args[0] == seed
+
+        # Re-executing the algorithm does not change the seed.
+        algo.execute(X2(), max_iter=10, **kwargs)
+        if seed is None:
+            assert srand.call_args is None
+        else:
+            assert srand.call_args.args[0] == seed
