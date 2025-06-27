@@ -46,6 +46,7 @@ from typing import ClassVar
 from typing import Final
 from typing import Union
 
+import nlopt
 from nlopt import LD_LBFGS
 from nlopt import LD_MMA
 from nlopt import LD_SLSQP
@@ -327,6 +328,9 @@ class Nlopt(BaseOptimizationLibrary):
 
         if self.algo_name == "NLOPT_MMA":
             nlopt_problem.set_param(self._INNER_MAXEVAL, settings[self._INNER_MAXEVAL])
+
+        if (seed := settings.get("seed")) is not None:
+            nlopt.srand(seed)
 
     def _pre_run(
         self,
