@@ -114,7 +114,7 @@ prettytable==3.15.1
     # via gemseo (pyproject.toml)
 psutil==7.0.0
     # via openturns
-pybtex==0.25.0
+pybtex==0.25.1
     # via
     #   pybtex-docutils
     #   sphinxcontrib-bibtex
