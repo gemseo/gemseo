@@ -175,7 +175,6 @@ setuptools==80.9.0
     # via
     #   gemseo (pyproject.toml)
     #   pbr
-    #   sphinxcontrib-bibtex
 six==1.17.0
     # via python-dateutil
 snowballstemmer==3.0.1
@@ -202,7 +201,7 @@ sphinxcontrib-apidoc==0.6.0
     # via gemseo (pyproject.toml)
 sphinxcontrib-applehelp==2.0.0
     # via sphinx
-sphinxcontrib-bibtex==2.6.4
+sphinxcontrib-bibtex==2.6.5
     # via gemseo (pyproject.toml)
 sphinxcontrib-devhelp==2.0.0
     # via sphinx
