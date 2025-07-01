@@ -53,6 +53,7 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 from gemseo.core.serializable import Serializable
 from gemseo.utils.locks import synchronized
 from gemseo.utils.seeder import Seeder
+from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -372,7 +373,10 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
         components = set(where(hstack(list(design_space.normalize.values())) == 0)[0])
         if components:
-            msg = f"The components {components} of the design space are unbounded."
+            msg = (
+                f"The components {pretty_str(components, use_and=True)} "
+                "of the design space are unbounded."
+            )
             raise ValueError(msg)
 
     def compute_doe(

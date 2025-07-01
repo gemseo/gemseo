@@ -21,6 +21,7 @@ from typing import Callable
 
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import colormaps
+from numpy import ptp
 from pandas.plotting import scatter_matrix
 
 from gemseo.post.dataset._trend import TREND_FUNCTIONS
@@ -59,7 +60,7 @@ class ScatterMatrix(MatplotlibPlot):
             values = self._common_dataset.get_view(
                 variable_names=[classifier]
             ).to_numpy()[:, 0]
-            values = (values - values.min()) / values.ptp()
+            values = (values - values.min()) / ptp(values)
             colormap = colormaps[self._specific_settings.colormap_name]
             kwargs["color"] = [colormap(value) for value in values]
             if self._specific_settings.exclude_classifier:

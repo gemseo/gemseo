@@ -377,7 +377,7 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, "f")
 
-    error_message = "The components {2, 3, 4} of the design space are unbounded."
+    error_message = "The components 2, 3 and 4 of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
         mc.compute_doe(design_space, n_samples=3)
 
