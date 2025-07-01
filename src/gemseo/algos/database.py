@@ -29,6 +29,8 @@ from ast import literal_eval
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
+from contextlib import contextmanager
+from contextlib import nullcontext
 from copy import deepcopy
 from itertools import chain
 from itertools import islice
@@ -49,6 +51,16 @@ from numpy import integer
 from numpy import issubdtype
 from numpy import nan
 from numpy import ndarray
+
+try:
+    from numpy._core import printoptions
+except ImportError:
+
+    @contextmanager
+    def printoptions(*args, **kwargs):  # noqa: D103
+        yield nullcontext()
+
+
 from numpy.linalg import norm
 from pandas import MultiIndex
 
@@ -974,7 +986,8 @@ class Database(Mapping):
         return f"{cls.GRAD_TAG}{name}"
 
     def __str__(self) -> str:
-        return str(self.__data)
+        with printoptions(legacy="1.25"):
+            return str(self.__data)
 
     def __get_index(self, iteration: int) -> int:
         """Return the index from an iteration.

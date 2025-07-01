@@ -30,6 +30,7 @@ from typing import Union
 import h5py
 from numpy import array
 from numpy import array_equal
+from numpy import asarray
 from numpy import bytes_
 from numpy import float64
 from numpy import ndarray
@@ -77,7 +78,7 @@ class HDFDatabase:
         Returns:
             The real data.
         """
-        return array(array(data, copy=False).real, dtype=float64)
+        return array(asarray(data).real, dtype=float64)
 
     @staticmethod
     def __add_hdf_input_dataset(

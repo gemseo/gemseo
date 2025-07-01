@@ -1671,7 +1671,7 @@ def test_get_current_value(fbb_design_space, names, cast, normalize, as_dict) ->
 @pytest.mark.parametrize("as_dict", [True, False])
 def test_get_current_value_empty_names(as_dict) -> None:
     design_space = DesignSpace()
-    assert not design_space.get_current_value(variable_names=[], as_dict=as_dict)
+    assert len(design_space.get_current_value(variable_names=[], as_dict=as_dict)) == 0
 
 
 def test_get_current_value_bad_names() -> None:
