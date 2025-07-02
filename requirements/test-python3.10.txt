@@ -74,7 +74,7 @@ numpy==2.2.6
     #   scipy
 openpyxl==3.1.5
     # via gemseo (pyproject.toml)
-openturns==1.24
+openturns==1.25
     # via gemseo (pyproject.toml)
 packaging==25.0
     # via
