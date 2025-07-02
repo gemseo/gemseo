@@ -883,3 +883,13 @@ def test_to_dataset_with_missing_integer() -> None:
     ].astype("Int64")
 
     assert dataset.equals(expected_dataset)
+
+
+@pytest.mark.parametrize("string_value", ["some_string", array(["some_string"])])
+def test_to_hdf_from_hdf_str(tmp_wd, string_value):
+    """Test that a database with str variables is correctly exported and imported."""
+    database = Database()
+    database.store(array([1.0, 2.0]), {"foo": 0, "toto": string_value})
+    database.to_hdf("database.h5")
+    loaded_database = Database.from_hdf("database.h5")
+    assert loaded_database.last_item == database.last_item

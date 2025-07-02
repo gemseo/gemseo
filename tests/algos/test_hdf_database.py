@@ -190,3 +190,31 @@ def test_get_missing_hdf_output_dataset(h5_file) -> None:
     )
     assert new_values == {"h": [2, 3], "i": 20}
     assert idx_mapping == {"h": 2, "i": 3}
+
+
+def test_add_hdf_string_output(h5_file) -> None:
+    """Test that a string (array or str) of outputs is correctly added to the group
+    of output values."""
+    hdf_database = HDFDatabase()
+
+    values_group = h5_file.require_group("v")
+
+    hdf_database._HDFDatabase__add_hdf_string_output(
+        0, 0, values_group, ["some_string"]
+    )
+    assert array(values_group["str_0"]["0"]) == array(["some_string"], dtype=bytes_)
+
+    hdf_database._HDFDatabase__add_hdf_string_output(
+        0, 1, values_group, array(["some_string_1"])
+    )
+    assert array(values_group["str_0"]["1"]) == array(["some_string_1"], dtype=bytes_)
+
+    hdf_database._HDFDatabase__add_hdf_string_output(
+        1, 2, values_group, array(["some_string_2"], dtype=bytes_)
+    )
+    assert array(values_group["str_1"]["2"]) == array(["some_string_2"], dtype=bytes_)
+
+    with pytest.raises(ValueError):
+        hdf_database._HDFDatabase__add_hdf_string_output(
+            1, 2, values_group, array(["some_string_2"])
+        )

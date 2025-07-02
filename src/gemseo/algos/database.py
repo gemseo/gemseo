@@ -761,6 +761,9 @@ class Database(Mapping):
     ) -> None:
         """Export the optimization database to an HDF file.
 
+        When exporting to an HDF file, the order of the values for each entry is not
+        guaranteed to be preserved.
+
         Args:
             file_path: The path of the HDF file.
             append: Whether to append the data to the file.
@@ -781,6 +784,9 @@ class Database(Mapping):
         log: bool = True,
     ) -> Database:
         """Create a database from an HDF file.
+
+        The order of the values for each key is not guaranteed to be
+        preserved.
 
         Args:
             file_path: The path of the HDF file.
