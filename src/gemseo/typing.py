@@ -29,6 +29,7 @@ from numpy import floating
 from numpy import inexact
 from numpy import integer
 from numpy import number
+from numpy import str_
 from numpy.typing import NDArray
 
 from gemseo.utils.compatibility.scipy import SparseArrayType
@@ -57,6 +58,9 @@ RealOrComplexArray = NDArray[inexact[Any]]
 
 RealOrComplexArrayT = TypeVar("RealOrComplexArrayT", RealArray, ComplexArray)
 """A NumPy array of real or complex numbers generic type."""
+
+StringArray = NDArray[str_]
+"""A NumPy array of strings."""
 
 SparseOrDenseRealArray = Union[RealArray, SparseArrayType]
 """A dense NumPy array or a sparse SciPy array."""
