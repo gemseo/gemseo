@@ -118,7 +118,7 @@ pytest==8.4.1
     #   pytest-xdist
 pytest-cov==6.2.1
     # via gemseo (pyproject.toml)
-pytest-xdist==3.7.0
+pytest-xdist==3.8.0
     # via gemseo (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
