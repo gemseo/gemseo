@@ -71,7 +71,7 @@ def parameter_space() -> ParameterSpace:
     return space
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def morris(discipline, parameter_space):
     """Morris analysis for the Ishigami function."""
     analysis = MorrisAnalysis()
@@ -278,6 +278,8 @@ def test_compute_indices_output_names(morris) -> None:
     """Check compute_indices with different types for output_names."""
     assert morris.compute_indices(["y1"]).mu
     assert morris.compute_indices("y1").mu
+    # morris is a module-scoped fixture and so the original indexes must be restored.
+    morris.compute_indices()
 
 
 def test_too_few_samples(discipline, parameter_space) -> None:

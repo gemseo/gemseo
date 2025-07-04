@@ -106,7 +106,7 @@ def uncertain_space() -> ParameterSpace:
     return parameter_space
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def sobol(discipline: Discipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
     """A Sobol' analysis."""
     analysis = SobolAnalysis()
@@ -115,13 +115,13 @@ def sobol(discipline: Discipline, uncertain_space: ParameterSpace) -> SobolAnaly
     return analysis
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def first_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the first-order indices."""
     return sobol.get_intervals()
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the total-order indices."""
     return sobol.get_intervals(False)
@@ -199,6 +199,7 @@ def test_algo(discipline, uncertain_space) -> None:
 @pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.TOTAL])
 def test_method(sobol, method) -> None:
     """Check the use of the main method."""
+    main_method = sobol.main_method
     assert sobol.main_method == "first"
     assert compare_dict_of_arrays(
         sobol.main_indices["y"][0], sobol.indices.first["y"][0], 0.1
@@ -210,7 +211,7 @@ def test_method(sobol, method) -> None:
         sobol.main_indices["y"][0], sobol.indices.total["y"][0], 0.1
     )
 
-    sobol.main_method = SobolAnalysis.Method.FIRST
+    sobol.main_method = main_method
 
 
 @pytest.mark.parametrize(
@@ -436,6 +437,8 @@ def test_compute_indices_output_names(sobol) -> None:
     """Check compute_indices with different types for output_names."""
     assert sobol.compute_indices(["y"]).first
     assert sobol.compute_indices("y").first
+    # sobol is a module-scoped fixture and so the original indexes must be restored.
+    sobol.compute_indices()
 
 
 def test_to_dataset(sobol) -> None:
@@ -463,6 +466,8 @@ def test_output_variance_cv(
     sobol.compute_indices(["y"], control_variates=[cv1])
     assert_almost_equal(sobol.output_variances["y"][0], 21.00, decimal=decimal)
     assert_almost_equal(sobol.output_variances["z"][0], 20.91, decimal=decimal)
+    # sobol is a module-scoped fixture and so the original indexes must be restored.
+    sobol.compute_indices()
 
 
 def test_cv_wo_statistics(
@@ -551,6 +556,8 @@ def test_cv_algo(
     assert compare_dict_of_arrays(
         getattr(indices_cv12, order)["z"][0], reference_cv12, 0.001
     )
+    # sobol is a module-scoped fixture and so the original indexes must be restored.
+    sobol.compute_indices()
 
 
 @pytest.mark.parametrize(
