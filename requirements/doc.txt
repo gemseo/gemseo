@@ -99,7 +99,7 @@ packaging==25.0
     #   sphinx
 pandas==2.3.0
     # via gemseo (pyproject.toml)
-pandera==0.24.0
+pandera==0.25.0
     # via gemseo (pyproject.toml)
 pbr==6.1.1
     # via sphinxcontrib-apidoc
