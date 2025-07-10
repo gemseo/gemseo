@@ -95,7 +95,7 @@ def test_cli_input_file_error(
     check_main_error(capsys, error_msg)
 
 
-protocol_999 = "999" if PYTHON_VERSION < (3, 11) else "'999'"
+protocol_999 = "999" if PYTHON_VERSION < (3, 12) else "'999'"
 
 
 @pytest.mark.parametrize(
