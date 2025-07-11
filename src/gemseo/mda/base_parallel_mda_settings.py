@@ -63,5 +63,10 @@ then multiprocessing should be preferred."""
         Args:
             default_n_processes: The default number of threads/processes.
         """
-        cls.__pydantic_fields__["n_processes"].default = default_n_processes
+        try:
+            fields = cls.__pydantic_fields__
+        except AttributeError:  # pragma: no cover
+            # TODO: remove when pydantic 2.9 is no longer supported.
+            fields = cls.model_fields
+        fields["n_processes"].default = default_n_processes
         cls.model_rebuild(force=True)
