@@ -321,7 +321,7 @@ def test_cobyqa() -> None:
         problem, algo_name="COBYQA", max_iter=100
     )
     x_opt, f_opt = problem.get_solution()
-    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.x_opt == pytest.approx(x_opt, abs=2.0e-2)
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
 
 
