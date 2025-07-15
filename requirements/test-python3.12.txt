@@ -2,7 +2,7 @@
 #    uv pip compile --python-platform linux --group dev --extra all --python-version 3.12 pyproject.toml -o requirements/test-python3.12.txt
 annotated-types==0.7.0
     # via pydantic
-certifi==2025.7.9
+certifi==2025.7.14
     # via requests
 charset-normalizer==3.4.2
     # via requests
