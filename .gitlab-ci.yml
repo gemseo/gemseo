@@ -1,2 +1,9 @@
 include:
-  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/main/gemseo.yml"
+  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/3.1/main.yml"
+
+.test-min-tags:
+  - saas-linux-medium-amd64
+
+.test-all-tags:
+  - saas-linux-medium-amd64
+  - windows-server-2012

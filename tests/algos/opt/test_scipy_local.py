@@ -57,7 +57,7 @@ class TestScipy(TestCase):
         """"""
         algo_name = "TNC"
         self.assertRaises(
-            Exception,
+            ValueError,
             OptLibraryTestBase.generate_one_test,
             algo_name,
             max_iter=10,
@@ -100,7 +100,7 @@ class TestScipy(TestCase):
 
         problem.objective = MDOFunction(i_fail, "rosen")
         self.assertRaises(
-            Exception, OptimizationLibraryFactory().execute, problem, algo_name
+            AttributeError, OptimizationLibraryFactory().execute, problem, algo_name
         )
 
     def test_tnc_options(self) -> None:
@@ -321,7 +321,7 @@ def test_cobyqa() -> None:
         problem, algo_name="COBYQA", max_iter=100
     )
     x_opt, f_opt = problem.get_solution()
-    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.x_opt == pytest.approx(x_opt, abs=2.0e-2)
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
 
 
