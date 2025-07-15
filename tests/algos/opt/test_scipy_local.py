@@ -57,7 +57,7 @@ class TestScipy(TestCase):
         """"""
         algo_name = "TNC"
         self.assertRaises(
-            Exception,
+            ValueError,
             OptLibraryTestBase.generate_one_test,
             algo_name,
             max_iter=10,
@@ -100,7 +100,7 @@ class TestScipy(TestCase):
 
         problem.objective = MDOFunction(i_fail, "rosen")
         self.assertRaises(
-            Exception, OptimizationLibraryFactory().execute, problem, algo_name
+            AttributeError, OptimizationLibraryFactory().execute, problem, algo_name
         )
 
     def test_tnc_options(self) -> None:

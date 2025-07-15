@@ -57,7 +57,7 @@ class TestNLOPT(TestCase):
         """"""
         algo_name = "NLOPT_SLSQP"
         self.assertRaises(
-            Exception,
+            ValueError,
             OptLibraryTestBase.generate_error_test,
             "NloptAlgorithms",
             algo_name=algo_name,
