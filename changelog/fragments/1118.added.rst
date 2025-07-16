@@ -1,0 +1,1 @@
+DOE algorithms have a new option, called ``"vectorize"``, to sample the functions in a vectorized way.

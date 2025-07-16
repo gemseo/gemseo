@@ -77,13 +77,26 @@ called as ``callback(index, (output, Jacobian))``.""",
         description="Whether to normalize the design space variables between 0 and 1.",
     )
 
+    vectorize: bool = Field(
+        default=False,
+        description="Whether to vectorize the functions evaluations.",
+    )
+
     @model_validator(mode="after")
-    def __check_wait_time_between_samples(self) -> Self:
-        """Log a warning message when wait_time_between_samples!=0 and n_processes=1."""
+    def __check(self) -> Self:
+        """Check that field values are compatible.
+
+        Raises:
+            NotImplementedError: When combining parallelization and vectorization.
+        """
         if self.wait_time_between_samples > 0 and self.n_processes == 1:
             LOGGER.warning(
                 "The option 'wait_time_between_samples' is ignored "
                 "when the option 'n_processes' is 1 (serial mode)."
             )
+
+        if self.vectorize and self.n_processes > 1:
+            msg = "Vectorization in parallel is not yet supported."
+            raise NotImplementedError(msg)
 
         return self

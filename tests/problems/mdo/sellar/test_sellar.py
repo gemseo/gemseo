@@ -28,6 +28,7 @@ from numpy import hstack
 from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_allclose
+from pandas._testing import assert_frame_equal
 
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -188,3 +189,50 @@ def test_exec(
 
     assert scenario.optimization_result.f_opt == pytest.approx(3.18339, rel=0.001)
     assert x_opt == pytest.approx(x_opt, abs=0.0001)
+
+
+@pytest.mark.parametrize(
+    ("cls", "output_names"),
+    [(Sellar1, ["y_1"]), (Sellar2, ["y_2"]), (SellarSystem, ["obj", "c_1", "c_2"])],
+)
+@pytest.mark.parametrize("eval_jac", [False, True])
+@pytest.mark.parametrize("n", [1, 2])
+def test_vectorization(eval_jac, cls, output_names, n):
+    """Check that the Sellar's disciplines are correctly vectorized."""
+    n_samples = 3
+
+    # Create the reference results without vectorization.
+    scenario = MDOScenario(
+        [cls(n=n)],
+        output_names[0],
+        SellarDesignSpace(n=n),
+        formulation_name="DisciplinaryOpt",
+    )
+    for output_name in output_names[1:]:
+        scenario.add_observable(output_name)
+    scenario.execute(
+        algo_name="MC", n_samples=n_samples, vectorize=False, eval_jac=eval_jac
+    )
+    reference = scenario.formulation.optimization_problem.database.to_dataset(
+        export_gradients=True
+    )
+
+    # Create the results with vectorization.
+    scenario = MDOScenario(
+        [cls(n=n)],
+        output_names[0],
+        SellarDesignSpace(n=n),
+        formulation_name="DisciplinaryOpt",
+    )
+    for output_name in output_names[1:]:
+        scenario.add_observable(output_name)
+    scenario.execute(
+        algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
+    )
+    result = scenario.formulation.optimization_problem.database.to_dataset(
+        export_gradients=True
+    )
+
+    # Compare the results
+    # in terms of input values, output values and gradient values.
+    assert_frame_equal(result, reference)

@@ -77,7 +77,7 @@ class FunctionFromDiscipline(MDOFunction):
     """The input components to unmask, set at the first evaluation of the function."""
 
     __unmask_x_swap_order: Callable[
-        [Iterable[str], NumberArray, Iterable[str] | None, NumberArray | None],
+        [Iterable[str], NumberArray, Iterable[str] | None],
         NumberArray,
     ]
     """Unmask a vector from a subset of names, with respect to a set of names."""
@@ -176,7 +176,7 @@ class FunctionFromDiscipline(MDOFunction):
         Returns:
             The value of the outputs.
         """
-        return self.__discipline_adapter.evaluate(x_vect[self._input_mask])
+        return self.__discipline_adapter.evaluate(x_vect[..., self._input_mask])
 
     def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Compute the gradient of the outputs.
@@ -190,7 +190,7 @@ class FunctionFromDiscipline(MDOFunction):
         # TODO: The support of sparse Jacobians requires modifications here.
         jac = self.__unmask_x_swap_order(
             self.__differentiated_input_names,
-            self.__discipline_adapter.jac(x_vect[self._input_mask]),
+            self.__discipline_adapter.jac(x_vect[..., self._input_mask]),
             self.__all_differentiated_input_names,
         )
         jac.astype(x_vect.dtype)

@@ -1505,7 +1505,7 @@ def design_space_to_check_membership() -> DesignSpace:
             ),
         ),
         (array([-1, 1, 1]), None, None, None),
-        (zeros(4), None, ValueError, "The array should be of size 3; got 4."),
+        (zeros(4), None, ValueError, "Expected an array of shape (..., 3); got (4,)."),
         (array([-1, 1, 1]), ["x", "y"], None, None),
         (array([1, 1, -1]), ["y", "x"], None, None),
         (

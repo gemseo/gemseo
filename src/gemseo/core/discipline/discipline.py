@@ -511,16 +511,14 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         input_names = input_names or self._differentiated_input_names
         input_names_to_sizes = (
             self.io.input_grammar.data_converter.compute_names_to_sizes(
-                input_names,
-                self.io.data,
+                input_names, self.io.data
             )
         )
 
         output_names = output_names or self._differentiated_output_names
         output_names_to_sizes = (
             self.io.output_grammar.data_converter.compute_names_to_sizes(
-                output_names,
-                self.io.data,
+                output_names, self.io.data
             )
         )
 
