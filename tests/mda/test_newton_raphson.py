@@ -43,6 +43,8 @@ from gemseo.problems.mdo.sellar.utils import get_y_opt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from tests.mda import check_iteration_callbacks_clearing
+from tests.mda import check_iteration_callbacks_execution
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -432,3 +434,13 @@ def test_linear_solver_not_converged(caplog) -> None:
     )
     mda.execute()
     assert expected_log in caplog.text
+
+
+def test_iteration_callbacks_execution() -> None:
+    """Check the execution of iteration callbacks."""
+    check_iteration_callbacks_execution(MDANewtonRaphson([Sellar1(), Sellar2()]))
+
+
+def test_iteration_callbacks_clearing() -> None:
+    """Check the clearing of iteration callbacks."""
+    check_iteration_callbacks_clearing(MDANewtonRaphson([Sellar1(), Sellar2()]))

@@ -22,6 +22,7 @@ from abc import abstractmethod
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 from typing import ClassVar
 
 from numpy import abs as np_abs
@@ -102,6 +103,9 @@ class BaseMDASolver(BaseMDA):
     __n_consecutive_unsuccessful_iterations: int
     """The number of consecutive unsuccessful iterations."""
 
+    __iteration_callbacks: list[Callable[[BaseMDASolver], None]]
+    """The callback functions to be called after each iteration."""
+
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
@@ -126,6 +130,8 @@ class BaseMDASolver(BaseMDA):
         self.__lower_bound_vector = None
         self.__upper_bound_vector = None
         self.__resolved_variable_names_to_bounds = {}
+
+        self.__iteration_callbacks = []
 
     @property
     def acceleration_method(self) -> AccelerationMethod:
@@ -215,6 +221,7 @@ class BaseMDASolver(BaseMDA):
         if update_iteration_metrics:
             self.__update_iteration_metrics()
 
+        self._execute_iteration_callbacks()
         if self.normed_residual <= self.settings.tolerance:
             return True
 
@@ -472,3 +479,22 @@ class BaseMDASolver(BaseMDA):
             LOGGER.info(
                 msg.format(self.name, f"{self.normed_residual:.2e}", self._current_iter)
             )
+
+    def add_iteration_callback(
+        self, iteration_callback: Callable[[BaseMDASolver], None]
+    ) -> None:
+        """Add a callback function to be called after each iteration.
+
+        Args:
+            iteration_callback: The callback function.
+        """
+        self.__iteration_callbacks.append(iteration_callback)
+
+    def _execute_iteration_callbacks(self) -> None:
+        """Execute the iteration callbacks."""
+        for iteration_callback in self.__iteration_callbacks:
+            iteration_callback(self)
+
+    def clear_iteration_callbacks(self) -> None:
+        """Clear the iteration callbacks."""
+        self.__iteration_callbacks.clear()

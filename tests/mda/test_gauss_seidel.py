@@ -42,6 +42,8 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import image_comparison
+from tests.mda import check_iteration_callbacks_clearing
+from tests.mda import check_iteration_callbacks_execution
 
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 from .utils import generate_parallel_doe
@@ -306,3 +308,13 @@ def test_max_mda_iter_0():
 
     for output_name, output_value in output_data.items():
         assert_almost_equal(output_value, expected_output_data[output_name])
+
+
+def test_iteration_callbacks_execution() -> None:
+    """Check the execution of iteration callbacks."""
+    check_iteration_callbacks_execution(SobieskiMDAGaussSeidel())
+
+
+def test_iteration_callbacks_clearing() -> None:
+    """Check the clearing of iteration callbacks."""
+    check_iteration_callbacks_clearing(SobieskiMDAGaussSeidel())
