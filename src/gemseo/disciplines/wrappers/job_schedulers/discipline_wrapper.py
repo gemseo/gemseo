@@ -275,7 +275,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self,
         current_workdir: Path,
         outputs_path: Path,
-    ) -> None:
+    ) -> StrKeyMapping:
         """Read the serialized outputs.
 
         If an exception is contained inside, raises it.
@@ -285,6 +285,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
         Args:
             current_workdir: The current working directory.
             outputs_path: The path to the serialized output data.
+
+        Returns:
+            The output data.
 
         Raises:
             FileNotFoundError: When the outputs contain an error.
@@ -315,9 +318,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
             current_workdir,
         )
 
-        self.io.data.update(output[0])
         if output[1]:
             self.jac = output[1]
+        return output[0]
 
     def _write_inputs_to_disk(
         self,
@@ -362,7 +365,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         linearize: bool,
         differentiated_inputs: Iterable[str] = (),
         differentiated_outputs: Iterable[str] = (),
-    ) -> None:
+    ) -> StrKeyMapping:
         """Executes or linearizes the discipline.
 
         Args:
@@ -371,6 +374,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
                 inputs that define the rows of the jacobian.
             differentiated_outputs: If the linearization is performed, the
                 outputs that define the columns of the jacobian.
+
+        Returns:
+            The output data.
         """
         current_workdir = self.__directory_creator.create()
         outputs_path = current_workdir / self.DISC_OUTPUT_FILE_NAME
@@ -393,10 +399,10 @@ class JobSchedulerDisciplineWrapper(Discipline):
 
         self._run_command(current_workdir, dest_job_file_path)
         self._wait_job(current_workdir)
-        self._handle_outputs(current_workdir, outputs_path)
+        return self._handle_outputs(current_workdir, outputs_path)
 
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self._run_or_compute_jacobian(False)
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        return self._run_or_compute_jacobian(False)
 
     def linearize(  # noqa: D102
         self,
@@ -416,6 +422,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self._run_or_compute_jacobian(
+        output_data = self._run_or_compute_jacobian(
             True, differentiated_inputs=input_names, differentiated_outputs=output_names
         )
+        self.io.data.update(output_data)
