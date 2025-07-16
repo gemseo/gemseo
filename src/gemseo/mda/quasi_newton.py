@@ -170,8 +170,11 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
         return compute_jacobian
 
-    def __get_residual_history_callback(self) -> Callable[[ndarray, Any], None] | None:
-        """Return the callback used to store the residual history."""
+    def __get_iteration_callback(self) -> Callable[[ndarray, Any], None] | None:
+        """Return the callback function to be called after each iteration.
+
+        This callback function computes and stores the residual of the iteration.
+        """
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
             return None
 
@@ -226,7 +229,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             x0=self.get_current_resolved_variables_vector().real,
             method=self.settings.method,
             jac=self.__get_jacobian_computer(),
-            callback=self.__get_residual_history_callback(),
+            callback=self.__get_iteration_callback(),
             tol=self.settings.tolerance,
             options=self.__get_options(),
         )
@@ -242,3 +245,21 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             })
 
         return False
+
+    def add_iteration_callback(
+        self, iteration_callback: Callable[[MDAQuasiNewton], None]
+    ) -> None:
+        """
+        Raises:
+            RuntimeError: If the quasi-Newton method
+                does not support iteration callbacks.
+        """  # noqa: D205, D212
+        method = self.settings.method
+        if method not in self._METHODS_SUPPORTING_CALLBACKS:
+            msg = (
+                "Iteration callbacks are only supported for the methods: "
+                f"{self._METHODS_SUPPORTING_CALLBACKS}, not for {method}."
+            )
+            raise RuntimeError(msg)
+
+        super().add_iteration_callback(iteration_callback)
