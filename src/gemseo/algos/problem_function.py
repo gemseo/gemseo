@@ -66,6 +66,9 @@ class ProblemFunction(MDOFunction, Serializable):
     _gradient_name: str
     """The name of the gradient variable."""
 
+    _input_dimension: int
+    """The input dimension."""
+
     _jacobian_evaluation_sequence: Iterable[Callable[[NumberArray], NumberArray]]
     """The execution sequence to compute a Jacobian from an input value."""
 
@@ -98,6 +101,7 @@ class ProblemFunction(MDOFunction, Serializable):
         design_space: DesignSpace,
         store_jacobian: bool = True,
         differentiation_method: ApproximationMode | None = None,
+        vectorize: bool = False,
         **differentiation_method_options: Any,
     ):
         """
@@ -117,6 +121,7 @@ class ProblemFunction(MDOFunction, Serializable):
             store_jacobian: Whether to store the Jacobian matrices in the database.
             differentiation_method: The differentiation method to compute the Jacobian.
                 If ``None``, use the original derivatives.
+            vectorize: Whether to vectorize the functions evaluations.
             **differentiation_method_options: The options of the differentiation method.
 
         """  # noqa: D205, D212, D415
@@ -129,6 +134,9 @@ class ProblemFunction(MDOFunction, Serializable):
         if use_database and with_normalized_inputs:
             compute_output = self._compute_output_db_norm
             compute_jacobian = self._compute_jacobian_db_norm
+        elif use_database and vectorize:
+            compute_output = self._compute_output_db_vect
+            compute_jacobian = self._compute_jacobian_db_vect
         elif use_database:
             compute_output = self._compute_output_db
             compute_jacobian = self._compute_jacobian_db
@@ -140,6 +148,7 @@ class ProblemFunction(MDOFunction, Serializable):
         self._evaluation_counter = counter
         self.stop_if_nan = stop_if_nan
         self._database = database
+        self._input_dimension = design_space.dimension
         self._unnormalize_vect = design_space.unnormalize_vect
         self._normalize_grad = design_space.normalize_grad
         self._unnormalize_grad = design_space.unnormalize_grad
@@ -274,6 +283,64 @@ class ProblemFunction(MDOFunction, Serializable):
 
         return jacobian
 
+    def _compute_output_db_vect(self, input_values: NumberArray) -> NumberArray:
+        """Compute the output values from input values.
+
+        The database is used to store the output and Jacobian values.
+
+        Args:
+            input_values: The input values of the form (n_samples * input_dimension,).
+
+        Returns:
+            The output values of the form (n_samples * output_dimension,).
+        """
+        name = self.name
+
+        self.check_function_output_includes_nan(input_values)
+        output_values = self._compute_output(input_values)
+        database = self._database
+        for input_value, output_value in zip(
+            input_values,
+            output_values.reshape((len(input_values), -1)),
+        ):
+            hashed_xu = database.get_hashable_ndarray(input_value)
+            self.check_function_output_includes_nan(
+                output_value, self.stop_if_nan, name, input_value
+            )
+            database.store(hashed_xu, {name: output_value})
+
+        return output_values
+
+    def _compute_jacobian_db_vect(self, input_values: NumberArray) -> NumberArray:
+        """Compute the Jacobian from input values.
+
+        The database is used to store the output and Jacobian values.
+
+        Args:
+            input_values: The input values of the form (n_samples * input_dimension,).
+
+        Returns:
+            The block diagonal Jacobian matrix
+            of the form (output_dimension * n_samples, input_dimension * n_samples).
+        """
+        self.check_function_output_includes_nan(input_values)
+        name = self._gradient_name
+        jac_values = self._compute_jacobian(input_values).real
+        output_dimension = jac_values.shape[0] // len(input_values)
+        database = self._database
+        for i, input_value in enumerate(input_values):
+            jac_value = jac_values[
+                i * output_dimension : (i + 1) * output_dimension,
+                i * self._input_dimension : (i + 1) * self._input_dimension,
+            ]
+            hashed_xu = database.get_hashable_ndarray(input_value)
+            self.check_function_output_includes_nan(
+                jac_value, self.stop_if_nan, name, input_value
+            )
+            database.store(hashed_xu, {name: jac_value})
+
+        return jac_values
+
     def _compute_output_db_norm(self, input_value: NumberArray) -> NumberArray:
         """Compute the output value from a database and a normalized input value.
 
@@ -370,12 +437,12 @@ class ProblemFunction(MDOFunction, Serializable):
         if stop_if_nan and isnan(value).any():
             if function_name:
                 msg = (
-                    f"The function {function_name} contains a NaN value "
-                    f"for x={xu_vect}."
+                    f"Found a NaN in the output data of the function {function_name} "
+                    f"evaluated at the input array {xu_vect}."
                 )
                 raise FunctionIsNan(msg)
 
-            msg = f"The input vector contains a NaN value: {value}."
+            msg = f"Found a NaN in the input array {value}."
             raise DesvarIsNan(msg)
 
     @property

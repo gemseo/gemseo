@@ -568,6 +568,7 @@ class EvaluationProblem(BaseProblem):
         eval_obs_jac: bool = False,
         support_sparse_jacobian: bool = False,
         store_jacobian: bool = True,
+        vectorize: bool = False,
     ) -> None:
         """Wrap the function for a more attractive evaluation.
 
@@ -586,6 +587,7 @@ class EvaluationProblem(BaseProblem):
             support_sparse_jacobian: Whether the driver supports sparse Jacobian.
             store_jacobian: Whether to store the Jacobian matrices in the database.
                 This argument is ignored when ``use_database`` is ``False``.
+            vectorize: Whether to vectorize the functions evaluations.
         """
         # Avoids multiple wrappings of functions when multiple executions
         # are performed, in bi-level scenarios for instance
@@ -601,8 +603,12 @@ class EvaluationProblem(BaseProblem):
 
         for functions in self._sequence_of_functions:
             if functions == self.__new_iter_observables:
+                # Vectorization does not make sense for these observables
+                # because they are evaluated at each point of the database.
+                vectorize_ = False
                 is_function_input_normalized_ = False
             else:
+                vectorize_ = vectorize
                 is_function_input_normalized_ = is_function_input_normalized
             for index, function in enumerate(functions):
                 function = self._preprocess_function(
@@ -612,6 +618,7 @@ class EvaluationProblem(BaseProblem):
                     round_ints=round_ints,
                     support_sparse_jacobian=support_sparse_jacobian,
                     store_jacobian=store_jacobian,
+                    vectorize=vectorize_,
                 )
                 functions[index] = function
 
@@ -626,6 +633,7 @@ class EvaluationProblem(BaseProblem):
                     round_ints=round_ints,
                     support_sparse_jacobian=support_sparse_jacobian,
                     store_jacobian=store_jacobian,
+                    vectorize=vectorize,
                 ),
             )
         self._functions_are_preprocessed = True
@@ -644,6 +652,7 @@ class EvaluationProblem(BaseProblem):
         round_ints: bool = True,
         support_sparse_jacobian: bool = False,
         store_jacobian: bool = True,
+        vectorize: bool = False,
     ) -> ProblemFunction:
         """Wrap the function for a more attractive evaluation.
 
@@ -655,6 +664,7 @@ class EvaluationProblem(BaseProblem):
             round_ints: Whether to round the integer variables.
             support_sparse_jacobian: Whether the driver supports sparse Jacobian.
             store_jacobian: Whether to store the Jacobian in the database.
+            vectorize: Whether to vectorize the functions evaluations.
 
         Returns:
             The pre-processed function.
@@ -717,6 +727,7 @@ class EvaluationProblem(BaseProblem):
             step=self.differentiation_step,
             normalize=is_function_input_normalized,
             parallel=self.__parallel_differentiation,
+            vectorize=vectorize,
             **self.__parallel_differentiation_options,
         )
         function.original = original_function

@@ -183,6 +183,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
             return getter(value)
         if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
+
         return value.size
 
     def compute_names_to_slices(
@@ -223,17 +224,15 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         return names_to_slices, end
 
     def compute_names_to_sizes(
-        self,
-        names: Iterable[str],
-        data: StrKeyMapping,
+        self, names: Iterable[str], data: StrKeyMapping
     ) -> dict[str, int]:
         """Compute a mapping from data names to data value sizes.
 
         .. seealso:: :meth:`.get_value_size`.
 
         Args:
-            data: The data structure.
             names: The data names.
+            data: The data structure.
 
         Returns:
             The mapping from the data names to the data sizes.
@@ -259,7 +258,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         """
         to_value = self.convert_array_to_value
         return {
-            name: to_value(name, array[slice_])
+            name: to_value(name, array[..., slice_])
             for name, slice_ in names_to_slices.items()
         }
 
@@ -282,7 +281,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         if not names:
             return np_array([])
         to_array = self.convert_value_to_array
-        return concatenate(tuple(to_array(name, data[name]) for name in names))
+        return concatenate(tuple(to_array(name, data[name]) for name in names), axis=-1)
 
     def is_numeric(self, name: str) -> bool:
         """Return whether a grammar item is numeric.

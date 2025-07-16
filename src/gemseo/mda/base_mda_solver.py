@@ -418,8 +418,14 @@ class BaseMDASolver(BaseMDA):
         for residual_name in self._resolved_residual_names:
             residual = to_array(residual_name, data[residual_name])
             if residual_name in self._resolved_variable_names:
-                # No -= assignment to avoid possible casting problems.
-                residual = residual - to_array(residual_name, input_data[residual_name])
+                residual_ = to_array(residual_name, input_data[residual_name])
+                # At first iteration,
+                # when sampling in a vectorized way,
+                # residual.shape = (d,) != residual_.shape is (d*n,)
+                # where d is the feature dimension and n is the number of samples.
+                if residual.shape == residual_.shape:
+                    # No -= assignment to avoid possible casting problems.
+                    residual = residual - residual_
 
             self.__current_residuals[residual_name] = residual
 

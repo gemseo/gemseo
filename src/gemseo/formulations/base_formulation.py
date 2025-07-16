@@ -30,10 +30,10 @@ from typing import Generic
 from typing import TypeVar
 
 from numpy import arange
-from numpy import copy
 from numpy import empty
 from numpy import ndarray
 from numpy import zeros
+from scipy.sparse import block_array
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
@@ -262,10 +262,9 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def unmask_x_swap_order(
         self,
-        masking_data_names: Iterable[str],
+        masking_data_names: Sequence[str],
         x_masked: ndarray,
         all_data_names: Iterable[str] = (),
-        x_full: ndarray | None = None,
     ) -> ndarray:
         """Unmask a vector or matrix from names, with respect to other names.
 
@@ -273,45 +272,113 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         if the order of the data names is inconsistent between these sets.
 
         Args:
-            masking_data_names: The names of the kept data.
+            masking_data_names: The names of the variables
+                whose values come from ``x_masked`` (the other are zeros).
             x_masked: The vector or matrix to unmask.
-            all_data_names: The set of all names.
-                If empty, use the design variables stored in the design space.
-            x_full: The default values for the full vector or matrix.
-                If ``None``, use the zero vector or matrix.
+            all_data_names: The names of the variables
+                whose values the full array will concatenate.
+                If empty, use the names of all the design variables.
 
         Returns:
             The vector or matrix related to the input mask.
 
         Raises:
-            IndexError: when the sizes of variables are inconsistent.
+            ValueError: when the sizes of variables are inconsistent.
         """
         if not all_data_names:
             all_data_names = self.get_optim_variable_names()
-        indices = self._get_dv_indices(all_data_names)
-        variable_sizes = self.variable_sizes
-        total_size = sum(variable_sizes[var] for var in all_data_names)
 
-        # TODO: The support of sparse Jacobians requires modifications here.
-        if x_full is None:
-            x_unmask = zeros((*x_masked.shape[:-1], total_size), dtype=x_masked.dtype)
-        else:
-            x_unmask = copy(x_full)
+        names_to_sizes = self.variable_sizes
+        mask_size = sum(names_to_sizes[name] for name in masking_data_names)
 
-        i_x = 0
-        try:
-            for key in all_data_names:
-                if key in masking_data_names:
-                    i_min, i_max, n_x = indices[key]
-                    x_unmask[..., i_min:i_max] = x_masked[..., i_x : i_x + n_x]
-                    i_x += n_x
-        except IndexError:
-            msg = (
-                "Inconsistent input array size of values array "
-                f"with reference data shape {x_unmask.shape}"
+        if (n_samples := x_masked.shape[-1] // mask_size) == 1:
+            return self.__unmask_x_swap_order_if_one_sample(
+                x_masked, all_data_names, masking_data_names
             )
-            raise ValueError(msg) from None
-        return x_unmask
+
+        return self.__unmask_x_swap_order_if_several_samples(
+            x_masked,
+            all_data_names,
+            masking_data_names,
+            mask_size,
+            n_samples,
+        )
+
+    def __unmask_x_swap_order_if_one_sample(
+        self,
+        x_masked: ndarray,
+        all_data_names: Iterable[str],
+        masking_data_names: Sequence[str],
+    ) -> ndarray:
+        """Unmasking function if there is only one sample.
+
+        Args:
+            x_masked: The array to unmask.
+            all_data_names: All the variable names.
+            masking_data_names: The names of the variables to unmask.
+
+        Returns:
+            The unmasked array.
+        """
+        names_to_sizes = self.variable_sizes
+        x_unmasked = zeros(
+            (
+                *x_masked.shape[:-1],
+                sum(names_to_sizes[name] for name in all_data_names),
+            ),
+            dtype=x_masked.dtype,
+        )
+        indices = self._get_dv_indices(all_data_names)
+        masked_position = 0
+        for variable_name in masking_data_names:
+            unmasked_position, _, size = indices[variable_name]
+            x_unmasked[..., unmasked_position : unmasked_position + size] = x_masked[
+                ..., masked_position : masked_position + size
+            ]
+            masked_position += size
+
+        return x_unmasked
+
+    def __unmask_x_swap_order_if_several_samples(
+        self,
+        x_masked: ndarray,
+        all_data_names: Iterable[str],
+        masking_data_names: Sequence[str],
+        mask_size: int,
+        n_samples: int,
+    ) -> ndarray:
+        """Unmasking function if there are several samples.
+
+        Args:
+            x_masked: The array to unmask.
+            all_data_names: All the variable names.
+            masking_data_names: The names of the variables to unmask.
+            mask_size: The size of the mask.
+            n_samples: The number of samples.
+
+        Returns:
+            The unmasked array.
+        """
+        masked_position = 0
+        names_to_indices = {
+            name: index
+            for index, name in enumerate(all_data_names)
+            if name in masking_data_names
+        }
+        n_variables = len(all_data_names)
+        arrays = [None] * n_samples * n_variables
+        names_to_sizes = self.variable_sizes
+        for variable_name, variable_index in names_to_indices.items():
+            size = names_to_sizes[variable_name]
+            a = variable_index - n_variables
+            b = masked_position - mask_size
+            for _ in range(n_samples):
+                a += n_variables
+                b += mask_size
+                arrays[a] = x_masked[..., b : b + size]
+
+            masked_position += size
+        return block_array([arrays])
 
     def mask_x_swap_order(
         self,

@@ -17,27 +17,28 @@ from __future__ import annotations
 import re
 
 import pytest
+from numpy import array
+from numpy import nan
 
-from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-
-
-def test_doe_settings_wait_time_between_samples(caplog):
-    """Check the log when setting wait_time_between_samples in serial mode."""
-    BaseDOESettings(wait_time_between_samples=0.2)
-    assert caplog.record_tuples == [
-        (
-            "gemseo.algos.doe.base_doe_settings",
-            30,
-            "The option 'wait_time_between_samples' is ignored "
-            "when the option 'n_processes' is 1 (serial mode).",
-        )
-    ]
+from gemseo.algos.problem_function import ProblemFunction
+from gemseo.algos.stop_criteria import DesvarIsNan
+from gemseo.algos.stop_criteria import FunctionIsNan
 
 
-def test_doe_settings_vectorize_in_parallel(caplog):
-    """Check the error when setting vectorize in parallel mode."""
+def test_check_function_output_includes_nan():
+    """Check the error raised by check_function_output_includes_nan()."""
     with pytest.raises(
-        NotImplementedError,
-        match=re.escape("Vectorization in parallel is not yet supported."),
+        DesvarIsNan, match=re.escape("Found a NaN in the input array [nan].")
     ):
-        BaseDOESettings(vectorize=True, n_processes=2)
+        ProblemFunction.check_function_output_includes_nan(array([nan]))
+
+    with pytest.raises(
+        FunctionIsNan,
+        match=re.escape(
+            "Found a NaN in the output data of the function f "
+            "evaluated at the input array [1.]."
+        ),
+    ):
+        ProblemFunction.check_function_output_includes_nan(
+            array([nan]), function_name="f", xu_vect=array([1.0])
+        )

@@ -16,10 +16,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
 from gemseo.problems.mdo.sellar.utils import get_initial_data
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
 
 
 class BaseSellar(Discipline):
@@ -31,13 +35,29 @@ class BaseSellar(Discipline):
     _OUTPUT_NAMES: ClassVar[tuple[str]]
     """The names of the outputs."""
 
+    _n: int
+    """The size of the local design variables and coupling variables."""
+
     def __init__(self, n: int = 1) -> None:
         """
         Args:
             n: The size of the local design variables and coupling variables.
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__()
+        self._n = n
         default_input_data = get_initial_data(self._INPUT_NAMES, n)
         self.io.input_grammar.update_from_data(default_input_data)
         self.io.output_grammar.update_from_data(get_initial_data(self._OUTPUT_NAMES, n))
         self.io.input_grammar.defaults = default_input_data
+
+    @staticmethod
+    def _get_n_samples(*args: RealArray) -> int:
+        """Return the number of samples in the case of vectorization.
+
+        Args:
+            *args: The values of the variables.
+
+        Returns:
+            The number of samples.
+        """
+        return max(len(arg) for arg in args)
