@@ -152,14 +152,29 @@ def test_handle_outputs_errors(
         discipline._handle_outputs(tmp_wd, outputs_path)
 
 
+def add_namespace_sobieski_mission(discipline):
+    """Add a namespace to the discipline grammars."""
+    discipline.input_grammar.add_namespace("y_14", "ns")
+    discipline.output_grammar.add_namespace("y_4", "ns")
+
+
 def test_execution(discipline_mocked_js) -> None:
-    """Test the execution of the wrapped discipline."""
+    """Test the execution of the wrapped discipline.
+
+    Test with and without the use of namespaces.
+    """
     orig_disc = discipline_mocked_js._discipline
     ref_data = orig_disc.io.input_grammar.defaults
     ref_data["x_shared"] += 1.0
+
+    add_namespace_sobieski_mission(discipline_mocked_js)
+
     out = discipline_mocked_js.execute(ref_data)
-    assert "y_4" in out
+
+    assert "ns:y_4" in out
+
     mission_local = create_discipline("SobieskiMission")
+    add_namespace_sobieski_mission(mission_local)
     out_ref = mission_local.execute(ref_data)
     assert compare_dict_of_arrays(out, out_ref)
 
