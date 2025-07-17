@@ -18,15 +18,17 @@
 #        :author: Fabian Castañeda
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-BiLevel BCD-based MDO on the Sobieski SSBJ test case.
+Bi-level BCD-based MDO on the Sobieski SSBJ test case
 =====================================================
 """
 
 # %%
 # .. note::
 #
-#    There are several variants of the BiLevel BCD formulation; this example shows
-#    the implementation of the BiLevel BCD MDF (BL-BCD-MDF) for other variants please
+#    As described in :ref:`bcd_formulation`,
+#    there are several variants of the bi-level BCD formulation; this example shows
+#    the implementation of the bi-level BCD-MDF (BL-BCD-MDF).
+#    For more details about other variants please
 #    refer to :cite:`david:hal-04758286`.
 
 from __future__ import annotations
@@ -151,7 +153,7 @@ structure_sc.add_constraint("g_1", constraint_type="ineq")
 # %%
 # System's Scenario Settings
 # ---------------------------
-# The BiLevel BCD formulation allows to independently define the settings
+# The bi-level BCD formulation allows to independently define the settings
 # for the BCD MDA, such as shown below.
 
 bcd_mda_settings = MDAGaussSeidel_Settings(tolerance=1e-5, max_mda_iter=10)
@@ -166,7 +168,7 @@ system_settings = BiLevel_BCD_Settings(
 # %%
 # .. tip::
 #
-#    When running BiLevel scenarios, it is interesting to access the optimization
+#    When running bi-level scenarios, it is interesting to access the optimization
 #    history of the sub-scenarios for each system iteration. By default, the setting
 #    ``keep_opt_history`` is set to ``True``. This allows you to store in memory the
 #    databases of the sub-scenarios (see the last section of this example for more
