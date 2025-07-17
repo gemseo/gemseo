@@ -32,13 +32,16 @@ This prints the formulations names available in the current configuration.
 
 .. code:: bash
 
-    ['MDF', 'DisciplinaryOpt', 'BiLevel', 'IDF']
+    ['BiLevel', 'BiLevelBCD', 'DisciplinaryOpt', 'IDF', 'MDF']
 
 These implement the classical formulations:
-    - :term:`MDF`
-    - :term:`IDF`
-    - a simple :term:`disciplinary optimization` formulation for a :term:`weakly coupled problem`
-    - a particular :term:`bi-level` formulation from :term:`IRT` Saint exupéry
+    - Multi-Disciplinary Feasible (:ref:`mdf_formulation`);
+    - Individual Discipline Feasible (:ref:`idf_formulation`);
+    - a simple :term:`disciplinary optimization` formulation for a :term:`weakly coupled problem`;
+    - a particular :ref:`bilevel_formulation` formulation from :term:`IRT` Saint-Exupéry;
+    - another bi-level formulation, denoted :ref:`bcd_formulation` formulation,
+      from :term:`IRT` Saint-Exupéry that enhances the previous one with a
+      Block Coordinate Descent (BCD) algorithm.
 
 In the following, general concepts about the formulations are given. The :ref:`mdf_formulation` and :ref:`idf_formulation` text is integrally taken from the paper :cite:`Vanaret2017`.
 
@@ -54,7 +57,7 @@ We use the following notations:
 - :math:`N` is the number of disciplines,
 - :math:`x=(x_1,x_2,\ldots,x_N)` are the local design variables,
 - :math:`z` are the shared design variables,
-- :math:`y=(y_1,y_2,\ldots,y_N)` are the coupling variables,
+- :math:`y=(y_1,y_2,\ldots,y_N)=\Psi(x, z)` are the coupling variables,
 - :math:`f` is the objective,
 - :math:`g` are the constraints.
 
@@ -171,38 +174,131 @@ so it is very context dependant.
    The XDSM of the IDF formulation for the Sobieski's SSBJ problem,
    considering the strong coupling targets only.
 
-
 .. _bilevel_formulation:
 
-Bi level
+Bi-level
 --------
 
-Bi level formulations are a family of MDO formulations that involve multiple optimization problems to be solved to obtain the solution
-of the MDO problem.
+Bi-level formulations are a family of MDO formulations that involve multiple optimization problems to
+be solved to obtain the solution of the MDO problem.
 
 In many of them, and in particular in the formulations derived from :term:`BLISS`,
-the separation of the optimization problems is made on the :term:`design variables`. The shared
-design variables by multiple disciplines are put in a so called system level optimization problem. In so-called disciplinary
+the separation of the optimization problems is made on the :term:`design variables`. The
+design variables shared by multiple disciplines are put in a so-called system level optimization problem.
+In so-called disciplinary
 optimization problems, only the design variables that have a direct impact on one discipline are used.
-Then, the coupling variables may be solved by a :ref:`mda`, as in :term:`BLISS`, :term:`ASO` and :term:`CSSO`,
-or by using consistency constraints or a penalty function, like in :term:`CO` or :term:`ATC`.
+Then, the coupling variables may be solved by a :ref:`mda`, as in formulations derived from :term:`MDF`
+(:term:`BLISS`, :term:`ASO` or :term:`CSSO`),
+or by using consistency constraints or a penalty function, like in :term:`IDF`-like formulations
+(:term:`CO` or :term:`ATC`).
 
-The next figure shows the decomposition of the bi-level MDO formulation implemented in |g| MDAs,
-sub optimization and a main optimization on the shared variables.
-It is derived from the BLISS formulation and variants from ONERA :cite:`Blondeau2012`.
-This formulation was invented in the MDA-MDO project at IRT Saint Exupery :cite:`gazaix2017towards`, :cite:`Gazaix2019`.
-
+The next figure shows the decomposition of the Bi-level MDO formulation implemented in |g|
+with two MDAs,
+the parallel sub-optimizations and a main optimization (system level) on the shared variables.
+It is an MDF-based approach, derived from the BLISS 98 formulation and variants from ONERA :cite:`Blondeau2012`.
+This formulation was invented in the MDA-MDO project at
+IRT Saint-Exupéry :cite:`gazaix2017towards`, :cite:`Gazaix2019` and also used in the
+R-EVOL project :cite:`gazaix2024industrialization`.
 
 .. figure:: /_images/mdo_formulations/bilevel_process.png
-   :scale: 55 %
+   :scale: 100 %
 
    A process based on a Bi-level formulation.
+
+This block decomposition is motivated by several purposes. First, this separation aligns
+with the industrial needs of work repartition between domains,
+which matches the decomposition in terms of disciplines.
+It allows for greater flexibility in the use of specific approaches (algorithms) for solving
+disciplinary optimizations, also dealing with less design variables at the same time. Secondly,
+as the full coupled derivatives may not be available, the use of a gradient-based
+approach with all variables in the loop may not be affordable.
+
+In the current Bi-level formulation, the objective function is minimized block by block, in parallel,
+with each block :math:`i` minimizing its own variables :math:`x_i`
+and handling its own constraints :math:`g_i`.
+Sometimes, if it is not straightforward to optimize the objective function :math:`f`
+in the sub-problem :math:`i`, another function :math:`f_i` can be considered as long as its decay
+is consistent with the decay (monotonic decrease) of the overall objective function :math:`f`.
+The decomposition is such that the sub-problems constraints :math:`g_i` are assumed
+to depend on other block variables :math:`x_{\neq i}` only through the couplings.
+These couplings are solved by two MDAs: one before the sub-optimizations in order
+to compute equilibrium values for each block,
+and the second one after the sub-optimizations in order to recompute the equilibrium
+for system level functions.
+The sub-optimization blocks do not exchange any information when they are solved in parallel,
+which means that the synchronization is ensured by the two MDAs and the system iterations
+which warm start each block with the previous optimal values of local variables.
+If the effect of one block variables :math:`x_i` on another block :math:`j` is too significant,
+it means that the optimal solution :math:`x^*` is sensitive to the initial guess :math:`x`,
+and therefore that for same values of shared variables :math:`z`,
+different solutions :math:`x^*` can be obtained. As a consequence, the synchronization mechanism
+may not be sufficient to solve accurately the lower problem and the system level algorithm may not converge
+to the right solution. In such a situation, an enhancement is proposed with the :ref:`bcd_formulation`
+which extends the range of problems that can be solved with Bi-level approaches.
+
+An example of the Bi-level formulation implemented on the Sobieski SSBJ test case
+can be found in :ref:`sphx_glr_examples_formulations_plot_sobieski_bilevel_example.py`.
 
 .. warning::
 
     Any :class:`.Discipline` that will be placed inside a :class:`.BiLevel`
     formulation with strong couplings **must** define its default inputs.
     Otherwise, the execution will fail.
+
+.. _bcd_formulation:
+
+Bi-level Block Coordinate Descent (Bi-level BCD)
+---------------------------------------
+
+The Bi-level BCD formulation adds more robustness and stability with respect to the
+previous :ref:`bilevel_formulation` formulation, solving more accurately the inner sub-problem.
+The decomposition discussed in the previous :ref:`bilevel_formulation` section remains the same
+and motivated by the same considerations.
+The next figure shows the process corresponding to the Bi-level BCD implemented in |g|.
+This formulation was invented in the R-EVOL project at
+IRT Saint-Exupéry and more details can be found in :cite:`David2024` and :cite:`david:hal-04758286`.
+
+.. figure:: /_images/mdo_formulations/bcd_process.png
+   :scale: 100 %
+
+   A process based on a Bi-level BCD formulation.
+
+Here, it can be seen that the lower problem is solved by a Block Coordinate Descent method (BCD),
+also known as the Block Gauss-Seidel method (BGS),
+which means that each block,
+consisting of a disciplinary optimization,
+is sequentially optimized
+within an iterative loop until convergence. As a consequence, each block :math:`i` is updated
+at every BCD iteration with :math:`x_{\neq i}^*` until a fixed point :math:`x^*` is found,
+regardless the initial guess :math:`x`, which drastically reduces the discrepancy of lower level
+solutions with respect to same values of shared variables.
+
+In :cite:`david:hal-04758286`, several variants are discussed,
+regarding the way how the couplings are solved:
+
+- when all the couplings are solved by running MDAs within each sub-optimization,
+  the formulation is referred to as the Bi-level BCD-MDF;
+- when each sub-optimization no longer solves the whole coupling vector but only
+  its own block of coupling variables, similarly to the design vector :math:`x_i`,
+  the formulation is referred to as the Bi-level BCD-WK (stands for weak BCD).
+  In this case, both the design variables and the coupling variables are exchanged
+  through the BCD loop and updated at each sub-optimization.
+  This approach can be considered either when running MDAs in each sub-optimization is
+  too time consuming, or when it is simply not accessible due to tools limitation
+  that do not give access to all coupling functions.
+
+The Bi-level BCD process schematized in the above image corresponds to
+the Bi-level BCD-MDF version where all the couplings are solved within each block,
+which is explicitly denoted by the dependence of :math:`f` and :math:`g_i` to
+:math:`\Psi(x, z)`, meaning that the couplings are recomputed and not fixed
+during sub-optimization conversely to the previous :ref:`bilevel_formulation`.
+While MDA 1 and 2 may not be theoretically necessary,
+in practice they allow to respectively compute more relevant initial
+coupling values for the BCD loop and objective function and constraints values for the system level optimizers
+when the BCD loop is not fully or not enough converged.
+
+An example of the Bi-level BCD-MDF formulation implemented on the Sobieski SSBJ test case
+can be found in :ref:`sphx_glr_examples_formulations_plot_sobieski_bilevel_bcd_example.py`.
 
 .. _xdsm:
 
