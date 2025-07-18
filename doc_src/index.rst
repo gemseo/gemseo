@@ -396,7 +396,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable (`see licence
         Define and solve an ordinary differential equation.
 
         Based on
-        `SciPy <https://scipy.org/>`_.
+        `SciPy <https://scipy.org/>`_ and `PETSc <https://petsc.org/>`_.
         +++
 
         :bdg-link-secondary-line:`Read more <ode/index.html>`
