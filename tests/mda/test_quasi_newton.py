@@ -147,7 +147,9 @@ def test_iteration_callbacks_clearing(method) -> None:
 
 @pytest.mark.parametrize(
     "method",
-    set(QuasiNewtonMethod).difference(MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS),
+    sorted(
+        set(QuasiNewtonMethod).difference(MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
+    ),
 )
 def test_iteration_callbacks_unsupported(method) -> None:
     """Check the iteration callbacks for unsupported methods."""
