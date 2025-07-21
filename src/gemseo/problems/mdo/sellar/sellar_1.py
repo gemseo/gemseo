@@ -147,9 +147,9 @@ class Sellar1(BaseSellar):
             )
         else:
             inv_denom = inv_denom.ravel()
-            jac[X_1] = diags(0.5 * inv_denom, format="csr")
+            jac[X_1] = diags(0.5 * inv_denom)
             jac[X_2] = self.__zeros_n
             jac[X_SHARED] = array([x_shared[0, 0] * inv_denom, 0.5 * inv_denom]).T
             temp = -0.5 * self.__k * inv_denom
-            jac[Y_2] = diags(temp * gamma.ravel(), format="csr")
+            jac[Y_2] = diags(temp * gamma.ravel())
             jac[GAMMA] = (temp * y_2.ravel()).reshape((self._n, 1))
