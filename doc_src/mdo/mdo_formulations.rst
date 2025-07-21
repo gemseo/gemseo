@@ -334,12 +334,6 @@ XDSM visualization shows:
 
       |g| XDSM visualization of the Sobiesky example solved with MDF formulation.
 
-Installation
-^^^^^^^^^^^^
-
-From |g| v1.4, the manual installation of XDSMjs is not required, since a Python package
-is now available. Also, a self contained web page can be generated.
-
 Usage
 ^^^^^
 
