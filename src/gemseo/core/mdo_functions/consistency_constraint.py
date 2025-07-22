@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import eye
 from numpy import newaxis
@@ -42,6 +43,9 @@ if TYPE_CHECKING:
 
 class ConsistencyConstraint(MDOFunction):
     """An :class:`.MDOFunction` object to compute the consistency constraints."""
+
+    __CONSISTENCY_CONSTRAINT_NAME: Final[str] = "consistency_{}"
+    """The name template for consistency constraints."""
 
     def __init__(
         self,
@@ -76,7 +80,7 @@ class ConsistencyConstraint(MDOFunction):
 
         super().__init__(
             self._func_to_wrap,
-            self.__coupl_func.name,
+            self.__CONSISTENCY_CONSTRAINT_NAME.format(self.__coupl_func.name),
             input_names=self.__dv_names_of_disc,
             expr=expr,
             jac=self._jac_to_wrap,

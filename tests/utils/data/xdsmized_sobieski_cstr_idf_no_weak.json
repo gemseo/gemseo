@@ -41,7 +41,7 @@
       {
         "from": "Opt",
         "to": "_U_",
-        "name": "y_4^*, y_31_y_32^*, y_21_y_23^*, y_12^*, g_1^*, g_2^*, g_3^*"
+        "name": "y_4^*, consistency_y_31_y_32^*, consistency_y_21_y_23^*, consistency_y_12^*, g_1^*, g_2^*, g_3^*"
       },
       {
         "from": "Opt",

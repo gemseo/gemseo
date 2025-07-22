@@ -95,7 +95,12 @@ def test_create_scenario(
     if formulation_name == "MDF":
         assert constraint_names == ["c_1", "c_2"]
     else:
-        assert constraint_names == ["y_1", "y_2", "c_1", "c_2"]
+        assert constraint_names == [
+            "consistency_y_1",
+            "consistency_y_2",
+            "c_1",
+            "c_2",
+        ]
 
     assert [
         constraint.name
