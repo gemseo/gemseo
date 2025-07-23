@@ -42,3 +42,9 @@ def test_check_function_output_includes_nan():
         ProblemFunction.check_function_output_includes_nan(
             array([nan]), function_name="f", xu_vect=array([1.0])
         )
+
+
+@pytest.mark.parametrize("value", [array(["some_string"]), array("some_string")])
+def test_check_function_output_includes_nan_with_strings(value):
+    """Check that strings are ignored in the test for NaN values."""
+    ProblemFunction.check_function_output_includes_nan(value)
