@@ -24,6 +24,7 @@ from typing import ClassVar
 
 from numpy import isnan
 from numpy import ndarray
+from numpy import str_
 
 from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -421,6 +422,8 @@ class ProblemFunction(MDOFunction, Serializable):
     ) -> None:
         """Check if an array contains a NaN value.
 
+        String arrays are ignored.
+
         Args:
             value: The array to be checked.
             stop_if_nan: Whether to stop if `value` contains a NaN.
@@ -434,6 +437,8 @@ class ProblemFunction(MDOFunction, Serializable):
             DesvarIsNan: If the value is a function input containing a NaN.
             FunctionIsNan: If the value is a function output containing a NaN.
         """
+        if isinstance(value, ndarray) and value.dtype.type is str_:
+            return
         if stop_if_nan and isnan(value).any():
             if function_name:
                 msg = (
