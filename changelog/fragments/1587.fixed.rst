@@ -1,0 +1,2 @@
+Fixed an issue with the ``JobSchedulerDisciplineWrapper`` that did not handle cases where the Jacobian is computed in the _run method.
+``JobSchedulerDisciplineWrapper`` now handles namespaces in execute() and linearize().
