@@ -293,6 +293,7 @@ class OptimizationProblem(EvaluationProblem):
         formatted_constraint = self.__constraints.format(
             function, value=value, constraint_type=constraint_type, positive=positive
         )
+        self._check_function_name(formatted_constraint)
         self.__constraints.append(formatted_constraint)
 
     def apply_exterior_penalty(
@@ -343,8 +344,10 @@ class OptimizationProblem(EvaluationProblem):
         """
         self.__is_linear = False
         penalized_objective = self._objective / objective_scale
-        self.add_observable(self._objective)
-        for constraint in self.__constraints:
+        previous_objective = self._objective
+        previous_constraints = deepcopy(self.__constraints)
+        self.__constraints.clear()
+        for constraint in previous_constraints:
             if constraint.f_type == MDOFunction.ConstraintType.INEQ:
                 penalized_objective += aggregate_positive_sum_square(
                     constraint, scale=scale_inequality
@@ -353,10 +356,11 @@ class OptimizationProblem(EvaluationProblem):
                 penalized_objective += aggregate_sum_square(
                     constraint, scale=scale_equality
                 )
+
             self.add_observable(constraint)
 
         self.objective = penalized_objective
-        self.__constraints.clear()
+        self.add_observable(previous_objective)
 
     def get_reformulated_problem_with_slack_variables(self) -> OptimizationProblem:
         r"""Add slack variables and replace inequality constraints with equality ones.

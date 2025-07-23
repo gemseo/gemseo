@@ -163,22 +163,34 @@ def test_callback() -> None:
     call_me.assert_called_once()
 
 
-def test_add_constraints(pow2_problem) -> None:
+def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
+    """Test to add constraints."""
+
+    def generate_function(name: str) -> MDOFunction:
+        """Generate an MDOFunction with a given name.
+
+        Args:
+            name: The function name.
+
+        Returns:
+            The function.
+        """
+        return MDOFunction(
+            Power2.ineq_constraint1,
+            name=name,
+            f_type=MDOFunction.ConstraintType.INEQ,
+            jac=Power2.ineq_constraint1_jac,
+            expr="0.5 -x[0] ** 3",
+            input_names=["x"],
+        )
+
     problem = pow2_problem
-    ineq1 = MDOFunction(
-        Power2.ineq_constraint1,
-        name="ineq1",
-        f_type=MDOFunction.ConstraintType.INEQ,
-        jac=Power2.ineq_constraint1_jac,
-        expr="0.5 -x[0] ** 3",
-        input_names=["x"],
-    )
-    problem.add_constraint(ineq1, value=-1)
+    problem.add_constraint(generate_function("ineq1"), value=-1)
     assert len(tuple(problem.constraints.get_inequality_constraints())) == 1
     assert len(tuple(problem.constraints.get_equality_constraints())) == 0
 
-    problem.add_constraint(ineq1, value=-1)
-    problem.add_constraint(ineq1, value=-1)
+    problem.add_constraint(generate_function("ineq1_bis"), value=-1)
+    problem.add_constraint(generate_function("ineq1_ter"), value=-1)
 
     assert len(problem.constraints) == 3
     assert problem.constraints
@@ -193,7 +205,7 @@ def test_add_constraints(pow2_problem) -> None:
     ):
         problem.add_constraint(ineq2)
 
-    problem.add_constraint(ineq1, positive=True)
+    problem.add_constraint(generate_function("ineq1_positive"), positive=True)
 
     with pytest.raises(
         ValueError,

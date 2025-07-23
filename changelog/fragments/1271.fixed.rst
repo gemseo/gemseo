@@ -1,0 +1,2 @@
+An end user cannot set a constraint name that is already taken by another problem function
+(objective, observable, constraint).

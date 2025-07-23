@@ -285,6 +285,7 @@ class EvaluationProblem(BaseProblem):
         if formatted_observable is None:
             return
 
+        self._check_function_name(formatted_observable)
         self.__observables.append(formatted_observable)
         if new_iter:
             self.__new_iter_observables.append(formatted_observable)
@@ -303,6 +304,24 @@ class EvaluationProblem(BaseProblem):
     def function_names(self) -> list[str]:
         """All the function names except those of :attr:`.new_iter_observables`."""
         return [function.name for function in self.functions]
+
+    def _check_function_name(self, function: MDOFunction) -> None:
+        """Check that the function has a valid name.
+
+        Args:
+            function: The function to check.
+
+        Raises:
+            ValueError: If the function name is already used.
+        """
+        if function.name in [
+            function_.name for function_ in self.functions if function_ is not None
+        ]:
+            msg = (
+                f"The function name '{function.name}' is already used by another"
+                f" function. Duplicated function names produce unpredictable behavior."
+            )
+            raise ValueError(msg)
 
     def add_listener(
         self,

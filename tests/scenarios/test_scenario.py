@@ -744,8 +744,8 @@ def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return MDOScenario(
-        [AnalyticDiscipline({"y": "x"})],
-        "y",
+        [AnalyticDiscipline({"y": "x", "z": "x"})],
+        "z",
         design_space,
         formulation_name="DisciplinaryOpt",
     )
@@ -1031,3 +1031,13 @@ def test_opt_and_doe(use_doe_first, expected):
 
     x = scenario.formulation.optimization_problem.database.get_x_vect_history()
     assert_almost_equal(x, expected)
+
+
+@pytest.mark.parametrize("name", ["g_1", "g_2", "-y_4"])
+def test_duplicate_constraint_name(mdf_scenario: MDOScenario, name: str):
+    with pytest.raises(
+        ValueError,
+        match=f"The function name '{name}' is already used by another function."
+        f" Duplicated function names produce unpredictable behavior.",
+    ):
+        mdf_scenario.add_constraint("y_4", constraint_name=name)
