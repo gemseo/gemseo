@@ -33,6 +33,7 @@ from gemseo.utils.directory_creator import DirectoryCreator
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import JacobianData
     from gemseo.typing import StrKeyMapping
 
@@ -138,9 +139,10 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self._setup_cmd = setup_cmd
         self._options = options
 
-        self.io.input_grammar = self._discipline.io.input_grammar
-        self.io.output_grammar = self._discipline.io.output_grammar
-        self.io.input_grammar.defaults = self._discipline.io.input_grammar.defaults
+        # We must copy the grammars otherwise adding namespaces to this discipline
+        # will affect the wrapped discipline.
+        self.io.input_grammar = self._discipline.io.input_grammar.copy()
+        self.io.output_grammar = self._discipline.io.output_grammar.copy()
         self.__directory_creator = DirectoryCreator(
             workdir_path, DirectoryCreator.Naming.UUID
         )
@@ -320,7 +322,10 @@ class JobSchedulerDisciplineWrapper(Discipline):
 
         if output[1]:
             self.jac = output[1]
-        return output[0]
+            self._has_jacobian = True
+            self._handle_ns_in_jacobian()
+
+        self.io.update_output_data(output[0])
 
     def _write_inputs_to_disk(
         self,
@@ -399,7 +404,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
 
         self._run_command(current_workdir, dest_job_file_path)
         self._wait_job(current_workdir)
-        return self._handle_outputs(current_workdir, outputs_path)
+        self._handle_outputs(current_workdir, outputs_path)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
         return self._run_or_compute_jacobian(False)
@@ -422,7 +427,43 @@ class JobSchedulerDisciplineWrapper(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        output_data = self._run_or_compute_jacobian(
+        input_names = self._clean_namespaces_data_names(input_names, self.input_grammar)
+        output_names = self._clean_namespaces_data_names(
+            output_names, self.output_grammar
+        )
+        self._run_or_compute_jacobian(
             True, differentiated_inputs=input_names, differentiated_outputs=output_names
         )
-        self.io.data.update(output_data)
+
+    def _clean_namespaces_data_names(
+        self, io_names: Iterable[str], grammar: BaseGrammar
+    ) -> Iterable[str]:
+        """Cleans the data names to be differentiated to remove the namespace prefixes.
+
+        Args:
+            io_names: The data names to differentiate.
+
+        Returns:
+            The cleaned data names.
+        """
+        to_namespaced = grammar.to_namespaced
+        if not to_namespaced:
+            return io_names
+
+        io_names_no_namespace = list(io_names)
+        for name, ns_name in to_namespaced.items():
+            io_names_no_namespace.remove(ns_name)
+            io_names_no_namespace.append(name)
+        return io_names_no_namespace
+
+    def _handle_ns_in_jacobian(self) -> None:
+        """Rename the Jacobian input and output names to handle the namespaces."""
+        jac = self.jac
+        for name, namespaced_name in self.io.output_grammar.to_namespaced.items():
+            jac[namespaced_name] = jac.pop(name)
+
+        to_namespaced = self.input_grammar.to_namespaced
+        if to_namespaced:
+            for local_jac in self.jac.values():
+                for input_name, input_namespace in to_namespaced.items():
+                    local_jac[input_namespace] = local_jac.pop(input_name)
