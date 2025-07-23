@@ -48,7 +48,7 @@ def test_is_initially_empty(functions):
     assert not functions
 
 
-def test_set_insert_get_del(functions, problem, mdo_functions):
+def test_set_insert_get_del(functions: Functions, mdo_functions: list[MDOFunction]):
     """Check the methods __setitem__, __getitem__, __delitem__, __len__ and insert."""
     function_0 = mdo_functions[0]
     functions.append(function_0)
@@ -63,12 +63,12 @@ def test_set_insert_get_del(functions, problem, mdo_functions):
     assert len(functions) == 1
 
 
-def test_format(functions):
+def test_format(functions: Functions):
     """Check that the method format does nothing."""
     assert functions.format("a") == "a"
 
 
-def test_names(functions, mdo_functions):
+def test_names(functions: Functions, mdo_functions: list[MDOFunction]):
     """Check the property names."""
     functions.extend(mdo_functions)
     assert functions.get_names() == [
@@ -76,7 +76,7 @@ def test_names(functions, mdo_functions):
     ]
 
 
-def test_original_reset(functions, mdo_functions):
+def test_original_reset(functions: Functions, mdo_functions: list[MDOFunction]):
     """Check the property original and the method reset."""
     functions.extend(mdo_functions)
     assert list(functions.get_originals()) == mdo_functions
@@ -97,7 +97,7 @@ def test_original_reset(functions, mdo_functions):
     assert list(functions.get_originals()) == original_mdo_functions
 
 
-def test_dimension(functions, mdo_functions):
+def test_dimension(functions: Functions, mdo_functions: list[MDOFunction]):
     """Check the property dimension."""
     assert functions.dimension == 0
     functions.extend(mdo_functions)
@@ -116,7 +116,7 @@ def test_dimension(functions, mdo_functions):
     assert functions.dimension == 3
 
 
-def test_f_types(functions):
+def test_f_types(functions: Functions):
     """Check _F_TYPES."""
     f_types = functions._F_TYPES = ("foo",)
     with pytest.raises(
@@ -128,3 +128,16 @@ def test_f_types(functions):
         functions.append(MDOFunction(lambda x: x, "f", f_type="bar"))
 
     functions._F_TYPES = f_types
+
+
+def test_f_names(functions: Functions):
+    """Check the function names."""
+    functions.append(MDOFunction(lambda x: x, name="bar"))
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The function 'bar' cannot be used as a function name "
+            "since it is already used."
+        ),
+    ):
+        functions.append(MDOFunction(lambda x: x, name="bar"))
