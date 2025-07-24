@@ -160,9 +160,13 @@ bcd_mda_settings = MDAGaussSeidel_Settings(tolerance=1e-5, max_mda_iter=10)
 
 # %%
 # Then, you may pass the BCD MDA settings directly to the formulation settings.
+# Since the system constraints are the same as the constraints that have already been
+# applied to the sub-scenarios, we set ``apply_cstr_tosub_scenarios=False`` to avoid
+# adding the same constraints twice on the lower level.
 
 system_settings = BiLevel_BCD_Settings(
     bcd_mda_settings=bcd_mda_settings,
+    apply_cstr_tosub_scenarios=False,
 )
 
 # %%
