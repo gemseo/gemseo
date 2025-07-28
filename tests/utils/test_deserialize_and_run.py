@@ -25,7 +25,6 @@ import pytest
 from gemseo import from_pickle
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.compatibility.python import PYTHON_VERSION
 from gemseo.utils.deserialize_and_run import main
 from gemseo.utils.pickle import to_pickle
 
@@ -57,7 +56,14 @@ def check_main_error(
     gives the expected message."""
     with pytest.raises(SystemExit, match="2"):
         main()
-    assert capsys.readouterr().err.strip().endswith(error_msg)
+    # The replacement is for the case that used protocol_999 where 999 may be wrapped
+    # with ' depending on the python version and the platform.
+    assert (
+        capsys.readouterr()
+        .err.strip()
+        .replace("'", "")
+        .endswith(error_msg.replace("'", ""))
+    )
 
 
 @pytest.mark.parametrize(
@@ -95,9 +101,6 @@ def test_cli_input_file_error(
     check_main_error(capsys, error_msg)
 
 
-protocol_999 = "999" if PYTHON_VERSION < (3, 12) else "'999'"
-
-
 @pytest.mark.parametrize(
     ("args", "error"),
     [
@@ -111,8 +114,8 @@ protocol_999 = "999" if PYTHON_VERSION < (3, 12) else "'999'"
         ),
         (
             "--protocol 999",
-            f"error: argument --protocol: invalid choice: {protocol_999} "
-            "(choose from 0, 1, 2, 3, 4, 5)",
+            "error: argument --protocol: invalid choice: 999"
+            " (choose from 0, 1, 2, 3, 4, 5)",
         ),
     ],
 )
