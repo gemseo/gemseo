@@ -1,0 +1,5 @@
+The ``NameGenerator`` has a new naming: ``Naming.DATED_UUID``.
+It helps the user to sort directories,
+while keeping the unicity of the names for multi-processes.
+The names now get the date (format: YYYY-MM-DD), the hour and the UUID.
+For instance, a new generated name: 2025-07-28_15h53min02s_UUID.
