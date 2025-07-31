@@ -33,8 +33,17 @@ from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
 from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
     ScalarDistributionMixin,
 )
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    _INTERFACED_DISTRIBUTION,
+)
+from gemseo.uncertainty.distributions.scipy.distribution_settings import _PARAMETERS
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    _STANDARD_PARAMETERS,
+)
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -69,6 +78,8 @@ class SPDistribution(
         expon(loc=3, scale=0.5)
     """
 
+    Settings = SPDistribution_Settings
+
     JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]] = (
         SPJointDistribution
     )
@@ -77,9 +88,10 @@ class SPDistribution(
 
     def __init__(  # noqa: D107
         self,
-        interfaced_distribution: str = "uniform",
-        parameters: StrKeyMapping | tuple[Any, ...] = READ_ONLY_EMPTY_DICT,
-        standard_parameters: StandardParametersType = READ_ONLY_EMPTY_DICT,
+        interfaced_distribution: str = _INTERFACED_DISTRIBUTION,
+        parameters: StrKeyMapping | tuple[Any, ...] = _PARAMETERS,
+        standard_parameters: StandardParametersType = _STANDARD_PARAMETERS,
+        settings: SPDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -98,7 +110,17 @@ class SPDistribution(
                 ``SPDistribution("uniform", parameters)``
                 is ``"uniform(loc=1, scale=2)"``.
         """  # noqa: D205 D212 D415
-        super().__init__(interfaced_distribution, parameters, standard_parameters)
+        if settings is None:
+            settings = SPDistribution_Settings(
+                interfaced_distribution=interfaced_distribution,
+                parameters=parameters,
+                standard_parameters=standard_parameters,
+            )
+        super().__init__(
+            settings.interfaced_distribution,
+            settings.parameters,
+            settings.standard_parameters,
+        )
 
     def _create_distribution(
         self,

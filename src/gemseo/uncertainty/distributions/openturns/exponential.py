@@ -21,32 +21,59 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.exponential_settings import _LOC
+from gemseo.uncertainty.distributions.base_settings.exponential_settings import _RATE
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _LOWER_BOUND,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _TRANSFORMATION,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _UPPER_BOUND,
+)
+from gemseo.uncertainty.distributions.openturns.exponential_settings import (
+    OTExponentialDistribution_Settings,
+)
 
 
 class OTExponentialDistribution(OTDistribution):
     """The OpenTURNS-based exponential distribution."""
 
+    Settings = OTExponentialDistribution_Settings
+
     def __init__(
         self,
-        rate: float = 1.0,
-        loc: float = 0.0,
-        transformation: str = "",
-        lower_bound: float | None = None,
-        upper_bound: float | None = None,
-        threshold: float = 0.5,
+        rate: float = _RATE,
+        loc: float = _LOC,
+        transformation: str = _TRANSFORMATION,
+        lower_bound: float | None = _LOWER_BOUND,
+        upper_bound: float | None = _UPPER_BOUND,
+        threshold: float = _THRESHOLD,
+        settings: OTExponentialDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
             rate: The rate of the exponential random variable.
             loc: The location of the exponential random variable.
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = OTExponentialDistribution_Settings(
+                rate=rate,
+                loc=loc,
+                transformation=transformation,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+                threshold=threshold,
+            )
         super().__init__(
             interfaced_distribution="Exponential",
-            parameters=(rate, loc),
-            standard_parameters={self._RATE: rate, self._LOC: loc},
-            transformation=transformation,
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-            threshold=threshold,
+            parameters=(settings.rate, settings.loc),
+            standard_parameters={self._RATE: settings.rate, self._LOC: settings.loc},
+            transformation=settings.transformation,
+            lower_bound=settings.lower_bound,
+            upper_bound=settings.upper_bound,
+            threshold=settings.threshold,
         )

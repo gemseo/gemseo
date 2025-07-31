@@ -21,24 +21,40 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.uniform_settings import _MAXIMUM
+from gemseo.uncertainty.distributions.base_settings.uniform_settings import _MINIMUM
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 
 
 class SPUniformDistribution(SPDistribution):
     """The SciPy-based uniform distribution."""
 
+    Settings = SPUniformDistribution_Settings
+
     def __init__(
         self,
-        minimum: float = 0.0,
-        maximum: float = 1.0,
+        minimum: float = _MINIMUM,
+        maximum: float = _MAXIMUM,
+        settings: SPUniformDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
             minimum: The minimum of the uniform random variable.
             maximum: The maximum of the uniform random variable.
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = SPUniformDistribution_Settings(minimum=minimum, maximum=maximum)
         super().__init__(
             interfaced_distribution="uniform",
-            parameters={"loc": minimum, "scale": maximum - minimum},
-            standard_parameters={self._LOWER: minimum, self._UPPER: maximum},
+            parameters={
+                "loc": settings.minimum,
+                "scale": settings.maximum - settings.minimum,
+            },
+            standard_parameters={
+                self._LOWER: settings.minimum,
+                self._UPPER: settings.maximum,
+            },
         )

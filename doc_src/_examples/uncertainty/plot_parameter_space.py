@@ -22,7 +22,8 @@
 Parameter space
 ===============
 
-In this example, we will see the basics of :class:`.ParameterSpace`.
+In this example,
+we will see the basics of :class:`.ParameterSpace`.
 """
 
 from __future__ import annotations
@@ -32,15 +33,16 @@ from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.settings.probability_distributions import SPNormalDistribution_Settings
 
 configure_logger()
 
 
 # %%
-# Firstly, a :class:`.ParameterSpace` does not require any mandatory argument.
-#
 # Create a parameter space
 # ------------------------
+# Firstly,
+# the creation of a :class:`.ParameterSpace` does not require any mandatory argument:
 parameter_space = ParameterSpace()
 
 # %%
@@ -52,14 +54,31 @@ parameter_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0)
 # %%
 # or uncertain variables from their distribution names and parameters
 # (use :meth:`.ParameterSpace.add_random_variable`):
-parameter_space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
+parameter_space.add_random_variable(
+    "y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0)
+)
 parameter_space
 
 # %%
+# or without Pydantic model:
+#
+# .. code-block:: python
+#
+#    parameter_space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
+#
 # .. warning::
 #
 #    We cannot mix probability distributions from different families,
 #    e.g. an :class:`.OTDistribution` and a :class:`.SPDistribution`.
+#
+# .. note::
+#    :ref:`This page <gen_distribution_algos>`
+#    lists the available probability distributions.
+#    The names prefixed with SP correspond to distributions based on SciPy.
+#    while those prefixed with OT correspond to distributions based on OpenTURNS.
+#    The settings class ``DistributionClassName_Settings``
+#    associated with the distribution ``DistributionClassName`` can be imported
+#    from ``gemseo.settings.probability_distributions``.
 #
 # We can check that the variables *x* and *y* are implemented
 # as deterministic and uncertain variables respectively:
@@ -78,9 +97,7 @@ parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
 #
 #    parameter_space.add_random_variable(
 #        "y",
-#        "SPDistribution",
-#        interfaced_distribution="norm",
-#        parameters={"loc": 1.0, "scale": 2.0},
+#        SPDistribution_Settings(interface_distribution="norm", parameters={"loc": 1.0, "scale": 2.0}),
 #    )
 
 # %%
@@ -99,30 +116,30 @@ parameter_space.is_deterministic("x"), parameter_space.is_uncertain("y")
 #
 #    parameter_space.add_random_variable(
 #        "y",
-#        "OTDistribution",
-#        interfaced_distribution="Normal",
-#        parameters=(1.0, 2.0),
+#        OTDistribution_Settings(interface_distribution="Normal", parameters=(1.0, 2.0)),
 #    )
 
 # %%
 # Sample from the parameter space
 # -------------------------------
-# We can sample the uncertain variables from the :class:`.ParameterSpace` and
-# get values either as an array (default value):
-sample = parameter_space.compute_samples(n_samples=2, as_dict=True)
-sample
+# We can sample the uncertain variables from the :class:`.ParameterSpace`
+# and return the result either as a dictionary of NumPy arrays
+# indexed by the names of these variables:
+samples = parameter_space.compute_samples(n_samples=4)
+samples
 
 # %%
-# or as a dictionary:
-sample = parameter_space.compute_samples(n_samples=4)
-sample
+# or a unique NumPy array concatenating the values of these variables
+# according to the order in which they were added to the :class:`.ParameterSpace`:
+samples = parameter_space.compute_samples(n_samples=2, as_dict=True)
+samples
 
 # %%
 # Sample a discipline over the parameter space
 # --------------------------------------------
-# We can also sample a discipline over the parameter space. For simplicity,
-# we instantiate an :class:`.AnalyticDiscipline` from a dictionary of
-# expressions.
+# We can also sample a discipline over the parameter space.
+# For simplicity,
+# we instantiate an :class:`.AnalyticDiscipline` from a dictionary of expressions:
 discipline = create_discipline("AnalyticDiscipline", expressions={"z": "x+y"})
 
 # %%
@@ -140,7 +157,8 @@ dataset = sample_disciplines(
 dataset
 
 # %%
-# or graphical by means of a scatter plot matrix for example:
+# or with a graphical post-processing,
+# e.g. a scatter plot matrix:
 ScatterMatrix(dataset).execute(save=False, show=True)
 
 # %%

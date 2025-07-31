@@ -46,6 +46,9 @@ from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_
 from gemseo.uncertainty.distributions.openturns.beta import OTBetaDistribution
 from gemseo.uncertainty.distributions.openturns.dirac import OTDiracDistribution
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    OTDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.openturns.exponential import (
     OTExponentialDistribution,
 )
@@ -82,7 +85,7 @@ def test_bad_distribution_parameters() -> None:
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The arguments of Normal(0, 1, 2) are wrong; "
+            "The arguments of Normal(0.0, 1.0, 2.0) are wrong; "
             "more details on "
             "http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html."  # noqa: E501
         ),
@@ -92,7 +95,7 @@ def test_bad_distribution_parameters() -> None:
 
 def test_str() -> None:
     distribution = OTDistribution("Normal", (0, 2))
-    assert str(distribution) == "Normal(0, 2)"
+    assert str(distribution) == "Normal(0.0, 2.0)"
     distribution = OTDistribution(
         "Normal", (0, 2), standard_parameters={"mean": 0, "var": 4}
     )
@@ -395,3 +398,17 @@ def test_lognormal_distribution():
     distribution = OTLogNormalDistribution()
     assert distribution.mean == pytest.approx(1.0)
     assert distribution.standard_deviation == pytest.approx(1.0)
+
+
+def test_settings_truncation_error():
+    """Test the message raised in the case of a truncation error."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The upper truncation bound of a probability distribution "
+            "must be greater than its lower truncation bound."
+        ),
+    ):
+        OTDistribution_Settings(
+            interfaced_distribution="Normal", lower_bound=0.0, upper_bound=-1
+        )

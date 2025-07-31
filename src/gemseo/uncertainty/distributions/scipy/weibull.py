@@ -16,18 +16,30 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.weibull_settings import _LOCATION
+from gemseo.uncertainty.distributions.base_settings.weibull_settings import _SCALE
+from gemseo.uncertainty.distributions.base_settings.weibull_settings import _SHAPE
+from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
+    _USE_WEIBULL_MIN,
+)
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.weibull_settings import (
+    SPWeibullDistribution_Settings,
+)
 
 
 class SPWeibullDistribution(SPDistribution):
     """The SciPy-based Weibull distribution."""
 
+    Settings = SPWeibullDistribution_Settings
+
     def __init__(
         self,
-        location: float = 0.0,
-        scale: float = 1.0,
-        shape: float = 1.0,
-        use_weibull_min: bool = True,
+        location: float = _LOCATION,
+        scale: float = _SCALE,
+        shape: float = _SHAPE,
+        use_weibull_min: bool = _USE_WEIBULL_MIN,
+        settings: SPWeibullDistribution_Settings | None = None,
     ) -> None:
         r"""
         Args:
@@ -40,12 +52,25 @@ class SPWeibullDistribution(SPDistribution):
                 or the Weibull maximum extreme value distribution
                 (the support of the random variable is :math:`]-\infty[,\gamma]`).
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = SPWeibullDistribution_Settings(
+                location=location,
+                scale=scale,
+                shape=shape,
+                use_weibull_min=use_weibull_min,
+            )
         super().__init__(
-            interfaced_distribution="weibull_min" if use_weibull_min else "weibull_max",
-            parameters={"loc": location, "scale": scale, "c": shape},
+            interfaced_distribution="weibull_min"
+            if settings.use_weibull_min
+            else "weibull_max",
+            parameters={
+                "loc": settings.location,
+                "scale": settings.scale,
+                "c": settings.shape,
+            },
             standard_parameters={
-                self._LOCATION: location,
-                self._SCALE: scale,
-                self._SHAPE: shape,
+                self._LOCATION: settings.location,
+                self._SCALE: settings.scale,
+                self._SHAPE: settings.shape,
             },
         )

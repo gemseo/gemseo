@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.problems.uncertainty.utils import UniformDistribution
+from gemseo.uncertainty.distributions.factory import DistributionFactory
 
 
 class WingWeightUncertainSpace(ParameterSpace):
@@ -49,11 +50,10 @@ class WingWeightUncertainSpace(ParameterSpace):
             "q": (16.0, 45.0),
             "tc": (0.08, 0.18),
         }
-
+        settings_class = (
+            DistributionFactory().get_class(uniform_distribution_name).Settings
+        )
         for name, (minimum, maximum) in data.items():
-            self.add_random_variable(
-                name,
-                uniform_distribution_name,
-                minimum=minimum,
-                maximum=maximum,
+            self.add_random_vector(
+                name, (settings_class(minimum=minimum, maximum=maximum),)
             )

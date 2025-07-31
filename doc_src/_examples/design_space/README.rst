@@ -9,4 +9,8 @@
 Design space
 ============
 
-Define a set of variables.
+A :class:`.DesignSpace` is a collection of scalar or vector variables defined from bounds.
+
+Use :class:`.ParameterSpace` to create a collection of scalar or vector *random* variables
+defined from probability distributions
+(more information in :ref:`this example <sphx_glr_examples_uncertainty_plot_parameter_space.py>`).

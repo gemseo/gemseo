@@ -36,6 +36,15 @@ from openturns import NormalCopula
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 from tests.algos.test_design_space import DesignVariableType
 
 
@@ -604,7 +613,7 @@ def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound) -> None:
     ),
     [
         ("OTDistribution", "Uniform", (), "Uniform()"),
-        ("OTDistribution", "Uniform", (2, 4), "Uniform(2, 4)"),
+        ("OTDistribution", "Uniform", (2, 4), "Uniform(2.0, 4.0)"),
         ("SPDistribution", "uniform", {}, "uniform()"),
         (
             "SPDistribution",
@@ -645,9 +654,9 @@ def test_string_representation() -> None:
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
-| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
-| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
-| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
+| d[0] |      0      |   1   |      2      | float | Uniform(lower=0.0, upper=2.0) |
+| d[1] |      0      |  1.5  |      3      | float | Uniform(lower=0.0, upper=3.0) |
+| d[2] |      0      |   2   |      4      | float | Uniform(lower=0.0, upper=4.0) |
 +------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
     assert str(parameter_space) == repr(parameter_space) == expected
 
@@ -658,9 +667,9 @@ def test_string_representation() -> None:
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
-| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
-| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
-| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
+| d[0] |      0      |   1   |      2      | float | Uniform(lower=0.0, upper=2.0) |
+| d[1] |      0      |  1.5  |      3      | float | Uniform(lower=0.0, upper=3.0) |
+| d[2] |      0      |   2   |      4      | float | Uniform(lower=0.0, upper=4.0) |
 +------+-------------+-------+-------------+-------+-------------------------------+"""  # noqa: E501
     assert (
         str(parameter_space.get_pretty_table(with_index=True, capitalize=False))
@@ -675,9 +684,9 @@ def test_string_representation() -> None:
 | b    |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[0] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
 | c[1] |      0      |  0.5  |      1      | float | Uniform(lower=0.0, upper=1.0) |
-| d[0] |      0      |   1   |      2      | float |  Uniform(lower=0.0, upper=2)  |
-| d[1] |      0      |  1.5  |      3      | float |  Uniform(lower=0.0, upper=3)  |
-| d[2] |      0      |   2   |      4      | float |  Uniform(lower=0.0, upper=4)  |
+| d[0] |      0      |   1   |      2      | float | Uniform(lower=0.0, upper=2.0) |
+| d[1] |      0      |  1.5  |      3      | float | Uniform(lower=0.0, upper=3.0) |
+| d[2] |      0      |   2   |      4      | float | Uniform(lower=0.0, upper=4.0) |
 +------+-------------+-------+-------------+-------+-------------------------------+"""
     assert repr(parameter_space) == expected
 
@@ -688,9 +697,9 @@ def test_string_representation() -> None:
 |  b   | Uniform(lower=0.0, upper=1.0) |
 | c[0] | Uniform(lower=0.0, upper=1.0) |
 | c[1] | Uniform(lower=0.0, upper=1.0) |
-| d[0] |  Uniform(lower=0.0, upper=2)  |
-| d[1] |  Uniform(lower=0.0, upper=3)  |
-| d[2] |  Uniform(lower=0.0, upper=4)  |
+| d[0] | Uniform(lower=0.0, upper=2.0) |
+| d[1] | Uniform(lower=0.0, upper=3.0) |
+| d[2] | Uniform(lower=0.0, upper=4.0) |
 +------+-------------------------------+"""
     assert str(parameter_space) == expected
 
@@ -704,9 +713,9 @@ def test_string_representation() -> None:
 |  b   | Uniform(lower=0.0, upper=1.0) |         x          |
 | c[0] | Uniform(lower=0.0, upper=1.0) |         x          |
 | c[1] | Uniform(lower=0.0, upper=1.0) |         x          |
-| d[0] |  Uniform(lower=0.0, upper=2)  |         x          |
-| d[1] |  Uniform(lower=0.0, upper=3)  |         x          |
-| d[2] |  Uniform(lower=0.0, upper=4)  |         x          |
+| d[0] | Uniform(lower=0.0, upper=2.0) |         x          |
+| d[1] | Uniform(lower=0.0, upper=3.0) |         x          |
+| d[2] | Uniform(lower=0.0, upper=4.0) |         x          |
 |  e   |   Normal(mu=0.0, sigma=1.0)   |       (x)+2        |
 +------+-------------------------------+--------------------+"""  # noqa: E501
     assert str(parameter_space) == expected
@@ -761,3 +770,46 @@ def test_add_variable_from():
     assert_equal(ps.get_current_value(["x"]), array([2, 2]))
     assert_equal(ps.get_current_value(["y"]), array([4, 4, 4]))
     assert_equal(ps.get_current_value(["z"]), array([0.5, 1.0]))
+
+
+def test_add_random_variable_from_settings():
+    """Check adding random variable from distribution settings."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings(mu=3.0))
+    assert parameter_space.distributions["x"].marginals[0].mean == 3.0
+
+
+def test_add_random_vector_from_settings():
+    """Check adding random vector from distribution settings."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_vector(
+        "x",
+        (
+            SPNormalDistribution_Settings(mu=3.0),
+            SPUniformDistribution_Settings(minimum=1.0, maximum=3.0),
+        ),
+    )
+    assert parameter_space.distributions["x"].marginals[0].mean == 3.0
+    assert parameter_space.distributions["x"].marginals[1].mean == 2.0
+
+
+@pytest.mark.parametrize("use_two_variables", [False, True])
+def test_add_random_vector_from_settings_error(use_two_variables):
+    """Check error when mixing settings from different libraries."""
+    first_settings = OTNormalDistribution_Settings(mu=3.0)
+    second_settings = SPUniformDistribution_Settings(minimum=1.0, maximum=3.0)
+    parameter_space = ParameterSpace()
+    if use_two_variables:
+        parameter_space.add_random_vector("x", (first_settings,))
+        distribution = (second_settings,)
+    else:
+        distribution = (first_settings, second_settings)
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "A parameter space cannot mix probability distributions "
+            "based on different libraries; got 'OT' and 'SP'."
+        ),
+    ):
+        parameter_space.add_random_vector("y", distribution)
