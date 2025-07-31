@@ -24,18 +24,28 @@ from __future__ import annotations
 from numpy import exp
 
 from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
+from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _LOCATION
+from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _MU
+from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _SET_LOG
+from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _SIGMA
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.log_normal_settings import (
+    SPLogNormalDistribution_Settings,
+)
 
 
 class SPLogNormalDistribution(SPDistribution):
     """The SciPy-based log-normal distribution."""
 
+    Settings = SPLogNormalDistribution_Settings
+
     def __init__(
         self,
-        mu: float = 1.0,
-        sigma: float = 1.0,
-        location: float = 0.0,
-        set_log: bool = False,
+        mu: float = _MU,
+        sigma: float = _SIGMA,
+        location: float = _LOCATION,
+        set_log: bool = _SET_LOG,
+        settings: SPLogNormalDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -49,13 +59,28 @@ class SPLogNormalDistribution(SPDistribution):
                 Otherwise,
                 ``mu`` and ``sigma`` apply to the log-normal random variable directly.
         """  # noqa: D205,D212,D415
-        if set_log:
-            log_mu, log_sigma = mu, sigma
+        if settings is None:
+            settings = SPLogNormalDistribution_Settings(
+                mu=mu, sigma=sigma, location=location, set_log=set_log
+            )
+
+        if settings.set_log:
+            log_mu, log_sigma = settings.mu, settings.sigma
         else:
-            log_mu, log_sigma = compute_mu_l_and_sigma_l(mu, sigma, location)
+            log_mu, log_sigma = compute_mu_l_and_sigma_l(
+                settings.mu, settings.sigma, settings.location
+            )
 
         super().__init__(
             interfaced_distribution="lognorm",
-            parameters={"s": log_sigma, "loc": location, "scale": exp(log_mu)},
-            standard_parameters={self._MU: mu, self._SIGMA: sigma, self._LOC: location},
+            parameters={
+                "s": log_sigma,
+                "loc": settings.location,
+                "scale": exp(log_mu),
+            },
+            standard_parameters={
+                self._MU: settings.mu,
+                self._SIGMA: settings.sigma,
+                self._LOC: settings.location,
+            },
         )

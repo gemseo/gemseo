@@ -20,6 +20,7 @@ from numpy import pi
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.problems.uncertainty.utils import UniformDistribution
+from gemseo.uncertainty.distributions.factory import DistributionFactory
 
 
 class IshigamiSpace(ParameterSpace):
@@ -37,7 +38,10 @@ class IshigamiSpace(ParameterSpace):
                 implementing the uniform distribution.
         """  # noqa: D205, D212
         super().__init__()
+        settings = (
+            DistributionFactory()
+            .get_class(uniform_distribution_name)
+            .Settings(minimum=-pi, maximum=pi)
+        )
         for index in range(3):
-            self.add_random_variable(
-                f"x{index + 1}", uniform_distribution_name, minimum=-pi, maximum=pi
-            )
+            self.add_random_vector(f"x{index + 1}", (settings,))

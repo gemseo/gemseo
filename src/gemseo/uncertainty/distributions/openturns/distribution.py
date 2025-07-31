@@ -36,17 +36,34 @@ from openturns import SymbolicFunction
 from openturns import TruncatedDistribution
 
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.base_distribution import StandardParametersType
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _INTERFACED_DISTRIBUTION,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _LOWER_BOUND,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import _PARAMETERS
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _STANDARD_PARAMETERS,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _TRANSFORMATION,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _UPPER_BOUND,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    OTDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
     ScalarDistributionMixin,
 )
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_distribution import (
-        StandardParametersType,
-    )
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 
@@ -73,6 +90,8 @@ class OTDistribution(
         Exponential(3, 2)
     """
 
+    Settings = OTDistribution_Settings
+
     JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]] = (
         OTJointDistribution
     )
@@ -84,13 +103,14 @@ class OTDistribution(
 
     def __init__(
         self,
-        interfaced_distribution: str = "Uniform",
-        parameters: tuple[Any, ...] = (),
-        standard_parameters: StandardParametersType = READ_ONLY_EMPTY_DICT,
-        transformation: str = "",
-        lower_bound: float | None = None,
-        upper_bound: float | None = None,
-        threshold: float = 0.5,
+        interfaced_distribution: str = _INTERFACED_DISTRIBUTION,
+        parameters: tuple[Any, ...] = _PARAMETERS,
+        standard_parameters: StandardParametersType = _STANDARD_PARAMETERS,
+        transformation: str = _TRANSFORMATION,
+        lower_bound: float | None = _LOWER_BOUND,
+        upper_bound: float | None = _UPPER_BOUND,
+        threshold: float = _THRESHOLD,
+        settings: OTDistribution_Settings | None = None,
     ) -> None:
         r"""
         Args:
@@ -119,14 +139,24 @@ class OTDistribution(
                 <http://openturns.github.io/openturns/latest/user_manual/
                 _generated/openturns.TruncatedDistribution.html>`_).
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = OTDistribution_Settings(
+                interfaced_distribution=interfaced_distribution,
+                parameters=parameters,
+                standard_parameters=standard_parameters,
+                transformation=transformation,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+                threshold=threshold,
+            )
         super().__init__(
-            interfaced_distribution,
-            parameters or (),
-            standard_parameters=standard_parameters,
-            transformation=transformation,
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-            threshold=threshold,
+            settings.interfaced_distribution,
+            settings.parameters or (),
+            standard_parameters=settings.standard_parameters,
+            transformation=settings.transformation,
+            lower_bound=settings.lower_bound,
+            upper_bound=settings.upper_bound,
+            threshold=settings.threshold,
         )
 
     def _create_distribution(

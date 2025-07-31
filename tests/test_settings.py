@@ -30,6 +30,7 @@ import gemseo.settings.mlearning as mlearning
 import gemseo.settings.ode as ode
 import gemseo.settings.opt as opt
 import gemseo.settings.post as post
+import gemseo.settings.probability_distributions as probability_distributions
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
@@ -42,6 +43,9 @@ from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.settings.base_settings import BaseSettings
+from gemseo.uncertainty.distributions.base_distribution_settings import (
+    BaseDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
@@ -198,5 +202,18 @@ def test_settings_inf_serialization():
     get_setting_classes(BaseMDASettings, "gemseo.mda", mda),
 )
 def test_mda_settings(module_and_cls):
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
+
+
+@pytest.mark.parametrize(
+    "module_and_cls",
+    get_setting_classes(
+        BaseDistribution_Settings,
+        "gemseo.uncertainty.distributions",
+        probability_distributions,
+    ),
+)
+def test_probability_distribution_settings(module_and_cls):
     module, cls = module_and_cls
     assert cls in module.__dict__.values()

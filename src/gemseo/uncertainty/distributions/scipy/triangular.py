@@ -21,17 +21,26 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MAXIMUM
+from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MINIMUM
+from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MODE
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.triangular_settings import (
+    SPTriangularDistribution_Settings,
+)
 
 
 class SPTriangularDistribution(SPDistribution):
     """The SciPy-based triangular distribution."""
 
+    Settings = SPTriangularDistribution_Settings
+
     def __init__(
         self,
-        minimum: float = 0.0,
-        mode: float = 0.5,
-        maximum: float = 1.0,
+        minimum: float = _MINIMUM,
+        mode: float = _MODE,
+        maximum: float = _MAXIMUM,
+        settings: SPTriangularDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -39,16 +48,21 @@ class SPTriangularDistribution(SPDistribution):
             mode: The mode of the triangular random variable.
             maximum: The maximum of the triangular random variable.
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = SPTriangularDistribution_Settings(
+                minimum=minimum, maximum=maximum, mode=mode
+            )
         super().__init__(
             interfaced_distribution="triang",
             parameters={
-                "loc": minimum,
-                "scale": maximum - minimum,
-                "c": (mode - minimum) / float(maximum - minimum),
+                "loc": settings.minimum,
+                "scale": settings.maximum - settings.minimum,
+                "c": (settings.mode - settings.minimum)
+                / float(settings.maximum - settings.minimum),
             },
             standard_parameters={
-                self._LOWER: minimum,
-                self._MODE: mode,
-                self._UPPER: maximum,
+                self._LOWER: settings.minimum,
+                self._MODE: settings.mode,
+                self._UPPER: settings.maximum,
             },
         )
