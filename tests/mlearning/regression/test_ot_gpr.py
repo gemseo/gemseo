@@ -22,6 +22,7 @@ from unittest.mock import Mock
 import openturns
 import pytest
 from numpy import array
+from numpy import diag
 from numpy import hstack
 from numpy import ndarray
 from numpy import zeros
@@ -463,3 +464,18 @@ def test_compute_samples(
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     assert model.compute_samples(input_data, 2, seed=123)[0, 0, 0] != samples[0, 0, 0]
     assert model.compute_samples(input_data[0], 2, seed=35)[0, 0] != samples_1pt[0, 0]
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([1.0, 1.0]), (2, 2)),
+        (array([[1.0, 1.0], [0.2, 0.0]]), (4, 4)),
+    ],
+)
+def test_predict_covariance(kriging, input_data, expected_shape):
+    """Check the method predict_covariance."""
+    cov_matrix = kriging.predict_covariance(input_data)
+    predicted_std = kriging.predict_std(input_data)
+    assert cov_matrix.shape == expected_shape
+    assert_allclose(diag(cov_matrix), predicted_std.ravel() ** 2)

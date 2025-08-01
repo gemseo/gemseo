@@ -1,0 +1,2 @@
+ ``OTGaussianProcessRegressor`` and
+``GaussianProcessRegressor`` have a new method ``predict_covariance`` to predict the output covariance matrix.
