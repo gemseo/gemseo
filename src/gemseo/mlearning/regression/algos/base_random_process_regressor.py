@@ -84,11 +84,47 @@ class BaseRandomProcessRegressor(BaseRegressor):
         Args:
             input_data: The :math:`N` input points of dimension :math:`d`
                 at which to observe the conditioned Gaussian process;
-                shaped as ``(N, d)``.
-            n_samples: The number of samples ``M``.
+                shaped as :math:`(N, d)`.
+            n_samples: The number of samples :math:`M`.
             seed: The seed for reproducible results.
 
         Returns:
-            The output samples shaped as ``(M, N, p)``
-            where ``p`` is the output dimension.
+            The output samples shaped as :math:`(M, N, p)`
+            where :math:`p` is the output dimension.
+        """
+
+    @abstractmethod
+    def predict_covariance(
+        self,
+        input_data: RealArray,
+    ) -> RealArray:
+        r"""Predict the covariance matrix from input data.
+
+        Args:
+            input_data: The :math:`N` input points of dimension :math:`d`
+                at which to observe the conditioned Gaussian process;
+                shaped as :math:`(N, d)`.
+
+        Returns:
+            The posterior covariance matrix at the input points
+            of shape :math:`(Np, Np)`
+            with :math:`p` the output dimension.
+            The covariance between
+            the :math:`k`-th output
+            at the :math:`i`-th input point
+            and the :math:`l`-th output
+            at the :math:`j`-th input point
+            is located at
+            the :math:`m`-th line and :math:`n`-th column
+            with :math:`m=ip+k`, :math:`n=jp+l`,
+            :math:`i,j\in\{0,\ldots,N-1\}`
+            and :math:`k,l\in\{0,\ldots,p-1\}`.
+
+        .. warning::
+
+           This statistic is expressed in relation to the transformed output space.
+           You can sample the :meth:`.predict` method
+           to estimate it in relation to the original output space
+           if it is different from the transformed output space.
+
         """
