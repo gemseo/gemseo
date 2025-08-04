@@ -248,7 +248,7 @@ def test_repr_2() -> None:
     g = MDOFunction(
         sin,
         name="G",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         jac=cos,
         expr="sin(x)",
         input_names=["x", "y"],

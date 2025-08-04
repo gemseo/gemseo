@@ -166,7 +166,7 @@ def test_mult_linear_function() -> None:
         expr="x_0**2.",
         input_names=["x"],
         dim=1,
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
     )
     prod = sqr * sqr_eq
 

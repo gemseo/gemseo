@@ -50,7 +50,7 @@ def test_build_func_from_disc() -> None:
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 
     for c_name in ["g_1", "g_2", "g_3"]:
-        idf.add_constraint(c_name, constraint_type="ineq")
+        idf.add_constraint(c_name, constraint_type=idf.ConstraintType.INEQ)
     opt = idf.optimization_problem
     opt.objective.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
     for cst in opt.constraints:

@@ -172,7 +172,9 @@ def test_xdsmize_mdf(options) -> None:
     assert_xdsm(scenario, **options("xdsmized_sobieski_mdf"))
 
     # with constraints
-    scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+    scenario.add_constraint(
+        ["g_1", "g_2", "g_3"], constraint_type=scenario.ConstraintType.INEQ
+    )
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_mdf"))
 
     xdsmizer = XDSMizer(scenario)
@@ -188,12 +190,12 @@ def test_xdsmize_idf(options) -> None:
 
     # with constraints
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, "ineq")
+        scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_idf"))
 
     scenario = build_sobieski_scenario("IDF", include_weak_coupling_targets=False)
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, "ineq")
+        scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_idf_no_weak"))
 
 
@@ -223,7 +225,7 @@ def test_xdsmize_bilevel(options) -> None:
         name="PropulsionScenario",
     )
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
-    sc_prop.add_constraint("g_3", constraint_type="ineq")
+    sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
     sc_aero = MDOScenario(
         [aerodynamics],
@@ -234,7 +236,7 @@ def test_xdsmize_bilevel(options) -> None:
         maximize_objective=True,
     )
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
-    sc_aero.add_constraint("g_2", constraint_type="ineq")
+    sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
     sc_str = MDOScenario(
         [structure],
@@ -244,7 +246,7 @@ def test_xdsmize_bilevel(options) -> None:
         name="StructureScenario",
         maximize_objective=True,
     )
-    sc_str.add_constraint("g_1", constraint_type="ineq")
+    sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
 
     sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
@@ -261,7 +263,9 @@ def test_xdsmize_bilevel(options) -> None:
         apply_cstr_to_system=True,
         main_mda_settings={"n_processes": 5},
     )
-    system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+    system_scenario.add_constraint(
+        ["g_1", "g_2", "g_3"], constraint_type=system_scenario.ConstraintType.INEQ
+    )
     assert_xdsm(system_scenario, **options("xdsmized_sobieski_bilevel"))
 
     system_scenario_par = MDOScenario(
@@ -275,7 +279,9 @@ def test_xdsmize_bilevel(options) -> None:
         parallel_scenarios=True,
         main_mda_settings={"n_processes": 5, "use_threading": True},
     )
-    system_scenario_par.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+    system_scenario_par.add_constraint(
+        ["g_1", "g_2", "g_3"], constraint_type=system_scenario_par.ConstraintType.INEQ
+    )
     assert_xdsm(system_scenario_par, **options("xdsmized_sobieski_bilevel_parallel"))
 
 

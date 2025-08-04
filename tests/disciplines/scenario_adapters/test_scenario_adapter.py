@@ -309,7 +309,7 @@ def build_struct_scenario():
         formulation_name="DisciplinaryOpt",
         maximize_objective=True,
     )
-    sc_str.add_constraint("g_1", constraint_type="ineq")
+    sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
     sc_str.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_str
 
@@ -323,7 +323,7 @@ def build_prop_scenario():
         formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
     )
-    sc_prop.add_constraint("g_3", constraint_type="ineq")
+    sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
     sc_prop.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_prop
 

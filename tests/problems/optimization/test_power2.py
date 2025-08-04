@@ -17,17 +17,14 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
 
 import numpy
 import pytest
 from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
-
-if TYPE_CHECKING:
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 @pytest.fixture(scope="module")
@@ -96,10 +93,10 @@ def test_function_name(request, function, name) -> None:
 @pytest.mark.parametrize(
     ("function", "type_"),
     [
-        ("objective", "obj"),
-        ("inequality_1", "ineq"),
-        ("inequality_2", "ineq"),
-        ("equality", "eq"),
+        ("objective", MDOFunction.FunctionType.OBJ),
+        ("inequality_1", MDOFunction.ConstraintType.INEQ),
+        ("inequality_2", MDOFunction.ConstraintType.INEQ),
+        ("equality", MDOFunction.ConstraintType.EQ),
     ],
 )
 def test_function_type(request, function, type_) -> None:
