@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -235,29 +234,5 @@ def test_discipline_exception(tmp_wd: Path, monkeypatch: MonkeyPatch) -> None:
     assert isinstance(error, ValueError)
     assert str(error) == disc.error_message
 
-    ref_tb = r"""
-Traceback \(most recent call last\):
-  File ".+deserialize_and_run.py", line \d+, in main
-    data, jac = _execute_discipline\(parsed_args\)(\n\s+\^+)?
-  File ".+deserialize_and_run\.py", line \d+, in _execute_discipline
-    data = discipline\.execute\(input_data\)(\n\s+\^+)?
-  File ".+discipline\.py", line \d+, in execute
-    return super\(\)\.execute\(input_data\)(\n\s+\^+)?
-  File ".+base_discipline\.py", line \d+, in execute
-    self\._execute_monitored\(\)
-  File ".+_base_monitored_process\.py", line \d+, in _execute_monitored
-    self\.execution_status\.handle\(
-  File ".+execution_status\.py", line \d+, in handle
-    function\(\*args\)
-  File ".+execution_statistics\.py", line \d+, in record_execution
-    self\.__record_call\(function, False\)
-  File ".+execution_statistics\.py", line \d+, in __record_call
-    function\(\)
-  File ".+base_discipline\.py", line \d+, in _execute
-    output_data = self\._run\(input_data=input_data\)(\n\s+\^+)?
-  File ".+test_deserialize_and_run\.py", line \d+, in _run
-    raise ValueError\(self\.error_message\)
-ValueError: This discipline is crashing
-""".strip()
-
-    assert re.match(ref_tb, tb, re.MULTILINE)
+    assert tb.startswith("Traceback")
+    assert tb.endswith("ValueError: This discipline is crashing")

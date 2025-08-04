@@ -283,8 +283,6 @@ def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> N
     assert disc.n_executions == n_trials
     assert disc.io.data == {"x": array([0.0])}
 
-    assert disc.execution_status.value == ExecutionStatus.Status.FAILED
-
     plural_suffix = "s" if n_trials > 1 else ""
     log_message = (
         "Failed to execute discipline AnalyticDiscipline"

@@ -285,7 +285,7 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
     assert chain.io.data["y"] == 2.0
 
 
-def test_max_mda_iter_0():
+def test_max_mda_iter_0(enable_discipline_statistics):
     """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
     mda = SobieskiMDAGaussSeidel(max_mda_iter=0)
     assert mda.NORMALIZED_RESIDUAL_NORM not in mda.io.output_grammar

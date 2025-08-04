@@ -54,6 +54,7 @@ from typing import TYPE_CHECKING
 
 from numpy import inf
 
+from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
@@ -622,6 +623,9 @@ class ScalabilityStudy:
             n_replicates: The number of times the scalability study is repeated
                 to study the variability.
         """
+        execution_statistics_was_enabled = ExecutionStatistics.is_enabled
+        ExecutionStatistics.is_enabled = True
+
         plural = "s" if n_replicates > 1 else ""
         LOGGER.info("Execute scalability study %s time%s", n_replicates, plural)
         if not self.formulations and not self.algorithms:
@@ -697,6 +701,9 @@ class ScalabilityStudy:
                     msg.add("Save statistics in {}", fpath)
                     result.to_pickle(str(self.directory))
                     LOGGER.debug("%s", msg)
+
+        ExecutionStatistics.is_enabled = execution_statistics_was_enabled
+
         return self.results
 
     def __get_statistics(

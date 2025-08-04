@@ -60,6 +60,9 @@ class ExecutionStatus(Serializable):
         FAILED = "FAILED"
         DONE = "DONE"
 
+    is_enabled: ClassVar[bool] = False
+    """Whether to handle statuses when calling :meth:`.handle`."""
+
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"__observers"}
 
     __process_name: str
@@ -138,6 +141,10 @@ class ExecutionStatus(Serializable):
             function: The function to be called.
             *args: The argument to be passed for calling the function.
         """
+        if not self.is_enabled:
+            function(*args)
+            return
+
         self.value = status
         try:
             function(*args)

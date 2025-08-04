@@ -501,7 +501,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
     ExecutionStatistics.is_enabled = activate_counters
 
 
-def test_get_execution_metrics(mdf_scenario) -> None:
+def test_get_execution_metrics(mdf_scenario, enable_discipline_statistics) -> None:
     """Check the string returned execution_metrics."""
     mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     expected = re.compile(

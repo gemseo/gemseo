@@ -196,7 +196,9 @@ def x2_problem() -> X2:
 
 
 @pytest.mark.parametrize("algo_name", ["NLOPT_COBYLA", "NLOPT_BOBYQA"])
-def test_no_stop_during_doe_phase(x2_problem: X2, algo_name: str) -> None:
+def test_no_stop_during_doe_phase(
+    x2_problem: X2, algo_name: str, enable_function_statistics
+) -> None:
     """Test that COBYLA and BOBYQA does not trigger a stop criterion during the DoE
     phase.
 
@@ -213,7 +215,9 @@ def test_no_stop_during_doe_phase(x2_problem: X2, algo_name: str) -> None:
     assert res.n_obj_call == 12
 
 
-def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
+def test_cobyla_stopped_due_to_small_crit_n_x(
+    x2_problem: X2, enable_function_statistics
+) -> None:
     """Test that COBYLA does not trigger a stop criterion during the doe phase.
 
     In this test, stop_crit_n_x is set by the user. An insufficient value is given,
@@ -228,7 +232,9 @@ def test_cobyla_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
     assert res.n_obj_call == 5
 
 
-def test_bobyqa_stopped_due_to_small_crit_n_x(x2_problem: X2) -> None:
+def test_bobyqa_stopped_due_to_small_crit_n_x(
+    x2_problem: X2, enable_function_statistics
+) -> None:
     """Test that BOBYQA does not trigger a stop criterion during its DoE phase.
 
     In this test, stop_crit_n_x is set by the user. An insufficient value is given,

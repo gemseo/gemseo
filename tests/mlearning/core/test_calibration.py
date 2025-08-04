@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import allclose
 from numpy import array
-from numpy import array_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.core.calibration import MLAlgoAssessor
@@ -89,7 +88,7 @@ def test_discipline(dataset) -> None:
     assert "criterion" in result
     assert "learning" in result
     assert allclose(result["criterion"], array([32107]), atol=1e0)
-    assert array_equal(result["degree"], array([3]))
+    assert result["degree"] == 3
 
 
 @pytest.fixture(scope="module")

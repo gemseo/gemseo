@@ -170,7 +170,7 @@ def test_raphson_sellar_sparse_complex() -> None:
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_raphson_sellar_without_cache(use_cache) -> None:
+def test_raphson_sellar_without_cache(use_cache, enable_discipline_statistics) -> None:
     """Test the execution of Newton on Sellar case.
 
     This test also checks that each Newton step implies one disciplinary call, and one

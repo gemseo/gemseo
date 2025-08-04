@@ -93,7 +93,7 @@ def test_create_scenario(scalable_problem) -> None:
     scalable_problem.create_scenario()
 
 
-def test_statistics(scalable_problem) -> None:
+def test_statistics(scalable_problem, enable_discipline_statistics) -> None:
     """"""
     scalable_problem.create_scenario()
     scalable_problem.get_execution_duration()

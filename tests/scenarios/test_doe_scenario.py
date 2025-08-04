@@ -200,7 +200,9 @@ def f_sellar_1(x_1: ndarray, y_2: ndarray, x_shared: ndarray) -> ndarray:
 
 
 @pytest.mark.parametrize("use_threading", [True, False])
-def test_exception_mda_jacobi(caplog, use_threading, sellar_disciplines) -> None:
+def test_exception_mda_jacobi(
+    caplog, use_threading, sellar_disciplines, enable_discipline_statistics
+) -> None:
     """Check that a DOE scenario does not crash with a ValueError and MDAJacobi.
 
     Args:
