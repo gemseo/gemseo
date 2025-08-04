@@ -511,11 +511,10 @@ class SobieskiProblem:
         Returns:
             The feasible starting point.
         """
-        if not names:
+        if names:
+            names = convert_strings_to_iterable(names)
+        else:
             names = self.__DESIGN_VARIABLE_NAMES
-
-        if isinstance(names, str):
-            names = [names]
 
         return concatenate([self.__names_to_feasible_values[name] for name in names])
 
