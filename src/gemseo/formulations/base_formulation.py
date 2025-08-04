@@ -44,6 +44,7 @@ from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -488,17 +489,18 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 If ``None``, the discipline is detected from the inner disciplines.
             top_level_disc: Whether to search the discipline among the top level ones.
         """
-        if isinstance(objective_name, str):
-            objective_name = [objective_name]
-        obj_mdo_fun = FunctionFromDiscipline(
-            objective_name, self, discipline=discipline, top_level_disc=top_level_disc
+        objective = FunctionFromDiscipline(
+            convert_strings_to_iterable(objective_name),
+            self,
+            discipline=discipline,
+            top_level_disc=top_level_disc,
         )
-        if obj_mdo_fun.discipline_adapter.is_linear:
-            obj_mdo_fun = compute_linear_approximation(
-                obj_mdo_fun, zeros(obj_mdo_fun.discipline_adapter.input_dimension)
+        if objective.discipline_adapter.is_linear:
+            objective = compute_linear_approximation(
+                objective, zeros(objective.discipline_adapter.input_dimension)
             )
 
-        self.optimization_problem.objective = obj_mdo_fun
+        self.optimization_problem.objective = objective
 
     def get_optim_variable_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.

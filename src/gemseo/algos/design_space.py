@@ -1141,11 +1141,10 @@ class DesignSpace:
         Returns:
             The name of the components of the variables.
         """
-        if not variable_names:
+        if variable_names:
+            variable_names = convert_strings_to_iterable(variable_names)
+        else:
             variable_names = self.variable_names
-
-        elif isinstance(variable_names, str):
-            variable_names = [variable_names]
 
         var_ind_names = []
         for variable_name in variable_names:
