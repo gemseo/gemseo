@@ -286,8 +286,8 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
                     callback(index, result)
             except ValueError:  # noqa: PERF203
                 LOGGER.exception(
-                    "Problem with evaluation of sample:"
-                    "%s result is not taken into account in DOE.",
+                    "The evaluation of the functions at point %s raised a"
+                    " ValueError; skipping to the next point.",
                     input_value,
                 )
 
