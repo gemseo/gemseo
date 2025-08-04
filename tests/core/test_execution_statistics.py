@@ -33,8 +33,11 @@ SLEEP_TIME = 0.1
 
 @pytest.fixture
 def reset() -> None:
-    """Reset the state of the class attributes."""
-    ExecutionStatistics.is_enabled = True
+    """Reset the state of the class attributes to their default values."""
+    ExecutionStatistics.is_enabled = False
+    ExecutionStatistics.is_time_stamps_enabled = False
+    yield
+    ExecutionStatistics.is_enabled = False
     ExecutionStatistics.is_time_stamps_enabled = False
 
 
@@ -44,14 +47,16 @@ def execution_statistics(reset) -> ExecutionStatistics:
     return ExecutionStatistics("dummy")
 
 
-def test_default_state(reset):
+def test_default_state():
     """Verify the default state of the recordings."""
-    assert ExecutionStatistics.is_enabled
+    assert not ExecutionStatistics.is_enabled
     assert not ExecutionStatistics.is_time_stamps_enabled
 
 
 def test_n_calls(execution_statistics: ExecutionStatistics):
-    """Verify n_executions."""
+    """Verify n_calls."""
+    ExecutionStatistics.is_enabled = True
+
     assert execution_statistics.n_executions == 0
     execution_statistics.n_executions = 1
     assert execution_statistics.n_executions == 1
@@ -71,7 +76,9 @@ def test_n_calls(execution_statistics: ExecutionStatistics):
 
 
 def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
-    """Verify n_linearizations."""
+    """Verify n_calls_linearizations."""
+    ExecutionStatistics.is_enabled = True
+
     assert execution_statistics.n_linearizations == 0
     execution_statistics.n_linearizations = 1
     assert execution_statistics.n_linearizations == 1
@@ -92,6 +99,8 @@ def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
 
 def test_duration(execution_statistics: ExecutionStatistics):
     """Verify duration."""
+    ExecutionStatistics.is_enabled = True
+
     assert execution_statistics.duration == 0.0
     execution_statistics.duration = 1.0
     assert execution_statistics.duration == 1.0
@@ -118,6 +127,9 @@ def _sleep() -> None:
 def test_record(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify record."""
     monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
+
+    ExecutionStatistics.is_enabled = True
+
     # Without linearization.
 
     execution_statistics.record_execution(_sleep)
@@ -151,6 +163,8 @@ def test_record(execution_statistics: ExecutionStatistics, monkeypatch):
 
 def test_time_stamps(execution_statistics: ExecutionStatistics, monkeypatch):
     """Verify the time stamps."""
+    ExecutionStatistics.is_enabled = True
+
     monkeypatch.setattr(timer, "perf_counter", SleepingCounter(SLEEP_TIME))
 
     assert ExecutionStatistics.time_stamps is None

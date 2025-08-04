@@ -328,17 +328,17 @@ class MNBI(BaseOptimizationLibrary):
         Raises:
             RuntimeError: If no optimum is found for one of the objectives.
         """
-        n_calls_start = self._problem.objective.n_calls
+        pb_obj = self._problem.objective
+        if pb_obj.enable_statistics:
+            n_calls_start = pb_obj.n_calls
         design_space = DesignSpace()
         design_space.extend(self._problem.design_space)
         opt_problem = OptimizationProblem(design_space)
         for constraint in self._problem.constraints:
             opt_problem.add_constraint(constraint)
-        objective = FunctionComponentExtractor(self._problem.objective, i)
+        objective = FunctionComponentExtractor(pb_obj, i)
         jac = (
-            None
-            if self._problem.objective.jac is NotImplementedCallable
-            else objective.compute_jacobian
+            None if pb_obj.jac is NotImplementedCallable else objective.compute_jacobian
         )
         opt_problem.objective = MDOFunction(objective.compute_output, f"f_{i}", jac=jac)
         opt_result = OptimizationLibraryFactory().execute(
@@ -353,8 +353,8 @@ class MNBI(BaseOptimizationLibrary):
             raise RuntimeError(msg)
 
         x_min = opt_result.x_opt
-        f_min = self._problem.objective.evaluate(x_min)
-        n_calls = self._problem.objective.n_calls - n_calls_start
+        f_min = pb_obj.evaluate(x_min)
+        n_calls = pb_obj.n_calls - n_calls_start if pb_obj.enable_statistics else 0
         return IndividualSubOptimOutput(f_min, x_min, self._problem.database, n_calls)
 
     def __copy_database_save_minimum(
@@ -378,7 +378,8 @@ class MNBI(BaseOptimizationLibrary):
         if self.__n_processes > 1:
             # Store the sub-process database in the main database
             objective = self._problem.objective
-            objective.n_calls += outputs.n_calls
+            if objective.enable_statistics:
+                objective.n_calls += outputs.n_calls
             for functions in [
                 [objective],
                 self._problem.constraints,
@@ -468,7 +469,8 @@ class MNBI(BaseOptimizationLibrary):
                 for the given value of beta is already known.
         """
         f = self._problem.objective
-        n_calls_start = f.n_calls
+        if f.enable_statistics:
+            n_calls_start = f.n_calls
 
         # Check if phi_beta is in the skippable domains.
         if self.__skip_betas and self.__is_skippable(phi_beta):
@@ -525,7 +527,7 @@ class MNBI(BaseOptimizationLibrary):
             )
         x_min = opt_res.x_opt[:-1]
         f_min = f.evaluate(x_min)
-        n_calls = f.n_calls - n_calls_start
+        n_calls = f.n_calls - n_calls_start if f.enable_statistics else 0
 
         # If some components of the sub-optim constraint are inactive, return the vector
         # w to find the values of phi_beta that can be skipped for the next sub-optims
@@ -563,7 +565,9 @@ class MNBI(BaseOptimizationLibrary):
 
         if self.__n_processes > 1 and database is not None:
             # Store the sub-process database in the main process database.
-            self._problem.objective.n_calls += outputs.n_calls
+            objective = self._problem.objective
+            if objective.enable_statistics:
+                objective.n_calls += outputs.n_calls
             f_hist, x_hist = database.get_function_history(
                 self._problem.objective.name, with_x_vect=True
             )

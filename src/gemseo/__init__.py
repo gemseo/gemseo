@@ -49,6 +49,7 @@ from typing import Callable
 from numpy import ndarray
 
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus as _ExecutionStatus
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
@@ -1683,14 +1684,15 @@ def _log_settings() -> str:
 
 
 def configure(
-    enable_discipline_statistics: bool = True,
-    enable_function_statistics: bool = True,
+    enable_discipline_statistics: bool = False,
+    enable_function_statistics: bool = False,
     enable_progress_bar: bool = True,
     enable_discipline_cache: bool = True,
     validate_input_data: bool = True,
     validate_output_data: bool = True,
     check_desvars_bounds: bool = True,
     enable_parallel_execution: bool = True,
+    enable_discipline_status: bool = False,
 ) -> None:
     """Update the configuration of |g| if needed.
 
@@ -1720,12 +1722,14 @@ def configure(
             in the bounds when evaluating the functions in OptimizationProblem.
         enable_parallel_execution: Whether to let |g|
             use parallelism (multi-processing or multi-threading) by default.
+        enable_discipline_status: Whether to enable discipline statuses.
     """
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.problem_function import ProblemFunction
     from gemseo.core.discipline import Discipline
 
+    _ExecutionStatus.is_enabled = enable_discipline_status
     _ExecutionStatistics.is_enabled = enable_discipline_statistics
     ProblemFunction.enable_statistics = enable_function_statistics
     BaseDriverLibrary.enable_progress_bar = enable_progress_bar

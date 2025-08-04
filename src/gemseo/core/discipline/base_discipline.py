@@ -29,6 +29,8 @@ from gemseo.caches.factory import CacheFactory
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow
 from gemseo.core.discipline.io import IO
+from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.factory import GrammarType as _GrammarType
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
@@ -136,6 +138,9 @@ class BaseDiscipline(BaseMonitoredProcess):
     _process_flow_class: ClassVar[type[BaseFlow]] = BaseFlow
     """The class used to create the process flow."""
 
+    _has_jacobian: bool
+    """Whether the Jacobian has been set either by :meth:`_run` or from the cache."""
+
     def __init__(
         self,
         name: str = "",
@@ -146,6 +151,7 @@ class BaseDiscipline(BaseMonitoredProcess):
                 If empty, use the name of the class.
         """  # noqa: D205, D212, D415
         super().__init__(name)
+        self._has_jacobian = False
         self.cache = None
         self.set_cache(self.default_cache_type)
         self.io = IO(
@@ -181,7 +187,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not output_grammar:
             return
 
-        output_data = self.io.data.copy()
+        output_data = self.io._data.copy()
         for name in output_data.keys() - output_grammar:
             del output_data[name]
 
@@ -220,7 +226,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             cache_entry: The cache entry.
         """
         self.io.data = cache_entry.inputs
-        self.io.data.update(cache_entry.outputs)
+        self.io._data.update(cache_entry.outputs)
 
     def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
         """Search and load the cached output data from input data.
@@ -326,39 +332,47 @@ class BaseDiscipline(BaseMonitoredProcess):
         Returns:
             The input and output data.
         """
-        input_data = self.io.prepare_input_data(input_data)
+        self._has_jacobian = False
+        io = self.io
 
-        if self.cache is not None:
+        input_data = io.prepare_input_data(input_data)
+
+        use_cache = self.cache is not None
+
+        if use_cache:
             if self._can_load_cache(input_data):
                 if self.validate_output_data:
-                    self.io.output_grammar.validate(self.io.data)
-                return self.io.data
+                    io.output_grammar.validate(io._data)
+                return io._data
 
             # Keep a pristine copy of the input data before it is eventually changed.
             input_data_for_cache = self.__create_input_data_for_cache(input_data)
 
-        self.io.initialize(input_data, self.validate_input_data)
+        io.initialize(input_data, self.validate_input_data)
 
         if self.virtual_execution:
-            self.io.update_output_data(self.io.output_grammar.defaults)
-        else:
+            io.update_output_data(io.output_grammar.defaults)
+        elif ExecutionStatus.is_enabled or ExecutionStatistics.is_enabled:
             self._execute_monitored()
+        else:
+            self._execute()
 
-        self.io.finalize(self.validate_output_data)
+        io.finalize(self.validate_output_data)
 
-        if self.cache is not None:
+        if use_cache:
             self._store_cache(input_data_for_cache)
 
-        return self.io.data
+        return io._data
 
     def _execute(self) -> None:
-        if self.io.input_grammar.to_namespaced:
-            input_data = self.io.get_input_data(with_namespaces=False)
+        io = self.io
+        if io.input_grammar.to_namespaced:
+            input_data = io.get_input_data(with_namespaces=False)
         else:
             # No namespaces, avoid useless processing.
-            input_data = self.io.data
+            input_data = io._data
 
-        data_processor = self.io.data_processor
+        data_processor = io.data_processor
         if data_processor is not None:
             input_data = data_processor.pre_process_data(input_data)
 
@@ -368,7 +382,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             if data_processor is not None:
                 output_data = data_processor.post_process_data(output_data)
 
-            self.io.update_output_data(output_data)
+            io.update_output_data(output_data)
 
     @abstractmethod
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -494,7 +508,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     @property
     def local_data(self) -> DisciplineData:
         """The current input and output data."""
-        return self.io.data
+        return self.io._data
 
     @local_data.setter
     def local_data(self, data: MutableStrKeyMapping) -> None:

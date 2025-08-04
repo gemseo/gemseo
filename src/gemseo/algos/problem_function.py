@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 class ProblemFunction(MDOFunction, Serializable):
     """A function to be attached to a problem."""
 
-    enable_statistics: ClassVar[bool] = True
+    enable_statistics: ClassVar[bool] = False
     """Whether to count the number of function evaluations."""
 
     stop_if_nan: bool

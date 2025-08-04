@@ -19,9 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from typing import Any
+
 import pytest
 from numpy import array
 
+from gemseo import configure
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
@@ -32,6 +36,9 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 def test_from_dict() -> None:
@@ -64,8 +71,9 @@ def test_from_dict() -> None:
 
 
 @pytest.fixture(scope="module")
-def optimization_result() -> OptimizationResult:
+def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
     """An optimization result."""
+    configure(enable_function_statistics=True)
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     design_space.add_variable("z", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5)
@@ -90,7 +98,8 @@ def optimization_result() -> OptimizationResult:
     )
     scenario.add_constraint("ineq_n_2", constraint_type="ineq")
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=1)
-    return scenario.optimization_result
+    yield scenario.optimization_result
+    configure()
 
 
 def test_optimization_result(optimization_result) -> None:
@@ -198,7 +207,13 @@ def test_from_optimization_problem_empy_database() -> None:
 @pytest.mark.parametrize("use_standardized_objective", [True, False])
 @pytest.mark.parametrize("maximize", [True, False])
 def test_from_optimization_problem(
-    value, is_feasible, sign, constraint, use_standardized_objective, maximize
+    value,
+    is_feasible,
+    sign,
+    constraint,
+    use_standardized_objective,
+    maximize,
+    enable_function_statistics,
 ) -> None:
     """Check from_optimization_problem with empty database."""
     design_space = DesignSpace()

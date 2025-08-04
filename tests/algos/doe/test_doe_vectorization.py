@@ -169,17 +169,19 @@ def test_preprocess_functions_vectorize(
         vectorize=vectorize,
         is_function_input_normalized=preprocess_design_vector,
     )
-    problem.evaluate_functions(
+    outputs = problem.evaluate_functions(
         design_vectors,
         output_functions=problem.get_functions(observable_names=())[0],
         design_vector_is_normalized=design_vector_is_normalized,
         preprocess_design_vector=preprocess_design_vector,
     )
-    assert_array_equal(problem.observables[-1].last_eval, expected)
+    assert_array_equal(outputs[0]["out"], expected)
 
 
 @pytest.mark.parametrize("vectorize", [False, True])
-def test_doe_vectorize_evaluation_problem(database, design_space, eval_jac, vectorize):
+def test_doe_vectorize_evaluation_problem(
+    database, design_space, eval_jac, vectorize, enable_function_statistics
+):
     """Check the DOE option 'vectorize' with an EvaluationProblem."""
     problem = EvaluationProblem(design_space)
     problem.add_observable(MDOFunction(f_vectorized, "out", jac=dfdx_vectorized))
@@ -224,7 +226,7 @@ def test_doe_vectorize_evaluation_problem(database, design_space, eval_jac, vect
 
 @pytest.mark.parametrize("vectorize", [False, True])
 def test_doe_vectorize_optimization_problem(
-    database, design_space, eval_jac, vectorize
+    database, design_space, eval_jac, vectorize, enable_function_statistics
 ):
     """Check the DOE option 'vectorize' with an OptimizationProblem."""
     problem = OptimizationProblem(design_space)
@@ -247,7 +249,12 @@ def test_doe_vectorize_optimization_problem(
 @pytest.mark.parametrize("vectorize", [False, True])
 @pytest.mark.parametrize("use_mdo_chain", [False, True])
 def test_doe_vectorize_scenario(
-    database, design_space, eval_jac, vectorize, use_mdo_chain
+    database,
+    design_space,
+    eval_jac,
+    vectorize,
+    use_mdo_chain,
+    enable_function_statistics,
 ):
     """Check the DOE option 'vectorize' with an MDOScenario."""
     discipline = VectorizedDiscipline()

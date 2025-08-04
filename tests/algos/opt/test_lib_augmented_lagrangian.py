@@ -179,7 +179,7 @@ def test_2d_mixed(
         assert lag_approx["equality"][1][0] > 0
 
 
-def test_n_obj_func_calls():
+def test_n_obj_func_calls(enable_function_statistics):
     """Test that n_obj_func_calls property returns correct number of function calls."""
     problem = Power2()
     problem.preprocess_functions()

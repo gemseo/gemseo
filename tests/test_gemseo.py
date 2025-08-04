@@ -92,6 +92,7 @@ from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settin
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -736,7 +737,13 @@ def test_print_configuration(capfd) -> None:
         capfd: Fixture capture outputs sent to `stdout` and
             `stderr`.
     """
+    configure(
+        enable_function_statistics=True,
+        enable_discipline_status=True,
+        enable_discipline_statistics=True,
+    )
     print_configuration()
+    configure()
 
     out, err = capfd.readouterr()
     assert not err
@@ -883,8 +890,9 @@ def test_configure(
 def test_configure_default() -> None:
     """Check the default use of configure."""
     configure()
-    assert ProblemFunction.enable_statistics is True
-    assert ExecutionStatistics.is_enabled is True
+    assert ProblemFunction.enable_statistics is False
+    assert ExecutionStatistics.is_enabled is False
+    assert ExecutionStatus.is_enabled is False
     assert Discipline.validate_input_data is True
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE

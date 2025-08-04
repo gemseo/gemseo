@@ -43,7 +43,7 @@ class IO:
     output data of the last execution.
     """
 
-    __data: DisciplineData
+    _data: DisciplineData
     """The input and output data."""
 
     __linear_relationships: tuple[()] | tuple[set[str], set[str]]
@@ -138,11 +138,13 @@ class IO:
         Returns:
             The input data.
         """
+        # TODO: remove comment: removing this line breaks one parallel test
         if not data:
             return self.input_grammar.defaults.copy()
 
         input_data = {}
         defaults = self.input_grammar.defaults
+
         for input_name in self.input_grammar:
             input_value = data.get(input_name)
             if input_value is not None:
@@ -160,11 +162,11 @@ class IO:
 
         When set, the passed data are shallow copied.
         """
-        return self.__data
+        return self._data
 
     @data.setter
     def data(self, data: MutableStrKeyMapping) -> None:
-        self.__data = DisciplineData(data)
+        self._data = DisciplineData(data)
 
     def __get_data(self, with_namespaces: bool, grammar: BaseGrammar) -> dict[str, Any]:
         """Return the local data restricted to the items in a grammar.
@@ -177,8 +179,8 @@ class IO:
         Returns:
             The local output data.
         """
-        copy_ = self.data.copy()
-        for name in copy_.keys() - grammar.keys():
+        copy_ = self._data.copy()
+        for name in copy_.keys() - grammar:
             del copy_[name]
 
         if not with_namespaces and grammar.to_namespaced:
@@ -226,12 +228,17 @@ class IO:
         """
         out_ns = self.output_grammar.to_namespaced
         out_names = self.output_grammar
-        data = self.__data
-        for key, value in output_data.items():
-            if key in out_names:
-                data[key] = value
-            elif key_with_ns := out_ns.get(key):
-                data[key_with_ns] = value
+        data = self._data
+        if out_ns:
+            for key, value in output_data.items():
+                if key in out_names:
+                    data[key] = value
+                elif key_with_ns := out_ns.get(key):
+                    data[key_with_ns] = value
+        else:
+            for key, value in output_data.items():
+                if key in out_names:
+                    data[key] = value
 
     def initialize(self, input_data: StrKeyMapping, validate: bool) -> None:
         """Initialize the data from input data.
@@ -252,7 +259,7 @@ class IO:
             validate: Whether to validate the (eventually post-processed) cleaned data.
         """
         if validate:
-            self.output_grammar.validate(self.data)
+            self.output_grammar.validate(self._data)
 
     def set_linear_relationships(
         self,

@@ -25,6 +25,7 @@ from copy import deepcopy
 from functools import partial
 from math import sqrt
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import numpy as np
@@ -74,8 +75,18 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail2.hdf5"
+
+
+@pytest.fixture(autouse=True)
+def _enable_function_statistics(
+    enable_function_statistics,
+) -> Generator[None, None, None]:
+    yield  # noqa: PT022
 
 
 @pytest.fixture(scope="module")

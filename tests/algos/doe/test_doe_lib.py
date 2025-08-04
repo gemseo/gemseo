@@ -131,7 +131,9 @@ def compute_obj_and_obs(x: float = 0.0) -> tuple[float, float]:
     return obj, obs
 
 
-def test_evaluate_samples_multiproc_with_observables() -> None:
+def test_evaluate_samples_multiproc_with_observables(
+    enable_discipline_statistics,
+) -> None:
     """Evaluate a DoE in // with multiprocessing and with observables."""
     disc = create_discipline("AutoPyDiscipline", py_func=compute_obj_and_obs)
     disc.cache = None

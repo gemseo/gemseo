@@ -269,7 +269,9 @@ def func(x):
         ("float_linux.h5", array([1.0, 2.0, 3.0]), array([1.0, 2.0, 3.0])),
     ],
 )
-def test_det_hash(tmp_wd, hdf_name, inputs, expected) -> None:
+def test_det_hash(
+    tmp_wd, hdf_name, inputs, expected, enable_discipline_statistics
+) -> None:
     """Test that hashed values are the same across sessions.
 
     Args:
@@ -407,7 +409,9 @@ def memory_cache(memory_full_cache, memory_full_cache_loc, request) -> MemoryFul
     return (memory_full_cache, memory_full_cache_loc)[request.param]
 
 
-def test_multithreading(memory_cache, sellar_with_2d_array, sellar_disciplines) -> None:
+def test_multithreading(
+    memory_cache, sellar_with_2d_array, sellar_disciplines, enable_function_statistics
+) -> None:
     s_1 = sellar_disciplines.sellar1
     s_s = sellar_disciplines.sellar_system
     s_1.cache = memory_cache
