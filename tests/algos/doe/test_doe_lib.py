@@ -543,3 +543,49 @@ def test_eval_func_and_eval_jac(eval_func, eval_jac):
     name = "pow2"
     assert (name in last_item) is eval_func
     assert (database.get_gradient_name(name) in last_item) is eval_jac
+
+
+class _DummyDiscValueError(Discipline):
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:
+        super().__init__("foo")
+        self.input_grammar.update_from_names("x")
+        self.output_grammar.update_from_names(("z", "t"))
+        self.output_grammar.update_from_types({
+            "z": ndarray,
+            "t": ndarray,
+        })
+
+    def _run(self, input_data: StrKeyMapping):
+        x = input_data["x"]
+        if x < 0:
+            msg = "The sample is undefined for x < 0."
+            raise ValueError(msg)
+        return {"z": array([sum(x)]), "t": 2 * x + 3}
+
+
+@pytest.mark.parametrize("formulation", ["MDF", "DisciplinaryOpt", "IDF"])
+def test_value_error_filtering(formulation, caplog):
+    """Test that the DOELibrary can skip a sample that raises a ``ValueError``."""
+    caplog.set_level("ERROR")
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
+
+    scenario = create_scenario(
+        [_DummyDiscValueError()],
+        "z",
+        design_space,
+        scenario_type="DOE",
+        formulation_name=formulation,
+    )
+    custom_doe_settings = CustomDOE_Settings(samples=array([[1.0], [-1.0], [0.0]]))
+    scenario.execute(custom_doe_settings)
+    assert len(scenario.formulation.optimization_problem.database) == 2
+    driver_message = (
+        "The evaluation of the functions at point [-1.] raised a ValueError; "
+        "skipping to the next point."
+    )
+    assert driver_message in caplog.text
+    discipline_message = "The sample is undefined for x < 0."
+    assert discipline_message in caplog.text
