@@ -111,8 +111,12 @@ class TestPropaneScenario(unittest.TestCase):
         scenario.set_differentiation_method(lin_method)
         # add constraints
 
-        scenario.add_constraint(["f_2", "f_6"], constraint_type="ineq")
-        scenario.add_constraint(["f_7", "f_9"], constraint_type="ineq")
+        scenario.add_constraint(
+            ["f_2", "f_6"], constraint_type=scenario.ConstraintType.INEQ
+        )
+        scenario.add_constraint(
+            ["f_7", "f_9"], constraint_type=scenario.ConstraintType.INEQ
+        )
 
         # run the optimizer
         scenario.execute(algo_name=algo, max_iter=50)

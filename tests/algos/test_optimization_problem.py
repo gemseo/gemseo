@@ -98,7 +98,9 @@ def problem_executed_twice() -> OptimizationProblem:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "obj")
     problem.add_observable(MDOFunction(lambda x: x, "obs"))
-    problem.add_constraint(MDOFunction(lambda x: x, "cstr", f_type="ineq"))
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "cstr", f_type=MDOFunction.ConstraintType.INEQ)
+    )
 
     execute_algo(
         problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.0]])
@@ -248,7 +250,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_std = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_std",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -258,7 +260,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_lo_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_posval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -268,7 +270,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_lo_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_negval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -278,7 +280,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_up_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_up_negval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -288,18 +290,24 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_up_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_up_posval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(ineq_up_posval, value=1.0, positive=True)
     expected.append("ineq_up_posval(x): cstr + cst >= 1.0")
 
-    linear_constraint = MDOLinearFunction(array([1, 2]), "lin1", f_type="ineq")
+    linear_constraint = MDOLinearFunction(
+        array([1, 2]), "lin1", f_type=MDOLinearFunction.ConstraintType.INEQ
+    )
     problem.add_constraint(linear_constraint)
     expected.append("lin1(x[0], x[1]): x[0] + 2.00e+00*x[1] <= 0.0")
 
-    linear_constraint = MDOLinearFunction(array([1, 2]), "lin2", f_type="ineq")
+    linear_constraint = MDOLinearFunction(
+        array([1, 2]),
+        "lin2",
+        f_type=MDOLinearFunction.ConstraintType.INEQ,
+    )
     problem.add_constraint(linear_constraint, positive=True, value=-1.0)
     expected.append("lin2(x[0], x[1]): x[0] + 2.00e+00*x[1] >= -1.0")
 
@@ -315,7 +323,7 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
     eq_std = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_std",
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -325,7 +333,7 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
     eq_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_posval",
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -334,7 +342,7 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
     eq_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_negval",
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -1227,10 +1235,11 @@ def constrained_problem() -> OptimizationProblem:
     problem.objective = MDOFunction(lambda x: x.sum(), "f", jac=lambda x: [1, 1])
     problem.add_constraint(
         MDOFunction(operator.itemgetter(0), "g", jac=lambda _: [1, 0], dim=1),
-        constraint_type="ineq",
+        constraint_type=problem.ConstraintType.INEQ,
     )
     problem.add_constraint(
-        MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)), constraint_type="eq"
+        MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)),
+        constraint_type=MDOFunction.ConstraintType.EQ,
     )
     problem.add_observable(
         MDOFunction(operator.itemgetter(1), "a", jac=lambda x: [0, 1])
@@ -1318,7 +1327,9 @@ def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
     problem.add_observable(MDOFunction(sum, "obs"))
-    problem.add_constraint(MDOFunction(sum, "cstr"), constraint_type="ineq")
+    problem.add_constraint(
+        MDOFunction(sum, "cstr"), constraint_type=problem.ConstraintType.INEQ
+    )
     start_point = problem.design_space.get_current_value(as_dict=True)
     execute_algo(problem, algo_name="LHS", n_samples=3, algo_type="doe")
     return problem, start_point
@@ -1610,7 +1621,12 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: 1 - x, "f", jac=lambda x: array([[-1.0]]))
     problem.add_constraint(
-        MDOFunction(lambda x: x - 0.5, "c", f_type="ineq", jac=lambda x: array([[1.0]]))
+        MDOFunction(
+            lambda x: x - 0.5,
+            "c",
+            f_type=MDOFunction.ConstraintType.INEQ,
+            jac=lambda x: array([[1.0]]),
+        )
     )
     problem.add_observable(MDOFunction(lambda x: x, "o", jac=lambda x: array([[1.0]])))
     return problem
@@ -1870,8 +1886,8 @@ def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> 
         design_space,
         formulation_name="MDF",
     )
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_observable("y_1")
     scenario.execute(algo_name="SLSQP", max_iter=3)
     total_iter = len(scenario.formulation.optimization_problem.database)

@@ -197,8 +197,8 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
             "inner_mda_name": "MDAJacobi",
         },
     )
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     doe_input = {
         "algo_name": "DiagonalDOE",
         "n_samples": 2,

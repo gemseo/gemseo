@@ -513,7 +513,9 @@ class MNBI(BaseOptimizationLibrary):
             )
             self.__beta_sub_optim.add_constraint(constraint)
 
-        self.__beta_sub_optim.add_constraint(beta_sub_cstr, constraint_type="ineq")
+        self.__beta_sub_optim.add_constraint(
+            beta_sub_cstr, constraint_type=self.__beta_sub_optim.ConstraintType.INEQ
+        )
         opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim,
             algo_name=self.__sub_optim_algo,

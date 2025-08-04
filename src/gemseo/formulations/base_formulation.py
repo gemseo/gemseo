@@ -105,6 +105,8 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     _settings: T
     """The Pydantic model for the settings of the formulation."""
 
+    ConstraintType = MDOFunction.ConstraintType
+
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -161,7 +163,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     def add_constraint(
         self,
         output_name: str | Sequence[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        constraint_type: ConstraintType = ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,

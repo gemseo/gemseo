@@ -154,6 +154,7 @@ class OptimizationProblem(EvaluationProblem):
     # Enumerations
     AggregationFunction = Constraints.AggregationFunction
     DifferentiationMethod = EvaluationProblem.DifferentiationMethod
+    ConstraintType = MDOFunction.ConstraintType
 
     class HistoryFileFormat(StrEnum):
         """The format of the history file."""
@@ -267,7 +268,7 @@ class OptimizationProblem(EvaluationProblem):
         self,
         function: MDOFunction,
         value: float = 0.0,
-        constraint_type: MDOFunction.ConstraintType | None = None,
+        constraint_type: ConstraintType | None = None,
         positive: bool = False,
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
@@ -348,7 +349,7 @@ class OptimizationProblem(EvaluationProblem):
         previous_constraints = deepcopy(self.__constraints)
         self.__constraints.clear()
         for constraint in previous_constraints:
-            if constraint.f_type == MDOFunction.ConstraintType.INEQ:
+            if constraint.f_type == self.ConstraintType.INEQ:
                 penalized_objective += aggregate_positive_sum_square(
                     constraint, scale=scale_inequality
                 )
@@ -435,8 +436,8 @@ class OptimizationProblem(EvaluationProblem):
         # restriction operator.
         for constraint in self.__constraints:
             new_function = LinearCompositeFunction(constraint, restriction_operator)
-            new_function.f_type = MDOFunction.ConstraintType.EQ
-            if constraint.f_type == MDOFunction.ConstraintType.EQ:
+            new_function.f_type = self.ConstraintType.EQ
+            if constraint.f_type == self.ConstraintType.EQ:
                 problem.add_constraint(new_function)
                 continue
 

@@ -91,12 +91,19 @@ def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
     )
     scenario.add_constraint("eq_1")
     scenario.add_constraint("eq_2", value=0.25)
-    scenario.add_constraint("ineq_p_1", constraint_type="ineq", positive=True)
-    scenario.add_constraint("ineq_n_1", constraint_type="ineq", value=0.25)
     scenario.add_constraint(
-        "ineq_p_2", constraint_type="ineq", positive=True, value=0.25
+        "ineq_p_1", constraint_type=scenario.ConstraintType.INEQ, positive=True
     )
-    scenario.add_constraint("ineq_n_2", constraint_type="ineq")
+    scenario.add_constraint(
+        "ineq_n_1", constraint_type=scenario.ConstraintType.INEQ, value=0.25
+    )
+    scenario.add_constraint(
+        "ineq_p_2",
+        constraint_type=scenario.ConstraintType.INEQ,
+        positive=True,
+        value=0.25,
+    )
+    scenario.add_constraint("ineq_n_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=1)
     yield scenario.optimization_result
     configure()

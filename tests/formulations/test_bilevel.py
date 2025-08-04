@@ -93,7 +93,9 @@ def test_constraint_not_in_sub_scenario(sobieski_bilevel_scenario) -> None:
     )
 
     for i in range(1, 4):
-        scenario.add_constraint(["g_" + str(i)], constraint_type="ineq")
+        scenario.add_constraint(
+            ["g_" + str(i)], constraint_type=scenario.ConstraintType.INEQ
+        )
 
     for i in range(3):
         cstrs = scenario.disciplines[i].formulation.optimization_problem.constraints
@@ -103,7 +105,7 @@ def test_constraint_not_in_sub_scenario(sobieski_bilevel_scenario) -> None:
     cstrs_sys = scenario.formulation.optimization_problem.constraints
     assert len(cstrs_sys) == 0
     with pytest.raises(ValueError):
-        scenario.add_constraint(["toto"], constraint_type="ineq")
+        scenario.add_constraint(["toto"], constraint_type=scenario.ConstraintType.INEQ)
 
 
 def test_get_sub_options_grammar_errors() -> None:

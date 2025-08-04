@@ -101,7 +101,7 @@ def build_and_run_idf_scenario_with_constraints(
         scenario.set_differentiation_method("complex_step", 1e-30)
     # Set the design constraints
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, constraint_type="ineq")
+        scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
 
     scenario.execute(
         algo_name=algo,

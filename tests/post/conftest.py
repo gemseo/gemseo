@@ -35,24 +35,28 @@ def __common_problem():  # noqa: PT005
     problem.minimize_objective = False
     func = MDOFunction(lambda x: x * 0.5, "eq")
     func.has_default_name = True
-    problem.add_constraint(func, constraint_type="eq")
+    problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
     func = MDOFunction(lambda x: x * 1.5, "pos")
     func.has_default_name = True
-    problem.add_constraint(func, constraint_type="ineq", positive=True)
+    problem.add_constraint(
+        func, constraint_type=MDOFunction.ConstraintType.INEQ, positive=True
+    )
     func = MDOFunction(lambda x: x * 1.5, "pos")
     func.has_default_name = True
     problem.add_constraint(
         func,
-        constraint_type="ineq",
+        constraint_type=MDOFunction.ConstraintType.INEQ,
         value=0.5,
         positive=True,
     )
     func = MDOFunction(lambda x: x * 2.5, "neg")
     func.has_default_name = True
-    problem.add_constraint(func, constraint_type="ineq")
+    problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.INEQ)
     func = MDOFunction(lambda x: x * 2.5, "neg")
     func.has_default_name = True
-    problem.add_constraint(func, constraint_type="ineq", value=0.5)
+    problem.add_constraint(
+        func, constraint_type=MDOFunction.ConstraintType.INEQ, value=0.5
+    )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     return problem
 

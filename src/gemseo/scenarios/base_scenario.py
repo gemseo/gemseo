@@ -174,6 +174,8 @@ class BaseScenario(BaseMonitoredProcess):
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
 
+    ConstraintType = MDOFunction.ConstraintType
+
     _opt_hist_backup_path: Path
 
     __history_backup_is_set: bool
@@ -364,7 +366,7 @@ class BaseScenario(BaseMonitoredProcess):
     def add_constraint(
         self,
         output_name: str | Sequence[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        constraint_type: ConstraintType = ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,

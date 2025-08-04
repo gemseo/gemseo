@@ -152,13 +152,13 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[[dict[str, Any]], MDOScen
             return scenario
 
         sc_prop = create_block("x_3", "PropulsionScenario")
-        sc_prop.add_constraint("g_3", constraint_type="ineq")
+        sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
         sc_aero = create_block("x_2", "AerodynamicsScenario")
-        sc_aero.add_constraint("g_2", constraint_type="ineq")
+        sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
         sc_str = create_block("x_1", "StructureScenario")
-        sc_str.add_constraint("g_1", constraint_type="ineq")
+        sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
 
         # Gather the sub-scenarios and mission for objective computation
         sub_scenarios = [sc_aero, sc_str, sc_prop, sub_disciplines[-1]]
@@ -317,7 +317,9 @@ def create_aerostructure_scenario(formulation_name: str):
         main_mda_settings={"tolerance": 1e-8},
     )
 
-    system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
+    system_scenario.add_constraint(
+        "reserve_fact", constraint_type=system_scenario.ConstraintType.INEQ, value=0.5
+    )
     system_scenario.add_constraint("lift", value=0.5)
     system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=5, **algo_settings)
 

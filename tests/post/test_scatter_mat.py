@@ -162,8 +162,8 @@ def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> Non
         formulation_name="MDF",
         maximize_objective=True,
     )
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.set_differentiation_method("finite_differences")
     scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     scenario.execute()

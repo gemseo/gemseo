@@ -65,7 +65,9 @@ class TestMDFFormulation(FormulationsBaseTest):
         else:
             scenario.set_differentiation_method("complex_step", 1e-30)
         # Set the design constraints
-        scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
+        scenario.add_constraint(
+            ["g_1", "g_2", "g_3"], constraint_type=scenario.ConstraintType.INEQ
+        )
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
         scenario.execute(
@@ -115,8 +117,8 @@ def test_reset(sellar_with_2d_array):
         formulation_name="MDF",
     )
     initial_current_value = design_space.get_current_value()
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.execute(algo_name="SLSQP", max_iter=5)
     final_current_value = design_space.get_current_value()
 

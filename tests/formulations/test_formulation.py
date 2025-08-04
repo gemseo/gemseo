@@ -100,7 +100,7 @@ def test_jac_sign(patch_mdo_formulation) -> None:
     g = MDOFunction(
         math.sin,
         name="G",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         jac=math.cos,
         expr="sin(x)",
         input_names=["x", "y"],

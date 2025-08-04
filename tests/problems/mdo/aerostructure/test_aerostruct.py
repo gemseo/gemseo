@@ -214,7 +214,7 @@ class TestAerostructureScenarios(unittest.TestCase):
 
         # add constraints
         scenario.add_constraint("c_lift")
-        scenario.add_constraint("c_rf", constraint_type="ineq")
+        scenario.add_constraint("c_rf", constraint_type=scenario.ConstraintType.INEQ)
         # run the optimizer
         scenario.execute(algo_name=algo, max_iter=10)
         obj_opt = scenario.optimization_result.f_opt
