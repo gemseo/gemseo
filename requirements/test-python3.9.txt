@@ -2,7 +2,7 @@
 #    uv pip compile --python-platform linux --group dev --extra all --python-version 3.9 pyproject.toml -o requirements/test-python3.9.txt
 annotated-types==0.7.0
     # via pydantic
-certifi==2025.7.14
+certifi==2025.8.3
     # via requests
 charset-normalizer==3.4.2
     # via requests
@@ -10,7 +10,7 @@ contourpy==1.3.0
     # via matplotlib
 covdefaults==2.3.0
     # via gemseo (pyproject.toml:dev)
-coverage==7.10.1
+coverage==7.10.2
     # via
     #   covdefaults
     #   pytest-cov
