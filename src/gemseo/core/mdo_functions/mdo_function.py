@@ -52,7 +52,7 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.enumeration import merge_enums
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.metaclasses import GoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -68,7 +68,7 @@ WrappedFunctionType = Callable[[NumberArray], OutputType]
 WrappedJacobianType = Callable[[NumberArray], NumberArray]
 
 
-class MDOFunction(metaclass=ABCGoogleDocstringInheritanceMeta):
+class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     """The standard definition of an array-based function with algebraic operations.
 
     :class:`.MDOFunction` is the key class
