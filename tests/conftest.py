@@ -25,7 +25,6 @@ from typing import NamedTuple
 import pytest
 from numpy import array
 
-from gemseo import configure
 from gemseo import set_data_converters
 from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -89,27 +88,3 @@ def sellar_with_2d_array() -> Generator[None, Any, None]:
         set_data_converters({}, {}, {})
     else:
         yield
-
-
-@pytest.fixture
-def enable_function_statistics() -> Generator[None, None, None]:
-    """Enable functions statistics temporary."""
-    configure(enable_function_statistics=True)
-    yield
-    configure()
-
-
-@pytest.fixture
-def enable_discipline_status() -> Generator[None, None, None]:
-    """Enable discipline status temporary."""
-    configure(enable_discipline_status=True)
-    yield
-    configure()
-
-
-@pytest.fixture
-def enable_discipline_statistics() -> Generator[None, None, None]:
-    """Enable discipline statistics temporary.."""
-    configure(enable_discipline_statistics=True)
-    yield
-    configure()
