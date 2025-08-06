@@ -19,21 +19,18 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from typing import Union
 
-from pydantic import BaseModel
-from pydantic import ConfigDict
 from pydantic import Field
 
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
+from gemseo.settings.base_settings import BaseSettings
 from gemseo.typing import StrKeyMapping
 
 SubTransformerType = Union[str, tuple[str, StrKeyMapping], BaseTransformer]
 TransformerType = MutableMapping[str, SubTransformerType]
 
 
-class BaseMLAlgoSettings(BaseModel):
+class BaseMLAlgoSettings(BaseSettings):
     """The settings common to all the machine learning algorithms."""
-
-    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True, frozen=True)
 
     transformer: StrKeyMapping = Field(
         default_factory=dict,

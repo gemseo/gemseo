@@ -30,6 +30,8 @@ from strenum import StrEnum
 from gemseo.core._discipline_class_injector import ClassInjector
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline.base_discipline import BaseDiscipline
+from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
@@ -106,9 +108,6 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     The structure is ``{output_name: {input_name: jacobian_matrix}}``.
     """
 
-    _has_jacobian: bool
-    """Whether the jacobian has been set either by :meth:`_run` or from the cache."""
-
     _differentiated_input_names: list[str]
     """The names of the inputs to differentiate the outputs."""
 
@@ -144,8 +143,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         self._differentiated_output_names = []
         self._jac_approx = None
         self._linearization_mode = self.LinearizationMode.AUTO
-        self._has_jacobian = False
         self.jac = {}
+        self.__input_names = ()
+        self.__output_names = ()
 
     @property
     def linearization_mode(self) -> LinearizationMode:
@@ -215,7 +215,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             # The data shall be reset to their original values
             # in case an input is also an output,
             # if we don't want to keep the computed state (as in MDAs).
-            self.io.data.update(input_data)
+            self.io._data.update(input_data)
 
         # TODO: that should be before the previous bloc,
         # but a test_parallel_chain_combinatorial_thread fails,
@@ -234,11 +234,14 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         self.__input_names = input_names
         self.__output_names = output_names
-        self.execution_status.handle(
-            self.execution_status.Status.LINEARIZING,
-            self.execution_statistics.record_linearization,
-            self.__compute_jacobian,
-        )
+        if ExecutionStatus.is_enabled or ExecutionStatistics.is_enabled:
+            self._call_monitored(
+                self.__compute_jacobian,
+                self.execution_status.Status.LINEARIZING,
+                self.execution_statistics.record_linearization,
+            )
+        else:
+            self.__compute_jacobian()
 
         if not compute_all_jacobians:
             for output_name in tuple(self.jac.keys()):
@@ -443,7 +446,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 )
                 raise KeyError(msg)
 
-            output_value = self.io.data.get(output_name)
+            output_value = self.io._data.get(output_name)
             if output_value is None:
                 # Unknown dimension, don't check the shape.
                 continue
@@ -451,7 +454,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             output_size = get_output_size(output_name, output_value)
 
             for input_name in input_names:
-                input_value = self.io.data.get(input_name)
+                input_value = self.io._data.get(input_name)
                 if input_value is None:
                     # Unknown dimension, don't check the shape.
                     continue
@@ -509,16 +512,14 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         input_names = input_names or self._differentiated_input_names
         input_names_to_sizes = (
             self.io.input_grammar.data_converter.compute_names_to_sizes(
-                input_names,
-                self.io.data,
+                input_names, self.io._data
             )
         )
 
         output_names = output_names or self._differentiated_output_names
         output_names_to_sizes = (
             self.io.output_grammar.data_converter.compute_names_to_sizes(
-                output_names,
-                self.io.data,
+                output_names, self.io._data
             )
         )
 
@@ -799,15 +800,6 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             #  there is an implicit side effect in how this attr is used,
             #  this should be made explicit.
             self.jac = {}
-
-    def execute(  # noqa: D102
-        self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-    ) -> DisciplineData:
-        # TODO: investigate the side effects in linearize that prevents clearing jac.
-        # self.jac.clear()
-        self._has_jacobian = False
-        return super().execute(input_data)
 
     def _compute_jacobian(
         self,

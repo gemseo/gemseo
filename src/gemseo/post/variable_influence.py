@@ -34,6 +34,7 @@ from numpy import array
 from numpy import savetxt
 from numpy import stack
 
+from gemseo.algos.database import Database
 from gemseo.post.base_post import BasePost
 from gemseo.post.variable_influence_settings import VariableInfluence_Settings
 from gemseo.utils.string_tools import pretty_str
@@ -69,29 +70,54 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
     Settings: ClassVar[type[VariableInfluence_Settings]] = VariableInfluence_Settings
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+
     def _plot(self, settings: VariableInfluence_Settings) -> None:
         level = settings.level
         absolute_value = settings.absolute_value
         log_scale = settings.log_scale
         save_var_files = settings.save_var_files
+        optimization_metadata = self._optimization_metadata
+        dataset = self._dataset
 
-        function_names = self.optimization_problem.function_names
-        _, x_opt, _, _, _ = self.optimization_problem.optimum
-        x_0 = self.database.get_x_vect(1)
+        function_names = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        x_opt = dataset.design_dataset.loc[
+            optimization_metadata.optimum_iteration
+        ].values
+        x_0 = dataset.design_dataset.iloc[0].to_numpy()
         absolute_value = log_scale or absolute_value
 
         names_to_sensitivities = {}
-        evaluate = self.database.get_function_value
         for function_name in function_names:
-            grad = evaluate(self.database.get_gradient_name(function_name), x_0)
+            grad_name = Database.get_gradient_name(function_name)
+            if grad_name in dataset.variable_names:
+                grad = dataset.get_view(variable_names=grad_name).iloc[0].to_numpy()
+                if grad.shape != x_0.shape:
+                    grad = grad.reshape(-1, len(x_0))
+
+            else:
+                grad = None
+
             if grad is None:
                 continue
 
-            f_0 = evaluate(function_name, x_0)
-            f_opt = evaluate(function_name, x_opt)
-            if self._change_obj and function_name == self._neg_obj_name:
+            f_0 = dataset.get_view(variable_names=function_name).iloc[0].to_numpy()
+            f_opt = (
+                dataset.get_view(variable_names=function_name)
+                .loc[optimization_metadata.optimum_iteration]
+                .to_numpy()
+            )
+            if (
+                self._change_obj
+                and function_name == f"-{optimization_metadata.objective_name}"
+            ):
                 grad = -grad
-                function_name = self._obj_name
+                function_name = optimization_metadata.objective_name
 
             if len(grad.shape) == 1:
                 sensitivity = grad * (x_opt - x_0)
@@ -156,14 +182,10 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             pretty_str([x_names[i] for i in influential_variables]),
         )
         if save:
+            input_space = self._dataset.misc["input_space"]
             names = [
-                [
-                    f"{name}${i}"
-                    for i in range(
-                        self.optimization_problem.design_space.get_size(name)
-                    )
-                ]
-                for name in self.optimization_problem.design_space  # noqa: E501
+                [f"{name}${i}" for i in range(input_space.get_size(name))]
+                for name in input_space
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"

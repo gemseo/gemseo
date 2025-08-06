@@ -66,9 +66,9 @@ variables = ["x_0", "x_1", "x_2", "x_3"]
 data
 
 # %%
-# Create a :class:`.ParametricStatistics` object
-# ----------------------------------------------
-# We create a :class:`.ParametricStatistics` object
+# Create a :class:`.OTParametricStatistics` object
+# ------------------------------------------------
+# We create a :class:`.OTParametricStatistics` object
 # from this data encapsulated in a :class:`.Dataset`:
 
 dataset = create_dataset("Dataset", data, variables)
@@ -76,11 +76,11 @@ dataset = create_dataset("Dataset", data, variables)
 # %%
 # and a list of names of candidate probability distributions:
 # exponential, normal and uniform distributions
-# (see :attr:`.ParametricStatistics.DistributionName`).
+# (see :attr:`.OTParametricStatistics.DistributionName`).
 # We do not use the default
 # fitting criterion ('BIC') but 'Kolmogorov'
-# (see :attr:`.ParametricStatistics.FittingCriterion`
-# and :attr:`.ParametricStatistics.SignificanceTest`).
+# (see :attr:`.OTParametricStatistics.FittingCriterion`
+# and :attr:`.OTParametricStatistics.SignificanceTest`).
 
 tested_distributions = ["Exponential", "Normal", "Uniform"]
 analysis = create_statistics(
@@ -109,7 +109,7 @@ analysis.plot_criteria("x_0")
 # %%
 # Get statistics
 # --------------
-# From this :class:`.ParametricStatistics` instance,
+# From this :class:`.OTParametricStatistics` instance,
 # we can easily get statistics for the different variables
 # based on the selected distributions.
 

@@ -282,12 +282,12 @@ class CouplingStructure:
         discipline: Discipline,
         strong: bool = True,
     ) -> list[str]:
-        """Compute the output coupling variables of a discipline, either strong or weak.
+        """Return the names of the output coupling variables.
 
         Args:
             discipline: The discipline.
-            strong: If ``True``,
-                consider the strong couplings. Otherwise, the weak ones.
+            strong: Whether to return the names of the strong coupling variables only.
+                Otherwise, return the names of all coupling variables.
 
         Returns:
             The names of the output coupling variables.
@@ -334,7 +334,7 @@ class CouplingStructure:
             if output in discipline.io.output_grammar:
                 return discipline
 
-        msg = f"{output} is not the output of a discipline."
+        msg = f"There is no discipline with an output variable named {output!r}."
         raise ValueError(msg)
 
     def __draw_n2_chart(

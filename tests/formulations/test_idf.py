@@ -18,6 +18,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
+
 import numpy as np
 import pytest
 
@@ -41,12 +43,14 @@ def test_build_func_from_disc() -> None:
         SobieskiStructure("complex128"),
     ]
     idf = IDF(disciplines, "y_4", pb.design_space)
+    assert idf.all_couplings == idf.coupling_structure.all_couplings
+
     x_names = idf.get_optim_variable_names()
     x_dict = pb.get_default_inputs(x_names)
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 
     for c_name in ["g_1", "g_2", "g_3"]:
-        idf.add_constraint(c_name, constraint_type="ineq")
+        idf.add_constraint(c_name, constraint_type=idf.ConstraintType.INEQ)
     opt = idf.optimization_problem
     opt.objective.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
     for cst in opt.constraints:
@@ -65,6 +69,32 @@ def test_build_func_from_disc() -> None:
 @pytest.mark.parametrize(
     ("options", "expected_feasible"),
     [
+        # Without weak coupling targets
+        (
+            {
+                "linearize": False,
+                "dtype": "complex128",
+                "normalize_cstr": True,
+                "eq_tolerance": 1e-4,
+                "ineq_tolerance": 1e-4,
+                "max_iter": 50,
+                "include_weak_coupling_targets": False,
+            },
+            True,
+        ),
+        (
+            {
+                "linearize": True,
+                "dtype": "float64",
+                "normalize_cstr": True,
+                "eq_tolerance": 1e-3,
+                "ineq_tolerance": 1e-3,
+                "max_iter": 50,
+                "include_weak_coupling_targets": False,
+            },
+            True,
+        ),
+        # With weak coupling targets
         (
             {
                 "linearize": False,
@@ -146,8 +176,12 @@ def test_idf_execution(
 
     assert is_feasible == expected_feasible
 
-    if options["n_processes"] > 1:
-        assert "Running IDF formulation in parallel on n_processes" in caplog.text
+    include_weak_coupling_targets = options.get("include_weak_coupling_targets", True)
+    if include_weak_coupling_targets and (n_processes := options["n_processes"]) > 1:
+        assert (
+            f"IDF formulation: running in parallel on {n_processes} processes."
+            in caplog.text
+        )
 
 
 def test_fail_idf_no_coupl(generate_idf_scenario) -> None:
@@ -159,8 +193,12 @@ def test_fail_idf_no_coupl(generate_idf_scenario) -> None:
     """
     with pytest.raises(
         ValueError,
-        match="IDF formulation needs coupling variables as design variables, "
-        r"missing variables: \{.*\}\.",
+        match=re.escape(
+            "IDF formulation: "
+            "the variables "
+            "'y_12', 'y_14', 'y_21', 'y_23', 'y_24', 'y_31', 'y_32' and 'y_34' "
+            "must be added to the design space."
+        ),
     ):
         generate_idf_scenario(
             "SLSQP",

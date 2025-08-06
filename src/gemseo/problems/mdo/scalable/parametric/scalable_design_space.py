@@ -35,6 +35,9 @@ from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings i
     ScalableDisciplineSettings,
 )
 from gemseo.problems.mdo.scalable.parametric.core.variable_names import get_u_local_name
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -97,8 +100,7 @@ class ScalableDesignSpace(ParameterSpace):
 
         if add_uncertain_variables:
             for index, settings in enumerate(discipline_settings):
-                self.add_random_variable(
+                self.add_random_vector(
                     get_u_local_name(index + 1),
-                    "OTNormalDistribution",
-                    settings.p_i,
+                    (OTNormalDistribution_Settings(),) * settings.p_i,
                 )

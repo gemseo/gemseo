@@ -42,6 +42,15 @@ from gemseo.utils.seeder import SEED
 RESIDUALS_TOL = 1e-12
 
 
+@pytest.fixture(scope="module")
+def algo() -> ScipyLinalgAlgos:
+    """A linear solver."""
+    lib = ScipyLinalgAlgos("LGMRES")
+    lib._problem = LinearProblem(zeros((2, 2)), ones(2))
+    lib._problem.solution = 1
+    return lib
+
+
 def test_algo_list() -> None:
     """Tests the algo list detection at lib creation."""
     factory = LinearSolverLibraryFactory()
@@ -185,11 +194,27 @@ def test_inconsistent_options() -> None:
         )
 
 
-def test_check_info() -> None:
-    lib = ScipyLinalgAlgos("LGMRES")
-    lib._problem = LinearProblem(zeros((2, 2)), ones(2))
-    with pytest.raises(RuntimeError, match="illegal input or breakdown"):
-        lib._check_solver_info(-1, {})
+def test_check_info_warning(algo, caplog) -> None:
+    """Check the warning message logged by check_info when info>0."""
+    algo._check_solver_info(2, {})
+    residual = algo._problem.compute_residuals(True)
+    assert caplog.record_tuples[0] == (
+        "gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg",
+        30,
+        f"SciPy linear solver algorithm stop info: residual = {residual}",
+    )
+
+
+def test_check_info_error(algo):
+    """Check the message of the error raised by check_info when info<0."""
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape(
+            "SciPy linear solver algorithm stop info: "
+            "illegal input or breakdown, options = {'a': 2}."
+        ),
+    ):
+        algo._check_solver_info(-1, {"a": 2})
 
 
 def test_factory() -> None:

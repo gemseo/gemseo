@@ -55,3 +55,9 @@ dataset
 plot = BarPlot(dataset, n_digits=2)
 plot.colormap = "PiYG"
 plot.execute(save=False, show=True)
+
+# %%
+# .. tip::
+#
+#    :class:`.BarPlot` can use plotly to generate an interactive web-based figure.
+#    Just set the execution option ``file_format`` to ``"html"``.

@@ -25,7 +25,9 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import ones
+from numpy import repeat
 from numpy import where
+from scipy.sparse import block_diag
 from scipy.sparse import csr_array
 from scipy.sparse import eye
 
@@ -80,30 +82,63 @@ class Sellar2(BaseSellar):
         self.__zeros_n = csr_array((n, n))
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x_2 = input_data[X_2]
         x_shared = input_data[X_SHARED]
+        x_2 = input_data[X_2]
         y_1 = input_data[Y_1]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
-        out = x_shared[0] + x_shared[1] - x_2
+        else:
+            defaults = self.io.input_grammar.defaults
+            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
+            x_2 = x_2.reshape((-1, defaults[X_2].size))
+            y_1 = y_1.reshape((-1, defaults[Y_1].size))
+
+        out = x_shared[..., [0]] + x_shared[..., [1]] - x_2
         y_2 = where(y_1.real > 0, self.__k * y_1 + out, -self.__k * y_1 + out)
         inds_where = y_1.real == 0
+        if len(inds_where) != (out_length := len(out)):
+            inds_where = repeat(inds_where, out_length, axis=0)
         y_2[inds_where] = out[inds_where]
-        return {Y_2: y_2}
+        return {Y_2: y_2.ravel()}
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        y_1 = self.io.data[Y_1]
+        input_data = self.io.data
+        x_shared = input_data[X_SHARED]
+        x_2 = input_data[X_2]
+        y_1 = input_data[Y_1]
+        n_samples = 1
+        if not WITH_2D_ARRAY:  # pragma: no branch
+            defaults = self.io.input_grammar.defaults
+            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
+            x_2 = x_2.reshape((-1, defaults[X_2].size))
+            y_1 = y_1.reshape((-1, defaults[Y_1].size))
+            n_samples = self._get_n_samples(x_shared, x_2, y_1)
+
         self.jac = {Y_2: {}}
         jac = self.jac[Y_2]
-        jac[X_1] = self.__zeros_n
-        jac[X_2] = -self.__eye_n
-        jac[X_SHARED] = self.__ones_n
-        dy_2_dy_1 = self.__k_eye_n.tocsr().copy()
-        inds_negative = y_1.real < 0
-        dy_2_dy_1[inds_negative] *= -1.0
-        dy_2_dy_1[y_1.real == 0] = 0.0
-        self.jac[Y_2][Y_1] = dy_2_dy_1
+        if n_samples > 1 and not WITH_2D_ARRAY:
+            jac[X_1] = csr_array((n_samples * self._n, n_samples * self._n))
+            jac[X_2] = -block_diag([eye(self._n)] * n_samples, format="csr")
+            jac[X_SHARED] = block_diag([ones((self._n, 2))] * n_samples, format="csr")
+            matrices = []
+            for y_1_i in y_1:
+                matrix = self.__k * eye(self._n).tocsr()
+                matrix[y_1_i.real < 0] *= -1.0
+                matrix[y_1_i.real == 0] = 0.0
+                matrices.append(matrix)
+
+            self.jac[Y_2][Y_1] = block_diag(matrices, format="csr")
+        else:
+            jac[X_1] = self.__zeros_n
+            jac[X_2] = -self.__eye_n
+            jac[X_SHARED] = self.__ones_n
+            dy_2_dy_1 = self.__k_eye_n.tocsr().copy()
+            y_1_real = y_1.real.ravel()
+            inds_negative = y_1_real < 0
+            dy_2_dy_1[inds_negative] *= -1.0
+            dy_2_dy_1[y_1_real == 0] = 0.0
+            self.jac[Y_2][Y_1] = dy_2_dy_1

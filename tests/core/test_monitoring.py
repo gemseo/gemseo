@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import unittest
 
+from gemseo import configure
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core._process_flow.execution_sequences.sequential import (
     SequentialExecSequence,
@@ -48,11 +49,15 @@ class FakeScenario:
 
 class TestMonitoring(unittest.TestCase):
     def setUp(self) -> None:
+        configure(enable_discipline_status=True, enable_discipline_statistics=True)
         self.sc = FakeScenario(DummyDiscipline(), DummyDiscipline())
         self.monitor = Monitoring(self.sc)
         self.monitor.add_observer(self)
         self._statuses = self.monitor.get_statuses()
         self._updated_uuid = None
+
+    def tearDown(self):
+        configure()
 
     def update(self, atom) -> None:
         self._statuses = self.monitor.get_statuses()

@@ -45,11 +45,11 @@ if TYPE_CHECKING:
 
 ScalarBoundType = Union[int, float]
 BoundType = Union[
-    ScalarBoundType,
-    list[ScalarBoundType],
-    tuple[ScalarBoundType],
     NDArrayPydantic[int],
     NDArrayPydantic[float],
+    list[ScalarBoundType],
+    tuple[ScalarBoundType],
+    ScalarBoundType,
 ]
 BoundArray = Union[IntegerArray, RealArray]
 
@@ -96,7 +96,6 @@ class Variable(BaseModel, validate_assignment=True):
 
     __LOWER_BOUND: Final[str] = "lower_bound"
     __UPPER_BOUND: Final[str] = "upper_bound"
-    __VALIDATE_ASSIGNMENT: Final[str] = "validate_assignment"
 
     @model_validator(mode="after")
     def __validate_variable(self) -> Self:
@@ -136,10 +135,8 @@ class Variable(BaseModel, validate_assignment=True):
         else:
             bound = atleast_1d(bound)
 
-        # Temporary remove assignment validation to avoid recursion when using setattr.
-        self.model_config[self.__VALIDATE_ASSIGNMENT] = False
-        setattr(self, bound_name, bound)
-        self.model_config[self.__VALIDATE_ASSIGNMENT] = True
+        # Bypass assignment validation to avoid recursion when using setattr.
+        self.__dict__[bound_name] = bound
 
     def __check_bound(
         self,

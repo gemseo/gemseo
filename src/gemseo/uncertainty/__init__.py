@@ -68,8 +68,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from gemseo.algos.parameter_space import ParameterSpace as ParameterSpace
-    from gemseo.core.discipline import Discipline as Discipline
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset as IODataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
@@ -145,35 +143,43 @@ def create_statistics(
     dataset: Dataset,
     variable_names: Iterable[str] = (),
     tested_distributions: Sequence[str] = (),
-    fitting_criterion: str = "BIC",
+    fitting_criterion: str = "",
     selection_criterion: str = "best",
     level: float = 0.05,
     name: str = "",
 ) -> BaseStatistics:
-    """Create a statistics toolbox, either parametric or empirical.
+    """Create a toolbox to estimate statistics, either empirically or parametrically.
 
-    If parametric, the toolbox selects a distribution from candidates,
-    based on a fitting criterion and on a selection strategy.
+    If parametrically,
+    the toolbox selects a distribution from candidates,
+    based on a goodness-of-fit criterion and on a selection strategy.
 
     Args:
         dataset: A dataset.
-        variable_names: The variables of interest.
-            If empty, consider all the variables from dataset.
-        tested_distributions: The names of
-            the tested distributions.
+        variable_names: The names of the variables of interest.
+            If empty, consider all the variables of the dataset.
+        tested_distributions: The names of the probability distributions
+            to be used as candidates.
+            Either SciPy class names or OpenTURNS class names.
+            Do not mix SciPy and OpenTURNS class names.
         fitting_criterion: The name of a goodness-of-fit criterion,
-            measuring how the distribution fits the data.
-            Use :meth:`.ParametricStatistics.get_criteria`
-            to get the available criteria.
+            measuring how a distribution fits the data.
+            If empty,
+            use :attr:`.OTDistributionFitter.default_fitting_criterion``
+            or :attr:`.SPDistributionFitter.default_fitting_criterion``
+            according to the type of ``tested_distributions``.
         selection_criterion: The name of a selection criterion
-            to select a distribution from candidates.
-            Either 'first' or 'best'.
+            to select a distribution from ``tested_distributions``.
+            Either ``"first"``
+            (select the first distribution satisfying a fitting criterion)
+            or ``"best"``
+            (select the distribution that best satisfies a fitting criterion).
         level: A test level,
             i.e. the risk of committing a Type 1 error,
             that is an incorrect rejection of a true null hypothesis,
             for criteria based on a test hypothesis.
-        name: A name for the statistics toolbox instance.
-            If empty, use the concatenation of class and dataset names.
+        name: A name for the statistics toolbox.
+            If empty, concatenate the statistics class name and the dataset name.
 
     Returns:
         A statistics toolbox.
@@ -187,10 +193,7 @@ def create_statistics(
         >>> from gemseo.uncertainty import create_statistics
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
+        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
         ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
@@ -213,18 +216,30 @@ def create_statistics(
         >>> statistics = create_statistics(dataset)
         >>> mean = statistics.compute_mean()
     """
+    import openturns as ot
+
     from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-    from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
+    from gemseo.uncertainty.statistics.ot_parametric_statistics import (
+        OTParametricStatistics,
+    )
+    from gemseo.uncertainty.statistics.sp_parametric_statistics import (
+        SPParametricStatistics,
+    )
 
     if tested_distributions:
-        statistical_analysis = ParametricStatistics(
+        cls = (
+            OTParametricStatistics
+            if hasattr(ot, tested_distributions[0])
+            else SPParametricStatistics
+        )
+        statistical_analysis = cls(
             dataset,
             tested_distributions,
-            variable_names,
-            fitting_criterion,
-            level,
-            selection_criterion,
-            name,
+            variable_names=variable_names,
+            fitting_criterion=fitting_criterion,
+            level=level,
+            selection_criterion=selection_criterion,
+            name=name,
         )
     else:
         statistical_analysis = EmpiricalStatistics(dataset, variable_names, name)
@@ -241,8 +256,7 @@ def create_sensitivity_analysis(
         analysis: The name of a sensitivity analysis class.
         samples: The samples for the estimation of the sensitivity indices,
             either as an :class:`.IODataset`
-            or as a pickle file path generated from
-            the :class:`.IODataset.to_pickle` method.
+            or as a pickle file path generated from the :func:`.to_pickle` function.
             If empty, use :meth:`.compute_samples`.
 
     Returns:

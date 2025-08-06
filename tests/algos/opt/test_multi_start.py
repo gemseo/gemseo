@@ -39,7 +39,9 @@ if TYPE_CHECKING:
         (15, {"opt_algo_max_iter": 2}, 11),
     ],
 )
-def test_database_length(max_iter, options, expected_length):
+def test_database_length(
+    max_iter, options, expected_length, enable_function_statistics
+):
     """Check the database length and the number of calls to the objective."""
     problem = Power2()
     algo = MultiStart()

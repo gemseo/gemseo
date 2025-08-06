@@ -51,7 +51,7 @@ This would result in the following example:
     >>> a_disc = create_discipline("AutoPyDiscipline", py_func=func_a)
     >>> b_disc = create_discipline("AutoPyDiscipline", py_func=func_b)
     >>> print("A inputs", list(a_disc.get_input_data_names()), ", outputs",
-    ...    list(a_disc.get_output_data_names()))
+    ...    list(a_disc.output_grammar.names))
     A inputs ['x'], outputs ['y']
 
     >>> chain = MDOChain(disciplines=[a_disc, b_disc])
@@ -62,7 +62,7 @@ This would result in the following example:
     >>> a_disc_ns.add_namespace_to_output("y", "ns")
     >>>
     >>> print("A inputs", list(a_disc_ns.get_input_data_names()), ", outputs",
-    ...     list(a_disc_ns.get_output_data_names()))
+    ...     list(a_disc_ns.output_grammar.names))
     A inputs ['x'], outputs ['ns:y']
 
     >>> chain_ns = MDOChain(disciplines=[a_disc_ns, b_disc])

@@ -24,10 +24,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import eye
 from numpy import newaxis
-from numpy import ones_like
+from numpy import ones
 from numpy import zeros
 
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
@@ -42,6 +43,9 @@ if TYPE_CHECKING:
 
 class ConsistencyConstraint(MDOFunction):
     """An :class:`.MDOFunction` object to compute the consistency constraints."""
+
+    __CONSISTENCY_CONSTRAINT_NAME: Final[str] = "consistency_{}"
+    """The name template for consistency constraints."""
 
     def __init__(
         self,
@@ -68,7 +72,7 @@ class ConsistencyConstraint(MDOFunction):
         else:
             self.__norm_fact = 1.0
 
-        self.__dv_len = self.__formulation.design_space.variable_sizes
+        self.__input_names_to_sizes = self.__formulation.design_space.variable_sizes
 
         expr = ""
         for out_c in self.__output_couplings:
@@ -76,7 +80,7 @@ class ConsistencyConstraint(MDOFunction):
 
         super().__init__(
             self._func_to_wrap,
-            self.__coupl_func.name,
+            self.__CONSISTENCY_CONSTRAINT_NAME.format(self.__coupl_func.name),
             input_names=self.__dv_names_of_disc,
             expr=expr,
             jac=self._jac_to_wrap,
@@ -90,10 +94,11 @@ class ConsistencyConstraint(MDOFunction):
         return self.__coupl_func
 
     def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
-        """Compute the consistency constraints.
+        """Compute the consistency constraints y(x, yt) - yt.
 
         Args:
-            x_vect: The design variable vector.
+            x_vect: The optimization vector
+                including both design variables x and the target coupling variables yt.
 
         Returns:
             The value of the consistency constraints.
@@ -106,46 +111,52 @@ class ConsistencyConstraint(MDOFunction):
         return coupl - x_sw
 
     def _jac_to_wrap(self, x_vect: NumberArray) -> NumberArray:
-        """Compute the gradient of the consistency constraints.
+        """Compute the gradient of the consistency constraints y(x, yt) - yt.
 
         Args:
-            x_vect: The design variable vector.
+            x_vect: The optimization vector
+                including both design variables x and the target coupling variables yt.
 
         Returns:
             The value of the gradient of the consistency constraints.
         """
-        coupl_jac = self.__coupl_func.jac(x_vect)
+        y_jac = self.__coupl_func.jac(x_vect)
 
-        if len(coupl_jac.shape) > 1:
+        if len(y_jac.shape) > 1:
             # In this case it is harder since a block diagonal
             # matrix with -Id should be placed for each output
             # coupling, at the right place.
-            n_outs = coupl_jac.shape[0]
-            x_jac_2d = zeros((n_outs, len(x_vect)), dtype=x_vect.dtype)
-            x_names = self.__formulation.get_optim_variable_names()
+            output_size = y_jac.shape[0]
+            yt_jac = zeros((output_size, len(x_vect)), dtype=x_vect.dtype)
+            input_names = self.__formulation.get_optim_variable_names()
             o_min = 0
             o_max = 0
-            for out in self.__output_couplings:
-                o_len = self.__dv_len[out]
+            for output_name in self.__output_couplings:
                 i_min = 0
                 i_max = 0
-                o_max += o_len
-                for x_i in x_names:
-                    x_len = self.__dv_len[x_i]
-                    i_max += x_len
-                    if x_i == out:
-                        x_jac_2d[o_min:o_max, i_min:i_max] = eye(x_len)
+                o_max += self.__input_names_to_sizes[output_name]
+                for input_name in input_names:
+                    i_max += (input_size := self.__input_names_to_sizes[input_name])
+                    if input_name == output_name:
+                        yt_jac[o_min:o_max, i_min:i_max] = eye(input_size)
                     i_min = i_max
+
                 o_min = o_max
-            x_jac = x_jac_2d
         else:
-            # This is surprising but there is a duality between the masking
-            # operation in the function inputs and the unmasking of its
-            # outputs
-            x_jac = self.__formulation.unmask_x_swap_order(
-                self.__output_couplings, ones_like(x_vect)
+            # We create a (..., input_dimension) matrix of ones
+            # and replace the ones by zeros for all input variables but yt.
+            shape = (
+                *x_vect.shape[:-1],
+                sum(
+                    self.__input_names_to_sizes[name]
+                    for name in self.__output_couplings
+                ),
+            )
+            yt_jac = self.__formulation.unmask_x_swap_order(
+                self.__output_couplings, ones(shape)
             )
 
         if self.__formulation.normalize_constraints:
-            return (coupl_jac - x_jac) / self.__norm_fact[:, newaxis]
-        return coupl_jac - x_jac
+            return (y_jac - yt_jac) / self.__norm_fact[:, newaxis]
+
+        return y_jac - yt_jac

@@ -50,8 +50,8 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
+from gemseo.settings.opt import MNBI_Settings
 
 configure_logger()
 

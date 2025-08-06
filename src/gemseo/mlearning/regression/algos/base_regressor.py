@@ -118,6 +118,37 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         """
         return self._predict_jacobian(input_data)
 
+    @DataFormatters.format_dict_jacobian
+    @DataFormatters.format_samples()
+    @DataFormatters.transform_jacobian
+    def predict_hessian(
+        self,
+        input_data: DataType,
+    ) -> DataType:
+        r"""Predict the Hessian with respect to the input variables.
+
+        The user can specify these input data either as a NumPy array,
+        e.g. ``array([1., 2., 3.])``
+        or as a dictionary,
+        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+
+        If the NumPy arrays are of dimension 2,
+        their i-th rows represent the input data of the i-th sample;
+        while if the NumPy arrays are of dimension 1,
+        there is a single sample.
+
+        The type of the output data and the dimension of the output arrays
+        will be consistent
+        with the type of the input data and the size of the input arrays.
+
+        Args:
+            input_data: The input data.
+
+        Returns:
+            The predicted Hessian data.
+        """
+        return self._predict_hessian(input_data)
+
     def predict_jacobian_wrt_special_variables(
         self,
         input_data: RealArray,
@@ -199,9 +230,9 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         self,
         input_data: RealArray,
     ) -> NoReturn:
-        """Predict the Jacobian matrices of the regression model at input_data.
+        """Predict the Jacobian matrices of the regression model.
 
-        These Jacobian matrices includes the partial derivatives of the outputs
+        These Jacobian matrices include the partial derivatives of the outputs
         with respect to the differentiated inputs.
 
         Args:
@@ -211,7 +242,29 @@ class BaseRegressor(BaseMLSupervisedAlgo):
             The predicted Jacobian data with shape ``(n_samples, n_outputs, n_inputs)``.
 
         Raises:
-            NotImplementedError: When the derivatives are not available.
+            NotImplementedError: When the Jacobian function is not implemented.
         """
-        msg = f"Derivatives are not available for {self.__class__.__name__}."
+        msg = f"The Jacobian function of {self.__class__.__name__} is not implemented."
+        raise NotImplementedError(msg)
+
+    def _predict_hessian(
+        self,
+        input_data: RealArray,
+    ) -> NoReturn:
+        """Predict the Hessian matrices of the regression model.
+
+        These Hessian matrices include the second partial derivatives of the outputs
+        with respect to the differentiated inputs.
+
+        Args:
+            input_data: The input data with shape ``(n_samples, n_inputs)``.
+
+        Returns:
+            The predicted Hessian data with shape
+             ``(n_samples, n_outputs, n_inputs, n_inputs)``.
+
+        Raises:
+            NotImplementedError: When the Hessian function is not implemented.
+        """
+        msg = f"The Hessian function of {self.__class__.__name__} is not implemented."
         raise NotImplementedError(msg)

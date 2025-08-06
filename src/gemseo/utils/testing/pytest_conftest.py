@@ -28,6 +28,7 @@ from typing import Any
 import matplotlib.testing.decorators
 import pytest
 
+from gemseo import configure
 from gemseo.core.base_factory import BaseFactory
 
 if TYPE_CHECKING:
@@ -163,14 +164,14 @@ def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
     """
     xlwings = import_or_skip_xlwings
 
-    try:
+    try:  # pragma: no cover
         # Launch xlwings from a context manager to ensure it closes immediately.
         # See https://docs.xlwings.org/en/stable/whatsnew.html#v0-24-3-jul-15-2021
         with xlwings.App(visible=False) as app:  # noqa: F841
             pass
-    except:  # noqa: E722,B001
+    except:  # noqa: E722  # pragma: no cover
         return False
-    else:
+    else:  # pragma: no cover
         return True
 
 
@@ -186,3 +187,27 @@ def skip_if_xlwings_is_usable(is_xlwings_usable: bool) -> None:
     """Fixture to skip a test when xlwings is usable."""
     if is_xlwings_usable:
         pytest.skip("This test is only required when excel is not available.")
+
+
+@pytest.fixture
+def enable_function_statistics() -> Generator[None, None, None]:
+    """Enable functions statistics temporary."""
+    configure(enable_function_statistics=True)
+    yield
+    configure()
+
+
+@pytest.fixture
+def enable_discipline_status() -> Generator[None, None, None]:
+    """Enable discipline status temporary."""
+    configure(enable_discipline_status=True)
+    yield
+    configure()
+
+
+@pytest.fixture
+def enable_discipline_statistics() -> Generator[None, None, None]:
+    """Enable discipline statistics temporary.."""
+    configure(enable_discipline_statistics=True)
+    yield
+    configure()

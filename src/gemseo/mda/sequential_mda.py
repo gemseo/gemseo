@@ -76,9 +76,7 @@ class MDASequential(BaseMDA):
         for mda in self.mda_sequence:
             mda.scaling = scaling
 
-    def _execute(self) -> None:
-        super()._execute()
-
+    def _solve(self) -> None:
         if self.reset_history_each_run:
             self.residual_history = []
 

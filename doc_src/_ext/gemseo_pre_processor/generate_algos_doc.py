@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import importlib
 import inspect
 import re
 from pathlib import Path
@@ -274,12 +275,23 @@ class AlgoOptionsDoc:
         if not self.pydantic_model_module_path:
             return dict.fromkeys(self.algos_names, "")
 
-        pattern = f"from {self.pydantic_model_module_path} import " + "{}"
-        print(self.get_pydantic_model_class_name(self.algos_names[0]))
-        return {
-            algo: pattern.format(self.get_pydantic_model_class_name(algo))
-            for algo in self.algos_names
-        }
+        dict_ = {}
+        for algo_name in self.algos_names:
+            pydantic_model_class_name = self.get_pydantic_model_class_name(algo_name)
+            library_name = self.get_module(algo_name).split(".")[0]
+            module_path = f"{library_name}.{self.pydantic_model_module_path}"
+            try:
+                module = importlib.import_module(module_path)
+                getattr(module, pydantic_model_class_name)
+                msg = f"from {module_path} import {pydantic_model_class_name}"
+            except:  # noqa: E722
+                msg = ""
+            if module_path:
+                dict_[algo_name] = msg
+            else:
+                dict_[algo_name] = ""
+
+        return dict_
 
     @property
     def features(self) -> dict[str, str] | None:
@@ -605,13 +617,13 @@ def main(gen_opts_path: str | Path) -> None:
             "clustering",
             "Clustering algorithms",
             ClustererFactory(),
-            pydantic_model_module_path="gemseo.settings.mlearning",
+            pydantic_model_module_path="settings.mlearning",
         ),
         BasePostAlgoOptionsDoc(
             "classification",
             "Classification algorithms",
             ClassifierFactory(),
-            pydantic_model_module_path="gemseo.settings.mlearning",
+            pydantic_model_module_path="settings.mlearning",
         ),
         InitOptionsDoc(
             "ml_quality",
@@ -623,44 +635,44 @@ def main(gen_opts_path: str | Path) -> None:
             "mda",
             "MDA algorithms",
             MDAFactory(),
-            pydantic_model_module_path="gemseo.settings.mda",
+            pydantic_model_module_path="settings.mda",
         ),
         BasePostAlgoOptionsDoc(
             "formulation",
             "MDO formulations",
             MDOFormulationFactory(),
-            pydantic_model_module_path="gemseo.settings.formulations",
+            pydantic_model_module_path="settings.formulations",
         ),
         BasePostAlgoOptionsDoc(
             "post",
             "Post-processing algorithms",
             PostFactory(),
-            pydantic_model_module_path="gemseo.settings.post",
+            pydantic_model_module_path="settings.post",
         ),
         DriverOptionsDoc(
             "doe",
             "DOE algorithms",
             DOELibraryFactory(),
             user_guide_anchor="doe",
-            pydantic_model_module_path="gemseo.settings.doe",
+            pydantic_model_module_path="settings.doe",
         ),
         DriverOptionsDoc(
             "opt",
             "Optimization algorithms",
             OptimizationLibraryFactory(),
-            pydantic_model_module_path="gemseo.settings.opt",
+            pydantic_model_module_path="settings.opt",
         ),
         DriverOptionsDoc(
             "linear_solver",
             "Linear solvers",
             LinearSolverLibraryFactory(),
-            pydantic_model_module_path="gemseo.settings.linear_solvers",
+            pydantic_model_module_path="settings.linear_solvers",
         ),
         DriverOptionsDoc(
             "ode",
             "Ordinary differential equations solvers",
             ODESolverLibraryFactory(),
-            pydantic_model_module_path="gemseo.settings.ode",
+            pydantic_model_module_path="settings.ode",
         ),
         InitOptionsDoc(
             "distribution",
@@ -685,7 +697,7 @@ def main(gen_opts_path: str | Path) -> None:
         "regression",
         "Regression algorithms",
         RegressorFactory(),
-        pydantic_model_module_path="gemseo.settings.mlearning",
+        pydantic_model_module_path="settings.mlearning",
     )
     options_doc.to_rst()
     options_doc.to_rst("surrogate_algos_template.tmpl", "surrogate_algos.rst")

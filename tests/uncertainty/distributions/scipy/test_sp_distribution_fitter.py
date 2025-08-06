@@ -40,7 +40,7 @@ def data() -> RealArray:
 @pytest.fixture(scope="module")
 def fitter(data) -> SPDistributionFitter:
     """The distribution fitter based on SciPy."""
-    return SPDistributionFitter(data)
+    return SPDistributionFitter("x", data)
 
 
 @pytest.fixture(scope="module")

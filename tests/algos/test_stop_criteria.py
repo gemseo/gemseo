@@ -69,7 +69,7 @@ def test_is_f_tol_reached() -> None:
 
 
 @pytest.mark.parametrize("n_stop_crit_x", [2, 4, 6, 10, 20])
-def test_n_stop_crit_x(n_stop_crit_x) -> None:
+def test_n_stop_crit_x(n_stop_crit_x, enable_function_statistics) -> None:
     """Test that the parameter n_stop_crit_x behave as expected.
 
     As the :class:`.Constant` problem always returns a constant objective value, The

@@ -27,6 +27,7 @@ from numpy import allclose
 from numpy import array_equal
 from numpy import asarray
 from numpy import ndarray
+from numpy import str_
 
 from gemseo.typing import SparseOrDenseRealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
@@ -110,7 +111,10 @@ def compare_dict_of_arrays(
             array_ = array_.data.reshape(-1)
             other_array = other_array.data.reshape(-1)
 
-        if not compare_arrays(array_, other_array):
+        if array_.dtype.type is str_:
+            if array_ != other_array:
+                return False
+        elif not compare_arrays(array_, other_array):
             return False
 
     return True

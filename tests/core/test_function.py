@@ -248,7 +248,7 @@ def test_repr_2() -> None:
     g = MDOFunction(
         sin,
         name="G",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         jac=cos,
         expr="sin(x)",
         input_names=["x", "y"],
@@ -541,7 +541,7 @@ def test_expect_normalized_inputs_from_database(
     assert func.expects_normalized_inputs == normalize
 
 
-def test_activate_counters() -> None:
+def test_activate_counters(enable_function_statistics) -> None:
     """Check that the function counter is active by default."""
     func = MDOFunction(lambda x: x, "func")
     func = ProblemFunction(
@@ -837,7 +837,7 @@ def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
 
 
 @pytest.mark.parametrize(("method", "n_calls"), [("func", 0), ("evaluate", 1)])
-def test_func(method, n_calls):
+def test_func(method, n_calls, enable_function_statistics):
     """Check that the property func is an alias of _func."""
     f = MDOFunction(lambda x: 2 * x, "f")
     f = ProblemFunction(

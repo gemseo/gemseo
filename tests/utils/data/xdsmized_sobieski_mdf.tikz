@@ -19,7 +19,7 @@
 \matrix[MatrixSetup]{
 %Row 0
 &
-\node [DataIO] (output_Opt) {$x\_shared^{(0)},  x\_1^{(0)}..., (4)$};&
+\node [DataIO] (output_Opt) {$x\_shared^{(0)},  x\_1^{(0)}, ... (4)$};&
 &
 &
 &
@@ -29,7 +29,7 @@
 %Row 1
 \node [DataIO] (left_output_Opt) {$y\_4^*$};&
 \node [Optimization] (Opt) {$\text{1,8-2:Optimizer}$};&
-\node [DataInter] (Opt-Dis1) {$x\_1,  x\_2..., (4)$};&
+\node [DataInter] (Opt-Dis1) {$x\_1,  x\_2, ... (4)$};&
 \node [DataInter] (Opt-Dis2) {$x\_3,  x\_shared$};&
 \node [DataInter] (Opt-Dis3) {$x\_2,  x\_shared$};&
 \node [DataInter] (Opt-Dis4) {$x\_1,  x\_shared$};&
@@ -42,10 +42,10 @@
 \node [DataInter] (Dis1-Dis2) {$y\_23$};&
 \node [DataInter] (Dis1-Dis3) {$y\_12$};&
 &
-\node [DataInter] (Dis1-Dis5) {$y\_14,  y\_24..., (3)$};&
+\node [DataInter] (Dis1-Dis5) {$y\_14,  y\_24, ... (3)$};&
 \\
 %Row 3
-\node [DataIO] (left_output_Dis2) {$y\_32^*,  y\_31^*..., (5)$};&
+\node [DataIO] (left_output_Dis2) {$y\_32^*,  y\_31^*, ... (5)$};&
 &
 &
 \node [Function] (Dis2) {$\text{3:SobieskiPropulsion}$};&
@@ -54,7 +54,7 @@
 &
 \\
 %Row 4
-\node [DataIO] (left_output_Dis3) {$y\_21^*,  y\_23^*..., (5)$};&
+\node [DataIO] (left_output_Dis3) {$y\_21^*,  y\_23^*, ... (5)$};&
 &
 \node [DataInter] (Dis3-Dis1) {$y\_23$};&
 &
@@ -63,7 +63,7 @@
 &
 \\
 %Row 5
-\node [DataIO] (left_output_Dis4) {$y\_1^*,  y\_11^*..., (5)$};&
+\node [DataIO] (left_output_Dis4) {$y\_1^*,  y\_11^*, ... (5)$};&
 &
 \node [DataInter] (Dis4-Dis1) {$y\_12$};&
 &

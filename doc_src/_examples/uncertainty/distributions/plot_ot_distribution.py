@@ -31,6 +31,12 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import get_available_distributions
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    OTDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 
 configure_logger()
 
@@ -64,6 +70,13 @@ distribution_1_2 = create_distribution("OTNormalDistribution", mu=1.0, sigma=2.0
 distribution_1_2
 
 # %%
+# Same from settings defined as a Pydantic model:
+distribution_1_2 = create_distribution(
+    "OTNormalDistribution", settings=OTNormalDistribution_Settings(mu=1.0, sigma=2.0)
+)
+distribution_1_2
+
+# %%
 # Case 2: the OpenTURNS distribution has no GEMSEO class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # When GEMSEO does not offer a class for the OpenTURNS distribution,
@@ -76,6 +89,16 @@ distribution_1_2
 # openturns.Normal.html#openturns.Normal>`__).
 distribution_1_2 = create_distribution(
     "OTDistribution", interfaced_distribution="Normal", parameters=(1.0, 2.0)
+)
+distribution_1_2
+
+# %%
+# Same from settings defined as a Pydantic model:
+distribution_1_2 = create_distribution(
+    "OTDistribution",
+    settings=OTDistribution_Settings(
+        interfaced_distribution="Normal", parameters=(1.0, 2.0)
+    ),
 )
 distribution_1_2
 

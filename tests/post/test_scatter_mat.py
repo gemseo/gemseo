@@ -134,7 +134,7 @@ def test_scatter_plot(baseline_images, variables) -> None:
     )
 
 
-def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
+def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> None:
     """Test if the method identifies maximized objectives properly.
 
     Args:
@@ -162,8 +162,8 @@ def test_maximized_func(tmp_wd, sellar_disciplines) -> None:
         formulation_name="MDF",
         maximize_objective=True,
     )
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.set_differentiation_method("finite_differences")
     scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     scenario.execute()
@@ -261,6 +261,6 @@ def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check ScatterPlotMatrix with objective, standardized or not."""
-    opt = ScatterPlotMatrix(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
+    opt = ScatterPlotMatrix(common_problem)
     opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)

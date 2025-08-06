@@ -42,6 +42,7 @@ from fastjsonschema import JsonSchemaException
 from fastjsonschema import compile as compile_schema
 from numpy import ndarray
 
+from gemseo.core.grammars._python_to_json import PYTHON_TO_JSON_TYPES
 from gemseo.core.grammars.base_grammar import BaseGrammar
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -51,7 +52,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Properties
-    from gemseo.core.grammars.json_schema import Property
     from gemseo.core.grammars.json_schema import Schema
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
@@ -67,6 +67,9 @@ class JSONGrammar(BaseGrammar):
     the values can be merged instead of being
     updated by passing ``merge = True``.
     In that case, the resulting grammar will allow any of the values.
+
+    When using :meth:`.update_from_types`,
+    it is assumed that a grammar element of type ``ndarray`` is a number.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "JSONGrammarDataConverter"
@@ -97,22 +100,13 @@ class JSONGrammar(BaseGrammar):
         "integer": int,
         "boolean": bool,
         # As opposed to the complex type, Complex follows sub-typing,
-        # such that a float number is a sub-type of complex number.
+        # such that a float number is a subtype of complex number.
         # This is especially important when converting to SimpleGrammar.
         "number": Complex,
     }
     """The mapping from JSON types to Python types."""
 
-    __PYTHON_TO_JSON_TYPES: Final[dict[type, str]] = {
-        ndarray: "array",
-        list: "array",
-        tuple: "array",
-        str: "string",
-        int: "integer",
-        bool: "boolean",
-        complex: "number",
-        float: "number",
-    }
+    __PYTHON_TO_JSON_TYPES: Final[dict[type, str]] = PYTHON_TO_JSON_TYPES
     """The mapping from Python types to JSON types."""
 
     __WARNING_TEMPLATE: Final[str] = (
@@ -227,12 +221,17 @@ class JSONGrammar(BaseGrammar):
         merge: bool,
     ) -> None:
         try:
-            properties: Properties = {
-                element_name: {}
-                if element_type is None
-                else {"type": self.__PYTHON_TO_JSON_TYPES[element_type]}
-                for element_name, element_type in names_to_types.items()
-            }
+            properties: Properties = {}
+            for element_name, element_type in names_to_types.items():
+                if element_type is None:
+                    sub_property = {}
+                else:
+                    json_type = self.__PYTHON_TO_JSON_TYPES[element_type]
+                    sub_property = {"type": json_type}
+                    if element_type == ndarray:
+                        sub_property["items"] = {"type": "number"}
+                properties[element_name] = sub_property
+        # TODO: API: use TypeError.
         except KeyError as error:
             msg = f"Unsupported python type for a JSON Grammar: {error}"
             raise KeyError(msg) from None
@@ -458,76 +457,20 @@ class JSONGrammar(BaseGrammar):
         return value
 
     def _get_names_to_types(self) -> SimpleGrammarTypes:
-        properties = self.schema.get("properties")
-
-        if properties is None:
-            return {}
-
         names_to_types = {}
 
-        for property_name, property_description in properties.items():
-            property_json_type = property_description["type"]
-
-            self.__warn_for_array(
-                property_name, property_json_type, property_description
-            )
-            self.__warn_for_items(property_name, property_description)
-
-            if property_json_type not in self.__JSON_TO_PYTHON_TYPES:
+        for property_name, property_description in self.schema.get(
+            "properties"
+        ).items():
+            if property_description["type"] not in self.__JSON_TO_PYTHON_TYPES:
                 property_type = None
             else:
                 property_type = self.__JSON_TO_PYTHON_TYPES[
                     property_description["type"]
                 ]
-
             names_to_types[property_name] = property_type
 
         return names_to_types
-
-    def __warn_for_array(
-        self,
-        property_name: str,
-        property_json_type: str,
-        property_description: Property,
-    ) -> None:
-        """Log a warning when an array has unsupported types.
-
-        Args:
-            property_name: The name of the property.
-            property_json_type: The json type of the property.
-            property_description: The description of the property.
-        """
-        if property_json_type == "array" and "items" in property_description:
-            property_json_sub_type = property_description["items"].get("type")
-            if property_json_sub_type not in {"number", "integer", None}:
-                LOGGER.warning(
-                    self.__WARNING_TEMPLATE,
-                    "type",
-                    property_json_sub_type,
-                    self.name,
-                    property_name,
-                )
-
-    def __warn_for_items(
-        self,
-        property_name: str,
-        property_description: Iterable[str],
-    ) -> None:
-        """Log a warning when an item has unsupported descriptions.
-
-        Args:
-            property_name: The name of the property.
-            property_description: The description of the property.
-        """
-        for feature in ["minItems", "maxItems", "additionalItems", "contains"]:
-            if feature in property_description:
-                LOGGER.warning(
-                    self.__WARNING_TEMPLATE,
-                    "feature",
-                    feature,
-                    self.name,
-                    property_name,
-                )
 
     def __init_dependencies(self) -> None:
         """Resets the validator and schema dict."""

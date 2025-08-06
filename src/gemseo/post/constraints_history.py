@@ -74,7 +74,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
         line_style = settings.line_style
         add_points = settings.add_points
         all_constraint_names = (
-            self.optimization_problem.constraints.original_to_current_names.keys()
+            self._optimization_metadata.output_names_to_constraint_names.keys()
         )
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
@@ -84,12 +84,18 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
                 )
                 raise ValueError(msg)
 
-        constraint_names = self.optimization_problem.get_function_names(
-            constraint_names
+        constraint_names = [
+            item
+            for variable in constraint_names
+            for item in (
+                self._optimization_metadata.output_names_to_constraint_names[variable]
+            )
+        ]
+
+        constraint_histories = (
+            self._dataset.get_view(variable_names=constraint_names).dropna().to_numpy()
         )
-        constraint_histories, constraint_names, _ = self.database.get_history_array(
-            function_names=constraint_names, with_x_vect=False
-        )
+        constraint_names = self._dataset.get_columns(constraint_names)
 
         # harmonization of tables format because constraints can be vectorial
         # or scalars. *vals.shape[0] = iteration, *vals.shape[1] = cstr values
@@ -111,10 +117,8 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
 
         iterations = arange(len(constraint_histories))
         n_iterations = len(iterations)
-        eq_constraint_names = [
-            f.name
-            for f in self.optimization_problem.constraints.get_equality_constraints()
-        ]
+        eq_constraint_names = self._dataset.equality_constraint_names
+
         # for each subplot
         for constraint_history, constraint_name, ax in zip(
             constraint_histories.T, constraint_names, axs.ravel()
@@ -125,11 +129,11 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
             if is_eq_constraint:
                 cmap = "seismic"
                 constraint_type = "equality"
-                tolerance = self.optimization_problem.tolerances.equality
+                tolerance = self._optimization_metadata.tolerances.equality
             else:
                 cmap = RG_SEISMIC
                 constraint_type = "inequality"
-                tolerance = self.optimization_problem.tolerances.inequality
+                tolerance = self._optimization_metadata.tolerances.inequality
 
             # prepare the graph
             ax.grid(True)

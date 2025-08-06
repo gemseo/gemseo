@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from collections import defaultdict
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping as ABCMapping
@@ -369,17 +370,18 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
             [input_group, output_group],
             [False, True],
         ):
-            for variable_name in variable_names:
-                cache_entries = []
-                for cache_entry in self.get_all_entries():
+            cache_entries = defaultdict(list)
+            for cache_entry in self.get_all_entries():
+                for variable_name in variable_names:
                     if cache_entry.outputs:
                         if is_output_group:
-                            selected_cache_entry = cache_entry.outputs[variable_name]
+                            values = cache_entry.outputs
                         else:
-                            selected_cache_entry = cache_entry.inputs[variable_name]
-                        cache_entries.append(selected_cache_entry)
+                            values = cache_entry.inputs
+                        cache_entries[variable_name].append(values[variable_name])
 
-                new_data = vstack(cache_entries)
+            for variable_name in variable_names:
+                new_data = vstack(cache_entries[variable_name])
                 data.append(new_data)
                 columns.extend([
                     (group_name, variable_name, i) for i in range(new_data.shape[1])

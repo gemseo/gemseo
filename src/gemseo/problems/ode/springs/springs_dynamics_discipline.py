@@ -200,8 +200,7 @@ class SpringsDynamicsDiscipline(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
         input_data = {
-            input_name: self.io.data[input_name]
-            for input_name in self.io.input_grammar.names
+            input_name: self.io.data[input_name] for input_name in self.io.input_grammar
         }
 
         position_dot, velocity_dot = self._compute_generic_mass_rhs_function(

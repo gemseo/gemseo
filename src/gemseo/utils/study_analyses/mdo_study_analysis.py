@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.scenarios.mdo_scenario import MDOScenario
-    from gemseo.utils.xdsm import XDSM
+    from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 

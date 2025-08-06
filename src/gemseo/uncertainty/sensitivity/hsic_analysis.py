@@ -302,7 +302,6 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             input_covariance_models = self.__compute_covariance_models(
                 input_samples, input_covariance_model_class
             )
-
             for output_name in output_names:
                 output_indices = []
                 for i, output_component_samples in enumerate(
@@ -313,6 +312,10 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                     .to_numpy()
                     .T
                 ):
+                    output_data = output_component_samples[:, newaxis]
+                    if output_data.var() == 0.0:
+                        output_indices.append(None)
+                        continue
                     output_samples = Sample(output_component_samples[:, newaxis])
                     output_covariance_models = self.__compute_covariance_models(
                         output_samples, output_covariance_model_class

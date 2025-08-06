@@ -21,7 +21,7 @@ from pathlib import Path
 
 from gemseo.utils.name_generator import NameGenerator
 
-# TODO: API Rename to Naming and update all references.
+# TODO: API: Rename to Naming and update all references.
 DirectoryNamingMethod = NameGenerator.Naming
 
 
@@ -52,7 +52,7 @@ class DirectoryCreator(NameGenerator):
         """  # noqa:D205 D212 D415
         self.__root_directory = Path(root_directory) if root_directory else Path.cwd()
         self.__last_directory = None
-        # TODO: API Rename to naming_method
+        # TODO: API: Rename to naming_method
         super().__init__(naming_method=directory_naming_method)
 
     @property

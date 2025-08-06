@@ -56,6 +56,10 @@ class Functions(MutableSequence[MDOFunction]):
 
     def __setitem__(self, key: int, function: MDOFunction) -> None:
         self.__check_function_type(function)
+        self.__check_function_name(
+            function,
+            all_functions=[f for (i, f) in enumerate(self._functions) if i != key],
+        )
         self._functions[key] = function
 
     def __len__(self) -> int:
@@ -64,28 +68,50 @@ class Functions(MutableSequence[MDOFunction]):
     def insert(  # noqa: D102
         self, index: int | slice, function: MDOFunction | Iterable[MDOFunction]
     ) -> None:
-        self.__check_function_type(function)
+        functions = [function] if isinstance(function, MDOFunction) else function
+        for _function in functions:
+            self.__check_function_type(_function)
+            self.__check_function_name(_function)
+
         self._functions.insert(index, function)
 
-    def __check_function_type(
-        self, function: MDOFunction | Iterable[MDOFunction]
-    ) -> None:
+    def __check_function_type(self, _function: MDOFunction) -> None:
         """Check if the function type is authorized.
 
         Args:
-            function: The function(s).
+            function: The function.
 
         Raises:
             ValueError: When the function type is not authorized.
         """
-        functions = [function] if isinstance(function, MDOFunction) else function
-        for _function in functions:
-            if self._F_TYPES and _function.f_type not in self._F_TYPES:
-                msg = (
-                    f"The function type '{_function.f_type}' is not "
-                    f"one of those authorized ({pretty_str(self._F_TYPES)})."
-                )
-                raise ValueError(msg)
+        type_ = _function.f_type
+        if self._F_TYPES and type_ not in self._F_TYPES:
+            msg = (
+                f"The function type '{type_}' is not "
+                f"one of those authorized ({pretty_str(self._F_TYPES)})."
+            )
+            raise ValueError(msg)
+
+    def __check_function_name(
+        self, _function: MDOFunction, all_functions: list[MDOFunction] | None = None
+    ):
+        """Check if the function name is available.
+
+        Args:
+            function: The function.
+            all_functions: All the kept functions to be compared with the function.
+
+        Raises:
+            ValueError: When the function name is already used.
+        """
+        name = _function.name
+        functions = all_functions if all_functions is not None else self._functions
+        if name in {f.name for f in functions}:
+            msg = (
+                f"The function '{name}' cannot be used as a function name "
+                "since it is already used."
+            )
+            raise ValueError(msg)
 
     def reset(self) -> None:
         """Reset the functions."""

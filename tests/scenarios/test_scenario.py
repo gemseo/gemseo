@@ -379,13 +379,13 @@ def test_adapter_error(idf_scenario) -> None:
 
     with pytest.raises(
         ValueError,
-        match=re.escape("Can't compute inputs from scenarios: missing_input."),
+        match=re.escape("Cannot compute inputs from scenarios: 'missing_input'."),
     ):
         MDOScenarioAdapter(idf_scenario, [*inputs, "missing_input"], outputs)
 
     with pytest.raises(
         ValueError,
-        match=re.escape("Can't compute outputs from scenarios: missing_output."),
+        match=re.escape("Cannot compute outputs from scenarios: 'missing_output'."),
     ):
         MDOScenarioAdapter(idf_scenario, inputs, [*outputs, "missing_output"])
 
@@ -501,7 +501,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
     ExecutionStatistics.is_enabled = activate_counters
 
 
-def test_get_execution_metrics(mdf_scenario) -> None:
+def test_get_execution_metrics(mdf_scenario, enable_discipline_statistics) -> None:
     """Check the string returned execution_metrics."""
     mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
     expected = re.compile(
@@ -744,8 +744,8 @@ def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     return MDOScenario(
-        [AnalyticDiscipline({"y": "x"})],
-        "y",
+        [AnalyticDiscipline({"y": "x", "z": "x"})],
+        "z",
         design_space,
         formulation_name="DisciplinaryOpt",
     )
@@ -754,109 +754,127 @@ def identity_scenario() -> MDOScenario:
 @pytest.mark.parametrize(
     ("constraint_type", "constraint_name", "value", "positive", "expected"),
     [
-        ("eq", "", 0.0, False, ["y", "", "y(x) == 0.0", "y(x) == 0.0"]),
         (
-            "eq",
+            MDOFunction.ConstraintType.EQ,
+            "",
+            0.0,
+            False,
+            ["y", "", "y(x) = 0.0", "y(x) = 0.0"],
+        ),
+        (
+            MDOFunction.ConstraintType.EQ,
             "cstr",
             0.0,
             False,
-            ["cstr", "", "y(x) == 0.0", "cstr: y(x) == 0.0"],
+            ["cstr", "", "y(x) = 0.0", "cstr: y(x) = 0.0"],
         ),
         (
-            "eq",
+            MDOFunction.ConstraintType.EQ,
             "",
             1.0,
             False,
-            ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 == 0.0", "y(x) == 1.0"],
+            ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 = 0.0", "y(x) = 1.0"],
         ),
         (
-            "eq",
+            MDOFunction.ConstraintType.EQ,
             "",
             -1.0,
             False,
-            ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 == 0.0", "y(x) == -1.0"],
+            ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 = 0.0", "y(x) = -1.0"],
         ),
         (
-            "eq",
+            MDOFunction.ConstraintType.EQ,
             "cstr",
             1.0,
             False,
-            ["cstr", "y(x)-1.0", "y(x)-1.0 == 0.0", "cstr: y(x) == 1.0"],
+            ["cstr", "y(x)-1.0", "y(x)-1.0 = 0.0", "cstr: y(x) = 1.0"],
         ),
         (
-            "eq",
+            MDOFunction.ConstraintType.EQ,
             "cstr",
             -1.0,
             False,
-            ["cstr", "y(x)+1.0", "y(x)+1.0 == 0.0", "cstr: y(x) == -1.0"],
+            ["cstr", "y(x)+1.0", "y(x)+1.0 = 0.0", "cstr: y(x) = -1.0"],
         ),
-        ("ineq", "", 0.0, False, ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"]),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
+            "",
+            0.0,
+            False,
+            ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"],
+        ),
+        (
+            MDOFunction.ConstraintType.INEQ,
             "cstr",
             0.0,
             False,
             ["cstr", "", "y(x) <= 0.0", "cstr: y(x) <= 0.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "",
             1.0,
             False,
             ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 <= 0.0", "y(x) <= 1.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "",
             -1.0,
             False,
             ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 <= 0.0", "y(x) <= -1.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "cstr",
             1.0,
             False,
             ["cstr", "y(x)-1.0", "y(x)-1.0 <= 0.0", "cstr: y(x) <= 1.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "cstr",
             -1.0,
             False,
             ["cstr", "y(x)+1.0", "y(x)+1.0 <= 0.0", "cstr: y(x) <= -1.0"],
         ),
-        ("ineq", "", 0.0, True, ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"]),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
+            "",
+            0.0,
+            True,
+            ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"],
+        ),
+        (
+            MDOFunction.ConstraintType.INEQ,
             "cstr",
             0.0,
             True,
             ["cstr", "-y(x)", "-y(x) <= 0.0", "cstr: y(x) >= 0.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "",
             1.0,
             True,
             ["-[y-1.0]", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "y(x) >= 1.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "",
             -1.0,
             True,
             ["-[y+1.0]", "-(y(x)+1.0)", "-(y(x)+1.0) <= 0.0", "y(x) >= -1.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "cstr",
             1.0,
             True,
             ["cstr", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "cstr: y(x) >= 1.0"],
         ),
         (
-            "ineq",
+            MDOFunction.ConstraintType.INEQ,
             "cstr",
             -1.0,
             True,
@@ -1031,3 +1049,36 @@ def test_opt_and_doe(use_doe_first, expected):
 
     x = scenario.formulation.optimization_problem.database.get_x_vect_history()
     assert_almost_equal(x, expected)
+
+
+@pytest.mark.parametrize("name", ["g_1", "g_2", "-y_4"])
+def test_duplicate_constraint_name(mdf_scenario: MDOScenario, name: str):
+    with pytest.raises(
+        ValueError,
+        match=f"The function name '{name}' is already used by another function."
+        f" Duplicated function names produce unpredictable behavior.",
+    ):
+        mdf_scenario.add_constraint("y_4", constraint_name=name)
+
+
+def test_derivative_bug_1602():
+    """Test that MDOScenario can compute the derivatives of a disciplinary output
+    when no design variable is an input of this discipline."""
+    disciplines = [
+        AnalyticDiscipline({"a": "x1+b+c"}, name="A"),
+        AnalyticDiscipline({"b": "x2**2"}, name="B"),
+        AnalyticDiscipline({"c": "x3**3"}, name="C"),
+    ]
+
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    design_space.add_variable("x2")
+
+    scenario = MDOScenario(disciplines, "a", design_space, formulation_name="MDF")
+    scenario.add_observable("c")
+    scenario.execute(algo_name="CustomDOE", samples=array([[1.0, 1.0]]), eval_jac=True)
+
+    assert_equal(
+        scenario.formulation.optimization_problem.database.last_item,
+        {"a": 2.0, "c": 0.0, "@a": array([1.0, 2.0]), "@c": array([0.0, 0.0])},
+    )

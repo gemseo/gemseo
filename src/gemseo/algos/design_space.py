@@ -706,9 +706,9 @@ class DesignSpace:
         if isinstance(x_vect, dict):
             self.__check_membership(x_vect, variable_names)
         elif isinstance(x_vect, ndarray):
-            if x_vect.size != self.dimension:
+            if (shape := x_vect.shape)[-1] != self.dimension:
                 msg = (
-                    f"The array should be of size {self.dimension}; got {x_vect.size}."
+                    f"Expected an array of shape (..., {self.dimension}); got {shape}."
                 )
                 raise ValueError(msg)
             if variable_names:
@@ -744,6 +744,12 @@ class DesignSpace:
         Raises:
             ValueError: When the values are outside the bounds of the variables.
         """
+        if x_vect.ndim > 1:
+            for x_vect_i in x_vect:
+                self.__check_membership_x_vect(x_vect_i)
+
+            return
+
         l_b = self.__lower_bounds_array
         u_b = self.__upper_bounds_array
         indices = (x_vect < l_b - self.__bound_tol).nonzero()[0]
@@ -1135,11 +1141,10 @@ class DesignSpace:
         Returns:
             The name of the components of the variables.
         """
-        if not variable_names:
+        if variable_names:
+            variable_names = convert_strings_to_iterable(variable_names)
+        else:
             variable_names = self.variable_names
-
-        elif isinstance(variable_names, str):
-            variable_names = [variable_names]
 
         var_ind_names = []
         for variable_name in variable_names:

@@ -15,7 +15,8 @@
 Monitoring the execution of a scenario
 ======================================
 
-When a scenario is executed (see :ref:`sellar_mdo` for building a scenario), |g| logs the last computed value of the objective
+When a scenario is executed (see :ref:`sphx_glr_examples_mdo_plot_sellar.py` for building a scenario),
+|g| logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
 In a situation like this, the current execution status of the :class:`.Discipline` is useful as well.
 
@@ -50,10 +51,11 @@ Basic monitoring using logs
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using |g|'s logger.
 Use :func:`.configure_logger` to configure the logger to log in a file.
 
-The method :meth:`~.BaseScenario.xdsmize` of the :class:`.BaseScenario`
-can be used to this aim (``monitor=True``).
-If the option ``save_html`` is set to ``True``, a self-contained html file will be generated. It may be opened automatically with the option ``show_html=True``.
-If ``save_pdf`` is ``True``, it will generate a `XDSMjs <https://github.com/OneraHub/XDSMjs>`_ input file :ref:`xdsm`.
+The method :meth:`~.BaseScenario.xdsmize` of the :class:`.BaseScenario` can be used to this aim (``monitor=True``).
+If the option ``save_html`` is set to ``True``, a self-contained HTML file will be generated.
+It may be opened automatically with the option ``show_html=True``.
+If ``save_pdf`` is ``True``,
+a TikZ file including the definition of the XDSM will be generated as well as a LaTeX file that can be compiled into a PDF file when ``pdf_build`` is ``True`` (default).
 If will log the status of the workflow if ``log_workflow_status=True``:
 
 .. code::

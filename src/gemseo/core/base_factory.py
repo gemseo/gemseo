@@ -192,7 +192,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         if search_paths is None:
             return []
 
-        paths = search_paths.split(":") if ":" in search_paths else [search_paths]
+        paths = search_paths.split(os.pathsep)
 
         # temporary make the paths visible to the import machinery
         for path in paths:

@@ -24,6 +24,8 @@ from gemseo.utils.pydantic import copy_field
 class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for :class:`.MDAJacobi`."""
 
+    _TARGET_CLASS_NAME = "MDAJacobi"
+
     acceleration_method: AccelerationMethod = copy_field(
         "acceleration_method",
         BaseParallelMDASettings,

@@ -33,6 +33,7 @@ from numpy import ndarray
 from numpy.ma.testutils import assert_close
 from numpy.testing import assert_equal
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
@@ -68,6 +69,12 @@ def test_constructor(io_dataset) -> None:
     assert ml_algo.algo is None
     assert ml_algo.input_names == io_dataset.get_variable_names("inputs")
     assert ml_algo.output_names == io_dataset.get_variable_names("outputs")
+    design_space = DesignSpace()
+    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=54.0)
+    design_space.add_variable(
+        "x_2", size=2, lower_bound=array([1.0, 2.0]), upper_bound=array([55.0, 56.0])
+    )
+    assert ml_algo.validity_domain == design_space
 
 
 @pytest.mark.parametrize(

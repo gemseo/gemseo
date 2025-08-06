@@ -184,7 +184,7 @@ def test_debug_mode(tmp_wd, binh_korn, kwargs):
     assert "obj" in debug_database.last_item
 
 
-def test_maximize_objective(binh_korn):
+def test_maximize_objective(binh_korn, enable_function_statistics):
     """Test the result of a maximized multi objective problem."""
     binh_korn.use_standardized_objective = False
     binh_korn.minimize_objective = False

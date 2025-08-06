@@ -25,6 +25,7 @@ from copy import deepcopy
 from functools import partial
 from math import sqrt
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import numpy as np
@@ -64,6 +65,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
@@ -73,8 +75,18 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail2.hdf5"
+
+
+@pytest.fixture(autouse=True)
+def _enable_function_statistics(
+    enable_function_statistics,
+) -> Generator[None, None, None]:
+    yield  # noqa: PT022
 
 
 @pytest.fixture(scope="module")
@@ -86,7 +98,9 @@ def problem_executed_twice() -> OptimizationProblem:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x, "obj")
     problem.add_observable(MDOFunction(lambda x: x, "obs"))
-    problem.add_constraint(MDOFunction(lambda x: x, "cstr", f_type="ineq"))
+    problem.add_constraint(
+        MDOFunction(lambda x: x, "cstr", f_type=MDOFunction.ConstraintType.INEQ)
+    )
 
     execute_algo(
         problem, algo_name="CustomDOE", algo_type="doe", samples=array([[0.0]])
@@ -162,22 +176,34 @@ def test_callback() -> None:
     call_me.assert_called_once()
 
 
-def test_add_constraints(pow2_problem) -> None:
+def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
+    """Test to add constraints."""
+
+    def generate_function(name: str) -> MDOFunction:
+        """Generate an MDOFunction with a given name.
+
+        Args:
+            name: The function name.
+
+        Returns:
+            The function.
+        """
+        return MDOFunction(
+            Power2.ineq_constraint1,
+            name=name,
+            f_type=MDOFunction.ConstraintType.INEQ,
+            jac=Power2.ineq_constraint1_jac,
+            expr="0.5 -x[0] ** 3",
+            input_names=["x"],
+        )
+
     problem = pow2_problem
-    ineq1 = MDOFunction(
-        Power2.ineq_constraint1,
-        name="ineq1",
-        f_type=MDOFunction.ConstraintType.INEQ,
-        jac=Power2.ineq_constraint1_jac,
-        expr="0.5 -x[0] ** 3",
-        input_names=["x"],
-    )
-    problem.add_constraint(ineq1, value=-1)
+    problem.add_constraint(generate_function("ineq1"), value=-1)
     assert len(tuple(problem.constraints.get_inequality_constraints())) == 1
     assert len(tuple(problem.constraints.get_equality_constraints())) == 0
 
-    problem.add_constraint(ineq1, value=-1)
-    problem.add_constraint(ineq1, value=-1)
+    problem.add_constraint(generate_function("ineq1_bis"), value=-1)
+    problem.add_constraint(generate_function("ineq1_ter"), value=-1)
 
     assert len(problem.constraints) == 3
     assert problem.constraints
@@ -192,7 +218,7 @@ def test_add_constraints(pow2_problem) -> None:
     ):
         problem.add_constraint(ineq2)
 
-    problem.add_constraint(ineq1, positive=True)
+    problem.add_constraint(generate_function("ineq1_positive"), positive=True)
 
     with pytest.raises(
         ValueError,
@@ -224,7 +250,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_std = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_std",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -234,7 +260,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_lo_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_posval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -244,7 +270,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_lo_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_negval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -254,7 +280,7 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_up_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_up_negval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
@@ -264,18 +290,24 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_up_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_up_posval",
-        f_type="ineq",
+        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(ineq_up_posval, value=1.0, positive=True)
     expected.append("ineq_up_posval(x): cstr + cst >= 1.0")
 
-    linear_constraint = MDOLinearFunction(array([1, 2]), "lin1", f_type="ineq")
+    linear_constraint = MDOLinearFunction(
+        array([1, 2]), "lin1", f_type=MDOLinearFunction.ConstraintType.INEQ
+    )
     problem.add_constraint(linear_constraint)
     expected.append("lin1(x[0], x[1]): x[0] + 2.00e+00*x[1] <= 0.0")
 
-    linear_constraint = MDOLinearFunction(array([1, 2]), "lin2", f_type="ineq")
+    linear_constraint = MDOLinearFunction(
+        array([1, 2]),
+        "lin2",
+        f_type=MDOLinearFunction.ConstraintType.INEQ,
+    )
     problem.add_constraint(linear_constraint, positive=True, value=-1.0)
     expected.append("lin2(x[0], x[1]): x[0] + 2.00e+00*x[1] >= -1.0")
 
@@ -291,31 +323,31 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
     eq_std = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_std",
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(eq_std)
-    expected.append("eq_std(x): cstr + cst == 0.0")
+    expected.append("eq_std(x): cstr + cst = 0.0")
 
     eq_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_posval",
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(eq_posval, value=1.0)
-    expected.append("eq_posval(x): cstr + cst == 1.0")
+    expected.append("eq_posval(x): cstr + cst = 1.0")
     eq_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_negval",
-        f_type="eq",
+        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(eq_negval, value=-1.0)
-    expected.append("eq_negval(x): cstr + cst == -1.0")
+    expected.append("eq_negval(x): cstr + cst = -1.0")
 
     msg = str(problem)
     for elem in expected:
@@ -1203,10 +1235,11 @@ def constrained_problem() -> OptimizationProblem:
     problem.objective = MDOFunction(lambda x: x.sum(), "f", jac=lambda x: [1, 1])
     problem.add_constraint(
         MDOFunction(operator.itemgetter(0), "g", jac=lambda _: [1, 0], dim=1),
-        constraint_type="ineq",
+        constraint_type=problem.ConstraintType.INEQ,
     )
     problem.add_constraint(
-        MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)), constraint_type="eq"
+        MDOFunction(lambda x: x, "h", jac=lambda _: np.eye(2)),
+        constraint_type=MDOFunction.ConstraintType.EQ,
     )
     problem.add_observable(
         MDOFunction(operator.itemgetter(1), "a", jac=lambda x: [0, 1])
@@ -1294,7 +1327,9 @@ def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
     problem.add_observable(MDOFunction(sum, "obs"))
-    problem.add_constraint(MDOFunction(sum, "cstr"), constraint_type="ineq")
+    problem.add_constraint(
+        MDOFunction(sum, "cstr"), constraint_type=problem.ConstraintType.INEQ
+    )
     start_point = problem.design_space.get_current_value(as_dict=True)
     execute_algo(problem, algo_name="LHS", n_samples=3, algo_type="doe")
     return problem, start_point
@@ -1586,7 +1621,12 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: 1 - x, "f", jac=lambda x: array([[-1.0]]))
     problem.add_constraint(
-        MDOFunction(lambda x: x - 0.5, "c", f_type="ineq", jac=lambda x: array([[1.0]]))
+        MDOFunction(
+            lambda x: x - 0.5,
+            "c",
+            f_type=MDOFunction.ConstraintType.INEQ,
+            jac=lambda x: array([[1.0]]),
+        )
     )
     problem.add_observable(MDOFunction(lambda x: x, "o", jac=lambda x: array([[1.0]])))
     return problem
@@ -1675,6 +1715,35 @@ def test_export_to_dataset(input_values, expected) -> None:
     assert_equal(dataset.get_view(variable_names="dv").to_numpy(), expected)
     assert_equal(dataset.get_view(variable_names="obj").to_numpy(), expected * 2)
     assert_equal(dataset.get_view(variable_names="cstr").to_numpy(), expected * 3)
+
+
+def test_export_to_dataset_with_grouped_functions():
+    """Check that functions are properly grouped when the option is true."""
+    problem = Power2()
+    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    dataset = problem.to_dataset(group_functions=True)
+
+    groups = [
+        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP,
+        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP,
+        OptimizationDataset.OBJECTIVE_GROUP,
+        OptimizationDataset.DESIGN_GROUP,
+    ]
+
+    assert groups.sort() == dataset.group_names.sort()
+
+    assert "ineq1" in dataset.get_variable_names(
+        group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+    )
+    assert "ineq2" in dataset.get_variable_names(
+        group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+    )
+    assert "eq" in dataset.get_variable_names(
+        group_name=OptimizationDataset.EQUALITY_CONSTRAINT_GROUP
+    )
+    assert "pow2" in dataset.get_variable_names(
+        group_name=OptimizationDataset.OBJECTIVE_GROUP
+    )
 
 
 @pytest.mark.skip("Input names are sorted.")
@@ -1800,7 +1869,7 @@ def test_original_to_current_names_with_aggregation() -> None:
             assert problem.constraints.original_to_current_names[name] == [name]
 
 
-def test_observables_normalization(sellar_disciplines) -> None:
+def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that the observables are called at each iteration."""
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=10.0, value=ones(1))
@@ -1817,8 +1886,8 @@ def test_observables_normalization(sellar_disciplines) -> None:
         design_space,
         formulation_name="MDF",
     )
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_observable("y_1")
     scenario.execute(algo_name="SLSQP", max_iter=3)
     total_iter = len(scenario.formulation.optimization_problem.database)
@@ -1864,7 +1933,7 @@ def test_repr_constraint_linear_lower_ineq() -> None:
         """Optimization problem:
    minimize f(x[0], x[1]) = x[0] + 2.00e+00*x[1]
    with respect to x
-   subject to constraints:
+   under the inequality constraints
       g(x[0], x[1]): [ 0.00e+00  1.00e+00][x[0]] + [ 6.00e+00] >= 0.0
                      [ 2.00e+00  3.00e+00][x[1]]   [ 7.00e+00]
                      [ 4.00e+00  5.00e+00]         [ 8.00e+00]"""
@@ -2063,20 +2132,26 @@ def test_repr_html():
         == """Optimization problem:
    minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2
    with respect to x
-   subject to constraints:
+   under the equality constraints
+      eq(x): 0.9 - x[2]**3 = 0.0
+   under the inequality constraints
       ineq1(x): 0.5 - x[0]**3 <= 0.0
-      ineq2(x): 0.5 - x[1]**3 <= 0.0
-      eq(x): 0.9 - x[2]**3 == 0.0"""
+      ineq2(x): 0.5 - x[1]**3 <= 0.0"""
     )
     assert problem._repr_html_() == REPR_HTML_WRAPPER.format(
         "Optimization problem:<br/>"
         "<ul>"
         "<li>minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2</li>"
-        "<li>with respect to x</li><li>subject to constraints:"
+        "<li>with respect to x</li>"
+        "<li>under the equality constraints"
+        "<ul>"
+        "<li>eq(x): 0.9 - x[2]**3 = 0.0</li>"
+        "</ul>"
+        "</li>"
+        "<li>under the inequality constraints"
         "<ul>"
         "<li>ineq1(x): 0.5 - x[0]**3 &lt;= 0.0</li>"
         "<li>ineq2(x): 0.5 - x[1]**3 &lt;= 0.0</li>"
-        "<li>eq(x): 0.9 - x[2]**3 == 0.0</li>"
         "</ul>"
         "</li>"
         "</ul>"

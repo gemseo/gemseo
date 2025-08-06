@@ -21,24 +21,34 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.normal_settings import _MU
+from gemseo.uncertainty.distributions.base_settings.normal_settings import _SIGMA
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
 
 
 class SPNormalDistribution(SPDistribution):
     """The SciPy-based normal distribution."""
 
+    Settings = SPNormalDistribution_Settings
+
     def __init__(
         self,
-        mu: float = 0.0,
-        sigma: float = 1.0,
+        mu: float = _MU,
+        sigma: float = _SIGMA,
+        settings: SPNormalDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
             mu: The mean of the normal random variable.
             sigma: The standard deviation of the normal random variable.
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = SPNormalDistribution_Settings(mu=mu, sigma=sigma)
         super().__init__(
             interfaced_distribution="norm",
-            parameters={"loc": mu, "scale": sigma},
-            standard_parameters={self._MU: mu, self._SIGMA: sigma},
+            parameters={"loc": settings.mu, "scale": settings.sigma},
+            standard_parameters={self._MU: settings.mu, self._SIGMA: settings.sigma},
         )

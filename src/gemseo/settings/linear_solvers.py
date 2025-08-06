@@ -35,6 +35,9 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import (  # noqa: F
     GMRES_Settings,
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import (  # noqa: F401
+    DEFAULT_Settings,
+)
+from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import (  # noqa: F401
     LGMRES_Settings,
 )
 from gemseo.algos.linear_solvers.scipy_linalg.settings.tfqmr import (  # noqa: F401

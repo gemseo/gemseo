@@ -98,6 +98,7 @@ from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.datasets.optimization_metadata import OptimizationMetadata
 from gemseo.typing import RealArray
 from gemseo.utils.hdf5 import convert_h5_group_to_dict
 from gemseo.utils.hdf5 import get_hdf5_group
@@ -153,6 +154,7 @@ class OptimizationProblem(EvaluationProblem):
     # Enumerations
     AggregationFunction = Constraints.AggregationFunction
     DifferentiationMethod = EvaluationProblem.DifferentiationMethod
+    ConstraintType = MDOFunction.ConstraintType
 
     class HistoryFileFormat(StrEnum):
         """The format of the history file."""
@@ -266,7 +268,7 @@ class OptimizationProblem(EvaluationProblem):
         self,
         function: MDOFunction,
         value: float = 0.0,
-        constraint_type: MDOFunction.ConstraintType | None = None,
+        constraint_type: ConstraintType | None = None,
         positive: bool = False,
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
@@ -292,6 +294,7 @@ class OptimizationProblem(EvaluationProblem):
         formatted_constraint = self.__constraints.format(
             function, value=value, constraint_type=constraint_type, positive=positive
         )
+        self._check_function_name(formatted_constraint)
         self.__constraints.append(formatted_constraint)
 
     def apply_exterior_penalty(
@@ -342,9 +345,11 @@ class OptimizationProblem(EvaluationProblem):
         """
         self.__is_linear = False
         penalized_objective = self._objective / objective_scale
-        self.add_observable(self._objective)
-        for constraint in self.__constraints:
-            if constraint.f_type == MDOFunction.ConstraintType.INEQ:
+        previous_objective = self._objective
+        previous_constraints = deepcopy(self.__constraints)
+        self.__constraints.clear()
+        for constraint in previous_constraints:
+            if constraint.f_type == self.ConstraintType.INEQ:
                 penalized_objective += aggregate_positive_sum_square(
                     constraint, scale=scale_inequality
                 )
@@ -352,10 +357,11 @@ class OptimizationProblem(EvaluationProblem):
                 penalized_objective += aggregate_sum_square(
                     constraint, scale=scale_equality
                 )
+
             self.add_observable(constraint)
 
         self.objective = penalized_objective
-        self.__constraints.clear()
+        self.add_observable(previous_objective)
 
     def get_reformulated_problem_with_slack_variables(self) -> OptimizationProblem:
         r"""Add slack variables and replace inequality constraints with equality ones.
@@ -430,8 +436,8 @@ class OptimizationProblem(EvaluationProblem):
         # restriction operator.
         for constraint in self.__constraints:
             new_function = LinearCompositeFunction(constraint, restriction_operator)
-            new_function.f_type = MDOFunction.ConstraintType.EQ
-            if constraint.f_type == MDOFunction.ConstraintType.EQ:
+            new_function.f_type = self.ConstraintType.EQ
+            if constraint.f_type == self.ConstraintType.EQ:
                 problem.add_constraint(new_function)
                 continue
 
@@ -628,16 +634,18 @@ class OptimizationProblem(EvaluationProblem):
         # variables representation
         mls.add("with respect to {}", pretty_str(self.design_space))
         if self.__constraints:
-            mls.add("subject to constraints:")
-            mls.indent()
-            for functions in [
-                self.constraints.get_inequality_constraints(),
-                self.constraints.get_equality_constraints(),
+            for type_, functions in [
+                ("equality", tuple(self.constraints.get_equality_constraints())),
+                ("inequality", tuple(self.constraints.get_inequality_constraints())),
             ]:
-                for constraint in functions:
-                    constraint = [c_i for c_i in str(constraint).split("\n") if c_i]
-                    for constraint_i in constraint:
-                        mls.add(constraint_i)
+                if functions:
+                    mls.add(f"under the {type_} constraints")
+                    mls.indent()
+                    for constraint in functions:
+                        constraint = [c_i for c_i in str(constraint).split("\n") if c_i]
+                        for constraint_i in constraint:
+                            mls.add(constraint_i)
+                    mls.dedent()
 
         return mls
 
@@ -835,6 +843,7 @@ class OptimizationProblem(EvaluationProblem):
         export_gradients: bool = False,
         input_values: Iterable[RealArray] = (),
         opt_naming: bool = True,
+        group_functions: bool = False,
     ) -> Dataset:
         """
         Args:
@@ -849,13 +858,39 @@ class OptimizationProblem(EvaluationProblem):
                 put the design variables in the :attr:`.IODataset.INPUT_GROUP`
                 and the functions and their derivatives in the
                 :attr:`.IODataset.OUTPUT_GROUP`.
+            group_functions: Whether to group the functions by category
+                (:attr:`~.OptimizationDataset.OBJECTIVE_GROUP`,
+                :attr:`~.OptimizationDataset.EQ_CONSTRAINT_GROUP`,
+                :attr:`~.OptimizationDataset.INEQ_CONSTRAINT_GROUP`,
+                :attr:`~.OptimizationDataset.OBSERVABLE_GROUP`).
         """  # noqa: D205, D212
+        groups_to_variables = {}
         if categorize:
             gradient_group = Dataset.GRADIENT_GROUP
             if opt_naming:
                 dataset_class = OptimizationDataset
                 input_group = OptimizationDataset.DESIGN_GROUP
                 output_group = OptimizationDataset.FUNCTION_GROUP
+                if group_functions:
+                    groups_to_variables = {
+                        OptimizationDataset.OBJECTIVE_GROUP: [
+                            self.standardized_objective_name
+                            if self.use_standardized_objective is True
+                            else self.objective.name
+                        ],
+                        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP: [
+                            constraint.name
+                            for constraint in self.constraints.get_equality_constraints()  # noqa: E501
+                        ],
+                        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP: [
+                            constraint.name
+                            for constraint in self.constraints.get_inequality_constraints()  # noqa: E501
+                        ],
+                        OptimizationDataset.OBSERVABLE_GROUP: [
+                            observable.name for observable in self.observables
+                        ],
+                    }
+
             else:
                 dataset_class = IODataset
                 input_group = IODataset.INPUT_GROUP
@@ -872,6 +907,8 @@ class OptimizationProblem(EvaluationProblem):
             input_group=input_group,
             output_group=output_group,
             gradient_group=gradient_group,
+            optimization_metadata=self._get_optimization_metadata(),
+            groups_to_variables=groups_to_variables,
         )
 
     @property
@@ -987,4 +1024,33 @@ class OptimizationProblem(EvaluationProblem):
             design_space=design_space,
             function_calls=function_calls,
             preprocessing=preprocessing,
+        )
+
+    def _get_optimization_metadata(self) -> OptimizationMetadata:
+        """Return the optimization metadata.
+
+        Returns:
+            The optimization metadata.
+        """
+        feasible_points_x_hist = self.history.feasible_points[0]
+        feasible_iterations = [
+            self.database.get_iteration(feasible_point)
+            for feasible_point in feasible_points_x_hist
+            if feasible_point in self.database
+        ]
+        optimum_iteration = (
+            self.database.get_iteration(self.history.optimum.design)
+            if self.database and self.history.optimum.design in self.database
+            else None
+        )
+
+        return OptimizationMetadata(
+            objective_name=self.objective_name,
+            standardized_objective_name=self.standardized_objective_name,
+            minimize_objective=self.minimize_objective,
+            use_standardized_objective=self.use_standardized_objective,
+            tolerances=self.tolerances,
+            output_names_to_constraint_names=self.constraints.original_to_current_names,
+            feasible_iterations=feasible_iterations,
+            optimum_iteration=optimum_iteration,
         )

@@ -46,8 +46,7 @@ or via their associated Pydantic model:
         "y_4",
         design_space,
         maximize_objective=True,
-        formulation_settings_model=MDFSettings(
-            main_mda_name="MDAGaussSeidel",
+        formulation_settings_model=MDF_Settings(
             main_mda_settings=MDAGaussSeidel_Settings(
                 max_mda_iter=50, warm_start=True, linear_solver_tolerance=1e-16
             ),

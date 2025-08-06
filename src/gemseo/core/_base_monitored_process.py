@@ -23,13 +23,16 @@ from typing import ClassVar
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.serializable import Serializable
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.utils.string_tools import MultiLineString
 
 
-class BaseMonitoredProcess(Serializable):
+class BaseMonitoredProcess(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base class to define monitored processes.
 
     A monitored process is an object
@@ -79,17 +82,44 @@ class BaseMonitoredProcess(Serializable):
             The string representation of the object.
         """
 
+    def _call_monitored(
+        self,
+        callable_: Callable[[], None],
+        status: ExecutionStatus.Status,
+        statistics_recorder: Callable[Callable[[], None], None],
+    ) -> None:
+        """Execute and monitor a callable.
+
+        This method handles the execution of a callable eventually monitored with
+        the execution status and/or statistics.
+
+        Args:
+            callable_: A callable.
+            status: The status to be set if the statuses are enabled.
+            statistics_recorder: The callable used to record the statistics.
+        """
+        if ExecutionStatus.is_enabled:
+            if ExecutionStatistics.is_enabled:
+                args = (statistics_recorder, callable_)
+            else:
+                args = (callable_,)
+            self.execution_status.handle(status, *args)
+        elif ExecutionStatistics.is_enabled:
+            statistics_recorder(callable_)
+        else:
+            callable_()
+
     def _execute_monitored(self) -> None:
         """Execute and monitor the internal business logic.
 
-        This method handles the execution of :meth:`._execute` monitored with
-        the execution status and statistics.
+        This method handles the execution of :meth:`._execute` eventually monitored with
+        the execution status and/or statistics.
         It shall be called by :meth:`.execute`.
         """
-        self.execution_status.handle(
+        self._call_monitored(
+            self._execute,
             self.execution_status.Status.RUNNING,
             self.execution_statistics.record_execution,
-            self._execute,
         )
 
     @abstractmethod

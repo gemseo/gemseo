@@ -99,6 +99,7 @@ select = [
 runtime-evaluated-base-classes = [
   "pydantic.BaseModel",
   "gemseo.post.base_post_settings.BasePostSettings",
+  "gemseo.settings.base_settings.BaseSettings",
 ]
 
 [lint.isort]

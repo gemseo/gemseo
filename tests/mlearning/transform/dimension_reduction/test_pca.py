@@ -164,3 +164,13 @@ def test_inverse_transformation_jacobian(pca) -> None:
     input_data = array([1.0, 2.0, 3.0])
     function.check_grad(input_data, error_max=1e-7)
     function.check_grad(input_data[::-1], error_max=1e-7)
+
+
+@pytest.mark.parametrize(
+    ("n_components", "final_n_components"), [(3, 3), (0.6, 1), ("mle", 1), (None, 8)]
+)
+def test_n_components_type(data, n_components, final_n_components):
+    """Check that n_components can support integer, float and "mle" literal."""
+    pca = PCA(n_components=n_components)
+    pca.fit(data)
+    assert pca.n_components == final_n_components

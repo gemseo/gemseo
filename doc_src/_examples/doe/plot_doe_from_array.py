@@ -18,8 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Use a design of experiments from an array
-=========================================
+DOE from an array.
+==================
 """
 
 from __future__ import annotations

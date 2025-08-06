@@ -21,156 +21,135 @@
 
 from __future__ import annotations
 
-from unittest import TestCase
+import re
 
-from numpy import allclose
-from numpy import ones
-from numpy import zeros
+import pytest
+from numpy import full
+from numpy.testing import assert_allclose
 
 from gemseo.algos.opt.core.trust_updater import BoundsUpdater
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
-from gemseo.algos.opt.core.trust_updater import TrustUpdater
 
 
-class TestTrustUpdater(TestCase):
-    """A class to test the TrustUpdater class."""
-
-    def test_not_implemented_errors(self) -> None:
-        trust_updater = TrustUpdater(
-            thresholds=(0.0, 0.25), multipliers=(0.5, 2.0), bound=1e-6
-        )
-        self.assertRaises(NotImplementedError, trust_updater._check)
-        self.assertRaises(NotImplementedError, trust_updater.update, 1.0, 1.0)
-
-
-class TestPenaltyUpdater(TestCase):
-    """A class to test the PenaltyUpdater class."""
-
-    def test_invalid_parameters(self) -> None:
-        """Tests the invalid parameters exceptions."""
-        self.assertRaises(Exception, PenaltyUpdater, thresholds=0.1)
-        self.assertRaises(Exception, PenaltyUpdater, thresholds=(0.1,))
-        self.assertRaises(Exception, PenaltyUpdater, thresholds=(0.2, 0.1))
-        self.assertRaises(Exception, PenaltyUpdater, multipliers=1.0)
-        self.assertRaises(Exception, PenaltyUpdater, multipliers=(1.0,))
-        self.assertRaises(Exception, PenaltyUpdater, multipliers=(2.0, 1.0))
-        self.assertRaises(Exception, PenaltyUpdater, multipliers=(0.5, 0.5))
-        PenaltyUpdater(multipliers=(0.5, 2.0))
-
-    def test_failure(self) -> None:
-        """Tests the failure case of the evaluate method."""
-        updater = PenaltyUpdater(
-            thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10
-        )
-        # Non-zero penalty parameter:
-        new_penalty, success = updater.update(0.5, 1.0)
-        self.assertAlmostEqual(new_penalty, 2.0, places=15)
-        assert not success
-        # Zero penalty parameter:
-        new_penalty, success = updater.update(0.5, 0.0)
-        self.assertAlmostEqual(new_penalty, 1e-10, places=15)
-        assert not success
-
-    def test_success_and_contraction(self) -> None:
-        """Tests the success&contract case of the update method."""
-        updater = PenaltyUpdater(
-            thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10
-        )
-        # Non-zero penalty parameter:
-        new_penalty, success = updater.update(2.5, 1.0)
-        self.assertAlmostEqual(new_penalty, 0.5, places=15)
-        assert success
-        # Zero penalty parameter:
-        new_penalty, success = updater.update(2.5, 0.0)
-        self.assertAlmostEqual(new_penalty, 0.0, places=15)
-        assert success
-
-    def test_success_and_expansion(self) -> None:
-        """Tests the success&expand case of the update method."""
-        updater = PenaltyUpdater(
-            thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10
-        )
-        # Non-zero penalty parameter:
-        new_penalty, success = updater.update(1.5, 1.0)
-        self.assertAlmostEqual(new_penalty, 2.0, places=15)
-        assert success
-        # Zero penalty parameter:
-        new_penalty, success = updater.update(1.5, 0.0)
-        self.assertAlmostEqual(new_penalty, 1e-10, places=15)
-        assert success
+@pytest.mark.parametrize(
+    ("thresholds", "type_", "msg"),
+    [
+        (
+            0.1,
+            TypeError,
+            "The thresholds must be input as a tuple; input of type <class 'float'> was provided.",  # noqa: E501
+        ),
+        (
+            (0.1,),
+            ValueError,
+            "There must be exactly two thresholds for the decreases ratio; 1 were given.",  # noqa: E501
+        ),
+        (
+            (0.2, 0.1),
+            ValueError,
+            "The update threshold (0.2) must be lower than or equal to the non-contraction threshold (0.1).",  # noqa: E501
+        ),
+    ],
+)
+@pytest.mark.parametrize("cls", [RadiusUpdater, PenaltyUpdater])
+def test_invalid_thresholds(thresholds, type_, msg, cls) -> None:
+    """Tests the invalid thresholds exceptions."""
+    if cls == PenaltyUpdater and (expr := "contraction") in msg:
+        msg = msg.replace(expr, "expansion")
+    with pytest.raises(type_, match=re.escape(msg)):
+        cls(thresholds=thresholds)
 
 
-class TestRadiusUpdater(TestCase):
-    """A class to test the RadiusUpdater class."""
-
-    def test_invalid_parameters(self) -> None:
-        """Tests the invalid parameters exceptions."""
-        self.assertRaises(Exception, RadiusUpdater, thresholds=0.1)
-        self.assertRaises(Exception, RadiusUpdater, thresholds=(0.1,))
-        self.assertRaises(Exception, RadiusUpdater, thresholds=(0.2, 0.1))
-        self.assertRaises(Exception, RadiusUpdater, multipliers=1.0)
-        self.assertRaises(Exception, RadiusUpdater, multipliers=(1.0,))
-        self.assertRaises(Exception, RadiusUpdater, multipliers=(2.0, 1.0))
-        self.assertRaises(Exception, RadiusUpdater, multipliers=(0.5, 0.5))
-        RadiusUpdater(multipliers=(0.5, 2.0))
-
-    def test_failure(self) -> None:
-        """Tests the failure case of the evaluate method."""
-        updater = RadiusUpdater(
-            thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0
-        )
-        new_radius, success = updater.update(0.5, 1.0)
-        self.assertAlmostEqual(new_radius, 0.5, places=15)
-        assert not success
-
-    def test_success_and_contraction(self) -> None:
-        """Tests the success&contract case of the update method."""
-        updater = RadiusUpdater(
-            thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0
-        )
-        new_radius, success = updater.update(1.5, 1.0)
-        self.assertAlmostEqual(new_radius, 0.5, places=15)
-        assert success
-
-    def test_success_and_expansion(self) -> None:
-        """Tests the success&expand case of the update method."""
-        updater = RadiusUpdater(
-            thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0
-        )
-        # Non-maximal penalty parameter:
-        new_radius, success = updater.update(2.5, 1.0)
-        self.assertAlmostEqual(new_radius, 2.0, places=15)
-        assert success
-        # Maximal penalty parameter:
-        new_radius, success = updater.update(2.5, 10.0)
-        self.assertAlmostEqual(new_radius, 10.0, places=15)
-        assert success
+@pytest.mark.parametrize(
+    ("multipliers", "type_", "msg"),
+    [
+        (
+            1.0,
+            TypeError,
+            "The multipliers must be input as a tuple; input of type <class 'float'> was provided.",  # noqa: E501
+        ),
+        (
+            (1.0,),
+            ValueError,
+            "There must be exactly two multipliers for the region radius; 2 were given.",  # noqa: E501
+        ),
+        (
+            (2.0, 1.0),
+            ValueError,
+            "The contraction factor (2.0) must be lower than or equal to one.",
+        ),
+        (
+            (0.5, 0.5),
+            ValueError,
+            "The expansion factor (0.5) must be greater than one.",
+        ),
+    ],
+)
+@pytest.mark.parametrize("cls", [RadiusUpdater, PenaltyUpdater])
+def test_invalid_multipliers(multipliers, type_, msg, cls) -> None:
+    """Tests the invalid multipliers exceptions."""
+    if cls == PenaltyUpdater:
+        if (expr := "region radius") in msg:
+            msg = msg.replace(expr, "penalty parameter")
+        if (expr := "lower than or equal to one") in msg:
+            msg = msg.replace(expr, "lower than one")
+        if (expr := "greater than one") in msg:
+            msg = msg.replace(expr, "greater than or equal to one")
+    with pytest.raises(type_, match=re.escape(msg)):
+        cls(multipliers=multipliers)
 
 
-class TestBoundsUpdater(TestCase):
-    """A class to test the BoundsUpdater class."""
+@pytest.mark.parametrize(
+    ("ratio", "parameter", "expected_new_penalty", "expected_success"),
+    [
+        (0.5, 1.0, 2.0, False),
+        (0.5, 0.0, 1e-10, False),
+        (1.5, 1.0, 2.0, True),
+        (1.5, 0.0, 1e-10, True),
+        (2.5, 1.0, 0.5, True),
+        (2.5, 0.0, 0.0, True),
+    ],
+)
+def test_penalty_updater(
+    ratio, parameter, expected_new_penalty, expected_success
+) -> None:
+    """Tests the update method of PenaltyUpdater."""
+    updater = PenaltyUpdater(thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=1e-10)
+    new_penalty, success = updater.update(ratio, parameter)
+    assert new_penalty == pytest.approx(expected_new_penalty)
+    assert success is expected_success
 
-    def setUp(self) -> None:
-        dim = 5
-        self.dim = dim
-        self.upper_bounds = 5.0 * ones(dim)
-        self.lower_bounds = -3.0 * ones(dim)
-        self.center = 2.0 * ones(dim)
 
-    def test_nonnormalized_update(self) -> None:
-        """Tests the non-normalized update of trust bounds."""
-        trust_bounds = BoundsUpdater(self.lower_bounds, self.upper_bounds)
-        lower_bounds, upper_bounds = trust_bounds.update(0.5, self.center)
-        assert allclose(lower_bounds, 1.5 * ones(self.dim))
-        assert allclose(upper_bounds, 2.5 * ones(self.dim))
+@pytest.mark.parametrize(
+    ("ratio", "parameter", "expected_new_radius", "expected_success"),
+    [
+        (0.5, 1.0, 0.5, False),
+        (1.5, 1.0, 0.5, True),
+        (2.5, 1.0, 2.0, True),
+        (2.5, 10.0, 10.0, True),
+    ],
+)
+def test_radius_updater(
+    ratio, parameter, expected_new_radius, expected_success
+) -> None:
+    """Tests the update method of RadiusUpdater."""
+    updater = RadiusUpdater(thresholds=(1.0, 2.0), multipliers=(0.5, 2.0), bound=10.0)
+    new_radius, success = updater.update(ratio, parameter)
+    assert new_radius == pytest.approx(expected_new_radius)
+    assert success is expected_success
 
-    def test_normalized_update(self) -> None:
-        """Tests the normalized update of trust bounds."""
-        trust_bounds = BoundsUpdater(
-            self.lower_bounds, self.upper_bounds, normalize=True
-        )
 
-        lower_bounds, upper_bounds = trust_bounds.update(0.5, self.center)
-        assert allclose(lower_bounds, zeros(self.dim))
-        assert allclose(upper_bounds, 4.0 * ones(self.dim))
+@pytest.mark.parametrize(
+    ("kwargs", "expected_lower_bounds", "expected_upper_bounds"),
+    [
+        ({}, full(5, 1.5), full(5, 2.5)),
+        ({"normalize": True}, full(5, 0.0), full(5, 4.0)),
+    ],
+)
+def test_bounds_updater(kwargs, expected_lower_bounds, expected_upper_bounds) -> None:
+    """Tests the update method of BoundsUpdater."""
+    trust_bounds = BoundsUpdater(full(5, -3.0), full(5, 5.0), **kwargs)
+    lower_bounds, upper_bounds = trust_bounds.update(0.5, full(5, 2.0))
+    assert_allclose(lower_bounds, expected_lower_bounds)
+    assert_allclose(upper_bounds, expected_upper_bounds)

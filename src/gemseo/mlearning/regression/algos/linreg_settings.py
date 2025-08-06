@@ -29,6 +29,8 @@ from gemseo.utils.seeder import SEED
 class LinearRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the linear regressor."""
 
+    _TARGET_CLASS_NAME = "LinearRegressor"
+
     fit_intercept: bool = Field(
         default=True, description="Whether to fit the intercept."
     )

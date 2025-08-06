@@ -27,6 +27,7 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Callable
 from typing import ClassVar
+from typing import Literal
 
 from numpy import array
 from numpy import ndarray
@@ -169,8 +170,11 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
         return compute_jacobian
 
-    def __get_residual_history_callback(self) -> Callable[[ndarray, Any], None] | None:
-        """Return the callback used to store the residual history."""
+    def __get_iteration_callback(self) -> Callable[[ndarray, Any], None] | None:
+        """Return the callback function to be called after each iteration.
+
+        This callback function computes and stores the residual of the iteration.
+        """
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
             return None
 
@@ -181,7 +185,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
                 iterate: The current iterate.
                 residual: The associated residual.
             """
-            self._compute_normalized_residual_norm()
+            self._check_stopping_criteria()
 
         return callback
 
@@ -202,9 +206,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
         return self.get_current_resolved_residual_vector()
 
-    def _execute(self) -> None:
-        super()._execute()
-
+    def _iterate_once(self) -> Literal[False]:
         self._execute_disciplines_and_update_local_data()
 
         if not self.coupling_structure.strong_couplings:
@@ -214,7 +216,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             )
             LOGGER.warning(msg)
             self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
-            return self.io.data
+            return False
 
         self._current_iter = 0
 
@@ -227,12 +229,13 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             x0=self.get_current_resolved_variables_vector().real,
             method=self.settings.method,
             jac=self.__get_jacobian_computer(),
-            callback=self.__get_residual_history_callback(),
+            callback=self.__get_iteration_callback(),
             tol=self.settings.tolerance,
             options=self.__get_options(),
         )
 
-        self._check_stopping_criteria()
+        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+            self._check_stopping_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 
@@ -240,4 +243,23 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             self.io.update_output_data({
                 self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual]),
             })
-        return None
+
+        return False
+
+    def add_iteration_callback(
+        self, iteration_callback: Callable[[MDAQuasiNewton], None]
+    ) -> None:
+        """
+        Raises:
+            RuntimeError: If the quasi-Newton method
+                does not support iteration callbacks.
+        """  # noqa: D205, D212
+        method = self.settings.method
+        if method not in self._METHODS_SUPPORTING_CALLBACKS:
+            msg = (
+                "Iteration callbacks are only supported for the methods: "
+                f"{self._METHODS_SUPPORTING_CALLBACKS}, not for {method}."
+            )
+            raise RuntimeError(msg)
+
+        super().add_iteration_callback(iteration_callback)

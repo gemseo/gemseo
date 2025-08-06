@@ -16,16 +16,9 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
-from pydantic import BaseModel
-from pydantic import ConfigDict
+from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseAlgorithmSettings(BaseModel):
+# TODO: API: remove
+class BaseAlgorithmSettings(BaseSettings):
     """The settings common to all the algorithms."""
-
-    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
-
-    _TARGET_CLASS_NAME: ClassVar[str]
-    """The name of the algorithm class."""

@@ -155,7 +155,9 @@ def test_disc_parallel_doe_scenario() -> None:
     )
 
 
-def test_disc_parallel_doe(sellar_disciplines) -> None:
+def test_disc_parallel_doe(
+    sellar_with_2d_array, sellar_disciplines, enable_discipline_statistics
+) -> None:
     """Test the execution of disciplines in parallel."""
     s_1 = sellar_disciplines.sellar1
     n = 10
@@ -223,7 +225,7 @@ def test_parallel_lin() -> None:
                 assert (dfdx == outs[i][f][x]).all()
 
 
-def test_disc_parallel_threading_proc(sellar_disciplines) -> None:
+def test_disc_parallel_threading_proc(sellar_with_2d_array, sellar_disciplines) -> None:
     disciplines = copy(sellar_disciplines)
     parallel_execution = DiscParallelExecution(
         disciplines, n_processes=2, use_threading=True
@@ -347,13 +349,13 @@ def test_multiprocessing_context(
     add_diff,
     expected_n_calls,
     reset_default_multiproc_method,
+    enable_discipline_statistics,
 ) -> None:
     """Test the multiprocessing where the method for the context is changed.
 
     The test is applied on both parallel execution and linearization, with and without
     the definition of differentiated I/O.
     """
-
     # Just for the test purpose, we consider multithreading as a mp_method
     # and set the boolean ``use_threading`` from this.
     use_threading = mp_method == "threading"

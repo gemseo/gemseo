@@ -24,15 +24,20 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from enum import auto
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Union
 
 import h5py
 from numpy import array
 from numpy import array_equal
+from numpy import asarray
 from numpy import bytes_
 from numpy import float64
 from numpy import ndarray
+from numpy import str_
+from strenum import LowercaseStrEnum
 
 from gemseo.utils.hdf5 import get_hdf5_group
 
@@ -41,17 +46,94 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
+    from gemseo import StrKeyMapping
     from gemseo.algos.database import Database
     from gemseo.algos.database import DatabaseValueType
     from gemseo.algos.hashable_ndarray import HashableNdarray
+    from gemseo.typing import StringArray
 
 ReturnedHdfMissingOutputType = tuple[
     Mapping[str, Union[float, ndarray, list[int]]], Mapping[str, int]
 ]
 
 
+def _cast(x: Any) -> Any:
+    """Auxiliar function used to cast data."""
+    return x
+
+
 class HDFDatabase:
-    """Capabilities to export a database to an HDF file."""
+    """Capabilities to export a database to an HDF file.
+
+    In the HDF file, three groups are created:
+
+        - design space group: with the name ``"design_space"``, it stores the names,
+          bounds, sizes, types, etc. of the design space of the problem.
+        - design variables group: with the name ``"x"``, it stores the values of the
+          design vector.
+        - keys group = with the name ``"k"``, it stores the names of the keys used to
+          identify each output stored in the database.
+        - values group = with the name ``"v"``, it stores all the outputs of the
+          functions stored in the database.
+
+    As a reminder, the values group ``"v"`` includes all the outputs of the
+    functions stored in the database. String outputs are treated in a special way
+    because we need to store them as bytes, and we need to know if they were
+    originally an ``array(str)`` or just a single string in order to be able to
+    reconstruct the database from a file.
+
+    Whenever a new string variable is added, the index of the dataset is used to
+    create a subgroup named ``"str_{index_dataset}"``. In which the value will be
+    stored as a dataset. The subgroup includes an attribute ``"str_type"`` that
+    indicates if the original data was a single string or an array of strings.
+
+    Numerical vectors are stored in a similar way, with a subgroupo named
+    ``"arr_{index_dataset}"``. Scalars are appended directly in the values group with no
+    subgroup.
+
+    The example below shows the structure of the data for a case with two entries
+    in the database. Each entry containing one scalar, one array, and two strings.
+
+    my_file.hdf5
+    │
+    ├── design_space
+    │   └── input
+    │       └── names
+    │
+    ├── k
+    │   ├── 0
+    │   └── 1
+    │
+    ├── v
+    │   ├── 0
+    │   ├── 1
+    │   ├── arr_0
+    │   ├── arr_1
+    │   ├── str_0
+    │   └── str_1
+    │
+    └── x
+        ├── 0
+        └── 1
+    """
+
+    class _StringDataType(LowercaseStrEnum):
+        """The scaling method applied to MDA residuals for convergence monitoring."""
+
+        STR = auto()
+        """A string type value."""
+
+        ARRAY = auto()
+        """A NumPy array of strings."""
+
+    class _ValueDataType(LowercaseStrEnum):
+        """The scaling method applied to MDA residuals for convergence monitoring."""
+
+        STR = auto()
+        """A string type value."""
+
+        ARR = auto()
+        """A NumPy array."""
 
     __pending_arrays: dict[int, HashableNdarray]
     """A buffer of input values.
@@ -77,7 +159,7 @@ class HDFDatabase:
         Returns:
             The real data.
         """
-        return array(array(data, copy=False).real, dtype=float64)
+        return array(asarray(data).real, dtype=float64)
 
     @staticmethod
     def __add_hdf_input_dataset(
@@ -143,10 +225,19 @@ class HDFDatabase:
         for name in output_keys_sorted:
             value = output_values[name]
             idx_value = output_name_to_idx[name]
-            if isinstance(value, (ndarray, list)):
-                self.__add_hdf_vector_output(
+            if isinstance(value, str):
+                self.__add_hdf_string_output(
                     index_dataset, idx_value, values_group, value
                 )
+            elif isinstance(value, (ndarray, list)):
+                if isinstance(value[0], str):
+                    self.__add_hdf_string_output(
+                        index_dataset, idx_value, values_group, value
+                    )
+                else:
+                    self.__add_hdf_vector_output(
+                        index_dataset, idx_value, values_group, value
+                    )
             else:
                 values.append(value)
 
@@ -259,6 +350,51 @@ class HDFDatabase:
             values_group[name][offset:] = self.__to_real(values)
         return offset
 
+    def __add_hdf_string_output(
+        self,
+        index_dataset: int,
+        idx_sub_group: int,
+        values_group: h5py.Group,
+        value: str | StringArray,
+    ) -> None:
+        """Add a new string to the HDF group of output values.
+
+        Create a subgroup dedicated to strings in the group of output
+        values.
+        Inside this subgroup, a new dataset is created for each string.
+        If the subgroup already exists, it is just appended.
+        Otherwise, the subgroup is created.
+
+        Args:
+            index_dataset: The index of the HDF entry.
+            idx_sub_group: The index of the dataset in the subgroup of strings.
+            values_group: The HDF group of the output values.
+            value: The string which is added to the group.
+
+        Raises:
+            ValueError: If the index of the dataset in the subgroup of vectors
+                already exist.
+        """
+        subgroup_name = f"str_{index_dataset}"
+
+        if subgroup_name not in values_group:
+            sub_group = values_group.require_group(subgroup_name)
+        else:
+            sub_group = values_group[subgroup_name]
+        if str(idx_sub_group) in sub_group:
+            msg = (
+                f"Dataset name '{idx_sub_group}' already exists "
+                f"in the sub-group of string output '{subgroup_name}'."
+            )
+            raise ValueError(msg)
+
+        sub_group.attrs["str_type"] = (
+            HDFDatabase._StringDataType.STR.value
+            if isinstance(value, str)
+            else HDFDatabase._StringDataType.ARRAY.value
+        )
+        sub_group[str(idx_sub_group)] = array(value, dtype=bytes_)
+
     def __add_hdf_vector_output(
         self,
         index_dataset: int,
@@ -272,7 +408,7 @@ class HDFDatabase:
         values.
         Inside this subgroup, a new dataset is created for each vector.
         If the subgroup already exists, it is just appended.
-        Otherwise, the sub-group is created.
+        Otherwise, the subgroup is created.
 
         Args:
             index_dataset: The index of the HDF entry.
@@ -458,26 +594,78 @@ class HDFDatabase:
                 str_index = str(raw_index)
                 keys = [k.decode() for k in get_hdf5_group(keys_group, str_index)]
 
-                array_name = f"arr_{str_index}"
-                if array_name in values_group:
-                    names_to_arrays = {
-                        keys[int(k)]: array(v)
-                        for k, v in values_group[array_name].items()
-                    }
-                else:
-                    names_to_arrays = {}
+                names_to_arrays = HDFDatabase.__read_values_from_group(
+                    str_index,
+                    keys,
+                    values_group,
+                    HDFDatabase._ValueDataType.ARR,
+                )
+
+                names_to_strings = HDFDatabase.__read_values_from_group(
+                    str_index,
+                    keys,
+                    values_group,
+                    HDFDatabase._ValueDataType.STR,
+                )
 
                 if str_index in values_group:
                     scalar_dict = dict(
                         zip(
-                            (k for k in keys if k not in names_to_arrays),
+                            (
+                                k
+                                for k in keys
+                                if k not in names_to_arrays
+                                and k not in names_to_strings
+                            ),
                             get_hdf5_group(values_group, str_index),
                         )
                     )
                 else:
                     scalar_dict = {}
                 scalar_dict.update(names_to_arrays)
+                scalar_dict.update(names_to_strings)
                 database.store(array(design_vars_grp[str_index]), scalar_dict)
+
+    @staticmethod
+    def __read_values_from_group(
+        index: str,
+        keys: list[str],
+        values_group: h5py.Group,
+        value_data_type: _ValueDataType,
+    ) -> StrKeyMapping:
+        """Read the numerical or string values from the HDF group.
+
+        The HDF groups in the database use a naming convention when they are stored,
+        array groups have the name ``"arr_{index}"``, and string groups have the name
+        ``"str_{index}"``.
+
+        Args:
+            index: The index in which the values are stored.
+            keys: The names of the variables to read.
+            values_group: The HDF group containing the values.
+            value_data_type: Whether the values are arrays or strings.
+
+        Returns:
+            A dictionary of variable names and their corresponding values if they exist.
+            Otherwise, return an empty dictionary.
+        """
+        group_name = f"{value_data_type}_{index}"
+        if group_name in values_group:
+            kwargs = {"dtype": str_}
+            cast = _cast
+            if value_data_type == HDFDatabase._ValueDataType.ARR:
+                kwargs = {}
+            elif (
+                values_group[group_name].attrs["str_type"]
+                == HDFDatabase._StringDataType.STR
+            ):
+                cast = str
+            return {
+                keys[int(k)]: cast(array(v, **kwargs))
+                for k, v in values_group[group_name].items()
+            }
+
+        return {}
 
     def add_pending_array(self, data: HashableNdarray) -> None:
         """Record an array for later exporting to disk.

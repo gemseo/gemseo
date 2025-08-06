@@ -58,10 +58,10 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.settings.opt import SLSQP_Settings
 from gemseo.settings.post import GradientSensitivity_Settings
 
 disciplines = create_discipline([
@@ -72,7 +72,6 @@ disciplines = create_discipline([
 ])
 
 formulation_settings = MDF_Settings(
-    main_mda_name="MDAGaussSeidel",
     main_mda_settings=MDAGaussSeidel_Settings(
         max_mda_iter=30,
         tolerance=1e-10,

@@ -30,6 +30,7 @@ from numpy import linalg
 from numpy.testing import assert_equal
 
 from gemseo import create_mda
+from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -42,6 +43,8 @@ from gemseo.problems.mdo.sellar.utils import get_y_opt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from tests.mda import check_iteration_callbacks_clearing
+from tests.mda import check_iteration_callbacks_execution
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -167,7 +170,7 @@ def test_raphson_sellar_sparse_complex() -> None:
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_raphson_sellar_without_cache(use_cache) -> None:
+def test_raphson_sellar_without_cache(use_cache, enable_discipline_statistics) -> None:
     """Test the execution of Newton on Sellar case.
 
     This test also checks that each Newton step implies one disciplinary call, and one
@@ -332,10 +335,13 @@ def test_pass_dedicated_newton_options(
     mda.execute()
     newton_step_args = mda.assembly.compute_newton_step.call_args
     assert mda.settings.linear_solver == mda_linear_solver
-    if mda_linear_solver_settings is None:
-        assert mda.settings.linear_solver_settings == {}
-    else:
-        assert mda.settings.linear_solver_settings == mda_linear_solver_settings
+    factory = LinearSolverLibraryFactory()
+    library_name = factory.algo_names_to_libraries[mda_linear_solver]
+    settings_model = (
+        factory.get_class(library_name).ALGORITHM_INFOS[mda_linear_solver].Settings
+    )
+    mda_linear_solver_settings = settings_model(**mda_linear_solver_settings)
+    assert mda.settings.linear_solver_settings == mda_linear_solver_settings
     assert newton_step_args.args[2] == newton_linear_solver_name
     del newton_step_args.kwargs["matrix_type"]
     if "atol" in newton_linear_solver_settings:
@@ -428,3 +434,13 @@ def test_linear_solver_not_converged(caplog) -> None:
     )
     mda.execute()
     assert expected_log in caplog.text
+
+
+def test_iteration_callbacks_execution() -> None:
+    """Check the execution of iteration callbacks."""
+    check_iteration_callbacks_execution(MDANewtonRaphson([Sellar1(), Sellar2()]))
+
+
+def test_iteration_callbacks_clearing() -> None:
+    """Check the clearing of iteration callbacks."""
+    check_iteration_callbacks_clearing(MDANewtonRaphson([Sellar1(), Sellar2()]))

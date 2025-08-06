@@ -62,12 +62,17 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
                 labels are different.
         """  # noqa: D205, D212, D415
         if not settings.objectives:
-            objectives = [self.optimization_problem.objective.name]
+            objectives = [self._optimization_metadata.objective_name]
         else:
             objectives = list(settings.objectives)
 
-        all_funcs = self.optimization_problem.function_names
-        all_dv_names = self.optimization_problem.design_space.variable_names
+        all_funcs = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        all_dv_names = self._dataset.misc["input_space"].variable_names
 
         all_labels: Sequence[str]
         sample_values, all_labels = self.__compute_names_and_values(
@@ -123,9 +128,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
         if not design_variables:
             design_variables_labels = []
             all_data_names = objectives
-            _, objective_labels, _ = self.database.get_history_array(
-                function_names=objectives, with_x_vect=False
-            )
+            objective_labels = self._dataset.get_columns(objectives)
         elif not objectives:
             design_variables_labels = self._get_design_variable_names(
                 variables=design_variables
@@ -137,16 +140,12 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
                 variables=design_variables
             )
             all_data_names = objectives + design_variables
-            _, objective_labels, _ = self.database.get_history_array(
-                function_names=objectives, with_x_vect=False
-            )
+            objective_labels = self._dataset.get_columns(objectives)
 
         all_data_names.sort()
         all_labels = sorted(objective_labels + design_variables_labels)
 
-        sample_values = self.optimization_problem.history.get_data_by_names(
-            names=all_data_names, as_dict=False
-        )
+        sample_values = self._dataset.get_view(variable_names=all_data_names).to_numpy()
 
         return sample_values, all_labels
 
@@ -169,8 +168,10 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
             ValueError: If the objective name is not valid.
         """
         if func not in all_funcs and func not in all_dv_names:
-            min_f = "-" + func == self.optimization_problem.objective.name
-            if min_f and not self.optimization_problem.minimize_objective:
+            min_f = (
+                self._optimization_metadata.standardized_objective_name == f"-{func}"
+            )
+            if min_f and not self._optimization_metadata.minimize_objective:
                 objectives[objectives.index(func)] = "-" + func
             else:
                 msg = (
@@ -198,7 +199,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
              func: The function name.
              objectives: The objectives names.
         """
-        if func in self.optimization_problem.design_space:
+        if func in self._dataset.misc["input_space"]:
             objectives.remove(func)
             design_variables.append(func)
 
@@ -211,8 +212,10 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
         Returns:
             An array of size ``n_samples``, True if the point is non-feasible.
         """
-        x_feasible, _ = self.optimization_problem.history.feasible_points
-        feasible_indexes = [self.database.get_iteration(x) - 1 for x in x_feasible]
+        feasible_indexes = [
+            iteration - 1
+            for iteration in self._optimization_metadata.feasible_iterations
+        ]
 
         is_non_feasible = full(sample_values.shape[0], True)
         is_non_feasible[feasible_indexes] = False

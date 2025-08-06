@@ -18,15 +18,17 @@
 #        :author: Fabian Castañeda
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-BiLevel BCD-based MDO on the Sobieski SSBJ test case
-================================================
+Bi-level BCD-based MDO on the Sobieski SSBJ test case
+=====================================================
 """
 
 # %%
 # .. note::
 #
-#    There are several variants of the BiLevel BCD formulation; this example shows
-#    the implementation of the BiLevel BCD MDF (BL-BCD-MDF) for other variants please
+#    As described in :ref:`bcd_formulation`,
+#    there are several variants of the bi-level BCD formulation; this example shows
+#    the implementation of the bi-level BCD-MDF (BL-BCD-MDF).
+#    For more details about other variants please
 #    refer to :cite:`david:hal-04758286`.
 
 from __future__ import annotations
@@ -35,17 +37,17 @@ from copy import deepcopy
 
 from gemseo import configure_logger
 from gemseo import execute_post
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.settings.formulations import BiLevel_BCD_Settings
+from gemseo.settings.formulations import MDF_Settings
+from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.settings.opt import NLOPT_COBYLA_Settings
+from gemseo.settings.opt import SLSQP_Settings
 
 configure_logger()
 
@@ -151,22 +153,26 @@ structure_sc.add_constraint("g_1", constraint_type="ineq")
 # %%
 # System's Scenario Settings
 # ---------------------------
-# The BiLevel BCD formulation allows to independently define the settings
+# The bi-level BCD formulation allows to independently define the settings
 # for the BCD MDA, such as shown below.
 
 bcd_mda_settings = MDAGaussSeidel_Settings(tolerance=1e-5, max_mda_iter=10)
 
 # %%
 # Then, you may pass the BCD MDA settings directly to the formulation settings.
+# Since the system constraints are the same as the constraints that have already been
+# applied to the sub-scenarios, we set ``apply_cstr_tosub_scenarios=False`` to avoid
+# adding the same constraints twice on the lower level.
 
 system_settings = BiLevel_BCD_Settings(
     bcd_mda_settings=bcd_mda_settings,
+    apply_cstr_tosub_scenarios=False,
 )
 
 # %%
 # .. tip::
 #
-#    When running BiLevel scenarios, it is interesting to access the optimization
+#    When running bi-level scenarios, it is interesting to access the optimization
 #    history of the sub-scenarios for each system iteration. By default, the setting
 #    ``keep_opt_history`` is set to ``True``. This allows you to store in memory the
 #    databases of the sub-scenarios (see the last section of this example for more
@@ -210,7 +216,7 @@ system_scenario.add_constraint("g_3", constraint_type="ineq")
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False, pdf_build=False)
+system_scenario.xdsmize(save_html=False)
 
 # %%
 # Execute the main scenario

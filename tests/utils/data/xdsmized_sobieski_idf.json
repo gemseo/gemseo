@@ -36,7 +36,7 @@
       {
         "from": "Opt",
         "to": "_U_",
-        "name": "y_4^*, y_31_y_32_y_34^*, y_21_y_23_y_24^*, y_12_y_14^*"
+        "name": "y_4^*, consistency_y_31_y_32_y_34^*, consistency_y_21_y_23_y_24^*, consistency_y_12_y_14^*"
       },
       {
         "from": "Opt",

@@ -22,6 +22,7 @@ from abc import abstractmethod
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 from typing import ClassVar
 
 from numpy import abs as np_abs
@@ -60,7 +61,7 @@ class BaseMDASolver(BaseMDA):
     settings: BaseMDASolverSettings
     """The settings of the MDA."""
 
-    _current_residuals: dict[str, ndarray]
+    __current_residuals: dict[str, ndarray]
     """The mapping from residual names to current values."""
 
     _sequence_transformer: RelaxationAcceleration
@@ -102,6 +103,9 @@ class BaseMDASolver(BaseMDA):
     __n_consecutive_unsuccessful_iterations: int
     """The number of consecutive unsuccessful iterations."""
 
+    __iteration_callbacks: list[Callable[[BaseMDASolver], None]]
+    """The callback functions to be called after each iteration."""
+
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
@@ -120,12 +124,14 @@ class BaseMDASolver(BaseMDA):
 
         self.__resolved_residual_names = ()
 
-        self._current_residuals = {}
+        self.__current_residuals = {}
         self.__n_consecutive_unsuccessful_iterations = 0
 
         self.__lower_bound_vector = None
         self.__upper_bound_vector = None
         self.__resolved_variable_names_to_bounds = {}
+
+        self.__iteration_callbacks = []
 
     @property
     def acceleration_method(self) -> AccelerationMethod:
@@ -176,12 +182,12 @@ class BaseMDASolver(BaseMDA):
 
     def get_current_resolved_residual_vector(self) -> ndarray:
         """Return the vector of residuals."""
-        return concatenate([
-            self.io.output_grammar.data_converter.convert_data_to_array(
-                self.__resolved_residual_names,
-                self._current_residuals,
-            )
-        ])
+        if not self._resolved_residual_names:
+            return array([])
+        current_residuals = self.__current_residuals
+        return concatenate(
+            tuple(current_residuals[name] for name in self._resolved_residual_names)
+        )
 
     def set_bounds(
         self,
@@ -215,6 +221,7 @@ class BaseMDASolver(BaseMDA):
         if update_iteration_metrics:
             self.__update_iteration_metrics()
 
+        self._execute_iteration_callbacks()
         if self.normed_residual <= self.settings.tolerance:
             return True
 
@@ -382,11 +389,22 @@ class BaseMDASolver(BaseMDA):
 
         return normed_residual
 
-    @abstractmethod
-    def _execute(self) -> None:  # noqa:D103
-        super()._execute()
+    def _pre_solve(self) -> bool:  # noqa: D103
         self._sequence_transformer.clear()
         self.__n_consecutive_unsuccessful_iterations = 0
+        return super()._pre_solve()
+
+    def _solve(self) -> None:
+        while self._iterate_once():
+            pass
+
+    @abstractmethod
+    def _iterate_once(self) -> bool:
+        """Perform one MDA iteration.
+
+        Returns:
+            Whether the iteration should be stopped.
+        """
 
     def _compute_residuals(self, input_data: MutableStrKeyMapping) -> None:
         """Compute the residual vector.
@@ -401,17 +419,22 @@ class BaseMDASolver(BaseMDA):
         Args:
             input_data: The input data to compute residual of coupling variables.
         """
-        convert_data_to_array = (
-            self.io.output_grammar.data_converter.convert_data_to_array
-        )
+        to_array = self.io.output_grammar.data_converter.convert_value_to_array
+        data = self.io.data
 
         for residual_name in self._resolved_residual_names:
-            residual = convert_data_to_array([residual_name], self.io.data)
+            residual = to_array(residual_name, data[residual_name])
             if residual_name in self._resolved_variable_names:
-                # No -= assignment to avoid possible casting problems.
-                residual = residual - convert_data_to_array([residual_name], input_data)
+                residual_ = to_array(residual_name, input_data[residual_name])
+                # At first iteration,
+                # when sampling in a vectorized way,
+                # residual.shape = (d,) != residual_.shape is (d*n,)
+                # where d is the feature dimension and n is the number of samples.
+                if residual.shape == residual_.shape:
+                    # No -= assignment to avoid possible casting problems.
+                    residual = residual - residual_
 
-            self._current_residuals[residual_name] = residual
+            self.__current_residuals[residual_name] = residual
 
     def __update_bounds_vectors(self) -> None:
         """Set the bounds of the sequence transformer."""
@@ -462,3 +485,22 @@ class BaseMDASolver(BaseMDA):
             LOGGER.info(
                 msg.format(self.name, f"{self.normed_residual:.2e}", self._current_iter)
             )
+
+    def add_iteration_callback(
+        self, iteration_callback: Callable[[BaseMDASolver], None]
+    ) -> None:
+        """Add a callback function to be called after each iteration.
+
+        Args:
+            iteration_callback: The callback function.
+        """
+        self.__iteration_callbacks.append(iteration_callback)
+
+    def _execute_iteration_callbacks(self) -> None:
+        """Execute the iteration callbacks."""
+        for iteration_callback in self.__iteration_callbacks:
+            iteration_callback(self)
+
+    def clear_iteration_callbacks(self) -> None:
+        """Clear the iteration callbacks."""
+        self.__iteration_callbacks.clear()

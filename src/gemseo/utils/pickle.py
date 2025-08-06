@@ -24,7 +24,9 @@ from typing import Any
 
 
 def to_pickle(
-    obj: Any, file_path: str | Path, protocol: int = HIGHEST_PROTOCOL
+    obj: Any,
+    file_path: str | Path,
+    protocol: int = HIGHEST_PROTOCOL,
 ) -> None:
     """Save the pickled representation of an object on the disk.
 

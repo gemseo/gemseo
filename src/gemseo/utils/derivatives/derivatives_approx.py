@@ -420,7 +420,7 @@ class DisciplineJacApprox:
 
         if not reference_jacobian_path or save_reference_jacobian:
             for input_name in tuple(input_data):
-                if input_name not in self.discipline.input_grammar.names:
+                if input_name not in self.discipline.input_grammar:
                     del input_data[input_name]
             approximated_jacobian = self.compute_approx_jac(
                 output_names, input_names, input_indices, input_data

@@ -72,7 +72,7 @@ DIRNAME = os.path.dirname(__file__)
 
 
 @pytest.fixture
-def sellar_mda(sellar_disciplines):
+def sellar_mda(sellar_with_2d_array, sellar_disciplines):
     return MDAGaussSeidel(sellar_disciplines)
 
 
@@ -83,7 +83,7 @@ def sellar_inputs():
 
 
 @pytest.fixture
-def base_mda_solver(sellar_disciplines) -> BaseMDASolver:
+def base_mda_solver(sellar_with_2d_array, sellar_disciplines) -> BaseMDASolver:
     """A concretized BaseMDASolver instance with the Sellar's disciplines."""
     with concretize_classes(BaseMDASolver):
         BaseMDASolver.Settings = BaseMDASolverSettings
@@ -285,7 +285,7 @@ def test_stopping_criteria(base_mda_solver, caplog) -> None:
     assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
 
-def test_coupling_structure(sellar_disciplines) -> None:
+def test_coupling_structure(sellar_with_2d_array, sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = CouplingStructure(sellar_disciplines)
     mda_sellar = MDAGaussSeidel(
@@ -560,28 +560,28 @@ class DiscWithNonNumericInputs3(Discipline):
 
 
 @pytest.mark.parametrize(
-    ("mda_class", "include_weak_couplings"),
+    ("mda_class", "include_weak_coupling_targets"),
     [(MDAJacobi, True), (MDAGaussSeidel, True), (MDANewtonRaphson, False)],
 )
-def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
+def test_mda_with_non_numeric_couplings(mda_class, include_weak_coupling_targets):
     """Test that MDAs can handle non-numeric couplings.
 
     Args:
         mda_class: The specific MDA to be tested.
-        include_weak_couplings: Whether to include weak couplings in the MDA. The Newton
-            method does not support weak couplings.
+        include_weak_coupling_targets: Whether to include weak couplings in the MDA.
+            The Newton method does not support weak couplings.
     """
     disciplines = [
         DiscWithNonNumericInputs1(),
         DiscWithNonNumericInputs2(),
     ]
 
-    if include_weak_couplings:
+    if include_weak_coupling_targets:
         disciplines.append(DiscWithNonNumericInputs3())
 
     mda = mda_class(disciplines)
     mda.add_differentiated_inputs(["a"])
-    mda.add_differentiated_outputs(["obj"] if include_weak_couplings else ["b"])
+    mda.add_differentiated_outputs(["obj"] if include_weak_coupling_targets else ["b"])
 
     inputs = {
         "a_file": "test",
@@ -589,7 +589,7 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
     }
     mda_output = mda.execute(inputs)
 
-    if include_weak_couplings:
+    if include_weak_coupling_targets:
         assert_almost_equal(mda_output["obj"], 0.0, decimal=5)
     else:
         assert_almost_equal(mda_output["b"], 1.0, decimal=5)
@@ -597,7 +597,7 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_couplings):
     assert mda.check_jacobian(
         input_data=inputs,
         input_names=["a"],
-        output_names=["obj"] if include_weak_couplings else ["b"],
+        output_names=["obj"] if include_weak_coupling_targets else ["b"],
         linearization_mode="adjoint",
         threshold=1e-3,
     )

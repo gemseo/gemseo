@@ -16,8 +16,10 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable  # noqa:TC003
 from collections.abc import Sequence  # noqa:TC003
+from typing import TYPE_CHECKING  # noqa:TC003
 from typing import Annotated
 from typing import Any  # noqa:TC003
 
@@ -25,9 +27,15 @@ from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TC002
 from pydantic import PositiveInt  # noqa:TC002
 from pydantic import WithJsonSchema
+from pydantic import model_validator
 
 from gemseo.algos.base_driver_settings import BaseDriverSettings
 from gemseo.algos.evaluation_problem import EvaluationType  # noqa:TC001
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+LOGGER = logging.getLogger(__name__)
 
 
 class BaseDOESettings(BaseDriverSettings):
@@ -68,3 +76,27 @@ called as ``callback(index, (output, Jacobian))``.""",
         default=False,
         description="Whether to normalize the design space variables between 0 and 1.",
     )
+
+    vectorize: bool = Field(
+        default=False,
+        description="Whether to vectorize the functions evaluations.",
+    )
+
+    @model_validator(mode="after")
+    def __check(self) -> Self:
+        """Check that field values are compatible.
+
+        Raises:
+            NotImplementedError: When combining parallelization and vectorization.
+        """
+        if self.wait_time_between_samples > 0 and self.n_processes == 1:
+            LOGGER.warning(
+                "The option 'wait_time_between_samples' is ignored "
+                "when the option 'n_processes' is 1 (serial mode)."
+            )
+
+        if self.vectorize and self.n_processes > 1:
+            msg = "Vectorization in parallel is not yet supported."
+            raise NotImplementedError(msg)
+
+        return self

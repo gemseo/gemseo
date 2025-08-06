@@ -21,14 +21,12 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import Union
 
 import pytest
 from matplotlib.figure import Figure
 from numpy import array
 from numpy import isnan
-from numpy import ndarray
 from numpy import pi
 from numpy import sign
 from numpy import sin
@@ -36,6 +34,7 @@ from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     FirstOrderIndicesType,
@@ -56,24 +55,16 @@ StatisticsType = tuple[
 ]
 
 
-@pytest.fixture(scope="module")
-def py_func() -> Callable[[ndarray, ndarray], tuple[ndarray, ndarray]]:
-    """The Ishigami function."""
-
-    def ishigami(x1, x23):
-        y = array([sin(x1[0]) + 7 * sin(x23[0]) ** 2 + 0.1 * x23[1] ** 4 * sin(x1[0])])
-        z = array([y[0], y[0]])
-        return y, z
-
-    return ishigami
+def ishigami(x1, x23):
+    y = array([sin(x1[0]) + 7 * sin(x23[0]) ** 2 + 0.1 * x23[1] ** 4 * sin(x1[0])])
+    z = array([y[0], y[0]])
+    return y, z
 
 
 @pytest.fixture(scope="module")
-def discipline(
-    py_func: Callable[[ndarray, ndarray], tuple[ndarray, ndarray]],
-) -> AutoPyDiscipline:
+def discipline() -> AutoPyDiscipline:
     """The discipline of interest."""
-    return AutoPyDiscipline(py_func=py_func, use_arrays=True)
+    return AutoPyDiscipline(py_func=ishigami, use_arrays=True)
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +106,7 @@ def uncertain_space() -> ParameterSpace:
     return parameter_space
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def sobol(discipline: Discipline, uncertain_space: ParameterSpace) -> SobolAnalysis:
     """A Sobol' analysis."""
     analysis = SobolAnalysis()
@@ -124,13 +115,13 @@ def sobol(discipline: Discipline, uncertain_space: ParameterSpace) -> SobolAnaly
     return analysis
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def first_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the first-order indices."""
     return sobol.get_intervals()
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def total_intervals(sobol: SobolAnalysis) -> FirstOrderIndicesType:
     """The intervals of the total-order indices."""
     return sobol.get_intervals(False)
@@ -208,6 +199,7 @@ def test_algo(discipline, uncertain_space) -> None:
 @pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.TOTAL])
 def test_method(sobol, method) -> None:
     """Check the use of the main method."""
+    main_method = sobol.main_method
     assert sobol.main_method == "first"
     assert compare_dict_of_arrays(
         sobol.main_indices["y"][0], sobol.indices.first["y"][0], 0.1
@@ -219,7 +211,7 @@ def test_method(sobol, method) -> None:
         sobol.main_indices["y"][0], sobol.indices.total["y"][0], 0.1
     )
 
-    sobol.main_method = SobolAnalysis.Method.FIRST
+    sobol.main_method = main_method
 
 
 @pytest.mark.parametrize(
@@ -445,6 +437,8 @@ def test_compute_indices_output_names(sobol) -> None:
     """Check compute_indices with different types for output_names."""
     assert sobol.compute_indices(["y"]).first
     assert sobol.compute_indices("y").first
+    # sobol is a module-scoped fixture and so the original indexes must be restored.
+    sobol.compute_indices()
 
 
 def test_to_dataset(sobol) -> None:
@@ -472,6 +466,8 @@ def test_output_variance_cv(
     sobol.compute_indices(["y"], control_variates=[cv1])
     assert_almost_equal(sobol.output_variances["y"][0], 21.00, decimal=decimal)
     assert_almost_equal(sobol.output_variances["z"][0], 20.91, decimal=decimal)
+    # sobol is a module-scoped fixture and so the original indexes must be restored.
+    sobol.compute_indices()
 
 
 def test_cv_wo_statistics(
@@ -560,6 +556,8 @@ def test_cv_algo(
     assert compare_dict_of_arrays(
         getattr(indices_cv12, order)["z"][0], reference_cv12, 0.001
     )
+    # sobol is a module-scoped fixture and so the original indexes must be restored.
+    sobol.compute_indices()
 
 
 @pytest.mark.parametrize(
@@ -617,7 +615,7 @@ def test_from_samples(sobol, tmp_wd):
 
 
 def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_wd):
-    """Check the instantiation from samples with control variates.."""
+    """Check the instantiation from samples with control variates."""
     file_path = Path("samples.pkl")
     sobol_cv.dataset.to_pickle(file_path)
     new_sobol_cv = SobolAnalysis(samples=file_path)
@@ -631,3 +629,31 @@ def test_from_samples_cv(sobol_cv, discipline_cv1, cv1_stat, tmp_wd):
     assert (
         new_sobol_cv.indices.first["y"][0]["x1"] == sobol_cv.indices.first["y"][0]["x1"]
     )
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {
+            "control_variates": SobolAnalysis.ControlVariate(
+                AnalyticDiscipline({"varying": "x1+x2", "constant": "1"})
+            )
+        },
+    ],
+)
+def test_constant_output(discipline_with_constant_output_and_space, kwargs):
+    """Check that SobolAnalysis supports constant outputs."""
+    discipline, uncertain_space = discipline_with_constant_output_and_space
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    indices = analysis.compute_indices(**kwargs)
+    assert indices.first["constant"][0] is None
+    assert indices.total["constant"][0] is None
+    if not kwargs:
+        assert indices.second["constant"][0] is None
+
+    assert indices.first["varying"][0]["x1"] is not None
+    assert indices.total["varying"][0]["x2"] is not None
+    if not kwargs:
+        assert indices.second["varying"][0] is not None

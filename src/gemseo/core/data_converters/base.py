@@ -16,21 +16,21 @@
 
 from __future__ import annotations
 
-from abc import ABC
 from abc import abstractmethod
 from numbers import Complex
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import Callable
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
 from typing import Union
-from typing import cast
 
 from numpy import array as np_array
 from numpy import concatenate
+from numpy import ndarray
 
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 T = TypeVar("T", bound="BaseGrammar")
 
 
-class BaseDataConverter(ABC, Generic[T]):
+class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class for converting data values to NumPy arrays and vice versa.
 
     Typically,
@@ -82,14 +82,41 @@ class BaseDataConverter(ABC, Generic[T]):
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (int, float, complex, Complex, str)
+    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (
+        int,
+        float,
+        complex,
+        Complex,
+        str,
+    )
     """The base types that are not arrays like."""
 
-    _IS_NUMERIC_TYPES: ClassVar[tuple[Any, ...]]
-    """The types used for `is_numeric`."""
+    _IS_CONTINUOUS_TYPES: ClassVar[tuple[type, ...]] = (
+        float,
+        complex,
+        Complex,
+        ndarray,
+    )
+    """The types that represent continuous data."""
 
-    _IS_CONTINUOUS_TYPES: ClassVar[tuple[Any, ...]]
-    """The types used for `is_continuous`."""
+    _IS_NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (
+        int,
+        *_IS_CONTINUOUS_TYPES,
+    )
+    """The types that represent numeric data."""
+
+    value_to_array_converters: ClassVar[
+        dict[str, Callable[[ValueType], NumberArray]]
+    ] = {}
+    """The mapping from data names to functions converting a data value to an array."""
+
+    array_to_value_converters: ClassVar[
+        dict[str, Callable[[NumberArray], ValueType]]
+    ] = {}
+    """The mapping from data names to functions converting an array to a data value."""
+
+    value_size_getters: ClassVar[dict[str, Callable[[ValueType], int]]] = {}
+    """The mapping from data names to functions returning the size of a data value."""
 
     def __init__(self, grammar: T) -> None:
         """
@@ -112,9 +139,13 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The NumPy array.
         """
-        if isinstance(value, self._NON_ARRAY_TYPES):
-            return np_array([value])
-        return cast("NumberArray", value)
+        if self.value_to_array_converters and (
+            converter := self.value_to_array_converters.get(name)
+        ):
+            return converter(value)
+        if isinstance(value, ndarray):
+            return value
+        return np_array([value])
 
     def convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
         """Convert a NumPy array to a data value.
@@ -126,7 +157,13 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The data value.
         """
-        return self._convert_array_to_value(name, array)
+        if self.array_to_value_converters and (
+            converter := self.array_to_value_converters.get(name)
+        ):
+            return converter(array)
+        if self._has_type(name, self._NON_ARRAY_TYPES):
+            return array[0]
+        return array
 
     @classmethod
     def get_value_size(cls, name: str, value: ValueType) -> int:
@@ -142,9 +179,12 @@ class BaseDataConverter(ABC, Generic[T]):
         Returns:
             The size.
         """
+        if cls.value_size_getters and (getter := cls.value_size_getters.get(name)):
+            return getter(value)
         if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
-        return cast("NumberArray", value).size
+
+        return value.size
 
     def compute_names_to_slices(
         self,
@@ -184,17 +224,15 @@ class BaseDataConverter(ABC, Generic[T]):
         return names_to_slices, end
 
     def compute_names_to_sizes(
-        self,
-        names: Iterable[str],
-        data: StrKeyMapping,
+        self, names: Iterable[str], data: StrKeyMapping
     ) -> dict[str, int]:
         """Compute a mapping from data names to data value sizes.
 
         .. seealso:: :meth:`.get_value_size`.
 
         Args:
-            data: The data structure.
             names: The data names.
+            data: The data structure.
 
         Returns:
             The mapping from the data names to the data sizes.
@@ -220,7 +258,7 @@ class BaseDataConverter(ABC, Generic[T]):
         """
         to_value = self.convert_array_to_value
         return {
-            name: to_value(name, array[slice_])
+            name: to_value(name, array[..., slice_])
             for name, slice_ in names_to_slices.items()
         }
 
@@ -243,50 +281,38 @@ class BaseDataConverter(ABC, Generic[T]):
         if not names:
             return np_array([])
         to_array = self.convert_value_to_array
-        return concatenate(tuple(to_array(name, data[name]) for name in names))
-
-    @abstractmethod
-    def _convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
-        """Convert back a NumPy array to a data value.
-
-        Args:
-            name: The data name.
-            array: The NumPy array to convert.
-
-        Returns:
-            The data value.
-        """
+        return concatenate(tuple(to_array(name, data[name]) for name in names), axis=-1)
 
     def is_numeric(self, name: str) -> bool:
-        """Check that a data item is numeric.
+        """Return whether a grammar item is numeric.
 
         Args:
-            name: The name of the data item.
+            name: The name of the grammar item.
 
         Returns:
-            Whether the data item is numeric.
+            Whether the grammar item is numeric.
         """
         return self._has_type(name, self._IS_NUMERIC_TYPES)
 
     def is_continuous(self, name: str) -> bool:
-        """Check that a data item has a type that can differentiate.
+        """Return whether a grammar item is continuous.
 
         Args:
-            name: The name of the data item.
+            name: The name of the grammar item.
 
         Returns:
-            Whether the data item can differentiate.
+            Whether the grammar item is continuous.
         """
         return self._has_type(name, self._IS_CONTINUOUS_TYPES)
 
     @abstractmethod
-    def _has_type(self, name: str, types: tuple[Any, ...]) -> bool:
-        """Check the type of a data item against allowed types.
+    def _has_type(self, name: str, types: tuple[type, ...]) -> bool:
+        """Return the type of grammar item has an expected type.
 
         Args:
-            name: The name of the data item.
-            types: The allowed types.
+            name: The name of the grammar item.
+            types: The expected types.
 
         Returns:
-            Whether the type of the data item is allowed.
+            Whether the type of the grammar item is one of the expected types.
         """

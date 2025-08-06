@@ -77,9 +77,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         ... )
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
+        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
         >>>
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
@@ -182,11 +180,13 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             sizes = self.dataset.variable_names_to_n_components
             indices[str(method).lower()] = {
                 output_name: [
-                    split_array_to_dict_of_arrays(
+                    None
+                    if (data := output_component_samples[:, newaxis]).var() == 0.0
+                    else split_array_to_dict_of_arrays(
                         array(
                             get_indices(
                                 input_samples,
-                                Sample(output_component_samples[:, newaxis]),
+                                Sample(data),
                             )
                         ),
                         sizes,

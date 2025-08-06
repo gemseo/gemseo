@@ -46,12 +46,12 @@ class BaseMDOFormulation(BaseFormulation):
         observable_name: str = "",
         discipline: Discipline | None = None,
     ) -> None:
-        if isinstance(output_names, str):
-            output_names = [output_names]
-        obs_fun = FunctionFromDiscipline(output_names, self, discipline=discipline)
+        observable = FunctionFromDiscipline(
+            convert_strings_to_iterable(output_names), self, discipline=discipline
+        )
         if observable_name:
-            obs_fun.name = observable_name
-        self.optimization_problem.add_observable(obs_fun)
+            observable.name = observable_name
+        self.optimization_problem.add_observable(observable)
 
     def add_constraint(  # noqa: D102
         self,
@@ -61,8 +61,9 @@ class BaseMDOFormulation(BaseFormulation):
         value: float = 0,
         positive: bool = False,
     ) -> None:
-        output_names = convert_strings_to_iterable(output_name)
-        constraint = FunctionFromDiscipline(output_names, self)
+        constraint = FunctionFromDiscipline(
+            convert_strings_to_iterable(output_name), self
+        )
         if constraint.discipline_adapter.is_linear:
             constraint = compute_linear_approximation(
                 constraint, zeros(constraint.discipline_adapter.input_dimension)

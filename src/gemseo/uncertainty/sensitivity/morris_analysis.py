@@ -80,6 +80,7 @@ import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
+from numpy import where
 from strenum import StrEnum
 
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
@@ -132,10 +133,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         >>> from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
+        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
         ...     "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
@@ -193,7 +191,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         r"""
         Args:
             n_replicates: The number of times
-                the OAT method is repeated. Used only if ``n_samples`` is None.
+                the OAT method is repeated. Used only if ``n_samples`` is ``0``.
                 Otherwise, this number is the greater integer :math:`r`
                 such that :math:`r(d+1)\leq` ``n_samples``
                 and :math:`r(d+1)` is the number of samples actually carried out.
@@ -273,7 +271,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         ]
         mu = array([diff.mean(0) for diff in output_differences])
         mu_star = array([np_abs(diff).mean(0) for diff in output_differences])
-        sigma = array([diff.std(0) for diff in output_differences])
+        sigma = array([diff.var(0) ** 0.5 for diff in output_differences])
         minimum = array([np_abs(diff).min(0) for diff in output_differences])
         maximum = array([np_abs(diff).max(0) for diff in output_differences])
         if normalize:
@@ -281,13 +279,15 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             lower = concatenate([outputs_bounds[name][0] for name in output_names])
             upper = concatenate([outputs_bounds[name][1] for name in output_names])
             diff = upper - lower
+            diff = where(diff == 0.0, 1.0, diff)
             mu /= diff
             sigma /= diff
             minimum /= diff
             maximum /= diff
             mu_star /= array(list(map(max, abs(lower), abs(upper))))
 
-        relative_sigma = sigma / mu_star
+        mu_star = where(mu_star == 0.0, 1.0, mu_star)
+        relative_sigma = where(sigma == 0.0, 0.0, sigma / mu_star)
 
         sizes = {
             name: len(
@@ -303,9 +303,26 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         }
         sizes.update(output_sizes)
 
+        variances = {
+            name: [
+                self.dataset.get_view(
+                    group_names=self.dataset.OUTPUT_GROUP,
+                    variable_names=name,
+                    components=i,
+                ).var()[0]
+                for i in range(output_sizes[name])
+            ]
+            for name in output_names
+        }
+
         self._indices = self.SensitivityIndices(**{
             x: {
-                k: [{kk: vv[i] for kk, vv in v.items()} for i in range(output_sizes[k])]
+                k: [
+                    None
+                    if variances[k][i] == 0.0
+                    else {kk: vv[i] for kk, vv in v.items()}
+                    for i in range(output_sizes[k])
+                ]
                 for k, v in split_array_to_dict_of_arrays(
                     y.T, sizes, output_names, self._input_names
                 ).items()

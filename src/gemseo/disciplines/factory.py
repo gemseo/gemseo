@@ -54,19 +54,21 @@ class DisciplineFactory(BaseFactory):
         self.__base_grammar.update_from_file(base_gram_path)
         self.__base_grammar_names = self.__base_grammar
 
-    def create(self, discipline_name: str, **options):
+    def create(self, discipline_name: str, *args: Any, **kwargs: Any) -> Discipline:
         """Create an :class:`.Discipline` from its name.
 
         Args:
             discipline_name: The name of the discipline
-            **options: The options of the discipline,
-                both the options to be passed to the constructor
-                and the options that are generic to all the disciplines.
+            *args: The position arguments.
+            **kwargs: The keyword arguments,
+                including
+                both the keyword arguments to be passed to the constructor
+                and the keyword arguments that are generic to all the disciplines.
 
         Returns:
             The discipline.
         """
-        common_options, specific_options = self.__filter_common_options(options)
+        common_options, specific_options = self.__filter_common_options(kwargs)
         self.__base_grammar.validate(common_options)
 
         grammar_type = specific_options.pop("grammar_type", None)
@@ -74,7 +76,7 @@ class DisciplineFactory(BaseFactory):
             cls = self.get_class(discipline_name)
             old_grammar_type = cls.default_grammar_type
 
-        discipline = super().create(discipline_name, **specific_options)
+        discipline = super().create(discipline_name, *args, **specific_options)
 
         if grammar_type is not None:
             cls.default_grammar_type = old_grammar_type

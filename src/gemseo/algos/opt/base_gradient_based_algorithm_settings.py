@@ -16,19 +16,20 @@
 
 from __future__ import annotations
 
+from math import inf
 from typing import TYPE_CHECKING
 
-from numpy import inf
-from pydantic import BaseModel
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TC002
 from pydantic import model_validator
+
+from gemseo.settings.base_settings import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class BaseGradientBasedAlgorithmSettings(BaseModel):
+class BaseGradientBasedAlgorithmSettings(BaseSettings):
     """The settings for gradient-based optimization algorithms."""
 
     kkt_tol_abs: NonNegativeFloat = Field(

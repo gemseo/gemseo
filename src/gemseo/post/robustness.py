@@ -51,28 +51,39 @@ class Robustness(BasePost[Robustness_Settings]):
     SR1_APPROX: ClassVar[str] = "SR1"
     Settings: ClassVar[type[Robustness_Settings]] = Robustness_Settings
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+
     def _plot(self, settings: Robustness_Settings) -> None:
         standard_deviation = settings.stddev
-        problem = self.optimization_problem
-        design_space = problem.design_space
+        design_space = self._dataset.misc["input_space"]
         bounds_range = design_space.get_upper_bounds() - design_space.get_lower_bounds()
-        n_x = problem.design_space.dimension
+        n_x = design_space.dimension
         cov = zeros((n_x, n_x))
         cov[range(n_x), range(n_x)] = (standard_deviation * bounds_range) ** 2
 
-        robustness = RobustnessQuantifier(self.database)
+        robustness = RobustnessQuantifier(self._dataset)
+        optimization_metadata = self._optimization_metadata
         function_samples = []
         function_names = []
-        for func in self.optimization_problem.functions:
-            func_name = database_func_name = func.name
-            if self._change_obj and func_name == self._neg_obj_name:
-                func_name = self._obj_name
+        all_function_names = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        for func in all_function_names:
+            func_name = dataset_func_name = func
+            if (
+                self._change_obj
+                and func_name == f"-{optimization_metadata.objective_name}"
+            ):
+                func_name = optimization_metadata.objective_name
 
-            dim = func.dim
+            dim = self._dataset.variable_names_to_n_components[func]
             at_most_niter = int(1.5 * n_x)
             for func_index in range(dim):
                 robustness.compute_approximation(
-                    funcname=database_func_name,
+                    funcname=dataset_func_name,
                     at_most_niter=at_most_niter,
                     func_index=func_index,
                     b0_mat=zeros((n_x, n_x)),

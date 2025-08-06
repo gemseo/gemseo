@@ -75,7 +75,7 @@ the dynamics of the components of the system.
 
 
 ODE Classes organization
---------------
+------------------------
 
 Here is the UML diagram of the classes in |g| for the solution of ODEs.
 

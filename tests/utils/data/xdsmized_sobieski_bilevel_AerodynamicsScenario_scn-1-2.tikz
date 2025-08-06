@@ -28,7 +28,7 @@
 \node [DataInter] (Opt-Dis1) {$x\_2$};&
 \\
 %Row 2
-\node [DataIO] (left_output_Dis1) {$y\_21^*,  y\_23^*..., (3)$};&
+\node [DataIO] (left_output_Dis1) {$y\_21^*,  y\_23^*, ... (3)$};&
 \node [DataInter] (Dis1-Opt) {$y\_24,  g\_2$};&
 \node [Function] (Dis1) {$\text{2:SobieskiAerodynamics}$};&
 \\

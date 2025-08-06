@@ -53,6 +53,7 @@ from gemseo.core.parallel_execution.callable_parallel_execution import (
 from gemseo.core.serializable import Serializable
 from gemseo.utils.locks import synchronized
 from gemseo.utils.seeder import Seeder
+from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -232,6 +233,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         wait_time_between_samples: float = 0.0,
         use_database: bool = True,
         callbacks: Iterable[CallbackType] = (),
+        vectorize: bool = False,
         **settings: Any,
     ) -> None:
         """
@@ -240,12 +242,13 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             eval_jac: Whether to sample the functions computing the Jacobian data.
             n_processes: The maximum simultaneous number of processes
                 used to parallelize the execution.
-            wait_time_between_samples: The time to wait between each sample
-                evaluation, in seconds.
+            wait_time_between_samples: The time to wait between each evaluation,
+                in seconds.
             use_database: Whether to store the evaluations in the database.
             callbacks: The functions to be evaluated
                 after each call to :meth:`.EvaluationProblem.evaluate_functions`;
                 to be called as ``callback(index, (output, jacobian))``.
+            vectorize: Whether to vectorize the functions evaluations.
             **settings: These options are not used.
 
         Warnings:
@@ -262,51 +265,113 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self.__jacobian_functions = jacobian_functions or None
         callbacks = list(callbacks)
         if n_processes > 1:
-            LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
-            # Given a ndarray input value,
-            # the worker evaluates the functions attached to the problem
-            # with up to n_processes simultaneous processes.
-            parallel = CallableParallelExecution(
-                [self._worker],
-                n_processes=n_processes,
-                wait_time_between_fork=wait_time_between_samples,
+            self.__run_in_parallel_one_at_a_time(
+                callbacks, n_processes, problem, use_database, wait_time_between_samples
             )
-            database = problem.database
-            if use_database:
-                # Add a callback to store the samples in the database on the fly.
-                callbacks.append(self.__store_in_database)
-                # Initialize the order of samples
-                # as parallel execution does not guarantee it.
-                for sample in self.samples:
-                    database.store(sample, {})
-
-            # The list of inputs of the tasks is the list of samples
-            # A callback function stores the samples on the fly
-            # during the parallel execution.
-            parallel.execute(self.samples, exec_callback=callbacks)
-            if use_database:
-                # We added empty entries by default to keep order in the database
-                # but when the DOE point is failed, this is not consistent
-                # with the serial exec, so we clean the DB
-                database.remove_empty_entries()
-
+        elif vectorize:
+            self.__run_in_serial_all_at_once(callbacks)
         else:
-            # Sequential execution
-            if wait_time_between_samples != 0:
-                LOGGER.warning(
-                    "Wait time between samples option is ignored in sequential run."
+            self.__run_in_serial_one_at_a_time(callbacks)
+
+    def __run_in_serial_one_at_a_time(self, callbacks: Iterable[CallbackType]) -> None:
+        """Evaluate the functions in serial, sample by sample.
+
+        Args:
+            callbacks: The callback functions.
+        """
+        for index, input_value in enumerate(self.samples):
+            try:
+                result = self._evaluate_functions(input_value)
+                for callback in callbacks:
+                    callback(index, result)
+            except ValueError:  # noqa: PERF203
+                LOGGER.exception(
+                    "The evaluation of the functions at point %s raised a"
+                    " ValueError; skipping to the next point.",
+                    input_value,
                 )
-            for index, input_value in enumerate(self.samples):
-                try:
-                    output_value, jacobian_value = self._evaluate_functions(input_value)
-                    for callback in callbacks:
-                        callback(index, (output_value, jacobian_value))
-                except ValueError:  # noqa: PERF203
-                    LOGGER.exception(
-                        "Problem with evaluation of sample:"
-                        "%s result is not taken into account in DOE.",
-                        input_value,
-                    )
+
+    def __run_in_serial_all_at_once(self, callbacks: Iterable[CallbackType]) -> None:
+        """Evaluate the functions in serial, with all the samples at once.
+
+        Args:
+            callbacks: The callback functions.
+        """
+        output_values, jacobian_values = self._evaluate_functions(self.samples)
+        n_samples = len(self.samples)
+        jacobian_shapes = {
+            output_name: (
+                value.shape[0] // n_samples,
+                value.shape[1] // n_samples,
+            )
+            for output_name, value in jacobian_values.items()
+        }
+        output_shape = (n_samples, -1)
+        for callback in callbacks:
+            output_values = {
+                name: value.reshape(output_shape)
+                for name, value in output_values.items()
+            }
+            for index in range(len(self.samples)):
+                callback(
+                    index,
+                    (
+                        {name: value[index] for name, value in output_values.items()},
+                        {
+                            name: jacobian_values[name][
+                                index * d : (index + 1) * d,
+                                index * p : (index + 1) * p,
+                            ]
+                            for name, (d, p) in jacobian_shapes.items()
+                        },
+                    ),
+                )
+
+    def __run_in_parallel_one_at_a_time(
+        self,
+        callbacks: Iterable[CallbackType],
+        n_processes: int,
+        problem: EvaluationProblem,
+        use_database: bool,
+        wait_time_between_samples: float,
+    ) -> None:
+        """Evaluate the functions in parallel, sample by sample.
+
+        Args:
+            callbacks: The callback functions.
+            n_processes: The maximum simultaneous number of processes
+                used to parallelize the execution.
+            problem: The evaluation problem.
+            use_database: Whether to store the evaluations in the database.
+            wait_time_between_samples: The time to wait between each evaluation,
+                in seconds.
+        """
+        LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
+        # Given a ndarray input value,
+        # the worker evaluates the functions attached to the problem
+        # with up to n_processes simultaneous processes.
+        parallel = CallableParallelExecution(
+            [self._worker],
+            n_processes=n_processes,
+            wait_time_between_fork=wait_time_between_samples,
+        )
+        database = problem.database
+        if use_database:
+            # Add a callback to store the samples in the database on the fly.
+            callbacks.append(self.__store_in_database)
+            # Initialize the order of samples
+            # as parallel execution does not guarantee it.
+            for sample in self.samples:
+                database.store(sample, {})
+        # The list of inputs of the tasks is the list of samples
+        # A callback function stores the samples on the fly
+        # during the parallel execution.
+        parallel.execute(self.samples, exec_callback=callbacks)
+        if use_database:
+            # We added empty entries by default to keep order in the database
+            # but when the DOE point is failed, this is not consistent
+            # with the serial exec, so we clean the DB
+            database.remove_empty_entries()
 
     def _worker(self, input_value: RealArray) -> EvaluationType:
         """Evaluate the functions at a given input point.
@@ -376,7 +441,10 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
         components = set(where(hstack(list(design_space.normalize.values())) == 0)[0])
         if components:
-            msg = f"The components {components} of the design space are unbounded."
+            msg = (
+                f"The components {pretty_str(components, use_and=True)} "
+                "of the design space are unbounded."
+            )
             raise ValueError(msg)
 
     def compute_doe(

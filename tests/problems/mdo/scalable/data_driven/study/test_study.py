@@ -50,7 +50,7 @@ def idf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):
 
 
 @pytest.fixture
-def sellar_use_case(tmp_wd, sellar_disciplines):
+def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
     n_samples = 20
     os.mkdir("data")
     file_name = "data/sellar.h5"
@@ -80,7 +80,7 @@ def sellar_use_case(tmp_wd, sellar_disciplines):
     return design_variables, objective_name, file_name, discipline_names
 
 
-def test_scalabilitystudy1(sellar_use_case) -> None:
+def test_scalabilitystudy1(sellar_use_case, enable_discipline_statistics) -> None:
     design_variables, objective, f_name, discipline_names = sellar_use_case
     variables = [{X_SHARED: i} for i in range(1, 2)]
     directory = "study_1"
@@ -165,7 +165,7 @@ def test_scalabilitystudy1(sellar_use_case) -> None:
     post.get_scaling_strategies(True)
 
 
-def test_scalabilitystudy2(sellar_use_case) -> None:
+def test_scalabilitystudy2(sellar_use_case, enable_discipline_statistics) -> None:
     design_variables, objective, f_name, discipline_names = sellar_use_case
     variables = [{X_SHARED: i} for i in range(1, 3)]
     study = ScalabilityStudy(objective, design_variables, "study_2")

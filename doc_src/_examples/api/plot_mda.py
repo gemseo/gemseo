@@ -67,8 +67,8 @@ settings_model = MDAGaussSeidel_Settings()
 # %%
 # Create an MDA
 # -------------
-# The high-level function :func:`~gemseo.create_mda` can be used
-# to create a scenario:
+# The high-level function :func:`.create_mda` can be used
+# to create an MDA:
 disciplines = create_discipline(["Sellar1", "Sellar2"])
 mda = create_mda("MDAGaussSeidel", disciplines)
 output_data = mda.execute()

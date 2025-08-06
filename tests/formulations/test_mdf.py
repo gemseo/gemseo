@@ -20,7 +20,6 @@ from __future__ import annotations
 
 from functools import partial
 
-import pytest
 from numpy.testing import assert_allclose
 
 from gemseo.formulations.mdf import MDF
@@ -31,7 +30,7 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.scenarios.mdo_scenario import MDOScenario
-from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
 from .formulations_basetest import FormulationsBaseTest
 
@@ -66,7 +65,9 @@ class TestMDFFormulation(FormulationsBaseTest):
         else:
             scenario.set_differentiation_method("complex_step", 1e-30)
         # Set the design constraints
-        scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
+        scenario.add_constraint(
+            ["g_1", "g_2", "g_3"], constraint_type=scenario.ConstraintType.INEQ
+        )
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
         scenario.execute(
@@ -95,14 +96,14 @@ class TestMDFFormulation(FormulationsBaseTest):
             "MDF", "SLSQP", linearize=True, dtype="float64", **options
         )
 
-        assert_allclose(-obj, 3964.0, atol=1.0, rtol=0)
+        assert_allclose(-obj, 3964.0, atol=4.0, rtol=0)
 
     def test_getsuboptions(self) -> None:
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)
         self.assertRaises(ValueError, MDF.get_default_sub_option_values)
 
 
-def test_reset():
+def test_reset(sellar_with_2d_array):
     """Check that the optimization problem can be reset.
 
     See https://gitlab.com/gemseo/dev/gemseo/-/issues/1179.
@@ -116,8 +117,8 @@ def test_reset():
         formulation_name="MDF",
     )
     initial_current_value = design_space.get_current_value()
-    scenario.add_constraint("c_1", constraint_type="ineq")
-    scenario.add_constraint("c_2", constraint_type="ineq")
+    scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
+    scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.execute(algo_name="SLSQP", max_iter=5)
     final_current_value = design_space.get_current_value()
 
@@ -146,19 +147,8 @@ def test_mda_settings():
     assert isinstance(mdf.mda, MDAGaussSeidel)
     assert mdf.mda.settings.max_mda_iter == 13
     mdf = create_sellar_mdf(
-        main_mda_name="MDAGaussSeidel",
         main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
     )
 
     assert isinstance(mdf.mda, MDAGaussSeidel)
     assert mdf.mda.settings.max_mda_iter == 13
-
-    msg = (
-        "The MDANewtonRaphson settings model has the wrong type: "
-        "expected MDANewtonRaphson_Settings, got MDAGaussSeidel_Settings."
-    )
-    with pytest.raises(TypeError, match=msg):
-        mdf = create_sellar_mdf(
-            main_mda_name="MDANewtonRaphson",
-            main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
-        )

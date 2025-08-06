@@ -52,6 +52,7 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.enumeration import merge_enums
+from gemseo.utils.metaclasses import GoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
@@ -67,7 +68,7 @@ WrappedFunctionType = Callable[[NumberArray], OutputType]
 WrappedJacobianType = Callable[[NumberArray], NumberArray]
 
 
-class MDOFunction:
+class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     """The standard definition of an array-based function with algebraic operations.
 
     :class:`.MDOFunction` is the key class
@@ -170,14 +171,14 @@ class MDOFunction:
     ]
     """The names of the attributes to be serialized."""
 
-    DEFAULT_BASE_INPUT_NAME: str = "x"
+    DEFAULT_BASE_INPUT_NAME: ClassVar[str] = "x"
     """The default base name for the inputs."""
 
-    COEFF_FORMAT_1D: str = "{:.2e}"
+    COEFF_FORMAT_1D: ClassVar[str] = "{:.2e}"
     """The format to be applied to a number when represented in a vector."""
     # ensure that coefficients strings have same length
 
-    COEFF_FORMAT_ND: str = "{: .2e}"
+    COEFF_FORMAT_ND: ClassVar[str] = "{: .2e}"
     """The format to be applied to a number when represented in a matrix."""
     # ensure that coefficients strings have same length
 
@@ -194,12 +195,6 @@ class MDOFunction:
 
     has_default_name: bool
     """Whether the name has been set with a default value."""
-
-    last_eval: OutputType | None
-    """The value of the function output at the last evaluation.
-
-    ``None`` if it has not yet been evaluated.
-    """
 
     name: str
     """The name of the function."""
@@ -274,7 +269,6 @@ class MDOFunction:
                 If empty, use the same name than the ``name`` input.
             with_normalized_inputs: Whether the function expects normalized inputs.
         """  # noqa: D205, D212, D415
-        super().__init__()
         self.__original_name = original_name or name
         self.name = name
         self.func = func
@@ -283,8 +277,7 @@ class MDOFunction:
         self.expr = expr
         self.input_names = input_names
         self.dim = dim
-        self.output_names = output_names
-        self.last_eval = None
+        self._output_names = list(output_names)
         self.force_real = force_real
         self.special_repr = special_repr or ""
         self.has_default_name = bool(self.name)
@@ -309,7 +302,7 @@ class MDOFunction:
             self._func = f_pointer
 
     def evaluate(self, x_vect: NumberArray) -> OutputType:
-        """Evaluate the function and store the output value in :attr:`.last_eval`.
+        """Evaluate the function.
 
         When the output dimension :attr:`.dim` is not defined,
         it is inferred on the first evaluation.
@@ -321,7 +314,7 @@ class MDOFunction:
             Either the raw output value
             or its real part when :attr:`.force_real` is `True`.
         """
-        output_value = self.last_eval = self._func(x_vect)
+        output_value = self._func(x_vect)
 
         if self.force_real:
             output_value = output_value.real
@@ -390,7 +383,7 @@ class MDOFunction:
                 else:
                     left = f"{name}"
 
-            sign = "==" if self.f_type == self.ConstraintType.EQ else "<="
+            sign = "=" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
         if self.input_names:

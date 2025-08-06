@@ -367,6 +367,9 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
             store_jacobian=settings[self.__STORE_JACOBIAN],
+            # Base drivers have no 'vectorize' option,
+            # unlike certain specialized drivers, such as DOEs.
+            vectorize=settings.get("vectorize", False),
         )
         # A database contains both shared listeners
         # and listeners specific to a BaseDriverLibrary instance.

@@ -117,7 +117,9 @@ def test_l_shape(tmp_wd) -> None:
         formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint(
-        "volume fraction", constraint_type="ineq", value=volume_fraction
+        "volume fraction",
+        constraint_type=scenario.ConstraintType.INEQ,
+        value=volume_fraction,
     )
     scenario.execute(algo_name="NLOPT_MMA", max_iter=10)
     post_processing = PostFactory().create(
