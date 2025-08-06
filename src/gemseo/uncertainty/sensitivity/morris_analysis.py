@@ -133,10 +133,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         >>> from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
         >>>
         >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
+        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
         ...     "x1", "OTUniformDistribution", minimum=-pi, maximum=pi

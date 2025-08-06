@@ -21,6 +21,7 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
+from typing import Callable
 
 import pytest
 
@@ -53,31 +54,32 @@ from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenari
 
 
 @pytest.fixture(params=["BiLevel", "BiLevelBCD"])
-def scenario_formulation_name(request):
+def formulation_name(request):
+    """The name of a bi-level formulation."""
     return request.param
 
 
 @pytest.fixture
-def sobieski_bilevel_scenario():
-    """Fixture from an existing function."""
+def generate_sobieski_bilevel_scenario() -> Callable[..., MDOScenario]:
+    """Generate a BiLevel scenario for the Sobieski's SSBJ problem."""
     return create_sobieski_bilevel_scenario()
 
 
 @pytest.fixture
-def sobieski_bilevel_bcd_scenario():
-    """Fixture from an existing function."""
+def generate_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
+    """Generate a BiLevelBCD scenario for the Sobieski's SSBJ problem."""
     return create_sobieski_bilevel_bcd_scenario()
 
 
 @pytest.fixture
-def dummy_bilevel_scenario(scenario_formulation_name) -> MDOScenario:
+def dummy_bilevel_scenario(formulation_name) -> MDOScenario:
     """Fixture from an existing function."""
-    return create_dummy_bilevel_scenario(scenario_formulation_name)
+    return create_dummy_bilevel_scenario(formulation_name)
 
 
 @pytest.fixture
-def aerostructure_scenario(scenario_formulation_name) -> MDOScenario:
-    return create_aerostructure_scenario(scenario_formulation_name)
+def aerostructure_scenario(formulation_name) -> MDOScenario:
+    return create_aerostructure_scenario(formulation_name)
 
 
 @pytest.fixture
@@ -86,21 +88,19 @@ def sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenario]:
     return create_sobieski_sub_scenarios()
 
 
-def test_constraint_not_in_sub_scenario(sobieski_bilevel_scenario) -> None:
+def test_constraint_not_in_sub_scenario(generate_sobieski_bilevel_scenario) -> None:
     """Test the execution of the Sobieski BiLevel Scenario."""
-    scenario = sobieski_bilevel_scenario(
-        apply_cstr_tosub_scenarios=True, apply_cstr_to_system=False
-    )
+    scenario = generate_sobieski_bilevel_scenario(apply_cstr_to_system=False)
 
     for i in range(1, 4):
         scenario.add_constraint(
-            ["g_" + str(i)], constraint_type=scenario.ConstraintType.INEQ
+            [f"g_{i}"], constraint_type=scenario.ConstraintType.INEQ
         )
 
     for i in range(3):
         cstrs = scenario.disciplines[i].formulation.optimization_problem.constraints
         assert len(cstrs) == 1
-        assert cstrs[0].name == "g_" + str(i + 1)
+        assert cstrs[0].name == f"g_{i + 1}"
 
     cstrs_sys = scenario.formulation.optimization_problem.constraints
     assert len(cstrs_sys) == 0
@@ -160,7 +160,7 @@ def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
         assert "b" not in disciplines[1].io.input_grammar
 
 
-@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
+@pytest.mark.parametrize("formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     """Test that the user can access the MDA1 and MDA2."""
     # In the Dummy scenario, there's not strongly coupled disciplines -> No MDA1
@@ -168,7 +168,7 @@ def test_bilevel_mda_getter(dummy_bilevel_scenario) -> None:
     assert "obj" in dummy_bilevel_scenario.formulation.mda2.io.output_grammar
 
 
-@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
+@pytest.mark.parametrize("formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
     """Test that the user cannot modify the MDA1 and MDA2 after instantiation."""
     discipline = create_discipline("SellarSystem")
@@ -179,7 +179,8 @@ def test_bilevel_mda_setter(dummy_bilevel_scenario) -> None:
 
 
 @pytest.mark.parametrize(
-    "scenario", [sobieski_bilevel_scenario, sobieski_bilevel_bcd_scenario]
+    "scenario",
+    [generate_sobieski_bilevel_scenario, generate_sobieski_bilevel_bcd_scenario],
 )
 def test_get_sub_disciplines(scenario, request) -> None:
     """Test the get_sub_disciplines method with the BiLevel formulation.
@@ -202,7 +203,8 @@ def test_get_sub_disciplines(scenario, request) -> None:
 
 
 @pytest.mark.parametrize(
-    "scenario", [sobieski_bilevel_scenario, sobieski_bilevel_bcd_scenario]
+    "scenario",
+    [generate_sobieski_bilevel_scenario, generate_sobieski_bilevel_bcd_scenario],
 )
 def test_bilevel_warm_start(scenario, request) -> None:
     """Test the warm start of the BiLevel chain.
@@ -231,7 +233,7 @@ def test_bilevel_warm_start(scenario, request) -> None:
     assert (mda1_inputs[2]["y_23"] == chain_outputs[1]["y_23"]).all()
 
 
-@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
+@pytest.mark.parametrize("formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
     """Test that a warm start chain is built even if the process does not include any
     MDA1.
@@ -239,7 +241,7 @@ def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
     assert isinstance(dummy_bilevel_scenario.formulation.chain, MDOWarmStartedChain)
 
 
-@pytest.mark.parametrize("scenario_formulation_name", ["BiLevel"], indirect=True)
+@pytest.mark.parametrize("formulation_name", ["BiLevel"], indirect=True)
 def test_bilevel_get_variable_names_to_warm_start_without_mdas(
     dummy_bilevel_scenario, monkeypatch
 ) -> None:
@@ -259,11 +261,11 @@ def test_bilevel_get_variable_names_to_warm_start_without_mdas(
 
 
 def test_bilevel_get_variable_names_to_warm_start_from_mdas(
-    sobieski_bilevel_scenario,
+    generate_sobieski_bilevel_scenario,
 ) -> None:
     """Check that the variables from both MDAs are being considered in the warm
     start."""
-    scenario = sobieski_bilevel_scenario()
+    scenario = generate_sobieski_bilevel_scenario()
     for variable in scenario.formulation._mda1.io.output_grammar:
         assert variable in scenario.formulation._get_variable_names_to_warm_start()
     for variable in scenario.formulation._mda2.io.output_grammar:
@@ -331,7 +333,7 @@ def test_remove_couplings_from_ds(sobieski_sub_scenarios, caplog) -> None:
     ("scenario", "subscenario"),
     [
         (
-            sobieski_bilevel_bcd_scenario,
+            generate_sobieski_bilevel_bcd_scenario,
             {
                 "StructureScenario_adapter": {
                     "ssbj_local_variables": {"x_1", "x_2", "x_3"},
@@ -348,7 +350,7 @@ def test_remove_couplings_from_ds(sobieski_sub_scenarios, caplog) -> None:
             },
         ),
         (
-            sobieski_bilevel_scenario,
+            generate_sobieski_bilevel_scenario,
             {
                 "StructureScenario_adapter": {
                     "ssbj_local_variables": {"x_1"},
@@ -485,17 +487,17 @@ def test_system_variables_not_in_variables_to_warm_start(
     assert "baz" not in scenario.formulation.chain._variable_names_to_warm_start
 
 
-def test_bcd_mda(sobieski_bilevel_bcd_scenario):
+def test_bcd_mda(generate_sobieski_bilevel_bcd_scenario):
     """Test that a BCD MDA is created and included in the chain."""
-    scenario = sobieski_bilevel_bcd_scenario()
+    scenario = generate_sobieski_bilevel_bcd_scenario()
     assert scenario.formulation.bcd_mda
     assert scenario.formulation.bcd_mda == scenario.formulation.chain.disciplines[1]
 
 
 @pytest.mark.parametrize("keep_opt_history", [True, False])
-def test_keep_opt_history(sobieski_bilevel_scenario, keep_opt_history) -> None:
+def test_keep_opt_history(generate_sobieski_bilevel_scenario, keep_opt_history) -> None:
     """Test the keep_opt_history setting."""
-    scenario = sobieski_bilevel_scenario(keep_opt_history=keep_opt_history)
+    scenario = generate_sobieski_bilevel_scenario(keep_opt_history=keep_opt_history)
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
     assert len(scenario.formulation.scenario_adapters[0].databases) == (
         2 if keep_opt_history else 0
@@ -512,10 +514,10 @@ def test_keep_opt_history(sobieski_bilevel_scenario, keep_opt_history) -> None:
     ],
 )
 def test_save_opt_history(
-    tmp_wd, sobieski_bilevel_scenario, save_opt_history, naming
+    tmp_wd, generate_sobieski_bilevel_scenario, save_opt_history, naming
 ) -> None:
     """Test the save_opt_history and naming settings."""
-    scenario = sobieski_bilevel_scenario(
+    scenario = generate_sobieski_bilevel_scenario(
         save_opt_history=save_opt_history, naming=naming
     )
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
@@ -536,7 +538,8 @@ def test_save_opt_history(
 
 
 @pytest.mark.parametrize(
-    "scenario", [sobieski_bilevel_scenario, sobieski_bilevel_bcd_scenario]
+    "scenario",
+    [generate_sobieski_bilevel_scenario, generate_sobieski_bilevel_bcd_scenario],
 )
 @pytest.mark.parametrize("include_sub_formulations", [False, True])
 def test_get_top_level_disciplines(scenario, request, include_sub_formulations) -> None:
@@ -602,11 +605,23 @@ def test_bilevel_settings_error():
 @pytest.mark.parametrize(
     "kwargs", [{"set_x0_before_opt": False}, {"set_x0_before_opt": True}, {}]
 )
-def test_set_x0_before_opt(sobieski_bilevel_scenario, kwargs):
+def test_set_x0_before_opt(generate_sobieski_bilevel_scenario, kwargs):
     """Verify that set_x0_before_opt is passed to MDOScenarioAdapter"""
     set_x0_before_opt = kwargs.get("set_x0_before_opt", False)
-    scenario = sobieski_bilevel_scenario(**kwargs)
+    scenario = generate_sobieski_bilevel_scenario(**kwargs)
     scenario_adapters = scenario.formulation._scenario_adapters
     assert scenario_adapters[0]._set_x0_before_opt is set_x0_before_opt
     assert scenario_adapters[1]._set_x0_before_opt is set_x0_before_opt
     assert scenario_adapters[2]._set_x0_before_opt is set_x0_before_opt
+
+
+def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):
+    """Test the database contains the optimal values of the local design variables."""
+    scenario = generate_sobieski_bilevel_scenario()
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=1)
+    last_item = scenario.formulation.optimization_problem.database.last_item
+    assert set(last_item) == {"x_3", "x_1", "-y_4", "x_2"}
+    x_3 = last_item["x_3"]
+    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    last_item = scenario.formulation.optimization_problem.database.last_item
+    assert last_item["x_3"] != x_3

@@ -21,6 +21,10 @@ import re
 import pytest
 from numpy import array
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
@@ -87,3 +91,31 @@ def test_get_top_optimization_result(scenario) -> None:
         scenario_result.get_top_optimization_result()
         == scenario_result.optimization_result
     )
+
+
+def test_no_databases():
+    """Test that it works properly when keep_opt_history is False."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+
+    sub_scenario = DOEScenario(
+        [AnalyticDiscipline({"z": "x+y"})],
+        "z",
+        design_space.filter(["y"], copy=True),
+        formulation_name="DisciplinaryOpt",
+        name="FooScenario",
+    )
+    sub_scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
+
+    scenario = DOEScenario(
+        [sub_scenario],
+        "z",
+        design_space.filter(["x"]),
+        formulation_settings_model=BiLevel_Settings(keep_opt_history=False),
+    )
+    scenario.execute(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
+
+    result = BiLevelScenarioResult(scenario)
+    assert len(result.optimization_problems_to_results) == 1
+    assert result.get_sub_optimization_result(0) is None

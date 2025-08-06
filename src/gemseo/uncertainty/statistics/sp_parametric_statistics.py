@@ -49,7 +49,7 @@ class SPParametricStatistics(
         ... )
         >>>
         >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions={"y1": "x1+2*x2", "y2": "x1-3*x2"}
+        ...     "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-3*x2"}
         ... )
         >>>
         >>> parameter_space = create_parameter_space()
