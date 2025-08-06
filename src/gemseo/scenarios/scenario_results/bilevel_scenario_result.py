@@ -43,22 +43,27 @@ class BiLevelScenarioResult(ScenarioResult):
     def __init__(self, scenario: BaseScenario | str | Path) -> None:  # noqa: D107
         super().__init__(scenario)
         formulation = scenario.formulation
+        scenario_adapters = formulation.scenario_adapters
         main_problem = formulation.optimization_problem
-        x_shared_opt = main_problem.solution.x_opt
-        i_opt = main_problem.database.get_iteration(x_shared_opt) - 1
-        scenario_adapters = formulation._scenario_adapters
+        y_opt = main_problem.database[main_problem.solution.x_opt]
+        optimal_local_design_values = {
+            variable_name: y_opt[variable_name]
+            for scenario_adapter in scenario_adapters
+            for variable_name in scenario_adapter.scenario.design_space.variable_names
+        }
+        self.design_variable_names_to_values.update(optimal_local_design_values)
         self.__n_sub_problems = len(scenario_adapters)
+        if not scenario_adapters[0].databases:
+            return
+
+        i_opt = main_problem.database.get_iteration(main_problem.solution.x_opt) - 1
         for index, scenario_adapter in enumerate(scenario_adapters):
             sub_problem = scenario_adapter.scenario.formulation.optimization_problem
             database = sub_problem.database
             sub_problem.database = scenario_adapter.databases[i_opt]
             result = OptimizationResult.from_optimization_problem(sub_problem)
-            x_local_opt = result.x_opt
             label = self.__SUB_LABEL_FORMATTER.format(index)
             self.optimization_problems_to_results[label] = result
-            self.design_variable_names_to_values.update(
-                sub_problem.design_space.convert_array_to_dict(x_local_opt)
-            )
             sub_problem.database = database
 
     def get_top_optimization_result(self) -> OptimizationResult:
@@ -73,7 +78,7 @@ class BiLevelScenarioResult(ScenarioResult):
                 between 0 and N-1 where N is the number of sub-optimization problems.
 
         Returns:
-            The optimization result of a sub-optimization problem.
+            The optimization result of a sub-optimization problem, if any.
 
         Raises:
             ValueError: If the index is greater than N-1.
@@ -85,6 +90,6 @@ class BiLevelScenarioResult(ScenarioResult):
                 f"must be between 0 and {max_index}."
             )
             raise ValueError(msg)
-        return self.optimization_problems_to_results[
+        return self.optimization_problems_to_results.get(
             self.__SUB_LABEL_FORMATTER.format(index)
-        ]
+        )

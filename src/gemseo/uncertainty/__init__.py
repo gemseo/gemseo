@@ -193,10 +193,7 @@ def create_statistics(
         >>> from gemseo.uncertainty import create_statistics
         >>>
         >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", expressions=expressions
-        ... )
-        >>>
+        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
         >>> parameter_space = create_parameter_space()
         >>> parameter_space.add_random_variable(
         ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1

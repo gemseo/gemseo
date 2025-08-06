@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo.algos.database import DatabaseKeyType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -161,6 +162,9 @@ class BiLevel(BaseMDOFormulation):
 
         # Builds the objective function on top of the chain
         self._build_objective_from_disc(self._objective_name)
+        self.optimization_problem.database.add_new_iter_listener(
+            self._store_optimal_local_design_values
+        )
 
     @property
     def mda1(self) -> BaseMDA | None:
@@ -625,3 +629,20 @@ class BiLevel(BaseMDOFormulation):
             if disc.io.output_grammar.has_names(output_names):
                 return True
         return False
+
+    def _store_optimal_local_design_values(self, x_vect: DatabaseKeyType) -> None:
+        """Store the optimal values of the local design variables in the database.
+
+        Args:
+            x_vect: The input value.
+        """
+        self.optimization_problem.database.store(
+            x_vect,
+            {
+                k: v
+                for adapter in self._scenario_adapters
+                for k, v in adapter.scenario.design_space.get_current_value(
+                    as_dict=True
+                ).items()
+            },
+        )

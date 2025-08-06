@@ -452,9 +452,9 @@ class BaseScenario(BaseMonitoredProcess):
         """
         self.formulation = self._form_factory.create(
             formulation_name,
-            disciplines=disciplines,
-            objective_name=objective_name,
-            design_space=design_space,
+            disciplines,
+            objective_name,
+            design_space,
             settings_model=formulation_settings_model,
             **formulation_settings,
         )
