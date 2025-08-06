@@ -1059,3 +1059,26 @@ def test_duplicate_constraint_name(mdf_scenario: MDOScenario, name: str):
         f" Duplicated function names produce unpredictable behavior.",
     ):
         mdf_scenario.add_constraint("y_4", constraint_name=name)
+
+
+def test_derivative_bug_1602():
+    """Test that MDOScenario can compute the derivatives of a disciplinary output
+    when no design variable is an input of this discipline."""
+    disciplines = [
+        AnalyticDiscipline({"a": "x1+b+c"}, name="A"),
+        AnalyticDiscipline({"b": "x2**2"}, name="B"),
+        AnalyticDiscipline({"c": "x3**3"}, name="C"),
+    ]
+
+    design_space = DesignSpace()
+    design_space.add_variable("x1")
+    design_space.add_variable("x2")
+
+    scenario = MDOScenario(disciplines, "a", design_space, formulation_name="MDF")
+    scenario.add_observable("c")
+    scenario.execute(algo_name="CustomDOE", samples=array([[1.0, 1.0]]), eval_jac=True)
+
+    assert_equal(
+        scenario.formulation.optimization_problem.database.last_item,
+        {"a": 2.0, "c": 0.0, "@a": array([1.0, 2.0]), "@c": array([0.0, 0.0])},
+    )

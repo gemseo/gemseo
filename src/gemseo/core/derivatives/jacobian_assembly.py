@@ -438,7 +438,11 @@ class JacobianAssembly:
         # Iterate over outputs
         for row_index, function in enumerate(functions):
             column = 0
-            function_jacobian = self.disciplines[function].jac[function]
+            discipline = self.disciplines[function]
+            if not discipline.jac:
+                continue
+
+            function_jacobian = discipline.jac[function]
             # Iterate over inputs
             for column_index, variable in enumerate(variables):
                 jacobian = function_jacobian.get(variable, None)
