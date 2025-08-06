@@ -43,6 +43,7 @@ from numpy.linalg import norm
 from gemseo import configure
 from gemseo import create_discipline
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.caches.memory_full_cache import MemoryFullCache
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
@@ -1416,3 +1417,18 @@ def test_linearize_status_and_statistics(enable_statistics, enable_status):
     else:
         sellar._call_monitored.assert_not_called()
         sellar._Discipline__compute_jacobian.assert_called()
+
+
+@pytest.mark.parametrize(
+    ("cache_type", "cache_class"),
+    [
+        (BaseDiscipline.CacheType.HDF5, HDF5Cache),
+        (BaseDiscipline.CacheType.SIMPLE, SimpleCache),
+        (BaseDiscipline.CacheType.MEMORY_FULL, MemoryFullCache),
+    ],
+)
+def test_default_cache(cache_type, cache_class):
+    """Test the instantiation of a discipline with different default caches."""
+    DummyDiscipline.default_cache_type = cache_type
+    discipline = DummyDiscipline()
+    assert isinstance(discipline.cache, cache_class)
