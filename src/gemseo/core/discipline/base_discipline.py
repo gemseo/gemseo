@@ -153,7 +153,6 @@ class BaseDiscipline(BaseMonitoredProcess):
         super().__init__(name)
         self._has_jacobian = False
         self.cache = None
-        self.set_cache(self.default_cache_type)
         self.io = IO(
             self.__class__,
             self.name,
@@ -161,6 +160,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             self.auto_detect_grammar_files,
             self.GRAMMAR_DIRECTORY,
         )
+        self.set_cache(self.default_cache_type)
 
     def _get_string_representation(self) -> MultiLineString:
         mls = MultiLineString()
