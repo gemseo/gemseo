@@ -1,3 +1,0 @@
-The description of the bi-level BCD formulation has been added to the documentation,
-in the user guide section.
-The description of the standard IRT bi-level, in the user guide, has been updated.

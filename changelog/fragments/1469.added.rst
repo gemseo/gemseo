@@ -1,1 +1,0 @@
-The argument ``timeout_with_process`` can be used to choose how the ``RetryDiscipline`` handles ``timeout``.

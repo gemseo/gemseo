@@ -1,2 +1,0 @@
-The method ``Database.get_history_array`` now raises an exception when the number of names
-passed with the argument ``input_names`` does not match the dimension of the design vector.

@@ -1,1 +1,0 @@
-``BaseFormulation.get_top_level_disciplines`` has a new argument ``include_sub_formulations`` (default: ``False``) to include the top level disciplines of the sub-formulations.

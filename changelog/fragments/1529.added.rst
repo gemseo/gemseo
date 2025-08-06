@@ -1,1 +1,0 @@
-Added a ``DesignSpaceFactory`` to create ``DesignSpace`` objects.

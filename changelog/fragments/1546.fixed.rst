@@ -1,2 +1,0 @@
-Fixed an issue with the ``Database.get_history_array`` method that caused it to return incomplete
-design vectors when the argument ``with_x_vect`` was set to ``True``.

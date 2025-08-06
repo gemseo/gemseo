@@ -1,2 +1,0 @@
-It is now possible to provide input/output data converters to the ``HDF5Cache`` at instantiation. These converters are
-optional and only necessary when input/output data cannot be casted directly to a NumPy array.

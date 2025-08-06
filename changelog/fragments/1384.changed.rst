@@ -1,5 +1,0 @@
-In order to improve the performance of disciplines, the execution status and statistics of
-disciplines, as well as the statistics of problem functions are now disabled by default.
-Use :func:`.configure` to enable them.
-Various internal changes have also been made in order to improve performance.
-The attribute ``MDOFunction.last_eval`` was removed.

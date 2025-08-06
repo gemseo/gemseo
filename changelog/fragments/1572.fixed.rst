@@ -1,1 +1,0 @@
-``JobSchedulerDisciplineWrapper`` did not support namespaces.

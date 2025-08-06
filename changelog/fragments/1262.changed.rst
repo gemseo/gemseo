@@ -1,1 +1,0 @@
-The subpackage ``gemseo.utils.xdsm`` brings together the modules linked to the XDSM concept.

@@ -1,1 +1,0 @@
-Fixed an issue that prevented the export a ``Database`` with ``str`` or ``array([str])`` variables to an HDF5 file.

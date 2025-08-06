@@ -1,1 +1,0 @@
-Documentation (optimization algorithms): the import paths for Pydantic settings models have been corrected.

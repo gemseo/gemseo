@@ -1,1 +1,0 @@
-``BaseScenario``, ``BaseFormulation`` and ``OptimizationProblem`` have an attribute ``ConstraintType`` enumerating the constraint types, namely ``"eq"`` and ``"ineq"``.
