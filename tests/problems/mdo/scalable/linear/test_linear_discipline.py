@@ -59,3 +59,24 @@ def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat) -> None:
                 assert issparse(jac[output_name][input_name])
 
             assert jac[output_name][input_name].shape == (20, 10)
+
+
+@pytest.mark.parametrize("linearize_first", [True, False])
+def test_compute_jac_at_run(linearize_first: bool):
+    """Tests the computation of the Jacobian at execute()"""
+    discipline = LinearDiscipline(
+        name="A",
+        input_names=["i"],
+        output_names=["o"],
+        compute_jac_at_run=True,
+    )
+    discipline.add_differentiated_outputs("o")
+    discipline.add_differentiated_inputs("i")
+
+    if linearize_first:
+        discipline.linearize(execute=False)
+    else:
+        discipline.execute()
+
+    assert "o" in discipline.jac
+    assert "i" in discipline.jac["o"]

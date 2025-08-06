@@ -16,15 +16,18 @@
 
 from __future__ import annotations
 
-import concurrent.futures as cfutures
 import math
-import os
-import signal
 import time
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
+from ctypes import c_long
+from ctypes import py_object
+from ctypes import pythonapi
 from logging import getLogger
 from typing import TYPE_CHECKING
-from typing import ClassVar
+
+import psutil
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
@@ -40,12 +43,17 @@ LOGGER = getLogger(__name__)
 class RetryDiscipline(Discipline):
     """A discipline to be executed with retry and timeout options.
 
-    This :class:`.Discipline` wraps another discipline.
-
-    It can be executed multiple times (up to a specified number of trials)
-    if the previous attempts fail to produce any result.
+    This :class:`.Discipline` wraps another discipline so it can be executed multiple
+    times (up to a specified number of trials) if the previous attempts fail to
+    produce any result.
 
     A timeout in seconds can be specified to prevent executions from becoming stuck.
+    The timeout can be handled either via a thread or a subprocess. By default, it is
+    handled by a thread, this can be changed by setting the ``timeout_with_process``
+    argument to ``True``.
+    Use a thread when the discipline does not create other processes, otherwise those
+    processes will keep running after the timeout duration.
+    Beware that using a process is slower, especially under Windows.
 
     Users can also provide a tuple of :class:`.Exception` that, if one of them is
     raised, it does not retry the execution.
@@ -60,12 +68,6 @@ class RetryDiscipline(Discipline):
 
     __n_executions: int
     """The number of performed executions of the discipline."""
-
-    __time_out_exceptions: ClassVar[tuple[type[Exception], ...]] = (
-        TimeoutError,
-        cfutures.TimeoutError,
-    )
-    """The possible timeout exceptions that can be raised during execution."""
 
     n_trials: int
     """The number of trials to execute the discipline."""
@@ -87,6 +89,7 @@ class RetryDiscipline(Discipline):
         wait_time: float = 0.0,
         timeout: float = math.inf,
         fatal_exceptions: Iterable[type[Exception]] = (),
+        timeout_with_process: bool = False,
     ) -> None:
         """
         Args:
@@ -94,27 +97,24 @@ class RetryDiscipline(Discipline):
             n_trials: The number of trials of the discipline.
             wait_time: The time to wait between 2 trials (in seconds).
             timeout: The maximum duration, in seconds, that the discipline is
-                           allowed to run. If this time limit is exceeded, the
-                           execution is terminated. If ``math.inf``, the
-                           discipline is executed without timeout limit.
+                allowed to run. If this time limit is exceeded, the
+                execution is terminated. If ``math.inf``, the
+                discipline is executed without timeout limit.
             fatal_exceptions: The exceptions for which the code raises an
-                            exception and exit immediately without retrying a run.
-
-        Raises:
-            TimeoutError: If the ``timeout`` limit is reached.
-            Exception: Other exceptions if an issue is encountered during the
-                          execution of ``discipline``.
-
+                exception and exit immediately without retrying a run.
+            timeout_with_process: Whether to use a process or a thread when using the
+                timeout feature.
         """  # noqa:D205 D212 D415
         super().__init__(discipline.name)
         self._discipline = discipline
+        self.__n_executions = 0
         self.io.input_grammar = discipline.io.input_grammar
         self.io.output_grammar = discipline.io.output_grammar
         self.n_trials = n_trials
         self.wait_time = wait_time
         self.timeout = timeout
         self.fatal_exceptions = fatal_exceptions
-        self.__n_executions = 0
+        self.timeout_with_process = timeout_with_process
 
     @property
     def n_executions(self) -> int:
@@ -136,9 +136,9 @@ class RetryDiscipline(Discipline):
             try:
                 if math.isinf(self.timeout):
                     return self._discipline.execute(input_data)
-                return self._execute_discipline(input_data)
+                return self._run_discipline_with_timeout(input_data)
 
-            except self.__time_out_exceptions:
+            except FutureTimeoutError:
                 msg = (
                     "Timeout reached during the execution of "
                     f"discipline {self._discipline.name}"
@@ -179,22 +179,23 @@ class RetryDiscipline(Discipline):
         preparation for the next trial.
         """
 
-    def _execute_discipline(self, input_data: StrKeyMapping) -> StrKeyMapping:
-        """Execute the discipline with a timeout.
+    def _run_discipline_with_timeout(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        """Run the discipline with a timeout.
 
         Args:
             input_data: The input data passed to the discipline.
 
         Returns:
             The output returned by the discipline.
+
+        Raises:
+            FutureTimeoutError: If the execution runs longer than the specified timeout.
         """
-        LOGGER.debug(
-            "Executing discipline %s with a timeout of %s s",
-            self._discipline.name,
-            self.timeout,
+        executor_class = (
+            ProcessPoolExecutor if self.timeout_with_process else ThreadPoolExecutor
         )
 
-        with ProcessPoolExecutor() as executor:
+        with executor_class(max_workers=1) as executor:
             run_discipline = executor.submit(
                 self._discipline.execute,
                 input_data,
@@ -202,22 +203,27 @@ class RetryDiscipline(Discipline):
 
             try:
                 return run_discipline.result(timeout=self.timeout)
-
-            except self.__time_out_exceptions:
-                # Killing the children is mandatory to abort the discipline execution
-                # immediately: shutdown + kill children.
-                pid_child = [p.pid for p in executor._processes.values()]
-                executor.shutdown(wait=False, cancel_futures=True)
-
-                LOGGER.debug("killing subprocesses: %s", pid_child)
-                for pid in pid_child:
-                    os.kill(pid, signal.SIGTERM)
-
-                LOGGER.exception(
-                    "Process stopped as it exceeds timeout (%s s)", self.timeout
-                )
-                raise
-
-            except Exception as error:  # noqa: BLE001
-                LOGGER.debug(type(error))
+            except FutureTimeoutError:
+                if self.timeout_with_process:
+                    # Terminate the unique process and its subprocesses.
+                    process_id = next(iter(executor._processes.keys()))
+                    process = psutil.Process(process_id)
+                    for child_process in process.children():
+                        child_process.terminate()
+                    process.terminate()
+                else:
+                    # The unique thread is still alive, so we need to kill it.
+                    thread = next(iter(executor._threads))
+                    # The following is inspired from https://tomerfiliba.com/recipes/Thread2
+                    thread_id = c_long(thread.ident)
+                    res = pythonapi.PyThreadState_SetAsyncExc(
+                        thread_id, py_object(SystemExit)
+                    )
+                    if res == 0:  # pragma: no cover
+                        LOGGER.debug("Invalid thread id %s", thread_id)
+                    if res != 1:  # pragma: no cover
+                        # If it returns a number greater than one, you're in trouble,
+                        # and you should call it again with exc=NULL
+                        # to revert the effect.
+                        pythonapi.PyThreadState_SetAsyncExc(thread_id, None)
                 raise

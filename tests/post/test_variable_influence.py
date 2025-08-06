@@ -126,6 +126,6 @@ def test_common_scenario(
     use_standardized_objective, baseline_images, common_problem
 ) -> None:
     """Check VariableInfluence with objective, standardized or not."""
-    opt = VariableInfluence(common_problem)
     common_problem.use_standardized_objective = use_standardized_objective
+    opt = VariableInfluence(common_problem)
     opt.execute(save=False)

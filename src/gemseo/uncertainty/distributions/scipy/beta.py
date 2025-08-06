@@ -21,18 +21,28 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _ALPHA
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _BETA
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _MAXIMUM
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _MINIMUM
+from gemseo.uncertainty.distributions.scipy.beta_settings import (
+    SPBetaDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 
 class SPBetaDistribution(SPDistribution):
     """The SciPy-based Beta distribution."""
 
+    Settings = SPBetaDistribution_Settings
+
     def __init__(
         self,
-        alpha: float = 2.0,
-        beta: float = 2.0,
-        minimum: float = 0.0,
-        maximum: float = 1.0,
+        alpha: float = _ALPHA,
+        beta: float = _BETA,
+        minimum: float = _MINIMUM,
+        maximum: float = _MAXIMUM,
+        settings: SPBetaDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -41,18 +51,25 @@ class SPBetaDistribution(SPDistribution):
             minimum: The minimum of the beta random variable.
             maximum: The maximum of the beta random variable.
         """  # noqa: D205,D212,D415
+        if settings is None and settings is None:
+            settings = SPBetaDistribution_Settings(
+                alpha=alpha,
+                beta=beta,
+                minimum=minimum,
+                maximum=maximum,
+            )
         super().__init__(
             interfaced_distribution="beta",
             parameters={
-                "a": alpha,
-                "b": beta,
-                "loc": minimum,
-                "scale": maximum - minimum,
+                "a": settings.alpha,
+                "b": settings.beta,
+                "loc": settings.minimum,
+                "scale": settings.maximum - settings.minimum,
             },
             standard_parameters={
-                self._LOWER: minimum,
-                self._UPPER: maximum,
-                self._ALPHA: alpha,
-                self._BETA: beta,
+                self._LOWER: settings.minimum,
+                self._UPPER: settings.maximum,
+                self._ALPHA: settings.alpha,
+                self._BETA: settings.beta,
             },
         )

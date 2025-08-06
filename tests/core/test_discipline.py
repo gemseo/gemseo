@@ -29,6 +29,8 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING
+from typing import ClassVar
+from unittest.mock import MagicMock
 
 import pytest
 from numpy import array
@@ -38,11 +40,14 @@ from numpy import ndarray
 from numpy import ones
 from numpy.linalg import norm
 
+from gemseo import configure
 from gemseo import create_discipline
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.caches.memory_full_cache import MemoryFullCache
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.data_processor import ComplexDataProcessor
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
@@ -51,6 +56,7 @@ from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.variables import X_1
 from gemseo.problems.mdo.sellar.variables import X_SHARED
@@ -165,11 +171,23 @@ def test_instantiate_grammars() -> None:
     assert isinstance(chain.disciplines[0].input_grammar, JSONGrammar)
 
 
-def test_execute_status_error(sobieski_chain) -> None:
+@pytest.fixture(params=[True, False])
+def enable_status(request) -> bool:
+    """Enable or not the execution status and return it."""
+    enable_status: bool = request.param
+    configure(enable_discipline_status=enable_status)
+    yield enable_status
+    configure()
+
+
+def test_execute_status_error(sobieski_chain, enable_status) -> None:
     """Test the execution with a failed status."""
     chain, indata = sobieski_chain
     chain.execution_status.value = ExecutionStatus.Status.FAILED
-    with pytest.raises(ValueError):
+    if enable_status:
+        with pytest.raises(ValueError):
+            chain.execute(indata)
+    else:
         chain.execute(indata)
 
 
@@ -225,10 +243,13 @@ def test_get_input_data(sobieski_chain) -> None:
     assert sorted(indata.keys()) == sorted(indata_ref.keys())
 
 
-def test_reset_statuses_for_run_error(sobieski_chain) -> None:
+def test_reset_statuses_for_run_error(sobieski_chain, enable_status) -> None:
     """Test the reset of the discipline status."""
     chain, _ = sobieski_chain
-    chain.execution_status.value = ExecutionStatus.Status.FAILED
+    if enable_status:
+        chain.execution_status.value = ExecutionStatus.Status.FAILED
+    else:
+        chain.execution_status.value = ExecutionStatus.Status.DONE
 
 
 def test_check_jac_fdapprox() -> None:
@@ -350,7 +371,7 @@ def test_serialize_deserialize(tmp_wd) -> None:
     assert ok
 
 
-def test_serialize_run_deserialize(tmp_wd) -> None:
+def test_serialize_run_deserialize(tmp_wd, enable_discipline_status) -> None:
     """Test serialization, run and deserialization."""
     aero = SobieskiAerodynamics()
     out_file = "sellar1.o"
@@ -544,11 +565,13 @@ def test_check_jacobian_2() -> None:
         disc.linearize({"x": x}, compute_all_jacobians=True)
 
 
-def test_check_jacobian_input_data() -> None:
+def test_check_jacobian_input_data(sellar_with_2d_array) -> None:
     sellar_1 = create_discipline("Sellar1")
+    value = array([[3.0, 3.0]]) if WITH_2D_ARRAY else array([3.0, 3.0])
+
     input_data = {
         X_1: array([3.0]),
-        X_SHARED: array([3.0, 3.0]),
+        X_SHARED: value,
         Y_2: array([3.0]),
     }
     sellar_1.check_jacobian(
@@ -575,7 +598,7 @@ def test_check_jacobian_parallel_cplx() -> None:
     )
 
 
-def test_execute_rerun_errors() -> None:
+def test_execute_rerun_errors(enable_discipline_status) -> None:
     """Test the execution and errors during re-run of Discipline."""
 
     class MyDisc(Discipline):
@@ -594,7 +617,7 @@ def test_execute_rerun_errors() -> None:
     d.execute({"a": [1]})
 
 
-def test_cache() -> None:
+def test_cache(enable_discipline_statistics) -> None:
     """Test the Discipline cache."""
     sm = SobieskiMission(enable_delay=0.1)
     sm.cache.tolerance = 1e-6
@@ -612,7 +635,7 @@ def test_cache() -> None:
     assert sm.execution_statistics.duration == 1.0
 
 
-def test_cache_h5(tmp_wd) -> None:
+def test_cache_h5(tmp_wd, enable_discipline_statistics) -> None:
     """Test the HDF5 cache."""
     sm = SobieskiMission(enable_delay=0.1)
     hdf_file = sm.name + ".hdf5"
@@ -702,7 +725,7 @@ def test_replace_h5_cache(tmp_wd) -> None:
     assert sm.cache.hdf_file.hdf_file_path == hdf_file_2
 
 
-def test_cache_run_and_linearize() -> None:
+def test_cache_run_and_linearize(enable_discipline_statistics) -> None:
     """Check that the cache is filled with the Jacobian during linearization."""
     sm = SobieskiMission()
     run_orig = sm._run
@@ -781,7 +804,7 @@ def test_jac_cache_trigger_shapecheck() -> None:
     aero.linearize(inpts, execute=False)
 
 
-def test_has_jacobian() -> None:
+def test_has_jacobian(enable_discipline_statistics) -> None:
     """Test that Discipline can be linearized."""
     # Test at the jacobian is not computed if _has_jacobian is
     # set to true by the discipline
@@ -863,7 +886,7 @@ def test_repr_str() -> None:
     assert repr(disc) == "myfunc\n   Inputs: x, y\n   Outputs: z"
 
 
-def test_activate_counters() -> None:
+def test_activate_counters(enable_discipline_statistics) -> None:
     """Check that the discipline counters are active by default."""
 
     discipline = DummyDiscipline()
@@ -977,7 +1000,7 @@ def test_activate_checks() -> None:
     SobieskiMission.validate_output_data = True
 
 
-def test_no_cache() -> None:
+def test_no_cache(enable_discipline_statistics) -> None:
     disc = SobieskiMission()
     disc.execute()
     disc.execute()
@@ -1084,7 +1107,7 @@ def observer() -> Observer:
 
 
 @pytest.mark.xfail
-def test_statuses(observer) -> None:
+def test_statuses(observer, enable_discipline_status) -> None:
     """Verify the successive status."""
     disc = Sellar1()
     disc.execution_status.add_observer(observer)
@@ -1124,7 +1147,7 @@ def test_statuses(observer) -> None:
     ]
 
 
-def test_statuses_linearize(observer) -> None:
+def test_statuses_linearize(observer, enable_discipline_status) -> None:
     """Verify the successive status for linearize alone."""
     disc = Sellar1()
     disc.execution_status.add_observer(observer)
@@ -1171,7 +1194,7 @@ def test_self_coupled(self_coupled_disc, name, group, value) -> None:
     assert len(d.get_group_names(name)) > 1
 
 
-def test_virtual_exe() -> None:
+def test_virtual_exe(enable_discipline_status) -> None:
     """Tests the discipline virtual execution."""
     disc_1 = DummyDiscipline("d1")
     disc_1.io.input_grammar.update_from_names(["x"])
@@ -1264,3 +1287,148 @@ def test_create_cache_policy_to_none() -> None:
     assert isinstance(discipline.cache, SimpleCache)
     discipline.set_cache(discipline.CacheType.NONE)
     assert discipline.cache is None
+
+
+class StrNumDiscipline(Discipline):
+    """A discipline that has both string and numeric i/o.
+
+    Depending on the initialization parameter, it can either use ``str`` or
+    ``array([str])`` for the string variables.
+
+    """
+
+    with_str_array: ClassVar[bool]
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.input_grammar.update_from_data({
+            "x": ones(1),
+            "input_string": array(["some_string"])
+            if self.with_str_array
+            else "some_string",
+        })
+        self.output_grammar.update_from_data({
+            "y": ones(1),
+            "output_string": array(["another_string"])
+            if self.with_str_array
+            else "another_string",
+        })
+
+        self.default_input_data = {
+            "x": ones(1),
+            "input_string": array(["some_string"])
+            if self.with_str_array
+            else "some_string",
+        }
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = input_data["x"]
+        output_data = {}
+        output_data["y"] = x + 1
+        output_data["output_string"] = (
+            array([f"modified_string_{x}"])
+            if self.with_str_array
+            else f"modified_string_{x}"
+        )
+        return output_data
+
+
+@pytest.mark.parametrize(
+    "with_str_array",
+    [True, False],
+)
+@pytest.mark.parametrize("tolerance", [0, 0.01])
+@pytest.mark.parametrize(
+    "cache_type",
+    [
+        BaseDiscipline.CacheType.HDF5,
+        BaseDiscipline.CacheType.SIMPLE,
+        BaseDiscipline.CacheType.MEMORY_FULL,
+    ],
+)
+def test_caches_str_num(
+    tmp_wd, with_str_array, tolerance, cache_type, enable_discipline_statistics
+):
+    """Test the discipline caches with both str and numeric variables."""
+    StrNumDiscipline.with_str_array = with_str_array
+    discipline = StrNumDiscipline()
+    discipline.set_cache(cache_type=cache_type, tolerance=tolerance)
+    # Default inputs
+    discipline.execute()
+    discipline.execute()
+    # Change the numerical input
+    input_data = {
+        "x": 5 * ones(1),
+        "input_string": array(["some_string"]) if with_str_array else "some_string",
+    }
+    discipline.execute(input_data)
+    discipline.execute(input_data)
+    # Change the string input
+    input_data = {
+        "x": ones(1),
+        "input_string": array(["some_string_2"]) if with_str_array else "some_string_2",
+    }
+    discipline.execute(input_data)
+    discipline.execute(input_data)
+    assert discipline.execution_statistics.n_executions == 3
+
+
+@pytest.mark.parametrize("enable_statistics", [True, False])
+@pytest.mark.parametrize("enable_status", [True, False])
+def test_execute_status_and_statistics(enable_statistics, enable_status):
+    """Verify execute minitoring enabling."""
+    ExecutionStatistics.is_enabled = enable_statistics
+    ExecutionStatus.is_enabled = enable_status
+
+    sellar = Sellar1()
+    sellar._execute = MagicMock()
+    sellar._execute_monitored = MagicMock()
+    # When mocking, the output data are not filled, then do not validate it.
+    sellar.validate_output_data = False
+
+    sellar.execute()
+
+    if enable_status or enable_statistics:
+        sellar._execute_monitored.assert_called()
+        sellar._execute.assert_not_called()
+    else:
+        sellar._execute.assert_called()
+        sellar._execute_monitored.assert_not_called()
+
+
+@pytest.mark.parametrize("enable_statistics", [True, False])
+@pytest.mark.parametrize("enable_status", [True, False])
+def test_linearize_status_and_statistics(enable_statistics, enable_status):
+    """Verify execute minitoring enabling."""
+    ExecutionStatistics.is_enabled = enable_statistics
+    ExecutionStatus.is_enabled = enable_status
+
+    sellar = Sellar1()
+    sellar.cache = None
+    sellar._Discipline__compute_jacobian = MagicMock()
+    sellar._call_monitored = MagicMock()
+
+    sellar.linearize(execute=False)
+
+    if enable_status or enable_statistics:
+        sellar._call_monitored.assert_called()
+        sellar._Discipline__compute_jacobian.assert_not_called()
+    else:
+        sellar._call_monitored.assert_not_called()
+        sellar._Discipline__compute_jacobian.assert_called()
+
+
+@pytest.mark.parametrize(
+    ("cache_type", "cache_class"),
+    [
+        (BaseDiscipline.CacheType.HDF5, HDF5Cache),
+        (BaseDiscipline.CacheType.SIMPLE, SimpleCache),
+        (BaseDiscipline.CacheType.MEMORY_FULL, MemoryFullCache),
+    ],
+)
+def test_default_cache(cache_type, cache_class):
+    """Test the instantiation of a discipline with different default caches."""
+    DummyDiscipline.default_cache_type = cache_type
+    discipline = DummyDiscipline()
+    assert isinstance(discipline.cache, cache_class)

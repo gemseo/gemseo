@@ -23,10 +23,12 @@ The optimisation dataset
 ========================
 
 The :class:`.OptimizationDataset` proposes several particular group names,
-namely :attr:`~.IODataset.DESIGN_GROUP`,
-:attr:`~.IODataset.OBJECTIVE_GROUP`,
-:attr:`~.IODataset.OBSERVABLE_GROUP`,
-and :attr:`~.IODataset.CONSTRAINT_GROUP`.
+namely :attr:`~.OptimizationDataset.DESIGN_GROUP`,
+:attr:`~.OptimizationDataset.OBJECTIVE_GROUP`,
+:attr:`~.OptimizationDataset.OBSERVABLE_GROUP`,
+:attr:`~.OptimizationDataset.CONSTRAINT_GROUP`,
+:attr:`~.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP`,
+and :attr:`~.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP`.
 This particular :class:`.Dataset` is useful
 to post-process an optimization history.
 """

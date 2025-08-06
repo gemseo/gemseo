@@ -55,22 +55,29 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
 
     Settings: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+
     def _plot(self, settings: QuadApprox_Settings) -> None:
         function = settings.function
         func_index = settings.func_index
 
-        problem = self.optimization_problem
-        if function == self._obj_name:
+        optimization_metadata = self._optimization_metadata
+        if function == optimization_metadata.objective_name:
             b_mat, grad_opt = self.__build_approx(
-                self._standardized_obj_name, func_index
+                optimization_metadata.standardized_objective_name, func_index
             )
-            if not (problem.minimize_objective or problem.use_standardized_objective):
+            if not (
+                optimization_metadata.minimize_objective
+                or optimization_metadata.use_standardized_objective
+            ):
                 grad_opt *= -1
                 b_mat *= -1
-                function = self._standardized_obj_name
+                function = optimization_metadata.standardized_objective_name
         else:
-            if function in problem.constraints.original_to_current_names:
-                function = problem.constraints.original_to_current_names[function][0]
+            if function in optimization_metadata.output_names_to_constraint_names:
+                function = optimization_metadata.output_names_to_constraint_names[
+                    function
+                ][0]
 
             b_mat, grad_opt = self.__build_approx(function, func_index)
 
@@ -100,9 +107,9 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
              The approximation.
         """
         # Avoid using alpha scaling for hessian otherwise diagonal is messy
-        b_mat, _, _, grad_opt = SR1Approx(self.database).build_approximation(
+        b_mat, _, _, grad_opt = SR1Approx(self._dataset).build_approximation(
             function,
-            at_most_niter=int(1.5 * self.optimization_problem.design_space.dimension),
+            at_most_niter=int(1.5 * self._dataset.misc["input_space"].dimension),
             return_x_grad=True,
             func_index=func_index,
         )
@@ -135,7 +142,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
             interpolation="nearest",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold),
         )
-        ticks = arange(self.optimization_problem.design_space.dimension)
+        ticks = arange(self._dataset.misc["input_space"].dimension)
         design_variable_names = self._get_design_variable_names(simplify=True)
         ax.set_xticks(ticks)
         ax.set_xticklabels(design_variable_names, rotation=45)
@@ -191,8 +198,9 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
         nrows = ceil(float(ndv) / ncols)
 
         xn_vars = np.arange(-1.0, 1.0, 0.01)
-        lower_bounds = self.optimization_problem.design_space.get_lower_bounds()
-        upper_bounds = self.optimization_problem.design_space.get_upper_bounds()
+        input_space = self._dataset.misc["input_space"]
+        lower_bounds = input_space.get_lower_bounds()
+        upper_bounds = input_space.get_upper_bounds()
         fig = plt.figure(figsize=fig_size)
 
         for i, design_variable_name in enumerate(self._get_design_variable_names()):

@@ -19,7 +19,9 @@
 from __future__ import annotations
 
 import unittest
+from typing import TYPE_CHECKING
 
+import pytest
 from numpy import array
 from numpy import complex128
 from numpy import concatenate
@@ -27,6 +29,7 @@ from numpy import float64
 from numpy import ones
 from numpy import zeros
 from numpy.linalg import norm
+from numpy.testing import assert_almost_equal
 
 from gemseo.problems.mdo.propane.propane import PropaneComb1
 from gemseo.problems.mdo.propane.propane import PropaneComb2
@@ -34,6 +37,20 @@ from gemseo.problems.mdo.propane.propane import PropaneComb3
 from gemseo.problems.mdo.propane.propane import PropaneReaction
 from gemseo.problems.mdo.propane.propane import get_design_space
 from gemseo.scenarios.mdo_scenario import MDOScenario
+
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
+
+
+@pytest.fixture(scope="module")
+def input_data() -> dict[str, RealArray]:
+    """"""
+    return {
+        "y_1": zeros(2, dtype=complex128),
+        "y_2": zeros(2, dtype=complex128),
+        "y_3": zeros(3, dtype=complex128),
+        "x_shared": ones(4, dtype=float64),
+    }
 
 
 class TestPropaneScenario(unittest.TestCase):
@@ -94,8 +111,12 @@ class TestPropaneScenario(unittest.TestCase):
         scenario.set_differentiation_method(lin_method)
         # add constraints
 
-        scenario.add_constraint(["f_2", "f_6"], constraint_type="ineq")
-        scenario.add_constraint(["f_7", "f_9"], constraint_type="ineq")
+        scenario.add_constraint(
+            ["f_2", "f_6"], constraint_type=scenario.ConstraintType.INEQ
+        )
+        scenario.add_constraint(
+            ["f_7", "f_9"], constraint_type=scenario.ConstraintType.INEQ
+        )
 
         # run the optimizer
         scenario.execute(algo_name=algo, max_iter=50)
@@ -137,66 +158,23 @@ class TestPropaneScenario(unittest.TestCase):
 # =========================================================================
 
 
-class TestPropaneCombustion(unittest.TestCase):
+@pytest.mark.parametrize(
+    ("cls", "output_name", "output_value"),
+    [
+        (PropaneComb1, "y_1", array([1.0, 2.0])),
+        (PropaneComb2, "y_2", array([2.0, 0.058860363180964305])),
+        (PropaneComb3, "y_3", array([38.0, 0.029430181590482152, 47.088290544771446])),
+    ],
+)
+def test_combustion_discipline(input_data, cls, output_name, output_value) -> None:
     """"""
+    discipline = cls()
+    discipline.execute(input_data)
+    assert_almost_equal(discipline.io.data[output_name], output_value)
 
-    def test_init_1(self) -> None:
-        """"""
-        PropaneComb1()
 
-    def test_init_2(self) -> None:
-        """"""
-        PropaneComb2()
-
-    def test_init_3(self) -> None:
-        """"""
-        PropaneComb3()
-
-    def get_xy(self):
-        """"""
-        y_1 = zeros(2, dtype=complex128)
-        y_2 = zeros(2, dtype=complex128)
-        y_3 = zeros(3, dtype=complex128)
-        x_shared = ones(4, dtype=float64)
-        return y_1, y_2, y_3, x_shared
-
-    def get_current_x(self):
-        """"""
-        y_1, y_2, y_3, x_shared = self.get_xy()
-        return {"y_1": y_1, "y_2": y_2, "y_3": y_3, "x_shared": x_shared}
-
-    def test_run_1(self) -> None:
-        """"""
-        pc = PropaneComb1()
-        pc.execute(self.get_current_x())
-        y_1 = pc.io.data["y_1"]
-        self.assertAlmostEqual(y_1[0], 1.0, 10)
-        self.assertAlmostEqual(y_1[1], 2.0, 10)
-
-    def test_run_2(self) -> None:
-        """"""
-        pc = PropaneComb2()
-        pc.execute(self.get_current_x())
-        y_2 = pc.io.data["y_2"]
-        self.assertAlmostEqual(y_2[0], 2.0, 10)
-        self.assertAlmostEqual(y_2[1], 0.058860363180964305, 10)
-
-    def test_run_3(self) -> None:
-        """"""
-        pc = PropaneComb3()
-        pc.execute(self.get_current_x())
-        y_3 = pc.io.data["y_3"]
-        self.assertAlmostEqual(y_3[0], 38.0, 10)
-        self.assertAlmostEqual(y_3[1], 0.029430181590482152, 10)
-        self.assertAlmostEqual(y_3[2], 47.088290544771446, 10)
-
-    def test_run_reac(self) -> None:
-        """"""
-        pc = PropaneReaction()
-        indata = self.get_current_x()
-        indata["y_1"] = ones([2])
-        indata["y_2"] = ones([2])
-        indata["y_3"] = ones([3])
-        pc.execute(indata)
-        f = pc.io.data["obj"]
-        self.assertAlmostEqual(f, -16.973665961010276, 10)
+def test_reaction_discipline() -> None:
+    """"""
+    discipline = PropaneReaction()
+    discipline.execute({"y_1": ones([2]), "y_2": ones([2]), "y_3": ones([3])})
+    assert_almost_equal(discipline.io.data["obj"], -16.973665961010276)

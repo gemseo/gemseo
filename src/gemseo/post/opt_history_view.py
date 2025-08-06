@@ -99,14 +99,13 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         variable_names = settings.variable_names
 
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
-            self._standardized_obj_name, variable_names
+            self._optimization_metadata.standardized_objective_name, variable_names
         )
-        normalize = self.optimization_problem.design_space.normalize_vect
-        x_xstar = norm(
-            normalize(x_history)
-            - normalize(self.optimization_problem.history.optimum.design),
-            axis=1,
-        )
+        normalize = self._dataset.misc["input_space"].normalize_vect
+        opt_design = self._dataset.design_dataset.loc[
+            self._optimization_metadata.optimum_iteration or 1
+        ].to_numpy()
+        x_xstar = norm(normalize(x_history) - normalize(opt_design), axis=1)
 
         self._create_variables_plot(
             x_history_to_display, variable_names, settings.fig_size, x_xstar
@@ -126,16 +125,16 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         for constraints, constraint_type in [
             (
-                self.optimization_problem.constraints.get_inequality_constraints(),
+                self._dataset.inequality_constraint_names,
                 MDOFunction.ConstraintType.INEQ,
             ),
             (
-                self.optimization_problem.constraints.get_equality_constraints(),
+                self._dataset.equality_constraint_names,
                 MDOFunction.ConstraintType.EQ,
             ),
         ]:
             if constraints:
-                constraint_names = [constraint.name for constraint in constraints]
+                constraint_names = constraints
                 self._create_cstr_plot(
                     self.__get_constraint_history(constraint_names),
                     constraint_type,
@@ -162,9 +161,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             the number of iterations and
             the history of the design variables to display.
         """
-        f_hist, x_hist = self.database.get_function_history(
-            function_name, with_x_vect=True
-        )
+        dataset = self._dataset
+        f_hist = dataset.get_view(variable_names=function_name).to_numpy().squeeze()
+        x_hist = dataset.design_dataset.to_numpy(dtype=float)
         f_hist = array(f_hist).real
         complete_x_hist = array(x_hist).real
 
@@ -173,9 +172,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             indices = [
                 index
                 for name in variable_names
-                for index in self.optimization_problem.design_space.names_to_indices[
-                    name
-                ]
+                for index in self._dataset.misc["input_space"].names_to_indices[name]
             ]
             x_hist_to_display = complete_x_hist[:, indices]
 
@@ -192,16 +189,16 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         Returns:
             The history of the constraints.
         """
-        available_data_names = self.database.get_function_names()
+        available_data_names = self._dataset.variable_names
         for constraint_name in tuple(constraint_names):
             if constraint_name not in available_data_names:
                 constraint_names.remove(constraint_name)
 
         constraints_history = []
         for constraint_name in constraint_names:
-            constraint_history = array(
-                self.database.get_function_history(constraint_name)
-            ).real
+            constraint_history = (
+                self._dataset.get_view(variable_names=constraint_name).to_numpy().real
+            )
             constraints_history.append(constraint_history)
 
         return constraints_history
@@ -225,7 +222,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         if n_iterations < 2:
             return
 
-        design_space = self.optimization_problem.design_space
+        design_space = self._dataset.misc["input_space"]
         lower_bounds = design_space.get_lower_bounds(variable_names)
         upper_bounds = design_space.get_upper_bounds(variable_names)
         norm_x_history = (x_history - lower_bounds) / (upper_bounds - lower_bounds)
@@ -361,9 +358,12 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         fig = plt.figure(figsize=fig_size)
         plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
-        normalize = self.optimization_problem.design_space.normalize_vect
+        normalize = self._dataset.misc["input_space"].normalize_vect
+        opt_design = self._dataset.design_dataset.loc[
+            self._optimization_metadata.optimum_iteration or 1
+        ].to_numpy(dtype=float)
         x_xstar = norm(
-            normalize(x_history) - normalize(self.optimization_problem.optimum[1]),
+            normalize(x_history) - normalize(opt_design),
             axis=1,
         )
 
@@ -541,7 +541,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         ax1.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
-        n_iterations = len(self.database)
+        n_iterations = len(self._dataset)
         ax1.set_xticks(range(n_iterations))
         ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
 

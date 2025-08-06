@@ -60,4 +60,6 @@ class LGMRES_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
     )
 
 
+# TODO: API: remove DEFAULTSettings.
 DEFAULTSettings = LGMRES_Settings
+DEFAULT_Settings = LGMRES_Settings

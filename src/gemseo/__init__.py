@@ -44,15 +44,21 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Callable
 
 from numpy import ndarray
 
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus as _ExecutionStatus
 from gemseo.datasets import DatasetClassName
+from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
+from gemseo.utils.constants import N_CPUS as N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
 from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
@@ -78,9 +84,6 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.datasets.optimization_dataset import (
-        OptimizationDataset as OptimizationDataset,
-    )
     from gemseo.disciplines.surrogate import SurrogateDiscipline
     from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
         JobSchedulerDisciplineWrapper,
@@ -88,7 +91,10 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.mda.base_mda_settings import BaseMDASettings
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.mlearning.core.algos.ml_algo import TransformerType as TransformerType
+    from gemseo.mlearning.regression.algos.base_regressor_settings import (
+        BaseRegressorSettings,
+    )
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
@@ -100,9 +106,10 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario_results.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
+    from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
-    from gemseo.utils.xdsm import XDSM
+    from gemseo.utils.xdsm.xdsm import XDSM
 
 # Most modules are imported directly in the methods, which adds a very small
 # overhead, but prevents users from importing them from this root module.
@@ -166,6 +173,7 @@ def generate_coupling_graph(
     disciplines: Sequence[Discipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
+    clean_up: bool = True,
 ) -> GraphView | None:
     """Generate a graph of the couplings between disciplines.
 
@@ -175,6 +183,7 @@ def generate_coupling_graph(
             If empty, the figure is not saved.
         full: Whether to generate the full coupling graph.
             Otherwise, the condensed coupling graph is generated.
+        clean_up: Whether to remove the DOT source file.
 
     Returns:
         Either the graph of the couplings between disciplines
@@ -189,8 +198,8 @@ def generate_coupling_graph(
 
     coupling_structure = CouplingStructure(disciplines)
     if full:
-        return coupling_structure.graph.render_full_graph(file_path)
-    return coupling_structure.graph.render_condensed_graph(file_path)
+        return coupling_structure.graph.render_full_graph(file_path, clean_up=clean_up)
+    return coupling_structure.graph.render_condensed_graph(file_path, clean_up)
 
 
 def get_available_formulations() -> list[str]:
@@ -449,15 +458,10 @@ def get_post_processing_options_schema(
         >>> schema = get_post_processing_options_schema('OptHistoryView',
         >>>                                             pretty_print=True)
     """
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.post.factory import PostFactory
 
-    problem = OptimizationProblem(DesignSpace())
-    problem.objective = MDOFunction(lambda x: x, "f")
-    post_proc = PostFactory().create(post_proc_name, problem)
-    return _get_json_schema_from_settings(post_proc.Settings, output_json, pretty_print)
+    cls = PostFactory().get_class(post_proc_name)
+    return _get_json_schema_from_settings(cls.Settings, output_json, pretty_print)
 
 
 def get_formulation_options_schema(
@@ -939,14 +943,19 @@ def configure_logger(
 # TODO: rename to create_disciplines (plural)
 def create_discipline(
     discipline_name: str | Iterable[str],
-    **options: Any,
+    *args: Any,
+    **kwargs: Any,
 ) -> Discipline | list[Discipline]:
     """Instantiate one or more disciplines.
 
     Args:
-        discipline_name: Either the name of a discipline
-            or the names of several disciplines.
-        **options: The options to be passed to the disciplines constructors.
+        discipline_name: Either the class name of a discipline
+            or the class names of several disciplines.
+        *args: The required arguments of the disciplines' constructors.
+        **kwargs: The keyword arguments,
+            including
+            both the keyword arguments to be passed to the disciplines' constructors
+            and the keyword arguments that are generic to all the disciplines.
 
     Returns:
         The disciplines.
@@ -964,9 +973,9 @@ def create_discipline(
 
     factory = DisciplineFactory()
     if isinstance(discipline_name, str):
-        return factory.create(discipline_name, **options)
+        return factory.create(discipline_name, *args, **kwargs)
 
-    return [factory.create(d_name, **options) for d_name in discipline_name]
+    return [factory.create(d_name, *args, **kwargs) for d_name in discipline_name]
 
 
 def import_discipline(
@@ -1011,54 +1020,69 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate: str | BaseRegressor,
+    surrogate: str | BaseRegressor | BaseRegressorSettings,
     data: IODataset | None = None,
+    # TODO: API: remove in favor of settings or surrogate as BaseRegressorSettings.
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
+    # TODO: API: rename to name.
     disc_name: str = "",
     default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
-    input_names: Iterable[str] = (),
-    output_names: Iterable[str] = (),
-    **parameters: Any,
+    input_names: Sequence[str] = (),
+    output_names: Sequence[str] = (),
+    **settings: Any,
 ) -> SurrogateDiscipline:
-    """Create a surrogate discipline, either from a dataset or a regression model.
+    """Create a surrogate discipline.
 
     Args:
-            surrogate: Either the name of a subclass of :class:`.BaseRegressor`
-                or an instance of this subclass.
-            data: The training dataset to train the regression model.
-                If ``None``, the regression model is supposed to be trained.
-            transformer: The strategies to transform the variables.
-                This argument is ignored
-                when ``surrogate`` is a :class:`.BaseRegressor`;
-                in this case,
-                these strategies are defined
-                with the ``transformer`` argument of this :class:`.BaseRegressor`,
-                whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
-                which means no transformation.
-                In the other cases,
-                the values of the dictionary are instances of :class:`.BaseTransformer`
-                while the keys can be variable names,
-                the group name ``"inputs"``
-                or the group name ``"outputs"``.
-                If a group name is specified,
-                the :class:`.BaseTransformer` will be applied
-                to all the variables of this group.
-                If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
-                The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
-                the :class:`.MinMaxScaler` strategy for both input and output variables.
-            disc_name: The name to be given to the surrogate discipline.
-                If empty,
-                the name will be ``f"{surrogate.SHORT_ALGO_NAME}_{data.name}``.
-            default_input_data: The default values of the input variables.
-                If empty,
-                use the center of the learning input space.
-            input_names: The names of the input variables.
-                If empty,
-                consider all input variables mentioned in the training dataset.
-            output_names: The names of the output variables.
-                If empty,
-                consider all input variables mentioned in the training dataset.
-            **parameters: The parameters of the machine learning algorithm.
+        surrogate: Either a regressor class name,
+            a regressor instance or regressor settings.
+        data: The dataset to train the regression model.
+            If ``None``, the regression model is supposed to be trained.
+        transformer: The strategies to transform the variables.
+            This argument is ignored
+            when ``surrogate`` is a :class:`.BaseRegressor`;
+            in this case,
+            these strategies are defined
+            with the ``transformer`` argument of this :class:`.BaseRegressor`,
+            whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
+            which means no transformation.
+            In the other cases,
+            the values of the dictionary are instances of :class:`.BaseTransformer`
+            while the keys can be variable names,
+            the group name ``"inputs"``
+            or the group name ``"outputs"``.
+            If a group name is specified,
+            the :class:`.BaseTransformer` will be applied
+            to all the variables of this group.
+            If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
+            The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
+            the :class:`.MinMaxScaler` strategy for both input and output variables.
+            This argument is ignored
+            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
+        disc_name: The name of the discipline.
+            If empty,
+            the concatenation of the short name of the surrogate algorithm
+            and the name of the training dataset is used.
+        default_input_data: The default values of the input variables.
+            If empty,
+            the center of the learning input space is used.
+        input_names: The names of the input variables of the discipline.
+            If empty and ``surrogate`` is a regressor instance,
+            all input variables of the regressor are used.
+            If empty and ``surrogate`` is not a regressor instance,
+            all input variables mentioned in the training dataset are used.
+            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
+            ``surrogate.input_names`` is ignored and replaced by ``input_names``.
+        output_names: The names of the output variables of the discipline.
+            If empty and ``surrogate`` is a regressor instance,
+            all output variables of the regressor are used.
+            If empty and ``surrogate`` is not a regressor instance,
+            all output variables mentioned in the training dataset are used.
+            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
+            ``surrogate.output_names`` is ignored and replaced by ``output_names``.
+        **settings: The settings of the machine learning algorithm.
+            These arguments are ignored
+            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
@@ -1070,7 +1094,7 @@ def create_surrogate(
         default_input_data=default_input_data,
         input_names=input_names,
         output_names=output_names,
-        **parameters,
+        **settings,
     )
 
 
@@ -1162,6 +1186,8 @@ def execute_post(
         opt_problem = to_post_proc
     elif isinstance(to_post_proc, (str, PathLike)):
         opt_problem = OptimizationProblem.from_hdf(to_post_proc)
+    elif isinstance(to_post_proc, OptimizationDataset):
+        opt_problem = to_post_proc
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
@@ -1658,13 +1684,15 @@ def _log_settings() -> str:
 
 
 def configure(
-    enable_discipline_statistics: bool = True,
-    enable_function_statistics: bool = True,
+    enable_discipline_statistics: bool = False,
+    enable_function_statistics: bool = False,
     enable_progress_bar: bool = True,
     enable_discipline_cache: bool = True,
     validate_input_data: bool = True,
     validate_output_data: bool = True,
     check_desvars_bounds: bool = True,
+    enable_parallel_execution: bool = True,
+    enable_discipline_status: bool = False,
 ) -> None:
     """Update the configuration of |g| if needed.
 
@@ -1692,12 +1720,16 @@ def configure(
             after execution.
         check_desvars_bounds: Whether to check the membership of design variables
             in the bounds when evaluating the functions in OptimizationProblem.
+        enable_parallel_execution: Whether to let |g|
+            use parallelism (multi-processing or multi-threading) by default.
+        enable_discipline_status: Whether to enable discipline statuses.
     """
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.problem_function import ProblemFunction
     from gemseo.core.discipline import Discipline
 
+    _ExecutionStatus.is_enabled = enable_discipline_status
     _ExecutionStatistics.is_enabled = enable_discipline_statistics
     ProblemFunction.enable_statistics = enable_function_statistics
     BaseDriverLibrary.enable_progress_bar = enable_progress_bar
@@ -1709,6 +1741,8 @@ def configure(
         else Discipline.CacheType.NONE
     )
     OptimizationProblem.check_bounds = check_desvars_bounds
+    default_n_processes = N_CPUS if enable_parallel_execution else 1
+    BaseParallelMDASettings.set_default_n_processes(default_n_processes)
 
 
 def wrap_discipline_in_job_scheduler(
@@ -1930,20 +1964,19 @@ def generate_xdsm(
         show_html: Whether to open the web browser and display the XDSM.
         save_html: Whether to save the XDSM as a HTML file.
         save_json: Whether to save the XDSM as a JSON file.
-        save_pdf: Whether to save the XDSM as a PDF file;
-            use ``save_pdf=True`` and ``pdf_build=False``
-            to generate the ``file_name.tex`` and ``file_name.tikz`` files
-            without building the PDF file.
-        pdf_build: Whether to generate the PDF file when ``save_pdf`` is ``True``.
-        pdf_cleanup: Whether to clean up the intermediate files
-            (``file_name.tex``, ``file_name.tikz`` and built files)
-            used to build the PDF file.
-        pdf_batchmode: Whether pdflatex is run in `batchmode`.
+        save_pdf: Whether to save the XDSM as
+            a TikZ file ``"{file_name}.tikz"`` containing its definition and
+            a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+            The LaTeX file can be compiled to a PDF file.
+        pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+            to a PDF file using pdflatex.
+        pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
+        pdf_batchmode: Whether to suppress compilation logs.
 
     Returns:
         The XDSM diagram of the discipline.
     """
-    from gemseo.utils.xdsmizer import XDSMizer
+    from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
     return XDSMizer(discipline).run(
         directory_path=directory_path,
@@ -1956,3 +1989,34 @@ def generate_xdsm(
         pdf_cleanup=pdf_cleanup,
         pdf_batchmode=pdf_batchmode,
     )
+
+
+def set_data_converters(
+    to_array: dict[str, Callable[[Any], NumberArray]],
+    from_array: dict[str, Callable[[NumberArray], Any]],
+    to_size: dict[str, Callable[[Any], int]],
+) -> None:
+    """Set data converters for custom disciplines variable types.
+
+    Natively, |g| supports disciplines that have the following variable types:
+    ``int``, ``float``, ``complex``, ``str`` and 1D NumPy array.
+    Using custom variable types may require to add converters to transform the value of
+    a variable to a 1D NumPy array back and forth, as well as to provide the size of the
+    expected 1D NumPy array.
+
+    See this
+    :ref:`example <sphx_glr_examples_disciplines_grammars_plot_data_converters.py>`.
+
+    Args:
+        to_array: The mapping from disciplines variable names
+            to functions converting a variable value to an array.
+        from_array: The mapping from discipline variable names
+            to functions converting an array to a variable value.
+        to_size: The mapping from disciplines variable names
+            to functions returning the size of a variable value.
+    """
+    from gemseo.core.data_converters.base import BaseDataConverter
+
+    BaseDataConverter.value_to_array_converters = to_array
+    BaseDataConverter.array_to_value_converters = from_array
+    BaseDataConverter.value_size_getters = to_size

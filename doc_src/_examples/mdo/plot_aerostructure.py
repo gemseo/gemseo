@@ -28,11 +28,12 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
+from gemseo.settings.mda import MDAChain_Settings
+from gemseo.settings.opt import NLOPT_COBYLA_Settings
+from gemseo.settings.opt import NLOPT_SLSQP_Settings
 
 configure_logger()
 
@@ -152,7 +153,7 @@ system_scenario = create_scenario(
     design_space_system,
     formulation_name="BiLevel",
     maximize_objective=True,
-    main_mda_settings={"inner_mda_name": "MDAJacobi", "tolerance": 1e-8},
+    main_mda_settings=MDAChain_Settings(inner_mda_name="MDAJacobi", tolerance=1e-8),
 )
 system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 system_scenario.add_constraint("lift", value=0.5)

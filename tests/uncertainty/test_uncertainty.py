@@ -34,7 +34,12 @@ from gemseo.uncertainty import create_statistics
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty import get_available_sensitivity_analyses
 from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
+from gemseo.uncertainty.statistics.ot_parametric_statistics import (
+    OTParametricStatistics,
+)
+from gemseo.uncertainty.statistics.sp_parametric_statistics import (
+    SPParametricStatistics,
+)
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
@@ -42,6 +47,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="module")
 def analysis() -> MorrisAnalysis:
+    """A Morris analysis."""
     discipline = AnalyticDiscipline(
         {"y": "sin(x1)+7*sin(x2)**2+0.1*a3**4*sin(x1)"}, name="Ishigami"
     )
@@ -52,38 +58,40 @@ def analysis() -> MorrisAnalysis:
             variable, "OTUniformDistribution", minimum=-pi, maximum=pi
         )
 
-    # Create a sensitivity analysis computing samples.
     analysis = create_sensitivity_analysis("MorrisAnalysis")
     analysis.compute_samples([discipline], space, n_samples=0, n_replicates=5)
-
     return analysis
 
 
+@pytest.fixture(scope="module")
+def samples() -> Dataset():
+    """100 realizations of a standard Gaussian variable."""
+    return Dataset.from_array(default_rng().normal(size=(100, 1)))
+
+
 @pytest.mark.parametrize(
-    "kwargs",
-    [{}, {"base_class_name": "OTDistribution"}, {"base_class_name": "SPDistribution"}],
+    ("kwargs", "ot_in", "sp_in"),
+    [
+        ({}, True, True),
+        ({"base_class_name": "OTDistribution"}, True, False),
+        ({"base_class_name": "SPDistribution"}, False, True),
+    ],
 )
-def test_available_distributions(kwargs) -> None:
-    """Check the function get_available_distributions."""
+def test_available_distributions(kwargs, ot_in, sp_in) -> None:
+    """Verify that get_available_distributions can filter the distributions."""
     distributions = get_available_distributions(**kwargs)
-    base_class_name = kwargs.get("base_class_name")
-    if base_class_name == "OTDistribution":
-        assert "OTNormalDistribution" in distributions
-        assert "SPNormalDistribution" not in distributions
-    elif base_class_name == "SPDistribution":
-        assert "OTNormalDistribution" not in distributions
-        assert "SPNormalDistribution" in distributions
-    else:
-        assert "OTNormalDistribution" in distributions
-        assert "SPNormalDistribution" in distributions
+    assert ("OTNormalDistribution" in distributions) is ot_in
+    assert ("SPNormalDistribution" in distributions) is sp_in
 
 
 def test_create_distribution() -> None:
+    """Verify that create_distribution can create a distribution."""
     distribution = create_distribution("OTNormalDistribution")
     assert distribution.mean == 0.0
 
 
 def test_available_sensitivity_analysis() -> None:
+    """Verify that get_available_sensitivity_analyses returns sensitivity analyses."""
     sensitivities = get_available_sensitivity_analyses()
     assert "MorrisAnalysis" in sensitivities
 
@@ -97,16 +105,22 @@ def test_create_sensitivity(analysis: MorrisAnalysis) -> None:
     assert analysis.dataset is other_analysis.dataset
 
 
-def test_create_statistics() -> None:
-    n_samples = 100
-    dataset = Dataset.from_array(default_rng().normal(size=(n_samples, 1)))
-    stat = create_statistics(dataset)
-    assert isinstance(stat, EmpiricalStatistics)
-    stat = create_statistics(dataset, tested_distributions=["Normal", "Exponential"])
-    assert isinstance(stat, ParametricStatistics)
+@pytest.mark.parametrize(
+    ("kwargs", "type_"),
+    [
+        ({}, EmpiricalStatistics),
+        ({"tested_distributions": ["Normal", "Exponential"]}, OTParametricStatistics),
+        ({"tested_distributions": ["norm", "expon"]}, SPParametricStatistics),
+    ],
+)
+def test_create_statistics(samples, kwargs, type_) -> None:
+    """Verify the type of statistics class in function of tested_distributions."""
+    stat = create_statistics(samples, **kwargs)
+    assert isinstance(stat, type_)
 
 
-def test_io_names(analysis: MorrisAnalysis):
+def test_io_names(tmp_wd, analysis):
+    """Verify that pickling preserves the input and output names."""
     analysis.dataset.to_pickle("dataset.pkl")
     input_names = analysis._input_names
     output_names = analysis._output_names

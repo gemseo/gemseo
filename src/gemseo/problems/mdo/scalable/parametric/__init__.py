@@ -15,7 +15,7 @@
 r"""A parametric scalable problem.
 
 Based on :cite:`TedfordMartins2010`,
-the scalable MDO problem proposed in :cite:`azizalaoui:hal-04002825`
+the scalable MDO problem proposed in :cite:`AzizAlaoui2024`
 aims to minimize the objective :math:`x_0^Tx_0 + \sum_{i=1}^N y_i^Ty_i`
 whilst satisfying the constraints :math:`t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0`.
 

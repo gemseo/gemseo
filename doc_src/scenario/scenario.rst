@@ -53,13 +53,13 @@ After the instantiation of the different :class:`.Discipline`,
 an instance of this scenario can be created from the :meth:`~gemseo.create_scenario` API function whose arguments are:
 
 - ``disciplines``: the ``list`` of instantiated :class:`.Discipline`,
-- ``formulation``: the multidisciplinary formulation name (``str``)
 - ``objective_name``: the objective name (``str``)
-- ``design_space``: the instantiated :class:`~gemseo.algos.design_space.DesignSpace`,
+- ``design_space``: the instantiated :class:`.DesignSpace`,
 - ``name=None``: the optional name of the scenario (``str``),
 - ``scenario_type='MDO'``: the optional type of scenario (``'MDO'`` or ``'DOE'``),
 - ``maximize_objective=False``: the choice between maximizing or minimizing the objective function (``bool``),
-- ``**formulation_options``: options passed to the multidisciplinary formulation.
+- ``formulation_settings_model``: the formulation settings as a Pydantic model (``BaseFormulationSettings``)
+- ``**formulation_settings``: settings passed to the multidisciplinary formulation, in case no ``formulation_settings_model`` is specified. In this case the ``formulation_name`` (``str``) is mandatory.
 
 The types of scenarios already implemented in |g| can be obtained by means of the :meth:`~gemseo.get_available_scenario_types` API function:
 
@@ -120,8 +120,8 @@ The objective function should be an output taken among the output list of the di
 
    objective_name = 'obj'
 
-2.d. Define the multidisciplinary formulation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2.d. Define the multidisciplinary formulation and its settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From the design space and the objective name,
 the :class:`.BaseScenario` automatically builds an multidisciplinary formulation
@@ -129,7 +129,13 @@ corresponding to a multidisciplinary formulation name specified by the user, e.g
 
 .. code::
 
-   formulation = 'MDF'
+   formulation_settings_model = MDF_Settings()
+
+or:
+
+.. code::
+
+   formulation_name = 'MDF'
 
 The list of the different available formulations can be obtained by means of the :meth:`~gemseo.get_available_formulations` API function:
 
@@ -186,10 +192,22 @@ by means of the :meth:`~gemseo.create_scenario` API function:
 
    scenario = create_scenario(
        disciplines=disciplines,
-       formulation=formulation,
        objective_name=objective_name,
        design_space=design_space,
        scenario_type=scenario_type,
+       formulation_settings_model=formulation_settings_model,
+   )
+
+or:
+
+.. code::
+
+   scenario = create_scenario(
+       disciplines=disciplines,
+       objective_name=objective_name,
+       design_space=design_space,
+       scenario_type=scenario_type,
+       formulation_name=formulation_name,
    )
 
 2.g. Get the names of design variables
@@ -265,9 +283,11 @@ and
 .. figure:: xdsm.png
    :scale: 65 %
 
-Moreover, you can export a static version of the XDSM in both TIKZ, LaTeX and PDF files
-by means of the ``save_pdf`` boolean argument of the
-:meth:`.BaseScenario.xdsmize` method:
+Moreover,
+you can save the XDSM into a PDF file
+by setting the argument ``save_pdf`` of the :meth:`.BaseScenario.xdsmize` method to ``True``
+and leaving the argument ``pdf_build`` to ``True``
+(if ``pdf_build`` is ``False``, only the TikZ and LaTeX files will be generated and it will be up to you to compile the LaTeX file):
 
 .. code::
 

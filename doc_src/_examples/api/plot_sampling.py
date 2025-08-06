@@ -14,7 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """Sample several disciplines.
-==========================
+==============================
 
 The :class:`.DOEScenario` class is used to solve trade-off studies,
 based on a design space, an objective and optional constraints.

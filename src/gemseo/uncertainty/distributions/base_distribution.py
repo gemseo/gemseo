@@ -82,6 +82,9 @@ if TYPE_CHECKING:
     from types import ModuleType
 
     from gemseo.typing import RealArray
+    from gemseo.uncertainty.distributions.base_distribution_settings import (
+        BaseDistribution_Settings,
+    )
 
 StandardParametersType = Mapping[str, Union[str, int, float]]
 ParametersType = Union[tuple[str, int, float], StandardParametersType]
@@ -102,6 +105,9 @@ class BaseDistribution(
     Child classes need to be adapted to model other types of random variables,
     e.g. random vectors (see :class:`.BaseJointDistribution`).
     """
+
+    Settings: ClassVar[BaseDistribution_Settings]
+    """The Pydantic model for the settings."""
 
     distribution: _DistributionT
     """The probability distribution of the random variable."""

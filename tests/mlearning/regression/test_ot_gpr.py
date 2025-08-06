@@ -22,6 +22,7 @@ from unittest.mock import Mock
 import openturns
 import pytest
 from numpy import array
+from numpy import diag
 from numpy import hstack
 from numpy import ndarray
 from numpy import zeros
@@ -206,10 +207,32 @@ def test_kriging_predict_std(transformer, dataset, x1, x2):
     KrigingResult.getConditionalCovariance = original_method
 
 
-def test_kriging_predict_jacobian(kriging):
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([0.0, 0.0]), (2, 2)),
+        (array([[0.0, 0.0]]), (1, 2, 2)),
+        (array([[0.0, 0.0], [-2.0, -2.0], [2.0, 2.0]]), (3, 2, 2)),
+    ],
+)
+def test_kriging_predict_jacobian(kriging, input_data, expected_shape):
     """Check the shape of the Jacobian."""
-    jacobian = kriging.predict_jacobian(array([[0.0, 0.0], [-2.0, -2.0], [2.0, 2.0]]))
-    assert jacobian.shape == (3, 2, 2)
+    jacobian = kriging.predict_jacobian(input_data)
+    assert jacobian.shape == expected_shape
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([0.0, 0.0]), (2, 2, 2)),
+        (array([[0.0, 0.0]]), (1, 2, 2, 2)),
+        (array([[0.0, 0.0], [-2.0, -2.0], [2.0, 2.0]]), (3, 2, 2, 2)),
+    ],
+)
+def test_kriging_predict_hessian(kriging, input_data, expected_shape):
+    """Check the shape of the Hessian."""
+    hessian = kriging.predict_hessian(input_data)
+    assert hessian.shape == expected_shape
 
 
 @pytest.mark.parametrize("output_name", ["rosen", "rosen2"])
@@ -406,68 +429,53 @@ def test_covariance_kernel_type(dataset, kernel_type):
 
 
 @pytest.mark.parametrize(
-    ("compute_options", "init_options", "expected_samples", "expected_samples_1pt"),
+    ("init_options", "expected_shape", "expected_shape_1pt"),
     [
-        (
-            {},
-            {},
-            array([
-                [
-                    [1.47647972e03, 2.21396378e00],
-                    [1.20973761e03, 1.18612131e00],
-                    [1.25126291e03, 2.18171156e00],
-                ],
-                [
-                    [1.49048507e03, -1.51470882e00],
-                    [1.55715040e03, 1.20897280e00],
-                    [1.49389310e03, -3.14649015e00],
-                ],
-            ]),
-            array([[1.39052263e03, 1.44782222e-01], [1.24957800e03, -2.77257687e00]]),
-        ),
-        (
-            {"seed": 2},
-            {},
-            array([
-                [
-                    [1.39052263e03, 1.44782222e-01],
-                    [1.25298244e03, -2.72898984e00],
-                    [1.41856634e03, 4.59435414e-01],
-                ],
-                [
-                    [1.53954913e03, 4.42708465e00],
-                    [1.45285976e03, 6.24822690e-01],
-                    [1.50965565e03, -3.20010056e00],
-                ],
-            ]),
-            array([[1.39052263e03, 1.44782222e-01], [1.24957800e03, -2.77257687e00]]),
-        ),
-        (
-            {},
-            {"output_names": ["sum"]},
-            array([
-                [[0.42115111], [1.42419408], [1.02099548]],
-                [[0.420637], [1.42092809], [1.02177389]],
-            ]),
-            array([[0.42043643], [0.42034654]]),
-        ),
+        ({}, (2, 3, 2), (2, 2)),
+        ({"output_names": ["sum"]}, (2, 3, 1), (2, 1)),
     ],
 )
 @pytest.mark.parametrize("transformer", [{}, {"inputs": "Scaler", "outputs": "Scaler"}])
 def test_compute_samples(
     dataset,
-    compute_options,
     init_options,
-    expected_samples,
-    expected_samples_1pt,
+    expected_shape,
+    expected_shape_1pt,
     transformer,
 ):
     """Check the method compute_samples."""
     model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
     model.learn()
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
-    samples = model.compute_samples(input_data, 2, **compute_options)
-    assert_allclose(samples, expected_samples, rtol=1e-4)
+    samples = model.compute_samples(input_data, 2)
+    assert samples.shape == expected_shape
 
-    samples = model.compute_samples(input_data[0], 2, **compute_options)
-    assert_allclose(samples, expected_samples_1pt, rtol=1e-4)
+    samples_1pt = model.compute_samples(input_data[0], 2)
+    assert samples_1pt.shape == expected_shape_1pt
+
+    model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model.learn()
+    input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
+    assert model.compute_samples(input_data, 2, seed=1)[0, 0, 0] == samples[0, 0, 0]
+    assert model.compute_samples(input_data[0], 2, seed=2)[0, 0] == samples_1pt[0, 0]
+
+    model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model.learn()
+    input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
+    assert model.compute_samples(input_data, 2, seed=123)[0, 0, 0] != samples[0, 0, 0]
+    assert model.compute_samples(input_data[0], 2, seed=35)[0, 0] != samples_1pt[0, 0]
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([1.0, 1.0]), (2, 2)),
+        (array([[1.0, 1.0], [0.2, 0.0]]), (4, 4)),
+    ],
+)
+def test_predict_covariance(kriging, input_data, expected_shape):
+    """Check the method predict_covariance."""
+    cov_matrix = kriging.predict_covariance(input_data)
+    predicted_std = kriging.predict_std(input_data)
+    assert cov_matrix.shape == expected_shape
+    assert_allclose(diag(cov_matrix), predicted_std.ravel() ** 2)

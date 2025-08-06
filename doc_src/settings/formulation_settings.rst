@@ -27,7 +27,6 @@ formulation settings, either one by one:
         maximize_objective=True,
         **formulation_settings,
         formulation_name="MDF",
-        main_mda_name="MDAGaussSeidel",
         main_mda_settings={
             "max_mda_iter": 50,
             "warm_start": True,
@@ -47,12 +46,11 @@ or via their associated Pydantic model:
         design_space,
         maximize_objective=True,
         formulation_settings_model=MDF_Settings(
-            main_mda_name="MDAGaussSeidel",
-            main_mda_settings={
-                "max_mda_iter": 50,
-                "warm_start": True,
-                "linear_solver_tolerance": 1e-14,
-            },
+            main_mda_settings=MDAGaussSeidel_Settings(
+                max_mda_iter=50,
+                warm_start=True,
+                linear_solver_tolerance=1e-14,
+            ),
         ),
     )
 

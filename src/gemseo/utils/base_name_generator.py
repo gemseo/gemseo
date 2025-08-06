@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from multiprocessing import Lock
 from multiprocessing import Value
 from uuid import uuid4
@@ -38,7 +39,16 @@ class BaseNameGenerator(Serializable):
         UUID = "UUID"
         """A unique name based on the UUID function is generated.
 
-        This last option shall be used if multiple MDO processes are run in the same
+        This option shall be used if multiple MDO processes are run in the same
+        working directory. This is multi-process safe.
+        """
+
+        DATED_UUID = "DATED_UUID"
+        """A unique dated name based on the UUID function is generated.
+
+        For instance,  "2025-07-10_15h26min35s_UUID".
+
+        This option shall be used if multiple MDO processes are run in the same
         working directory. This is multi-process safe.
         """
 
@@ -88,6 +98,11 @@ class BaseNameGenerator(Serializable):
                 return str(self.__counter.value)
         elif self.__naming_method == self.Naming.UUID:
             return str(uuid4()).split("-")[-1]
+        elif self.__naming_method == self.Naming.DATED_UUID:
+            return (
+                f"{datetime.now().strftime('%Y-%m-%d_%Hh%Mmin%Ss')}_"
+                f"{str(uuid4()).split('-')[-1]}"
+            )
         return None
 
     def _get_initial_counter(self) -> int:

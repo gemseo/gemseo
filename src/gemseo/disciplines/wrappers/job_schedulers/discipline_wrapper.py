@@ -25,13 +25,15 @@ from subprocess import run as subprocess_run
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from uuid import uuid1
 
+from gemseo import from_pickle
 from gemseo.core.discipline import Discipline
+from gemseo.utils.directory_creator import DirectoryCreator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import JacobianData
     from gemseo.typing import StrKeyMapping
 
@@ -47,32 +49,50 @@ class JobSchedulerDisciplineWrapper(Discipline):
     execute it and serialize the outputs. Finally, the deserialized outputs are returned
     by the wrapper.
 
+    Each execution of the wrapped discipline is done in a unique directory within the
+    ``workdir_path`` directory passed when instantiating this class.
+
     .. warning::
         See :ref:`platform-paths` to handle paths for cross-platforms.
     """
 
     DISC_PICKLE_FILE_NAME: ClassVar[str] = "discipline.pckl"
+    """The name of the pickle file for the discipline."""
+
     DISC_INPUT_FILE_NAME: ClassVar[str] = "input_data.pckl"
+    """The name of the pickle file for the discipline inputs."""
+
     DISC_OUTPUT_FILE_NAME: ClassVar[str] = "output_data.pckl"
+    """The name of the pickle file for the discipline outputs."""
+
+    # TODO: API: rename to JOB_TEMPLATES_DIR_PATH
     TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
+    """The path to the directory with the job templates."""
 
     _discipline: Discipline
     """The discipline to wrap in the job scheduler."""
+
     _job_template_path: Path
     """The path to the template to be used to make a submission to the job scheduler
     command."""
-    _workdir_path: Path
-    """The path to the workdir where the files will be generated."""
+
     _scheduler_run_command: str
     """The command to call the job scheduler and submit the generated script."""
+
     _job_out_filename: str
     """The output job file name."""
+
     _options: dict[str, Any]
     """The job scheduler specific options."""
+
     _setup_cmd: str
     """The environment command to be used before running."""
+
     _execute_at_linearize: bool
     """Whether to execute the discipline when linearizing."""
+
+    __directory_creator: DirectoryCreator
+    """The temporary directory creator."""
 
     def __init__(
         self,
@@ -119,10 +139,13 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self._setup_cmd = setup_cmd
         self._options = options
 
-        self.io.input_grammar = self._discipline.io.input_grammar
-        self.io.output_grammar = self._discipline.io.output_grammar
-        self.io.input_grammar.defaults = self._discipline.io.input_grammar.defaults
-        self._workdir_path = workdir_path
+        # We must copy the grammars otherwise adding namespaces to this discipline
+        # will affect the wrapped discipline.
+        self.io.input_grammar = self._discipline.io.input_grammar.copy()
+        self.io.output_grammar = self._discipline.io.output_grammar.copy()
+        self.__directory_creator = DirectoryCreator(
+            workdir_path, DirectoryCreator.Naming.UUID
+        )
         self.pickled_discipline = pickle.dumps(self._discipline)
         self.job_file_template = None
         self._execute_at_linearize = True
@@ -254,7 +277,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self,
         current_workdir: Path,
         outputs_path: Path,
-    ) -> None:
+    ) -> StrKeyMapping:
         """Read the serialized outputs.
 
         If an exception is contained inside, raises it.
@@ -264,6 +287,9 @@ class JobSchedulerDisciplineWrapper(Discipline):
         Args:
             current_workdir: The current working directory.
             outputs_path: The path to the serialized output data.
+
+        Returns:
+            The output data.
 
         Raises:
             FileNotFoundError: When the outputs contain an error.
@@ -275,43 +301,31 @@ class JobSchedulerDisciplineWrapper(Discipline):
             )
             raise FileNotFoundError(msg)
 
-        with outputs_path.open("rb") as output_file:
-            output = pickle.load(output_file)
+        output = from_pickle(outputs_path)
 
-            if isinstance(output[0], BaseException):
-                error, trace = output
-                LOGGER.error(
-                    "Discipline %s execution failed in %s",
-                    self._discipline.name,
-                    current_workdir,
-                )
-
-                LOGGER.error(trace)
-                raise error
-
-            LOGGER.debug(
-                "Discipline %s execution succeeded in %s",
+        if isinstance(output[0], BaseException):
+            error, trace = output
+            LOGGER.error(
+                "Discipline %s execution failed in %s",
                 self._discipline.name,
                 current_workdir,
             )
 
-            self.io.data.update(output[0])
-            if output[1]:
-                self.jac = output[1]
+            LOGGER.error(trace)
+            raise error
 
-    def _create_current_workdir(self) -> Path:
-        """Create the current working directory.
+        LOGGER.debug(
+            "Discipline %s execution succeeded in %s",
+            self._discipline.name,
+            current_workdir,
+        )
 
-        Returns:
-            The path to the working directory.
-        """
-        # This generates a unique random and thread safe working directory name.
-        # We do not use tempdir from the standard python library because it is a
-        # permanent run directory.
-        loc_id = str(uuid1()).split("-")[0]
-        current_workdir = Path(self._workdir_path / loc_id)
-        current_workdir.mkdir()
-        return current_workdir
+        if output[1]:
+            self.jac = output[1]
+            self._has_jacobian = True
+            self._handle_ns_in_jacobian()
+
+        self.io.update_output_data(output[0])
 
     def _write_inputs_to_disk(
         self,
@@ -356,7 +370,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         linearize: bool,
         differentiated_inputs: Iterable[str] = (),
         differentiated_outputs: Iterable[str] = (),
-    ) -> None:
+    ) -> StrKeyMapping:
         """Executes or linearizes the discipline.
 
         Args:
@@ -365,8 +379,11 @@ class JobSchedulerDisciplineWrapper(Discipline):
                 inputs that define the rows of the jacobian.
             differentiated_outputs: If the linearization is performed, the
                 outputs that define the columns of the jacobian.
+
+        Returns:
+            The output data.
         """
-        current_workdir = self._create_current_workdir()
+        current_workdir = self.__directory_creator.create()
         outputs_path = current_workdir / self.DISC_OUTPUT_FILE_NAME
         log_path = current_workdir / f"{self._discipline.name}.log"
         discipline_path, inputs_path = self._write_inputs_to_disk(
@@ -389,8 +406,8 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self._wait_job(current_workdir)
         self._handle_outputs(current_workdir, outputs_path)
 
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self._run_or_compute_jacobian(False)
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+        return self._run_or_compute_jacobian(False)
 
     def linearize(  # noqa: D102
         self,
@@ -410,6 +427,43 @@ class JobSchedulerDisciplineWrapper(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
+        input_names = self._clean_namespaces_data_names(input_names, self.input_grammar)
+        output_names = self._clean_namespaces_data_names(
+            output_names, self.output_grammar
+        )
         self._run_or_compute_jacobian(
             True, differentiated_inputs=input_names, differentiated_outputs=output_names
         )
+
+    def _clean_namespaces_data_names(
+        self, io_names: Iterable[str], grammar: BaseGrammar
+    ) -> Iterable[str]:
+        """Cleans the data names to be differentiated to remove the namespace prefixes.
+
+        Args:
+            io_names: The data names to differentiate.
+
+        Returns:
+            The cleaned data names.
+        """
+        to_namespaced = grammar.to_namespaced
+        if not to_namespaced:
+            return io_names
+
+        io_names_no_namespace = list(io_names)
+        for name, ns_name in to_namespaced.items():
+            io_names_no_namespace.remove(ns_name)
+            io_names_no_namespace.append(name)
+        return io_names_no_namespace
+
+    def _handle_ns_in_jacobian(self) -> None:
+        """Rename the Jacobian input and output names to handle the namespaces."""
+        jac = self.jac
+        for name, namespaced_name in self.io.output_grammar.to_namespaced.items():
+            jac[namespaced_name] = jac.pop(name)
+
+        to_namespaced = self.input_grammar.to_namespaced
+        if to_namespaced:
+            for local_jac in self.jac.values():
+                for input_name, input_namespace in to_namespaced.items():
+                    local_jac[input_namespace] = local_jac.pop(input_name)

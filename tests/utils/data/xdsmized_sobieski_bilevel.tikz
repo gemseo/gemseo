@@ -45,7 +45,7 @@
 \\
 %Row 2
 &
-\node [DataInter] (Dis1-Opt) {$g\_1,  g\_2..., (3)$};&
+\node [DataInter] (Dis1-Opt) {$g\_1,  g\_2, ... (3)$};&
 \node [MDA] (Dis1) {$\text{2,4-3:MDAJacobi}$};&
 \node [DataInter] (Dis1-Dis2) {$y\_23$};&
 \node [DataInter] (Dis1-Dis3) {$y\_12,  y\_32$};&
@@ -53,11 +53,11 @@
 \node [DataInter] (Dis1-Dis5) {$y\_23$};&
 \node [DataInter] (Dis1-Dis6) {$y\_12,  y\_32$};&
 \node [DataInter] (Dis1-Dis7) {$y\_21,  y\_31$};&
-\node [DataInter] (Dis1-Dis8) {$y\_12,  y\_21..., (5)$};&
-\node [DataInter] (Dis1-Dis12) {$y\_14,  y\_24..., (3)$};&
+\node [DataInter] (Dis1-Dis8) {$y\_12,  y\_21, ... (5)$};&
+\node [DataInter] (Dis1-Dis12) {$y\_14,  y\_24, ... (3)$};&
 \\
 %Row 3
-\node [DataIO] (left_output_Dis2) {$y\_32^*,  y\_31^*..., (4)$};&
+\node [DataIO] (left_output_Dis2) {$y\_32^*,  y\_31^*, ... (4)$};&
 \node [DataInter] (Dis2-Opt) {$g\_3$};&
 \node [DataInter] (Dis2-Dis1) {$y\_31,  y\_32$};&
 \node [Function] (Dis2) {$\text{3,9:SobieskiPropulsion}$};&
@@ -70,7 +70,7 @@
 &
 \\
 %Row 4
-\node [DataIO] (left_output_Dis3) {$y\_21^*,  y\_23^*..., (4)$};&
+\node [DataIO] (left_output_Dis3) {$y\_21^*,  y\_23^*, ... (4)$};&
 \node [DataInter] (Dis3-Opt) {$g\_2$};&
 \node [DataInter] (Dis3-Dis1) {$y\_21,  y\_23$};&
 &
@@ -83,7 +83,7 @@
 &
 \\
 %Row 5
-\node [DataIO] (left_output_Dis4) {$y\_1^*,  y\_11^*..., (4)$};&
+\node [DataIO] (left_output_Dis4) {$y\_1^*,  y\_11^*, ... (4)$};&
 \node [DataInter] (Dis4-Opt) {$g\_1$};&
 \node [DataInter] (Dis4-Dis1) {$y\_12$};&
 &
@@ -98,27 +98,27 @@
 %Row 6
 &
 &
-\node [DataInter] (Dis5-Dis1) {$x\_3,  y\_31..., (3)$};&
+\node [DataInter] (Dis5-Dis1) {$x\_3,  y\_31, ... (3)$};&
 &
 &
 &
 \node [SubOptimization] (Dis5) {$\text{5:PropulsionScenario\_scn-1-1}$};&
 \node [DataInter] (Dis5-Dis6) {$y\_32$};&
 \node [DataInter] (Dis5-Dis7) {$y\_31$};&
-\node [DataInter] (Dis5-Dis8) {$x\_3,  y\_31..., (3)$};&
+\node [DataInter] (Dis5-Dis8) {$x\_3,  y\_31, ... (3)$};&
 \node [DataInter] (Dis5-Dis12) {$y\_34$};&
 \\
 %Row 7
 &
 &
-\node [DataInter] (Dis6-Dis1) {$x\_2,  y\_21..., (3)$};&
+\node [DataInter] (Dis6-Dis1) {$x\_2,  y\_21, ... (3)$};&
 &
 &
 &
 \node [DataInter] (Dis6-Dis5) {$y\_23$};&
 \node [SubOptimization] (Dis6) {$\text{6:AerodynamicsScenario\_scn-1-2}$};&
 \node [DataInter] (Dis6-Dis7) {$y\_21$};&
-\node [DataInter] (Dis6-Dis8) {$x\_2,  y\_21..., (3)$};&
+\node [DataInter] (Dis6-Dis8) {$x\_2,  y\_21, ... (3)$};&
 \node [DataInter] (Dis6-Dis12) {$y\_24$};&
 \\
 %Row 8
@@ -136,8 +136,8 @@
 \\
 %Row 9
 &
-\node [DataInter] (Dis8-Opt) {$g\_1,  g\_2..., (3)$};&
-\node [DataInter] (Dis8-Dis1) {$y\_12,  y\_21..., (5)$};&
+\node [DataInter] (Dis8-Opt) {$g\_1,  g\_2, ... (3)$};&
+\node [DataInter] (Dis8-Dis1) {$y\_12,  y\_21, ... (5)$};&
 \node [DataInter] (Dis8-Dis2) {$y\_23$};&
 \node [DataInter] (Dis8-Dis3) {$y\_12,  y\_32$};&
 \node [DataInter] (Dis8-Dis4) {$y\_21,  y\_31$};&
@@ -145,7 +145,7 @@
 \node [DataInter] (Dis8-Dis6) {$y\_12,  y\_32$};&
 \node [DataInter] (Dis8-Dis7) {$y\_21,  y\_31$};&
 \node [MDA] (Dis8) {$\text{8,10-9:MDAJacobi}$};&
-\node [DataInter] (Dis8-Dis12) {$y\_14,  y\_24..., (3)$};&
+\node [DataInter] (Dis8-Dis12) {$y\_14,  y\_24, ... (3)$};&
 \\
 %Row 10
 &

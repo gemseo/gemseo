@@ -50,7 +50,7 @@ configure_logger()
 #
 # Get available scenario type
 # ---------------------------
-# The high-level function :func:`~gemseo.get_available_scenario_types` can be used
+# The high-level function :func:`.get_available_scenario_types` can be used
 # to get the available scenario types (:class:`.MDOScenario` and
 # :class:`.DOEScenario`).
 get_available_scenario_types()
@@ -130,7 +130,7 @@ get_scenario_differentiation_modes()
 # use :func:`.monitor_scenario`.
 # The first argument is the scenario to monitor, and the second is an
 # observer object, that is notified by its update(atom) method, which takes an
-# :class:`~gemseo.core.execution_sequence.ExecutionSequence` as argument.
+# :class:`.ExecutionSequence` as argument.
 # This method will be called every time a discipline status changes.
 # The atom represents a discipline's position in the process. One discipline
 # can have multiple atoms, since one discipline can be used in multiple

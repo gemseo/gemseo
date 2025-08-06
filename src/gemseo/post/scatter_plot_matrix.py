@@ -50,23 +50,31 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
         variable_names = list(settings.variable_names)
         filter_non_feasible = settings.filter_non_feasible
 
-        problem = self.optimization_problem
+        optimization_metadata = self._optimization_metadata
         add_design_variables = False
-        all_function_names = problem.function_names
-        all_design_names = problem.design_space.variable_names
+        all_function_names = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        all_design_names = self._dataset.misc["input_space"].variable_names
 
-        if not problem.minimize_objective and self._obj_name in variable_names:
-            obj_index = variable_names.index(self._obj_name)
-            variable_names[obj_index] = self._standardized_obj_name
+        if (
+            not optimization_metadata.minimize_objective
+            and optimization_metadata.objective_name in variable_names
+        ):
+            obj_index = variable_names.index(optimization_metadata.objective_name)
+            variable_names[obj_index] = (
+                optimization_metadata.standardized_objective_name
+            )
 
         variable_names.sort()
         if not variable_names:
             # In this case, plot all design variables, no functions.
-            variable_values = problem.history.get_data_by_names(
-                names=all_design_names,
-                as_dict=False,
-                filter_non_feasible=filter_non_feasible,
-            )
+            variable_values = self._dataset.get_view(
+                variable_names=all_design_names
+            ).to_numpy()
             variable_labels = self._get_design_variable_names(
                 variables=all_design_names
             )
@@ -79,7 +87,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     variable_name not in all_function_names
                     and variable_name not in all_design_names
                     and variable_name
-                    not in problem.constraints.original_to_current_names
+                    not in optimization_metadata.output_names_to_constraint_names
                 ):
                     msg = (
                         "Cannot build scatter plot matrix: "
@@ -89,12 +97,17 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     )
                     raise ValueError(msg)
 
-                if variable_name in problem.design_space:
+                if variable_name in self._dataset.misc["input_space"]:
                     add_design_variables = True
                     design_names.append(variable_name)
-                elif variable_name in problem.constraints.original_to_current_names:
+                elif (
+                    variable_name
+                    in optimization_metadata.output_names_to_constraint_names
+                ):
                     function_names.extend(
-                        problem.constraints.original_to_current_names[variable_name]
+                        optimization_metadata.output_names_to_constraint_names[
+                            variable_name
+                        ]
                     )
                 else:
                     function_names.append(variable_name)
@@ -108,9 +121,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
 
                 design_labels = self._get_design_variable_names(variables=design_names)
                 if function_names:
-                    _, function_labels, _ = self.database.get_history_array(
-                        function_names=function_names, with_x_vect=False
-                    )
+                    function_labels = self._dataset.get_columns(function_names)
                 else:
                     function_labels = []
 
@@ -118,24 +129,25 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                 variable_labels = function_labels + design_labels
             else:
                 variable_names = function_names
-                _, variable_labels, _ = self.database.get_history_array(
-                    function_names=variable_names, with_x_vect=False
-                )
+                variable_labels = self._dataset.get_columns(variable_names)
                 variable_labels.sort()
 
-            variable_values = problem.history.get_data_by_names(
-                names=variable_names,
-                as_dict=False,
-                filter_non_feasible=filter_non_feasible,
-            )
+            variables_dataset = self._dataset.get_view(variable_names=variable_names)
+            if filter_non_feasible:
+                variables_dataset = variables_dataset.loc[
+                    optimization_metadata.feasible_iterations
+                ]
 
+            variable_values = variables_dataset.to_numpy()
         if (
-            self._standardized_obj_name in variable_labels
-            and not problem.minimize_objective
-            and not problem.use_standardized_objective
+            optimization_metadata.standardized_objective_name in variable_labels
+            and not optimization_metadata.minimize_objective
+            and not optimization_metadata.use_standardized_objective
         ):
-            index = variable_labels.index(self._standardized_obj_name)
-            variable_labels[index] = self._obj_name
+            index = variable_labels.index(
+                optimization_metadata.standardized_objective_name
+            )
+            variable_labels[index] = optimization_metadata.objective_name
             variable_values[:, index] *= -1
 
         if filter_non_feasible and not np_any(variable_values):

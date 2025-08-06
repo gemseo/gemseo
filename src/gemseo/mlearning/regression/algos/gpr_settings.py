@@ -35,6 +35,8 @@ from gemseo.utils.seeder import SEED
 class GaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the Gaussian process regressor from scikit-learn."""
 
+    _TARGET_CLASS_NAME = "GaussianProcessRegressor"
+
     kernel: Annotated[Kernel, WithJsonSchema({})] | None = Field(
         default=None,
         description="""The kernel specifying the covariance model.

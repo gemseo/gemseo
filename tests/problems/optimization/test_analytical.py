@@ -27,6 +27,7 @@ from numpy import zeros
 
 from gemseo.algos.base_driver_library import MaxIterReachedException
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.problems.optimization.hock_schittkowski_71 import HockSchittkowski71
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rastrigin import Rastrigin
 from gemseo.problems.optimization.rosen_mf import RosenMF
@@ -83,3 +84,9 @@ def test_rosen_mf() -> None:
         step=1e-8,
         threshold=1e-4,
     )
+
+
+def test_hs071() -> None:
+    """"""
+    problem = HockSchittkowski71()
+    run_and_test_problem(problem)

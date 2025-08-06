@@ -30,10 +30,10 @@ from typing import Generic
 from typing import TypeVar
 
 from numpy import arange
-from numpy import copy
 from numpy import empty
 from numpy import ndarray
 from numpy import zeros
+from scipy.sparse import block_array
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
@@ -44,6 +44,7 @@ from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -104,6 +105,8 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     _settings: T
     """The Pydantic model for the settings of the formulation."""
 
+    ConstraintType = MDOFunction.ConstraintType
+
     def __init__(
         self,
         disciplines: Sequence[Discipline],
@@ -160,7 +163,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     def add_constraint(
         self,
         output_name: str | Sequence[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        constraint_type: ConstraintType = ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
@@ -209,17 +212,26 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @abstractmethod
-    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:
-        """Return the disciplines which inputs are required to run the scenario.
+    def get_top_level_disciplines(
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
+        """Return the top level disciplines that are executed in the foreground.
 
-        A formulation seeks to
-        compute the objective and constraints from the input variables.
-        It structures the optimization problem into multiple levels of disciplines.
-        The disciplines directly depending on these inputs
-        are called top level disciplines.
+        A formulation structures the optimization problem
+        into multiple levels of disciplines.
+        The top level disciplines map
+        from the :attr:`.design_space`
+        to the objective, constraint and observable spaces.
+        They can be composed of
+        both user disciplines and process disciplines added by the formulation,
+        e.g. :class:`.MDOChain`.
+        These process disciplines may also include
+        both user disciplines and process disciplines,
+        and so on.
 
-        By default, this method returns all disciplines.
-        This method can be overloaded by subclasses.
+        Args:
+            include_sub_formulations: Whether to include the top level disciplines
+                of the formulations that make up the current one.
 
         Returns:
             The top level disciplines.
@@ -253,10 +265,9 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def unmask_x_swap_order(
         self,
-        masking_data_names: Iterable[str],
+        masking_data_names: Sequence[str],
         x_masked: ndarray,
         all_data_names: Iterable[str] = (),
-        x_full: ndarray | None = None,
     ) -> ndarray:
         """Unmask a vector or matrix from names, with respect to other names.
 
@@ -264,45 +275,113 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         if the order of the data names is inconsistent between these sets.
 
         Args:
-            masking_data_names: The names of the kept data.
+            masking_data_names: The names of the variables
+                whose values come from ``x_masked`` (the other are zeros).
             x_masked: The vector or matrix to unmask.
-            all_data_names: The set of all names.
-                If empty, use the design variables stored in the design space.
-            x_full: The default values for the full vector or matrix.
-                If ``None``, use the zero vector or matrix.
+            all_data_names: The names of the variables
+                whose values the full array will concatenate.
+                If empty, use the names of all the design variables.
 
         Returns:
             The vector or matrix related to the input mask.
 
         Raises:
-            IndexError: when the sizes of variables are inconsistent.
+            ValueError: when the sizes of variables are inconsistent.
         """
         if not all_data_names:
             all_data_names = self.get_optim_variable_names()
-        indices = self._get_dv_indices(all_data_names)
-        variable_sizes = self.variable_sizes
-        total_size = sum(variable_sizes[var] for var in all_data_names)
 
-        # TODO: The support of sparse Jacobians requires modifications here.
-        if x_full is None:
-            x_unmask = zeros((*x_masked.shape[:-1], total_size), dtype=x_masked.dtype)
-        else:
-            x_unmask = copy(x_full)
+        names_to_sizes = self.variable_sizes
+        mask_size = sum(names_to_sizes[name] for name in masking_data_names)
 
-        i_x = 0
-        try:
-            for key in all_data_names:
-                if key in masking_data_names:
-                    i_min, i_max, n_x = indices[key]
-                    x_unmask[..., i_min:i_max] = x_masked[..., i_x : i_x + n_x]
-                    i_x += n_x
-        except IndexError:
-            msg = (
-                "Inconsistent input array size of values array "
-                f"with reference data shape {x_unmask.shape}"
+        if (n_samples := x_masked.shape[-1] // mask_size) == 1:
+            return self.__unmask_x_swap_order_if_one_sample(
+                x_masked, all_data_names, masking_data_names
             )
-            raise ValueError(msg) from None
-        return x_unmask
+
+        return self.__unmask_x_swap_order_if_several_samples(
+            x_masked,
+            all_data_names,
+            masking_data_names,
+            mask_size,
+            n_samples,
+        )
+
+    def __unmask_x_swap_order_if_one_sample(
+        self,
+        x_masked: ndarray,
+        all_data_names: Iterable[str],
+        masking_data_names: Sequence[str],
+    ) -> ndarray:
+        """Unmasking function if there is only one sample.
+
+        Args:
+            x_masked: The array to unmask.
+            all_data_names: All the variable names.
+            masking_data_names: The names of the variables to unmask.
+
+        Returns:
+            The unmasked array.
+        """
+        names_to_sizes = self.variable_sizes
+        x_unmasked = zeros(
+            (
+                *x_masked.shape[:-1],
+                sum(names_to_sizes[name] for name in all_data_names),
+            ),
+            dtype=x_masked.dtype,
+        )
+        indices = self._get_dv_indices(all_data_names)
+        masked_position = 0
+        for variable_name in masking_data_names:
+            unmasked_position, _, size = indices[variable_name]
+            x_unmasked[..., unmasked_position : unmasked_position + size] = x_masked[
+                ..., masked_position : masked_position + size
+            ]
+            masked_position += size
+
+        return x_unmasked
+
+    def __unmask_x_swap_order_if_several_samples(
+        self,
+        x_masked: ndarray,
+        all_data_names: Iterable[str],
+        masking_data_names: Sequence[str],
+        mask_size: int,
+        n_samples: int,
+    ) -> ndarray:
+        """Unmasking function if there are several samples.
+
+        Args:
+            x_masked: The array to unmask.
+            all_data_names: All the variable names.
+            masking_data_names: The names of the variables to unmask.
+            mask_size: The size of the mask.
+            n_samples: The number of samples.
+
+        Returns:
+            The unmasked array.
+        """
+        masked_position = 0
+        names_to_indices = {
+            name: index
+            for index, name in enumerate(all_data_names)
+            if name in masking_data_names
+        }
+        n_variables = len(all_data_names)
+        arrays = [None] * n_samples * n_variables
+        names_to_sizes = self.variable_sizes
+        for variable_name, variable_index in names_to_indices.items():
+            size = names_to_sizes[variable_name]
+            a = variable_index - n_variables
+            b = masked_position - mask_size
+            for _ in range(n_samples):
+                a += n_variables
+                b += mask_size
+                arrays[a] = x_masked[..., b : b + size]
+
+            masked_position += size
+        return block_array([arrays])
 
     def mask_x_swap_order(
         self,
@@ -412,17 +491,18 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 If ``None``, the discipline is detected from the inner disciplines.
             top_level_disc: Whether to search the discipline among the top level ones.
         """
-        if isinstance(objective_name, str):
-            objective_name = [objective_name]
-        obj_mdo_fun = FunctionFromDiscipline(
-            objective_name, self, discipline=discipline, top_level_disc=top_level_disc
+        objective = FunctionFromDiscipline(
+            convert_strings_to_iterable(objective_name),
+            self,
+            discipline=discipline,
+            top_level_disc=top_level_disc,
         )
-        if obj_mdo_fun.discipline_adapter.is_linear:
-            obj_mdo_fun = compute_linear_approximation(
-                obj_mdo_fun, zeros(obj_mdo_fun.discipline_adapter.input_dimension)
+        if objective.discipline_adapter.is_linear:
+            objective = compute_linear_approximation(
+                objective, zeros(objective.discipline_adapter.input_dimension)
             )
 
-        self.optimization_problem.objective = obj_mdo_fun
+        self.optimization_problem.objective = objective
 
     def get_optim_variable_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.

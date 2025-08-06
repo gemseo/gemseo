@@ -45,5 +45,7 @@ class ANotMDOFormulation(NotMDOFormulation):
     ) -> None:
         pass
 
-    def get_top_level_disciplines(self) -> tuple[BaseDiscipline, ...]:
+    def get_top_level_disciplines(
+        self, include_sub_formulations: bool = False
+    ) -> tuple[BaseDiscipline, ...]:
         pass

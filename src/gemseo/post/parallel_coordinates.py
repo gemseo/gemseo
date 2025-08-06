@@ -28,6 +28,7 @@ import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 from numpy import array
+from numpy import hstack
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
@@ -50,31 +51,49 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
     )
 
     def _plot(self, settings: ParallelCoordinates_Settings) -> None:
-        problem = self.optimization_problem
-
-        variable_history, variable_names, _ = self.database.get_history_array(
-            function_names=problem.function_names
+        optimization_metadata = self._optimization_metadata
+        input_space = self._dataset.misc["input_space"]
+        dataset = self._dataset
+        all_function_names = (
+            dataset.equality_constraint_names
+            + dataset.inequality_constraint_names
+            + dataset.objective_names
+            + dataset.observable_names
         )
-        names_to_sizes = problem.design_space.variable_sizes
+        variable_history = dataset.get_view(
+            variable_names=all_function_names
+        ).to_numpy()
+        x_history = dataset.design_dataset.to_numpy()
+        variable_history = hstack((variable_history, x_history))
+        variable_names = dataset.get_columns(all_function_names)
+        x_names = dataset.get_columns(
+            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
+        )
+        # x_names should be the actual names of the designs.
+        x_names = [f"x_{i + 1}" for i in range(len(x_names))]
+        variable_names.extend(x_names)
+        names_to_sizes = input_space.variable_sizes
         design_names = [
             repr_variable(name, i, names_to_sizes[name])
-            for name in problem.design_space.variable_names
+            for name in input_space.variable_names
             for i in range(names_to_sizes[name])
         ]
         output_dimension = variable_history.shape[1] - len(design_names)
-        design_history = problem.design_space.normalize_vect(
+        design_history = input_space.normalize_vect(
             variable_history[:, output_dimension:]
         )
         function_names = variable_names[:output_dimension]
-        objective_index = variable_names.index(self._standardized_obj_name)
+        objective_index = variable_names.index(
+            optimization_metadata.standardized_objective_name
+        )
         objective_history = variable_history[:, objective_index]
         if self._change_obj:
             objective_history = -objective_history
             variable_history[:, objective_index] = objective_history
-            function_names[objective_index] = self._obj_name
-            obj_name = self._obj_name
+            function_names[objective_index] = optimization_metadata.objective_name
+            obj_name = optimization_metadata.objective_name
         else:
-            obj_name = self._standardized_obj_name
+            obj_name = optimization_metadata.standardized_objective_name
 
         fig = self.__parallel_coordinates(
             design_history, design_names, objective_history, settings.fig_size

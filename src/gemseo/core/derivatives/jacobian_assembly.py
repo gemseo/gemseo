@@ -438,7 +438,11 @@ class JacobianAssembly:
         # Iterate over outputs
         for row_index, function in enumerate(functions):
             column = 0
-            function_jacobian = self.disciplines[function].jac[function]
+            discipline = self.disciplines[function]
+            if not discipline.jac:
+                continue
+
+            function_jacobian = discipline.jac[function]
             # Iterate over inputs
             for column_index, variable in enumerate(variables):
                 jacobian = function_jacobian.get(variable, None)
@@ -653,7 +657,6 @@ class JacobianAssembly:
                 with the right input data;
                 it can be almost free if the corresponding output data
                 have been stored in the :attr:`.Discipline.cache`.
-            linear_solver_settings: The options passed to the linear solver factory.
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
             **linear_solver_settings: The options passed to the linear solver factory.

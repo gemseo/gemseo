@@ -25,12 +25,12 @@ from typing import ClassVar
 
 from strenum import StrEnum
 
-from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.factory import CacheFactory
-from gemseo.caches.simple_cache import SimpleCache
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow
 from gemseo.core.discipline.io import IO
+from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.factory import GrammarType as _GrammarType
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.caches.base_cache import BaseCache
+    from gemseo.caches.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.core.grammars.grammar_properties import GrammarProperties
@@ -137,6 +138,9 @@ class BaseDiscipline(BaseMonitoredProcess):
     _process_flow_class: ClassVar[type[BaseFlow]] = BaseFlow
     """The class used to create the process flow."""
 
+    _has_jacobian: bool
+    """Whether the Jacobian has been set either by :meth:`_run` or from the cache."""
+
     def __init__(
         self,
         name: str = "",
@@ -147,8 +151,8 @@ class BaseDiscipline(BaseMonitoredProcess):
                 If empty, use the name of the class.
         """  # noqa: D205, D212, D415
         super().__init__(name)
+        self._has_jacobian = False
         self.cache = None
-        self.set_cache(self.default_cache_type)
         self.io = IO(
             self.__class__,
             self.name,
@@ -156,6 +160,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             self.auto_detect_grammar_files,
             self.GRAMMAR_DIRECTORY,
         )
+        self.set_cache(self.default_cache_type)
 
     def _get_string_representation(self) -> MultiLineString:
         mls = MultiLineString()
@@ -182,15 +187,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not output_grammar:
             return
 
-        output_data = self.io.data.copy()
+        output_data = self.io._data.copy()
         for name in output_data.keys() - output_grammar:
             del output_data[name]
-
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            to_array = output_grammar.data_converter.convert_value_to_array
-            for name, value in output_data.items():
-                output_data[name] = to_array(name, value)
 
         self.cache.cache_outputs(input_data, output_data)  # type: ignore[union-attr]  # because cache is checked to be not None in the caller
 
@@ -218,12 +217,6 @@ class BaseDiscipline(BaseMonitoredProcess):
             if value is not None:
                 input_data_[auto_coupled_name] = deepcopy(value)
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            to_array = self.io.input_grammar.data_converter.convert_value_to_array
-            for input_name, value in input_data_.items():
-                input_data_[input_name] = to_array(input_name, value)
-
         return input_data_
 
     def _set_data_from_cache(self, cache_entry: CacheEntry) -> None:
@@ -233,7 +226,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             cache_entry: The cache entry.
         """
         self.io.data = cache_entry.inputs
-        self.io.data.update(cache_entry.outputs)
+        self.io._data.update(cache_entry.outputs)
 
     def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
         """Search and load the cached output data from input data.
@@ -251,22 +244,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not cache_entry.outputs:
             return False
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
-            # Do not modify the cache entry which is mutable.
-            cache_output = cache_entry.outputs.copy()
-            to_value = self.io.output_grammar.data_converter.convert_array_to_value
-            for output_name, value in cache_output.items():
-                cache_output[output_name] = to_value(output_name, value)
-        else:
-            cache_output = cache_entry.outputs
-
-        # TODO: Fix this workaround for input_data that does not match strictly
-        #  the cache one.
-        cache_entry = CacheEntry(input_data, cache_output, cache_entry.jacobian)
-
         self._set_data_from_cache(cache_entry)
-
         return True
 
     def set_cache(
@@ -317,6 +295,8 @@ class BaseDiscipline(BaseMonitoredProcess):
         ):
             if cache_type == self.CacheType.HDF5:
                 kwargs.setdefault("hdf_node_path", self.name)
+                kwargs["input_data_converter"] = self.io.input_grammar.data_converter
+                kwargs["output_data_converter"] = self.io.output_grammar.data_converter
             self.cache = _CACHE_FACTORY.create(
                 cache_type, tolerance=tolerance, **kwargs
             )
@@ -352,39 +332,47 @@ class BaseDiscipline(BaseMonitoredProcess):
         Returns:
             The input and output data.
         """
-        input_data = self.io.prepare_input_data(input_data)
+        self._has_jacobian = False
+        io = self.io
 
-        if self.cache is not None:
+        input_data = io.prepare_input_data(input_data)
+
+        use_cache = self.cache is not None
+
+        if use_cache:
             if self._can_load_cache(input_data):
                 if self.validate_output_data:
-                    self.io.output_grammar.validate(self.io.data)
-                return self.io.data
+                    io.output_grammar.validate(io._data)
+                return io._data
 
             # Keep a pristine copy of the input data before it is eventually changed.
             input_data_for_cache = self.__create_input_data_for_cache(input_data)
 
-        self.io.initialize(input_data, self.validate_input_data)
+        io.initialize(input_data, self.validate_input_data)
 
         if self.virtual_execution:
-            self.io.update_output_data(self.io.output_grammar.defaults)
-        else:
+            io.update_output_data(io.output_grammar.defaults)
+        elif ExecutionStatus.is_enabled or ExecutionStatistics.is_enabled:
             self._execute_monitored()
+        else:
+            self._execute()
 
-        self.io.finalize(self.validate_output_data)
+        io.finalize(self.validate_output_data)
 
-        if self.cache is not None:
+        if use_cache:
             self._store_cache(input_data_for_cache)
 
-        return self.io.data
+        return io._data
 
     def _execute(self) -> None:
-        if self.io.input_grammar.to_namespaced:
-            input_data = self.io.get_input_data(with_namespaces=False)
+        io = self.io
+        if io.input_grammar.to_namespaced:
+            input_data = io.get_input_data(with_namespaces=False)
         else:
             # No namespaces, avoid useless processing.
-            input_data = self.io.data
+            input_data = io._data
 
-        data_processor = self.io.data_processor
+        data_processor = io.data_processor
         if data_processor is not None:
             input_data = data_processor.pre_process_data(input_data)
 
@@ -394,7 +382,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             if data_processor is not None:
                 output_data = data_processor.post_process_data(output_data)
 
-            self.io.update_output_data(output_data)
+            io.update_output_data(output_data)
 
     @abstractmethod
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -520,7 +508,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     @property
     def local_data(self) -> DisciplineData:
         """The current input and output data."""
-        return self.io.data
+        return self.io._data
 
     @local_data.setter
     def local_data(self, data: MutableStrKeyMapping) -> None:

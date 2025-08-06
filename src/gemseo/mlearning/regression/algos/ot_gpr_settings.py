@@ -81,6 +81,8 @@ TNC: Final[TNC] = OT_TNC()
 class OTGaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the Gaussian process regressor from OpenTURNS."""
 
+    _TARGET_CLASS_NAME = "OTGaussianProcessRegressor"
+
     use_hmat: bool | None = Field(
         default=None,
         description="""Whether to use the HMAT or LAPACK as linear algebra method.

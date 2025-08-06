@@ -123,7 +123,7 @@ class BaseFullCache(BaseCache):
             input_data: The input data to cache.
 
         Returns:
-            Whether ``input_data`` was missing.
+            Whether ``input_data`` exists.
         """
         data_hash = hash_data(input_data)
 
@@ -136,7 +136,7 @@ class BaseFullCache(BaseCache):
             self._last_accessed_index.value = self._max_index.value
             self._hashes_to_indices[data_hash] = array([self._max_index.value])
             self._initialize_entry(self._max_index.value)
-            return True
+            return False
 
         # If yes, look if there is a corresponding input data equal to ``input_data``.
         for index in indices:
@@ -145,7 +145,7 @@ class BaseFullCache(BaseCache):
             ):
                 # The input data is already cached => we don't store it again.
                 self._last_accessed_index.value = index
-                return False
+                return True
 
         # If there is no an input data equal ``input_data``,
         # update the indices related to the ``data_hash``.
@@ -153,7 +153,7 @@ class BaseFullCache(BaseCache):
         self._last_accessed_index.value = self._max_index.value
         self._hashes_to_indices[data_hash] = append(indices, self._max_index.value)
         self._initialize_entry(self._max_index.value)
-        return True
+        return False
 
     def _initialize_entry(
         self,
@@ -215,7 +215,7 @@ class BaseFullCache(BaseCache):
         Returns:
             Whether ``group`` exists.
         """
-        if self.__ensure_input_data_exists(input_data):
+        if not self.__ensure_input_data_exists(input_data):
             self._write_data(input_data, self.Group.INPUTS, self._max_index.value)
         elif self._has_group(self._last_accessed_index.value, group):
             return True

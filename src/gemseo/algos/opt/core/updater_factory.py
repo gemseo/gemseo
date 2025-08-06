@@ -26,6 +26,7 @@ from typing import ClassVar
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
 from gemseo.algos.opt.core.trust_updater import TrustUpdater
+from gemseo.utils.string_tools import pretty_repr
 
 
 class UpdaterFactory:
@@ -61,8 +62,8 @@ class UpdaterFactory:
         """
         if name not in self.__update_name_to_updater:
             msg = (
-                f"No update method named {name} is available among update methods: "
-                f"{list(self.__update_name_to_updater.keys())}."
+                f"{name!r} is not an updater; available: "
+                f"{pretty_repr(self.__update_name_to_updater.keys(), use_and=True)}."
             )
             raise ValueError(msg)
 

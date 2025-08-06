@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import re
-import unittest
 from os.path import exists
 from random import shuffle
 from typing import TYPE_CHECKING
@@ -55,89 +54,91 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-@pytest.mark.usefixtures("tmp_wd")
-class TestCouplingStructure(unittest.TestCase):
-    """Test the methods of the coupling structure class."""
+def test_couplings_sellar() -> None:
+    """Verify the strong/weak/total couplings of Sellar pb."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    coupling_structure = CouplingStructure(disciplines)
 
-    def test_couplings_sellar(self) -> None:
-        """Verify the strong/weak/total couplings of Sellar pb."""
-        disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-        coupling_structure = CouplingStructure(disciplines)
+    strong_couplings = coupling_structure.strong_couplings
+    weak_couplings = coupling_structure.weak_couplings
+    assert strong_couplings == [Y_1, Y_2]
+    assert weak_couplings == [C_1, C_2, OBJ]
 
-        strong_couplings = coupling_structure.strong_couplings
-        weak_couplings = coupling_structure.weak_couplings
-        assert strong_couplings == [Y_1, Y_2]
-        assert weak_couplings == [C_1, C_2, OBJ]
+    input_coupl = coupling_structure.get_input_couplings(disciplines[1])
+    assert input_coupl == [Y_1]
+    input_coupl = coupling_structure.get_input_couplings(disciplines[2])
+    assert input_coupl == [Y_1, Y_2]
 
-        input_coupl = coupling_structure.get_input_couplings(disciplines[1])
-        assert input_coupl == [Y_1]
-        input_coupl = coupling_structure.get_input_couplings(disciplines[2])
-        assert input_coupl == [Y_1, Y_2]
+    with pytest.raises(
+        ValueError,
+        match=re.escape("There is no discipline with an output variable named 'foo'."),
+    ):
+        coupling_structure.find_discipline("foo")
 
-        self.assertRaises(ValueError, coupling_structure.find_discipline, "self")
 
-    def test_strong_weak_coupling(self) -> None:
-        disciplines = [SobieskiStructure(), SobieskiMission()]
-        coupling_structure = CouplingStructure(disciplines)
-        s1_o_strong = coupling_structure.get_output_couplings(disciplines[0])
-        assert len(s1_o_strong) == 0
-        s1_o_weak = coupling_structure.get_output_couplings(
-            disciplines[0], strong=False
-        )
-        assert s1_o_weak == ["y_14"]
+def test_strong_weak_coupling() -> None:
+    disciplines = [SobieskiStructure(), SobieskiMission()]
+    coupling_structure = CouplingStructure(disciplines)
+    s1_o_strong = coupling_structure.get_output_couplings(disciplines[0])
+    assert len(s1_o_strong) == 0
+    s1_o_weak = coupling_structure.get_output_couplings(disciplines[0], strong=False)
+    assert s1_o_weak == ["y_14"]
 
-    def test_n2(self) -> None:
-        """Verify the strong/weak/total couplings of Sellar pb."""
-        disciplines = [
-            SobieskiStructure(),
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
-        coupling_structure = CouplingStructure(disciplines)
 
-        coupling_structure.plot_n2_chart("n2_1.png", False)
-        assert exists("n2_1.png")
-        coupling_structure.plot_n2_chart("n2_2.png")
-        assert exists("n2_2.png")
+def test_n2(tmp_wd) -> None:
+    """Verify the strong/weak/total couplings of Sellar pb."""
+    disciplines = [
+        SobieskiStructure(),
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+        SobieskiMission(),
+    ]
+    coupling_structure = CouplingStructure(disciplines)
 
-        disc_shuff = list(DISC_DESCRIPTIONS["16"].items())
-        shuffle(disc_shuff)
-        disc_shuff = dict(disc_shuff)
-        disciplines = create_disciplines_from_desc(disc_shuff)
-        coupling_structure = CouplingStructure(disciplines)
+    coupling_structure.plot_n2_chart("n2_1.png", False)
+    assert exists("n2_1.png")
+    coupling_structure.plot_n2_chart("n2_2.png")
+    assert exists("n2_2.png")
 
-        fname = "n2_16d.png"
-        coupling_structure.plot_n2_chart(fname, False)
-        assert exists(fname)
+    disc_shuff = list(DISC_DESCRIPTIONS["16"].items())
+    shuffle(disc_shuff)
+    disc_shuff = dict(disc_shuff)
+    disciplines = create_disciplines_from_desc(disc_shuff)
+    coupling_structure = CouplingStructure(disciplines)
 
-        coupling_structure = CouplingStructure([disciplines[0]])
-        with pytest.raises(
-            ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
-        ):
-            coupling_structure.plot_n2_chart("n2_3.png", False)
+    fname = "n2_16d.png"
+    coupling_structure.plot_n2_chart(fname, False)
+    assert exists(fname)
 
-    def test_n2_many_io(self) -> None:
-        a = DummyDiscipline("a")
-        b = DummyDiscipline("b")
-        a.io.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
-        a.io.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
-        b.io.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
-        b.io.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
+    coupling_structure = CouplingStructure([disciplines[0]])
+    with pytest.raises(
+        ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
+    ):
+        coupling_structure.plot_n2_chart("n2_3.png", False)
 
-        cpl = CouplingStructure([a, b])
-        cpl.plot_n2_chart()
 
-    def test_self_coupled(self) -> None:
-        sc_disc = SelfCoupledDisc()
-        sc_disc.execute()
+def test_n2_many_io(tmp_wd) -> None:
+    a = DummyDiscipline("a")
+    b = DummyDiscipline("b")
+    a.io.input_grammar.update_from_names(["i" + str(i) for i in range(30)])
+    a.io.output_grammar.update_from_names(["o" + str(i) for i in range(30)])
+    b.io.output_grammar.update_from_names(["i" + str(i) for i in range(30)])
+    b.io.input_grammar.update_from_names(["o" + str(i) for i in range(30)])
 
-        coupl = CouplingStructure([sc_disc])
-        assert coupl.all_couplings == ["y"]
-        assert coupl.strongly_coupled_disciplines == [sc_disc]
-        assert coupl.weakly_coupled_disciplines == []
-        assert coupl.weak_couplings == []
-        assert coupl.strong_couplings == ["y"]
+    cpl = CouplingStructure([a, b])
+    cpl.plot_n2_chart()
+
+
+def test_self_coupled() -> None:
+    sc_disc = SelfCoupledDisc()
+    sc_disc.execute()
+
+    coupl = CouplingStructure([sc_disc])
+    assert coupl.all_couplings == ["y"]
+    assert coupl.strongly_coupled_disciplines == [sc_disc]
+    assert coupl.weakly_coupled_disciplines == []
+    assert coupl.weak_couplings == []
+    assert coupl.strong_couplings == ["y"]
 
 
 class SelfCoupledDisc(Discipline):

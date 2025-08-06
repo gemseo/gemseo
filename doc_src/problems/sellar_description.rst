@@ -13,10 +13,10 @@
 Sellar's problem
 ----------------
 
-The Sellar's problem is considered in different tutorials:
+The Sellar's problem is considered in different examples:
 
 - :ref:`sphx_glr_examples_mdo_plot_gemseo_in_10_minutes.py`
-- :ref:`sellar_mdo`
+- :ref:`sphx_glr_examples_mdo_plot_sellar.py`
 
 Description of the problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +30,7 @@ The Sellar disciplines are also available with analytic derivatives in |g|, as w
 Creation of the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create the Sellar disciplines, use the function ``create_discipline``:
+To create the Sellar disciplines, use the function :func:`.create_discipline`:
 
 .. code::
 
@@ -41,7 +41,7 @@ To create the Sellar disciplines, use the function ``create_discipline``:
 Importation of the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To import the Sellar design space, use the class ``create_discipline``:
+The :class:`.SellarDesignSpace` can be imported as follows:
 
 .. code-block:: python
 
@@ -68,4 +68,4 @@ Then, you can visualize it with ``print(design_space)``:
 
 .. seealso::
 
-   See :ref:`sellar_mdo` to create the Sellar problem from scratch
+   See :ref:`sphx_glr_examples_mdo_plot_sellar.py` to create the Sellar problem from scratch.

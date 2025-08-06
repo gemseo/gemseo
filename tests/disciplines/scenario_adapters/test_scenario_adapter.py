@@ -139,7 +139,7 @@ def test_adapter_set_and_reset_x0(scenario) -> None:
     instantiation."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    msg = "Inconsistent options for MDOScenarioAdapter."
+    msg = "The options reset_x0_before_opt and set_x0_before_opt of MDOScenarioAdapter cannot both be True."  # noqa: E501
     with pytest.raises(ValueError, match=msg):
         MDOScenarioAdapter(
             scenario, inputs, outputs, set_x0_before_opt=True, reset_x0_before_opt=True
@@ -264,14 +264,18 @@ def test_compute_jacobian_exceptions(scenario) -> None:
     # Pass invalid inputs
     with pytest.raises(
         ValueError,
-        match=re.escape("The following are not inputs of the adapter: bar, foo."),
+        match=re.escape(
+            "The following are not inputs of the adapter: 'bar' and 'foo'."
+        ),
     ):
         adapter._compute_jacobian(input_names=["x_shared", "foo", "bar"])
 
     # Pass invalid outputs
     with pytest.raises(
         ValueError,
-        match=re.escape("The following are not outputs of the adapter: bar, foo."),
+        match=re.escape(
+            "The following are not outputs of the adapter: 'bar' and 'foo'."
+        ),
     ):
         adapter._compute_jacobian(output_names=["y_4", "foo", "bar"])
 
@@ -281,7 +285,9 @@ def test_compute_jacobian_exceptions(scenario) -> None:
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
     with pytest.raises(
         ValueError,
-        match=re.escape("Post-optimal Jacobians of g_1, g_2 cannot be computed."),
+        match=re.escape(
+            "The post-optimal Jacobians of 'g_1' and 'g_2' cannot be computed."
+        ),
     ):
         adapter._compute_jacobian(output_names=["y_4", "g_2", "g_1"])
 
@@ -303,7 +309,7 @@ def build_struct_scenario():
         formulation_name="DisciplinaryOpt",
         maximize_objective=True,
     )
-    sc_str.add_constraint("g_1", constraint_type="ineq")
+    sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
     sc_str.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_str
 
@@ -317,7 +323,7 @@ def build_prop_scenario():
         formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
     )
-    sc_prop.add_constraint("g_3", constraint_type="ineq")
+    sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
     sc_prop.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_prop
 

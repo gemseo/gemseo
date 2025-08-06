@@ -16,22 +16,42 @@
 
 from __future__ import annotations
 
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _ALPHA
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _BETA
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _MAXIMUM
+from gemseo.uncertainty.distributions.base_settings.beta_settings import _MINIMUM
+from gemseo.uncertainty.distributions.openturns.beta_settings import (
+    OTBetaDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _LOWER_BOUND,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _TRANSFORMATION,
+)
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    _UPPER_BOUND,
+)
 
 
 class OTBetaDistribution(OTDistribution):
     """The OpenTURNS-based Beta distribution."""
 
+    Settings = OTBetaDistribution_Settings
+
     def __init__(
         self,
-        alpha: float = 2.0,
-        beta: float = 2.0,
-        minimum: float = 0.0,
-        maximum: float = 1.0,
-        transformation: str = "",
-        lower_bound: float | None = None,
-        upper_bound: float | None = None,
-        threshold: float = 0.5,
+        alpha: float = _ALPHA,
+        beta: float = _BETA,
+        minimum: float = _MINIMUM,
+        maximum: float = _MAXIMUM,
+        transformation: str = _TRANSFORMATION,
+        lower_bound: float | None = _LOWER_BOUND,
+        upper_bound: float | None = _UPPER_BOUND,
+        threshold: float = _THRESHOLD,
+        settings: OTBetaDistribution_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -40,22 +60,33 @@ class OTBetaDistribution(OTDistribution):
             minimum: The minimum of the beta random variable.
             maximum: The maximum of the beta random variable.
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = OTBetaDistribution_Settings(
+                alpha=alpha,
+                beta=beta,
+                minimum=minimum,
+                maximum=maximum,
+                transformation=transformation,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+                threshold=threshold,
+            )
         super().__init__(
             interfaced_distribution="Beta",
             parameters=(
-                alpha,
-                beta,
-                minimum,
-                maximum,
+                settings.alpha,
+                settings.beta,
+                settings.minimum,
+                settings.maximum,
             ),
             standard_parameters={
-                self._LOWER: minimum,
-                self._UPPER: maximum,
-                self._ALPHA: alpha,
-                self._BETA: beta,
+                self._LOWER: settings.minimum,
+                self._UPPER: settings.maximum,
+                self._ALPHA: settings.alpha,
+                self._BETA: settings.beta,
             },
-            transformation=transformation,
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-            threshold=threshold,
+            transformation=settings.transformation,
+            lower_bound=settings.lower_bound,
+            upper_bound=settings.upper_bound,
+            threshold=settings.threshold,
         )

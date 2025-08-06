@@ -23,7 +23,7 @@ from gemseo.mda.factory import MDAFactory
 from gemseo.mda.jacobi import MDAJacobi
 
 
-def test_create(sellar_disciplines) -> None:
+def test_create(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test the factory create."""
     mda = MDAFactory().create("MDAJacobi", sellar_disciplines, max_mda_iter=2)
     assert isinstance(mda, MDAJacobi)

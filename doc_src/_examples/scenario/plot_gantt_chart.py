@@ -40,6 +40,7 @@ on the Sobieski's SSBJ problem.
 
 from __future__ import annotations
 
+from gemseo import configure
 from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -49,10 +50,14 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 configure_logger()
 
+# %%
+# Enable the recording of statistics
+# ----------------------------------
+configure(enable_discipline_statistics=True)
 
 # %%
 # Create the scenario
-# ------------------
+# -------------------
 # First, we define the Sobieski's SSBJ problem as a scenario.
 #
 # For this,

@@ -53,13 +53,13 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
     return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()

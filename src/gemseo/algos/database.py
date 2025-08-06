@@ -29,6 +29,8 @@ from ast import literal_eval
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
+from contextlib import contextmanager
+from contextlib import nullcontext
 from copy import deepcopy
 from itertools import chain
 from itertools import islice
@@ -49,6 +51,16 @@ from numpy import integer
 from numpy import issubdtype
 from numpy import nan
 from numpy import ndarray
+
+try:
+    from numpy._core import printoptions
+except ImportError:
+
+    @contextmanager
+    def printoptions(*args, **kwargs):  # noqa: D103
+        yield nullcontext()
+
+
 from numpy.linalg import norm
 from pandas import MultiIndex
 
@@ -57,6 +69,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_repr
@@ -65,6 +78,7 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from gemseo.datasets.optimization_metadata import OptimizationMetadata
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
@@ -747,6 +761,9 @@ class Database(Mapping):
     ) -> None:
         """Export the optimization database to an HDF file.
 
+        When exporting to an HDF file, the order of the values for each entry is not
+        guaranteed to be preserved.
+
         Args:
             file_path: The path of the HDF file.
             append: Whether to append the data to the file.
@@ -767,6 +784,9 @@ class Database(Mapping):
         log: bool = True,
     ) -> Database:
         """Create a database from an HDF file.
+
+        The order of the values for each key is not guaranteed to be
+        preserved.
 
         Args:
             file_path: The path of the HDF file.
@@ -826,8 +846,10 @@ class Database(Mapping):
             function_names: The names of the functions
                 whose output values must be returned.
                 If empty, use all the functions.
-            input_names: The names of the input variables.
-                If empty, use :attr:`.input_names`.
+            input_names: The names of the input variables to name the columns of the
+                ``x_vect`` when ``with_x_vect`` is ``True``. These names must match the
+                dimension of the design vector.
+                If empty, the i-th column is named ``"x_i"``.
             add_missing_tag: If ``True``,
                 add the tag specified in ``missing_tag``
                 for data that are not available.
@@ -835,6 +857,10 @@ class Database(Mapping):
             with_x_vect: If ``True``,
                 the input variables are returned in the history
                 as ``np.hstack((get_output_history, x_vect_history))``.
+
+        Raises:
+            ValueError: If the number of names does not match the dimension of the
+                design vector.
 
         Returns:
             The history as an 2D array
@@ -857,9 +883,14 @@ class Database(Mapping):
             f_history = array(f_flat_values, dtype=object).real
         if with_x_vect:
             if not input_names:
-                x_names = [f"x_{i + 1}" for i in range(len(self))]
+                x_names = [f"x_{i}" for i in range(1, self.input_space.dimension + 1)]
             else:
                 x_names = convert_strings_to_iterable(input_names)
+                if (n := len(list(x_names))) != (
+                    expected_n := self.input_space.dimension
+                ):
+                    msg = f"Expected {expected_n} names, got {n}."
+                    raise ValueError(msg)
 
             x_flat_names, x_flat_values = self.__split_history(x_history, x_names)
             variables_flat_names = f_flat_names + x_flat_names
@@ -961,7 +992,8 @@ class Database(Mapping):
         return f"{cls.GRAD_TAG}{name}"
 
     def __str__(self) -> str:
-        return str(self.__data)
+        with printoptions(legacy="1.25"):
+            return str(self.__data)
 
     def __get_index(self, iteration: int) -> int:
         """Return the index from an iteration.
@@ -998,6 +1030,8 @@ class Database(Mapping):
         input_group: str = Dataset.DEFAULT_GROUP,
         output_group: str = Dataset.DEFAULT_GROUP,
         gradient_group: str = Dataset.GRADIENT_GROUP,
+        optimization_metadata: OptimizationMetadata | None = None,
+        groups_to_variables: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
         """Export the database to a :class:`.Dataset`.
 
@@ -1012,13 +1046,15 @@ class Database(Mapping):
             dataset_class: The dataset class.
             input_group: The name of the group to store the input values.
             output_group: The name of the group to store the output values.
+                This argument is ignored when ``groups_to_variables`` is defined.
             gradient_group: The name of the group to store the gradient values.
+            groups_to_variables: The variable names
+                mapped to their corresponding group to be stored in.
 
         Returns:
             A dataset built from the database.
         """
         dataset_name = name or self.name
-
         # Add database inputs
         input_history = array(self.get_x_vect_history())
         input_space = self.input_space
@@ -1043,21 +1079,24 @@ class Database(Mapping):
             for name in input_space
             for index in range(names_to_sizes[name])
         ]
-
         # Add database outputs
-        output_names = self.get_function_names()
-        self.__update_data_and_columns_for_dataset(
-            data,
-            columns,
-            names_to_types,
-            output_names,
-            n_samples,
-            output_group,
-            False,
-        )
+        if not groups_to_variables:
+            groups_to_variables = {output_group: self.get_function_names()}
+
+        for group_name, variable_names in groups_to_variables.items():
+            self.__update_data_and_columns_for_dataset(
+                data,
+                columns,
+                names_to_types,
+                variable_names,
+                n_samples,
+                group_name,
+                False,
+            )
 
         # Add database output gradients
         if export_gradients:
+            output_names = self.get_function_names()
             self.__update_data_and_columns_for_dataset(
                 data,
                 columns,
@@ -1078,6 +1117,7 @@ class Database(Mapping):
         ).get_view(indices=positions)
         # In case of any future modification of self.input_space,
         # we use a copy of its current value.
+        dataset.misc["optimization_metadata"] = optimization_metadata
         dataset.misc["input_space"] = deepcopy(self.input_space)
 
         names_to_types_without_int = {
@@ -1086,6 +1126,15 @@ class Database(Mapping):
         names_to_types_without_int.update({
             k: float for k, v in names_to_types.items() if issubdtype(v, integer)
         })
+
+        # The type for integers must be "pandas.Int64Dtype()"
+        # to manage NaN with integers.
+        # It's a Pandas experimental feature.
+        # See https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html
+        names_to_types.update({
+            k: "Int64" for k, v in names_to_types.items() if issubdtype(v, integer)
+        })
+
         # "0.0" cannot be cast to int directly (try int("0.0")).
         # So
         # 1) we cast the str-like int to float
@@ -1128,6 +1177,10 @@ class Database(Mapping):
             history, input_history = self.get_function_history(
                 function_name=function_name, with_x_vect=True
             )
+            # The history data type may change if data is incomplete.
+            # In that case, we insert NaNs and convert ``history`` into float.
+            # Thus, the initial data type is kept for future data type conversion.
+            history_dtype = atleast_1d(history).real.dtype
             history = (
                 self.__replace_missing_values(
                     history,
@@ -1140,7 +1193,7 @@ class Database(Mapping):
             data.append(history)
             columns_ = [(group, function_name, i) for i in range(history.shape[1])]
             columns.extend(columns_)
-            names_to_types.update(dict.fromkeys(columns_, atleast_1d(history).dtype))
+            names_to_types.update(dict.fromkeys(columns_, history_dtype))
 
     @staticmethod
     def __replace_missing_values(
@@ -1165,6 +1218,7 @@ class Database(Mapping):
             # Add NaN values at the missing input data.
             # N.B. the input data are assumed to be in the same order.
             index = 0
+            output_history = output_history.astype(float)
             for input_data in input_history:
                 while not array_equal(input_data, full_input_history[index]):
                     output_history = insert(output_history, index, nan, 0)

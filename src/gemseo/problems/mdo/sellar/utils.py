@@ -16,9 +16,7 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import array
 from numpy import atleast_2d
@@ -27,8 +25,6 @@ from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 
-from gemseo.core.data_converters.json import JSONGrammarDataConverter
-from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.variables import ALPHA
 from gemseo.problems.mdo.sellar.variables import BETA
@@ -86,28 +82,3 @@ def get_y_opt(mda: BaseMDA) -> ndarray:
         mda.io.data[Y_1][0].real,
         mda.io.data[Y_2][0].real,
     ])
-
-
-class DataConverterFor2DArray(JSONGrammarDataConverter):
-    """A data converter where ``x_shared`` is not a ndarray."""
-
-    def convert_value_to_array(self, name: str, value: Any) -> ndarray:  # noqa: D102 # pragma: no cover
-        if name == X_SHARED:
-            return value[0]
-        return super().convert_value_to_array(name, value)
-
-    def convert_array_to_value(self, name: str, array_: Any) -> Any:  # noqa: D102 # pragma: no cover
-        if name == X_SHARED:
-            return array([array_])
-        return super().convert_array_to_value(name, array_)
-
-
-@contextmanager
-def set_data_converter() -> None:
-    """Set the data converter according to whether 2D array shall be used."""
-    if WITH_2D_ARRAY:  # pragma: no cover
-        JSONGrammar.DATA_CONVERTER_CLASS = DataConverterFor2DArray
-        yield
-        JSONGrammar.DATA_CONVERTER_CLASS = JSONGrammarDataConverter
-    else:
-        yield

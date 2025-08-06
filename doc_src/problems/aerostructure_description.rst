@@ -13,9 +13,7 @@
 Aerostructure problem
 ---------------------
 
-The Sobieski's SSBJ test case is considered in the different tutorials:
-
-- :ref:`aerostruct_toy_example`
+The Aerostructure problem is considered in the :ref:`sphx_glr_examples_scalable_plot_problem.py` example.
 
 Description of the problem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,7 +22,8 @@ The Aerostructure problem is defined by analytical functions:
 
 .. include:: aerostructure_problem_definition.inc
 
-The Aerostructure disciplines are also available with analytic derivatives in the classes :class:`~gemseo.problems.aerostructure.aerostructure.Mission`, :class:`~gemseo.problems.aerostructure.aerostructure.Aerodynamics` and :class:`~gemseo.problems.aerostructure.aerostructure.Structure`, as well as a :class:`~gemseo.problems.aerostructure.aerostructure_design_space.AerostructureDesignSpace`:
+The Aerostructure disciplines are also available with analytic derivatives in the classes :class:`.Mission`,
+:class:`.Aerodynamics` and :class:`.Structure`, as well as a :class:`.AerostructureDesignSpace`:
 
 Creation of the disciplines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,7 +39,7 @@ To create the aerostructure disciplines, use the function :func:`.create_discipl
 Importation of the design space
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To import the aerostructure design space, use the class ``create_discipline``:
+The :class:`.AerostructureDesignSpace` class can be imported as follows:
 
 .. code-block:: python
 
@@ -67,4 +66,4 @@ Then, you can visualize it with ``print(design_space)``:
 
 .. seealso::
 
-   See :ref:`aerostruct_toy_example` to see an application of this problem.
+   See :ref:`sphx_glr_examples_scalable_plot_problem.py` to see an application of this problem.

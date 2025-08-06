@@ -33,6 +33,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -44,6 +45,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo.algos.database import DatabaseKeyType
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
@@ -145,6 +147,7 @@ class BiLevel(BaseMDOFormulation):
 
         self._create_scenario_adapters(
             reset_x0_before_opt=self._settings.reset_x0_before_opt,
+            set_x0_before_opt=self._settings.set_x0_before_opt,
             keep_opt_history=self._settings.keep_opt_history,
             save_opt_history=self._settings.save_opt_history,
             scenario_log_level=self._settings.sub_scenarios_log_level,
@@ -159,6 +162,9 @@ class BiLevel(BaseMDOFormulation):
 
         # Builds the objective function on top of the chain
         self._build_objective_from_disc(self._objective_name)
+        self.optimization_problem.database.add_new_iter_listener(
+            self._store_optimal_local_design_values
+        )
 
     @property
     def mda1(self) -> BaseMDA | None:
@@ -338,14 +344,18 @@ class BiLevel(BaseMDOFormulation):
         strongly_coupled_disciplines = (
             self.coupling_structure.strongly_coupled_disciplines
         )
+        main_mda_settings = self._settings.main_mda_settings
+        if isinstance(main_mda_settings, BaseMDASettings):
+            main_mda_name = main_mda_settings._TARGET_CLASS_NAME
+        else:
+            main_mda_name = self._settings.main_mda_name
         if len(strongly_coupled_disciplines) > 0:
             mda1 = self.__mda_factory.create(
-                self._settings.main_mda_name,
+                main_mda_name,
                 strongly_coupled_disciplines,
-                settings_model=self._settings.main_mda_settings,
+                settings_model=main_mda_settings,
             )
             mda1.settings.warm_start = True
-
         else:
             LOGGER.warning(
                 "No strongly coupled disciplines detected, "
@@ -353,9 +363,9 @@ class BiLevel(BaseMDOFormulation):
             )
 
         mda2 = self.__mda_factory.create(
-            self._settings.main_mda_name,
+            main_mda_name,
             get_sub_disciplines(self.disciplines),
-            settings_model=self._settings.main_mda_settings,
+            settings_model=main_mda_settings,
         )
         mda2.settings.warm_start = False
 
@@ -449,7 +459,21 @@ class BiLevel(BaseMDOFormulation):
                     )
                     design_space.remove_variable(coupling)
 
-    def get_top_level_disciplines(self) -> tuple[Discipline]:  # noqa:D102
+    def get_top_level_disciplines(  # noqa:D102
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
+        if include_sub_formulations:
+            return (
+                self.chain,
+                *(
+                    discipline
+                    for scenario_adapter in self._scenario_adapters
+                    for discipline in scenario_adapter.scenario.formulation.get_top_level_disciplines(  # noqa: E501
+                        include_sub_formulations=include_sub_formulations
+                    )
+                ),
+            )
+
         return (self.chain,)
 
     def add_constraint(
@@ -605,3 +629,20 @@ class BiLevel(BaseMDOFormulation):
             if disc.io.output_grammar.has_names(output_names):
                 return True
         return False
+
+    def _store_optimal_local_design_values(self, x_vect: DatabaseKeyType) -> None:
+        """Store the optimal values of the local design variables in the database.
+
+        Args:
+            x_vect: The input value.
+        """
+        self.optimization_problem.database.store(
+            x_vect,
+            {
+                k: v
+                for adapter in self._scenario_adapters
+                for k, v in adapter.scenario.design_space.get_current_value(
+                    as_dict=True
+                ).items()
+            },
+        )

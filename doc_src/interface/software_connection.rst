@@ -237,7 +237,7 @@ which is error-prone.
 
 From the previous JSON grammar of the Sobieski Mission discipline,
 we can illustrate the interest of the data check.
-The :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` will check any data passed to its  :meth:`.Discipline.execute` method before
+The :class:`.SobieskiMission` will check any data passed to its  :meth:`.Discipline.execute` method before
 calling :meth:`!Discipline._run`.
 
 .. code-block:: python
@@ -259,7 +259,7 @@ as well as the rules.
     ERROR - 15:15:19 : JSON Grammar schema = {u'name': u'SobieskiMission_input', 'required': [u'x_shared', u'y_14', u'y_24', u'y_34'], u'id': u'#SobieskiMission_input', u'$schema': u'http://json-schema.org/draft-04/schema', 'type': u'object', 'properties': {u'y_24': {'items': {'type': u'number'}, 'type': u'array'}, u'x_shared': {'items': {'type': u'number'}, 'type': u'array'}, u'y_34': {'items': {'type': u'number'}, 'type': u'array'}, u'y_14': {'items': {'type': u'number'}, 'type': u'array'}}}
 
 The existence of required inputs is also checked before running.
-The wrapper :class:`~gemseo.problems.mdo.sobieski.disciplines.SobieskiMission` has :attr:`!Discipline.default_input_data` set for all its inputs, so
+The wrapper :class:`.SobieskiMission` has :attr:`!Discipline.default_input_data` set for all its inputs, so
 we need first to erase them to show that.
 
 .. code-block:: python
@@ -354,4 +354,4 @@ that will:
 #. Update the :attr:`!Discipline.status` to DONE or FAILED.
 #. Update accumulated execution time :attr:`!ExecutionStatistics.execution_time`.
 
-A complete example of discipline integration is given in :ref:`sellar_mdo`.
+A complete example of discipline integration is given in :ref:`sphx_glr_examples_mdo_plot_sellar.py`.

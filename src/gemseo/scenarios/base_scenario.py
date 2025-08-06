@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
-    from gemseo.utils.xdsm import XDSM
+    from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
@@ -173,6 +173,8 @@ class BaseScenario(BaseMonitoredProcess):
     """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
+
+    ConstraintType = MDOFunction.ConstraintType
 
     _opt_hist_backup_path: Path
 
@@ -364,7 +366,7 @@ class BaseScenario(BaseMonitoredProcess):
     def add_constraint(
         self,
         output_name: str | Sequence[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        constraint_type: ConstraintType = ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
@@ -450,9 +452,9 @@ class BaseScenario(BaseMonitoredProcess):
         """
         self.formulation = self._form_factory.create(
             formulation_name,
-            disciplines=disciplines,
-            objective_name=objective_name,
-            design_space=design_space,
+            disciplines,
+            objective_name,
+            design_space,
             settings_model=formulation_settings_model,
             **formulation_settings,
         )
@@ -734,16 +736,19 @@ class BaseScenario(BaseMonitoredProcess):
             show_html: Whether to open the web browser and display the XDSM.
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
-            save_pdf: Whether to save the XDSM as a PDF file.
-            pdf_build: Whether the standalone pdf of the XDSM will be built.
-            pdf_cleanup: Whether pdflatex built files will be cleaned up
-                after build is complete.
-            pdf_batchmode: Whether pdflatex is run in `batchmode`.
+            save_pdf: Whether to save the XDSM as
+                a TikZ file ``"{file_name}.tikz"`` containing its definition and
+                a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+                The LaTeX file can be compiled to a PDF file.
+            pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+                to a PDF file using pdflatex.
+            pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
+            pdf_batchmode: Whether to suppress compilation logs.
 
         Returns:
             A view of the XDSM if ``monitor`` is ``False``.
         """
-        from gemseo.utils.xdsmizer import XDSMizer
+        from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
         if log_workflow_status:
             monitor = True

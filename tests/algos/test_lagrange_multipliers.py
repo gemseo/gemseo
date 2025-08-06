@@ -154,8 +154,10 @@ def test_lagrangian_validation_ineq_normalize() -> None:
     assert err < 1e-3
 
 
-@pytest.mark.parametrize("constraint_type", ["eq", "ineq"])
-def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
+@pytest.mark.parametrize("constraint_type", MDOFunction.ConstraintType)
+def test_lagrangian_constraint(
+    constraint_type, sellar_with_2d_array, sellar_disciplines
+) -> None:
     scenario = create_scenario(
         sellar_disciplines,
         "obj",
@@ -163,8 +165,8 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
         formulation_name="MDF",
     )
 
-    scenario.add_constraint("c_1", constraint_type)
-    scenario.add_constraint("c_2", constraint_type)
+    scenario.add_constraint("c_1", constraint_type=constraint_type)
+    scenario.add_constraint("c_2", constraint_type=constraint_type)
 
     scenario.execute(algo_name="SLSQP", max_iter=50)
     problem = scenario.formulation.optimization_problem
@@ -172,7 +174,7 @@ def test_lagrangian_constraint(constraint_type, sellar_disciplines) -> None:
 
     lag = lagrange.compute(problem.solution.x_opt)
 
-    if constraint_type == "eq":
+    if constraint_type == scenario.ConstraintType.EQ:
         assert lagrange.EQUALITY in lag
         assert len(lag[lagrange.EQUALITY][-1]) == 2
 
@@ -344,7 +346,7 @@ def test_nnls_linalgerror():
         MDOFunction(
             lambda x: x * gradient, "g", jac=lambda _: gradient.reshape((-1, 1))
         ),
-        constraint_type="ineq",
+        constraint_type=MDOFunction.ConstraintType.INEQ,
     )
     multipliers = LagrangeMultipliers(problem).compute(array([0]))
     assert 18 - multipliers["lower_bounds"][1] + gradient @ multipliers["inequality"][
@@ -365,6 +367,6 @@ def test_nnls_runtimeerror():
     ])
     problem.add_constraint(
         MDOFunction(lambda x: jacobian @ x, "g", jac=lambda _: jacobian),
-        constraint_type="ineq",
+        constraint_type=problem.ConstraintType.INEQ,
     )
     LagrangeMultipliers(problem).compute(array([0, 0, 0]))

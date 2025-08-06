@@ -168,8 +168,8 @@ def test_common_scenario(
     three_length_common_problem,
 ) -> None:
     """Check OptHistoryView with objective, standardized or not."""
-    opt = OptHistoryView(three_length_common_problem)
     three_length_common_problem.use_standardized_objective = use_standardized_objective
+    opt = OptHistoryView(three_length_common_problem)
     opt.execute(save=False)
 
 

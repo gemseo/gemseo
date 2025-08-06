@@ -20,7 +20,8 @@ Make a monodisciplinary optimization problem multidisciplinary
 Introduction
 ------------
 
-The :class:`.OptAsMDOScenario` is a monodisciplinary optimization scenario made multidisciplinary.
+The :class:`.OptAsMDOScenario` is a class
+to make a monodisciplinary optimization problem multidisciplinary :cite:`AzizAlaoui2025`.
 The only requirement is that
 the discipline has at least three scalar inputs and at least one output.
 This scenario can be used to enrich a catalog of benchmark MDO problems,

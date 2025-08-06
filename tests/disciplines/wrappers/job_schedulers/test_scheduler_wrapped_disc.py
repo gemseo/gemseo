@@ -27,10 +27,12 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
+from gemseo.core.chains.chain import MDOChain
 from gemseo.disciplines.wrappers import job_schedulers
 from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
     JobSchedulerDisciplineWrapper,
 )
+from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.topology_optimization.volume_fraction_disc import VolumeFraction
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
@@ -88,9 +90,9 @@ def test_write_inputs_to_disk(discipline, tmp_wd) -> None:
     assert path_to_input_data.parent == tmp_wd
 
 
-def test_generate_job_template(discipline) -> None:
+def test_generate_job_template(tmp_wd, discipline) -> None:
     """Test the job scheduler template creation."""
-    current_workdir = discipline._create_current_workdir()
+    current_workdir = tmp_wd
     path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
         current_workdir, (), ()
     )
@@ -152,21 +154,29 @@ def test_handle_outputs_errors(
         discipline._handle_outputs(tmp_wd, outputs_path)
 
 
-def test_create_current_workdir(discipline) -> None:
-    """Test the creation of the workdir."""
-    current_workdir = discipline._create_current_workdir()
-    assert current_workdir.exists()
-    assert current_workdir.parent == discipline._workdir_path
+def add_namespace_sobieski_mission(discipline):
+    """Add a namespace to the discipline grammars."""
+    discipline.input_grammar.add_namespace("y_14", "ns")
+    discipline.output_grammar.add_namespace("y_4", "ns")
 
 
 def test_execution(discipline_mocked_js) -> None:
-    """Test the execution of the wrapped discipline."""
+    """Test the execution of the wrapped discipline.
+
+    Test with and without the use of namespaces.
+    """
     orig_disc = discipline_mocked_js._discipline
     ref_data = orig_disc.io.input_grammar.defaults
     ref_data["x_shared"] += 1.0
+
+    add_namespace_sobieski_mission(discipline_mocked_js)
+
     out = discipline_mocked_js.execute(ref_data)
-    assert "y_4" in out
+
+    assert "ns:y_4" in out
+
     mission_local = create_discipline("SobieskiMission")
+    add_namespace_sobieski_mission(mission_local)
     out_ref = mission_local.execute(ref_data)
     assert compare_dict_of_arrays(out, out_ref)
 
@@ -255,3 +265,56 @@ def test_run_or_compute_jacobian(discipline_diff_mocked_js):
         match="The serialized outputs file of the discipline does not exist",
     ):
         discipline_diff_mocked_js.execute()
+
+
+@pytest.fixture
+def cfd_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
+    """Creates a LinearDiscipline that linearizes at _run
+    based on JobSchedulerDisciplineWrapper using the mock template.
+
+    Returns:
+        The wrapped discipline
+    """
+    cfd = LinearDiscipline(
+        "CFD", input_names=["xa", "bc"], output_names=["cd"], compute_jac_at_run=True
+    )
+    return JobSchedulerDisciplineWrapper(
+        cfd,
+        job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
+        workdir_path=tmp_wd,
+        job_out_filename="run_disc.py",
+        scheduler_run_command="python",
+    )
+
+
+def test_jac_avec_compute_jacobian(cfd_mocked_js):
+    """Verify the jacobian computation at run within a chain."""
+    disc1 = LinearDiscipline(
+        "BC", input_names=["z"], output_names=["bc"], compute_jac_at_run=True
+    )
+
+    chain = MDOChain([disc1, cfd_mocked_js])
+    chain.add_differentiated_inputs(["xa"])
+    chain.add_differentiated_outputs(["cd"])
+    chain.execute()
+    chain.linearize()
+    assert "xa" in chain.jac["cd"]
+
+
+@pytest.mark.parametrize("discipline", ["discipline_mocked_js", "cfd_mocked_js"])
+def test_namespaces_jac(request, discipline):
+    """Verify the jacobian computation with namespaces."""
+    discipline = request.getfixturevalue(discipline)
+    discipline.name = "wrapped" + discipline.name
+    inputs = list(discipline.input_grammar.names)
+    inp = inputs[0]
+    out = next(iter(discipline.output_grammar.names))
+    discipline.add_namespace_to_input(inp, "ns_in")
+    discipline.add_namespace_to_output(out, "ns_out")
+
+    discipline.add_differentiated_outputs(["ns_out:" + out])
+    discipline.add_differentiated_inputs(["ns_in:" + inp, inputs[1]])
+
+    discipline.execute()
+    discipline.linearize()
+    assert "ns_in:" + inp in discipline.jac["ns_out:" + out]

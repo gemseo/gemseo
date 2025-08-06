@@ -26,6 +26,10 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import empty
 from numpy import ndarray
+from scipy.sparse import block_array
+from scipy.sparse import block_diag
+from scipy.sparse import csr_array
+from scipy.sparse import dok_array
 
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -98,7 +102,6 @@ class DisciplineAdapter(MDOFunction):
         self.__default_inputs = default_input_data
         self.__input_size = 0
         self.__differentiated_input_size = 0
-        self.__output_names_to_slices = {}
         self.__jacobian = array(())
         self.__discipline = discipline
         self.__input_names_to_slices = {}
@@ -163,25 +166,6 @@ class DisciplineAdapter(MDOFunction):
         # TODO: document what None means. We could use 0 instead.
         return None
 
-    def __create_output_names_to_slices(self, jacobians: JacobianData) -> int:
-        """Compute the indices of the input variables in the Jacobian array.
-
-        Args:
-            jacobians: The Jacobians data used to compute the slices.
-
-        Returns:
-            The size of the inputs.
-        """
-        self.__output_names_to_slices = output_names_to_slices = {}
-        start = 0
-        output_size = 0
-        for output_name in self.output_names:
-            input_name = next(iter(jacobians[output_name]))
-            output_size += jacobians[output_name][input_name].shape[0]
-            output_names_to_slices[output_name] = slice(start, output_size)
-            start = output_size
-        return output_size
-
     def _func_to_wrap(self, x_vect: NumberArray) -> complex | NumberArray:
         """Compute an output vector from an input one.
 
@@ -193,25 +177,35 @@ class DisciplineAdapter(MDOFunction):
         """
         self.__discipline.execution_status.value = ExecutionStatus.Status.DONE
         input_data = self.__create_discipline_input_data(x_vect)
-        output_data = self.__discipline.execute(input_data)
-        return self._convert_output_data_to_array(output_data)
+        n_samples = len(x_vect) if x_vect.ndim == 2 else 1
+        data = self.__discipline.execute(input_data)
+        return self._convert_output_data_to_array(
+            {k: v for k, v in data.items() if k in self.output_names},
+            n_samples=n_samples,
+        )
 
     def _convert_output_data_to_array(
-        self, output_data: StrKeyMapping
+        self, output_data: StrKeyMapping, n_samples: int = 1
     ) -> complex | NumberArray:
         """Convert the discipline's output data to array/scalar.
 
         Args:
             output_data: The discipline's output data.
+            n_samples: The number of samples.
 
         Returns:
             The vector or scalar of output data.
         """
+        if n_samples > 1:
+            output_data = {
+                k: v.reshape((n_samples, -1)) if isinstance(v, ndarray) else v
+                for k, v in output_data.items()
+            }
         output_vector = (
             self.__discipline.io.output_grammar.data_converter.convert_data_to_array(
                 self.output_names, output_data
             )
-        )
+        ).ravel()
 
         if output_vector.size == 1:  # The function is scalar.
             return output_vector[0]
@@ -228,61 +222,149 @@ class DisciplineAdapter(MDOFunction):
             The Jacobian value.
         """
         input_data = self.__create_discipline_input_data(x_vect)
-        jacobians = self.__discipline.linearize(input_data)
+        n_samples = len(x_vect) if x_vect.ndim == 2 else 1
+        jacobian_data = self.__discipline.linearize(input_data)
+        return self._convert_jacobian_to_array(jacobian_data, n_samples=n_samples)
 
-        return self._convert_jacobian_to_array(jacobians)
-
-    def _convert_jacobian_to_array(self, jacobians: JacobianData) -> NumberArray:
+    def _convert_jacobian_to_array(
+        self, jacobian_data: JacobianData, n_samples: int = 1
+    ) -> NumberArray:
         """Convert the discipline's Jacobians to array.
 
         Args:
-            jacobians: The discipline's Jacobians data.
+            jacobian_data: The discipline's Jacobian data.
+            n_samples: The number of samples.
 
         Returns:
             The aggregated Jacobian as a NumPy array.
         """
-        if len(self.__jacobian) == 0:
-            output_size = self.__create_output_names_to_slices(jacobians)
-            if output_size == 1:
-                shape = self.__differentiated_input_size
-            else:
-                shape = (output_size, self.__differentiated_input_size)
+        if n_samples > 1 or len(self.__jacobian) == 0:
+            self.__initialize_jacobian(jacobian_data, n_samples)
 
-            self.__jacobian = empty(shape)
-
+        # Case 1 = "1 sample and output_dimension = 1".
         if self.__jacobian.ndim == 1 or self.__jacobian.shape[0] == 1:
-            output_name = self.output_names[0]
-            jac_output = jacobians[output_name]
-            for input_name in self.differentiated_input_names_substitute:
-                input_slice = self.__differentiated_input_names_to_slices[input_name]
-                jac = jac_output[input_name]
-                # TODO: This precaution is meant to disappear when sparse 1-D array will
-                # be available. This is also mandatory since self.__jacobian is
-                # initialized as a dense array.
-                if isinstance(jac, sparse_classes):
-                    first_row = get_row(jac, 0).todense().flatten()
-                else:
-                    first_row = jac[0, :]
+            self.__convert_jacobian_to_array_case_1(jacobian_data)
+            return self.__jacobian
 
-                self.__jacobian[input_slice] = first_row
-        else:
-            for output_name in self.output_names:
-                output_slice = self.__output_names_to_slices[output_name]
-                jac_output = jacobians[output_name]
-                for input_name in self.differentiated_input_names_substitute:
-                    input_slice = self.__differentiated_input_names_to_slices[
-                        input_name
-                    ]
-                    jac = jac_output[input_name]
-                    # TODO: This is mandatory since self.__jacobian is initialized as a
-                    # dense array. Performance improvement could be obtained if one is
-                    # able to infer the type of jac.
-                    if isinstance(jac, sparse_classes):
-                        jac = jac.toarray()
+        # Case 2 = "1 sample and output_dimension > 1".
+        if n_samples == 1:
+            self.__convert_jacobian_to_array_case_2(jacobian_data)
+            return self.__jacobian
 
-                    self.__jacobian[output_slice, input_slice] = jac
-
+        # Case 3 = "n samples".
+        self.__convert_jacobian_to_array_case_3(jacobian_data, n_samples)
         return self.__jacobian
+
+    def __convert_jacobian_to_array_case_1(self, jacobian_data: JacobianData) -> None:
+        """Convert the Jacobian data in the case "1 sample and output_dimension = 1".
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+        """
+        jacobian_ = self.__jacobian
+        jacobian_data_ = jacobian_data[self.output_names[0]]
+        for input_name in self.differentiated_input_names_substitute:
+            input_slice = self.__differentiated_input_names_to_slices[input_name]
+            # jacobian_data__ is a (n*pi, n*dj) array
+            jacobian_data__ = jacobian_data_[input_name]
+            # TODO: This precaution is meant to disappear when sparse 1-D array will
+            # be available. This is also mandatory since self.__jacobian is
+            # initialized as a dense array.
+            if isinstance(jacobian_data__, sparse_classes):
+                first_row = get_row(jacobian_data__, 0).todense().flatten()
+            else:
+                first_row = jacobian_data__[0, :]
+
+            jacobian_[input_slice] = first_row
+
+    def __convert_jacobian_to_array_case_2(self, jacobian_data: JacobianData) -> None:
+        """Convert the Jacobian data in the case "output_dimension > 1".
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+        """
+        jacobian_ = self.__jacobian
+        output_position = 0
+        for output_name in self.output_names:
+            jacobian_data_ = jacobian_data[output_name]
+            input_position = 0
+            output_dimension = 0
+            for input_name in self.differentiated_input_names_substitute:
+                jacobian_data__ = jacobian_data_[input_name]
+                # TODO: This is mandatory since self.__jacobian is initialized as a
+                # dense array. Performance improvement could be obtained if one is
+                # able to infer the type of jac.
+                if isinstance(jacobian_data__, sparse_classes):
+                    jacobian_data__ = jacobian_data__.toarray()
+
+                output_dimension, input_dimension = jacobian_data__.shape
+                jacobian_[
+                    output_position : output_position + output_dimension,
+                    input_position : input_position + input_dimension,
+                ] = jacobian_data__
+
+                input_position += input_dimension
+
+            output_position += output_dimension
+
+    def __convert_jacobian_to_array_case_3(
+        self, jacobian_data: JacobianData, n_samples: int
+    ) -> None:
+        """Convert the Jacobian data in the case "n samples or output_dimension > 1".
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+            n_samples: The number of samples.
+        """
+        n_inputs = len(self.differentiated_input_names_substitute)
+        n_outputs = len(self.output_names)
+        output_names_to_sizes = {
+            k: next(iter(v.values())).shape[0] // n_samples
+            for k, v in jacobian_data.items()
+        }
+        diagonal_arrays = []
+        for i in range(n_samples):
+            arrays = [[None] * n_inputs] * n_outputs
+            for output_index, output_name in enumerate(self.output_names):
+                jacobian_data_ = jacobian_data[output_name]
+                output_size = output_names_to_sizes[output_name]
+                arrays_ = arrays[output_index]
+                for input_index, input_name in enumerate(
+                    self.differentiated_input_names_substitute
+                ):
+                    jacobian_data__ = jacobian_data_[input_name]
+                    input_size = self.__input_names_to_sizes[input_name]
+                    arrays_[input_index] = jacobian_data__[
+                        i * output_size : (i + 1) * output_size,
+                        i * input_size : (i + 1) * input_size,
+                    ]
+
+            if all(
+                isinstance(array_, ndarray) for arrays_ in arrays for array_ in arrays_
+            ):
+                arrays[0][0] = csr_array(arrays[0][0])
+            diagonal_arrays.append(block_array(arrays))
+
+        self.__jacobian = block_diag(diagonal_arrays, format="csr")
+
+    def __initialize_jacobian(
+        self, jacobian_data: JacobianData, n_samples: int
+    ) -> None:
+        """Initialize the attribute ``__jacobian``.
+
+        Args:
+            jacobian_data: The discipline's Jacobian data.
+            n_samples: The number of samples.
+        """
+        input_name = self.differentiated_input_names_substitute[0]
+        n_columns = self.__differentiated_input_size * n_samples
+        n_rows = sum(
+            jacobian_data[output_name][input_name].shape[-2]
+            for output_name in self.output_names
+        )
+        shape = n_columns if n_rows == 1 else (n_rows, n_columns)
+        create_array = dok_array if n_samples > 1 else empty
+        self.__jacobian = create_array(shape)
 
     def __create_input_names_to_slices(self) -> None:
         """Create the map from discipline input names to input vector slices.
@@ -358,5 +440,8 @@ class DisciplineAdapter(MDOFunction):
             # Restore the proper data types as declared in the design space.
             for name, type_ in variable_types.items():
                 input_data[name] = input_data[name].astype(type_, copy=False)
+
+        if x_vect.ndim == 2:
+            return {k: v.ravel() for k, v in input_data.items()}
 
         return input_data

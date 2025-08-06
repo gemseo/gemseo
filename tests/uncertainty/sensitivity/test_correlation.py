@@ -146,3 +146,13 @@ def test_from_samples(correlation, tmp_wd):
     new_correlation = CorrelationAnalysis(samples=file_path)
     new_correlation.compute_indices()
     assert new_correlation.indices == correlation.indices
+
+
+def test_constant_output(discipline_with_constant_output_and_space):
+    """Check that CorrelationAnalysis supports constant outputs."""
+    discipline, uncertain_space = discipline_with_constant_output_and_space
+    analysis = CorrelationAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    indices = analysis.compute_indices()
+    assert indices.kendall["constant"][0] is None
+    assert indices.kendall["varying"][0] is not None

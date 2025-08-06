@@ -67,7 +67,7 @@ configure_logger()
 # In this section,
 # we define the Sellar disciplines by sub-classing the :class:`.Discipline` class.
 # For each class,
-# the constructor and the _run method are overriden:
+# the constructor and the _run method are overridden:
 #
 # - In the constructor,
 #   the input and output grammar are created.
@@ -75,7 +75,7 @@ configure_logger()
 #   at the discipline execution.
 #   The default inputs are also defined,
 #   in case of the user does not provide them at the discipline execution.
-# - In the _run method is implemented the concrete computation of the discipline.
+# - In the ``_run`` method is implemented the concrete computation of the discipline.
 #   The returned NumPy arrays can then be used to compute the output values.
 #   They can then be stored in the :attr:`!Discipline.data` dictionary.
 #   If the discipline execution is successful.

@@ -21,12 +21,14 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
 from numpy import array
 from numpy import array_equal
+from numpy import diag
 from numpy import hstack
 from numpy import ndarray
 from numpy.testing import assert_almost_equal
@@ -68,6 +70,14 @@ def model(request, dataset) -> GaussianProcessRegressor:
     return gpr
 
 
+@pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
+def model_1d(request, dataset) -> GaussianProcessRegressor:
+    """A trained GaussianProcessRegressor with 1d output."""
+    gpr = GaussianProcessRegressor(dataset, output_names=["y_1"])
+    gpr.learn()
+    return gpr
+
+
 def test_constructor(dataset) -> None:
     """Test construction."""
     gpr = GaussianProcessRegressor(dataset)
@@ -104,11 +114,9 @@ def test_predict_std_training_point(model) -> None:
     assert prediction_std.shape == (1, 2)
 
 
-def test_predict_std_1d_output(dataset) -> None:
+def test_predict_std_1d_output(model_1d) -> None:
     """Test std prediction for a training point with a 1d output."""
-    gpr = GaussianProcessRegressor(dataset, output_names=["y_1"])
-    gpr.learn()
-    prediction_std = gpr.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
+    prediction_std = model_1d.predict_std({"x_1": array([1.0]), "x_2": array([1.0])})
     assert allclose(prediction_std, 0, atol=1e-3)
     assert prediction_std.shape == (1, 1)
 
@@ -158,6 +166,26 @@ def test_kernel(dataset) -> None:
     assert id(model.kernel) == id(model.algo.kernel)
     model.learn()
     assert id(model.kernel) == id(model.algo.kernel_)
+
+
+def test_failure_jacobian(model):
+    """Check that the Jacobian function is not available."""
+    msg = f"The Jacobian function of {model.__class__.__name__} is not implemented."
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(msg),
+    ):
+        model.predict_jacobian(array([[1.85016387, 4.00618543]]))
+
+
+def test_failure_hessian(model):
+    """Check that the Hessian function is not available."""
+    msg = f"The Hessian function of {model.__class__.__name__} is not implemented."
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape(msg),
+    ):
+        model.predict_hessian(array([[1.85016387, 4.00618543]]))
 
 
 @pytest.mark.parametrize(
@@ -259,3 +287,33 @@ def test_homonymous_io():
     gpr = GaussianProcessRegressor(dataset)
     gpr.learn()
     assert_equal(gpr.predict(array([0.25])), reference)
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([[1.0, 0.0]]), (2, 2)),
+        (array([[1.0, 1.0], [0.2, 0.0]]), (4, 4)),
+    ],
+)
+def test_predict_covariance(model, input_data, expected_shape):
+    """Check the method predict_covariance for GPs with multivariate output."""
+    prediction_cov = model.predict_covariance(input_data)
+    prediction_std = model.predict_std(input_data)
+    assert prediction_cov.shape == expected_shape
+    assert allclose(diag(prediction_cov), prediction_std.ravel() ** 2)
+
+
+@pytest.mark.parametrize(
+    ("input_data", "expected_shape"),
+    [
+        (array([[1.0, 0.0]]), (1, 1)),
+        (array([[1.0, 1.0], [0.2, 0.0]]), (2, 2)),
+    ],
+)
+def test_predict_std_scalar_output(model_1d, input_data, expected_shape) -> None:
+    """Check the method predict_covariance for GPs with 1d output."""
+    prediction_std = model_1d.predict_std(input_data)
+    prediction_cov = model_1d.predict_covariance(input_data)
+    assert prediction_cov.shape == expected_shape
+    assert allclose(diag(prediction_cov), prediction_std.ravel() ** 2)

@@ -31,9 +31,10 @@ from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.settings.opt import NLOPT_COBYLA_Settings
+from gemseo.settings.opt import SLSQP_Settings
 
 configure_logger()
 
@@ -78,7 +79,7 @@ slsqp_settings = SLSQP_Settings(
 )
 
 cobyla_settings = NLOPT_COBYLA_Settings(
-    max_iter=50,
+    max_iter=140,
     xtol_rel=1e-7,
     xtol_abs=1e-7,
     ftol_rel=1e-7,
@@ -143,7 +144,13 @@ system_scenario = create_scenario(
     apply_cstr_tosub_scenarios=False,
     parallel_scenarios=False,
     multithread_scenarios=True,
-    main_mda_settings={"tolerance": 1e-14, "max_mda_iter": 30},
+    main_mda_settings=MDAGaussSeidel_Settings(
+        tolerance=1e-14,
+        max_mda_iter=50,
+        warm_start=True,
+        use_lu_fact=False,
+        linear_solver_tolerance=1e-14,
+    ),
     maximize_objective=True,
     sub_scenarios_log_level=WARNING,
     formulation_name="BiLevel",
@@ -170,7 +177,7 @@ system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
 # - ``log_workflow_status=True`` will log the status of the workflow  in the console,
 # - ``save_html`` (default ``True``) will generate a self-contained HTML file,
 #   that can be automatically opened using ``show_html=True``.
-system_scenario.xdsmize(save_html=False, pdf_build=False)
+system_scenario.xdsmize(save_html=False)
 
 # %%
 # Execute the main scenario

@@ -17,8 +17,8 @@
 from __future__ import annotations
 
 from functools import partial
+from math import inf
 
-from numpy import inf
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TC002
 

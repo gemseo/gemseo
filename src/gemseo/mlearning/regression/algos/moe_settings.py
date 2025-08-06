@@ -23,9 +23,15 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 )
 
 
-class MOE_Settings(BaseRegressorSettings):  # noqa: N801
+class MOERegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the mixture of experts."""
+
+    _TARGET_CLASS_NAME = "MOERegressor"
 
     hard: bool = Field(
         default=True, description="Whether to use a hard classification."
     )
+
+
+# TODO: API: Remove.
+MOE_Settings = MOERegressor_Settings

@@ -108,6 +108,7 @@ from numpy import atleast_2d
 from numpy import newaxis
 from numpy import repeat
 from numpy import swapaxes
+from numpy import zeros
 from sklearn.gaussian_process.kernels import Matern
 
 from gemseo.mlearning.data_formatters.regression_data_formatters import (
@@ -250,3 +251,22 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
             samples = samples[:, newaxis, :]
 
         return swapaxes(swapaxes(samples, 0, 2), 1, 2)
+
+    def predict_covariance(self, input_data: RealArray) -> RealArray:  # noqa: D102
+        transformer = self.transformer.get(self.learning_set.INPUT_GROUP)
+        if transformer:
+            input_data = transformer.transform(input_data)
+
+        output_data = self.algo.predict(input_data, return_cov=True)[1]
+        if self._reduced_output_dimension == 1:
+            return output_data
+
+        n_samples = output_data.shape[1]
+        output_dimension = output_data.shape[2]
+        cov = zeros((
+            n_samples * output_dimension,
+            n_samples * output_dimension,
+        ))
+        for k in range(output_dimension):
+            cov[k::output_dimension, k::output_dimension] = output_data[:, :, k]
+        return cov

@@ -36,7 +36,7 @@ from gemseo.utils.testing.disciplines_creator import create_disciplines_from_des
 
 def create_sobieski_bilevel_scenario(
     formulation_name: str = "BiLevel",
-) -> Callable[[dict[str, Any]], MDOScenario]:
+) -> Callable[..., MDOScenario]:
     """Create a function to generate a BiLevel Sobieski Scenario.
 
     Args:
@@ -46,7 +46,7 @@ def create_sobieski_bilevel_scenario(
         A function which generates a BiLevel Sobieski scenario with specific options.
     """
 
-    def func(**settings):
+    def func(**settings: Any):
         """Create a Sobieski BiLevel scenario.
 
         Args:
@@ -112,7 +112,7 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
     return structure, aerodynamics, propulsion
 
 
-def create_sobieski_bilevel_bcd_scenario() -> Callable[[dict[str, Any]], MDOScenario]:
+def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
     """Create a function to generate a BiLevel BCD Sobieski Scenario.
 
     Returns:
@@ -120,7 +120,7 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[[dict[str, Any]], MDOScen
         with specific options.
     """
 
-    def func(**settings):
+    def func(**settings: Any):
         """Create a Sobieski BiLevel scenario.
 
         Args:
@@ -152,13 +152,13 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[[dict[str, Any]], MDOScen
             return scenario
 
         sc_prop = create_block("x_3", "PropulsionScenario")
-        sc_prop.add_constraint("g_3", constraint_type="ineq")
+        sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
         sc_aero = create_block("x_2", "AerodynamicsScenario")
-        sc_aero.add_constraint("g_2", constraint_type="ineq")
+        sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
         sc_str = create_block("x_1", "StructureScenario")
-        sc_str.add_constraint("g_1", constraint_type="ineq")
+        sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
 
         # Gather the sub-scenarios and mission for objective computation
         sub_scenarios = [sc_aero, sc_str, sc_prop, sub_disciplines[-1]]
@@ -227,7 +227,7 @@ def create_dummy_bilevel_scenario(formulation_name: str) -> MDOScenario:
     return create_scenario(
         [sub_scenario_1, sub_scenario_2],
         "obj",
-        design_space=system_design_space,
+        system_design_space,
         formulation_name=formulation_name,
     )
 
@@ -257,7 +257,7 @@ def create_aerostructure_scenario(formulation_name: str):
         "lift": "(sweep + 0.2*thick_airfoils - 2.*displ)/3000.",
     }
     aerodynamics = create_discipline(
-        "AnalyticDiscipline", name="Aerodynamics", expressions=aero_formulas
+        "AnalyticDiscipline", aero_formulas, name="Aerodynamics"
     )
     struc_formulas = {
         "mass": "4000*(sweep/360)**3 + 200000 + 100*thick_panels + 200.0*forces",
@@ -265,12 +265,10 @@ def create_aerostructure_scenario(formulation_name: str):
         "displ": "2*sweep + 3*thick_panels - 2.*forces",
     }
     structure = create_discipline(
-        "AnalyticDiscipline", name="Structure", expressions=struc_formulas
+        "AnalyticDiscipline", struc_formulas, name="Structure"
     )
     mission_formulas = {"range": "8e11*lift/(mass*drag)"}
-    mission = create_discipline(
-        "AnalyticDiscipline", name="Mission", expressions=mission_formulas
-    )
+    mission = create_discipline("AnalyticDiscipline", mission_formulas, name="Mission")
     sub_scenario_options = {
         "max_iter": 2,
         "algo_name": "NLOPT_SLSQP",
@@ -284,7 +282,7 @@ def create_aerostructure_scenario(formulation_name: str):
         [aerodynamics, mission]
         + ([structure] if formulation_name == "BiLevelBCD" else []),
         "range",
-        design_space=design_space_aero,
+        design_space_aero,
         formulation_name=(
             "DisciplinaryOpt" if formulation_name == "BiLevel" else "MDF"
         ),
@@ -298,7 +296,7 @@ def create_aerostructure_scenario(formulation_name: str):
         [structure, mission]
         + ([aerodynamics] if formulation_name == "BiLevelBCD" else []),
         "range",
-        design_space=design_space_struct,
+        design_space_struct,
         formulation_name=(
             "DisciplinaryOpt" if formulation_name == "BiLevel" else "MDF"
         ),
@@ -310,14 +308,16 @@ def create_aerostructure_scenario(formulation_name: str):
     system_scenario = create_scenario(
         [aero_scenario, struct_scenario, mission],
         "range",
-        design_space=design_space_system,
+        design_space_system,
         formulation_name=formulation_name,
         maximize_objective=True,
         main_mda_name="MDAJacobi",
         main_mda_settings={"tolerance": 1e-8},
     )
 
-    system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
+    system_scenario.add_constraint(
+        "reserve_fact", constraint_type=system_scenario.ConstraintType.INEQ, value=0.5
+    )
     system_scenario.add_constraint("lift", value=0.5)
     system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=5, **algo_settings)
 

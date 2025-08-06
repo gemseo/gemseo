@@ -42,7 +42,8 @@ def build_and_run_idf_scenario_with_constraints(
     remove_coupl_from_ds: bool = False,
     n_processes: int = 1,
     use_threading: bool = True,
-    max_iter=50,
+    max_iter: int = 50,
+    include_weak_coupling_targets: bool = True,
 ) -> tuple[ndarray, bool]:
     """Build and execute an :class:`.MDOScenario` with an IDF formulation.
 
@@ -59,6 +60,9 @@ def build_and_run_idf_scenario_with_constraints(
         n_processes: The number of processes in which to run the formulation.
         use_threading: Whether to use multi-threading or multi-processing when running
             the formulation in parallel (n_processes > 1).
+        max_iter: The maximum number of iterations of the optimization algorithm.
+        include_weak_coupling_targets: Whether to control all coupling variables.
+            Otherwise, IDF will control the strong coupling variables only.
 
     Returns:
         The objective value after the execution of the scenario and whether the
@@ -89,6 +93,7 @@ def build_and_run_idf_scenario_with_constraints(
         maximize_objective=True,
         start_at_equilibrium=True,
         mda_chain_settings_for_start_at_equilibrium={"tolerance": 1e-8},
+        include_weak_coupling_targets=include_weak_coupling_targets,
     )
     if linearize:
         scenario.set_differentiation_method()
@@ -96,7 +101,7 @@ def build_and_run_idf_scenario_with_constraints(
         scenario.set_differentiation_method("complex_step", 1e-30)
     # Set the design constraints
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, constraint_type="ineq")
+        scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
 
     scenario.execute(
         algo_name=algo,

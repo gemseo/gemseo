@@ -160,7 +160,7 @@ renamer.translations
 # using its :meth:`~.VariableRenamer.add_translations_by_variable` method
 # from a new variable name
 # and a dictionary of the form ``{discipline_name: variable_name}``:
-renamer.add_translations_by_discipline("i", {"A": "r", "B": "m"})
+renamer.add_translations_by_variable("i", {"A": "r", "B": "m"})
 renamer.translations
 
 # %%

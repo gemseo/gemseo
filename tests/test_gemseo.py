@@ -92,10 +92,12 @@ from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settin
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -105,11 +107,12 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.utils.constants import N_CPUS
 from gemseo.utils.logging_tools import LOGGING_SETTINGS
 from gemseo.utils.logging_tools import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
-from gemseo.utils.xdsm import XDSM
-from gemseo.utils.xdsmizer import XDSMizer
+from gemseo.utils.xdsm.xdsm import XDSM
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
 if TYPE_CHECKING:
     from gemseo.scenarios.mdo_scenario import MDOScenario
@@ -159,14 +162,18 @@ def test_generate_n2_plot(tmp_wd, sobieski_disciplines) -> None:
 
 
 @pytest.mark.parametrize("full", [False, True])
-def test_generate_coupling_graph(tmp_wd, full, sobieski_disciplines) -> None:
+@pytest.mark.parametrize("clean_up", [None, False, True])
+def test_generate_coupling_graph(tmp_wd, full, sobieski_disciplines, clean_up) -> None:
     """Test the coupling graph with the Sobieski problem."""
     # TODO: reuse data and checks from test_dependency_graph
+    clean_up = True if clean_up is None else clean_up
     file_path = "coupl.pdf"
-    graph_view = generate_coupling_graph(sobieski_disciplines, file_path, full)
+    graph_view = generate_coupling_graph(
+        sobieski_disciplines, file_path=file_path, full=full, clean_up=clean_up
+    )
     assert isinstance(graph_view, GraphView)
     assert Path(file_path).exists()
-    assert Path("coupl.dot").exists()
+    assert Path("coupl.dot").exists() is not clean_up
 
 
 @pytest.mark.parametrize("full", [False, True])
@@ -278,6 +285,13 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
         obj = file_name if obj_type is str else Path(file_name)
 
     post = execute_post(obj, post_name="OptHistoryView", save=False, show=False)
+    assert isinstance(post, OptHistoryView)
+
+
+def test_execute_post_with_optimization_dataset(scenario):
+    """Test the method execute_post with a :class:`.OptimizationDataset."""
+    dataset = scenario.formulation.optimization_problem.to_dataset(group_functions=True)
+    post = execute_post(dataset, post_name="OptHistoryView", save=False, show=False)
     assert isinstance(post, OptHistoryView)
 
 
@@ -493,6 +507,13 @@ def test_create_discipline() -> None:
     )
     with pytest.raises(InvalidDataError, match=msg):
         create_discipline("SobieskiMission", **options_fail)
+
+
+def test_create_discipline_with_positional_arguments():
+    """Test create_discipline for disciplines with positional arguments."""
+    discipline = create_discipline("AnalyticDiscipline", {"y": "2*x"})
+    discipline.execute({"x": array([3.0])})
+    assert discipline.io.data["y"] == 6.0
 
 
 def test_create_surrogate() -> None:
@@ -716,7 +737,13 @@ def test_print_configuration(capfd) -> None:
         capfd: Fixture capture outputs sent to `stdout` and
             `stderr`.
     """
+    configure(
+        enable_function_statistics=True,
+        enable_discipline_status=True,
+        enable_discipline_statistics=True,
+    )
     print_configuration()
+    configure()
 
     out, err = capfd.readouterr()
     assert not err
@@ -822,6 +849,7 @@ def test_import_discipline(tmp_wd) -> None:
 @pytest.mark.parametrize("enable_discipline_cache", [False, True])
 @pytest.mark.parametrize("validate_input_data", [False, True])
 @pytest.mark.parametrize("validate_output_data", [False, True])
+@pytest.mark.parametrize("enable_parallel_execution", [False, True])
 def test_configure(
     enable_discipline_statistics,
     enable_function_statistics,
@@ -829,6 +857,7 @@ def test_configure(
     enable_discipline_cache,
     validate_input_data,
     validate_output_data,
+    enable_parallel_execution,
 ) -> None:
     """Check that the configuration of GEMSEO works correctly."""
     configure(
@@ -838,6 +867,7 @@ def test_configure(
         enable_discipline_cache=enable_discipline_cache,
         validate_input_data=validate_input_data,
         validate_output_data=validate_output_data,
+        enable_parallel_execution=enable_parallel_execution,
     )
     assert ProblemFunction.enable_statistics == enable_function_statistics
     assert ExecutionStatistics.is_enabled == enable_discipline_statistics
@@ -850,18 +880,24 @@ def test_configure(
     )
     assert BaseDriverLibrary.enable_progress_bar == enable_progress_bar
     assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
+    assert BaseParallelMDASettings().n_processes == (
+        N_CPUS if enable_parallel_execution else 1
+    )
     configure()
+    BaseParallelMDASettings.default_n_processes = N_CPUS
 
 
 def test_configure_default() -> None:
     """Check the default use of configure."""
     configure()
-    assert ProblemFunction.enable_statistics is True
-    assert ExecutionStatistics.is_enabled is True
+    assert ProblemFunction.enable_statistics is False
+    assert ExecutionStatistics.is_enabled is False
+    assert ExecutionStatus.is_enabled is False
     assert Discipline.validate_input_data is True
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseDriverLibrary.enable_progress_bar is True
+    assert BaseParallelMDASettings().n_processes == N_CPUS
 
 
 def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:

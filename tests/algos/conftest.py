@@ -45,7 +45,7 @@ def analytical_test_2d_ineq(x0, y0):
         ds,
         formulation_name="DisciplinaryOpt",
     )
-    scenario.add_constraint("g", constraint_type="ineq")
+    scenario.add_constraint("g", constraint_type=scenario.ConstraintType.INEQ)
     return scenario
 
 
@@ -110,6 +110,6 @@ def analytical_test_2d_mixed_rank_deficient():
         ds,
         formulation_name="DisciplinaryOpt",
     )
-    scenario.add_constraint("g", constraint_type="ineq")
+    scenario.add_constraint("g", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_constraint("h")
     return scenario

@@ -78,14 +78,16 @@ class MDF(BaseMDOFormulation):
             **settings,
         )
         self.mda = self.__mda_factory.create(
-            self._settings.main_mda_name,
+            self._settings.main_mda_settings._TARGET_CLASS_NAME,
             self.disciplines,
             settings_model=self._settings.main_mda_settings,
         )
         self._update_design_space()
         self._build_objective_from_disc(objective_name, discipline=self.mda)
 
-    def get_top_level_disciplines(self) -> tuple[Discipline, ...]:  # noqa:D102
+    def get_top_level_disciplines(  # noqa:D102
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
         return (self.mda,)
 
     @classmethod

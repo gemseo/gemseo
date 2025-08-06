@@ -46,6 +46,7 @@ from typing import ClassVar
 from typing import Final
 from typing import Union
 
+import nlopt
 from nlopt import LD_LBFGS
 from nlopt import LD_MMA
 from nlopt import LD_SLSQP
@@ -54,6 +55,12 @@ from nlopt import LN_COBYLA
 from nlopt import LN_NEWUOA_BOUND
 from nlopt import RoundoffLimited
 from nlopt import opt
+
+try:
+    from nlopt import runtime_error
+except ImportError:  # pragma: no cover
+    runtime_error = None
+
 from numpy import array
 from numpy import atleast_1d
 from numpy import atleast_2d
@@ -217,6 +224,15 @@ class Nlopt(BaseOptimizationLibrary):
         ),
     }
 
+    __EXCEPTION_CLASSES: ClassVar[tuple[type[BaseException], ...]] = (
+        RoundoffLimited,
+        RuntimeError,
+    )
+    """The exception classes to be caught by the `NLopt` optimizer."""
+
+    if runtime_error is not None:
+        __EXCEPTION_CLASSES = (*__EXCEPTION_CLASSES, runtime_error)
+
     def __opt_objective_grad_nlopt(
         self,
         xn_vect: ndarray,
@@ -328,6 +344,9 @@ class Nlopt(BaseOptimizationLibrary):
         if self.algo_name == "NLOPT_MMA":
             nlopt_problem.set_param(self._INNER_MAXEVAL, settings[self._INNER_MAXEVAL])
 
+        if (seed := settings.get("seed")) is not None:
+            nlopt.srand(seed)
+
     def _pre_run(
         self,
         problem: OptimizationProblem,
@@ -382,11 +401,12 @@ class Nlopt(BaseOptimizationLibrary):
         self.__add_constraints(nlopt_problem, **settings)
         try:
             nlopt_problem.optimize(x_0.real)
-        except (RoundoffLimited, RuntimeError) as err:
+        except self.__EXCEPTION_CLASSES as err:
+            arg = f"{err.args[0]}, " if err.args else ""
             LOGGER.exception(
-                "NLopt run failed: %s, %s",
-                str(err.args[0]),
-                str(err.__class__.__name__),
+                "NLopt run failed: %s%s",
+                arg,
+                err.__class__.__name__,
             )
             raise TerminationCriterion from None
         message = self.__NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]

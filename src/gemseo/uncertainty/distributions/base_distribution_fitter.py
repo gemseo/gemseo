@@ -54,6 +54,9 @@ class BaseDistributionFitter(
     _samples: Any
     """The samples."""
 
+    variable: str
+    """The name of the variable."""
+
     _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[StrKeyMapping]
     """Fitting criteria to objects of the UQ library."""
 
@@ -62,6 +65,9 @@ class BaseDistributionFitter(
 
     FittingCriterion: ClassVar[StrEnum]
     """The names of the fitting criteria."""
+
+    default_fitting_criterion: ClassVar[BaseDistributionFitter.FittingCriterion]
+    """The names of the default fitting criterion."""
 
     SignificanceTest: ClassVar[StrEnum]
     """The names of the fitting criteria that are statistical significance tests."""
@@ -78,12 +84,15 @@ class BaseDistributionFitter(
     _FITTING_CRITERIA_TO_MINIMIZE: ClassVar[set[str]] = set()
     """The fitting criteria to minimize (the others are to be maximized)."""
 
-    def __init__(self, data: RealArray) -> None:
+    def __init__(self, variable: str, data: RealArray) -> None:
+        # TODO: API: rename variable to variable_name or remove it because useless.
         """
         Args:
+            variable: The name of the variable.
             data: A data array.
         """  # noqa: D205,D212,D415
         self.data = data
+        self.variable = variable
 
     @property
     def data(self) -> RealArray:
@@ -209,7 +218,7 @@ class BaseDistributionFitter(
         """
         measures = []
         for index, distribution in enumerate(distributions):
-            if distribution in self.DistributionName.__members__:
+            if distribution in set(self.DistributionName):
                 distribution = self.fit(distribution)
 
             distributions[index] = distribution
@@ -246,7 +255,7 @@ class BaseDistributionFitter(
             The index of the best probability distribution
             according to the fitting criterion and the selection criterion.
         """
-        is_significant_test = fitting_criterion in cls.SignificanceTest.__members__
+        is_significant_test = fitting_criterion in set(cls.SignificanceTest)
         if is_significant_test:
             measures = [measure[1]["p-value"] for index, measure in enumerate(measures)]
             if all(p_value < level for p_value in measures):

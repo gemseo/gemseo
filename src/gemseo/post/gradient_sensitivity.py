@@ -25,12 +25,14 @@ import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+import numpy as np
 from matplotlib import pyplot
 from numpy import arange
 from numpy import atleast_2d
 from numpy import ndarray
 from numpy import where
 
+from gemseo.algos.database import Database
 from gemseo.post.base_post import BasePost
 from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
 from gemseo.utils.string_tools import repr_variable
@@ -53,21 +55,25 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         GradientSensitivity_Settings
     )
 
+    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+
     def _plot(self, settings: GradientSensitivity_Settings) -> None:
         compute_missing_gradients = settings.compute_missing_gradients
 
         if settings.iteration is None:
-            design_value = self.optimization_problem.solution.x_opt
+            design_value = self._dataset.design_dataset.loc[
+                self._optimization_metadata.optimum_iteration
+            ].values
         else:
-            design_value = self.optimization_problem.database.get_x_vect(
+            design_value = self._dataset.design_dataset.loc[
                 settings.iteration
-            )
-
+            ].to_numpy()
         fig = self.__generate_subplots(
             self._get_design_variable_names(),
             design_value,
             self.__get_output_gradients(
                 design_value,
+                iteration=settings.iteration,
                 scale_gradients=settings.scale_gradients,
                 compute_missing_gradients=compute_missing_gradients,
             ),
@@ -80,6 +86,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
     def __get_output_gradients(
         self,
         design_value: ndarray,
+        iteration: int | None = None,
         scale_gradients: bool = False,
         compute_missing_gradients: bool = False,
     ) -> dict[str, RealArray]:
@@ -126,16 +133,38 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     "callable functions cannot be computed."
                 )
 
-        function_names = self.optimization_problem.function_names
-        scale_gradient = self.optimization_problem.design_space.unnormalize_vect
+        function_names = (
+            self._dataset.equality_constraint_names
+            + self._dataset.inequality_constraint_names
+            + self._dataset.objective_names
+            + self._dataset.observable_names
+        )
+        scale_gradient = self._dataset.misc["input_space"].unnormalize_vect
         function_names_to_gradients = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:
                 gradient_value = gradient_values[function_name]
             else:
-                gradient_value = self.database.get_function_value(
-                    self.database.get_gradient_name(function_name), design_value
-                )
+                grad_name = Database.get_gradient_name(function_name)
+                if iteration is None:
+                    iteration = self._optimization_metadata.optimum_iteration
+                try:
+                    gradient_value = (
+                        self._dataset.get_view(variable_names=grad_name)
+                        .loc[iteration]
+                        .to_numpy()
+                    )
+                    if not np.isnan(gradient_value).any():
+                        if gradient_value.shape != design_value.shape:
+                            gradient_value = gradient_value.reshape(
+                                -1, len(design_value)
+                            )
+                    else:
+                        gradient_value = None
+                        continue
+                except KeyError:
+                    gradient_value = None
+
             if gradient_value is None:
                 continue
 
@@ -188,7 +217,9 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
 
         abscissa = arange(len(design_value))
         if self._change_obj:
-            gradients[self._obj_name] = -gradients.pop(self._standardized_obj_name)
+            gradients[self._optimization_metadata.objective_name] = -gradients.pop(
+                self._optimization_metadata.standardized_objective_name
+            )
 
         i = j = 0
         font_size = 12

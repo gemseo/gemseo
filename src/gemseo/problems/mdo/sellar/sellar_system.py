@@ -28,7 +28,7 @@ from numpy import array
 from numpy import exp
 from numpy import ones
 from numpy import repeat
-from numpy import sum as np_sum
+from scipy.sparse import block_diag
 from scipy.sparse import diags
 from scipy.sparse import eye
 
@@ -76,9 +76,6 @@ class SellarSystem(BaseSellar):
     __inv_n_double: float
     """The double of the inverse of the size of the local and coupling variables."""
 
-    __n: float
-    """The size of the local and coupling variables."""
-
     __ones_n: RealArray
     """The one vector."""
 
@@ -89,32 +86,40 @@ class SellarSystem(BaseSellar):
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__(n)
         self.io.output_grammar.update_from_names(self._OUTPUT_NAMES)
-        self.__n = n
         self.__inv_n = 1.0 / n
         self.__inv_n_double = self.__inv_n * 2.0
         self.__eye_n = eye(n)
         self.__ones_n = ones((n, 1))
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x_shared = input_data[X_SHARED]
         x_1 = input_data[X_1]
         x_2 = input_data[X_2]
-        x_shared = input_data[X_SHARED]
         y_1 = input_data[Y_1]
         y_2 = input_data[Y_2]
         alpha = input_data[ALPHA]
         beta = input_data[BETA]
         if WITH_2D_ARRAY:  # pragma: no cover
             x_shared = x_shared[0]
+        else:
+            defaults = self.io.input_grammar.defaults
+            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
+            x_1 = x_1.reshape((-1, defaults[X_1].size))
+            x_2 = x_2.reshape((-1, defaults[X_2].size))
+            y_1 = y_1.reshape((-1, defaults[Y_1].size))
+            y_2 = y_2.reshape((-1, defaults[Y_2].size))
+            alpha = alpha.reshape((-1, defaults[ALPHA].size))
+            beta = beta.reshape((-1, defaults[BETA].size))
 
-        obj = array([
-            (x_1.dot(x_1) + x_2.dot(x_2) + y_1.dot(y_1)) * self.__inv_n
-            + x_shared[1]
-            + exp(-y_2.mean())
-        ])
+        obj = (
+            ((x_1**2).sum(-1) + (x_2**2).sum(-1) + (y_1**2).sum(-1)) * self.__inv_n
+            + x_shared[..., 1]
+            + exp(-y_2.mean(-1))
+        )
         return {
-            "obj": obj,
-            "c_1": alpha - y_1**2,
-            "c_2": y_2 - beta,
+            "obj": obj.ravel(),
+            "c_1": (alpha - y_1**2).ravel(),
+            "c_2": (y_2 - beta).ravel(),
         }
 
     def _compute_jacobian(
@@ -122,21 +127,64 @@ class SellarSystem(BaseSellar):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
+        input_data = self.io.data
+        x_1 = input_data[X_1]
+        x_2 = input_data[X_2]
+        y_1 = input_data[Y_1]
+        y_2 = input_data[Y_2]
+        alpha = input_data[ALPHA]
+        beta = input_data[BETA]
+        n_samples = 1
+        if not WITH_2D_ARRAY:  # pragma: no cover
+            defaults = self.io.input_grammar.defaults
+            x_1 = x_1.reshape((-1, defaults[X_1].size))
+            x_2 = x_2.reshape((-1, defaults[X_2].size))
+            y_1 = y_1.reshape((-1, defaults[Y_1].size))
+            y_2 = y_2.reshape((-1, defaults[Y_2].size))
+            alpha = alpha.reshape((-1, defaults[ALPHA].size))
+            beta = beta.reshape((-1, defaults[BETA].size))
+            n_samples = self._get_n_samples(x_1, x_2, y_1, y_2, alpha, beta)
+
         self._init_jacobian(input_names, output_names)
-        x_1 = self.io.data[X_1]
-        x_2 = self.io.data[X_2]
-        y_1 = self.io.data[Y_1]
-        y_2 = self.io.data[Y_2]
-        jac = self.jac[C_1]
-        jac[Y_1] = diags(-2.0 * y_1)
-        jac[ALPHA] = self.__ones_n
-        jac = self.jac[C_2]
-        jac[Y_2] = self.__eye_n
-        jac[BETA] = -self.__ones_n
-        jac = self.jac[OBJ]
-        jac[X_1] = array([x_1 * self.__inv_n_double])
-        jac[X_2] = array([x_2 * self.__inv_n_double])
-        jac[X_SHARED] = array([[0.0, 1.0]])
-        jac[Y_1] = array([y_1 * self.__inv_n_double])
-        exp_sum_y2 = -exp(-np_sum(y_2) * self.__inv_n) * self.__inv_n
-        jac[Y_2] = array([repeat(exp_sum_y2, self.__n)])
+        if n_samples > 1 and not WITH_2D_ARRAY:
+            jac = self.jac[C_1]
+            ones_m_n_1 = block_diag([ones((self._n, 1))] * n_samples, format="csr")
+            jac[Y_1] = block_diag([diags(-2.0 * y_1_i) for y_1_i in y_1], format="csr")
+            jac[ALPHA] = ones_m_n_1
+            jac = self.jac[C_2]
+            jac[Y_2] = block_diag([eye(self._n)] * n_samples, format="csr")
+            jac[BETA] = -ones_m_n_1
+            jac = self.jac[OBJ]
+            jac[X_1] = block_diag(
+                [array([x * self.__inv_n_double]) for x in x_1], format="csr"
+            )
+            jac[X_2] = block_diag(
+                [array([x * self.__inv_n_double]) for x in x_2], format="csr"
+            )
+            jac[X_SHARED] = block_diag([array([[0.0, 1.0]])] * n_samples, format="csr")
+            jac[Y_1] = block_diag(
+                [array([y * self.__inv_n_double]) for y in y_1], format="csr"
+            )
+            jac[Y_2] = block_diag(
+                [
+                    array([
+                        repeat(-exp(-y.sum() * self.__inv_n) * self.__inv_n, self._n)
+                    ])
+                    for y in y_2
+                ],
+                format="csr",
+            )
+        else:
+            jac = self.jac[C_1]
+            jac[Y_1] = diags(-2.0 * y_1.ravel(), format="csr")
+            jac[ALPHA] = self.__ones_n
+            jac = self.jac[C_2]
+            jac[Y_2] = self.__eye_n
+            jac[BETA] = -self.__ones_n
+            jac = self.jac[OBJ]
+            jac[X_1] = array([x_1.ravel() * self.__inv_n_double])
+            jac[X_2] = array([x_2.ravel() * self.__inv_n_double])
+            jac[X_SHARED] = array([[0.0, 1.0]])
+            jac[Y_1] = array([y_1.ravel() * self.__inv_n_double])
+            exp_sum_y2 = -exp(-y_2.sum() * self.__inv_n) * self.__inv_n
+            jac[Y_2] = array([repeat(exp_sum_y2, self._n)])

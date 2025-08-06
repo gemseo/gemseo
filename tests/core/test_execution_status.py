@@ -50,7 +50,7 @@ INITIAL_TO_NEW_STATUSES_WITH_ERRORS = {
 @pytest.mark.parametrize(
     ("initial_status", "new_statuses"),
     [
-        # TODO: should be only  RUNNING or LINEARIZING
+        # TODO: should be only RUNNING or LINEARIZING
         (Status.DONE, Status),
         (
             Status.LINEARIZING,
@@ -107,7 +107,11 @@ def test_handle_success(execution_status: ExecutionStatus, status: Status):
 
 
 @pytest.mark.parametrize("status", [Status.RUNNING, Status.LINEARIZING])
-def test_handle_failure(execution_status: ExecutionStatus, status: Status):
+def test_handle_failure(
+    execution_status: ExecutionStatus,
+    status: Status,
+    enable_discipline_status: bool,
+):
     """Verify the handle method on failure."""
     execution_status.value = Status.DONE
 
@@ -120,7 +124,11 @@ def test_handle_failure(execution_status: ExecutionStatus, status: Status):
 
 
 @pytest.mark.parametrize("status", [Status.RUNNING, Status.LINEARIZING])
-def test_handle_bad_initial_status(execution_status: ExecutionStatus, status: Status):
+def test_handle_bad_initial_status(
+    execution_status: ExecutionStatus,
+    status: Status,
+    enable_discipline_status: bool,
+):
     """Verify the handle method on bad initial status."""
     execution_status.value = Status.LINEARIZING
     match = f" cannot be set to status {status} while in status LINEARIZING"
@@ -157,8 +165,22 @@ def test_observers(execution_status: ExecutionStatus):
     assert observer2.status == Status.FAILED
 
 
-def test_pickling(execution_status, tmp_wd):
+def test_pickling(execution_status: ExecutionStatus, tmp_wd):
     """Verify pickling."""
     to_pickle(execution_status, "pickle_path")
     execution_status = from_pickle("pickle_path")
     assert execution_status.value == Status.DONE
+
+
+def test_disabled():
+    """Verify behavior when it is disabled, this is the default behavior.
+
+    No check should be performed.
+    """
+    assert not ExecutionStatus.is_enabled
+    for initial_status in ExecutionStatus.Status:
+        execution_status = ExecutionStatus("")
+        execution_status.value = initial_status
+        for new_status in ExecutionStatus.Status:
+            execution_status.handle(new_status, lambda: None)
+            assert execution_status.value == initial_status

@@ -138,7 +138,9 @@ def objective_and_problem_for_tests(constraints_before_obj):
     problem = OptimizationProblem(design_space)
     problem.objective = f
     if constraints_before_obj:
-        problem.add_constraint(g, value=0.0, constraint_type="ineq")
+        problem.add_constraint(
+            g, value=0.0, constraint_type=problem.ConstraintType.INEQ
+        )
     return f, problem
 
 

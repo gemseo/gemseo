@@ -209,7 +209,7 @@ def scenario_pn() -> DOEScenario:
         "throttle_c",
         "temperature",
     ]:
-        scn.add_constraint(constraint_name, constraint_type="ineq")
+        scn.add_constraint(constraint_name, constraint_type=scn.ConstraintType.INEQ)
     scn.add_observable("y_1")
     scn.add_observable("y_2")
     scn.add_observable("y_3")
@@ -231,7 +231,7 @@ def scenario() -> DOEScenario:
         formulation_name="MDF",
     )
     for constraint_name in ["g_1", "g_2", "g_3"]:
-        scn.add_constraint(constraint_name, constraint_type="ineq")
+        scn.add_constraint(constraint_name, constraint_type=scn.ConstraintType.INEQ)
     scn.add_observable("y_1")
     scn.add_observable("y_2")
     scn.add_observable("y_3")

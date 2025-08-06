@@ -56,6 +56,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Union
 
+from matplotlib.pyplot import colormaps
+from strenum import StrEnum
+
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
@@ -64,6 +67,7 @@ from gemseo.post.dataset._trend import TrendFunctionCreator
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
 ScatterMatrixOption = Union[bool, int, str, Sequence[str], None]
+ColormapName = StrEnum("ColormapName", sorted(colormaps.keys()))
 
 
 class ScatterMatrix(DatasetPlot):
@@ -83,6 +87,8 @@ class ScatterMatrix(DatasetPlot):
         plot_lower: bool = True,
         plot_upper: bool = True,
         trend: Trend | TrendFunctionCreator = Trend.NONE,
+        colormap_name: ColormapName = ColormapName.cool,
+        exclude_classifier: bool = True,
         **options: Any,
     ) -> None:
         """
@@ -100,6 +106,9 @@ class ScatterMatrix(DatasetPlot):
             plot_upper: Whether to plot the upper part.
             trend: The trend function to be added on the scatter plots
                 or a function creating a trend function from a set of *xy*-points.
+            colormap_name: The name of the matplotlib colormap.
+            exclude_classifier: Whether to exclude the classifier
+                from the variables to be plotted on the axes.
             **options: The options of the underlying pandas scatter matrix.
         """  # noqa: D205, D212, D415
         super().__init__(
@@ -112,6 +121,8 @@ class ScatterMatrix(DatasetPlot):
             plot_lower=plot_lower,
             plot_upper=plot_upper,
             trend=trend,
+            colormap_name=colormap_name,
+            exclude_classifier=exclude_classifier,
             options=options,
         )
 

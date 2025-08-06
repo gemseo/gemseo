@@ -31,6 +31,12 @@ from __future__ import annotations
 from gemseo import configure_logger
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import get_available_distributions
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
 
 configure_logger()
 
@@ -64,6 +70,13 @@ distribution_1_2 = create_distribution("SPNormalDistribution", mu=1.0, sigma=2.0
 distribution_1_2
 
 # %%
+# Same from settings defined as a Pydantic model:
+distribution_1_2 = create_distribution(
+    "SPNormalDistribution", settings=SPNormalDistribution_Settings(mu=1.0, sigma=2.0)
+)
+distribution_1_2
+
+# %%
 # Case 2: the SciPy distribution has no GEMSEO class
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # When GEMSEO does not offer a class for the SciPy distribution,
@@ -77,6 +90,16 @@ distribution_1_2 = create_distribution(
     "SPDistribution",
     interfaced_distribution="norm",
     parameters={"loc": 1.0, "scale": 2.0},
+)
+distribution_1_2
+
+# %%
+# Same from settings defined as a Pydantic model:
+distribution_1_2 = create_distribution(
+    "SPDistribution",
+    settings=SPDistribution_Settings(
+        interfaced_distribution="norm", parameters={"loc": 1.0, "scale": 2.0}
+    ),
 )
 distribution_1_2
 

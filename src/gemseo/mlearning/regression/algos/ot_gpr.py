@@ -67,7 +67,7 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.typing import NumberArray
+    from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
 
@@ -240,7 +240,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             linear_algebra_method = "LAPACK"
         ResourceMap.SetAsString("KrigingAlgorithm-LinearAlgebra", linear_algebra_method)
 
-    def _fit(self, input_data: NumberArray, output_data: NumberArray) -> None:
+    def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
         log_flags = Log.Flags()
         Log.Show(Log.NONE)
         algo = KrigingAlgorithm(
@@ -278,10 +278,10 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         algo.run()
         self.algo = algo.getResult()
 
-    def _predict(self, input_data: NumberArray) -> NumberArray:
+    def _predict(self, input_data: RealArray) -> RealArray:
         return atleast_2d(self.algo.getConditionalMean(input_data))
 
-    def predict_std(self, input_data: DataType) -> NumberArray:
+    def predict_std(self, input_data: DataType) -> RealArray:
         """Predict the standard deviation from input data.
 
         Args:
@@ -314,14 +314,18 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
 
         return output_data
 
-    def _predict_jacobian(self, input_data: NumberArray) -> NumberArray:
+    def _predict_jacobian(self, input_data: RealArray) -> RealArray:
         gradient = self.algo.getMetaModel().gradient
         return array([array(gradient(Point(data))).T for data in input_data])
 
+    def _predict_hessian(self, input_data: RealArray) -> RealArray:
+        hessian = self.algo.getMetaModel().getHessian().hessian
+        return array([array(hessian(Point(data))).T for data in input_data])
+
     @RegressionDataFormatters.format_input_output(input_axis=1)
     def compute_samples(  # noqa: D102
-        self, input_data: NumberArray, n_samples: int, seed: int | None = None
-    ) -> NumberArray:
+        self, input_data: RealArray, n_samples: int, seed: int | None = None
+    ) -> RealArray:
         RandomGenerator.SetSeed(self._seeder.get_seed(seed))
         input_data = Sample(input_data)
         trend_vector = array(self.algo.getConditionalMean(input_data))
@@ -330,3 +334,6 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         covariance_model = UserDefinedCovarianceModel(mesh, covariance_matrix)
         process = GaussianProcess(covariance_model, mesh)
         return array(process.getSample(n_samples)) + trend_vector
+
+    def predict_covariance(self, input_data: RealArray) -> RealArray:  # noqa: D102
+        return array(self.algo.getConditionalCovariance(input_data))

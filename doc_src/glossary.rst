@@ -345,3 +345,6 @@ Glossary
 
     IVP
         Initial Value Problem
+
+    BCD
+        Block Coordinate Descent

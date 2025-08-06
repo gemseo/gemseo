@@ -62,11 +62,11 @@ from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import concretize_classes
-from gemseo.utils.xdsm_to_pdf import XDSM
-from gemseo.utils.xdsmizer import EdgeType
-from gemseo.utils.xdsmizer import NodeType
-from gemseo.utils.xdsmizer import XDSMizer
-from gemseo.utils.xdsmizer import expand
+from gemseo.utils.xdsm.xdsm_to_pdf import XDSM
+from gemseo.utils.xdsm.xdsmizer import EdgeType
+from gemseo.utils.xdsm.xdsmizer import NodeType
+from gemseo.utils.xdsm.xdsmizer import XDSMizer
+from gemseo.utils.xdsm.xdsmizer import expand
 
 from ..mda.test_mda import analytic_disciplines_from_desc
 
@@ -78,7 +78,7 @@ if TYPE_CHECKING:
 
 
 def build_sobieski_scenario(
-    formulation_name: str = "MDF", **formulation_settings: dict[str, Any]
+    formulation_name: str = "MDF", **formulation_settings: Any
 ) -> MDOScenario:
     """Scenario based on Sobieski case.
 
@@ -172,7 +172,9 @@ def test_xdsmize_mdf(options) -> None:
     assert_xdsm(scenario, **options("xdsmized_sobieski_mdf"))
 
     # with constraints
-    scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+    scenario.add_constraint(
+        ["g_1", "g_2", "g_3"], constraint_type=scenario.ConstraintType.INEQ
+    )
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_mdf"))
 
     xdsmizer = XDSMizer(scenario)
@@ -188,8 +190,13 @@ def test_xdsmize_idf(options) -> None:
 
     # with constraints
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, "ineq")
+        scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_idf"))
+
+    scenario = build_sobieski_scenario("IDF", include_weak_coupling_targets=False)
+    for c_name in ["g_1", "g_2", "g_3"]:
+        scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
+    assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_idf_no_weak"))
 
 
 def test_xdsmize_bilevel(options) -> None:
@@ -218,7 +225,7 @@ def test_xdsmize_bilevel(options) -> None:
         name="PropulsionScenario",
     )
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
-    sc_prop.add_constraint("g_3", constraint_type="ineq")
+    sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
     sc_aero = MDOScenario(
         [aerodynamics],
@@ -229,7 +236,7 @@ def test_xdsmize_bilevel(options) -> None:
         maximize_objective=True,
     )
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
-    sc_aero.add_constraint("g_2", constraint_type="ineq")
+    sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
     sc_str = MDOScenario(
         [structure],
@@ -239,7 +246,7 @@ def test_xdsmize_bilevel(options) -> None:
         name="StructureScenario",
         maximize_objective=True,
     )
-    sc_str.add_constraint("g_1", constraint_type="ineq")
+    sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
 
     sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
@@ -256,7 +263,9 @@ def test_xdsmize_bilevel(options) -> None:
         apply_cstr_to_system=True,
         main_mda_settings={"n_processes": 5},
     )
-    system_scenario.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+    system_scenario.add_constraint(
+        ["g_1", "g_2", "g_3"], constraint_type=system_scenario.ConstraintType.INEQ
+    )
     assert_xdsm(system_scenario, **options("xdsmized_sobieski_bilevel"))
 
     system_scenario_par = MDOScenario(
@@ -270,7 +279,9 @@ def test_xdsmize_bilevel(options) -> None:
         parallel_scenarios=True,
         main_mda_settings={"n_processes": 5, "use_threading": True},
     )
-    system_scenario_par.add_constraint(["g_1", "g_2", "g_3"], "ineq")
+    system_scenario_par.add_constraint(
+        ["g_1", "g_2", "g_3"], constraint_type=system_scenario_par.ConstraintType.INEQ
+    )
     assert_xdsm(system_scenario_par, **options("xdsmized_sobieski_bilevel_parallel"))
 
 
@@ -654,7 +665,7 @@ def assert_xdsm_equal(expected: dict[str, Any], generated: dict[str, Any]) -> No
         expected: The expected XDSM structure to be compared with.
         generated: The generated XDSM structure.
     """
-    assert sorted(expected.keys()) == sorted(generated.keys())
+    assert sorted(generated.keys()) == sorted(expected.keys())
 
     for key in expected:
         assert_level_xdsm_equal(expected[key], generated[key])
@@ -670,14 +681,14 @@ def assert_level_xdsm_equal(
         expected: The expected data to be compared with.
         generated: The generated data.
     """
-    assert len(expected["nodes"]) == len(generated["nodes"])
+    assert len(generated["nodes"]) == len(expected["nodes"])
 
     for expected_node in expected["nodes"]:
         found = False
         for node in generated["nodes"]:
             if node["id"] == expected_node["id"]:
-                assert expected_node["name"] == node["name"]
-                assert expected_node["type"] == node["type"]
+                assert node["name"] == expected_node["name"]
+                assert node["type"] == expected_node["type"]
                 found = True
         assert found, f"Node {expected_node!s} not found."
 
@@ -688,12 +699,13 @@ def assert_level_xdsm_equal(
                 edge["from"] == expected_edge["from"]
                 and edge["to"] == expected_edge["to"]
             ):
-                assert set(expected_edge["name"].split(", ")) == set(
-                    edge["name"].split(", ")
+                assert set(edge["name"].split(", ")) == set(
+                    expected_edge["name"].split(", ")
                 )
                 found = True
         assert found, f"Edge {expected_edge!s} not found."
-    assert expected["workflow"] == generated["workflow"]
+
+    assert generated["workflow"] == expected["workflow"]
 
 
 def test_xdsmize_mdf_mdoparallelchain(options) -> None:

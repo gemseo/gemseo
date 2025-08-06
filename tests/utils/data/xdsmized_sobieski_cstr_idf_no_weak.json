@@ -1,0 +1,155 @@
+{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "Optimizer",
+        "type": "optimization",
+        "status": "DONE"
+      },
+      {
+        "id": "Dis1",
+        "name": "SobieskiPropulsion",
+        "type": "analysis",
+        "status": "DONE"
+      },
+      {
+        "id": "Dis2",
+        "name": "SobieskiAerodynamics",
+        "type": "analysis",
+        "status": "DONE"
+      },
+      {
+        "id": "Dis3",
+        "name": "SobieskiStructure",
+        "type": "analysis",
+        "status": "DONE"
+      },
+      {
+        "id": "Dis4",
+        "name": "SobieskiMission",
+        "type": "analysis",
+        "status": "DONE"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x_shared^(0), x_1^(0), x_2^(0), x_3^(0), y_32^(0), y_31^(0), y_23^(0), y_21^(0), y_12^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": "y_4^*, consistency_y_31_y_32^*, consistency_y_21_y_23^*, consistency_y_12^*, g_1^*, g_2^*, g_3^*"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x_3, x_shared, y_23"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "g_3, y_31, y_32"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis2",
+        "name": "x_2, x_shared, y_12, y_32"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "g_2, y_21, y_23"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis3",
+        "name": "x_1, x_shared, y_21, y_31"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_1, y_12"
+      },
+      {
+        "from": "Opt",
+        "to": "Dis4",
+        "name": "x_shared"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "y_3^*, y_34^*"
+      },
+      {
+        "from": "Dis1",
+        "to": "Opt",
+        "name": "y_32, y_31, g_3"
+      },
+      {
+        "from": "Dis2",
+        "to": "_U_",
+        "name": "y_24^*, y_2^*"
+      },
+      {
+        "from": "Dis2",
+        "to": "Opt",
+        "name": "y_21, y_23, g_2"
+      },
+      {
+        "from": "Dis3",
+        "to": "_U_",
+        "name": "y_1^*, y_11^*, y_14^*"
+      },
+      {
+        "from": "Dis3",
+        "to": "Opt",
+        "name": "g_1, y_12"
+      },
+      {
+        "from": "Dis4",
+        "to": "Opt",
+        "name": "y_4"
+      },
+      {
+        "from": "Dis1",
+        "to": "Dis4",
+        "name": "y_34"
+      },
+      {
+        "from": "Dis2",
+        "to": "Dis4",
+        "name": "y_24"
+      },
+      {
+        "from": "Dis3",
+        "to": "Dis4",
+        "name": "y_14"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          {
+            "parallel": [
+              "Dis1",
+              "Dis2",
+              "Dis3"
+            ]
+          },
+          "Dis4"
+        ]
+      ]
+    ],
+    "optpb": ""
+  }
+}

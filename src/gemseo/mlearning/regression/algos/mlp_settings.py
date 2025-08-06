@@ -29,6 +29,8 @@ from gemseo.utils.seeder import SEED
 class MLPRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the multiLayer perceptron (MLP)."""
 
+    _TARGET_CLASS_NAME = "MLPRegressor"
+
     hidden_layer_sizes: tuple[PositiveInt, ...] = Field(
         default=(100,), description="The number of neurons per hidden layer."
     )

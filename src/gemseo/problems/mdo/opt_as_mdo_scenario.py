@@ -20,7 +20,8 @@ This difference is even greater in the case of MDO under uncertainties.
 
 Faced with this limitation,
 the :class:`.OptAsMDOScenario` allows the user to
-rewrite a monodisciplinary optimization problem into an MDO problem.
+rewrite a monodisciplinary optimization problem
+into an MDO problem :cite:`AzizAlaoui2025`.
 
 The original discipline
 
@@ -97,9 +98,7 @@ If the original discipline is analytically differentiable,
 so are the objective and constraint functions of this MDO problem.
 
 By default,
-this scenario applies
-the technique proposed by Amine Aziz-Alaoui in his doctoral thesis
-to the case of linear coupling and link disciplines,
+this scenario uses linear coupling and link disciplines,
 using the previous expressions of :math:`h_1,\ldots,h_N` and :math:`L`.
 More advanced disciplines could be imagined,
 using the arguments ``coupling_equations`` and ``link_discipline``.
@@ -390,8 +389,8 @@ def create_disciplines(
         Iterable[Discipline, ...],
         Callable[[RealArray], RealArray],
         Callable[[RealArray], RealArray],
-    ],
-    link_discipline_class: type[BaseLinkDiscipline],
+    ] = (),
+    link_discipline_class: type[BaseLinkDiscipline] = LinearLinkDiscipline,
 ) -> tuple[Discipline, BaseLinkDiscipline, Discipline]:
     r"""Create the disciplines to make an optimization problem multidisciplinary.
 

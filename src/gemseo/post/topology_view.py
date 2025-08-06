@@ -47,17 +47,18 @@ class TopologyView(BasePost[TopologyView_Settings]):
         if isinstance(iterations, int):
             iterations = [iterations]
         elif not iterations:
-            iterations = [len(self.database)]
+            iterations = [len(self._dataset)]
 
         for iteration in iterations:
             plt.ion()  # Ensure that redrawing is possible
-            design = self.database.get_x_vect(iteration)
+            design = self._dataset.design_dataset.iloc[iteration - 1].to_numpy()
             fig, ax = plt.subplots()
             if observable:
+                design_point = self._dataset.get_view(indices=(iteration))
                 data = (
                     -cast(
                         "RealArray",
-                        self.database.get_function_value(observable, design),
+                        design_point.get_view(variable_names=observable).to_numpy(),
                     )
                     .reshape((n_x, n_y))
                     .T

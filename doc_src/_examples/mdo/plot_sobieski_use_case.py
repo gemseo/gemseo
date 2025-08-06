@@ -29,7 +29,7 @@ Application: Sobieski's Super-Sonic Business Jet (MDO)
 # .. seealso::
 #
 #    To begin with a more simple MDO problem, and have a detailed description
-#    of how to plug a test case to |g|, see :ref:`sellar_mdo`.
+#    of how to plug a test case to |g|, see :ref:`sphx_glr_examples_mdo_plot_sellar.py`.
 #
 #
 # .. _sobieski_use_case:
@@ -64,14 +64,16 @@ from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.settings.opt import NLOPT_SLSQP_Settings
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.discipline import get_all_outputs
 
 configure_logger()
 
 # %%
-# Step 1: Creation of :class:`.Discipline`
-# -------------------------------------------
+# Step 1: :class:`.Discipline` creation.
+# --------------------------------------
 #
 # To build the scenario, we first instantiate the disciplines. Here, the
 # disciplines themselves have already been
@@ -88,14 +90,14 @@ disciplines = create_discipline([
 # .. tip::
 #
 #    For the disciplines that are not interfaced with |g|, the |g|'s
-#    :mod:`~gemseo` eases the creation of disciplines without having
+#    :mod:`~gemseo` module eases the creation of disciplines without having
 #    to import them.
 #
 #    See :ref:`api`.
 
 # %%
-# Step 2: Creation of :class:`.Scenario`
-# --------------------------------------
+# Step 2: :class:`.Scenario` creation.
+# ------------------------------------
 #
 # The scenario delegates the creation of the optimization problem to the
 # :ref:`MDO formulation <mdo_formulations>`.
@@ -108,7 +110,7 @@ disciplines = create_discipline([
 #   all the design variables needed by the :ref:`MDF formulation <mdf_formulation>`.
 #   It can be imported from a text file, or created from scratch with the methods
 #   :func:`.create_design_space` and
-#   :meth:`~gemseo.algos.design_space.DesignSpace.add_variable`. In this case,
+#   :meth:`.DesignSpace.add_variable`. In this case,
 #   we will create it directly from the API.
 design_space = SobieskiDesignSpace()
 # %%
@@ -141,7 +143,7 @@ design_space = SobieskiDesignSpace()
 # - The available :ref:`MDO formulations <mdo_formulations>` are located in the
 #   **gemseo.formulations** package, see :ref:`extending-gemseo` for extending
 #   GEMSEO with other formulations.
-# - The ``formulation`` classname (here, ``"MDF"``) shall be passed to
+# - The ``formulation`` class name (here, ``"MDF"``) shall be passed to
 #   the scenario to select them.
 # - The list of available formulations can be obtained by using
 #   :func:`.get_available_formulations`.
@@ -150,19 +152,31 @@ get_available_formulations()
 # - :math:`y\_4` corresponds to the ``objective_name``. This name must be one
 #   of the disciplines outputs, here the "SobieskiMission" discipline. The list of
 #   all outputs of the disciplines can be obtained by using
-#   :meth:`~gemseo.disciplines.utils.get_all_outputs`:
+#   :meth:`~gemseo.utils.discipline.get_all_outputs`:
 get_all_outputs(disciplines)
 get_all_inputs(disciplines)
 # %%
-# From these :class:`~gemseo.core.discipline.Discipline`, design space filename,
+# From these :class:`.Discipline`, design space filename,
 # :ref:`MDO formulation <mdo_formulations>` name and objective function name,
-# we build the scenario:
+# we build the scenario.
+# During the instantiation of the scenario, we provide some options for the
+# MDF formulations. The MDF formulation includes an MDA, and thus one of the settings of
+# the formulation is ``main_mda_settings``, which configures the solver for the strong
+# couplings.
+main_mda_settings = MDAGaussSeidel_Settings(
+    tolerance=1e-14,
+    max_mda_iter=50,
+    warm_start=True,
+    use_lu_fact=False,
+    linear_solver_tolerance=1e-14,
+)
 scenario = create_scenario(
     disciplines,
     "y_4",
     design_space,
     formulation_name="MDF",
     maximize_objective=True,
+    main_mda_settings=main_mda_settings,
 )
 # %%
 # The range function (:math:`y\_4`) should be maximized. However, optimizers
@@ -176,20 +190,22 @@ scenario = create_scenario(
 #
 #
 # **Function derivatives.** As analytical disciplinary derivatives are
-# vailable for Sobieski test-case, they can be used instead of computing
-# the derivatives with finite-differences or with the complex-step method.
-# The easiest way to set a method is to let the optimizer determine it:
+# available for Sobieski test-case, they can be used instead of computing
+# the derivatives with finite differences or with the complex step method.
+# The easiest way to set it is the method
+# :meth:`.BaseScenario.set_differentiation_method`:
 scenario.set_differentiation_method()
 # %%
 #
-# The default behavior of the optimizer triggers :term:`finite differences`.
-# It corresponds to:
+# The default behavior uses the analytical derivatives defined in
+# :meth:`.Discipline._compute_jacobian`. Otherwise, the finite differences method can
+# be set as follows:
 #
 # .. code::
 #
 #   scenario.set_differentiation_method("finite_differences",1e-7)
 #
-# It it also possible to differentiate functions by means of the
+# It is also possible to differentiate functions by means of the
 # :term:`complex step` method:
 #
 # .. code::
@@ -201,12 +217,12 @@ scenario.set_differentiation_method()
 #
 # Similarly to the objective function, the constraints names are a subset
 # of the disciplines' outputs. They can be obtained by using
-# :meth:`~gemseo.disciplines.utils.get_all_outputs`.
+# :meth:`~gemseo.utils.discipline.get_all_outputs`.
 #
 # The formulation has a powerful feature to automatically dispatch the constraints
 # (:math:`g\_1, g\_2, g\_3`) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# :meth:`~gemseo.scenarios.scenario.Scenario.add_constraint`:
+# :meth:`.BaseScenario.add_constraint`:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
@@ -219,12 +235,19 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # and possibly a few options.
 # The maximum number of iterations and the options can be passed
 # either as keyword arguments
-# e.g. ``scenario.execute(algo_name="SLSQP", max_iter=10, ftol_rel=1e-6)``
+# e.g. ``scenario.execute(algo_name="NLOPT_SLSQP", max_iter=10, ftol_rel=1e-6)``
 # or as a Pydantic model of settings,
-# e.g. ``scenario.execute(NLOPTSLSQPSettings(max_iter=10, ftol_rel=1e-6))``
-# where the Pydantic model ``NLOPTSLSQPSettings`` is imported from ``gemseo.settings.opt``.
-# In this example, we do not use any option:
-scenario.execute(algo_name="SLSQP", max_iter=10)
+# e.g. ``scenario.execute(NLOPT_SLSQP_Settings(max_iter=10, ftol_rel=1e-6))``
+# where the Pydantic model ``NLOPT_SLSQP_Settings`` is imported from
+# ``gemseo.settings.opt``.
+# In this example, we use the Pydantic model:
+slsqp_settings = NLOPT_SLSQP_Settings(
+    max_iter=10,
+    ftol_rel=1e-10,
+    ineq_tolerance=2e-3,
+    normalize_design_space=True,
+)
+scenario.execute(slsqp_settings)
 # %%
 # Post-processing options
 # ~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,7 +286,7 @@ scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPER
 # %%
 # The next table shows the performance of each method for solving the Sobieski use case
 # with :ref:`MDF <mdf_formulation>` and :ref:`IDF <idf_formulation>` formulations.
-# Efficiency of linearization is clearly visible has it takes from 10 to 20 times
+# The efficiency of linearization is clearly visible as it takes from 10 to 20 times
 # less CPU time to compute analytic derivatives of an :ref:`mda` compared
 # to finite difference and complex step.
 # For :ref:`IDF <idf_formulation>`, improvements are less consequent,

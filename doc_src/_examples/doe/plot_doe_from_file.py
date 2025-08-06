@@ -18,8 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Use a design of experiments from a file
-=======================================
+DOE from a file.
+================
 """
 
 from __future__ import annotations

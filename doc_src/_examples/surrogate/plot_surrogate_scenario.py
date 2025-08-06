@@ -32,8 +32,9 @@ and is faster to compute than the original discipline. It relies on a
 :class:`.BaseRegressor`. This comes at the price of computing a :term:`DOE`
 on the original :class:`.Discipline`, and validating the approximation. The
 computations from which the approximation is built can be available, or can be
-built using |g|' :term:`DOE` capabilities. See :ref:`sobieski_doe` and
-:ref:`sellar_mdo`.
+built using |g|' :term:`DOE` capabilities.
+See :ref:`sphx_glr_examples_formulations_plot_doe_sobieski_mdf_example.py` and
+:ref:`sphx_glr_examples_mdo_plot_sellar.py`.
 
 In |g|'s, the data used to build the surrogate model is taken from a
 :class:`.Dataset` containing both inputs and outputs of the :term:`DOE`. This

@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import PositiveInt  # noqa: TC002
+from pydantic import NonNegativeInt
 
 from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
 from gemseo.utils.constants import N_CPUS
@@ -34,11 +34,15 @@ class BaseParallelMDASettings(BaseMDASolverSettings):
             stored in the :attr:`.BaseMDA.cache`.""",
     )
 
-    n_processes: PositiveInt = Field(
+    n_processes: NonNegativeInt = Field(
         default=N_CPUS,
         description="""The number of threads/processes.
 
-Threads if ``use_threading``, processes otherwise.""",
+Threads if ``use_threading``, processes otherwise.
+
+The default value can be changed
+using :meth:`.set_default_n_processes` or :func:`.configure`.
+""",
     )
 
     use_threading: bool = Field(
@@ -51,3 +55,18 @@ If one wants to execute the same discipline multiple times,
 then multiprocessing should be preferred."""
         ),
     )
+
+    @classmethod
+    def set_default_n_processes(cls, default_n_processes: int) -> None:
+        """Set the default number of threads/processes.
+
+        Args:
+            default_n_processes: The default number of threads/processes.
+        """
+        try:
+            fields = cls.__pydantic_fields__
+        except AttributeError:  # pragma: no cover
+            # TODO: remove when pydantic 2.9 is no longer supported.
+            fields = cls.model_fields
+        fields["n_processes"].default = default_n_processes
+        cls.model_rebuild(force=True)

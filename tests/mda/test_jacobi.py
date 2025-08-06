@@ -41,6 +41,8 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from gemseo.utils.discipline import DummyDiscipline
+from tests.mda import check_iteration_callbacks_clearing
+from tests.mda import check_iteration_callbacks_execution
 
 from .test_gauss_seidel import SelfCoupledDisc
 from .utils import generate_parallel_doe
@@ -136,7 +138,7 @@ def test_mda_jacobi_parallel() -> None:
     assert_equal(mda_seq_local_data, mda_parallel_local_data)
 
 
-def test_jacobi_sellar(sellar_disciplines) -> None:
+def test_jacobi_sellar(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test the execution of Jacobi on Sobieski."""
     mda = MDAJacobi(sellar_disciplines)
     mda.execute()
@@ -227,12 +229,22 @@ def test_self_coupled() -> None:
     assert abs(out["y"] - 2.0 / 3.0) < 1e-6
 
 
-def test_log_convergence(sellar_disciplines) -> None:
+def test_log_convergence(sellar_with_2d_array, sellar_disciplines) -> None:
     """Check that the boolean log_convergence is correctly set."""
     mda = MDAJacobi(sellar_disciplines)
     assert not mda.settings.log_convergence
     mda = create_mda("MDAJacobi", sellar_disciplines, log_convergence=True)
     assert mda.settings.log_convergence
+
+
+def test_iteration_callbacks_execution(sellar_disciplines) -> None:
+    """Check the execution of iteration callbacks."""
+    check_iteration_callbacks_execution(MDAJacobi(sellar_disciplines))
+
+
+def test_iteration_callbacks_clearing(sellar_disciplines) -> None:
+    """Check the clearing of iteration callbacks."""
+    check_iteration_callbacks_clearing(MDAJacobi(sellar_disciplines))
 
 
 def test_parallel_doe() -> None:

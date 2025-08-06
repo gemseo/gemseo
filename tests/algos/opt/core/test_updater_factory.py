@@ -21,23 +21,27 @@
 
 from __future__ import annotations
 
-from unittest import TestCase
+import re
+
+import pytest
 
 from gemseo.algos.opt.core.updater_factory import UpdaterFactory
 
 
-class TestUpdaterFactory(TestCase):
-    """A class to test the UpdaterFactory class."""
-
-    def test_unavailable_update(self) -> None:
-        """Tests the unavailable update exception."""
-        updater_factory = UpdaterFactory()
-        self.assertRaises(
-            Exception,
-            updater_factory.create,
-            name="unavailable update",
+def test_unavailable_update() -> None:
+    """Tests the unavailable update exception."""
+    updater_factory = UpdaterFactory()
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "'method_name' is not an updater; available: 'penalty' and 'radius'."
+        ),
+    ):
+        updater_factory.create(
+            "method_name",
             thresholds=(0.0, 0.25),
             multipliers=(0.5, 2.0),
             bound=1.0,
         )
-        updater_factory.create("penalty", (0.0, 0.25), (0.5, 2.0), 1.0)
+
+    updater_factory.create("penalty", (0.0, 0.25), (0.5, 2.0), 1.0)

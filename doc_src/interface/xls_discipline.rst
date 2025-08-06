@@ -27,7 +27,7 @@ We start by importing all the necessary modules and configuring the logger.
    from numpy import array, ones
 
    from gemseo import create_design_space, configure_logger, create_scenario
-   from gemseo.wrappers.xls_discipline import XLSDiscipline
+   from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
 
    configure_logger()
 
@@ -96,9 +96,9 @@ Create the :class:`.DOEScenario` with the :class:`.XLSDiscipline`, the :class:`.
 
    scenario = create_scenario(
        xls_discipline,
-       formulation_name="DisciplinaryOpt",
        objective_name="c",
        design_space=design_space,
+       formulation_name="DisciplinaryOpt",
        scenario_type='DOE',
    )
 
@@ -143,9 +143,9 @@ For that, we will use the :class:`.MDFFormulation`:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation_name="MDF",
        objective_name="f",
        design_space=design_space,
+       formulation_name="MDF",
        scenario_type='DOE',
    )
 
@@ -197,10 +197,10 @@ The scenario creation would specify the MDA:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation_name="MDF",
-       main_mda_class="MDAJacobi",
        objective_name="f",
        design_space=design_space,
+       formulation_name="MDF",
+       main_mda_class="MDAJacobi",
        scenario_type='DOE',
    )
 
@@ -231,10 +231,10 @@ The scenario would be created as follows:
 
    scenario = create_scenario(
        [xls_discipline, other_discipline],
-       formulation_name="MDF",
-       main_mda_class="MDAJacobi",
        objective_name="f",
        design_space=design_space,
+       formulation_name="MDF",
+       main_mda_class="MDAJacobi",
        scenario_type='DOE',
    )
 

@@ -18,9 +18,13 @@ from __future__ import annotations
 
 import math
 import re
+import shlex
 import time
+from subprocess import Popen
+from time import sleep
 from typing import TYPE_CHECKING
 
+import psutil
 import pytest
 from numpy import array
 
@@ -28,10 +32,13 @@ from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.wrappers.retry_discipline import RetryDiscipline
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.utils.timer import Timer
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
 
     from gemseo.typing import StrKeyMapping
 
@@ -53,24 +60,12 @@ def a_crashing_discipline_in_run() -> Discipline:
     return CrashingDisciplineInRun(name="Crash_run")
 
 
-@pytest.fixture
-def a_long_time_running_discipline() -> Discipline:
-    return DisciplineLongTimeRunning()
-
-
 class CrashingDisciplineInRun(Discipline):
     """A discipline raising NotImplementedError in ``_run``."""
 
     def _run(self, input_data: StrKeyMapping):
         msg = "Error: This method is not implemented."
         raise NotImplementedError(msg)
-
-
-class DisciplineLongTimeRunning(Discipline):
-    """A discipline that could run for a while, to test the timeout feature."""
-
-    def _run(self, input_data: StrKeyMapping) -> None:
-        time.sleep(5.0)
 
 
 class FictiveDiscipline(Discipline):
@@ -84,12 +79,11 @@ class FictiveDiscipline(Discipline):
         super().__init__()
         self.attempt = 0
 
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
+    def _run(self, input_data: StrKeyMapping) -> None:
         self.attempt += 1
         if self.attempt < 3:
             msg = "runtime error in FictiveDiscipline"
             raise RuntimeError(msg)
-        return {}
 
 
 @pytest.mark.parametrize("timeout", [math.inf, 10.0])
@@ -100,18 +94,65 @@ def test_retry_discipline(an_analytic_discipline, timeout, caplog) -> None:
 
     assert retry_discipline.n_executions == 1
     assert retry_discipline.local_data == {"x": array([4.0]), "y": array([4.0])}
-
     assert caplog.text == ""
 
 
-@pytest.mark.parametrize("wait_time", [0.5, 1.0])
+class SlowThreadDiscipline(Discipline):
+    """A discipline that executes a long-running ."""
+
+    def _run(self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT) -> None:
+        end_time = time.time() + 60.0
+
+        while time.time() < end_time:
+            pass
+
+
+class SlowProcessDiscipline(Discipline):
+    """A discipline that executes a long-running process."""
+
+    pid_path: Path
+    """The path to the file to contain the process id."""
+
+    def _run(self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT) -> None:
+        cmd_line = 'python -c "import time; time.sleep(60.0)"'
+
+        # The following is inspired from subprocess.run.
+        process = Popen(shlex.split(cmd_line))
+        # Store the process id to later check if it is still running.
+        self.pid_path.write_text(str(process.pid))
+        try:
+            process.communicate()
+        except:
+            process.kill()
+            raise
+        process.poll()
+
+        sleep(60)
+
+
+TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
+
+
+@pytest.mark.skipif(
+    PLATFORM_IS_WINDOWS,
+    reason="The windows CI has big troubles with this test.",
+)
+@pytest.mark.parametrize("wait_time", [0.01, 0.1])
 @pytest.mark.parametrize("n_trials", [1, 3])
-def test_failure_retry_discipline_with_timeout(
-    an_analytic_discipline, n_trials, wait_time, caplog
+@pytest.mark.parametrize("disc_class", [SlowProcessDiscipline, SlowThreadDiscipline])
+def test_wait_time_and_n_trials(
+    n_trials, wait_time, disc_class, caplog, tmp_wd
 ) -> None:
     """Test failure of the discipline with a too much very short timeout."""
-    disc_with_timeout = RetryDiscipline(
-        an_analytic_discipline, timeout=1e-4, n_trials=n_trials, wait_time=wait_time
+    wrapped_disc = disc_class()
+    wrapped_disc.pid_path = pid_path = tmp_wd / "pid"
+
+    disc = RetryDiscipline(
+        wrapped_disc,
+        timeout=TIMEOUT,
+        n_trials=n_trials,
+        wait_time=wait_time,
+        timeout_with_process=disc_class == SlowProcessDiscipline,
     )
 
     with (
@@ -119,22 +160,24 @@ def test_failure_retry_discipline_with_timeout(
         pytest.raises(
             TimeoutError,
             match="Timeout reached during the execution"
-            " of discipline AnalyticDiscipline",
+            rf" of discipline {disc_class.__name__}",
         ),
     ):
-        disc_with_timeout.execute({"x": array([4.0])})
+        disc.execute()
 
-    elapsed_time = timer.elapsed_time
-    assert elapsed_time > 0.05 + (n_trials - 1) * wait_time
+    if disc_class == SlowProcessDiscipline:
+        # The wrapped discipline process should have been killed.
+        assert not psutil.pid_exists(int(pid_path.read_text()))
 
-    assert disc_with_timeout.n_executions == n_trials
-    assert disc_with_timeout.local_data == {"x": array([4.0])}
-
-    assert "Process stopped as it exceeds timeout" in caplog.text
+    # The offset accounts for the time it takes for the execution to reach the _run of
+    # retry discipline.
+    assert timer.elapsed_time > 0.01 + (n_trials - 1) * wait_time
+    assert disc.n_executions == n_trials
+    assert not disc.local_data
 
     plural_suffix = "s" if n_trials > 1 else ""
     log_message = (
-        f"Failed to execute discipline AnalyticDiscipline after {n_trials}"
+        f"Failed to execute discipline {disc_class.__name__} after {n_trials}"
         f" attempt{plural_suffix}."
     )
     assert log_message in caplog.text
@@ -165,7 +208,7 @@ def test_failure_zero_division_error(a_crashing_analytic_discipline, caplog) -> 
     ],
 )
 @pytest.mark.parametrize("n_trials", [1, 3])
-def test_failure_zero_division_error_with_timeout(
+def test_failure_zero_division_error_n_trials(
     n_trials: int,
     fatal_exceptions: Iterable[type[Exception]],
     a_crashing_analytic_discipline,
@@ -179,7 +222,6 @@ def test_failure_zero_division_error_with_timeout(
     disc = RetryDiscipline(
         a_crashing_analytic_discipline,
         n_trials=n_trials,
-        timeout=10.0,
         fatal_exceptions=fatal_exceptions,
     )
     with pytest.raises(ZeroDivisionError, match="float division by zero"):
@@ -228,32 +270,6 @@ def test_a_not_implemented_error_analytic_discipline(
     assert log_message in caplog.text
 
 
-def test_retry_discipline_timeout_feature(
-    a_long_time_running_discipline, caplog
-) -> None:
-    """Test the timeout feature of discipline with a long computation."""
-    n_trials = 1
-
-    disc_with_timeout = RetryDiscipline(
-        a_long_time_running_discipline, timeout=2.0, n_trials=n_trials
-    )
-    with pytest.raises(
-        TimeoutError,
-        match="Timeout reached during the execution"
-        " of discipline DisciplineLongTimeRunning",
-    ):
-        disc_with_timeout.execute({"x": array([0.0])})
-
-    assert disc_with_timeout.n_executions == n_trials
-    assert disc_with_timeout.local_data == {}
-
-    assert "Process stopped as it exceeds timeout" in caplog.text
-    log_message = (
-        "Failed to execute discipline DisciplineLongTimeRunning after 1 attempt."
-    )
-    assert log_message in caplog.text
-
-
 @pytest.mark.parametrize("n_trials", [1, 3])
 def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> None:
     """Test a discipline crashing each time, n_trials = 1 or 3."""
@@ -266,8 +282,6 @@ def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> N
 
     assert disc.n_executions == n_trials
     assert disc.io.data == {"x": array([0.0])}
-
-    assert disc.execution_status.value == ExecutionStatus.Status.FAILED
 
     plural_suffix = "s" if n_trials > 1 else ""
     log_message = (

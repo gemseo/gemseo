@@ -109,6 +109,7 @@ def aggregate_sum_square(
     constr_fct: MDOFunction,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
+    output_suffix: str = "",
 ) -> MDOFunction:
     """Transform a vector of equalities into a sum of squared constraints.
 
@@ -117,6 +118,9 @@ def aggregate_sum_square(
         indices: The indices to generate a subset of the outputs to aggregate.
             If ``None``, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
+        output_suffix: The suffix to add to the output names. Useful for cases in which
+            the same aggregation method is used multiple times on the same constraint
+            function.
 
     Returns:
         The aggregated function.
@@ -136,9 +140,9 @@ def aggregate_sum_square(
         constr_fct,
         compute,
         compute_jac,
-        f"sum²_{constr_fct.name}",
-        f"sum({constr_fct.expr}**2)",
-        "sum_sq_cstr",
+        f"sum²_{constr_fct.name}{output_suffix}",
+        f"sum({constr_fct.expr}**2){output_suffix}",
+        f"sum_sq_cstr{output_suffix}",
     )
 
 
@@ -147,6 +151,7 @@ def aggregate_positive_sum_square(
     constr_fct: MDOFunction,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
+    output_suffix: str = "",
 ) -> MDOFunction:
     """Transform a vector of equalities into a sum of squared constraints.
 
@@ -155,6 +160,9 @@ def aggregate_positive_sum_square(
         indices: The indices to generate a subset of the outputs to aggregate.
             If ``None``, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
+        output_suffix: The suffix to add to the output names. Useful for cases in which
+            the same aggregation method is used multiple times on the same constraint
+            function.
 
     Returns:
         The aggregated function.
@@ -174,9 +182,9 @@ def aggregate_positive_sum_square(
         constr_fct,
         compute,
         compute_jac,
-        f"pos_sum_{constr_fct.name}",
-        f"sum(heaviside({constr_fct.expr})*{constr_fct.expr}**2)",
-        "pos_sum_sq_cstr",
+        f"pos_sum_{constr_fct.name}{output_suffix}",
+        f"sum(heaviside({constr_fct.expr})*{constr_fct.expr}**2){output_suffix}",
+        f"pos_sum_sq_cstr{output_suffix}",
     )
 
 
@@ -185,6 +193,7 @@ def aggregate_max(
     constr_fct: MDOFunction,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
+    output_suffix: str = "",
 ) -> MDOFunction:
     """Transform a vector of equalities into a max of all values.
 
@@ -193,6 +202,9 @@ def aggregate_max(
         indices: The indices to generate a subset of the outputs to aggregate.
             If ``None``, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
+        output_suffix: The suffix to add to the output names. Useful for cases in which
+            the same aggregation method is used multiple times on the same constraint
+            function.
 
     Returns:
         The aggregated function.
@@ -210,9 +222,9 @@ def aggregate_max(
         constr_fct,
         compute,
         compute_jac,
-        "max_" + constr_fct.name,
-        f"max({constr_fct.expr})",
-        "max_cstr",
+        f"max_{constr_fct.name}{output_suffix}",
+        f"max({constr_fct.expr}){output_suffix}",
+        f"max_cstr{output_suffix}",
     )
 
 
@@ -222,6 +234,7 @@ def aggregate_iks(
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
     scale: float | ndarray = 1.0,
+    output_suffix: str = "",
 ) -> MDOFunction:
     """Constraints aggregation method for inequality constraints.
 
@@ -233,6 +246,9 @@ def aggregate_iks(
             If ``None``, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         rho: The multiplicative parameter in the exponential.
+        output_suffix: The suffix to add to the output names. Useful for cases in which
+            the same aggregation method is used multiple times on the same constraint
+            function.
 
     Returns:
         The aggregated function.
@@ -256,9 +272,9 @@ def aggregate_iks(
         constr_fct,
         compute,
         compute_jac,
-        f"IKS({constr_fct.name})",
-        f"IKS({constr_fct.expr})",
-        "IKS",
+        f"IKS({constr_fct.name}){output_suffix}",
+        f"IKS({constr_fct.expr}){output_suffix}",
+        f"IKS{output_suffix}",
     )
 
 
@@ -268,6 +284,7 @@ def aggregate_lower_bound_ks(
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
     scale: float | ndarray = 1.0,
+    output_suffix: str = "",
 ) -> MDOFunction:
     """Aggregate constraints for inequality constraints.
 
@@ -279,6 +296,9 @@ def aggregate_lower_bound_ks(
             If ``None``, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         rho: The multiplicative parameter in the exponential.
+        output_suffix: The suffix to add to the output names. Useful for cases in which
+            the same aggregation method is used multiple times on the same constraint
+            function.
 
     Returns:
         The aggregated function.
@@ -302,9 +322,9 @@ def aggregate_lower_bound_ks(
         constr_fct,
         compute,
         compute_jac,
-        f"lower_bound_KS({constr_fct.name})",
-        f"lower_bound_KS({constr_fct.expr})",
-        "lower_bound_KS",
+        f"lower_bound_KS({constr_fct.name}){output_suffix}",
+        f"lower_bound_KS({constr_fct.expr}){output_suffix}",
+        f"lower_bound_KS{output_suffix}",
     )
 
 
@@ -314,6 +334,7 @@ def aggregate_upper_bound_ks(
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
     scale: float | ndarray = 1.0,
+    output_suffix: str = "",
 ) -> MDOFunction:
     """Aggregate constraints for inequality constraints.
 
@@ -325,6 +346,9 @@ def aggregate_upper_bound_ks(
             If ``None``, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         rho: The multiplicative parameter in the exponential.
+        output_suffix: The suffix to add to the output names. Useful for cases in which
+            the same aggregation method is used multiple times on the same constraint
+            function.
 
     Returns:
         The aggregated function.
@@ -348,9 +372,9 @@ def aggregate_upper_bound_ks(
         constr_fct,
         compute,
         compute_jac,
-        f"upper_bound_KS({constr_fct.name})",
-        f"upper_bound_KS({constr_fct.expr})",
-        "upper_bound_KS",
+        f"upper_bound_KS({constr_fct.name}){output_suffix}",
+        f"upper_bound_KS({constr_fct.expr}){output_suffix}",
+        f"upper_bound_KS{output_suffix}",
     )
 
 

@@ -46,7 +46,7 @@ def test_compare_mda_jacobi_gs() -> None:
         )
 
 
-def test_mda_jacobi_newton_hybrid(sellar_disciplines) -> None:
+def test_mda_jacobi_newton_hybrid(sellar_with_2d_array, sellar_disciplines) -> None:
     """Compare Newton and Gauss-Seidel MDA."""
     mda_j = MDAChain(sellar_disciplines, inner_mda_name="MDAJacobi")
     out1 = mda_j.execute()

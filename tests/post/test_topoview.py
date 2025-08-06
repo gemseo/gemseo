@@ -45,7 +45,9 @@ def scenario_and_dimensions():
         formulation_name="DisciplinaryOpt",
     )
     scenario.add_observable("xPhys")
-    scenario.add_constraint("volume fraction", constraint_type="ineq", value=vf0)
+    scenario.add_constraint(
+        "volume fraction", constraint_type=scenario.ConstraintType.INEQ, value=vf0
+    )
     scenario.execute(algo_name="NLOPT_MMA", max_iter=1)
     return scenario, n_el, n_el
 

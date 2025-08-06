@@ -56,7 +56,6 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from gemseo.core.discipline.base_discipline import _CacheType
-    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -131,12 +130,6 @@ class BaseMDA(ProcessDiscipline):
     reset_history_each_run: bool
     """Whether to reset the history of MDA residuals before each run."""
 
-    _scaling: ResidualScaling
-    """The scaling method applied to MDA residuals for convergence monitoring."""
-
-    _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
-    """The data required to perform the scaling of the MDA residuals."""
-
     # TODO: API: remove
     norm0: float | None
     """The reference residual, if any."""
@@ -150,6 +143,15 @@ class BaseMDA(ProcessDiscipline):
 
     lin_cache_tol_fact: float
     """The tolerance factor to cache the Jacobian."""
+
+    _current_iter: int
+    """The iteration number."""
+
+    _scaling: ResidualScaling
+    """The scaling method applied to MDA residuals for convergence monitoring."""
+
+    _scaling_data: float | list[tuple[slice, float]] | NDArray[float] | None
+    """The data required to perform the scaling of the MDA residuals."""
 
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
@@ -260,13 +262,12 @@ class BaseMDA(ProcessDiscipline):
         self._input_couplings = []
         self._non_numeric_array_variables = []
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
-        # By default don't use an approximate cache for linearization
+        # By default, don't use an approximate cache for linearization
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
         self.io.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
         self._check_consistency()
-        self.__check_linear_solver_settings()
         self._check_coupling_types()
 
     @property
@@ -284,23 +285,6 @@ class BaseMDA(ProcessDiscipline):
         for discipline in self._disciplines:
             self.io.input_grammar.update(discipline.io.input_grammar)
             self.io.output_grammar.update(discipline.io.output_grammar)
-
-    def __check_linear_solver_settings(self) -> None:
-        """Check the linear solver options.
-
-        The linear solver tolerance cannot be set
-        using the linear solver option dictionary,
-        as it is set using the linear_solver_tolerance keyword argument.
-
-        Raises:
-            ValueError: If the ``rtol`` keyword is in :attr:`.linear_solver_settings`.
-        """
-        if "rtol" in self.settings.linear_solver_settings:
-            msg = (
-                "The linear solver tolerance shall be set"
-                " using the linear_solver_tolerance argument."
-            )
-            raise ValueError(msg)
 
     def _check_consistency(self) -> None:
         """Check if there are not more than one equation per variable.
@@ -360,7 +344,7 @@ class BaseMDA(ProcessDiscipline):
     def _get_differentiated_io(
         self,
         compute_all_jacobians: bool = False,
-    ) -> tuple[set[str] | list[str], set[str] | list[str]]:
+    ) -> tuple[tuple[str, ...], tuple[str, ...]]:
         if compute_all_jacobians:
             strong_cpl = set(self.coupling_structure.strong_couplings)
             inputs = set(self.io.input_grammar)
@@ -431,7 +415,6 @@ class BaseMDA(ProcessDiscipline):
         # have changed at convergence, therefore the cache is not exactly
         # the same as the current value
         exec_cache_tol = self.lin_cache_tol_fact * self.settings.tolerance
-        self.__check_linear_solver_settings()
         residual_variables = {}
         for disc in self._disciplines:
             residual_variables.update(disc.io.residual_to_state_variable)
@@ -451,20 +434,20 @@ class BaseMDA(ProcessDiscipline):
             set(input_names).difference(self._non_numeric_array_variables)
         )
 
+        linear_solver_settings = self.settings.linear_solver_settings.model_dump()
+        linear_solver_settings["rtol"] = self.settings.linear_solver_tolerance
         self.jac = self.assembly.total_derivatives(
             self.io.data,
             output_names,
             input_names,
             couplings_adjoint,
-            rtol=self.settings.linear_solver_tolerance,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
             use_lu_fact=self.settings.use_lu_fact,
             exec_cache_tol=exec_cache_tol,
             execute=exec_cache_tol == 0.0,
-            linear_solver=self.settings.linear_solver,
             residual_variables=residual_variables,
-            **self.settings.linear_solver_settings,
+            **linear_solver_settings,
         )
 
     def _prepare_io_for_check_jacobian(
@@ -503,13 +486,6 @@ class BaseMDA(ProcessDiscipline):
             if self.io.output_grammar.data_converter.is_numeric(output)
         ]
         return input_names, output_names
-
-    def execute(  # noqa:D102
-        self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
-    ) -> DisciplineData:
-        self._current_iter = 0
-        return super().execute(input_data=input_data)
 
     def plot_residual_history(
         self,
@@ -593,15 +569,15 @@ class BaseMDA(ProcessDiscipline):
         if not cached_outputs:
             return
 
-        # Non simple caches require NumPy arrays.
-        if not isinstance(self.cache, SimpleCache):
+        if isinstance(self.cache, SimpleCache):
+            self.io.data.update(dict(self.__get_cached_outputs(cached_outputs)))
+        else:
+            # Non simple caches require NumPy arrays.
             to_value = self.io.input_grammar.data_converter.convert_array_to_value
             for input_name, input_value in self.__get_cached_outputs(cached_outputs):
                 self.io.update_output_data({
                     input_name: to_value(input_name, input_value)
                 })
-        else:
-            self.io.data.update(dict(self.__get_cached_outputs(cached_outputs)))
 
     def __get_cached_outputs(self, cached_outputs) -> Iterator[Any]:
         """Return an iterator over the input couplings names and value in cache.
@@ -617,10 +593,24 @@ class BaseMDA(ProcessDiscipline):
             if input_value is not None:
                 yield input_name, input_value
 
-    @abstractmethod
-    def _execute(self) -> None:  # noqa:D103
+    def _execute(self) -> None:  # noqa: D103
+        self._current_iter = 0
+        if self._pre_solve():
+            self._solve()
+
+    def _pre_solve(self) -> bool:
+        """Prepare to solve the MDA.
+
+        Returns:
+            Whether the MDA can be solved.
+        """
         if self.settings.warm_start:
             self._prepare_warm_start()
+        return True
+
+    @abstractmethod
+    def _solve(self) -> None:
+        """Solve the MDA."""
 
     def _execute_disciplines_and_update_local_data(
         self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT

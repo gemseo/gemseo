@@ -27,6 +27,7 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 if TYPE_CHECKING:
     from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.core.process_discipline import ProcessDiscipline
 
 
 class BaseProcessFlow(BaseFlow):
@@ -34,6 +35,8 @@ class BaseProcessFlow(BaseFlow):
 
     A process flow is composed of a data flow and an execution flow.
     """
+
+    _node: ProcessDiscipline
 
     is_parallel: bool = False
     """Whether the execution sequence is parallel or sequential."""
@@ -47,7 +50,7 @@ class BaseProcessFlow(BaseFlow):
         sequence = (
             ParallelExecSequence() if self.is_parallel else SequentialExecSequence()
         )
-        for discipline in self._node._disciplines:
+        for discipline in self._node.disciplines:
             sequence.extend(discipline.get_process_flow().get_execution_flow())
         return sequence
 
@@ -58,7 +61,7 @@ class BaseProcessFlow(BaseFlow):
             The disciplines.
         """
         all_disciplines = []
-        for disc in self._node._disciplines:
+        for disc in self._node.disciplines:
             disciplines = disc.get_process_flow().get_disciplines_in_data_flow()
             if not disciplines:
                 disciplines = [disc]

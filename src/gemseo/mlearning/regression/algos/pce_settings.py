@@ -53,6 +53,8 @@ class CleaningOptions:
 class PCERegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the polynomial chaos expansion model."""
 
+    _TARGET_CLASS_NAME = "PCERegressor"
+
     # TODO: API: remove in gemseo v7.
     probability_space: ParameterSpace | None = Field(
         default=None,

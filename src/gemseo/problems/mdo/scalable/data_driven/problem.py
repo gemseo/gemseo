@@ -455,7 +455,11 @@ class ScalableProblem:
                 )
             else:
                 taui = 0.0
-            self.scenario.add_constraint(constraint, constraint_type="ineq", value=taui)
+            self.scenario.add_constraint(
+                constraint,
+                constraint_type=self.scenario.ConstraintType.INEQ,
+                value=taui,
+            )
 
     def __add_eq_constraints(self, equilibrium: Mapping[str, NDArray[float]]) -> None:
         """Add equality constraints.
