@@ -27,6 +27,205 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 6.2.0 (2025-08-06)
+**************************
+
+
+
+Added
+-----
+
+- The argument ``validity_domain`` of ``BaseMLSupervisedAlgo`` is the hypercube defined by the lower and upper bounds of the input variables computed from the training dataset.
+  The ``SurrogateDiscipline`` logs a warning message when its execution or linearization is done at an input point outside the domain of validity of the surrogate.
+  `#363 <https://gitlab.com/gemseo/dev/gemseo/-/issues/363>`_
+- The argument ``n_components`` of ``PCA`` can be either the number of components, the minimum amount of variance to be explained by the components, the constant ``"mle"`` to guess this number or ``None`` to define it as ``min(n_samples, n_features)``.
+  `#521 <https://gitlab.com/gemseo/dev/gemseo/-/issues/521>`_
+- DOE algorithms have a new option, called ``"vectorize"``, to sample the functions in a vectorized way.
+  `#1118 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1118>`_
+- Data converters for custom discipline variable types are now easier to set thanks to the ``set_data_converter`` function.
+  `#1359 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1359>`_
+- The probability distributions can be instantiated from Pydantic models, e.g. ``OTNormalDistribution(settings=OTNormalDistribution_Settings(mu=0.2, sigma=1.4))``.
+  The argument ``distribution`` of ``ParameterSpace.add_random_variable`` can be a Pydantic model defining the settings of the distribution.
+  The argument ``distribution`` of ``ParameterSpace.add_random_vector`` can be a collection of Pydantic models defining the settings of the marginal distributions.
+  `#1432 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1432>`_
+- The argument ``timeout_with_process`` can be used to choose how the ``RetryDiscipline`` handles ``timeout``.
+  `#1469 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1469>`_
+- Add the possibility to have iteration callbacks for MDAs, i.e. functions that are called at the end of each iteration.
+  `#1477 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1477>`_
+- The ``NameGenerator`` has a new naming: ``Naming.DATED_UUID``.
+  It helps the user to sort directories,
+  while keeping the unicity of the names for multi-processes.
+  The names now get the date (format: YYYY-MM-DD), the hour and the UUID.
+  For instance, a new generated name: 2025-07-28_15h53min02s_UUID.
+  `#1483 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1483>`_
+- ``OTParametricStatistics`` (formerly ``ParametricStatistics``) and ``SPParametricStatistics`` allow to estimate statistics parametrically,
+  using data-fitted probability distributions from OpenTURNS and SciPy respectively.
+  `#1484 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1484>`_
+- The arguments ``output_names`` and ``input_names`` of ``TaylorDiscipline``
+  define the output variables of the wrapped discipline to expand as Taylor polynomials and the input variables of these polynomials.
+  If empty, use all the input and output variables of the discipline.
+  `#1490 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1490>`_
+- The default output values of the ``TaylorDiscipline`` correspond to the first term of the Taylor polynomial; they can be accessed using ``taylor_discipline.io.output_grammar.defaults``.
+  `#1491 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1491>`_
+- Added a ``ParameterSpaceFactory`` to create ``ParameterSpace`` objects.
+  `#1492 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1492>`_
+- The method ``BaseRegressor.predict_hessian`` allows to compute the Hessian of a regressor. This feature is implemented only in the case of ``OTGaussianProcessRegressor``.
+  `#1499 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1499>`_
+- Post processors can now take an ``OptimizationDataset`` as an argument instead of an ``OptimizationProblem``.
+  `#1500 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1500>`_
+- ``BaseFormulation.get_top_level_disciplines`` has a new argument ``include_sub_formulations`` (default: ``False``) to include the top level disciplines of the sub-formulations.
+  `#1507 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1507>`_
+- Documentation (home page): a button to subscribe to the RSS feeds of GEMSEO and its plugins.
+  `#1508 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1508>`_
+- All post-processors are based on the ``OptimizationDataset`` class, and can be initiated with it by passing the attribute ``misc['optimization_metadata']`` using the ``OptimizationMetadata`` class. The post-processor ``GradientSensitivity`` still requires the ``OptimizationProblem`` class if the option ``compute_missing_gradient`` is set to true.
+  `#1513 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1513>`_
+- Documentation (optimization algorithms): a button to display all the optimization algorithms instead of filtering them.
+  `#1527 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1527>`_
+- Added a ``DesignSpaceFactory`` to create ``DesignSpace`` objects.
+  `#1529 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1529>`_
+- The entering and exiting timestamps of a ``Timer`` context are now accessible.
+  `#1534 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1534>`_
+- The boolean option ``include_weak_coupling_targets`` of ``IDF_Settings``
+  makes ``IDF`` include both the strong couplings and the weak couplings in the optimization problem,
+  in the form of optimization variables supplemented by consistency constraints (default).
+  Otherwise, this MDO formulation includes the strong couplings only.
+  `#1548 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1548>`_
+- The function ``update_default_input_values`` makes it easy to update the default values of certain inputs of several disciplines.
+  `#1555 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1555>`_
+- ``generate_coupling_graph`` has an option ``clean_up`` to remove the DOT source file (default: ``True``).
+  `#1556 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1556>`_
+- ``BiLevel`` has a new option ``set_x0_before_opt`` to warm start the sub-optimizations from the input data of the top-level disciplines.
+  `#1564 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1564>`_
+- The function ``configure`` has a new option, named ``enable_parallel_execution`` (default: ``True``), to let use parallelism (multi-processing or multi-threading) by default.
+  `#1565 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1565>`_
+- The ``seed`` option of ``NLOPT_COBYLA`` enables to change the seed used by ``nlopt`` for pseudo-randomizing the  simplex steps in the COBYLA algorithm.
+  `#1582 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1582>`_
+- Add support to NumPy version 2 and NLopt version 2.9.
+  `#1584 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1584>`_
+- ``OTGaussianProcessRegressor`` and
+  ``GaussianProcessRegressor`` have a new method ``predict_covariance`` to predict the output covariance matrix.
+  `#1585 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1585>`_
+- ``BaseScenario``, ``BaseFormulation`` and ``OptimizationProblem`` have an attribute ``ConstraintType`` enumerating the constraint types, namely ``"eq"`` and ``"ineq"``.
+  `#1599 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1599>`_
+- ``BiLevel`` stores the optimal values of the local design variables in the database.
+  `#1600 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1600>`_
+- The description of the bi-level BCD formulation has been added to the documentation,
+  in the user guide section.
+  The description of the standard IRT bi-level, in the user guide, has been updated.
+  `#1883 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1883>`_
+
+Fixed
+-----
+
+- An end user cannot set a constraint name that is already taken by another problem function
+  (objective, observable, constraint).
+  `#1271 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1271>`_
+- ``AutoPyDiscipline`` did not support subscripted type annotations, e.g. ``RealArray`` defined as ``NDArray[floating[Any]]``, when parsing the function signature.
+  `#1292 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1292>`_
+- The field ``linear_solver_settings`` of ``BaseMDASettings`` can be a Pydantic model of type ``BaseLinearSolverSettings``, e.g. ``LGMRES_Settings``.
+  `#1402 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1402>`_
+- The handling of the Windows path separator ``";"`` in the environment variable ``GEMSEO_PATH``.
+  `#1444 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1444>`_
+- A missing integer value in the database is no longer an issue for exporting data
+  as a dataset.
+  `#1452 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1452>`_
+- The ``timeout`` handling is now faster when using a thread instead of a process.
+  `#1469 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1469>`_
+- A Discipline executed remotely now correctly reports all errors happening remotely.
+  `#1515 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1515>`_
+- Fixed an issue with the ``aggregate`` function that caused it to generate the same names for different groups of
+  constraints when the argument ``groups`` was used.
+  `#1518 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1518>`_
+- Documentation (optimization algorithms): the import paths for Pydantic settings models have been corrected.
+  `#1521 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1521>`_
+- Documentation (optimization algorithms): unchecking "require gradient evaluations" lists the gradient-free optimization algorithms.
+  `#1527 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1527>`_
+- The ``HDF5Cache``, ``MemoryFullCache``, and ``SimpleCache`` now handle properly input and output data that includes ``str`` or
+  ``array([str])``. In the past, some of these caches would crash while others would run but miss hits for existing
+  entries.
+  `#1536 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1536>`_
+- ``inf`` values are now converted to ``null`` during the JSON serialization of algorithm settings, addressing a limitation of the JSON standard which does not support infinity values.
+  `#1540 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1540>`_
+- Fixed an issue with the ``Correlations`` post-processor that caused it to ignore
+  entries of the design vector across all iterations, thus producing an incorrect plot.
+  `#1542 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1542>`_
+- Fixed an issue with the ``Database.get_history_array`` method that caused it to return incomplete
+  design vectors when the argument ``with_x_vect`` was set to ``True``.
+  `#1546 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1546>`_
+- ``create_discipline`` and ``DisciplineFactory.create`` accept positional arguments, which makes it possible to create disciplines with positional arguments according to their signatures, e.g. ``create_discipline("AnalyticDiscipline", {"y": "2*x"})``.
+  `#1557 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1557>`_
+- Fixed an issue that prevented the export a ``Database`` with ``str`` or ``array([str])`` variables to an HDF5 file.
+  `#1559 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1559>`_
+- Fixed an issue that prevented the evaluation of an observable with ``str`` or ``array([str])`` outputs.
+  `#1561 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1561>`_
+- ``CorrelationAnalysis``, ``HSICAnalysis``, ``MorrisAnalysis`` and ``SobolAnalysis`` support constant output components.
+  In this case, ``analysis.indices.method_name[output_name][component]`` is ``None``.
+  `#1566 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1566>`_
+- ``JobSchedulerDisciplineWrapper`` did not support namespaces.
+  `#1572 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1572>`_
+- Fixed the update of convergence metrics for MDA quasi-Newton supporting callbacks
+  `#1579 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1579>`_
+- Fixed an issue with the ``JobSchedulerDisciplineWrapper`` that did not handle cases where the Jacobian is computed in the _run method.
+  ``JobSchedulerDisciplineWrapper`` now handles namespaces in execute() and linearize().
+  `#1587 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1587>`_
+- ``MDOScenario`` can compute the derivatives of a disciplinary output when no design variable is an input of this discipline.
+  `#1602 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1602>`_
+- Fixed an issue that caused ``BaseDiscipline`` to crash at instantiation when ``BaseDiscipline.default_cache_type`` was
+  set to ``BaseDiscipline.CacheType.HDF5``.
+  `#1605 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1605>`_
+
+Changed
+-------
+
+- In order to improve the performance of disciplines, the execution status and statistics of
+  disciplines, as well as the statistics of problem functions are now disabled by default.
+  Use :func:`.configure` to enable them.
+  Various internal changes have also been made in order to improve performance.
+  `#1384 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1384>`_
+- The subpackage ``gemseo.utils.xdsm`` brings together the modules linked to the XDSM concept.
+  `#1262 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1262>`_
+- For grammars of type ``JSONGrammar``, a grammar item defined only with the type ``ndarray``
+  and no type for the array elements will now consider that the elements are of type ``number``,
+  i.e. ``float`` or ``complex``.
+  This convention was implicit, it is now made explicit.
+  `#1359 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1359>`_
+- The field ``main_mda_name`` of ``MDF_Settings`` is ignored when the field ``main_mda_settings`` is a Pydantic model.
+  The field ``inner_mda_name`` of ``MDAChain_Settings`` is ignored when the field ``inner_mda_settings`` is a Pydantic model.
+  The field ``linear_solver`` of ``BaseMDASettings``, e.g. ``MDAJacobi_Settings``, is ignored when the field ``linear_solver_settings`` is a Pydantic model.
+  The field ``newton_linear_solver_name`` of ``BaseMDASettings``, e.g. ``MDANewtonRaphson_Settings``, is ignored when the field ``newton_linear_solver_settings`` is a Pydantic model.
+  `#1402 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1402>`_
+- In the module ``opt_as_mdo_scenario``, the arguments ``coupling_equations`` and ``link_discipline_class`` of the function ``create_disciplines`` are now optional; by default, the coupling equations and the link discipline are linear.
+  `#1514 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1514>`_
+- API CHANGE: The output ``final_time`` of ``ODEDiscipline`` is now a float instead of a NumPy array.
+  The wrapper ``ScipyODEAlgos`` for the solution of ODEs by Scipy casts
+  the argument ``termination_time`` of ``ODEResult`` as a float.
+  `#1523 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1523>`_
+- It is now possible to provide input/output data converters to the ``HDF5Cache`` at instantiation. These converters are
+  optional and only necessary when input/output data cannot be casted directly to a NumPy array.
+  `#1536 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1536>`_
+- The methods ``OptimizationProblem.to_dataset`` and ``Database.to_dataset`` will group functions accordingly to their optimization role with the arguments ``group_functions`` for the ``OptimizationProblem`` class and ``group_variables`` for the ``Database`` class.
+  `#1537 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1537>`_
+- The log of the ``OptimizationProblem`` distinguishes between equality and inequality constraints.
+  The log of the ``OptimizationProblem`` writes equality constraints as ``c(x) = 0``, for consistency with mathematical writing.
+  `#1541 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1541>`_
+- The method ``Database.get_history_array`` now raises an exception when the number of names
+  passed with the argument ``input_names`` does not match the dimension of the design vector.
+  `#1546 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1546>`_
+- The SOM post processor now is based on the external library ``minisom``. Therefore, the third party module ``gemseo.third_party.sompy`` has been removed.
+  `#1547 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1547>`_
+- The ``IDF`` formulation now names consistency constraints with the format ``"consistency_{variable_name}"``. This makes
+  the constraints created by the formulation easily identifiable. It also reduces the possibility of naming conflicts with
+  existing problem functions (objective, constraints, observables).
+  `#1581 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1581>`_
+
+Removed
+-------
+
+- The attribute ``MDOFunction.last_eval`` was removed.
+  `#1384 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1384>`_
+- The argument ``x_full`` of the method ``BaseFormulation.unmask_x_swap_order``.
+  `#1118 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1118>`_
+
 Version 6.1.0 (2025-03-17)
 **************************
 

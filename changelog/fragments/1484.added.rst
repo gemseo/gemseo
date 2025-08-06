@@ -1,2 +1,0 @@
-``OTParametricStatistics`` (formerly ``ParametricStatistics``) and ``SPParametricStatistics`` allow to estimate statistics parametrically,
-using data-fitted probability distributions from OpenTURNS and SciPy respectively.

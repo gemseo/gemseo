@@ -1,3 +1,0 @@
-The ``HDF5Cache``, ``MemoryFullCache``, and ``SimpleCache`` now handle properly input and output data that includes ``str`` or
-``array([str])``. In the past, some of these caches would crash while others would run but miss hits for existing
-entries.

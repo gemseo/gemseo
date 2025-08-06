@@ -1,1 +1,0 @@
-In the module ``opt_as_mdo_scenario``, the arguments ``coupling_equations`` and ``link_discipline_class`` of the function ``create_disciplines`` are now optional; by default, the coupling equations and the link discipline are linear.

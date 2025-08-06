@@ -1,3 +1,0 @@
-The ``IDF`` formulation now names consistency constraints with the format ``"consistency_{variable_name}"``. This makes
-the constraints created by the formulation easily identifiable. It also reduces the possibility of naming conflicts with
-existing problem functions (objective, constraints, observables).

@@ -1,1 +1,0 @@
-Fixed an issue that prevented the evaluation of an observable with ``str`` or ``array([str])`` outputs.

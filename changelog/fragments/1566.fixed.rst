@@ -1,2 +1,0 @@
-``CorrelationAnalysis``, ``HSICAnalysis``, ``MorrisAnalysis`` and ``SobolAnalysis`` support constant output components.
-In this case, ``analysis.indices.method_name[output_name][component]`` is ``None``.

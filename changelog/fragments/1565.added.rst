@@ -1,1 +1,0 @@
-The function ``configure`` has a new option, named ``enable_parallel_execution`` (default: ``True``), to let |g| use parallelism (multi-processing or multi-threading) by default.

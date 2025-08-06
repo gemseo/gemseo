@@ -1,3 +1,0 @@
-The arguments ``output_names`` and ``input_names`` of ``TaylorDiscipline``
-define the output variables of the wrapped discipline to expand as Taylor polynomials and the input variables of these polynomials.
-If empty, use all the input and output variables of the discipline.

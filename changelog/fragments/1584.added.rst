@@ -1,1 +1,0 @@
-Add support to NumPy version 2 and NLopt version 2.9.

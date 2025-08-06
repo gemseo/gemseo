@@ -1,2 +1,0 @@
-
-The argument ``x_full`` of the method ``BaseFormulation.unmask_x_swap_order``.

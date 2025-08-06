@@ -1,1 +1,0 @@
-The ``seed`` option of ``NLOPT_COBYLA`` enables to change the seed used by ``nlopt`` for pseudo-randomizing the  simplex steps in the COBYLA algorithm.

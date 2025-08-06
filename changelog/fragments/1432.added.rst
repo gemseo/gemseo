@@ -1,3 +1,0 @@
-- The probability distributions can be instantiated from Pydantic models, e.g. ``OTNormalDistribution(settings=OTNormalDistribution_Settings(mu=0.2, sigma=1.4))``.
-- The argument ``distribution`` of ``ParameterSpace.add_random_variable`` can be a Pydantic model defining the settings of the distribution.
-- The argument ``distribution`` of ``ParameterSpace.add_random_vector`` can be a collection of Pydantic models defining the settings of the marginal distributions.

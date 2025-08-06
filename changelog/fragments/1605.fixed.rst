@@ -1,2 +1,0 @@
-Fixed an issue that caused ``BaseDiscipline`` to crash at instantiation when ``BaseDiscipline.default_cache_type`` was
-set to ``BaseDiscipline.CacheType.HDF5``.

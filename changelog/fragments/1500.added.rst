@@ -1,1 +1,0 @@
-Post processors can now take an ``OptimizationDataset`` as an argument instead of an ``OptimizationProblem``.

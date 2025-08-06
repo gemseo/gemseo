@@ -1,2 +1,0 @@
-Fixed an issue with the ``Correlations`` post-processor that caused it to ignore
-entries of the design vector across all iterations, thus producing an incorrect plot.

@@ -1,1 +1,0 @@
-The handling of the Windows path separator ``";"`` in the environment variable ``GEMSEO_PATH``.

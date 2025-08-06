@@ -1,1 +1,0 @@
-``MDOScenario`` can compute the derivatives of a disciplinary output when no design variable is an input of this discipline.

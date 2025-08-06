@@ -1,1 +1,0 @@
-The default output values of the ``TaylorDiscipline`` correspond to the first term of the Taylor polynomial; they can be accessed using ``taylor_discipline.io.output_grammar.defaults``.
