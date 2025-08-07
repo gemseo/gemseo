@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pytest
@@ -55,10 +54,9 @@ def test_create_with_wrong_formulation_name(factory) -> None:
     """Check that a BaseMDOFormulation cannot be instantiated with a wrong name."""
     with pytest.raises(
         ImportError,
-        match=re.escape(
-            "The class foo is not available; "
-            "the available ones are: BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF."
-        ),
+        match="The class foo is not available; "
+        # Prevent failure when testing in environments with plugins. (terminal .*)
+        r"the available ones are: BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.*",
     ):
         factory.create("foo", None, None, None)
 
