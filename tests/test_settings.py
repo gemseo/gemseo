@@ -80,7 +80,9 @@ def get_setting_classes(
             ]
 
     for cls in SettingsFactory().classes:
-        yield module_, cls
+        # Prevent failure when testing in environments with plugins.
+        if cls.__module__.startswith("gemseo."):
+            yield module_, cls
 
 
 @pytest.mark.parametrize(

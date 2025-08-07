@@ -156,6 +156,9 @@ def test_pickle(
     class_name, rosenbrock_dataset, before_training, probability_space, tmp_wd
 ):
     """Check that regression models are picklable."""
+    # Prevent failure when testing in environments with plugins.
+    if not FACTORY.get_class(class_name).__module__.startswith("gemseo."):
+        return
     kwargs = {}
     if class_name == "PCERegressor":
         kwargs["probability_space"] = probability_space
