@@ -26,6 +26,7 @@ class BaseSettings(
     extra="forbid",
     arbitrary_types_allowed=True,
     ser_json_inf_nan="null",
+    validate_default=True,
 ):
     """The base settings class."""
 

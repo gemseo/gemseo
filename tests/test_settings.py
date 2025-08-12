@@ -21,6 +21,7 @@ from typing import ClassVar
 import pytest
 from pydantic import Field
 from pydantic import NonNegativeFloat
+from pydantic import ValidationError
 
 import gemseo.settings.doe as doe
 import gemseo.settings.formulations as formulations
@@ -83,6 +84,10 @@ def get_setting_classes(
         # Prevent failure when testing in environments with plugins.
         if cls.__module__.startswith("gemseo."):
             yield module_, cls
+
+
+class SettingsWithInvalidDefault(BaseSettings):
+    name: str = Field(default=123)
 
 
 @pytest.mark.parametrize(
@@ -219,3 +224,23 @@ def test_mda_settings(module_and_cls):
 def test_probability_distribution_settings(module_and_cls):
     module, cls = module_and_cls
     assert cls in module.__dict__.values()
+
+
+def test_default_validation():
+    """Check that default values are validated."""
+    with pytest.raises(ValidationError):
+        SettingsWithInvalidDefault()
+
+
+@pytest.mark.parametrize(
+    "cls",
+    [
+        cls
+        for cls in BaseSettings.__subclasses__()
+        if cls.__name__
+        not in {"BaseGradientBasedAlgorithmSettings", "SettingsWithInvalidDefault"}
+    ],
+)
+def test_valid_defaults_for_all_settings(cls):
+    """Check that all settings classes have valid defaults."""
+    cls()

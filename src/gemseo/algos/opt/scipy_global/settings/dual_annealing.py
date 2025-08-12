@@ -35,7 +35,7 @@ class DUAL_ANNEALING_Settings(BaseSciPyGlobalSettings):  # noqa: N801
     initial_temp: float = Field(
         default=5230,
         gt=1e-2,
-        le=5e-4,
+        le=5e4,
         description="""The initial temperature.
 
 Use higher values to facilitates a wider search of the energy landscape.""",
@@ -61,7 +61,7 @@ algorithm jump to a more distant region.""",
 
     accept: float = Field(
         default=-5,
-        gt=-1e-4,
+        gt=-1e4,
         le=-5,
         description="""The acceptance distribution parameter.
 
