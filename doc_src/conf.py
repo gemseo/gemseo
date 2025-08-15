@@ -389,6 +389,10 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
             "A GEMSEO-based package to benchmark optimization algorithm.",
             True,
         ),
+        "gemseo-bilevel-outer-approximation": (
+            "GEMSEO plugin for the bi-level outer approximation (shortened as bi-level OA) algorithm.",
+            True,
+        ),
         "gemseo-calibration": (
             "Capability to calibrate GEMSEO disciplines from data",
             True,
