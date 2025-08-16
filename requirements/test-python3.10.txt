@@ -28,7 +28,7 @@ execnet==2.1.1
     # via pytest-xdist
 fastjsonschema==2.21.1
     # via gemseo (pyproject.toml)
-fonttools==4.59.0
+fonttools==4.59.1
     # via matplotlib
 genson==1.3.0
     # via gemseo (pyproject.toml)
@@ -85,7 +85,7 @@ packaging==25.0
     #   pytest
 pandas==2.3.0
     # via gemseo (pyproject.toml)
-pandera==0.25.0
+pandera==0.26.0
     # via gemseo (pyproject.toml:dev)
 pillow==11.2.1
     # via
