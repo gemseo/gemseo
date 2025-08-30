@@ -14,7 +14,7 @@ babel==2.17.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
-beautifulsoup4==4.13.4
+beautifulsoup4==4.13.5
     # via pydata-sphinx-theme
 certifi==2025.8.3
     # via requests
@@ -38,7 +38,7 @@ et-xmlfile==2.0.0
     # via openpyxl
 fastjsonschema==2.21.1
     # via gemseo (pyproject.toml)
-fonttools==4.59.0
+fonttools==4.59.2
     # via matplotlib
 genson==1.3.0
     # via gemseo (pyproject.toml)
@@ -54,7 +54,7 @@ jinja2==3.1.6
     # via
     #   gemseo (pyproject.toml)
     #   sphinx
-joblib==1.5.1
+joblib==1.5.2
     # via scikit-learn
 kiwisolver==1.4.9
     # via matplotlib
@@ -99,9 +99,9 @@ packaging==25.0
     #   sphinx
 pandas==2.3.0
     # via gemseo (pyproject.toml)
-pandera==0.25.0
+pandera==0.26.1
     # via gemseo (pyproject.toml:doc)
-pbr==6.1.1
+pbr==7.0.1
     # via sphinxcontrib-apidoc
 pillow==11.2.1
     # via
@@ -158,7 +158,7 @@ pyxdsm==2.3.1
     # via gemseo (pyproject.toml)
 pyyaml==6.0.2
     # via pybtex
-requests==2.32.4
+requests==2.32.5
     # via
     #   gemseo (pyproject.toml)
     #   sphinx
@@ -180,7 +180,7 @@ six==1.17.0
     # via python-dateutil
 snowballstemmer==3.0.1
     # via sphinx
-soupsieve==2.7
+soupsieve==2.8
     # via beautifulsoup4
 sphinx==8.2.3
     # via
@@ -230,7 +230,7 @@ tqdm==4.67.1
     # via gemseo (pyproject.toml)
 typeguard==4.4.4
     # via pandera
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   gemseo (pyproject.toml)
     #   beautifulsoup4
