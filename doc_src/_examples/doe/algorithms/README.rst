@@ -6,8 +6,12 @@
    http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
    Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
-Design of experiments (DOE)
-===========================
+Algorithms
+~~~~~~~~~~
 
-The first examples show generic features common to all DOE algorithms.
-Some of these algorithms are then illustrated below in a dedicated section.
+Below are some examples of DOE algorithms proposed by |g|.
+
+.. note::
+
+   You can find all the algorithms and their options
+   on `this page <https://gemseo.readthedocs.io/en/stable/algorithms/doe_algos.html>`__.

@@ -18,8 +18,8 @@
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Simple disciplinary DOE example on the Sobieski SSBJ test case
-==============================================================
+Execute a scenario using a DOE
+==============================
 """
 
 from __future__ import annotations
@@ -64,16 +64,17 @@ scenario = create_scenario(
 scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 
 # %%
-# Note that both the formulation settings passed to func:`.create_scenario` and the
-# algorithm settings passed to :meth:`~.DriverLibrary.execute` can be provided via a Pydantic model. For
-# more information, see :ref:`formulation_settings` and :ref:`algorithm_settings`.
+# Note that both the formulation settings passed to :func:`.create_scenario` and the
+# algorithm settings passed to :meth:`~.BaseScenario.execute`
+# can be provided via a Pydantic model.
+# For more information, see :ref:`formulation_settings` and :ref:`algorithm_settings`.
 #
 # Plot optimization history view
 # ------------------------------
 scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
-# Note that post-processor settings passed to :meth:`.BaseScenario.post_process` can be
+# Note that post-processor settings passed to :meth:`~.BaseScenario.post_process` can be
 # provided via a Pydantic model (see the example below). For more information,
 # see :ref:`post_processor_settings`.
 #

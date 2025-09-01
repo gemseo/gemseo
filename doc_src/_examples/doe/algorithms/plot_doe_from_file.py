@@ -18,8 +18,8 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-DOE from a file.
-================
+DOE from a file
+===============
 """
 
 from __future__ import annotations

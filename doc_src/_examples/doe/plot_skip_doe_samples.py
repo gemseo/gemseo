@@ -18,8 +18,8 @@
 #        :author: Gilberto Ruiz Jiménez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Skip samples when using DOE.
-============================
+Skip samples when using DOE
+===========================
 """
 
 from __future__ import annotations
