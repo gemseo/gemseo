@@ -89,7 +89,6 @@ from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.regression.algos.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.utils.compatibility.sklearn import get_n_input_features_
 
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import DataType
@@ -143,7 +142,7 @@ class PolynomialRegressor(LinearRegressor):
         # n_powers is given by the formula
         # n_powers = binom(n_inputs+degree, n_inputs)+1
         powers = self._poly.powers_
-        n_inputs = get_n_input_features_(self._poly)
+        n_inputs = self._poly.n_features_in_
         n_outputs = self.algo.coef_.shape[0]
         coefs = self.get_coefficients()
         jac_intercept = zeros((n_outputs, n_inputs))
