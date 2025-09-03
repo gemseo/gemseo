@@ -1,0 +1,3 @@
+- The options of ``configure`` can be passed through the argument ``settings``, which is a Pydantic model of type ``GEMSEO_Settings``.
+- ``GEMSEO_Settings`` is the base Pydantic model for defining the GEMSEO configuration settings.
+- ``Fast_GEMSEO_Settings`` is a Pydantic model for defining the GEMSEO configuration settings with slow options deactivated.
