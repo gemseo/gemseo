@@ -58,6 +58,7 @@ from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
+from gemseo.utils.configuration import GEMSEO_Settings
 from gemseo.utils.constants import N_CPUS as N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
@@ -108,6 +109,7 @@ if TYPE_CHECKING:
     )
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.utils.configurations import GEMSEOConfiguration as GEMSEOConfiguration
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.utils.xdsm.xdsm import XDSM
 
@@ -1693,6 +1695,7 @@ def configure(
     check_desvars_bounds: bool = True,
     enable_parallel_execution: bool = True,
     enable_discipline_status: bool = False,
+    settings: GEMSEO_Settings | None = None,
 ) -> None:
     """Update the configuration of |g| if needed.
 
@@ -1723,25 +1726,41 @@ def configure(
         enable_parallel_execution: Whether to let |g|
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
+        settings: The GEMSEO configuration settings.
+            If ``None``, the other arguments are used.
+            If not ``None``, the other arguments are ignored.
     """
     from gemseo.algos.base_driver_library import BaseDriverLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.problem_function import ProblemFunction
     from gemseo.core.discipline import Discipline
 
-    _ExecutionStatus.is_enabled = enable_discipline_status
-    _ExecutionStatistics.is_enabled = enable_discipline_statistics
-    ProblemFunction.enable_statistics = enable_function_statistics
-    BaseDriverLibrary.enable_progress_bar = enable_progress_bar
-    Discipline.validate_input_data = validate_input_data
-    Discipline.validate_output_data = validate_output_data
+    if settings is None:
+        settings = GEMSEO_Settings(
+            check_desvars_bounds=check_desvars_bounds,
+            enable_discipline_cache=enable_discipline_cache,
+            enable_discipline_statistics=enable_discipline_statistics,
+            enable_discipline_status=enable_discipline_status,
+            enable_function_statistics=enable_function_statistics,
+            enable_parallel_execution=enable_parallel_execution,
+            enable_progress_bar=enable_progress_bar,
+            validate_input_data=validate_input_data,
+            validate_output_data=validate_output_data,
+        )
+
+    _ExecutionStatus.is_enabled = settings.enable_discipline_status
+    _ExecutionStatistics.is_enabled = settings.enable_discipline_statistics
+    ProblemFunction.enable_statistics = settings.enable_function_statistics
+    BaseDriverLibrary.enable_progress_bar = settings.enable_progress_bar
+    Discipline.validate_input_data = settings.validate_input_data
+    Discipline.validate_output_data = settings.validate_output_data
     Discipline.default_cache_type = (
         Discipline.CacheType.SIMPLE
-        if enable_discipline_cache
+        if settings.enable_discipline_cache
         else Discipline.CacheType.NONE
     )
-    OptimizationProblem.check_bounds = check_desvars_bounds
-    default_n_processes = N_CPUS if enable_parallel_execution else 1
+    OptimizationProblem.check_bounds = settings.check_desvars_bounds
+    default_n_processes = N_CPUS if settings.enable_parallel_execution else 1
     BaseParallelMDASettings.set_default_n_processes(default_n_processes)
 
 
