@@ -182,6 +182,9 @@ class Database(Mapping):
     __input_space: DesignSpace
     """The input space."""
 
+    __listener_output_names: list[str]
+    """The names of the output variables whose values are stored by listeners."""
+
     def __init__(self, name: str = "", input_space: DesignSpace | None = None) -> None:
         """
         Args:
@@ -197,6 +200,12 @@ class Database(Mapping):
         self.__new_iter_listeners = []
         self.__hdf_database = HDFDatabase()
         self.__input_space = DesignSpace() if input_space is None else input_space
+        self.__listener_output_names = []
+
+    @property
+    def listener_output_names(self) -> list[str]:
+        """The names of the output variables whose values are stored by listeners."""
+        return self.__listener_output_names
 
     @property
     def input_space(self) -> DesignSpace:
@@ -552,43 +561,58 @@ class Database(Mapping):
         if self.__new_iter_listeners and outputs and current_outputs_is_empty:
             self.notify_new_iter_listeners(x_vect)
 
-    def add_store_listener(self, function: ListenerType) -> bool:
+    def add_store_listener(
+        self, function: ListenerType, output_names: Iterable[str] = ()
+    ) -> bool:
         """Add a function to be called when an item is stored to the database.
 
         Args:
             function: The function to be called.
+            output_names: The names of the output variables
+                whose values are to be stored in the database by this listener.
 
         Returns:
             Whether the function has been added;
             otherwise, it was already attached to the database.
         """
-        return self.__add_listener(function, self.__store_listeners)
+        return self.__add_listener(function, self.__store_listeners, output_names)
 
-    def add_new_iter_listener(self, function: ListenerType) -> bool:
+    def add_new_iter_listener(
+        self, function: ListenerType, output_names: Iterable[str] = ()
+    ) -> bool:
         """Add a function to be called when a new iteration is stored to the database.
 
         Args:
             function: The function to be called, it must have one argument that is
                 the current input value.
+            output_names: The names of the output variables
+                whose values are to be stored in the database by this listener.
 
         Returns:
             Whether the function has been added;
             otherwise, it was already attached to the database.
         """
-        return self.__add_listener(function, self.__new_iter_listeners)
+        return self.__add_listener(function, self.__new_iter_listeners, output_names)
 
-    @staticmethod
-    def __add_listener(function: ListenerType, listeners: list[ListenerType]) -> bool:
+    def __add_listener(
+        self,
+        function: ListenerType,
+        listeners: list[ListenerType],
+        output_names: Iterable[str] = (),
+    ) -> bool:
         """Add a function as listener.
 
         Args:
             function: The function.
             listeners: The listeners to which to add the function.
+            output_names: The names of the output variables
+                whose values are to be stored in the database by this listener.
 
         Returns:
             Whether the function has been added;
             otherwise, it was already attached to the database.
         """
+        self.__listener_output_names.extend(output_names)
         if function in listeners:
             return False
 

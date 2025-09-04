@@ -328,6 +328,7 @@ class EvaluationProblem(BaseProblem):
         listener: Callable[[RealArray], Any],
         at_each_iteration: bool = True,
         at_each_function_call: bool = False,
+        output_names: Iterable[str] = (),
     ) -> None:
         """Add a listener for some events.
 
@@ -342,11 +343,13 @@ class EvaluationProblem(BaseProblem):
                 for a given point and storing their values in the :attr:`.database`.
             at_each_function_call: Whether to evaluate the listeners
                 after storing any new value in the :attr:`.database`.
+            output_names: The names of the output variables
+                whose values are to be stored in the database by this listener.
         """
         if at_each_function_call:
-            self.database.add_store_listener(listener)
+            self.database.add_store_listener(listener, output_names=output_names)
         if at_each_iteration:
-            self.database.add_new_iter_listener(listener)
+            self.database.add_new_iter_listener(listener, output_names=output_names)
 
     def get_functions(
         self,

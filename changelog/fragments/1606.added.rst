@@ -1,0 +1,3 @@
+- ``BaseScenario.post_process`` can handle output values stored in the database by listeners.
+- ``EvaluationProblem.add_listener``, ``Database.add_new_iter_listener`` and ``Database.add_store_listener`` have a new argument, called ``output_names``, to declare the names of the output variables whose values are stored in the database by the associated listener.
+- ``Database.listener_output_names`` lists the names of the output variables whose values are stored in the database by listeners.

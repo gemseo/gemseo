@@ -888,7 +888,8 @@ class OptimizationProblem(EvaluationProblem):
                         ],
                         OptimizationDataset.OBSERVABLE_GROUP: [
                             observable.name for observable in self.observables
-                        ],
+                        ]
+                        + self.database.listener_output_names,
                     }
 
             else:

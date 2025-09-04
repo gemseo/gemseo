@@ -47,6 +47,7 @@ from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDisci
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
@@ -1082,3 +1083,34 @@ def test_derivative_bug_1602():
         scenario.formulation.optimization_problem.database.last_item,
         {"a": 2.0, "c": 0.0, "@a": array([1.0, 2.0]), "@c": array([0.0, 0.0])},
     )
+
+
+def test_listener_dataset():
+    """Test that the variables added by listeners to the database are in the dataset."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+
+    discipline = AnalyticDiscipline({"y": "2*x"})
+
+    scenario = MDOScenario(
+        [discipline], "y", design_space, formulation_name="DisciplinaryOpt"
+    )
+
+    def callback(x):
+        scenario.formulation.optimization_problem.database.store(x, {"z": 3 * x})
+
+    scenario.formulation.optimization_problem.database.add_new_iter_listener(
+        callback, output_names=["z"]
+    )
+    scenario.execute(algo_name="CustomDOE", samples=array([[1.0]]))
+
+    dataset = scenario.formulation.optimization_problem.to_dataset(group_functions=True)
+
+    expected = OptimizationDataset()
+    expected.add_design_variable("x", array([[1.0]]))
+    expected.add_objective_variable("y", array([[2.0]]))
+    expected.add_variable(
+        "z", array([[3.0]]), group_name=OptimizationDataset.OBSERVABLE_GROUP
+    )
+
+    assert_frame_equal(dataset, expected)
