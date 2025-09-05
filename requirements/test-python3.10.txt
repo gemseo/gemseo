@@ -113,7 +113,7 @@ pygments==2.19.2
     # via pytest
 pyparsing==3.2.3
     # via matplotlib
-pytest==8.4.1
+pytest==8.4.2
     # via
     #   gemseo (pyproject.toml:dev)
     #   pytest-cov
