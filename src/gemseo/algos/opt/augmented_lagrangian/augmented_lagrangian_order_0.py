@@ -33,7 +33,9 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
+class AugmentedLagrangianOrder0(
+    AugmentedLagrangianPenaltyHeuristic[Augmented_Lagrangian_order_0_Settings]
+):
     """An augmented Lagrangian algorithm of order 0.
 
     The Lagrange multipliers are updated thanks to the constraint values solely (no
@@ -59,7 +61,7 @@ class AugmentedLagrangianOrder0(AugmentedLagrangianPenaltyHeuristic):
         eq_lag: dict[str, NumberArray],
         ineq_lag: dict[str, NumberArray],
         x_opt: NumberArray,
-    ) -> None:  # noqa:D107
+    ) -> None:
         for constraint in self._problem.constraints:
             if constraint.name in ineq_lag:
                 mu_1 = (

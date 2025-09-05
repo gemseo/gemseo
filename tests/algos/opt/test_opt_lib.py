@@ -41,6 +41,7 @@ from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_S
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.pydantic import create_model
 
 OPT_LIB_NAME = "ScipyOpt"
 
@@ -182,10 +183,12 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
     library = ScipyOpt("SLSQP")
     library._problem = power
     library._problem.preprocess_functions()
-    settings = library._validate_settings(
-        max_iter=2, scaling_threshold=scaling_threshold
+    library._settings = create_model(
+        library.ALGORITHM_INFOS[library.algo_name].Settings,
+        max_iter=2,
+        scaling_threshold=scaling_threshold,
     )
-    library._pre_run(power, **settings)
+    library._pre_run(power)
     current_value = power.design_space.get_current_value()
     assert library._problem.objective.evaluate(current_value) == pow2
     assert library._problem.constraints[0].evaluate(current_value) == ineq1

@@ -22,19 +22,30 @@ from typing import TYPE_CHECKING
 from gemseo.utils.base_multiton import BaseABCMultiton
 
 if TYPE_CHECKING:
+    from gemseo.algos.doe.base_n_samples_based_doe_settings import (
+        BaseNSamplesBasedDOESettings,
+    )
     from gemseo.typing import RealArray
 
 
 class BaseDOE(metaclass=BaseABCMultiton):
     """The base class for DOE algorithms."""
 
+    # TODO: API: remove n_samples from the signature.
     @abstractmethod
-    def generate_samples(self, n_samples: int, dimension: int) -> RealArray:
+    def generate_samples(
+        self,
+        n_samples: int,
+        dimension: int,
+        settings: BaseNSamplesBasedDOESettings | None = None,
+    ) -> RealArray:
         """Generate samples.
 
         Args:
             n_samples: The number of samples.
+                Ignored if ``settings`` is not `None`.
             dimension: The dimension of the sampling space.
+            settings: The settings of the DOE algorithm.
 
         Returns:
             The samples.

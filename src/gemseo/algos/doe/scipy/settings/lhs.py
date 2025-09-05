@@ -46,10 +46,3 @@ If ``None``, use the DOE as is. New in SciPy 1.10.0.""",
         default=Strength.one,
         description="""The strength of the LHS.""",
     )
-
-    centered: bool = Field(
-        default=False,
-        description="""Whether to center the samples within the multi-dimensional grid cells.
-
-If SciPy >= 1.10.0, this argument is ignored; use ``scramble`` instead.""",  # noqa: E501
-    )

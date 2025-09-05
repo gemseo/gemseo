@@ -23,7 +23,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Callable
 from typing import ClassVar
 from typing import Final
@@ -38,7 +37,6 @@ from scipy.sparse.linalg import cgs
 from scipy.sparse.linalg import gcrotmk
 from scipy.sparse.linalg import gmres
 from scipy.sparse.linalg import lgmres
-from scipy.sparse.linalg import splu
 from scipy.sparse.linalg import tfqmr
 
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
@@ -61,13 +59,10 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import GCROT_Settin
 from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import GMRES_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import DEFAULTSettings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
-from gemseo.utils.compatibility.scipy import TOL_OPTION
-from gemseo.utils.compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
     from gemseo.algos.linear_solvers.linear_problem import LinearProblem
     from gemseo.typing import NumberArray
-    from gemseo.typing import SparseOrDenseRealArray
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -84,7 +79,7 @@ class ScipyLinAlgAlgorithmDescription(LinearSolverDescription):
     """The option validation model for SciPy linear algebra library."""
 
 
-class ScipyLinalgAlgos(BaseLinearSolverLibrary):
+class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
     """Wrapper for scipy linalg sparse linear solvers."""
 
     file_path: str
@@ -95,6 +90,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
 
     __BASE_INFO_MSG: ClassVar[str] = "SciPy linear solver algorithm stop info"
 
+    # TODO: API - remove DEFAULT solver since it's a duplicate (LGMRES)
     __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
         "BICG": bicg,
         "BICGSTAB": bicgstab,
@@ -178,14 +174,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
         ),
     }
 
-    def _pre_run(self, problem: LinearProblem, **settings: Any) -> None:
-        if settings["use_ilu_precond"] and settings["M"] is not None:
-            msg = (
-                "Use either 'use_ilu_precond' or "
-                "provide 'preconditioner', but not both."
-            )
-            raise ValueError(msg)
-
+    def _pre_run(self, problem: LinearProblem) -> None:
         if issparse(problem.rhs):
             problem.rhs = problem.rhs.toarray()
 
@@ -198,17 +187,19 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             if rhs.dtype != c_dtype:
                 problem.rhs = rhs.astype(c_dtype)
 
-        super()._pre_run(problem, **settings)
+        super()._pre_run(problem)
 
-    def _run(self, problem: LinearProblem, **settings: Any) -> None:
-        if settings["use_ilu_precond"] and not isinstance(problem.lhs, LinearOperator):
-            settings["M"] = self._build_ilu_preconditioner(problem.lhs)
+    def _run(self, problem: LinearProblem) -> None:
+        if self._settings.use_ilu_precond and not isinstance(
+            problem.lhs, LinearOperator
+        ):
+            self._settings.M = self._build_ilu_preconditioner(problem.lhs)
 
-        if settings["store_residuals"]:
-            settings["callback"] = self.__store_residuals
+        if self._settings.store_residuals:
+            self._settings.callback = self.__store_residuals
 
         settings_ = self._filter_settings(
-            settings, model_to_exclude=BaseLinearSolverSettings
+            self._settings.model_dump(), model_to_exclude=BaseLinearSolverSettings
         )
 
         linear_solver = self.__NAMES_TO_FUNCTIONS[self._algo_name]
@@ -266,64 +257,3 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary):
             raise RuntimeError(msg)
 
         return True
-
-    def _run_default_solver(
-        self,
-        lhs: SparseOrDenseRealArray | LinearOperator,
-        rhs: NumberArray,
-        **settings: Any,
-    ) -> tuple[NumberArray, int]:
-        """Run the default solver.
-
-        This starts by LGMRES, but if it fails, switches to GMRES,
-        then direct method super LU factorization.
-
-        Args:
-            lhs: The left hand side of the equation (matrix).
-            rhs: The right hand side of the equation.
-            **settings: The user options.
-
-        Returns:
-            The last solution found and the info.
-        """
-        # Try LGMRES first
-        best_sol, info = lgmres(A=lhs, b=rhs, **settings)
-        best_res = self._problem.compute_residuals(True, current_x=best_sol)
-
-        if self._check_solver_info(info, settings):
-            return best_sol, info
-
-        # If not converged, try GMRES
-
-        # Adapt options
-        for k in self._LGMRES_SPEC_OPTS:
-            settings.pop(k, None)
-
-        if best_res < 1.0:
-            settings["x0"] = best_sol
-
-        sol, info = gmres(A=lhs, b=rhs, **settings)
-        res = self._problem.compute_residuals(True, current_x=sol)
-
-        if res < best_res:
-            best_sol = sol
-            settings["x0"] = best_sol
-
-        if self._check_solver_info(info, settings):  # pragma: no cover
-            return best_sol, info
-
-        info = 1
-        self._problem.is_converged = False
-
-        # Attempt direct solver when possible
-        if isinstance(lhs, array_classes):
-            a_fact = splu(lhs)
-            sol = a_fact.solve(rhs)
-            res = self._problem.compute_residuals(True, current_x=sol)
-
-            if res < settings[TOL_OPTION]:  # pragma: no cover
-                best_sol = sol
-                info = 0
-                self._problem.is_converged = True
-
-        return best_sol, info

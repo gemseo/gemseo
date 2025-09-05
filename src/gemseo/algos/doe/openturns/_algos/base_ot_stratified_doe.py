@@ -32,6 +32,9 @@ if TYPE_CHECKING:
 
     from openturns import StratifiedExperiment
 
+    from gemseo.algos.doe.openturns.settings.base_ot_stratified_doe import (
+        BaseOTStratifiedDOESettings,
+    )
     from gemseo.typing import NumberArray
 
 
@@ -47,6 +50,7 @@ class BaseOTStratifiedDOE(BaseOTDOE):
         dimension: int,
         centers: float | Sequence[float] = 0.5,
         levels: Sequence[float] = (),
+        settings: BaseOTStratifiedDOESettings | None = None,
     ) -> NumberArray:
         r"""
         Args:
@@ -56,28 +60,38 @@ class BaseOTStratifiedDOE(BaseOTDOE):
                 the DOE will use the center of the unit hypercube
                 and the levels and the effective number of samples
                 will depend on the stratified DOE type.
+                Ignored if ``settings`` is not `None`.
             centers: The center of the DOE in the unit hypercube.
                 This argument is used when ``n_samples`` is greater than 0.
                 If a real number is passed,
                 create a ``dimension``-length vector filled with this value.
                 Otherwise, the length of ``centers`` must be equal to ``dimension``.
+                Ignored if ``settings`` is not `None`.
             levels: The relative positions of the levels
                 This argument is used when ``n_samples`` is greater than 0.
                 between the center and the bounds
                 E.g. [0.2, 0.8] with [0.5] as center
                 will generate the values [0.1, 0.4, 0.5, 0.6, 0.9].
+                Ignored if ``settings`` is not `None`.
+            settings: The settings of the DOE algorithm.
 
         Raises:
             ValueError: When the number of centers is different from the dimension,
                 when a center is outside :math:`]0,1[`
                 or when a level is outside :math:`[0,1]`.
         """  # noqa: D205, D212
+        if settings is not None:
+            n_samples = settings.n_samples
+            centers = settings.centers
+            levels = settings.levels
+
         if n_samples > 0:
             n_levels = self._compute_n_levels(n_samples, dimension)
             centers = full(dimension, 0.5)
             levels = linspace(0, 1, n_levels + 1)[1:]
         elif isinstance(centers, float):
             centers = [centers] * dimension
+            levels = levels
         elif len(centers) == 1:
             centers = list(centers) * dimension
 

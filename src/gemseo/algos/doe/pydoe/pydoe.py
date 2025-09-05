@@ -40,6 +40,7 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.pydoe.pydoe_full_factorial_doe import PyDOEFullFactorialDOE
+from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 from gemseo.algos.doe.pydoe.settings.pydoe_bbdesign import PYDOE_BBDESIGN_Settings
 from gemseo.algos.doe.pydoe.settings.pydoe_ccdesign import PYDOE_CCDESIGN_Settings
 from gemseo.algos.doe.pydoe.settings.pydoe_ff2n import PYDOE_FF2N_Settings
@@ -64,7 +65,7 @@ class PyDOEAlgorithmDescription(DOEAlgorithmDescription):
     """The library name."""
 
 
-class PyDOELibrary(BaseDOELibrary):
+class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
     """The PyDOE DOE algorithms library."""
 
     __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
@@ -125,35 +126,31 @@ class PyDOELibrary(BaseDOELibrary):
         ),
     }
 
-    def _generate_unit_samples(
-        self, design_space: DesignSpace, **settings: OptionType
-    ) -> RealArray:
+    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         n = design_space.dimension
-        if self._algo_name == "PYDOE_FULLFACT":
-            return PyDOEFullFactorialDOE().generate_samples(dimension=n, **settings)
 
+        if self._algo_name == "PYDOE_FULLFACT":
+            self._settings: PYDOE_FULLFACT_Settings
+            return PyDOEFullFactorialDOE().generate_samples(
+                n_samples=self._settings.n_samples, dimension=n, settings=self._settings
+            )
+
+        settings_ = self._filter_settings(
+            self._settings.model_dump(),
+            BasePyDOESettings,
+        )
         doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         if self._algo_name == "PYDOE_LHS":
-            settings["random_state"] = RandomState(
-                self._seeder.get_seed(settings["random_state"])
+            settings_["random_state"] = RandomState(
+                self._seeder.get_seed(self._settings.random_state)
             )
-            settings["samples"] = settings["n_samples"]
-            del settings["n_samples"]
-            return doe_algorithm(n, **settings)
+            settings_["samples"] = settings_["n_samples"]
+            del settings_["n_samples"]
+            return doe_algorithm(n, **settings_)
 
-        return self.__scale(doe_algorithm(n, **settings))
-
-    @staticmethod
-    def __scale(result: RealArray) -> RealArray:
-        """Scale the DOE design variables to [0, 1].
-
-        Args:
-            result: The design variables to be scaled.
-
-        Returns:
-            The scaled design variables.
-        """
-        return (result + 1.0) * 0.5
+        data = doe_algorithm(n, **settings_)
+        # Scale data from [-1,1] to [0,1]
+        return (data + 1.0) / 2.0
 
     @classmethod
     def _get_unsuitability_reason(

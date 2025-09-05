@@ -27,6 +27,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Generic
+from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
@@ -46,6 +48,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
+T = TypeVar("T", bound=BaseAlgorithmSettings)
 
 
 @dataclass
@@ -75,7 +78,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     """The Pydantic model for the settings."""
 
 
-class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class for algorithm libraries to handle a :class:`.BaseProblem`.
 
     An algorithm library solves a numerical problem (optim, doe, linear problem) using a
@@ -96,6 +99,9 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
     ALGORITHM_INFOS: ClassVar[dict[str, AlgorithmDescription]] = {}
     """The description of the algorithms contained in the library."""
 
+    _settings: T | None
+    """The Pydantic model for the settings of the formulation."""
+
     def __init__(self, algo_name: str) -> None:
         """
         Args:
@@ -112,34 +118,17 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise KeyError(msg)
 
         self._algo_name = algo_name
+        self._reset()
+
+    def _reset(self) -> None:
+        """Clear the state attributes."""
         self._problem = None
+        self._settings = None
 
     @property
     def algo_name(self) -> str:
         """The name of the algorithm."""
         return self._algo_name
-
-    def _validate_settings(
-        self,
-        settings_model: BaseAlgorithmSettings | None = None,
-        **settings: Any,
-    ) -> dict[str, Any]:
-        """Validate the settings with the appropriate Pydantic model.
-
-        Args:
-            settings_model: The algorithm settings as a Pydantic model.
-                If ``None``, use ``**settings``.
-            **settings: The algorithm settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
-
-        Returns:
-            The validated settings.
-        """
-        return create_model(
-            self.ALGORITHM_INFOS[self.algo_name].Settings,
-            settings_model=settings_model,
-            **settings,
-        ).model_dump()
 
     @staticmethod
     def _filter_settings(
@@ -159,26 +148,22 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         # Remove GEMSEO settings lying in dedicated Pydantic models
         fields_to_exclude |= BaseGradientBasedAlgorithmSettings.model_fields
-
         return {key: settings[key] for key in settings if key not in fields_to_exclude}
 
     def _pre_run(
         self,
         problem: BaseProblem,
-        **settings: Any,
     ) -> None:
         """Save the solver settings and name in the problem attributes.
 
         Args:
             problem: The problem to be solved.
-            **settings: The settings for the algorithm, see associated JSON file.
         """
 
     def _post_run(
         self,
         problem: BaseProblem,
         result: ndarray,
-        **settings: Any,
     ) -> None:
         """Save the LinearProblem to the disk when required.
 
@@ -188,7 +173,6 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             problem: The problem to be solved.
             result: The result of the run, i.e. the solution.
-            **settings: The settings for the algorithm.
         """
 
     def execute(
@@ -211,23 +195,27 @@ class BaseAlgorithmLibrary(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         self._problem = problem
         problem.check()
-        settings = self._validate_settings(settings_model=settings_model, **settings)
-        self._pre_run(problem, **settings)
-        self._run(problem, **settings)
-        result = self._get_result(problem)
-        self._post_run(problem, result, **settings)
 
-        # Clear the state of _problem; the cache of the AlgoFactory can be used.
-        self._problem = None
+        self._settings = create_model(
+            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            settings_model=settings_model,
+            **settings,
+        )
+
+        self._pre_run(problem)
+        self._run(problem)
+        result = self._get_result(problem)
+        self._post_run(problem, result)
+
+        self._reset()
         return result
 
     @abstractmethod
-    def _run(self, problem: BaseProblem, **settings: Any) -> None:
+    def _run(self, problem: BaseProblem) -> None:
         """Solve the problem.
 
         Args:
             problem: The problem.
-            **settings: The settings of the algorithm.
         """
 
     def _get_result(self, problem: BaseProblem) -> Any:

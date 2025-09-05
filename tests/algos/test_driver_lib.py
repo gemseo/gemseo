@@ -40,6 +40,7 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -94,7 +95,10 @@ def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None
     """Test the new iteration callback."""
     test_driver = ScipyOpt("SLSQP")
     test_driver._problem = power_2
-    test_driver._max_time = 0
+    test_driver._settings = create_model(
+        test_driver.ALGORITHM_INFOS[test_driver.algo_name].Settings
+    )
+    test_driver._settings.max_time = 0
     test_driver._init_iter_observer(power_2, max_iter=2, **kwargs)
     test_driver._new_iteration_callback(array([0, 0]))
     test_driver._new_iteration_callback(array([0, 0]))
