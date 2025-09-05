@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
 
 
-class OATDOE(BaseDOELibrary):
+class OATDOE(BaseDOELibrary[OATDOE_Settings]):
     r"""The DOE used by a One-factor-at-a-Time sensitivity analysis.
 
     The purpose of the OAT is to quantify the elementary effect
@@ -83,25 +83,14 @@ class OATDOE(BaseDOELibrary):
     def __init__(self, algo_name: str = "OATDOE") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _generate_unit_samples(
-        self,
-        design_space: DesignSpace,
-        step: float,
-        initial_point: RealArray,
-        **settings: OptionType,
-    ) -> RealArray:
-        """
-        Args:
-            initial_point: The initial point of the OAT DOE.
-            step: The relative step of the OAT DOE
-                so that the step in the ``x`` direction is
-                ``step*(max_x-min_x)`` if ``x+step*(max_x-min_x)<=max_x``
-                and ``-step*(max_x-min_x)`` otherwise.
-        """  # noqa: D205, D212
+    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+        step = self._settings.step
+        initial_point = self._settings.initial_point
+
         points = [initial_point]
         for i in range(len(initial_point)):
-            points.append(points[-1].copy())
-            current_point = points[-1]
+            current_point = points[-1].copy()
+            points.append(current_point)
             if current_point[i] + step > 1:
                 current_point[i] -= step
             else:

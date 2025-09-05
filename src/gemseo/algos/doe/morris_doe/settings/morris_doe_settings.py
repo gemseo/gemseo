@@ -44,6 +44,7 @@ class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801
         description="""The name of the DOE algorithm to repeat the OAT DOE.""",
     )
 
+    # TODO: replace by setting_model
     doe_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
         description="""The options of the DOE algorithm.""",

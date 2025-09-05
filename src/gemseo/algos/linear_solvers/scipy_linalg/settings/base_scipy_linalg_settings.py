@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable  # noqa: TC003
+from typing import TYPE_CHECKING
 from typing import Annotated
 
 from numpy import ndarray  # noqa: TC002
@@ -26,6 +27,7 @@ from pydantic import NonNegativeFloat
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 from pydantic import WithJsonSchema
+from pydantic import model_validator
 from scipy.sparse import sparray  # noqa: TC002
 from scipy.sparse.linalg import LinearOperator  # noqa: TC002
 
@@ -33,6 +35,9 @@ from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
 )
 from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
@@ -89,3 +94,19 @@ If ``None``, start from a matrix of zeros.""",
         validation_alias=AliasChoices("M", "preconditioner"),
         description="The preconditioner approximating the inverse of A.",
     )
+
+    @model_validator(mode="after")
+    def __check_preconditioner(self) -> Self:
+        """Check the consistency of preconditioners.
+
+        Currently,
+        the ILU preconditioner can be used, or a preconditioner can be given.
+        """
+        if self.use_ilu_precond and self.M is not None:
+            msg = (
+                "Use either 'use_ilu_precond' or "
+                "provide 'preconditioner', but not both."
+            )
+            raise ValueError(msg)
+
+        return self

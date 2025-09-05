@@ -17,8 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
-from typing import Final
+from typing import TypeVar
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -26,45 +25,40 @@ if TYPE_CHECKING:
 from gemseo.algos.opt.augmented_lagrangian.base_augmented_lagrangian import (
     BaseAugmentedLagrangian,
 )
+from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (  # noqa: E501
+    PenaltyHeuristicSettings,
+)
+
+T = TypeVar("T", bound=PenaltyHeuristicSettings)
 
 
-class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian):
+class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian[T]):
     """This class implements the penalty update scheme of :cite:`birgin2014practical`.
 
     This class must be inherited in order to implement the function
     :func:`_update_lagrange_multipliers`.
     """
 
-    __GAMMA: Final[str] = "gamma"
-    """The name of `gamma` option, which is the increase of the penalty."""
-
-    __TAU: Final[str] = "tau"
-    """The name of `tau` option, which is the threshold for the penalty increase."""
-
-    __MAX_RHO: Final[str] = "max_rho"
-    """The name of `max_rho` option, which is the maximum penalty value."""
-
-    def _update_penalty(  # noqa: D107
+    def _update_penalty(
         self,
         constraint_violation_current_iteration: float | RealArray,
         objective_function_current_iteration: float | RealArray,
         constraint_violation_previous_iteration: float | RealArray,
         current_penalty: float | RealArray,
         iteration: int,
-        **options: Any,
     ) -> float:
         if iteration == 0 and constraint_violation_current_iteration > 1e-9:
             gamma = max(
                 abs(objective_function_current_iteration)
                 / constraint_violation_current_iteration,
-                options[self.__GAMMA],
+                self._settings.gamma,
             )
         elif (
             constraint_violation_current_iteration
-            > options[self.__TAU] * constraint_violation_previous_iteration
+            > self._settings.tau * constraint_violation_previous_iteration
         ):
-            gamma = options[self.__GAMMA]
+            gamma = self._settings.gamma
         else:
             gamma = 1.0
 
-        return min(gamma * current_penalty, options.get(self.__MAX_RHO))
+        return min(gamma * current_penalty, self._settings.max_rho)

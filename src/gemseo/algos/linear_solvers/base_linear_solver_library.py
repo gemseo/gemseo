@@ -25,7 +25,7 @@ import pickle
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import TypeVar
 from uuid import uuid4
 
 from scipy.sparse import csc_matrix
@@ -47,6 +47,8 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
+T = TypeVar("T", bound=BaseLinearSolverSettings)
+
 
 @dataclass
 class LinearSolverDescription(AlgorithmDescription):
@@ -65,7 +67,7 @@ class LinearSolverDescription(AlgorithmDescription):
     """The linear solver libraries settings."""
 
 
-class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
+class BaseLinearSolverLibrary(BaseAlgorithmLibrary[T]):
     """Base class for libraries of linear solvers."""
 
     file_path: Path
@@ -123,7 +125,6 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
     def _pre_run(
         self,
         problem: LinearProblem,
-        **settings: Any,
     ) -> None:
         problem.solver_name = self._algo_name
 
@@ -131,7 +132,6 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
         self,
         problem: LinearProblem,
         result: ndarray,
-        **settings: Any,
     ) -> None:
         if not problem.is_converged:
             LOGGER.warning(
@@ -140,7 +140,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary):
 
         # If the save_when_fail option is True, save the LinearProblem to the disk when
         # the system failed and print the file name in the warnings.
-        if settings["save_when_fail"] and not problem.is_converged:
+        if self._settings.save_when_fail and not problem.is_converged:
             file_path = Path(f"linear_system_{uuid4()}.pck")
 
             with file_path.open("wb") as stream:

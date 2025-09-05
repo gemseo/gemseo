@@ -52,6 +52,9 @@ from gemseo.algos.doe.openturns._algos.ot_reverse_halton_sequence import (
 from gemseo.algos.doe.openturns._algos.ot_sobol_doe import OTSobolDOE
 from gemseo.algos.doe.openturns._algos.ot_sobol_sequence import OTSobolSequence
 from gemseo.algos.doe.openturns._algos.ot_standard_lhs import OTStandardLHS
+from gemseo.algos.doe.openturns.settings.base_openturns_settings import (
+    BaseOpenTURNSSettings,
+)
 from gemseo.algos.doe.openturns.settings.ot_axial import OT_AXIAL_Settings
 from gemseo.algos.doe.openturns.settings.ot_composite import OT_COMPOSITE_Settings
 from gemseo.algos.doe.openturns.settings.ot_factorial import OT_FACTORIAL_Settings
@@ -89,7 +92,7 @@ class OpenTURNSAlgorithmDescription(DOEAlgorithmDescription):
     """The library name."""
 
 
-class OpenTURNS(BaseDOELibrary):
+class OpenTURNS(BaseDOELibrary[BaseOpenTURNSSettings]):
     """The OpenTURNS DOE algorithms library."""
 
     # Algorithm names within GEMSEO
@@ -241,18 +244,12 @@ class OpenTURNS(BaseDOELibrary):
     def _generate_unit_samples(
         self,
         design_space: DesignSpace,
-        n_samples: int = 0,
-        seed: int | None = None,
-        **settings: OptionType,
     ) -> NumberArray:
-        """
-        Args:
-            n_samples: The number of samples.
-                If 0, set from the options.
-            seed: The seed used for reproducibility reasons.
-                If ``None``, use :attr:`.seed`.
-        """  # noqa: D205, D212, D415
-        openturns.RandomGenerator.SetSeed(self._seeder.get_seed(seed))
+        openturns.RandomGenerator.SetSeed(self._seeder.get_seed(self._settings.seed))
         doe_algo = self.__NAMES_TO_CLASSES[self._algo_name]()
 
-        return doe_algo.generate_samples(n_samples, design_space.dimension, **settings)
+        return doe_algo.generate_samples(
+            self._settings.n_samples,
+            design_space.dimension,
+            settings=self._settings,
+        )

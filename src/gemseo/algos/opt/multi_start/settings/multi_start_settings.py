@@ -55,6 +55,7 @@ If 0, this number is ``int(max_iter/n_start)``.""",
         description="""The name of the sub-optimization algorithm.""",
     )
 
+    # TODO: prepare this to be a Pydantic model
     opt_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
         description="""The settings of the sub-optimization algorithm.""",
@@ -67,6 +68,7 @@ If 0, this number is ``int(max_iter/n_start)``.""",
 The DOE algorthm is used to generate the sub-optimizations starting points.""",
     )
 
+    # TODO: prepare this to be a Pydantic model
     doe_algo_settings: StrKeyMapping = Field(
         default_factory=dict,
         description="""The settings of the DOE algorithm.""",

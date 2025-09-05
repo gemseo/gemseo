@@ -21,6 +21,9 @@ from typing import TYPE_CHECKING
 from gemseo.algos.doe.openturns._algos.ot_standard_lhs import OTStandardLHS
 
 if TYPE_CHECKING:
+    from gemseo.algos.doe.base_n_samples_based_doe_settings import (
+        BaseNSamplesBasedDOESettings,
+    )
     from gemseo.typing import RealArray
 
 
@@ -31,7 +34,12 @@ class OTCenteredLHS(OTStandardLHS):
     """
 
     def generate_samples(  # noqa: D102
-        self, n_samples: int, dimension: int
+        self,
+        n_samples: int,
+        dimension: int,
+        settings: BaseNSamplesBasedDOESettings | None = None,
     ) -> RealArray:
-        samples = super().generate_samples(n_samples, dimension)
+        if settings is not None:
+            n_samples = settings.n_samples
+        samples = super().generate_samples(n_samples, dimension, settings)
         return (samples // (1.0 / n_samples) + 0.5) / n_samples

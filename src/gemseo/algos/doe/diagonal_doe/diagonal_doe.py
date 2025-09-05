@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 OptionType = Optional[Union[str, int, float, bool, Container[str]]]
 
 
-class DiagonalDOE(BaseDOELibrary):
+class DiagonalDOE(BaseDOELibrary[DiagonalDOE_Settings]):
     """Class used to create a diagonal DOE."""
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
@@ -59,11 +59,8 @@ class DiagonalDOE(BaseDOELibrary):
     def __init__(self, algo_name: str = "DiagonalDOE") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _generate_unit_samples(
-        self, design_space: DesignSpace, **settings: OptionType
-    ) -> RealArray:
-        n_samples = settings.get(self._N_SAMPLES)
-        reverse = settings.get("reverse")
+    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+        reverse = self._settings.reverse
 
         name_by_index = {}
         start = 0
@@ -83,6 +80,6 @@ class DiagonalDOE(BaseDOELibrary):
                 start = 0.0
                 end = 1.0
 
-            samples.append(linspace(start, end, n_samples)[:, newaxis])
+            samples.append(linspace(start, end, self._settings.n_samples)[:, newaxis])
 
         return hstack(samples)

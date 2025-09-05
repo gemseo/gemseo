@@ -21,7 +21,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Final
+from typing import TypeVar
 
 from numpy import atleast_1d
 from numpy import concatenate
@@ -32,6 +32,9 @@ from numpy.ma import allequal
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
+from gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings import (  # noqa: E501
+    BaseAugmentedLagragianSettings,
+)
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -46,8 +49,10 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
+T = TypeVar("T", bound=BaseAugmentedLagragianSettings)
 
-class BaseAugmentedLagrangian(BaseOptimizationLibrary):
+
+class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
     """This is an abstract base class for augmented lagrangian optimization algorithms.
 
     The abstract methods :func:`_update_penalty` and
@@ -56,12 +61,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
 
     __n_obj_func_calls: int
     """The total number of objective function calls."""
-
-    __INITIAL_RHO: Final[str] = "initial_rho"
-    """The name of the option for `initial_rho` parameter."""
-
-    __SUB_PROBLEM_CONSTRAINTS: Final[str] = "sub_problem_constraints"
-    """The name of the option that corresponds to sub problem constraints."""
 
     _rho: float
     """The penalty value."""
@@ -83,23 +82,23 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         """The total number of objective function calls."""
         return self.__n_obj_func_calls
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
-        self._rho = settings[self.__INITIAL_RHO]
-        self._update_options_callback = settings["update_options_callback"]
+    def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
+        self._rho = self._settings.initial_rho
+        self._update_options_callback = self._settings.update_options_callback
 
         problem_ineq_constraints = [
             constr
             for constr in problem.constraints.get_inequality_constraints()
-            if constr.name not in settings[self.__SUB_PROBLEM_CONSTRAINTS]
+            if constr.name not in self._settings.sub_problem_constraints
         ]
         problem_eq_constraints = [
             constr
             for constr in problem.constraints.get_equality_constraints()
-            if constr.name not in settings[self.__SUB_PROBLEM_CONSTRAINTS]
+            if constr.name not in self._settings.sub_problem_constraints
         ]
 
         current_value = self._problem.design_space.get_current_value(
-            normalize=self._normalize_ds
+            normalize=self._settings.normalize_design_space
         )
         eq_multipliers = {
             h.name: zeros_like(h.evaluate(current_value))
@@ -113,7 +112,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         active_constraint_residual = inf
         x = self._problem.design_space.get_current_value()
         message = None
-        for iteration in range(settings[self._MAX_ITER]):
+        for iteration in range(self._settings.max_iter):
             LOGGER.debug("iteration: %s", iteration)
             LOGGER.debug(
                 "inequality Lagrange multiplier approximations:  %s", ineq_multipliers
@@ -128,10 +127,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
             f_calls_sub_prob, x_new = self.__solve_sub_problem(
                 eq_multipliers,
                 ineq_multipliers,
-                self._normalize_ds,
-                settings[self.__SUB_PROBLEM_CONSTRAINTS],
-                settings["sub_algorithm_name"],
-                settings["sub_algorithm_settings"],
                 x,
             )
 
@@ -154,7 +149,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
                 constraint_violation_previous_iteration=active_constraint_residual,
                 current_penalty=self._rho,
                 iteration=iteration,
-                **settings,
             )
             # Update the active constraint residual.
             active_constraint_residual = max(norm(vk), norm(hv))
@@ -176,12 +170,9 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         problem: OptimizationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
-        **settings: Any,
     ) -> None:
         result.n_obj_call = self.__n_obj_func_calls
-        super()._post_run(
-            problem, result, max_design_space_dimension_to_log, **settings
-        )
+        super()._post_run(problem, result, max_design_space_dimension_to_log)
 
     @staticmethod
     def _check_termination_criteria(
@@ -268,10 +259,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         self,
         lambda0: dict[str, NumberArray],
         mu0: dict[str, NumberArray],
-        normalize: bool,
-        sub_problem_constraints: Iterable[str],
-        sub_algorithm_name: str,
-        sub_algorithm_settings: StrKeyMapping,
         x_init: NumberArray,
     ) -> tuple[int, NumberArray]:
         """Solve the sub-problem.
@@ -279,13 +266,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         Args:
             lambda0: The lagrangian multipliers for equality constraints.
             mu0: The lagrangian multipliers for inequality constraints.
-            normalize: Whether to normalize the design space.
-            sub_problem_constraints: The constraints to keep in the sub-problem.
-                If ``empty`` all constraints are dealt by the Augmented Lagrange,
-                which means that the sub-problem is unconstrained.
-            sub_algorithm_name: The name of the optimization algorithm used to solve
-                each sub-poblem.
-            sub_algorithm_settings: The settings of the sub-problem optimization solver.
             x_init: The design variable vector at the current iteration.
 
         Returns:
@@ -298,18 +278,24 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         sub_problem = OptimizationProblem(dspace)
         sub_problem.objective = lagrangian
         for constraint in self._problem.constraints.get_originals():
-            if constraint.name in sub_problem_constraints:
+            if constraint.name in self._settings.sub_problem_constraints:
                 sub_problem.constraints.append(constraint)
-        sub_problem.preprocess_functions(is_function_input_normalized=normalize)
+        sub_problem.preprocess_functions(
+            is_function_input_normalized=self._settings.normalize_design_space
+        )
 
         if self._update_options_callback is not None:
-            self._update_options_callback(self._sub_problems, sub_algorithm_settings)
+            self._update_options_callback(
+                self._sub_problems, self._settings.sub_algorithm_settings
+            )
 
-        self._check_for_preconditioner(sub_algorithm_settings)
+        self._check_for_preconditioner(self._settings.sub_algorithm_settings)
 
         # Solve the sub-problem.
         opt = OptimizationLibraryFactory().execute(
-            sub_problem, algo_name=sub_algorithm_name, **sub_algorithm_settings
+            sub_problem,
+            algo_name=self._settings.sub_algorithm_name,
+            **self._settings.sub_algorithm_settings,
         )
 
         self._sub_problems.append(sub_problem)
@@ -324,7 +310,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
         constraint_violation_previous_iteration: NumberArray | float,
         current_penalty: NumberArray | float,
         iteration: int,
-        **options: Any,
     ) -> float:
         """Update the penalty.
 
@@ -341,7 +326,6 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary):
                 the previous iteration.
             current_penalty: The penalty value at the current iteration.
             iteration: The iteration number.
-            **options: The other options of the update penalty method.
 
         Returns:
             The updated penalty value.

@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 
@@ -115,9 +114,9 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         ),
     }
 
-    def _run(self, problem: ODEProblem, **settings: Any) -> ODEResult:
+    def _run(self, problem: ODEProblem) -> ODEResult:
         settings_ = self._filter_settings(
-            settings, model_to_exclude=BaseODESolverSettings
+            self._settings.model_dump(), model_to_exclude=BaseODESolverSettings
         )
         if issubclass(
             self.ALGORITHM_INFOS[self.algo_name].Settings, BaseScipyODESolverJacSettings

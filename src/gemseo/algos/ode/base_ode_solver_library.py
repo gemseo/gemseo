@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Any
 
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
@@ -42,22 +41,20 @@ class ODESolverDescription(AlgorithmDescription):
     """The settings validation model."""
 
 
-class BaseODESolverLibrary(BaseAlgorithmLibrary):
+class BaseODESolverLibrary(BaseAlgorithmLibrary[BaseODESolverSettings]):
     """Base class for libraries of ODE solvers."""
 
     def _pre_run(
         self,
         problem: ODEProblem,
-        **settings: Any,
     ) -> None:
-        problem.result.solver_options = settings
+        problem.result.solver_options = self._settings.model_dump()
         problem.result.solver_name = self._algo_name
 
     def _post_run(
         self,
         problem: ODEProblem,
         result: ODEResult,
-        **settings: Any,
     ) -> None:  # noqa: D107
         if not problem.result.algorithm_has_converged:
             LOGGER.warning(

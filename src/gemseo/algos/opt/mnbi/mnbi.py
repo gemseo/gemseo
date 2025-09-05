@@ -30,7 +30,6 @@ from dataclasses import dataclass
 from itertools import combinations
 from multiprocessing import Manager
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 from typing import NamedTuple
@@ -79,9 +78,7 @@ from gemseo.utils.multiprocessing.execution import execute
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Mapping
 
-    from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.algos.optimization_problem import OptimizationResult
     from gemseo.typing import RealArray
 
@@ -143,7 +140,7 @@ class MNBIAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "MNBI"
 
 
-class MNBI(BaseOptimizationLibrary):
+class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     r"""MNBI optimizer.
 
     This algorithm computes the Pareto front of a multi-objective optimization problem
@@ -213,32 +210,8 @@ class MNBI(BaseOptimizationLibrary):
     __custom_phi_betas: Iterable[RealArray]
     r"""The custom values of :math:`\Phi \beta` to be used in the optimization."""
 
-    __debug: bool = False
-    """Whether the algorithm is running in debug mode."""
-
-    __debug_file_path: str = "debug_Pareto.h5"
-    """The output file for the Pareto front in debug mode.
-
-    mNBI algorithm normally returns one point of the Pareto front per sub-optimization.
-    The ``get_optimum_from_database`` method returns all Pareto optimal points in the
-    database. In debug mode, the optima actually returned by mNBI are saved to an hdf5
-    file, in order to verify that the algorithm has worked as intended.
-    """
-
-    __doe_algo_settings: Mapping[str, DriverSettingType]
-    """The settings for the DOE algorithm."""
-
-    __ineq_tolerance: float = 1e-4
-    """The tolerance on the inequality constraints."""
-
-    __sub_optim_max_iter: int
-    """The maximum number of iterations for each run of the sub-optimization problem."""
-
     __n_obj: int
     """The number of objectives of the optimization problem."""
-
-    __n_processes: int
-    """The number of processes to use when running the sub-optimizations."""
 
     __n_sub_optim: int
     """The number of runs of the sub-optimization problem."""
@@ -255,24 +228,8 @@ class MNBI(BaseOptimizationLibrary):
     It has the shape ``(n_obj, n_obj)``.
     """
 
-    __skip_betas: bool
-    """Whether to skip the sub-optimizations corresponding to values of beta for which
-    the theoretical result has already been found.
-
-    This can accelerate the main optimization by avoiding redundant sub-optimizations.
-    But in cases where some sub-optimizations do not properly converge, some values of
-    betas will be skipped based on false assumptions, and some parts of the Pareto front
-    can be incorrectly resolved.
-    """
-
     __skippable_domains: list[RealArray]
     """The regions of the phi simplex that can be skipped."""
-
-    __sub_optim_algo: str
-    """The algorithm used for the sub-optimizations."""
-
-    __sub_optim_algo_settings: Mapping[str, DriverSettingType]
-    """The settings for the sub-optimization algorithm."""
 
     __utopia: RealArray
     r"""The utopia :math:`(f_1(x^{(1),*}), \ldots, f_d(x^{(d),*}))`.
@@ -305,7 +262,7 @@ class MNBI(BaseOptimizationLibrary):
         optima = execute(
             self._minimize_objective_component,
             [self.__copy_database_save_minimum],
-            self.__n_processes,
+            self._settings.n_processes,
             list(range(self.__n_obj)),
         )
         self.__phi = column_stack([optimum[0] for optimum in optima])
@@ -343,10 +300,10 @@ class MNBI(BaseOptimizationLibrary):
         opt_problem.objective = MDOFunction(objective.compute_output, f"f_{i}", jac=jac)
         opt_result = OptimizationLibraryFactory().execute(
             opt_problem,
-            algo_name=self.__sub_optim_algo,
-            max_iter=self.__sub_optim_max_iter,
+            algo_name=self._settings.sub_optim_algo,
+            max_iter=self._settings.sub_optim_max_iter,
             enable_progress_bar=False,
-            **self.__sub_optim_algo_settings,
+            **self._settings.sub_optim_algo_settings,
         )
         if not opt_result.is_feasible:
             msg = f"No feasible optimum found for the {i}-th objective function."
@@ -375,7 +332,7 @@ class MNBI(BaseOptimizationLibrary):
             outputs: The outputs of the sub-optimization
                 returned by ``_minimize_objective_component``.
         """
-        if self.__n_processes > 1:
+        if self._settings.n_processes > 1:
             # Store the sub-process database in the main database
             objective = self._problem.objective
             if objective.enable_statistics:
@@ -392,7 +349,7 @@ class MNBI(BaseOptimizationLibrary):
                     for x_value, f_value in zip(x_hist, f_hist):
                         self._problem.database.store(x_value, {f.name: f_value})
 
-        if self.__debug:
+        if self._settings.debug:
             self._debug_results.store(outputs.x_min, {"obj": outputs.f_min})
 
     @staticmethod
@@ -473,7 +430,7 @@ class MNBI(BaseOptimizationLibrary):
             n_calls_start = f.n_calls
 
         # Check if phi_beta is in the skippable domains.
-        if self.__skip_betas and self.__is_skippable(phi_beta):
+        if self._settings.skip_betas and self.__is_skippable(phi_beta):
             LOGGER.info(
                 "Skipping sub-optimization for phi_beta = %s "
                 "because the resulting solution is already known.",
@@ -518,10 +475,10 @@ class MNBI(BaseOptimizationLibrary):
         )
         opt_res = OptimizationLibraryFactory().execute(
             self.__beta_sub_optim,
-            algo_name=self.__sub_optim_algo,
-            max_iter=self.__sub_optim_max_iter,
+            algo_name=self._settings.sub_optim_algo,
+            max_iter=self._settings.sub_optim_max_iter,
             enable_progress_bar=False,
-            **self.__sub_optim_algo_settings,
+            **self._settings.sub_optim_algo_settings,
         )
         if not opt_res.is_feasible:
             LOGGER.warning(
@@ -533,9 +490,9 @@ class MNBI(BaseOptimizationLibrary):
 
         # If some components of the sub-optim constraint are inactive, return the vector
         # w to find the values of phi_beta that can be skipped for the next sub-optims
-        if self.__skip_betas and any(
+        if self._settings.skip_betas and any(
             beta_sub_optim_constraint.compute_output(opt_res.x_opt)
-            < self.__ineq_tolerance
+            < self._settings.ineq_tolerance
         ):
             w = phi_beta + opt_res.x_opt[-1] * self.__n_vect
         else:
@@ -565,7 +522,7 @@ class MNBI(BaseOptimizationLibrary):
 
         database = outputs.database
 
-        if self.__n_processes > 1 and database is not None:
+        if self._settings.n_processes > 1 and database is not None:
             # Store the sub-process database in the main process database.
             objective = self._problem.objective
             if objective.enable_statistics:
@@ -589,7 +546,7 @@ class MNBI(BaseOptimizationLibrary):
         if outputs.w is not None:
             self.__find_skippable_domain(f_min, outputs.w)
 
-        if self.__debug and f_min is not None:
+        if self._settings.debug and f_min is not None:
             self._debug_results.store(outputs.x_min, {"obj": f_min})
 
     def __find_skippable_domain(self, f: RealArray, w: RealArray) -> None:
@@ -606,7 +563,7 @@ class MNBI(BaseOptimizationLibrary):
         fw = column_stack((f, w))
         # Find all the corners of the hypervolume
         proj_points = []
-        inds = argwhere(abs(f - w) > self.__ineq_tolerance)
+        inds = argwhere(abs(f - w) > self._settings.ineq_tolerance)
         for c in combinations([0, 1], len(inds)):
             y = zeros((f.size, 1))
             for i, j in enumerate(inds):
@@ -703,7 +660,7 @@ class MNBI(BaseOptimizationLibrary):
         lp = linprog(c, A_eq=a, b_eq=b, method="highs")
         return lp.success
 
-    def _pre_run(self, problem: OptimizationProblem, **settings: Any) -> None:
+    def _pre_run(self, problem: OptimizationProblem) -> None:
         """Processes the settings and sets up the optimization.
 
         Raises:
@@ -723,15 +680,15 @@ class MNBI(BaseOptimizationLibrary):
                 - If the dimension of the custom phi_betas is not the same as the number
                   of objectives.
         """
-        super()._pre_run(problem, **settings)
+        super()._pre_run(problem)
         self.__n_obj = problem.objective.dim
-        self.__n_sub_optim = settings.pop("n_sub_optim")
+        self.__n_sub_optim = self._settings.n_sub_optim
         if self.__n_obj == 1:
             msg = "MNBI optimizer is not suitable for mono-objective problems."
             raise ValueError(msg)
 
-        custom_anchor_points = settings.pop("custom_anchor_points")
-        custom_phi_betas = settings.pop("custom_phi_betas")
+        custom_anchor_points = self._settings.custom_anchor_points
+        custom_phi_betas = self._settings.custom_phi_betas
         if self.__n_sub_optim <= self.__n_obj and not (
             custom_anchor_points or custom_phi_betas
         ):
@@ -824,25 +781,17 @@ class MNBI(BaseOptimizationLibrary):
             )
         self.__custom_phi_betas = custom_phi_betas
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> None:
-        self.__n_processes = settings.pop("n_processes")
-        self.__sub_optim_algo = settings.pop("sub_optim_algo")
-        self.__sub_optim_algo_settings = settings.pop("sub_optim_algo_settings")
-        self.__debug = settings.pop("debug")
-        self.__debug_file_path = settings.pop("debug_file_path")
-        self.__skip_betas = settings.pop("skip_betas")
-        self.__sub_optim_max_iter = settings.pop("sub_optim_max_iter")
-        self.__doe_algo_settings = settings.pop("doe_algo_settings")
+    def _run(self, problem: OptimizationProblem) -> None:
         self.__n_obj = problem.objective.dim
-        self.__ineq_tolerance = settings.get(
-            self._INEQ_TOLERANCE, self._problem.tolerances.inequality
+
+        self.__skippable_domains = (
+            Manager().list() if self._settings.n_processes > 1 else []
         )
-        self.__skippable_domains = Manager().list() if self.__n_processes > 1 else []
-        if self.__debug:
+        if self._settings.debug:
             self._debug_results.clear()
 
-        if self.__n_processes > 1:
-            LOGGER.info("Running mNBI on %s processes", self.__n_processes)
+        if self._settings.n_processes > 1:
+            LOGGER.info("Running mNBI on %s processes", self._settings.n_processes)
 
         # Find the individual optimum phi of each objective function and the utopia
         self.__minimize_objective_components_separately()
@@ -880,7 +829,7 @@ class MNBI(BaseOptimizationLibrary):
             if self.__n_obj == 2:
                 betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
             else:
-                library = DOELibraryFactory().create(settings["doe_algo"])
+                library = DOELibraryFactory().create(self._settings.doe_algo)
                 beta_design_space = DesignSpace()
                 beta_design_space.add_variable(
                     "beta", size=self.__n_obj - 1, lower_bound=0.0, upper_bound=1.0
@@ -889,7 +838,7 @@ class MNBI(BaseOptimizationLibrary):
                     beta_design_space,
                     n_samples=n_samples,
                     unit_sampling=True,
-                    **self.__doe_algo_settings,
+                    **self._settings.doe_algo_settings,
                 )
             for beta in betas:
                 beta = append(beta, 1 - beta.sum())
@@ -898,12 +847,12 @@ class MNBI(BaseOptimizationLibrary):
         execute(
             self._run_beta_sub_optim,
             [self.__beta_sub_optim_callback],
-            self.__n_processes,
+            self._settings.n_processes,
             phi_betas,
         )
 
-        if self.__debug:
-            self._debug_results.to_hdf(self.__debug_file_path)
+        if self._settings.debug:
+            self._debug_results.to_hdf(self._settings.debug_file_path)
 
     def _log_result(
         self, problem: OptimizationProblem, max_design_space_dimension_to_log: int

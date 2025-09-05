@@ -77,7 +77,7 @@ class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     """The option validation model for SciPy linear programming library."""
 
 
-class ScipyLinprog(BaseOptimizationLibrary):
+class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
     """SciPy linear programming library interface.
 
     See BaseOptimizationLibrary.
@@ -107,7 +107,7 @@ class ScipyLinprog(BaseOptimizationLibrary):
     }
 
     def _run(
-        self, problem: OptimizationProblem, **settings: Any
+        self, problem: OptimizationProblem
     ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
@@ -134,7 +134,9 @@ class ScipyLinprog(BaseOptimizationLibrary):
         )
 
         # Filter settings to get only the scipy.optimize.linprog ones
-        settings_ = self._filter_settings(settings, BaseOptimizerSettings)
+        settings_ = self._filter_settings(
+            self._settings.model_dump(), BaseOptimizerSettings
+        )
 
         # Deactivate stopping criteria which are handled by GEMSEO
         settings_["tol"] = 0.0
