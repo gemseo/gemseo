@@ -90,6 +90,7 @@ class FunctionFromDiscipline(MDOFunction):
     __discipline_adapter: DisciplineAdapter
     """The discipline adapter."""
 
+    # TODO: API remove this class attribute
     generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
         DisciplineAdapterGenerator
     )
