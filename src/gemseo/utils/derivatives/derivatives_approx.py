@@ -79,6 +79,7 @@ class DisciplineJacApprox:
     approximator: BaseGradientApproximator | None
     """The gradient approximation method."""
 
+    # TODO: API remove this class attribute
     generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
         DisciplineAdapterGenerator
     )

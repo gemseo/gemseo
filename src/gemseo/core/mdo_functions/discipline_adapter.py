@@ -176,7 +176,7 @@ class DisciplineAdapter(MDOFunction):
             The output vector or a scalar if the vector has only one component.
         """
         self.__discipline.execution_status.value = ExecutionStatus.Status.DONE
-        input_data = self.__create_discipline_input_data(x_vect)
+        input_data = self._create_discipline_input_data(x_vect)
         n_samples = len(x_vect) if x_vect.ndim == 2 else 1
         data = self.__discipline.execute(input_data)
         return self._convert_output_data_to_array(
@@ -221,7 +221,7 @@ class DisciplineAdapter(MDOFunction):
         Returns:
             The Jacobian value.
         """
-        input_data = self.__create_discipline_input_data(x_vect)
+        input_data = self._create_discipline_input_data(x_vect)
         n_samples = len(x_vect) if x_vect.ndim == 2 else 1
         jacobian_data = self.__discipline.linearize(input_data)
         return self._convert_jacobian_to_array(jacobian_data, n_samples=n_samples)
@@ -409,7 +409,7 @@ class DisciplineAdapter(MDOFunction):
             self.__input_names_to_sizes,
         )
 
-    def __create_discipline_input_data(
+    def _create_discipline_input_data(
         self,
         x_vect: ndarray,
     ) -> dict[str, ndarray]:
