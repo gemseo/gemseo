@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
@@ -36,7 +37,11 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
@@ -45,6 +50,9 @@ from gemseo.problems.mdo.sellar.utils import get_initial_data
 
 from .test_mda import analytic_disciplines_from_desc
 from .utils import generate_parallel_doe
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 DISC_DESCR_16D = [
     ("A", ["a"], ["b"]),
@@ -66,16 +74,10 @@ DISC_DESCR_16D = [
 ]
 
 
-def test_set_tolerances(sellar_with_2d_array, sellar_disciplines) -> None:
-    """Test that the MDA tolerances can be set at the object instantiation."""
-    mda_chain = MDAChain(
-        sellar_disciplines, tolerance=1e-3, linear_solver_tolerance=1e-6
-    )
-    assert mda_chain.settings.tolerance == 1e-3
-    assert mda_chain.settings.linear_solver_tolerance == 1e-6
-
-    assert mda_chain.mdo_chain.disciplines[0].settings.tolerance == 1e-3
-    assert mda_chain.mdo_chain.disciplines[0].settings.linear_solver_tolerance == 1e-6
+@pytest.fixture
+def coupled_disciplines() -> Sequence[Discipline]:
+    """A set of 16 coupled disciplines."""
+    return create_disciplines_from_desc(DISC_DESCR_16D)
 
 
 def test_set_solver(sellar_with_2d_array, sellar_disciplines) -> None:
@@ -307,26 +309,7 @@ def test_mdachain_parallelmdochain_options(parallel_options) -> None:
     assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
 
 
-def test_max_mda_iter(sellar_with_2d_array, sellar_disciplines) -> None:
-    """Test that changing the max_mda_iter of a chain modifies all the inner mdas."""
-    mda_chain = MDAChain(
-        sellar_disciplines,
-        tolerance=1e-13,
-        max_mda_iter=30,
-        chain_linearize=True,
-        warm_start=True,
-    )
-    assert mda_chain.settings.max_mda_iter == 30
-    for mda in mda_chain.inner_mdas:
-        assert mda.settings.max_mda_iter == 30
-
-    mda_chain.settings.max_mda_iter = 10
-    assert mda_chain.settings.max_mda_iter == 10
-    for mda in mda_chain.inner_mdas:
-        assert mda.settings.max_mda_iter == 10
-
-
-def test_scaling(sellar_with_2d_array, sellar_disciplines) -> None:
+def test_scaling_setter(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that changing the scaling of a chain modifies all the inner mdas."""
     mda_chain = MDAChain(
         sellar_disciplines,
@@ -405,3 +388,109 @@ def test_set_bounds():
 
     assert (mda_2._sequence_transformer.lower_bound == array([-2.0, 1.0])).all()
     assert (mda_2._sequence_transformer.upper_bound == array([+inf, 4.0])).all()
+
+
+def test_settings_cascading(coupled_disciplines):
+    """Test that settings are cascaded to inner mdas."""
+    mda_chain = MDAChain(coupled_disciplines)
+
+    for inner_mda in mda_chain.inner_mdas:
+        assert inner_mda.settings.tolerance == 1e-6
+        assert inner_mda.settings.max_mda_iter == 20
+        assert not inner_mda.settings.log_convergence
+
+    mda_chain.settings.tolerance = 1e-12
+    mda_chain.settings.max_mda_iter = 30
+    mda_chain.settings.log_convergence = True
+
+    for inner_mda in mda_chain.inner_mdas:
+        assert inner_mda.settings.tolerance == 1e-12
+        assert inner_mda.settings.max_mda_iter == 30
+        assert inner_mda.settings.log_convergence
+
+
+@pytest.mark.parametrize(
+    "inner_mda",
+    [
+        ("MDAJacobi", MDAJacobi),
+        ("MDAGaussSeidel", MDAGaussSeidel),
+        ("MDANewtonRaphson", MDANewtonRaphson),
+    ],
+)
+def test_inner_mda_name_setting(coupled_disciplines, inner_mda):
+    """Test that the inner MDA name settings is properly used or ignored."""
+    inner_mda_name, inner_mda_class = inner_mda
+
+    mda_chain = MDAChain(coupled_disciplines, inner_mda_name=inner_mda_name)
+
+    for inner_mda in mda_chain.inner_mdas:
+        assert isinstance(inner_mda, inner_mda_class)
+        assert isinstance(inner_mda.settings, inner_mda_class.Settings)
+
+    # Inner MDA name is ignored when a Pydantic model is passed.
+    mda_chain = MDAChain(
+        coupled_disciplines,
+        inner_mda_name=inner_mda_name,
+        inner_mda_settings=MDAGaussSeidel_Settings(),
+    )
+
+    for inner_mda in mda_chain.inner_mdas:
+        assert isinstance(inner_mda, MDAGaussSeidel)
+        assert isinstance(inner_mda.settings, MDAGaussSeidel_Settings)
+
+
+def test_settings_precedence(coupled_disciplines, caplog):
+    """Test the settings precedence of MDA chain over inner MDAs."""
+    main_settings = {
+        "linear_solver": "BICG",
+        "linear_solver_tolerance": 0.314,
+        "log_convergence": True,
+        "max_mda_iter": 17,
+        "max_consecutive_unsuccessful_iterations": 13,
+        "tolerance": 3e-14,
+        "use_lu_fact": True,
+        "warm_start": True,
+    }
+
+    sub_settings = {
+        "linear_solver": "TFQMR",
+        "linear_solver_tolerance": 0.628,
+        "log_convergence": False,
+        "max_mda_iter": 34,
+        "max_consecutive_unsuccessful_iterations": 26,
+        "tolerance": 6e-28,
+        "use_lu_fact": False,
+        "warm_start": False,
+    }
+
+    mda_chain = MDAChain(coupled_disciplines, **main_settings)
+    for inner_mda in mda_chain.inner_mdas:
+        inner_mda_settings = inner_mda.settings.model_dump()
+
+        for name in main_settings:
+            assert inner_mda_settings[name] == main_settings[name]
+
+    mda_chain = MDAChain(coupled_disciplines, inner_mda_settings=sub_settings)
+    for inner_mda in mda_chain.inner_mdas:
+        inner_mda_settings = inner_mda.settings.model_dump()
+
+        for name in sub_settings:
+            assert inner_mda_settings[name] == sub_settings[name]
+
+    mda_chain = MDAChain(
+        coupled_disciplines, inner_mda_settings=sub_settings, **main_settings
+    )
+    for inner_mda in mda_chain.inner_mdas:
+        inner_mda_settings = inner_mda.settings.model_dump()
+
+        for name in main_settings:
+            assert inner_mda_settings[name] == main_settings[name]
+
+    for name, setting in main_settings.items():
+        msg = (
+            f"The '{name}' setting has been set for both the MDAChain "
+            f"and the inner MDA. The retained value is "
+            f"{setting}"
+        )
+
+        assert msg in caplog.text
