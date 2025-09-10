@@ -94,11 +94,19 @@ class Sellar2(BaseSellar):
             y_1 = y_1.reshape((-1, defaults[Y_1].size))
 
         out = x_shared[..., [0]] + x_shared[..., [1]] - x_2
-        y_2 = where(y_1.real > 0, self.__k * y_1 + out, -self.__k * y_1 + out)
-        inds_where = y_1.real == 0
-        if len(inds_where) != (out_length := len(out)):
-            inds_where = repeat(inds_where, out_length, axis=0)
-        y_2[inds_where] = out[inds_where]
+        if out.shape != y_1.shape:
+            out = repeat(out, len(y_1), axis=0)
+
+        # Implement y_2 = |k*y_1| + x_00 + x_01 - x2 in the case of complex numbers.
+        y_2 = where(
+            y_1.real > 0,
+            self.__k * y_1 + out,
+            # The complex step technique expects "out" at y_1=0+aj where a is a real.
+            # This is the reason of this second check:
+            # -> neither "self.__k * y_1 + out" nor "-self.__k * y_1 + out" can be used,
+            # even if they are equal to "out" when considering real numbers.
+            where(y_1.real < 0, -self.__k * y_1 + out, out),
+        )
         return {Y_2: y_2.ravel()}
 
     def _compute_jacobian(
