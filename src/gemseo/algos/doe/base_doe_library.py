@@ -238,6 +238,8 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         """Evaluate the functions in serial, sample by sample."""
         for index, input_value in enumerate(self.samples):
             try:
+                for preprocessor in self._settings.preprocessors:
+                    preprocessor(index)
                 result = self._evaluate_functions(input_value)
                 for callback in self._settings.callbacks:
                     callback(index, result)
@@ -306,7 +308,11 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         # The list of inputs of the tasks is the list of samples
         # A callback function stores the samples on the fly
         # during the parallel execution.
-        parallel.execute(self.samples, exec_callback=callbacks)
+        parallel.execute(
+            self.samples,
+            exec_callback=callbacks,
+            preprocessors=self._settings.preprocessors,
+        )
         if self._settings.use_database:
             # We added empty entries by default to keep order in the database
             # but when the DOE point is failed, this is not consistent
