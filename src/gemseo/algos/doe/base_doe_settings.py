@@ -65,11 +65,22 @@ class BaseDOESettings(BaseDriverSettings):
         Annotated[Callable[[int, EvaluationType], Any], WithJsonSchema({})]
     ] = Field(
         default=(),
-        description="""The functions to be evaluated after each functions evaluation.
+        description="""The functions called after evaluating the function of interest.
 
-The functions evaluation is done by
-:meth:`.OptimizationProblem.evaluate_functions` and the callback must be
-called as ``callback(index, (output, Jacobian))``.""",
+A callback must be called as ``callback(sample_index, (output, Jacobian))``.""",
+    )
+
+    preprocessors: Sequence[Annotated[Callable[[int], Any], WithJsonSchema({})]] = (
+        Field(
+            default=(),
+            description="""The functions called
+before evaluating the function of interest.
+
+A preprocessor must be called as ``preprocessor(sample_index)``.
+
+This option is not compatible with the vectorization of functions evaluations.
+""",
+        )
     )
 
     normalize_design_space: bool = Field(
@@ -96,7 +107,11 @@ called as ``callback(index, (output, Jacobian))``.""",
             )
 
         if self.vectorize and self.n_processes > 1:
-            msg = "Vectorization in parallel is not yet supported."
+            msg = "Vectorization in parallel is not supported."
+            raise NotImplementedError(msg)
+
+        if self.preprocessors and self.vectorize:
+            msg = "Combining preprocessors and vectorization is not supported."
             raise NotImplementedError(msg)
 
         return self

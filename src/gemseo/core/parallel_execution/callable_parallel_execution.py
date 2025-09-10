@@ -102,12 +102,22 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
     callables: Sequence[CallableType[ArgT, ReturnT]]
     """The callables."""
 
-    def __init__(self, callables: Sequence[CallableType[ArgT, ReturnT]]) -> None:
+    preprocessors: Iterable[Callable[[int], None]]
+    """The preprocessors."""
+
+    def __init__(
+        self,
+        callables: Sequence[CallableType[ArgT, ReturnT]],
+        preprocessors: Iterable[Callable[[int], None]],
+    ) -> None:
         """
         Args:
             callables: The callables.
+            preprocessors: The functions called before the execution,
+                whose unique argument is the task index.
         """  # noqa: D205, D212, D415
         self.callables = callables
+        self.preprocessors = preprocessors
 
     def __call__(self, task_index: int, input_: ArgT) -> ReturnT:
         """Call a callable.
@@ -118,11 +128,10 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
         Returns:
             The output of callable.
         """
-        if len(self.callables) > 1:
-            callable_ = self.callables[task_index]
-        else:
-            callable_ = self.callables[0]
-        return callable_(input_)
+        index = task_index if len(self.callables) > 1 else 0
+        for preprocessor in self.preprocessors:
+            preprocessor(index)
+        return self.callables[index](input_)
 
 
 class CallableParallelExecution(
@@ -231,6 +240,7 @@ class CallableParallelExecution(
         inputs: Sequence[ArgT],
         exec_callback: CallbackType | Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
+        preprocessors: Iterable[Callable[[int], None]] = (),
     ) -> list[ReturnT | None]:
         """Execute all the processes.
 
@@ -244,6 +254,8 @@ class CallableParallelExecution(
             task_submitted_callback: A callback function called when all the
                 tasks are submitted, but not done yet. If ``None``, no function
                 is called.
+            preprocessors: The functions called before the execution,
+                whose unique argument is the task index.
 
         Returns:
             The computed outputs.
@@ -278,7 +290,7 @@ class CallableParallelExecution(
             self.__check_multiprocessing_start_method()
             processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process  # type: ignore[attr-defined]
 
-        task_callables = _TaskCallables(self.workers)
+        task_callables = _TaskCallables(self.workers, preprocessors)
 
         processes = []
         for _ in range(min(n_tasks, self.n_processes)):

@@ -51,6 +51,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from gemseo.scenarios.doe_scenario import DOEScenario
@@ -589,3 +590,57 @@ def test_value_error_filtering(formulation, caplog):
     assert driver_message in caplog.text
     discipline_message = "The sample is undefined for x < 0."
     assert discipline_message in caplog.text
+
+
+class Preprocessor:
+    """A function called before each sample generation."""
+
+    def __init__(self, database: Database, parallelize: bool) -> None:
+        """
+        Args:
+            database: The database attached to a problem.
+        """
+        self.database = database
+        if parallelize:
+            self.tuples = get_multi_processing_manager().list()
+        else:
+            self.tuples = []
+
+    def __call__(self, index: int) -> None:
+        """Store (index, n_entries_with_output_values) at index.
+
+        Args:
+            index: The sample index.
+        """
+        self.tuples.insert(
+            index, (index, sum(bool(value) for value in self.database.values()))
+        )
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+@pytest.mark.parametrize("add_pre_processors", [False, True])
+def test_preprocessors(custom_doe, n_processes, add_pre_processors):
+    """Test the option preprocessors."""
+    problem = Power2()
+    if add_pre_processors:
+        preprocessor = Preprocessor(problem.database, n_processes > 1)
+        preprocessors = (preprocessor,)
+    else:
+        preprocessors = ()
+    custom_doe.execute(
+        problem,
+        samples=array([[1.0, 1.0, 1.0]]),
+        preprocessors=preprocessors,
+        n_processes=n_processes,
+    )
+    assert len(problem.database) == 1
+    if add_pre_processors:
+        assert list(preprocessor.tuples) == [(0, 0)]
+    custom_doe.execute(
+        problem,
+        samples=array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]),
+        preprocessors=preprocessors,
+    )
+    assert len(problem.database) == 3
+    if add_pre_processors:
+        assert list(preprocessor.tuples) == [(0, 1), (1, 1), (2, 2), (0, 0)]
