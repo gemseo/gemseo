@@ -41,14 +41,11 @@ on the Sobieski's SSBJ problem.
 from __future__ import annotations
 
 from gemseo import configure
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-
-configure_logger()
 
 # %%
 # Enable the recording of statistics

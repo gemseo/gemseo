@@ -1,0 +1,3 @@
+- Logging is now enabled by default; use the following to disable it: ``from gemseo import configuration; configuration.logging.enable = False``.
+- The default value of the ``logger`` argument of ``LoggingContext`` is the GEMSEO logger.
+- The module ``gemseo.utils.logging_tools`` has been renamed ``gemseo.utils.logging``; the former is deprecated.

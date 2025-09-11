@@ -27,11 +27,8 @@ given that these MDA are independent and can be run in parallel.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo.mda.mda_chain import MDAChain
-
-configure_logger()
 
 # %%
 # Introduction

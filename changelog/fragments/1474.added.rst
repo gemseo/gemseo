@@ -1,3 +1,4 @@
-- The options of ``configure`` can be passed through the argument ``settings``, which is a Pydantic model of type ``GEMSEO_Settings``.
-- ``GEMSEO_Settings`` is the base Pydantic model for defining the GEMSEO configuration settings.
-- ``Fast_GEMSEO_Settings`` is a Pydantic model for defining the GEMSEO configuration settings with slow options deactivated.
+- The ``gemseo.configuration`` variable can be used to configure |g| instead of using ``gemseo.configure``.
+- The ``gemseo.configuration.logging`` variable can be used to configure logging for |g| and its plugins instead of using ``gemseo.configure_logger``.
+- The global configuration settings can be specified via environment variables of the form ``GEMSEO_{OPTION_NAME}`` and ``GEMSEO_LOGGING_{OPTION_NAME}``, and can also be defined in a file named ``.env``.
+- Configuring GEMSEO is documented in the user guide.

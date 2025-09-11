@@ -30,10 +30,7 @@ from __future__ import annotations
 from numpy import concatenate
 from numpy.random import default_rng
 
-from gemseo import configure_logger
 from gemseo.datasets.dataset import Dataset
-
-configure_logger()
 
 rng = default_rng(1)
 

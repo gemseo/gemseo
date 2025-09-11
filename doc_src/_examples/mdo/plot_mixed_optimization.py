@@ -49,7 +49,6 @@ from __future__ import annotations
 from numpy import ndarray  # noqa: TC002
 from numpy.linalg import norm
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -58,9 +57,6 @@ from gemseo.settings.doe import PYDOE_FULLFACT_Settings
 from gemseo.settings.formulations import DisciplinaryOpt_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.post import OptHistoryView_Settings
-
-configure_logger()
-
 
 # %%
 # Optimization problem definition.

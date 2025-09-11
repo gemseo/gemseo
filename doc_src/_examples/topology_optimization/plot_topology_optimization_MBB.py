@@ -23,13 +23,11 @@ Solve a 2D MBB topology optimization problem
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
 
-configure_logger()
 # %%
 # Setup the topology optimization problem
 # ---------------------------------------

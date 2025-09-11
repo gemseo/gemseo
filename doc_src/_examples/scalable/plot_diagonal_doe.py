@@ -31,14 +31,10 @@ on one of the diagonals of its input space.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-
-configure_logger()
-
 
 # %%
 # Create the discipline

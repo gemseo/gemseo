@@ -33,13 +33,10 @@ based on the bounds of the design parameters.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.uncertainty import create_statistics
-
-configure_logger()
 
 # %%
 # Create the dataset

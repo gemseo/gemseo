@@ -26,12 +26,8 @@ Andrews curves
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
-
-configure_logger()
-
 
 # %%
 # Load a dataset

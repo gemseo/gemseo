@@ -28,7 +28,6 @@ we seek to create a probability distribution based on the OpenTURNS library.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
@@ -37,8 +36,6 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-
-configure_logger()
 
 # %%
 # First of all,

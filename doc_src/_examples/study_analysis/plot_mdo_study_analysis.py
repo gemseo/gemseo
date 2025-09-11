@@ -24,11 +24,7 @@ Generate N2 and XDSM diagrams from an Excel description of the MDO problem
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
-
-configure_logger()
-
 
 # %%
 # Describe your MDO problem in an Excel file

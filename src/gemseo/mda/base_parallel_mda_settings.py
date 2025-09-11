@@ -20,6 +20,7 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 
 from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
+from gemseo.utils.constants import _ENABLE_PARALLEL_EXECUTION
 from gemseo.utils.constants import N_CPUS
 
 
@@ -35,7 +36,7 @@ class BaseParallelMDASettings(BaseMDASolverSettings):
     )
 
     n_processes: NonNegativeInt = Field(
-        default=N_CPUS,
+        default=N_CPUS if _ENABLE_PARALLEL_EXECUTION else 1,
         description="""The number of threads/processes.
 
 Threads if ``use_threading``, processes otherwise.

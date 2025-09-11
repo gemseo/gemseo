@@ -42,11 +42,8 @@ whether a given solution has a feasible design (MDA convergence) or not.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_mda
-
-configure_logger()
 
 # %%
 # Create and execute the MDA

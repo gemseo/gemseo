@@ -28,15 +28,12 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import exp
 
-from gemseo import configure_logger
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import StrKeyMapping
-
-configure_logger()
 
 
 # %%

@@ -28,14 +28,10 @@ to create classification models from model class names.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_classification_model
 from gemseo.mlearning import get_classification_models
 from gemseo.mlearning import get_classification_options
-
-configure_logger()
-
 
 # %%
 # Available models

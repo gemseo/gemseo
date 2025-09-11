@@ -27,18 +27,9 @@ on the Binh and Korn multi-objective problem.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.post.factory import PostFactory
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
-
-# %%
-# Import
-# ------
-# The first step is to import a high-level function for logging.
-
-configure_logger()
-
 
 # %%
 # Import the optimization problem

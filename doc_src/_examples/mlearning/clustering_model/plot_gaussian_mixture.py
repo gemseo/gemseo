@@ -33,14 +33,10 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning import create_clustering_model
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-
-configure_logger()
-
 
 # %%
 # Create dataset

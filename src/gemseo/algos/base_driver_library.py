@@ -67,8 +67,9 @@ from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.typing import StrKeyMapping
+from gemseo.utils.constants import _ENABLE_PROGRESS_BAR
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.logging_tools import OneLineLogging
+from gemseo.utils.logging import OneLineLogging
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import MultiLineString
 
@@ -112,7 +113,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
     """Whether the library support sparse Jacobians."""
 
-    enable_progress_bar: bool = True
+    enable_progress_bar: bool = _ENABLE_PROGRESS_BAR
     """Whether to enable the progress bar in the evaluation log."""
 
     _problem: EvaluationProblem | None

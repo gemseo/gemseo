@@ -32,6 +32,9 @@ from gemseo.core.discipline.io import IO
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.factory import GrammarType as _GrammarType
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
+from gemseo.utils.constants import _VALIDATE_INPUT_DATA
+from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -46,6 +49,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -113,10 +117,10 @@ class BaseDiscipline(BaseMonitoredProcess):
     auto_detect_grammar_files: ClassVar[bool] = False
     """Whether to find the grammar files automatically."""
 
-    validate_input_data: ClassVar[bool] = True
+    validate_input_data: ClassVar[bool] = _VALIDATE_INPUT_DATA
     """Whether to validate the input data."""
 
-    validate_output_data: ClassVar[bool] = True
+    validate_output_data: ClassVar[bool] = _VALIDATE_OUTPUT_DATA
     """Whether to validate the output data."""
 
     virtual_execution: ClassVar[bool] = False
@@ -129,7 +133,9 @@ class BaseDiscipline(BaseMonitoredProcess):
     CacheType: ClassVar[type[CacheType]] = CacheType
     """The type of cache."""
 
-    default_cache_type: ClassVar[CacheType] = CacheType.SIMPLE
+    default_cache_type: ClassVar[CacheType] = (
+        CacheType.SIMPLE if _ENABLE_DISCIPLINE_CACHE else CacheType.NONE
+    )
     """The default type of cache."""
 
     cache: BaseCache | None

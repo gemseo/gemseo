@@ -36,11 +36,7 @@ from numpy import ones
 from numpy import sin
 from scipy import optimize
 
-from gemseo import configure_logger
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-
-configure_logger()
-
 
 # %%
 # Define the objective function

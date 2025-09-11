@@ -47,6 +47,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import MultiLineString
@@ -77,7 +78,7 @@ class EvaluationProblem(BaseProblem):
     __observables: Observables
     """The observables."""
 
-    check_bounds: ClassVar[bool] = True
+    check_bounds: ClassVar[bool] = _CHECK_DESVARS_BOUNDS
     """Whether to check if a point is in the design space before calling functions."""
 
     database: Database

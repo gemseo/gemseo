@@ -39,14 +39,10 @@ from logging import WARNING
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
-
-configure_logger()
-
 
 # %%
 # Definition of the disciplines

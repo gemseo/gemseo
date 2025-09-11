@@ -24,13 +24,9 @@ Execute a scenario using a DOE
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-
-configure_logger()
-
 
 # %%
 # Instantiate the discipline

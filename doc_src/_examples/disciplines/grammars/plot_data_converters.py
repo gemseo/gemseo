@@ -31,7 +31,6 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import ones
 
-from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo import set_data_converters
 from gemseo.algos.design_space import DesignSpace
@@ -39,8 +38,6 @@ from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
-
-configure_logger()
 
 
 # %%

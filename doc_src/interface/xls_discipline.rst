@@ -20,16 +20,14 @@ a practical application using a simple discipline in a :class:`.DOEScenario`.
 
 Imports
 -------
-We start by importing all the necessary modules and configuring the logger.
+We start by importing all the necessary dependencies.
 
 .. code-block:: python
 
    from numpy import array, ones
 
-   from gemseo import create_design_space, configure_logger, create_scenario
+   from gemseo import create_design_space, create_scenario
    from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
-
-   configure_logger()
 
 Create an XLSDiscipline
 -----------------------

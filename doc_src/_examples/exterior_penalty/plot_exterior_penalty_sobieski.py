@@ -54,7 +54,6 @@ Example for exterior penalty applied to the Sobieski test case.
 # All the imports needed for the tutorials are performed here.
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
@@ -62,8 +61,6 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.formulations import MDF_Settings
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.discipline import get_all_outputs
-
-configure_logger()
 
 # %%
 # Step 1: Creation of :class:`.Discipline`

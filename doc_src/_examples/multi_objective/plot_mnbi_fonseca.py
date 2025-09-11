@@ -40,14 +40,10 @@ We also show how the Pareto front can be refined.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
 from gemseo.settings.opt import MNBI_Settings
-
-configure_logger()
-
 
 # %%
 # Solve the Fonseca-Fleming optimization problem

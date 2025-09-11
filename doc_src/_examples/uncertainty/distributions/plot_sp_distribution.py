@@ -28,7 +28,6 @@ we seek to create a probability distribution based on the SciPy library.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty.distributions.scipy.distribution_settings import (
@@ -37,8 +36,6 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
-
-configure_logger()
 
 # %%
 # First of all,

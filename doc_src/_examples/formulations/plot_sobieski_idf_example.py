@@ -24,14 +24,11 @@ IDF-based MDO on the Sobieski SSBJ test case
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.opt import SLSQP_Settings
-
-configure_logger()
 
 # %%
 # Instantiate the  disciplines

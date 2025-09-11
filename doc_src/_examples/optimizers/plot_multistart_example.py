@@ -29,7 +29,6 @@ and run a sub-optimization algorithm from each starting point.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -37,9 +36,6 @@ from gemseo import execute_post
 from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
     MultiStart_Settings,
 )
-
-configure_logger()
-
 
 # %%
 # First,

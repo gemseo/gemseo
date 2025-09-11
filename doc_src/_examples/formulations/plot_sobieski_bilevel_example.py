@@ -27,7 +27,6 @@ from __future__ import annotations
 from copy import deepcopy
 from logging import WARNING
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
@@ -35,8 +34,6 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.opt import SLSQP_Settings
-
-configure_logger()
 
 # %%
 # Instantiate the  disciplines

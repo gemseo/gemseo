@@ -24,11 +24,8 @@ Gauss-Seidel MDA
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_mda
-
-configure_logger()
 
 
 # %%
