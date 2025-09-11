@@ -24,6 +24,7 @@ from typing import ClassVar
 from strenum import StrEnum
 
 from gemseo.core.serializable import Serializable
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATUS
 
 if TYPE_CHECKING:
     from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
@@ -60,7 +61,7 @@ class ExecutionStatus(Serializable):
         FAILED = "FAILED"
         DONE = "DONE"
 
-    is_enabled: ClassVar[bool] = False
+    is_enabled: ClassVar[bool] = _ENABLE_DISCIPLINE_STATUS
     """Whether to handle statuses when calling :meth:`.handle`."""
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"__observers"}

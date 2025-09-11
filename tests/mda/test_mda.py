@@ -317,7 +317,7 @@ def test_log_convergence(base_mda_solver, caplog) -> None:
 
 def test_not_numeric_couplings(caplog) -> None:
     """Test that a message is logged when an MDA includes non-numeric couplings."""
-    caplog.set_level("DEBUG")
+    caplog.set_level("DEBUG", logger="gemseo")
     sellar1 = Sellar1()
     # Tweak the output grammar and set y_1 as an array of string
     prop = sellar1.io.output_grammar.schema.get("properties").get("y_1")

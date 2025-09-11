@@ -29,12 +29,8 @@ related to design of experiments.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import get_algorithm_options_schema
 from gemseo import get_available_doe_algorithms
-
-configure_logger()
-
 
 # %%
 # Get available DOE algorithms

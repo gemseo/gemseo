@@ -26,15 +26,11 @@ Create a DOE Scenario
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_doe_algorithms
 from gemseo import get_available_post_processings
-
-configure_logger()
-
 
 # %%
 #

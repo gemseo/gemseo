@@ -49,7 +49,7 @@ Basic monitoring using logs
 ---------------------------
 
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using |g|'s logger.
-Use :func:`.configure_logger` to configure the logger to log in a file.
+Use :attr:`gemseo.configuration.logging` to configure |g| logging.
 
 The method :meth:`~.BaseScenario.xdsmize` of the :class:`.BaseScenario` can be used to this aim (``monitor=True``).
 If the option ``save_html`` is set to ``True``, a self-contained HTML file will be generated.

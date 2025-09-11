@@ -36,7 +36,6 @@ from numpy import sin
 from numpy.testing import assert_equal
 
 from gemseo import DatasetClassName
-from gemseo import GEMSEO_Settings
 from gemseo import compute_doe
 from gemseo import configure
 from gemseo import configure_logger
@@ -109,8 +108,7 @@ from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.constants import N_CPUS
-from gemseo.utils.logging_tools import LOGGING_SETTINGS
-from gemseo.utils.logging_tools import MultiLineStreamHandler
+from gemseo.utils.logging import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.xdsm.xdsm import XDSM
 from gemseo.utils.xdsm.xdsmizer import XDSMizer
@@ -888,55 +886,9 @@ def test_configure(
     BaseParallelMDASettings.default_n_processes = N_CPUS
 
 
-@pytest.mark.parametrize("enable_discipline_statistics", [False, True])
-@pytest.mark.parametrize("enable_function_statistics", [False, True])
-@pytest.mark.parametrize("enable_progress_bar", [False, True])
-@pytest.mark.parametrize("enable_discipline_cache", [False, True])
-@pytest.mark.parametrize("validate_input_data", [False, True])
-@pytest.mark.parametrize("validate_output_data", [False, True])
-@pytest.mark.parametrize("enable_parallel_execution", [False, True])
-def test_configure_from_settings(
-    enable_discipline_statistics,
-    enable_function_statistics,
-    enable_progress_bar,
-    enable_discipline_cache,
-    validate_input_data,
-    validate_output_data,
-    enable_parallel_execution,
-) -> None:
-    """Check that the configuration of GEMSEO works correctly from settings."""
-    settings = GEMSEO_Settings(
-        enable_discipline_statistics=enable_discipline_statistics,
-        enable_function_statistics=enable_function_statistics,
-        enable_progress_bar=enable_progress_bar,
-        enable_discipline_cache=enable_discipline_cache,
-        validate_input_data=validate_input_data,
-        validate_output_data=validate_output_data,
-        enable_parallel_execution=enable_parallel_execution,
-    )
-    configure(settings=settings)
-    assert ProblemFunction.enable_statistics == enable_function_statistics
-    assert ExecutionStatistics.is_enabled == enable_discipline_statistics
-    assert Discipline.validate_input_data == validate_input_data
-    assert Discipline.validate_output_data == validate_output_data
-    assert Discipline.default_cache_type == (
-        Discipline.CacheType.SIMPLE
-        if enable_discipline_cache
-        else Discipline.CacheType.NONE
-    )
-    assert BaseDriverLibrary.enable_progress_bar == enable_progress_bar
-    assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
-    assert BaseParallelMDASettings().n_processes == (
-        N_CPUS if enable_parallel_execution else 1
-    )
-    configure()
-    BaseParallelMDASettings.default_n_processes = N_CPUS
-
-
-@pytest.mark.parametrize("kwargs", [{}, {"settings": GEMSEO_Settings()}])
-def test_configure_default(kwargs) -> None:
+def test_configure_default() -> None:
     """Check the default use of configure."""
-    configure(**kwargs)
+    configure()
     assert ProblemFunction.enable_statistics is False
     assert ExecutionStatistics.is_enabled is False
     assert ExecutionStatus.is_enabled is False
@@ -1003,8 +955,6 @@ def test_configure_logger_format(caplog) -> None:
         logger_name="bar", date_format=date_format, message_format=message_format
     )
     logger.info("baz")
-    assert LOGGING_SETTINGS.date_format == date_format
-    assert LOGGING_SETTINGS.message_format == message_format
     assert re.match(r"INFO     bar:test_gemseo\.py:\d+\d+\d+ baz\n", caplog.text)
 
 

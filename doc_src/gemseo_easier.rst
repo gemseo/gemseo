@@ -18,6 +18,7 @@ Make |g| easy to use
 .. toctree::
    :maxdepth: 2
 
+   configuration
    discipline_interface_easier
    mdo_scenario_easier
    settings_easier

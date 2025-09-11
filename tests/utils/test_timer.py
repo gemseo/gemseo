@@ -76,7 +76,7 @@ def test_no_log(caplog) -> None:
 @pytest.mark.parametrize("level", [logging.INFO, logging.DEBUG])
 def test_log(caplog, level) -> None:
     """Check the logs."""
-    caplog.set_level(level)
+    caplog.set_level(level, logger="gemseo")
     with Timer(level):
         sleep(0.1)
 

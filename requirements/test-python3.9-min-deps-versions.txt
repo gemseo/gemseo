@@ -113,8 +113,11 @@ pydantic==2.6.0
     # via
     #   gemseo (pyproject.toml)
     #   pandera
+    #   pydantic-settings
 pydantic-core==2.16.1
     # via pydantic
+pydantic-settings==2.0.0
+    # via gemseo (pyproject.toml)
 pydoe3==1.0.1
     # via gemseo (pyproject.toml)
 pyparsing==3.2.3
@@ -134,6 +137,8 @@ python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
+python-dotenv==1.1.1
+    # via pydantic-settings
 pytz==2025.2
     # via pandas
 pyxdsm==2.2.1

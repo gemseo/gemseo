@@ -28,15 +28,11 @@ we will see the basics of :class:`.ParameterSpace`.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from gemseo.settings.probability_distributions import SPNormalDistribution_Settings
-
-configure_logger()
-
 
 # %%
 # Create a parameter space

@@ -33,12 +33,8 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from numpy import nonzero
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
-
-configure_logger()
-
 
 # %%
 # Load dataset (Burgers)

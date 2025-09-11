@@ -37,11 +37,8 @@ The :class:`.OptimizationProblem` class is composed of at least a
 
 .. code:: python
 
-    from gemseo import configure_logger
     from gemseo import create_design_space
     from numpy import ones
-
-    configure_logger()
 
     design_space = create_design_space()
     design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2.,

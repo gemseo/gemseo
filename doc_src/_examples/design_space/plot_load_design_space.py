@@ -28,12 +28,8 @@ from the disk.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import read_design_space
 from gemseo import write_design_space
-
-configure_logger()
-
 
 # %%
 # Read a design space from a file

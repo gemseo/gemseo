@@ -39,12 +39,8 @@ from numpy import nonzero
 from numpy import sqrt
 from numpy import zeros
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
-
-configure_logger()
-
 
 # %%
 # Dataset (Rosenbrock)

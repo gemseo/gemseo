@@ -27,7 +27,6 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
@@ -39,9 +38,6 @@ from gemseo import get_discipline_outputs_schema
 from gemseo.core.discipline import Discipline
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.discipline import get_all_outputs
-
-configure_logger()
-
 
 # %%
 # In this example, we will discover the different functions of the API

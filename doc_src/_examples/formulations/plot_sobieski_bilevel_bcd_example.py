@@ -35,7 +35,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from gemseo import configure_logger
 from gemseo import execute_post
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -48,8 +47,6 @@ from gemseo.settings.formulations import MDF_Settings
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.opt import SLSQP_Settings
-
-configure_logger()
 
 # %%
 # Instantiate the  disciplines

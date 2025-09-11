@@ -193,7 +193,7 @@ area_discipline = AreaDiscipline()
 # In the case of this discipline,
 # the expected forms of the input and output data are
 # ``{"length": array([length_1, ..., length_n]), "width": array([width_1, ..., width_n])}``
-# and ``{"area": array([area_1, ..., area_2])}`` respectively.
+# and ``{"area": array([area_1, ..., area_n])}`` respectively.
 #
 # Note that in the case of a ``d``-length vectorial variable ``"x"``,
 # the expected form would be

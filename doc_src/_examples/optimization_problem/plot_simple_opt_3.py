@@ -33,7 +33,6 @@ from __future__ import annotations
 
 from numpy import sum as np_sum
 
-from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import get_available_doe_algorithms
@@ -41,9 +40,6 @@ from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-
-LOGGER = configure_logger()
-
 
 # %%
 # Define the objective function

@@ -255,7 +255,7 @@ def test_transformation(doe_database, var) -> None:
 
 def test_pre_run_debug(lhs, caplog) -> None:
     """Check a DEBUG message logged just after sampling the input unit hypercube."""
-    caplog.set_level("DEBUG")
+    caplog.set_level("DEBUG", logger="gemseo")
     problem = Power2()
     lhs.execute(problem, n_samples=2)
     message = (

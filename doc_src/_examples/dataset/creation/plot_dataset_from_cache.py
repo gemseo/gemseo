@@ -30,10 +30,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo.caches.memory_full_cache import MemoryFullCache
-
-configure_logger()
 
 # %%
 # Let us consider an :class:`.MemoryFullCache` storing two parameters:

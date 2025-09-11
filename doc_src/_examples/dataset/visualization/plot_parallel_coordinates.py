@@ -26,12 +26,8 @@ Parallel coordinates
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
-
-configure_logger()
-
 
 # %%
 # Load a dataset

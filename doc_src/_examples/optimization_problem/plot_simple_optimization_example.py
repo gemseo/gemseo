@@ -35,7 +35,6 @@ from __future__ import annotations
 import numpy as np
 from scipy import optimize
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -67,9 +66,6 @@ from gemseo import get_available_opt_algorithms
 # Firstly, by means of the :func:`.create_discipline` high-level function,
 # we create a :class:`.Discipline` of :class:`.AutoPyDiscipline` type
 # from a Python function.
-# We also configure the |g| logger with the :func:`.configure_logger` function.
-
-configure_logger()
 
 
 def f(x1=0.0, x2=0.0):

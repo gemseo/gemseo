@@ -27,14 +27,12 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 
 # %%
 # Import
 # ------
 
-configure_logger()
 
 # %%
 # Introduction

@@ -47,14 +47,10 @@ It is an interesting one because its Pareto front is discontinuous.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
 from gemseo.settings.opt import MNBI_Settings
-
-configure_logger()
-
 
 # %%
 # Solve the Poloni optimization problem

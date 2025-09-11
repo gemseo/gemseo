@@ -24,6 +24,7 @@ from typing import ClassVar
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.serializable import Serializable
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 from gemseo.utils.timer import Timer
 
@@ -106,7 +107,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
 
     """
 
-    is_enabled: ClassVar[bool] = False
+    is_enabled: ClassVar[bool] = _ENABLE_DISCIPLINE_STATISTICS
     """Whether to record all the statistics."""
 
     is_time_stamps_enabled: ClassVar[bool]

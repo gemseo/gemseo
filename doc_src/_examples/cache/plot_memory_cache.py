@@ -28,10 +28,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo.caches.memory_full_cache import MemoryFullCache
-
-configure_logger()
 
 # %%
 # Create

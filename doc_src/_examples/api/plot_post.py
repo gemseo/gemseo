@@ -29,15 +29,11 @@ related to graphical post-processing of scenarios.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo import get_available_post_processings
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
-
-configure_logger()
-
 
 # %%
 # Get available post-processors

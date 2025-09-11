@@ -34,6 +34,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_function import OutputType
 from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
 from gemseo.core.serializable import Serializable
+from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 
 if TYPE_CHECKING:
@@ -49,7 +50,7 @@ if TYPE_CHECKING:
 class ProblemFunction(MDOFunction, Serializable):
     """A function to be attached to a problem."""
 
-    enable_statistics: ClassVar[bool] = False
+    enable_statistics: ClassVar[bool] = _ENABLE_FUNCTION_STATISTICS
     """Whether to count the number of function evaluations."""
 
     stop_if_nan: bool

@@ -43,7 +43,6 @@ from math import exp
 from numpy import array
 from numpy import ones
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -56,14 +55,6 @@ from gemseo.settings.mda import MDAChain_Settings
 # |g| at a low level. If you are not comfortable using NumPy, please have a
 # look at the `Numpy Quickstart tutorial
 # <https://numpy.org/doc/stable/user/quickstart.html>`_.
-
-# %%
-# Here, we configure the |g| logger in order to get information of the process as
-# it is executed.
-
-configure_logger()
-
-# %%
 #
 # A simple MDO test case: the Sellar Problem
 # ------------------------------------------

@@ -14,13 +14,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.utils.configuration import Fast_GEMSEO_Settings
-from gemseo.utils.configuration import GEMSEO_Settings
+from logging import INFO
+
+from gemseo.utils.global_configuration import GlobalConfiguration
 
 
 def test_default():
-    """Check the GEMSEO_Settings."""
-    settings = GEMSEO_Settings()
+    """Check the GlobalConfiguration."""
+    settings = GlobalConfiguration()
     assert settings.model_fields.keys() == {
         "check_desvars_bounds",
         "enable_discipline_cache",
@@ -29,6 +30,8 @@ def test_default():
         "enable_function_statistics",
         "enable_parallel_execution",
         "enable_progress_bar",
+        "logging",
+        "fast",
         "validate_input_data",
         "validate_output_data",
     }
@@ -39,24 +42,21 @@ def test_default():
     assert not settings.enable_function_statistics
     assert settings.enable_parallel_execution
     assert settings.enable_progress_bar
+    assert not settings.fast
+    logging = settings.logging
+    assert logging.date_format == "%H:%M:%S"
+    assert logging.enable
+    assert logging.file_path == ""
+    assert logging.file_mode == "a"
+    assert logging.level == INFO
+    assert logging.message_format == "%(levelname)8s - %(asctime)s: %(message)s"
     assert settings.validate_input_data
     assert settings.validate_output_data
 
 
 def test_fast():
-    """Check the Fast_GEMSEO_Settings."""
-    settings = Fast_GEMSEO_Settings()
-    assert settings.model_fields.keys() == {
-        "check_desvars_bounds",
-        "enable_discipline_cache",
-        "enable_discipline_statistics",
-        "enable_discipline_status",
-        "enable_function_statistics",
-        "enable_parallel_execution",
-        "enable_progress_bar",
-        "validate_input_data",
-        "validate_output_data",
-    }
+    """Check the GlobalConfiguration."""
+    settings = GlobalConfiguration(fast=True)
     assert not settings.check_desvars_bounds
     assert not settings.enable_discipline_cache
     assert not settings.enable_discipline_statistics
@@ -64,5 +64,34 @@ def test_fast():
     assert not settings.enable_function_statistics
     assert not settings.enable_parallel_execution
     assert settings.enable_progress_bar
+    assert settings.fast
+    logging = settings.logging
+    assert logging.date_format == "%H:%M:%S"
+    assert settings.logging.enable
+    assert logging.file_path == ""
+    assert logging.file_mode == "a"
+    assert logging.level == INFO
+    assert logging.message_format == "%(levelname)8s - %(asctime)s: %(message)s"
     assert not settings.validate_input_data
     assert not settings.validate_output_data
+
+
+def test_environment_variable(monkeypatch):
+    """Check the use of environment variables."""
+    assert GlobalConfiguration().enable_progress_bar
+    monkeypatch.setenv("GEMSEO_ENABLE_PROGRESS_BAR", "False")
+    monkeypatch.setenv("GEMSEO_LOGGING_ENABLE", "False")
+    configuration = GlobalConfiguration()
+    assert not configuration.enable_progress_bar
+    assert not configuration.logging.enable
+
+
+def test_environment_variable_env_file(monkeypatch, tmp_wd):
+    """Check the use of environment variables from a .env file."""
+    assert GlobalConfiguration().enable_progress_bar
+    with (tmp_wd / ".env").open("w") as f:
+        f.write("GEMSEO_ENABLE_PROGRESS_BAR=False\n")
+        f.write("GEMSEO_LOGGING_ENABLE=True")
+    configuration = GlobalConfiguration()
+    assert not configuration.enable_progress_bar
+    assert configuration.logging.enable

@@ -29,10 +29,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo.caches.simple_cache import SimpleCache
-
-configure_logger()
 
 # %%
 # Import

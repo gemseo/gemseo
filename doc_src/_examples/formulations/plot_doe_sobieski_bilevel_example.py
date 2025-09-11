@@ -27,13 +27,10 @@ from __future__ import annotations
 from copy import deepcopy
 from os import name as os_name
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-
-configure_logger()
 
 # %%
 # Instantiate the  disciplines

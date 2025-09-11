@@ -38,6 +38,7 @@ dependencies = [
   "prettytable >=2.3.0,<=3.16.0",
   "pyxdsm >=2.2.1,<=2.3.1",
   "pydantic >=2.6,<=2.11.7",
+  "pydantic-settings >=2.0.0,<=2.9.1",
   "requests >2,<3",
   "scipy >=1.11,<=1.15.2",
   "strenum >=0.4.9,<=0.4.15",
