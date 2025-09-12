@@ -24,7 +24,6 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Iterable
-from collections.abc import Iterator
 from collections.abc import Mapping
 from contextlib import contextmanager
 from copy import deepcopy
@@ -48,6 +47,8 @@ from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from typing_extensions import Self
 
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes

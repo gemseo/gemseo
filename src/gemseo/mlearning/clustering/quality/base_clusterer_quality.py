@@ -25,7 +25,6 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -33,6 +32,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 
 
 class BaseClustererQuality(BaseMLAlgoQuality):

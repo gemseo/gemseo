@@ -47,13 +47,11 @@ from typing import Any
 
 from numpy import argmin
 from numpy import array
-from numpy import ndarray
 
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import Discipline
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureOptionsType
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -61,11 +59,14 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from numpy import ndarray
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
     from gemseo.mlearning.core.algos.ml_algo import MLAlgoSettingsType
     from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureOptionsType
     from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping
 

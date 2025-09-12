@@ -39,7 +39,6 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.initialization_chain import MDOInitializationChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.factory import MDAFactory
 from gemseo.mda.mda_chain_settings import MDAChain_Settings
@@ -52,6 +51,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.mda.base_mda import BaseProcessFlow
     from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.mda.base_mda_solver import BaseMDASolver
     from gemseo.typing import RealArray

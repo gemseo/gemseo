@@ -40,7 +40,6 @@ from numpy.linalg import norm
 from scipy.sparse import bmat
 from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
-from scipy.sparse import dok_matrix
 from scipy.sparse import eye
 from scipy.sparse import vstack
 from scipy.sparse.linalg import LinearOperator
@@ -62,6 +61,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
 
+    from scipy.sparse import dok_matrix
     from typing_extensions import TypeAlias
 
     from gemseo.core.coupling_structure import CouplingStructure

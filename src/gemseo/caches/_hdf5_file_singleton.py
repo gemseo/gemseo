@@ -29,7 +29,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 import h5py
-from h5py import File
 from numpy import append
 from numpy import bytes_
 from numpy import str_
@@ -40,7 +39,6 @@ from strenum import StrEnum
 from gemseo.caches.base_cache import BaseCache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
-from gemseo.utils.compatibility.scipy import SparseArrayType
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
@@ -49,8 +47,11 @@ if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
     from multiprocessing.synchronize import RLock as RLockType
 
+    from h5py import File
+
     from gemseo.typing import IntegerArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
 class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):

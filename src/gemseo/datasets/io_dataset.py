@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Final
 
-from gemseo.datasets.dataset import ComponentType
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.dataset import DataType
-from gemseo.datasets.dataset import StrColumnType
+
+if TYPE_CHECKING:
+    from gemseo.datasets.dataset import ComponentType
+    from gemseo.datasets.dataset import DataType
+    from gemseo.datasets.dataset import StrColumnType
 
 
 class IODataset(Dataset):

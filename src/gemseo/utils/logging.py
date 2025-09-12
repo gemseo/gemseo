@@ -26,7 +26,6 @@ from dataclasses import dataclass
 from logging import WARNING
 from logging import FileHandler
 from logging import Formatter
-from logging import Logger
 from logging import LogRecord
 from logging import StreamHandler
 from logging import getLogger
@@ -34,7 +33,6 @@ from logging import root
 from pathlib import Path
 from sys import stderr
 from sys import stdout
-from types import TracebackType
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -49,6 +47,9 @@ from gemseo.utils.constants import _LOGGING_LEVEL
 from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 
 if TYPE_CHECKING:
+    from logging import Logger
+    from types import TracebackType
+
     from typing_extensions import Self
 
 # TODO: API: remove this variable.

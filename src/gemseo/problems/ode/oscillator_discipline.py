@@ -57,7 +57,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import array
-from numpy import ndarray
+from numpy import ndarray  # noqa: TC002
 
 from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline

@@ -29,8 +29,6 @@ This abstract class has to be overloaded by concrete ones implementing at least 
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from collections.abc import Mapping
 from collections.abc import Sequence
 from inspect import getfullargspec
 from typing import TYPE_CHECKING
@@ -47,6 +45,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
     from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset

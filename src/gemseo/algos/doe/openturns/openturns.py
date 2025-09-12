@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -77,6 +76,8 @@ from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.doe.base_doe import BaseDOE
     from gemseo.typing import NumberArray

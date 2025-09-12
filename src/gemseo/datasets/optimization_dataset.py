@@ -21,14 +21,15 @@ from typing import Final
 
 from numpy import arange
 
-from gemseo.datasets.dataset import ComponentType
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.dataset import DataType
-from gemseo.datasets.dataset import StrColumnType
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    from gemseo.datasets.dataset import ComponentType
+    from gemseo.datasets.dataset import DataType
+    from gemseo.datasets.dataset import StrColumnType
 
 
 class OptimizationDataset(Dataset):

@@ -50,12 +50,13 @@ from typing import Any
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import full
-from numpy import ndarray
 
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset
 

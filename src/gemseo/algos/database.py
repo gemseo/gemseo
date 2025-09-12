@@ -26,8 +26,6 @@ from __future__ import annotations
 import logging
 import sys
 from ast import literal_eval
-from collections.abc import Iterable
-from collections.abc import Iterator
 from collections.abc import Mapping
 from contextlib import contextmanager
 from contextlib import nullcontext
@@ -76,6 +74,8 @@ from gemseo.utils.string_tools import pretty_repr
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
     from pathlib import Path
 
     from gemseo.datasets.optimization_metadata import OptimizationMetadata

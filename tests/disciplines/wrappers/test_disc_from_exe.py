@@ -23,6 +23,7 @@ from copy import deepcopy
 from os.path import dirname
 from os.path import join
 from subprocess import CalledProcessError
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
@@ -30,7 +31,6 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.wrappers.disc_from_exe import DiscFromExe
 from gemseo.disciplines.wrappers.disc_from_exe import Parser
 from gemseo.disciplines.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.disciplines.wrappers.disc_from_exe import parse_outfile
@@ -39,6 +39,9 @@ from gemseo.utils.directory_creator import DirectoryNamingMethod
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
+
+if TYPE_CHECKING:
+    from gemseo.disciplines.wrappers.disc_from_exe import DiscFromExe
 
 DIRNAME = dirname(__file__)
 

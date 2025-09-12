@@ -25,7 +25,6 @@ import logging
 from typing import TYPE_CHECKING
 from typing import Final
 
-from pandas import DataFrame
 from pandas import read_excel
 
 from gemseo import get_available_formulations
@@ -35,6 +34,8 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from pandas import DataFrame
 
     from gemseo.core.discipline import Discipline
 

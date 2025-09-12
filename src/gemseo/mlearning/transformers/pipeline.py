@@ -28,13 +28,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import eye
-from numpy import ndarray
 
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
-from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from numpy import ndarray
+
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 
 class Pipeline(BaseTransformer):

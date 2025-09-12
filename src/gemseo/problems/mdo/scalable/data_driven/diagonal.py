@@ -61,7 +61,6 @@ from numpy import sqrt
 from numpy import vstack
 from numpy import where
 from numpy import zeros
-from numpy.random import Generator
 from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
@@ -77,6 +76,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy._typing import NDArray
+    from numpy.random import Generator
 
     from gemseo.datasets.io_dataset import IODataset
 

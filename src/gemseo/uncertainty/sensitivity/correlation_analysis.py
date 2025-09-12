@@ -39,10 +39,6 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import OutputsType
 from gemseo.utils.compatibility.openturns import PEARSON_METHOD_NAME
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import filter_names
@@ -54,6 +50,10 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import OutputsType
     from gemseo.utils.string_tools import VariableType
 
 from openturns import CorrelationAnalysis as OTCorrelationAnalysis

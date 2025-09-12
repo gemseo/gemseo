@@ -26,12 +26,12 @@ from typing import TYPE_CHECKING
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.utils.discipline import DummyBaseDiscipline
-from gemseo.utils.discipline import DummyDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.derivatives.chain_rule import DisciplineIOMapping
+    from gemseo.utils.discipline import DummyDiscipline
 
 
 def _replace_strongly_coupled(

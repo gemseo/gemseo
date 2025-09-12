@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from networkx import DiGraph
 from networkx import edge_bfs
 from networkx import reverse_view
 
@@ -31,6 +30,8 @@ from gemseo.utils.discipline import DummyBaseDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from networkx import DiGraph
 
     from gemseo.core.discipline import Discipline
 

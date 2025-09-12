@@ -25,6 +25,7 @@ from operator import add
 from operator import itemgetter
 from operator import mul
 from operator import truediv
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -33,7 +34,6 @@ from numpy import array
 from numpy import cos
 from numpy import eye
 from numpy import matmul
-from numpy import ndarray
 from numpy import ones
 from numpy import sin
 from numpy import zeros
@@ -55,6 +55,9 @@ from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture(scope="module")

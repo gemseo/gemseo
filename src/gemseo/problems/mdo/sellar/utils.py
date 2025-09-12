@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import atleast_2d
 from numpy import float64
-from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 
@@ -37,6 +36,8 @@ from gemseo.problems.mdo.sellar.variables import Y_2
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from numpy import ndarray
 
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.typing import RealArray

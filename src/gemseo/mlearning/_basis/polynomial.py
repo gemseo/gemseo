@@ -17,11 +17,15 @@
 
 from __future__ import annotations
 
-from openturns import LinearEnumerateFunction
+from typing import TYPE_CHECKING
+
 from openturns import OrthogonalProductPolynomialFactory
 from openturns import StandardDistributionPolynomialFactory
 
 from gemseo.mlearning._basis.base_ot_basis import BaseOTBasis
+
+if TYPE_CHECKING:
+    from openturns import LinearEnumerateFunction
 
 
 class Polynomial(BaseOTBasis):

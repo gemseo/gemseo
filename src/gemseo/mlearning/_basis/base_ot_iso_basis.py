@@ -17,13 +17,16 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from openturns import LinearEnumerateFunction
 from openturns import OrthogonalProductFunctionFactory
-from openturns import OrthogonalUniVariateFunctionFactory
 
 from gemseo.mlearning._basis.base_ot_basis import BaseOTBasis
+
+if TYPE_CHECKING:
+    from openturns import LinearEnumerateFunction
+    from openturns import OrthogonalUniVariateFunctionFactory
 
 
 class BaseOTIsoBasis(BaseOTBasis):

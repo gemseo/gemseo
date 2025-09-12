@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 from numpy import array_split
 from numpy import concatenate
 from numpy import empty
-from numpy import ndarray
 from numpy import setdiff1d
 from numpy import vstack
 from numpy.random import default_rng
@@ -32,6 +31,7 @@ from gemseo.mlearning.resampling.splits import Splits
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from numpy import ndarray
     from numpy.typing import NDArray
 
     from gemseo.mlearning import MLAlgo

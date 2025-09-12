@@ -43,7 +43,6 @@ import logging
 import re
 from copy import deepcopy
 from numbers import Complex
-from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -67,7 +66,6 @@ from numpy import float64
 from numpy import full
 from numpy import genfromtxt
 from numpy import inf
-from numpy import int64
 from numpy import isin
 from numpy import isinf
 from numpy import isnan
@@ -100,6 +98,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
+    from numbers import Number
+
+    from numpy import int64
 
     from gemseo.typing import BooleanArray
     from gemseo.typing import IntegerArray

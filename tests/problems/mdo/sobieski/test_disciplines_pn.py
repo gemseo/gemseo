@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
-from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
@@ -36,6 +35,8 @@ from gemseo.problems.mdo.sobieski.disciplines import (
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.core.discipline import Discipline
 
 FACTORS = [0.5, 1.0, 1.5]

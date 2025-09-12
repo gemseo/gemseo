@@ -27,12 +27,13 @@ import matplotlib.pyplot as plt
 
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.utils.file_path_manager import FilePathManager
-from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
+
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 DEFAULT_NAME = "gantt_chart"
 

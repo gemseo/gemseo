@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING
 
 from numpy import arange
 from plotly.graph_objects import Bar
-from plotly.graph_objects import Figure
 
 from gemseo.post.dataset.plots._plotly.plot import PlotlyPlot
 
@@ -28,6 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from numpy.typing import NDArray
+    from plotly.graph_objects import Figure
 
 
 class BarPlot(PlotlyPlot):

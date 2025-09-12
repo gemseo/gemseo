@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest import mock
 from unittest.mock import Mock
 
@@ -24,7 +25,6 @@ import pytest
 from numpy import array
 from numpy import diag
 from numpy import hstack
-from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
@@ -47,6 +47,9 @@ from gemseo.mlearning.regression.algos.ot_gpr import OTGaussianProcessRegressor
 from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModel
 from gemseo.mlearning.regression.algos.ot_gpr_settings import Trend
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 OTGaussianProcessRegressor.HMATRIX_ASSEMBLY_EPSILON = 1e-10
 OTGaussianProcessRegressor.HMATRIX_RECOMPRESSION_EPSILON = 1e-10

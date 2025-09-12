@@ -22,16 +22,20 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import diag
-from numpy import ndarray
 from numpy import tile
 
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 N_SAMPLES = 10
 N_FEATURES = 8

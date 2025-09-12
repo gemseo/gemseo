@@ -23,11 +23,12 @@ Solve an ODE: the harmonic oscillator
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 from numpy import array
 from numpy import cos
 from numpy import linspace
-from numpy import ndarray
 from numpy import pi
 from numpy import sin
 
@@ -35,6 +36,9 @@ from gemseo import create_discipline
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 # %%
 # This tutorial describes how to instantiate an ODEDiscipline to solve a

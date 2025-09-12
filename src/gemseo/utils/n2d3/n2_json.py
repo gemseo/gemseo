@@ -17,9 +17,6 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
-from collections.abc import Mapping
-from collections.abc import Sequence
 from collections.abc import Sized
 from typing import TYPE_CHECKING
 
@@ -28,6 +25,10 @@ from jinja2 import Template
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
 

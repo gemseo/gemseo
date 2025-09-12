@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from collections.abc import Iterator
 from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -26,6 +24,9 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+
     from gemseo.typing import RealArray
 
 

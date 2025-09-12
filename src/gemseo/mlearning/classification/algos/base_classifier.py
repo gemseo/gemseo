@@ -37,10 +37,10 @@ from gemseo.mlearning.core.algos.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
 )
 from gemseo.typing import NumberArray
-from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.typing import RealArray
 
 SavedObjectType = Union[
     MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, NumberArray], int

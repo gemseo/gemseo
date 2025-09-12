@@ -18,12 +18,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import allclose
 from numpy import arange
-from numpy import ndarray
 
 from gemseo.mlearning.transformers.sensor.jameson import JamesonSensor
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture

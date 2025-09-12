@@ -54,7 +54,6 @@ from numpy import cumsum
 from numpy import diag as np_diag
 from numpy import eye
 from numpy import inf
-from numpy import ndarray
 from numpy import newaxis
 from numpy import sqrt
 from numpy import tile
@@ -70,6 +69,8 @@ from gemseo.algos.database import Database
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+    from numpy import ndarray
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.optimization_dataset import OptimizationDataset

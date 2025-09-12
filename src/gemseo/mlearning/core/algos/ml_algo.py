@@ -99,7 +99,6 @@ from __future__ import annotations
 import inspect
 from abc import abstractmethod
 from collections.abc import Mapping
-from collections.abc import Sequence
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
@@ -111,8 +110,6 @@ from numpy import ndarray
 
 from gemseo.core.serializable import Serializable
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
-from gemseo.mlearning.core.algos.ml_algo_settings import SubTransformerType
 from gemseo.mlearning.core.algos.ml_algo_settings import TransformerType
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.mlearning.transformers.base_transformer import TransformerFactory
@@ -125,6 +122,10 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
+    from gemseo.mlearning.core.algos.ml_algo_settings import SubTransformerType
     from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
     from gemseo.mlearning.resampling.base_resampler import BaseResampler
 

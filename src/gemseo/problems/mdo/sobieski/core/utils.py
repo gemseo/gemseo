@@ -36,7 +36,6 @@ from numpy import clip
 from numpy import complex128
 from numpy import concatenate
 from numpy import float64
-from numpy import ndarray
 from strenum import StrEnum
 
 from gemseo.utils.string_tools import convert_strings_to_iterable
@@ -44,6 +43,8 @@ from gemseo.utils.string_tools import convert_strings_to_iterable
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from types import ModuleType
+
+    from numpy import ndarray
 
 
 DEG_TO_RAD = math.pi / 180.0

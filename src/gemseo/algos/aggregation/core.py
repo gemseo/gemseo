@@ -31,12 +31,13 @@ from numpy import full
 from numpy import heaviside
 from numpy import max as np_max
 from numpy import multiply
-from numpy import ndarray
 from numpy import sum as np_sum
 from numpy import zeros
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from numpy import ndarray
 
 
 def compute_lower_bound_ks_agg(

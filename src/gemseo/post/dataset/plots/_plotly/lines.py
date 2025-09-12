@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from plotly.graph_objects import Figure
 from plotly.graph_objects import Scatter
 
 from gemseo.post.dataset.plots._plotly.plot import PlotlyPlot
@@ -27,6 +26,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from numpy.typing import ArrayLike
+    from plotly.graph_objects import Figure
 
 
 class Lines(PlotlyPlot):

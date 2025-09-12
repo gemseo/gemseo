@@ -18,9 +18,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import arange
-from numpy import int64 as np_int
 
 if TYPE_CHECKING:
+    from numpy import int64 as np_int
     from numpy.typing import NDArray
 
 

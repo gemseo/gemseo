@@ -75,7 +75,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import finfo
-from numpy import ndarray
 from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
@@ -86,6 +85,8 @@ from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
 from gemseo.mlearning.clustering.algos.kmeans_settings import KMeans_Settings
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.typing import RealArray
 
 

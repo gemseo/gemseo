@@ -63,7 +63,6 @@ except ImportError:  # pragma: no cover
 from numpy import array
 from numpy import atleast_1d
 from numpy import atleast_2d
-from numpy import ndarray
 
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
@@ -80,6 +79,8 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)

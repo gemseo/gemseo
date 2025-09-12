@@ -29,9 +29,10 @@ from pydantic import PositiveInt
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
     BaseLinearModelFitter_Settings,
 )
+from gemseo.settings.base_settings import BaseSettings
 
 
-class _LassoSettingsMixin:
+class _LassoSettingsMixin(BaseSettings):
     """Mixin for defining the settings of the scikit-learn lasso algorithm."""
 
     copy_X: bool = Field(  # noqa: N815

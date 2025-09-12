@@ -19,13 +19,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
 from numpy import concatenate
 from numpy import full
 from numpy import hstack
-from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_allclose
 from pandas._testing import assert_frame_equal
@@ -49,6 +49,9 @@ from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.pickle import to_pickle
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture(params=[1, 2])

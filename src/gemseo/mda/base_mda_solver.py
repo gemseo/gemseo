@@ -29,7 +29,6 @@ from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
 from numpy import inf
-from numpy import ndarray
 from numpy import ones
 from numpy.linalg import norm
 
@@ -42,6 +41,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from numpy import ndarray
 
     from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
     from gemseo.core.discipline import Discipline

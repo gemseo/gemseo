@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 
 from numpy import hstack
 from numpy import isfinite
-from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 from scipy.sparse import vstack as sparse_vstack
@@ -34,6 +33,8 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from numpy import ndarray
 
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
 

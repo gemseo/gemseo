@@ -22,13 +22,13 @@ from typing import Any
 
 from numpy import vstack
 
-from gemseo.datasets.dataset import ComponentType
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.dataset import IndexType
-from gemseo.datasets.dataset import StrColumnType
 from gemseo.utils.metrics.base_composite_metric import BaseCompositeMetric
 
 if TYPE_CHECKING:
+    from gemseo.datasets.dataset import ComponentType
+    from gemseo.datasets.dataset import IndexType
+    from gemseo.datasets.dataset import StrColumnType
     from gemseo.utils.metrics.base_metric import BaseMetric
 
 

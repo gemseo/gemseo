@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
-import minisom
 import numpy as np
 from matplotlib import pyplot as plt
 from minisom import MiniSom
@@ -51,6 +50,7 @@ from gemseo.post.core.colormaps import PARULA
 from gemseo.post.som_settings import SOM_Settings
 
 if TYPE_CHECKING:
+    import minisom
     from matplotlib.axes import Axes
     from numpy.typing import ArrayLike
 

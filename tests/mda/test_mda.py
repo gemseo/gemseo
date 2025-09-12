@@ -30,7 +30,6 @@ from numpy import allclose
 from numpy import array
 from numpy import eye
 from numpy import inf
-from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.random import default_rng
@@ -66,6 +65,8 @@ from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.typing import StrKeyMapping
 
 DIRNAME = os.path.dirname(__file__)

@@ -94,7 +94,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy import ndarray
 from numpy import newaxis
 from numpy import stack
 from sklearn.neighbors import KNeighborsClassifier
@@ -103,6 +102,8 @@ from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
 from gemseo.mlearning.classification.algos.knn_settings import KNNClassifier_Settings
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.typing import RealArray
 
 

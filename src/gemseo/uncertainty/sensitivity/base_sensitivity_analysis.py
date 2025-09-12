@@ -23,9 +23,6 @@ from __future__ import annotations
 
 import pickle
 from abc import abstractmethod
-from collections.abc import Collection
-from collections.abc import Iterable
-from collections.abc import Mapping
 from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import asdict
@@ -63,6 +60,10 @@ from gemseo.utils.string_tools import get_variables_with_components
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from matplotlib.figure import Figure
 
     from gemseo.algos.base_driver_library import DriverSettingType

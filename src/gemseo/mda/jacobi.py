@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
@@ -35,6 +34,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
+    from gemseo.mda.base_mda import BaseProcessFlow
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):

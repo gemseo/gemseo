@@ -23,14 +23,17 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 
 from numpy import divide
 from numpy import maximum
 from numpy import minimum
 from numpy import multiply
-from numpy import ndarray
 
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class TrustUpdater(metaclass=ABCGoogleDocstringInheritanceMeta):

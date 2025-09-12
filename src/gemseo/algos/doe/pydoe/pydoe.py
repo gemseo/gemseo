@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -50,6 +49,8 @@ from gemseo.algos.doe.pydoe.settings.pydoe_pbdesign import PYDOE_PBDESIGN_Settin
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
 

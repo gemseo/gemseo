@@ -19,16 +19,19 @@
 from __future__ import annotations
 
 from os.path import exists
+from typing import TYPE_CHECKING
 
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
-from numpy import ndarray
 from numpy.random import default_rng
 from numpy.testing import assert_array_equal
 
 from gemseo.algos.pareto.utils import compute_pareto_optimal_points
 from gemseo.algos.pareto.utils import generate_pareto_plots
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture

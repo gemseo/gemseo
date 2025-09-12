@@ -52,7 +52,6 @@ from strenum import StrEnum
 from gemseo.uncertainty.distributions.base_distribution_fitter import (
     BaseDistributionFitter,
 )
-from gemseo.uncertainty.distributions.base_distribution_fitter import MeasureType
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
@@ -74,6 +73,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+    from gemseo.uncertainty.distributions.base_distribution_fitter import MeasureType
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 

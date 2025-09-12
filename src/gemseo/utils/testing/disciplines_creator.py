@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from collections.abc import Mapping
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
@@ -26,6 +24,9 @@ from numpy import ones
 from gemseo.utils.discipline import DummyDiscipline
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from gemseo.core.discipline import Discipline
 
 

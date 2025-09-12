@@ -32,7 +32,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.core.dependency_graph import ExecutionSequence
 from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.n2d3.n2_html import N2HTML
 
@@ -43,6 +42,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from matplotlib.text import Text
 
+    from gemseo.core.dependency_graph import ExecutionSequence
     from gemseo.core.discipline import Discipline
     from gemseo.utils.matplotlib_figure import FigSizeType
 

@@ -5,6 +5,7 @@ target-version = "py39"
 src = ["src"]
 
 [lint]
+future-annotations = true
 task-tags = ["TODO"]
 ignore = [
   # Shadowing a Python builtin module.
@@ -98,8 +99,28 @@ select = [
 [lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
   "pydantic.BaseModel",
-  "gemseo.post.base_post_settings.BasePostSettings",
+  "gemseo.algos.doe.base_doe_settings.BaseDOESettings",
   "gemseo.settings.base_settings.BaseSettings",
+  "gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings",
+  "gemseo.algos.opt.base_optimizer_settings.BaseOptimizerSettings",
+  "gemseo.algos.opt.nlopt.settings.base_nlopt_settings.BaseNLoptSettings",
+  "gemseo.algos.opt.nlopt.settings.base_gradient_free_nlopt_settings.BaseGradientFreeNLoptSettings",
+  "gemseo.mlearning.classification.algos.base_classifier_settings.BaseClassifierSettings",
+  "gemseo.algos.base_driver_settings.BaseDriverSettings",
+  "gemseo.mda.base_mda_solver_settings.BaseMDASolverSettings",
+  "gemseo.mlearning.core.algos.unsupervised_settings.BaseMLUnsupervisedAlgoSettings",
+  "gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings",
+  "gemseo.mlearning.regression.algos.linreg_settings.LinearRegressor_Settings",
+  "gemseo.post.base_post_settings.BasePostSettings",
+  "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistribution_Settings",
+  "gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistribution_Settings",
+  "gemseo.algos.doe.pydoe.settings.base_pydoe_settings.BasePyDOESettings",
+  "gemseo.algos.doe.openturns.settings.base_openturns_settings.BaseOpenTURNSSettings",
+  "gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.BaseSciPyDOESettings",
+  "gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings.BaseSciPyGlobalSettings",
+  "gemseo.formulations.base_formulation_settings.BaseFormulationSettings",
+  "gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings",
+  "gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressor_Settings",
 ]
 
 [lint.isort]

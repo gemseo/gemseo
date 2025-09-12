@@ -24,12 +24,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from openturns import ComposedDistribution
-from openturns import Distribution
 from openturns import IndependentCopula
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+
+    from openturns import Distribution
 
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping

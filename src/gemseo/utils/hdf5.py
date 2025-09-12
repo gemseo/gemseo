@@ -23,7 +23,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 import h5py
-from h5py import Group
 from numpy import array
 from numpy import bytes_
 from numpy import issubdtype
@@ -33,6 +32,8 @@ from numpy import object_
 
 if TYPE_CHECKING:
     from numbers import Number
+
+    from h5py import Group
 
     from gemseo.typing import RealArray
 

@@ -19,12 +19,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import array
-from numpy import ndarray
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from matplotlib.axes import Axes
+    from numpy import ndarray
 
     from gemseo.typing import BooleanArray
 

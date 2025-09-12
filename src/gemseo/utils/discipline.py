@@ -23,7 +23,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import NamedTuple
 
-from pandas import DataFrame
 from pandas import read_csv
 from pandas import read_excel
 from prettytable import PrettyTable
@@ -40,6 +39,8 @@ if TYPE_CHECKING:
     from collections.abc import MutableSequence
     from pathlib import Path
     from typing import Self
+
+    from pandas import DataFrame
 
     from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping

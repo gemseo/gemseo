@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
@@ -42,6 +41,7 @@ from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
     from matplotlib.figure import Figure
