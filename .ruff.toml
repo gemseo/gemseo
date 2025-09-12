@@ -149,6 +149,5 @@ convention = "google"
 "src/gemseo/third_party/*" = ["ALL"]
 
 [format]
-exclude = ["src/gemseo/third_party"]
 docstring-code-format = true
 docstring-code-line-length = 75
