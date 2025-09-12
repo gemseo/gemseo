@@ -149,6 +149,7 @@ class BaseScenario(BaseMonitoredProcess):
     _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]]
     """The driver factory."""
 
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of :meth:`.execute`."""
 

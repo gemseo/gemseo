@@ -74,6 +74,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     #  in modules for which one library class handles many different algorithms. In the
     #  future we should have one algorithm per module and use the Settings class
     #  variable to validate the settings in _validate_settings.
+    # TODO: API: rename to settings_class.
     Settings: type[BaseAlgorithmSettings] = BaseAlgorithmSettings
     """The Pydantic model for the settings."""
 

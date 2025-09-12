@@ -106,6 +106,7 @@ class BaseDistribution(
     e.g. random vectors (see :class:`.BaseJointDistribution`).
     """
 
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[BaseDistribution_Settings]
     """The Pydantic model for the settings."""
 

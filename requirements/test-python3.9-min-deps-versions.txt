@@ -79,6 +79,7 @@ numpy==1.23.0
     #   pyxdsm
     #   scikit-learn
     #   scipy
+    #   spgl1
 openpyxl==3.0.7
     # via gemseo (pyproject.toml)
 openturns==1.20.post3
@@ -152,11 +153,14 @@ scipy==1.11.1
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
+    #   spgl1
 six==1.17.0
     # via
     #   packaging
     #   plotly
     #   python-dateutil
+spgl1==0.0.3
+    # via gemseo (pyproject.toml)
 strenum==0.4.9
     # via gemseo (pyproject.toml)
 sympy==1.5
