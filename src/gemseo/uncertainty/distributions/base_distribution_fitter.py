@@ -18,9 +18,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from collections.abc import Iterable
 from collections.abc import Mapping
-from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -33,6 +31,9 @@ from strenum import StrEnum
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import MutableSequence
+
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 

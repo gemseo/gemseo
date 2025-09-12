@@ -40,10 +40,8 @@ from numpy import where
 
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.base_driver_library import DriverSettingType
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
@@ -57,6 +55,8 @@ from gemseo.utils.seeder import Seeder
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from gemseo.algos.base_driver_library import DriverSettingType
+    from gemseo.algos.evaluation_problem import EvaluationProblem
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import RealArray
 

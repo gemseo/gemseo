@@ -26,11 +26,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import array
-from numpy import ndarray
 from numpy import zeros
 
 from gemseo.problems.mdo.sobieski.core.discipline import SobieskiDiscipline
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class SobieskiMission(SobieskiDiscipline):

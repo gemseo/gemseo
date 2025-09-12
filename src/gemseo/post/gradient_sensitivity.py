@@ -29,7 +29,6 @@ import numpy as np
 from matplotlib import pyplot
 from numpy import arange
 from numpy import atleast_2d
-from numpy import ndarray
 from numpy import where
 
 from gemseo.algos.database import Database
@@ -41,6 +40,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from matplotlib.figure import Figure
+    from numpy import ndarray
 
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray

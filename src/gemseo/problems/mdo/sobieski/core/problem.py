@@ -39,7 +39,6 @@ from numpy import array
 from numpy import complex128
 from numpy import concatenate
 from numpy import float64
-from numpy import ndarray
 from numpy import ones
 
 from gemseo.problems.mdo.sobieski.core.aerodynamics import SobieskiAerodynamics
@@ -53,6 +52,8 @@ from gemseo.utils.string_tools import convert_strings_to_iterable
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+
+    from numpy import ndarray
 
     from gemseo import Discipline
 

@@ -22,11 +22,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import linspace
-from numpy import ndarray
 
 from gemseo.mlearning.transformers.dimension_reduction.kpca import KPCA
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 N_SAMPLES = 10
 N_FEATURES = 8

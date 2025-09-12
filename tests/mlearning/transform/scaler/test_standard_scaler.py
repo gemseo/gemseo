@@ -20,15 +20,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import allclose
 from numpy import arange
 from numpy import array
-from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_almost_equal
 
 from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture

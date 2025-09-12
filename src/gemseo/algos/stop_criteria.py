@@ -30,13 +30,14 @@ from typing import Final
 from numpy import all as np_all
 from numpy import allclose
 from numpy import average
-from numpy import bool_
-from numpy import ndarray
 from numpy.linalg import norm
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 
 if TYPE_CHECKING:
+    from numpy import bool_
+    from numpy import ndarray
+
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 

@@ -24,7 +24,6 @@ from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import N_CPUS
 
@@ -33,6 +32,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 
 
 class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineData]):

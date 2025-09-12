@@ -21,13 +21,13 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import numpy as np
 import pytest
 from numpy import allclose
 from numpy import concatenate
-from numpy import ndarray
 from numpy import ones
 from numpy.random import default_rng
 from scipy.sparse import csr_matrix
@@ -43,6 +43,9 @@ from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 CWD = Path(__file__).parent
 RNG = default_rng()

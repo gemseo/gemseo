@@ -17,15 +17,18 @@
 from __future__ import annotations
 
 from importlib.metadata import version
+from typing import TYPE_CHECKING
 from typing import Final
 from typing import Union
 
 from numpy import ndarray
-from packaging.version import Version
 from packaging.version import parse as parse_version
 from scipy.sparse import coo_matrix
 from scipy.sparse import sparray
 from scipy.sparse import spmatrix
+
+if TYPE_CHECKING:
+    from packaging.version import Version
 
 SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
 SCIPY_LOWER_THAN_1_12: Final[bool] = parse_version("1.12") > SCIPY_VERSION

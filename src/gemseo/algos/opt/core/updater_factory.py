@@ -21,12 +21,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
-from gemseo.algos.opt.core.trust_updater import TrustUpdater
 from gemseo.utils.string_tools import pretty_repr
+
+if TYPE_CHECKING:
+    from gemseo.algos.opt.core.trust_updater import TrustUpdater
 
 
 class UpdaterFactory:

@@ -27,7 +27,6 @@ from numpy import ndarray
 from numpy import where
 
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_function import OutputType
 from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.core.mdo_functions.mdo_function import OutputType
     from gemseo.typing import NumberArray
     from gemseo.typing import SparseOrDenseRealArray
 

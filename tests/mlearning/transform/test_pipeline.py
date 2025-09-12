@@ -28,12 +28,13 @@ from numpy import arange
 from numpy import array
 from numpy import diag
 from numpy import eye
-from numpy import ndarray
 
 from gemseo.mlearning.transformers.pipeline import Pipeline
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 

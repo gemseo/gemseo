@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import arange
-from numpy import ndarray
 from numpy import ones
 from numpy import sin
 from numpy.linalg import norm
@@ -27,6 +26,8 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.algos.sequence_transformer.factory import SequenceTransformerFactory
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.algos.sequence_transformer.sequence_transformer import (
         SequenceTransformer,
     )

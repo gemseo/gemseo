@@ -17,10 +17,13 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import finfo
-from numpy import ndarray
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 LOGGER = logging.getLogger(__name__)
 EPSILON: Final[float] = finfo(float).eps

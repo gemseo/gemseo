@@ -53,9 +53,6 @@ from gemseo.problems.mdo.scalable.parametric.core.scalable_design_space import (
 from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
     DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
 )
-from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
-    ScalableDisciplineSettings,
-)
 from gemseo.problems.mdo.scalable.parametric.core.variable_names import (
     SHARED_DESIGN_VARIABLE_NAME,
 )
@@ -73,6 +70,9 @@ from gemseo.utils.string_tools import MultiLineString
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (  # noqa: E501
+        ScalableDisciplineSettings,
+    )
     from gemseo.typing import RealArray
 
 

@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from collections.abc import Sequence
 from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -59,6 +58,8 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.driver_library import DriverLibraryFactory

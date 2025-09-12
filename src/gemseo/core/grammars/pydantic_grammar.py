@@ -29,7 +29,6 @@ from pydantic import BaseModel
 from pydantic import ValidationError
 from pydantic import create_model
 from pydantic.fields import FieldInfo
-from typing_extensions import Self
 from typing_extensions import get_origin
 
 from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
@@ -41,6 +40,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Mapping
+
+    from typing_extensions import Self
 
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Schema

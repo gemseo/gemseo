@@ -26,7 +26,6 @@ import numpy as np
 import pytest
 from numpy import array
 from numpy import multiply
-from numpy import ndarray
 from numpy import outer
 from numpy.linalg import LinAlgError
 from numpy.linalg import norm
@@ -39,6 +38,8 @@ from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import StrKeyMapping
 

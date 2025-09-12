@@ -22,13 +22,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
-from numpy import ndarray
 from numpy import newaxis
 from numpy import sum as npsum
 from numpy.random import default_rng
 
 from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 N_SAMPLES = 10
 N_FEATURES = 8

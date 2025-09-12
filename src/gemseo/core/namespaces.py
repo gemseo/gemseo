@@ -25,11 +25,14 @@ The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` a
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from collections.abc import Iterator
 from collections.abc import Mapping
 from collections.abc import MutableMapping
+from typing import TYPE_CHECKING
 from typing import Union
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
 
 MutableNamespacesMapping = MutableMapping[str, Union[str, list[str]]]
 NamespacesMapping = Mapping[str, Union[str, list[str]]]

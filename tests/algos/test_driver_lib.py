@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import logging
 import re
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from unittest import mock
 
@@ -32,7 +33,6 @@ from numpy import full
 
 from gemseo.algos._progress_bars.progress_bar import ProgressBar
 from gemseo.algos.base_driver_library import BaseDriverLibrary
-from gemseo.algos.base_driver_library import DriverDescription
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
@@ -42,6 +42,9 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.testing.helpers import concretize_classes
+
+if TYPE_CHECKING:
+    from gemseo.algos.base_driver_library import DriverDescription
 
 
 @pytest.fixture(scope="module")

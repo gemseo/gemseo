@@ -64,7 +64,6 @@ from typing import NoReturn
 from typing import Optional
 from typing import Union
 
-from numpy import ndarray
 from numpy import newaxis
 from numpy import nonzero
 from numpy import unique
@@ -76,7 +75,6 @@ from gemseo.mlearning.classification.algos.factory import ClassifierFactory
 from gemseo.mlearning.classification.quality.f1_measure import F1Measure
 from gemseo.mlearning.clustering.algos.factory import ClustererFactory
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
-from gemseo.mlearning.core.algos.ml_algo import DataType
 from gemseo.mlearning.core.algos.ml_algo import MLAlgoSettingsType
 from gemseo.mlearning.core.algos.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.core.selection import MLAlgoSelection
@@ -89,9 +87,12 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
     from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
+    from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
     from gemseo.mlearning.core.quality.base_ml_algo_quality import (
         OptionType as EvalOptionType,

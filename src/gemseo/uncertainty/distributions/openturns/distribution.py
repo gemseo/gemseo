@@ -29,14 +29,12 @@ import openturns
 from numpy import array
 from numpy import inf
 from openturns import CompositeDistribution
-from openturns import Distribution
 from openturns import DistributionImplementation
 from openturns import Interval
 from openturns import SymbolicFunction
 from openturns import TruncatedDistribution
 
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-from gemseo.uncertainty.distributions.base_distribution import StandardParametersType
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     _INTERFACED_DISTRIBUTION,
 )
@@ -63,7 +61,12 @@ from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
 )
 
 if TYPE_CHECKING:
+    from openturns import Distribution
+
     from gemseo.typing import RealArray
+    from gemseo.uncertainty.distributions.base_distribution import (
+        StandardParametersType,
+    )
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 

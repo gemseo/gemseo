@@ -14,13 +14,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import allclose
-from numpy import ndarray
 from numpy.random import default_rng
 from scipy.sparse import rand
 
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 RNG = default_rng()
 

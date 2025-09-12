@@ -28,7 +28,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import openturns
 from numpy import array
 from openturns import Field
 from openturns import KarhunenLoeveSVDAlgorithm
@@ -45,6 +44,8 @@ from gemseo.utils.compatibility.openturns import OT_1_23
 from gemseo.utils.compatibility.openturns import OT_VERSION
 
 if TYPE_CHECKING:
+    import openturns
+
     from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 

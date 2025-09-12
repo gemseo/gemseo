@@ -26,15 +26,16 @@ from openturns import LinearProfile
 from openturns import MonteCarloLHS
 from openturns import SimulatedAnnealingLHS
 from openturns import SpaceFillingC2
-from openturns import SpaceFillingImplementation
 from openturns import SpaceFillingMinDist
 from openturns import SpaceFillingPhiP
-from openturns import TemperatureProfileImplementation
 from strenum import StrEnum
 
 from gemseo.algos.doe.openturns._algos.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
+    from openturns import SpaceFillingImplementation
+    from openturns import TemperatureProfileImplementation
+
     from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
     from gemseo.typing import RealArray
 

@@ -20,7 +20,6 @@ import pickle
 from logging import getLogger
 from pathlib import Path
 from string import Template
-from subprocess import CompletedProcess
 from subprocess import run as subprocess_run
 from typing import TYPE_CHECKING
 from typing import Any
@@ -32,6 +31,7 @@ from gemseo.utils.directory_creator import DirectoryCreator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from subprocess import CompletedProcess
 
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import JacobianData

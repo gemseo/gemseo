@@ -16,11 +16,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from collections.abc import Set as AbstractSet
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from gemseo.mlearning.resampling.split import Split
 
 

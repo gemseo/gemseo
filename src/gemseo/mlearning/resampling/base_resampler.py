@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import concatenate
-from numpy import ndarray
 from numpy import vstack
 
 from gemseo.datasets.dataset import Dataset
@@ -32,6 +31,7 @@ from gemseo.utils.seeder import SEED
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from numpy import ndarray
     from numpy.typing import NDArray
 
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo

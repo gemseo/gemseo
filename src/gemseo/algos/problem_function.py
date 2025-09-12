@@ -31,8 +31,6 @@ from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_function import OutputType
-from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
 from gemseo.core.serializable import Serializable
 from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
@@ -42,6 +40,8 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.evaluation_counter import EvaluationCounter
+    from gemseo.core.mdo_functions.mdo_function import OutputType
+    from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
     from gemseo.typing import NumberArray
     from gemseo.typing import RealOrComplexArrayT
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode

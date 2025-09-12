@@ -25,7 +25,6 @@ from typing import TYPE_CHECKING
 
 from numpy import atleast_1d
 from numpy import hstack
-from numpy import ndarray
 from numpy import vstack
 from numpy import zeros
 from numpy.linalg.linalg import norm
@@ -38,6 +37,8 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
+
+    from numpy import ndarray
 
     from gemseo.algos.optimization_problem import OptimizationProblem
 

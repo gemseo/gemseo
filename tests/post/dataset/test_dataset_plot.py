@@ -28,13 +28,13 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure as MatplotlibFigure
 from numpy import array
+from plotly.graph_objects import Figure as PlotlyFigure
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.plots._matplotlib import plot
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
-from gemseo.post.dataset.plots._plotly.lines import Figure as PlotlyFigure
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.utils.testing.helpers import concretize_classes
 

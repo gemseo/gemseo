@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 import string
 from io import StringIO
-from io import TextIOWrapper
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -29,6 +28,7 @@ from typing import Final
 import tqdm
 
 if TYPE_CHECKING:
+    from io import TextIOWrapper
     from numbers import Real
 
 LOGGER = logging.getLogger(__name__)

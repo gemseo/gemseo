@@ -24,8 +24,6 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from collections import defaultdict
-from collections.abc import Iterable
-from collections.abc import Iterator
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
 from itertools import chain
@@ -48,6 +46,9 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+
     from gemseo.typing import JacobianData
     from gemseo.utils.comparisons import DataToCompare
 

@@ -22,17 +22,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.parallel_execution.callable_parallel_execution import ArgT
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.callable_parallel_execution import CallableType
-from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
-from gemseo.core.parallel_execution.callable_parallel_execution import ReturnT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+
+    from gemseo.core.parallel_execution.callable_parallel_execution import ArgT
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallableType
+    from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
+    from gemseo.core.parallel_execution.callable_parallel_execution import ReturnT
 
 
 def execute(

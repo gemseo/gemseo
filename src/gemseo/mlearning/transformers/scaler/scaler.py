@@ -54,9 +54,9 @@ from numpy import full
 from numpy import tile
 
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
-from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)

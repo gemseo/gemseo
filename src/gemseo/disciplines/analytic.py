@@ -27,10 +27,8 @@ from numpy import array
 from numpy import expand_dims
 from numpy import float64
 from numpy import heaviside
-from numpy import ndarray
 from numpy import zeros
 from sympy import Expr
-from sympy import Symbol
 from sympy import lambdify
 from sympy import symbols
 from sympy.parsing.sympy_parser import parse_expr
@@ -40,6 +38,9 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
+
+    from numpy import ndarray
+    from sympy import Symbol
 
     from gemseo.typing import StrKeyMapping
 

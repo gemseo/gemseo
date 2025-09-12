@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -43,6 +42,8 @@ from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_S
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.design_space import DesignSpace
 
 OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]

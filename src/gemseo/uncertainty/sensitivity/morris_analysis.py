@@ -86,9 +86,6 @@ from strenum import StrEnum
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
@@ -109,6 +106,9 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.scenarios.backup_settings import BackupSettings
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
     from gemseo.utils.string_tools import VariableType
 
 

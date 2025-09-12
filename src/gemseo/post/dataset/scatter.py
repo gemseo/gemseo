@@ -33,11 +33,11 @@ from gemseo.utils.string_tools import get_name_and_component
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
+    from gemseo.post.dataset._trend import TrendFunctionCreator
     from gemseo.typing import RealArray
     from gemseo.utils.string_tools import VariableType
 
 from gemseo.post.dataset._trend import Trend as _Trend
-from gemseo.post.dataset._trend import TrendFunctionCreator
 
 
 class Scatter(DatasetPlot):

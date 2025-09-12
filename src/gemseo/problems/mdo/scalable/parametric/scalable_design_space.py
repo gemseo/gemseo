@@ -31,9 +31,6 @@ from gemseo.problems.mdo.scalable.parametric.core.scalable_design_space import (
 from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
     DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
 )
-from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
-    ScalableDisciplineSettings,
-)
 from gemseo.problems.mdo.scalable.parametric.core.variable_names import get_u_local_name
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -44,6 +41,9 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
+    from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (  # noqa: E501
+        ScalableDisciplineSettings,
+    )
     from gemseo.typing import RealArray
 
 

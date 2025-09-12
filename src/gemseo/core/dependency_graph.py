@@ -25,7 +25,6 @@ from typing import Final
 from typing import cast
 
 from gemseo.core.discipline import Discipline
-from gemseo.utils.discipline import DisciplineVariableProperties
 from gemseo.utils.discipline import get_discipline_variable_properties
 from gemseo.utils.string_tools import pretty_str
 
@@ -49,6 +48,8 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
     from pathlib import Path
+
+    from gemseo.utils.discipline import DisciplineVariableProperties
 
 LOGGER = logging.getLogger(__name__)
 

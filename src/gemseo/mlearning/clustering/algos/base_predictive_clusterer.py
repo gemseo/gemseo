@@ -26,13 +26,14 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from numpy import atleast_2d
-from numpy import ndarray
 from numpy import zeros
 
 from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.typing import IntegerArray
     from gemseo.typing import RealArray

@@ -28,7 +28,6 @@ from typing import Final
 from numpy import atleast_1d
 
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
     from gemseo.typing import RealArray
 
 

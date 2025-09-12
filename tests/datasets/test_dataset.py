@@ -27,8 +27,6 @@ from numpy import allclose
 from numpy import arange
 from numpy import array
 from numpy import concatenate
-from numpy import int64 as np_int
-from numpy import ndarray
 from numpy import savetxt
 from numpy import unique
 from numpy import vstack
@@ -45,6 +43,8 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
+    from numpy import int64 as np_int
+    from numpy import ndarray
     from numpy.typing import NDArray
 
 

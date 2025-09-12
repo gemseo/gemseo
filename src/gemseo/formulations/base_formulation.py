@@ -31,7 +31,6 @@ from typing import TypeVar
 
 from numpy import arange
 from numpy import empty
-from numpy import ndarray
 from numpy import zeros
 from scipy.sparse import block_array
 
@@ -49,6 +48,8 @@ from gemseo.utils.string_tools import convert_strings_to_iterable
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+
+    from numpy import ndarray
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline

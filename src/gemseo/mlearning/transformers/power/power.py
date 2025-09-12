@@ -35,9 +35,9 @@ from typing import ClassVar
 from sklearn.preprocessing import PowerTransformer
 
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
-from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
 
 if TYPE_CHECKING:
+    from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
 
 

@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from numbers import Number
-from re import Pattern
 from re import compile as re_compile
 from re import search
 from typing import TYPE_CHECKING
@@ -33,6 +32,8 @@ from numpy import subtract as _subtract
 from numpy import tile
 
 if TYPE_CHECKING:
+    from re import Pattern
+
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.core.mdo_functions.mdo_function import OperatorType
     from gemseo.core.mdo_functions.mdo_function import OutputType

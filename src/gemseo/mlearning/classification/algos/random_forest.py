@@ -34,7 +34,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy import ndarray
 from numpy import newaxis
 from numpy import stack
 from sklearn.ensemble import RandomForestClassifier as SKLRandForest
@@ -45,6 +44,8 @@ from gemseo.mlearning.classification.algos.random_forest_settings import (
 )
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.typing import RealArray
 
 
