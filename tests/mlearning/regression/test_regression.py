@@ -59,7 +59,7 @@ def io_dataset() -> IODataset:
     return dataset
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def rosenbrock_dataset() -> IODataset:
     """The Rosenbrock dataset."""
     return create_rosenbrock_dataset(opt_naming=False, n_samples=25)
@@ -159,11 +159,10 @@ def test_pickle(
     # Prevent failure when testing in environments with plugins.
     if not FACTORY.get_class(class_name).__module__.startswith("gemseo."):
         return
-    kwargs = {}
-    if class_name == "PCERegressor":
-        kwargs["probability_space"] = probability_space
+    if class_name in ["PCERegressor", "FCERegressor"]:
+        rosenbrock_dataset.misc["input_space"] = probability_space
 
-    reference_model = FACTORY.create(class_name, rosenbrock_dataset, **kwargs)
+    reference_model = FACTORY.create(class_name, rosenbrock_dataset)
     if class_name == "RegressorChain":
         reference_model.add_algo("LinearRegressor")
 

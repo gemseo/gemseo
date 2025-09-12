@@ -22,17 +22,21 @@ r"""Settings of the polynomial chaos expansion model.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
-from pydantic import PositiveInt
+from pydantic import model_validator
 
 from gemseo.algos.parameter_space import ParameterSpace  # noqa: TC001
 from gemseo.core.discipline.discipline import Discipline  # noqa: TC001
-from gemseo.mlearning.regression.algos.base_regressor_settings import (
-    BaseRegressorSettings,
+from gemseo.mlearning.regression.algos.base_fce_settings import (
+    BaseFCERegressor_Settings,
 )
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 @dataclass
@@ -50,7 +54,7 @@ class CleaningOptions:
     """The threshold to select the efficient coefficients of the polynomial basis."""
 
 
-class PCERegressor_Settings(BaseRegressorSettings):  # noqa: N801
+class PCERegressor_Settings(BaseFCERegressor_Settings):  # noqa: N801
     """The settings of the polynomial chaos expansion model."""
 
     _TARGET_CLASS_NAME = "PCERegressor"
@@ -64,10 +68,6 @@ If ``None``,
 :class:`.PCERegressor` uses ``data.misc["input_space"]``
 where ``data`` is the :class:`.IODataset` passed at instantiation.
 """,
-    )
-
-    degree: PositiveInt = Field(
-        default=2, description="The polynomial degree of the PCE."
     )
 
     discipline: Discipline | None = Field(
@@ -127,3 +127,16 @@ and :math:`P` is the polynomial degree of the PCE.""",
         If ``None``, use :attr:`.DEFAULT_CLEANING_OPTIONS`.
         """,
     )
+
+    @model_validator(mode="after")
+    def __check(self) -> Self:
+        """Check the values."""
+        if self.use_quadrature and self.use_lars:
+            msg = "LARS is not applicable with the quadrature rule."
+            raise ValueError(msg)
+
+        if not self.use_quadrature and self.discipline is not None:
+            msg = "The least-squares regression does not require a discipline."
+            raise ValueError(msg)
+
+        return self

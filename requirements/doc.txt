@@ -86,6 +86,7 @@ numpy==2.3.1
     #   pyxdsm
     #   scikit-learn
     #   scipy
+    #   spgl1
 openpyxl==3.1.5
     # via gemseo (pyproject.toml)
 openturns==1.25
@@ -174,6 +175,7 @@ scipy==1.15.2
     #   gemseo (pyproject.toml)
     #   pydoe3
     #   scikit-learn
+    #   spgl1
 setuptools==80.9.0
     # via
     #   gemseo (pyproject.toml:doc)
@@ -184,6 +186,8 @@ snowballstemmer==3.0.1
     # via sphinx
 soupsieve==2.8
     # via beautifulsoup4
+spgl1==0.0.3
+    # via gemseo (pyproject.toml)
 sphinx==8.2.3
     # via
     #   gemseo (pyproject.toml:doc)

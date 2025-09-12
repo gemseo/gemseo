@@ -61,6 +61,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     # Silencing mypy since the root cause does not seem legit,
     # and may be changed.
     # See https://github.com/python/mypy/issues/5144.
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[T]]
     """The Pydantic model for the settings."""
 

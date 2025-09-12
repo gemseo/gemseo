@@ -99,6 +99,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     __disciplines: tuple[Discipline, ...]
     """The disciplines."""
 
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[T]]
     """The Pydantic model class for the settings of the formulation."""
 

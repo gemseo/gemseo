@@ -109,6 +109,7 @@ from typing import Union
 
 from numpy import ndarray
 
+from gemseo.core.serializable import Serializable
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 from gemseo.mlearning.core.algos.ml_algo_settings import SubTransformerType
@@ -135,7 +136,7 @@ MLAlgoSettingsType = Optional[Any]
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
 
-class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseMLAlgo(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     """An abstract machine learning algorithm."""
 
     resampling_results: dict[
@@ -167,7 +168,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     """
 
     algo: Any
-    """The interfaced machine learning algorithm."""
+    """The interfaced machine learning algorithm, if any."""
 
     SHORT_ALGO_NAME: ClassVar[str] = "BaseMLAlgo"
     """The short name of the machine learning algorithm, often an acronym.
@@ -186,6 +187,7 @@ class BaseMLAlgo(metaclass=ABCGoogleDocstringInheritanceMeta):
     DataFormatters: ClassVar[type[BaseDataFormatters]]
     """The data formatters for the learning and prediction methods."""
 
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[BaseMLAlgoSettings]]
     """The Pydantic model class for the settings of the machine learning algorithm."""
 

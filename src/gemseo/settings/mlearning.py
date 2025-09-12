@@ -31,6 +31,9 @@ from gemseo.mlearning.clustering.algos.gaussian_mixture_settings import (  # noq
 from gemseo.mlearning.clustering.algos.kmeans_settings import (  # noqa: F401
     KMeans_Settings,
 )
+from gemseo.mlearning.regression.algos.fce_settings import (  # noqa: F401
+    FCERegressor_Settings,
+)
 from gemseo.mlearning.regression.algos.gpr_settings import (  # noqa: F401
     GaussianProcessRegressor_Settings,
 )

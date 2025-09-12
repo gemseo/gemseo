@@ -97,7 +97,6 @@ from numpy import array
 from numpy import atleast_1d
 from numpy import concatenate
 from numpy import hstack
-from numpy import newaxis
 from numpy import vstack
 from numpy import zeros
 from openturns import LARS
@@ -117,10 +116,9 @@ from openturns import OrthogonalBasis
 from openturns import OrthogonalProductPolynomialFactory
 from openturns import Point
 from openturns import StandardDistributionPolynomialFactory
-from scipy.linalg import solve
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.algos.base_fce import BaseFCERegressor
 from gemseo.mlearning.regression.algos.pce_settings import CleaningOptions
 from gemseo.mlearning.regression.algos.pce_settings import PCERegressor_Settings
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
@@ -133,11 +131,12 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PCERegressor(BaseRegressor):
+class PCERegressor(BaseFCERegressor):
     """Polynomial chaos expansion model.
 
     See Also: API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
@@ -149,29 +148,14 @@ class PCERegressor(BaseRegressor):
 
     Settings: ClassVar[type[PCERegressor_Settings]] = PCERegressor_Settings
 
-    _coefficients: RealArray | None
-    """The coefficients to differentiate with respect to the special variables.
-
-    Shaped as ``(output_dimension, special_variable_dimension, n_basis_functions)``.
-    """
-
-    _mean_jacobian_wrt_special_variables: RealArray | None
-    """The gradient of the mean with respect to the special variables.
-
-    Shaped as ``(output_dimension, special_variable_dimension)``.
-    """
-
-    _standard_deviation_jacobian_wrt_special_variables: RealArray | None
-    """The gradient of the standard deviation with respect the special variables.
-
-    Shaped as ``(output_dimension, special_variable_dimension)``.
-    """
-
-    _variance_jacobian_wrt_special_variables: RealArray | None
-    """The gradient of the variance with respect the special variables.
-
-    Shaped as ``(output_dimension, special_variable_dimension)``.
-    """
+    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = (
+        BaseFCERegressor._ATTR_NOT_TO_SERIALIZE.union({
+            "_basis_functions",
+            "_coefficients",
+            "_isoprobabilistic_transformation",
+            "_prediction_function",
+        })
+    )
 
     def __init__(
         self,
@@ -217,20 +201,12 @@ class PCERegressor(BaseRegressor):
                 msg = "The quadrature rule requires data or discipline but not both."
                 raise ValueError(msg)
 
-            if settings_.use_lars:
-                msg = "LARS is not applicable with the quadrature rule."
-                raise ValueError(msg)
-
             if data is None:
                 data = IODataset()
 
         else:
             if not there_are_data:
                 msg = "The least-squares regression requires data."
-                raise ValueError(msg)
-
-            if there_is_a_discipline:
-                msg = "The least-squares regression does not require a discipline."
                 raise ValueError(msg)
 
         if settings_.probability_space is not None:
@@ -307,18 +283,9 @@ class PCERegressor(BaseRegressor):
         else:
             self.__quadrature_points_with_weights = None
 
-        self._mean = array([])
         self._covariance = array([])
-        self._variance = array([])
-        self._standard_deviation = array([])
-        self._first_order_sobol_indices = []
         self._second_order_sobol_indices = []
-        self._total_order_sobol_indices = []
         self._prediction_function = None
-        self._coefficients = None
-        self._mean_jacobian_wrt_special_variables = None
-        self._standard_deviation_jacobian_wrt_special_variables = None
-        self._variance_jacobian_wrt_special_variables = None
 
     def __instantiate_functional_chaos_algorithm(
         self, input_data: RealArray, output_data: RealArray
@@ -423,25 +390,17 @@ class PCERegressor(BaseRegressor):
 
         return x
 
-    def _fit(
-        self,
-        input_data: RealArray,
-        output_data: RealArray,
-    ) -> None:
-        # Create and train the PCE.
-        algo = self.__instantiate_functional_chaos_algorithm(input_data, output_data)
-        algo.run()
-        self.algo = pce_result = algo.getResult()
-        self._prediction_function = pce_result.getMetaModel()
+    def _get_features_for_special_jacobian_data_use(self, *args: Any) -> None:
+        pce_result = self.algo
+        basis_functions = pce_result.getReducedBasis()
+        input_sample = pce_result.getInputSample()
+        transformation = self.algo.getTransformation()
+        t_input_sample = transformation(input_sample)
+        return hstack([
+            array(basis_function(t_input_sample)) for basis_function in basis_functions
+        ])
 
-        # Compute some statistics.
-        random_vector = FunctionalChaosRandomVector(pce_result)
-        self._mean = array(random_vector.getMean())
-        self._covariance = array(random_vector.getCovariance())
-        self._variance = self._covariance.diagonal()
-        self._standard_deviation = self._variance**0.5
-
-        # Compute some sensitivity indices.
+    def _compute_sobol_indices(self) -> None:
         names_to_positions = {}
         start = 0
         names_to_sizes = self.learning_set.variable_names_to_n_components
@@ -449,8 +408,7 @@ class PCERegressor(BaseRegressor):
             stop = start + names_to_sizes[name]
             names_to_positions[name] = range(start, stop)
             start = stop
-
-        ot_sobol_indices = FunctionalChaosSobolIndices(pce_result)
+        ot_sobol_indices = FunctionalChaosSobolIndices(self.algo)
         self.__compute_first_or_total_order_indices(
             names_to_positions, ot_sobol_indices, True
         )
@@ -459,59 +417,26 @@ class PCERegressor(BaseRegressor):
             names_to_positions, ot_sobol_indices, False
         )
 
-        # Compute the derivatives of the coefficients wrt the special variables.
-        # as well as those of the mean and variance.
-        if self._jacobian_data is not None:
-            basis_functions = pce_result.getReducedBasis()
-            input_sample = pce_result.getInputSample()
-            transformation = self.algo.getTransformation()
-            phi = hstack([
-                array(basis_function(transformation(input_sample)))
-                for basis_function in basis_functions
-            ])
-            jacobian_data = self._jacobian_data[self._learning_samples_indices]
-            coefficients = (
-                jacobian_data.T
-                @ solve(
-                    phi.T @ phi,
-                    phi.T,
-                    overwrite_a=True,
-                    overwrite_b=True,
-                    assume_a="sym",
-                ).T
-            )
-            shape = (self._reduced_output_dimension, -1, len(basis_functions))
-            self._coefficients = coefficients.reshape(shape)
-            self._variance_jacobian_wrt_special_variables = vstack([
-                2 * ci_jac @ ci_out
-                for ci_jac, ci_out in zip(
-                    self._coefficients[..., 1:],
-                    array(pce_result.getCoefficients()).T[..., 1:],
-                )
-            ])
-            # _variance_jacobian_wrt_special_variables: (n_out, n_in)
-            # _standard_deviation: (n_out,)
-            self._standard_deviation_jacobian_wrt_special_variables = (
-                self._variance_jacobian_wrt_special_variables
-                / 2
-                / self._standard_deviation[:, newaxis]
-            )
+    def _compute_statistics(self) -> None:
+        random_vector = FunctionalChaosRandomVector(self.algo)
+        self._mean = array(random_vector.getMean())
+        self._covariance = array(random_vector.getCovariance())
+        self._variance = self._covariance.diagonal()
+        self._standard_deviation = self._variance**0.5
 
-            first_basis_function = basis_functions[0]
-            phi = array(first_basis_function(transformation(input_sample)))
-            coefficients = (
-                solve(
-                    phi.T @ phi,
-                    phi.T,
-                    overwrite_a=True,
-                    overwrite_b=True,
-                    assume_a="sym",
-                )
-                @ jacobian_data
-            )
-            self._mean_jacobian_wrt_special_variables = coefficients.sum(0).reshape(
-                self._reduced_output_dimension, -1
-            )
+    def _create_predictor(self, input_data: RealArray, output_data: RealArray) -> tuple:
+        algo = self.__instantiate_functional_chaos_algorithm(input_data, output_data)
+        algo.run()
+        self.algo = algo.getResult()
+        self.__set_result_aliases()
+        return ()
+
+    def __set_result_aliases(self) -> None:
+        """Set aliases to methods of the PCE result."""
+        self._basis_functions = self.algo.getReducedBasis()
+        self._coefficients = array(self.algo.getCoefficients())
+        self._isoprobabilistic_transformation = self.algo.getTransformation()
+        self._prediction_function = self.algo.getMetaModel()
 
     def __compute_second_order_indices(
         self,
@@ -669,71 +594,11 @@ class PCERegressor(BaseRegressor):
     def _predict_jacobian_wrt_special_variables(  # noqa: D102
         self, input_data: RealArray
     ) -> RealArray:
-        basis_functions = self.algo.getReducedBasis()
+        polynomials = self.algo.getReducedBasis()
         transformation = self.algo.getTransformation()
-        y = array([
-            basis_function(transformation(input_data))[0]
-            for basis_function in basis_functions
-        ])
-        return self._coefficients @ y
-
-    @property
-    def mean_jacobian_wrt_special_variables(self) -> RealArray:
-        """The gradient of the mean with respect to the special variables.
-
-        See :meth:`.predict_jacobian_wrt_special_variables`
-        for more information about the notion of special variables.
-
-        Raises:
-            ValueError: When the training dataset does not include gradient information.
-        """
-        self._check_is_trained()
-        self._check_jacobian_learning_data("mean_jacobian_wrt_special_variables")
-        return self._mean_jacobian_wrt_special_variables
-
-    @property
-    def standard_deviation_jacobian_wrt_special_variables(self) -> RealArray:
-        """The gradient of the standard deviation with respect to the special variables.
-
-        See :meth:`.predict_jacobian_wrt_special_variables`
-        for more information about the notion of special variables.
-
-        Raises:
-            ValueError: When the training dataset does not include gradient information.
-        """
-        self._check_is_trained()
-        self._check_jacobian_learning_data(
-            "standard_deviation_jacobian_wrt_special_variables"
-        )
-        return self._standard_deviation_jacobian_wrt_special_variables
-
-    @property
-    def variance_jacobian_wrt_special_variables(self) -> RealArray:
-        """The gradient of the variance with respect to the special variables.
-
-        See :meth:`.predict_jacobian_wrt_special_variables`
-        for more information about the notion of special variables.
-
-        Raises:
-            ValueError: When the training dataset does not include gradient information.
-        """
-        self._check_is_trained()
-        self._check_jacobian_learning_data("variance_jacobian_wrt_special_variables")
-        return self._variance_jacobian_wrt_special_variables
-
-    @property
-    def mean(self) -> RealArray:
-        """The mean vector of the PCE model output.
-
-        .. warning::
-
-           This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
-           to estimate it in relation to the original output space
-           if it is different from the transformed output space.
-        """
-        self._check_is_trained()
-        return self._mean
+        t_input_data = transformation(input_data)
+        y = array([polynomial(t_input_data)[0] for polynomial in polynomials])
+        return self._jac_coefficients @ y
 
     @property
     def covariance(self) -> RealArray:
@@ -750,48 +615,6 @@ class PCERegressor(BaseRegressor):
         return self._covariance
 
     @property
-    def variance(self) -> RealArray:
-        """The variance vector of the PCE model output.
-
-        .. warning::
-
-           This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
-           to estimate it in relation to the original output space
-           if it is different from the transformed output space.
-        """
-        self._check_is_trained()
-        return self._variance
-
-    @property
-    def standard_deviation(self) -> RealArray:
-        """The standard deviation vector of the PCE model output.
-
-        .. warning::
-
-           This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
-           to estimate it in relation to the original output space
-           if it is different from the transformed output space.
-        """
-        self._check_is_trained()
-        return self._standard_deviation
-
-    @property
-    def first_sobol_indices(self) -> list[dict[str, float]]:
-        """The first-order Sobol' indices for the different output components.
-
-        .. warning::
-
-           These statistics are expressed in relation to the transformed output space.
-           You can use a :class:`.SobolAnalysis`
-           to estimate them in relation to the original output space
-           if it is different from the transformed output space.
-        """
-        self._check_is_trained()
-        return self._first_order_sobol_indices
-
-    @property
     def second_sobol_indices(self) -> list[dict[str, dict[str, float]]]:
         """The second-order Sobol' indices for the different output components.
 
@@ -805,16 +628,10 @@ class PCERegressor(BaseRegressor):
         self._check_is_trained()
         return self._second_order_sobol_indices
 
-    @property
-    def total_sobol_indices(self) -> list[dict[str, float]]:
-        """The total Sobol' indices for the different output components.
-
-        .. warning::
-
-           These statistics are expressed in relation to the transformed output space.
-           You can use a :class:`.SobolAnalysis`
-           to estimate them in relation to the original output space
-           if it is different from the transformed output space.
-        """
-        self._check_is_trained()
-        return self._total_order_sobol_indices
+    def __setstate__(
+        self,
+        state: StrKeyMapping,
+    ) -> None:
+        super().__setstate__(state)
+        if self.algo is not None:
+            self.__set_result_aliases()
