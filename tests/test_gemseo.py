@@ -82,6 +82,7 @@ from gemseo import import_database
 from gemseo import import_discipline
 from gemseo import monitor_scenario
 from gemseo import print_configuration
+from gemseo import read_design_space
 from gemseo import sample_disciplines
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo import write_design_space
@@ -686,8 +687,9 @@ def test_create_design_space() -> None:
     design_space.check()
 
 
-def test_write_design_space(tmp_wd) -> None:
-    """Test that a design space can be exported to a text or h5 file.
+@pytest.mark.parametrize("file_name", ["design_space.csv", "design_space.h5"])
+def test_read_write_design_space(tmp_wd, file_name) -> None:
+    """Test that a design space can be exported/imported to/from a text or h5 file.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
@@ -696,8 +698,18 @@ def test_write_design_space(tmp_wd) -> None:
     design_space.add_variable(
         "name", type_="float", lower_bound=-1, upper_bound=1, value=0
     )
-    write_design_space(design_space, "design_space.csv")
-    write_design_space(design_space, "design_space.h5")
+    design_space.add_variable(
+        "another_name",
+        type_="integer",
+        lower_bound=-1,
+        upper_bound=1,
+        value=[0, 0],
+        size=2,
+    )
+    write_design_space(design_space, file_name)
+    assert Path(file_name).exists()
+    design_space_from_file = read_design_space(file_path=file_name)
+    assert design_space == design_space_from_file
 
 
 def test_create_cache() -> None:

@@ -1002,14 +1002,15 @@ def test_hdf5_with_node(tmp_wd):
 
 
 @pytest.mark.parametrize("suffix", [".csv", ".h5", ".hdf", ".hdf5", ".txt"])
-def test_to_from_file(tmp_wd, suffix) -> None:
+@pytest.mark.parametrize("delimiter", [None, ","])
+def test_to_from_file(tmp_wd, suffix, delimiter) -> None:
     """Check that the methods to_file() and from_file() work correctly."""
     file_path = Path("foo").with_suffix(suffix)
     design_space = get_sobieski_design_space()
-    design_space.to_file(file_path)
+    design_space.to_file(file_path, delimiter)
     assert h5py.is_hdf5(file_path) == file_path.suffix.startswith((".h5", ".hdf"))
 
-    read_design_space = DesignSpace.from_file(file_path)
+    read_design_space = DesignSpace.from_file(file_path, delimiter=delimiter)
     check_ds(design_space, read_design_space, file_path)
 
 
@@ -2060,3 +2061,13 @@ def test_normalize_vect_with_inout_argument() -> None:
     inout = array([0])
     space.normalize_vect(array([0]), out=inout)
     assert_array_equal(inout, array([0]))
+
+
+# TODO: API: remove this test along with **table_options
+def test_to_csv_pretty_table(tmp_wd):
+    """Test that the pretty table options are taken into account."""
+    ref_ds = get_sobieski_design_space()
+    f_path = Path("sobieski_design_space.csv")
+    ref_ds.to_csv(f_path, border=True)
+    table_text = f_path.read_text()
+    assert "-" in table_text
