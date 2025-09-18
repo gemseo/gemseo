@@ -204,3 +204,10 @@ after execution.""",
                 object.__setattr__(self, name, False)
 
         return self
+
+
+_configuration = GlobalConfiguration()
+"""The global |g| configuration.
+
+The feature is described on page :ref:`global_configuration` of the user guide.
+"""

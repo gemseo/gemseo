@@ -71,9 +71,7 @@ from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.constants import _VALIDATE_INPUT_DATA
 from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.global_configuration import (
-    GlobalConfiguration as _GlobalConfiguration,
-)
+from gemseo.utils.global_configuration import _configuration as configuration
 from gemseo.utils.logging import _configure_logger
 from gemseo.utils.pickle import from_pickle  # noqa: F401
 from gemseo.utils.pickle import to_pickle  # noqa: F401
@@ -1712,8 +1710,6 @@ def configure(
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
     """
-    global configuration
-
     configuration.check_desvars_bounds = check_desvars_bounds
     configuration.enable_discipline_cache = enable_discipline_cache
     configuration.enable_discipline_statistics = enable_discipline_statistics
@@ -2000,10 +1996,3 @@ def set_data_converters(
     BaseDataConverter.value_to_array_converters = to_array
     BaseDataConverter.array_to_value_converters = from_array
     BaseDataConverter.value_size_getters = to_size
-
-
-configuration = _GlobalConfiguration()
-"""The global |g| configuration.
-
-The feature is described on page :ref:`global_configuration` of the user guide.
-"""
