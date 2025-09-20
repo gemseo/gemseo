@@ -30,7 +30,7 @@ execnet==2.1.1
     # via pytest-xdist
 fastjsonschema==2.14.5
     # via gemseo (pyproject.toml)
-fonttools==4.59.2
+fonttools==4.60.0
     # via matplotlib
 genson==1.2.2
     # via gemseo (pyproject.toml)
@@ -106,7 +106,7 @@ pluggy==1.6.0
     # via pytest
 prettytable==2.3.0
     # via gemseo (pyproject.toml)
-psutil==7.0.0
+psutil==7.1.0
     # via openturns
 py==1.11.0
     # via pytest
@@ -121,7 +121,7 @@ pydantic-settings==2.0.0
     # via gemseo (pyproject.toml)
 pydoe3==1.0.1
     # via gemseo (pyproject.toml)
-pyparsing==3.2.3
+pyparsing==3.2.4
     # via
     #   matplotlib
     #   packaging
