@@ -42,6 +42,7 @@ extensions = [
     "add_toctree_functions",
     "autodocsumm",
     "default_kwargs_values",
+    "reload_gemseo",
     "gemseo_pre_processor",
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
