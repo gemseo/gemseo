@@ -53,6 +53,7 @@ class GlobalConfiguration(
     env_nested_delimiter="_",
     env_prefix="GEMSEO_",
     env_file=".env",
+    extra="ignore",
 ):  # noqa: N801
     """Global configuration."""
 
