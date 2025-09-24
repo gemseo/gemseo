@@ -15,6 +15,8 @@
 from __future__ import annotations
 
 from logging import INFO
+from logging import NullHandler
+from logging import getLogger
 
 from gemseo.utils.global_configuration import GlobalConfiguration
 
@@ -78,12 +80,17 @@ def test_fast():
 
 def test_environment_variable(monkeypatch):
     """Check the use of environment variables."""
+    logger = getLogger("NewLogger")
+    logger.addHandler(NullHandler())
     assert GlobalConfiguration().enable_progress_bar
     monkeypatch.setenv("GEMSEO_ENABLE_PROGRESS_BAR", "False")
     monkeypatch.setenv("GEMSEO_LOGGING_ENABLE", "False")
     configuration = GlobalConfiguration()
     assert not configuration.enable_progress_bar
     assert not configuration.logging.enable
+    assert not getLogger("gemseo").handlers
+    assert getLogger("").handlers
+    assert getLogger("NewLogger").handlers
 
 
 def test_environment_variable_env_file(monkeypatch, tmp_wd):
