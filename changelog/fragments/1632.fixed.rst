@@ -1,0 +1,1 @@
+GlobalConfiguration now allows extra fields in .env files, preventing validation errors when third-party applications have their own environment variables.

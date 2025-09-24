@@ -95,3 +95,13 @@ def test_environment_variable_env_file(monkeypatch, tmp_wd):
     configuration = GlobalConfiguration()
     assert not configuration.enable_progress_bar
     assert configuration.logging.enable
+
+
+def test_extra_config_in_env_file(monkeypatch, tmp_wd):
+    """Check that extra config in .env file doesn't raise validation errors."""
+    with (tmp_wd / ".env").open("w") as f:
+        f.write("SOME_OTHER_APP_CONFIG=value\n")
+
+    # This should not raise a ValidationError about extra_forbidden
+    configuration = GlobalConfiguration()
+    assert not hasattr(configuration, "some_other_app_config")
