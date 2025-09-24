@@ -106,11 +106,11 @@ Values can either be
     @model_validator(mode="after")
     def __validate(self) -> Self:
         """Create the logger."""
+        # Configure the loggers for GEMSEO and its plugins.
+        # Do not configure the loggers for their modules.
         if self.enable:
             for name in root.manager.loggerDict:
-                # Configure the loggers for GEMSEO and its plugins.
-                # Do not configure the loggers for their modules.
-                if name.startswith("gemseo") and "." not in name:
+                if _is_gemseo_logger(name):
                     _configure_logger(
                         name,
                         self.level,
@@ -119,8 +119,26 @@ Values can either be
                         self.file_path,
                         self.file_mode,
                     )
+        else:
+            for name in root.manager.loggerDict:
+                if _is_gemseo_logger(name):
+                    logger = getLogger(name)
+                    for handler in logger.handlers[:]:
+                        logger.removeHandler(handler)
 
         return self
+
+
+def _is_gemseo_logger(name: str) -> bool:
+    """Check whether a name is the name of the GEMSEO logger or one of its plugins.
+
+    Args:
+        name: The name.
+
+    Returns:
+        Whether the name is the name of the GEMSEO logger or one of its plugins.
+    """
+    return name.startswith("gemseo") and "." not in name
 
 
 def _configure_logger(
