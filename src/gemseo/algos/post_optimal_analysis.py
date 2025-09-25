@@ -27,7 +27,7 @@ from numpy import atleast_1d
 from numpy import hstack
 from numpy import vstack
 from numpy import zeros
-from numpy.linalg.linalg import norm
+from numpy.linalg import norm
 from scipy.sparse import vstack as spvstack
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers

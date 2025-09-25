@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from numpy.core.multiarray import ndarray
+    from numpy import ndarray
 
     from gemseo.algos.database import Database
     from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence

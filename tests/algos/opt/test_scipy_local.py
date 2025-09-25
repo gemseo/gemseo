@@ -27,8 +27,8 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 from pydantic import ValidationError
-from scipy.optimize.optimize import rosen
-from scipy.optimize.optimize import rosen_der
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace

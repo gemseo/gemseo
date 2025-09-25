@@ -336,7 +336,7 @@ class OptAsMDOScenario(MDOScenario):
         maximize_objective: bool = False,
         formulation_settings_model: BaseFormulationSettings | None = None,
         coupling_equations: tuple[
-            Iterable[Discipline, ...],
+            Iterable[Discipline],
             Callable[[RealArray], RealArray],
             Callable[[RealArray], RealArray],
         ] = (),

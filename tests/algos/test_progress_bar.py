@@ -26,9 +26,9 @@ from typing import Any
 from typing import ClassVar
 
 import pytest
+from numpy import array
 from numpy import atleast_2d
-from numpy.core._multiarray_umath import array
-from numpy.core._multiarray_umath import zeros
+from numpy import zeros
 from tqdm import tqdm
 
 from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar

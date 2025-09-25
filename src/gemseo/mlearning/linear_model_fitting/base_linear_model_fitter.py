@@ -88,16 +88,16 @@ class BaseLinearModelFitter(
 
     def fit(
         self,
-        features: RealArray,
-        observations: RealArray,
+        input_data: RealArray,
+        output_data: RealArray,
         *extra_data: tuple[RealArray, RealArray],
     ) -> RealArray:
         """Fit a linear model to data.
 
         Args:
-            features: The features matrix,
+            input_data: The features matrix,
                 shaped as ``(n_samples, n_features)``.
-            observations: The observations matrix,
+            output_data: The observations matrix,
                 shaped as ``(n_samples, n_targets)``.
             *extra_data: Additional pairs "(features matrix, observations matrix)".
                 where a features matrix has ``n_features`` columns,
@@ -111,9 +111,9 @@ class BaseLinearModelFitter(
             The coefficients of the linear model, shaped as ``(n_targets, n_features)``.
         """
         if self._settings.fit_intercept and not extra_data:
-            features = hstack((ones((len(features), 1)), features))
+            input_data = hstack((ones((len(input_data), 1)), input_data))
 
-        return self._fit(features, observations, *extra_data)
+        return self._fit(input_data, output_data, *extra_data)
 
     @abstractmethod
     def _fit(
@@ -125,9 +125,9 @@ class BaseLinearModelFitter(
         """Fit a linear model to data.
 
         Args:
-            features: The features matrix,
+            input_data: The features matrix,
                 shaped as ``(n_samples, n_features)``.
-            observations: The observations matrix,
+            output_data: The observations matrix,
                 shaped as ``(n_samples, n_targets)``.
             *extra_data: Additional pairs "(features matrix, observations matrix)".
                 where a features matrix has ``n_features`` columns,

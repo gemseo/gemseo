@@ -132,6 +132,7 @@ class SpringsDynamicsDiscipline(Discipline):
         state_dot_var_names: Sequence[str] = STATE_DOT_NAMES,
         left_position_name: str = "",
         right_position_name: str = "",
+        # TODO: API: replace by name.
         **kwargs,
     ) -> None:
         """Args:
@@ -155,6 +156,7 @@ class SpringsDynamicsDiscipline(Discipline):
                 on the left, if is_left_position_fixed is False.
             right_position_name: Name of the input describing the position of the mass
                 on the right, if is_right_position_fixed is False.
+            **kwargs: The arguments passed to the constructor of :class:`.Discipline`.
 
         Returns:
             The Discipline describing a single point mass.
