@@ -35,13 +35,18 @@ LOGGER = logging.getLogger(__name__)
 class BaseFullFactorialDOE(BaseDOE):
     """The base class of a full-factorial DOE."""
 
-    def generate_samples(  # noqa: D102
+    def generate_samples(
         self,
         n_samples: int,
         dimension: int,
         settings: BaseNSamplesBasedDOESettings | None = None,
+        # TODO: API: remove.
         **options: Any,
     ) -> RealArray:
+        """
+        Args:
+            **options: These options are ignored.
+        """  # noqa: D205, D212
         return self._generate_fullfact(dimension, settings)
 
     # TODO: Propagate a settings pydantic model.

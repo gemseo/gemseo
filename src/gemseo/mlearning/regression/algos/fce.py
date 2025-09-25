@@ -96,6 +96,10 @@ class FCERegressor(BaseFCERegressor):
     def _get_features_for_special_jacobian_data_use(
         self, features: RealArray
     ) -> RealArray:
+        """
+        Args:
+            features: The features matrix.
+        """  # noqa: D205, D212
         return features
 
     def _compute_sobol_indices(self, features: RealArray) -> None:

@@ -30,9 +30,9 @@ from typing import ClassVar
 
 import h5py
 from numpy import append
+from numpy import array
 from numpy import bytes_
 from numpy import str_
-from numpy.core.multiarray import array
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
