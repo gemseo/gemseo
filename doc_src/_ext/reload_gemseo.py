@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from sphinx.ext.autodoc.importer import import_module
+from sphinx.ext.autodoc.mock import mock
 from sphinx.util.logging import getLogger
 
 if TYPE_CHECKING:
@@ -15,14 +16,14 @@ if TYPE_CHECKING:
 logger = getLogger("reload-gemseo")
 
 
-def reload_gemseo(*args, **kwargs) -> None:
+def reload_gemseo(app: Sphinx, *args, **kwargs) -> None:
     """Reload all gemseo modules"""
     logger.info("reloading gemseo modules", color="white")
-    for name in sys.modules:
+    for name in tuple(sys.modules):
         if name.startswith("gemseo."):
-            # Reload module via autodoc importer such that it handles
-            # the mocked modules defined in autodoc_mock_imports.
-            import_module(name, try_reload=True)
+            del sys.modules[name]
+            with mock(app.config.autodoc_mock_imports):
+                import_module(name)
 
 
 def setup(app: Sphinx) -> dict[str, Any]:
