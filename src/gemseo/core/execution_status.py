@@ -41,13 +41,18 @@ class ExecutionStatus(Serializable):
 
     The possible statuses are defined in :attr:`.Status`.
     The status rules are:
+
     - the initial status is ``DONE``,
-    - the status ``RUNNING`` or ``LINEARIZING`` can only be set when the current one is
-        ``DONE``,
+    - the status ``RUNNING`` or ``LINEARIZING`` can only be set
+      when the current one is ``DONE``,
     - the status ``DONE`` can only be set when the current one is ``RUNNING``.
 
-    Helper methods should be used to handle the statuses when running or linearizing
-    a process: :meth:`.run` and :meth:`linearize`.
+    Helper methods should be used to handle the statuses
+    when executing a monitored process,
+    e.g., a :class:`.Discipline` or an :class:`.MDOScenario`,
+    using the method :meth:`execute`,
+    or linearizing a :class:`.Discipline`
+    using the method :meth:`~.Discipline.linearize`.
 
     Observers can be attached and are notified when the value of the status is changed.
     The observers are not restored after pickling.
