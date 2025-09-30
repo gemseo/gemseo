@@ -134,7 +134,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        bounds = list(zip(l_b, u_b, strict=False))
 
         # Get constraint in SciPy format
         scipy_constraints = [

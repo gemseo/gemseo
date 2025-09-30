@@ -117,7 +117,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
             data=vstack([
                 self._metric.compute(a, b)
                 for name in variable_names
-                for a, b in zip(*name_to_a_b_data[name])
+                for a, b in zip(*name_to_a_b_data[name], strict=False)
             ]).T,
             variable_names=variable_names,
             variable_names_to_group_names={

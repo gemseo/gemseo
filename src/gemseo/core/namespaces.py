@@ -28,14 +28,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from collections.abc import MutableMapping
 from typing import TYPE_CHECKING
-from typing import Union
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
 
-MutableNamespacesMapping = MutableMapping[str, Union[str, list[str]]]
-NamespacesMapping = Mapping[str, Union[str, list[str]]]
+MutableNamespacesMapping = MutableMapping[str, str | list[str]]
+NamespacesMapping = Mapping[str, str | list[str]]
 
 namespaces_separator = ":"
 

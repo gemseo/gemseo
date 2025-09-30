@@ -19,9 +19,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Optional
 from typing import TextIO
-from typing import Union
 
 from numpy import array
 
@@ -33,7 +31,7 @@ from gemseo.typing import RealArray
 if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
 
-OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
+OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
 
 class OATDOE(BaseDOELibrary[OATDOE_Settings]):

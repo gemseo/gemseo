@@ -40,7 +40,9 @@ def test_element_wise_metric(a, b, c):
     Elements are either floats or NumPy arrays.
     """
     element_wise_se_metric = ElementWiseMetric(SquaredErrorMetric())
-    for element, expected_element in zip(element_wise_se_metric.compute(a, b), c):
+    for element, expected_element in zip(
+        element_wise_se_metric.compute(a, b), c, strict=False
+    ):
         if isinstance(expected_element, ndarray):
             assert_almost_equal(element, expected_element)
         else:

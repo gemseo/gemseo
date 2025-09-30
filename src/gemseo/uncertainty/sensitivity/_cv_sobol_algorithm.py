@@ -112,7 +112,6 @@ from __future__ import annotations
 
 import contextlib
 from typing import TYPE_CHECKING
-from typing import Callable
 
 from numpy import array
 from numpy import cov
@@ -127,6 +126,7 @@ from scipy.linalg import solve
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
 
     from gemseo.typing import IntegerArray
@@ -262,7 +262,7 @@ class CVSobolAlgorithm:
             for samples in samples_mix
         ])
 
-        self.__cv_variance, self.__cv_indices = zip(*cv_statistics)
+        self.__cv_variance, self.__cv_indices = zip(*cv_statistics, strict=False)
         self.variance = self.__compute_variance()
         self.__confidence_level = confidence_level
         self.__bootstrap_samples = bootstrap_samples

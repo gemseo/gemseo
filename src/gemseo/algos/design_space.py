@@ -2457,7 +2457,9 @@ class DesignSpace:
                 continue
 
             current_value = []
-            for l_b_i, u_b_i in zip(variable.lower_bound, variable.upper_bound):
+            for l_b_i, u_b_i in zip(
+                variable.lower_bound, variable.upper_bound, strict=False
+            ):
                 if l_b_i == -inf:
                     current_value_i = 0 if u_b_i == inf else u_b_i
                 else:

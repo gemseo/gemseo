@@ -25,8 +25,6 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Optional
-from typing import Union
 
 from numpy import array
 from strenum import StrEnum
@@ -40,8 +38,8 @@ from gemseo.utils.seeder import Seeder
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
 
-MeasureType = Union[float, RealArray, dict[str, RealArray]]
-OptionType = Optional[Union[Sequence[int], bool, int, Dataset]]
+MeasureType = float | RealArray | dict[str, RealArray]
+OptionType = Sequence[int] | bool | int | Dataset | None
 MeasureOptionsType = dict[str, OptionType]
 
 

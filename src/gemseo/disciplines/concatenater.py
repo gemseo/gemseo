@@ -111,7 +111,7 @@ class Concatenater(Discipline):
         # Instead of manually accumulating, we use the accumulate() iterator.
         jac = self.jac[self.__output_name]
         for name, size, start in zip(
-            input_names, input_sizes, accumulate(input_sizes, initial=0)
+            input_names, input_sizes, accumulate(input_sizes, initial=0), strict=False
         ):
             jac[name] = csr_array(
                 (

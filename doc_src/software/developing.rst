@@ -76,12 +76,12 @@ First time setup:
 * Install the :ref:`requirements`.
 
 * From the root of the git clone,
-  run the tests for Python 3.9
-  and create a development environment under :file:`.tox/py39`:
+  run the tests for Python 3.10
+  and create a development environment under :file:`.tox/py310`:
 
 .. code-block:: console
 
-  tox run -e py39
+  tox run -e py310
 
 * Run the checks:
 
@@ -128,7 +128,7 @@ Requirements
 ++++++++++++
 
 Make sure Python 3 is installed,
-preferably 3.9.
+preferably 3.10
 
 First install `uv`_,
 then install `tox`_ and `pre-commit`_:
@@ -216,9 +216,9 @@ Create a development environment:
 
 .. code-block:: console
 
-  tox run -e py39
+  tox run -e py310
 
-This will create an environment based on Python 3.9 with
+This will create an environment based on Python 3.10 with
 |g| installed in `editable mode`_,
 With an editable installation,
 |g| appears installed in the development environment created by `tox`_,
@@ -541,7 +541,7 @@ Rework commit history
 Tests
     Avoid commits that break tests,
     only push a branch that passes all the tests
-    for py39 on your machine.
+    for py310 on your machine.
 
 Testing
 -------
@@ -625,27 +625,27 @@ Generated files
 Executing tests
 +++++++++++++++
 
-For Python 3.9,
+For Python 3.10
 run the tests with:
 
 .. code-block:: console
 
-   tox run -e py39
+   tox run -e py310
 
-Replace py39 by py310 for testing with Python 3.10.
+Replace py310 by py310 for testing with Python 3.10.
 With `tox`_,
 you can pass options to `pytest`_ after ``--``,
 for instance:
 
 .. code-block:: console
 
-   tox run -e py39 -- --last-failed --step-wise
+   tox run -e py310 -- --last-failed --step-wise
 
-Run the tests for several Python versions with for instance (on Linux):
+Run the tests for several Python versions with for instancer:
 
 .. code-block:: console
 
-   tox run -e py39,py310,py311
+   tox run -e py310,py311,py312
 
 To speed up the execution of the tests,
 you may execute exclusively or
@@ -659,7 +659,7 @@ skip all the post with
 
 .. code-block:: console
 
-   tox run -e py39 -- -m 'not post'
+   tox run -e py310 -- -m 'not post'
 
 Tests coverage
 ++++++++++++++
@@ -669,7 +669,7 @@ get the coverage information with:
 
 .. code-block:: console
 
-   tox run -e py39-coverage
+   tox run -e py310-coverage
 
 See `pytest-cov`_ for more information.
 
@@ -683,7 +683,7 @@ Generating the doc
 ++++++++++++++++++
 
 The documentation is written with `sphinx`_.
-On Linux, generate the documentation with:
+Generate the documentation with:
 
 .. code-block:: console
 
@@ -763,7 +763,7 @@ Check that the examples run correctly with:
 
 .. code::
 
-    tox run -e py39 -- tests/test_doc_examples.py -m doc_examples
+    tox run -e py310 -- tests/test_doc_examples.py -m doc_examples
 
 Versioning
 ----------

@@ -37,7 +37,6 @@ from gemseo.utils.compatibility.scipy import SparseArrayType
 if TYPE_CHECKING:
     from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 
-
 BooleanArray = NDArray[bool_]
 """A NumPy array of boolean numbers."""
 
@@ -62,7 +61,7 @@ RealOrComplexArrayT = TypeVar("RealOrComplexArrayT", RealArray, ComplexArray)
 StringArray = NDArray[str_]
 """A NumPy array of strings."""
 
-SparseOrDenseRealArray = Union[RealArray, SparseArrayType]
+SparseOrDenseRealArray = RealArray | SparseArrayType
 """A dense NumPy array or a sparse SciPy array."""
 
 JacobianData = MutableMapping[

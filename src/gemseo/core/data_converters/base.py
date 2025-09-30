@@ -19,11 +19,9 @@ from __future__ import annotations
 from abc import abstractmethod
 from numbers import Complex
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from numpy import array as np_array
 from numpy import concatenate
@@ -33,6 +31,7 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
 
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
 
-    ValueType = Union[int, float, complex, NumberArray]
+    ValueType = int | float | complex | NumberArray
 
 
 T = TypeVar("T", bound="BaseGrammar")

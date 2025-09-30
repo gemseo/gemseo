@@ -69,7 +69,6 @@ from typing import ClassVar
 from typing import Final
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from numpy import array
 
@@ -86,8 +85,8 @@ if TYPE_CHECKING:
         BaseDistribution_Settings,
     )
 
-StandardParametersType = Mapping[str, Union[str, int, float]]
-ParametersType = Union[tuple[str, int, float], StandardParametersType]
+StandardParametersType = Mapping[str, str | int | float]
+ParametersType = tuple[str, int, float] | StandardParametersType
 
 _DistributionT = TypeVar("_DistributionT")
 _ParametersT = TypeVar("_ParametersT")

@@ -31,7 +31,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 
 from numpy import array
 from numpy import hstack
@@ -74,9 +73,9 @@ if TYPE_CHECKING:
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.utils.string_tools import VariableType
 
-OutputsType = Union[str, tuple[str, int], Sequence[Union[str, tuple[str, int]]]]
-FirstOrderIndicesType = dict[str, list[Union[dict[str, RealArray], None]]]
-SecondOrderIndicesType = dict[str, list[Union[dict[str, dict[str, RealArray]], None]]]
+OutputsType = str | tuple[str, int], Sequence[str | tuple[str, int]]
+FirstOrderIndicesType = dict[str, list[dict[str, RealArray] | None]]
+SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]] | None]]
 
 
 class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):

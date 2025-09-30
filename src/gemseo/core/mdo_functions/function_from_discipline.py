@@ -24,7 +24,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
@@ -33,6 +32,7 @@ from gemseo.core.mdo_functions.discipline_adapter_generator import (
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Sequence
 

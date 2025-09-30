@@ -25,7 +25,6 @@ from dataclasses import fields
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 
 from numpy import ndarray
 
@@ -37,7 +36,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_problem import OptimizationProblem
 
-Value = Union[str, int, bool, ndarray]
+Value = str | int | bool | ndarray
 
 
 @dataclass

@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from strenum import StrEnum
@@ -27,6 +26,8 @@ from gemseo.core.serializable import Serializable
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATUS
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
 
 # TODO: use BaseExecutionStatusObserver.

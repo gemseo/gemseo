@@ -107,7 +107,7 @@ class SpringODEDiscipline(ODEDiscipline):
 
         super().__init__(
             rhs_discipline=mass_spring_discipline,
-            state_names=dict(zip(state_names, state_dot_names)),
+            state_names=dict(zip(state_names, state_dot_names, strict=False)),
             times=times,
             return_trajectories=True,
             **ode_solver_options,

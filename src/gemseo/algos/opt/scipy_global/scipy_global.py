@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import float64
 from numpy import inf as np_inf
@@ -63,7 +62,7 @@ if TYPE_CHECKING:
     from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
     from gemseo.core.mdo_functions.mdo_function import WrappedJacobianType
 
-InputType = NDArray[Union[float64, int32]]
+InputType = NDArray[float64 | int32]
 
 
 @dataclass
@@ -152,7 +151,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        bounds = list(zip(l_b, u_b, strict=False))
 
         # This is required because some algorithms do not
         # call the objective very often when the problem

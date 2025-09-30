@@ -26,8 +26,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Optional
-from typing import Union
 
 import openturns
 
@@ -82,7 +80,7 @@ if TYPE_CHECKING:
     from gemseo.algos.doe.base_doe import BaseDOE
     from gemseo.typing import NumberArray
 
-OptionType = Optional[Union[str, int, float, bool, Sequence[int], RealArray]]
+OptionType = str | int | float | bool | Sequence[int] | RealArray | None
 
 
 @dataclass

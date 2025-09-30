@@ -73,7 +73,6 @@ from collections.abc import Sequence
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Union
 
 from numpy import concatenate
 from numpy import hstack
@@ -102,7 +101,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.transformers.base_transformer import BaseTransformer
     from gemseo.typing import RealArray
 
-SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], dict[str, ndarray]]
+SavedObjectType = MLAlgoSaveObjectType | Sequence[str] | dict[str, ndarray]
 
 
 class BaseMLSupervisedAlgo(BaseMLAlgo):

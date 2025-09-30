@@ -132,7 +132,7 @@ def test_add_hdf_output_dataset(h5_file) -> None:
     assert sorted(keys_group["10"]) == sorted(array(list(values.keys()), dtype=bytes_))
     assert array(values_group["10"]) == pytest.approx(array([10]))
     dataset_names = values_group["arr_10"].keys()
-    for key, dataset_name in zip(sorted(values.keys()), dataset_names):
+    for key, dataset_name in zip(sorted(values.keys()), dataset_names, strict=False):
         val = values[key]
         if isinstance(val, (ndarray, list)):
             assert array(values_group["arr_10"][dataset_name]) == pytest.approx(

@@ -19,7 +19,6 @@ from __future__ import annotations
 from importlib.metadata import version
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import Union
 
 from numpy import ndarray
 from packaging.version import parse as parse_version
@@ -37,7 +36,7 @@ TOL_OPTION: Final[str] = "tol" if SCIPY_LOWER_THAN_1_12 else "rtol"
 
 
 sparse_classes = (spmatrix, sparray)
-SparseArrayType = Union[coo_matrix, spmatrix, sparray]
+SparseArrayType = coo_matrix | spmatrix | sparray
 
 
 def get_row(matrix, i):  # noqa: D103

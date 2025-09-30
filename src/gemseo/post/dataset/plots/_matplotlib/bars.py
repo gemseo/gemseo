@@ -61,6 +61,7 @@ class BarPlot(MatplotlibPlot):
             self._common_dataset.index,
             data,
             self._common_settings.color,
+            strict=False,
         ):
             subplots.append(
                 ax.bar(

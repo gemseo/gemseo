@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Callable
 
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.execution_statistics import ExecutionStatistics
@@ -28,6 +27,7 @@ from gemseo.typing import StrKeyMapping
 from gemseo.utils.constants import N_CPUS
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Sequence
 
@@ -86,7 +86,7 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
             ):
                 self._disciplines[0].execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
-            for disc, output in zip(self._disciplines, ordered_outputs):
+            for disc, output in zip(self._disciplines, ordered_outputs, strict=False):
                 # When the discipline in the worker failed, output is None.
                 # We do not update the local_data such that the issue is caught by the
                 # output grammar.

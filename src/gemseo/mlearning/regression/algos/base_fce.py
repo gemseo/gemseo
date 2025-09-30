@@ -19,7 +19,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import array
@@ -34,6 +33,7 @@ from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.utils.pydantic import create_model
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Sequence
 
     from numpy.typing import ArrayLike
@@ -207,6 +207,7 @@ class BaseFCERegressor(BaseRegressor):
             for ci_jac, ci_out in zip(
                 self._jac_coefficients[..., 1:],
                 self._coefficients.T[:, 1:],
+                strict=False,
             )
         ])
         # _variance_jacobian_wrt_special_variables: (n_out, n_in)

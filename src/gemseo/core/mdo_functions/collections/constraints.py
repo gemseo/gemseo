@@ -155,7 +155,7 @@ class Constraints(Functions):
                 for group_index, indices in enumerate(groups)
             ]
             for indice, constraint_to_insert in zip(
-                groups, reversed(aggregated_constraints)
+                groups, reversed(aggregated_constraints), strict=False
             ):
                 constraint_to_insert.name += f"[{indice}]"
                 self.insert(constraint_index, constraint_to_insert)

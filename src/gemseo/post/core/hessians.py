@@ -293,7 +293,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             raise ValueError(msg)
 
         scaled_x_hist, scaled_grad_hist = [], []
-        for x_value, grad_value in zip(x_hist, x_grad_hist):
+        for x_value, grad_value in zip(x_hist, x_grad_hist, strict=False):
             scaled_x_hist.append(design_space.normalize_vect(x_value))
             scaled_grad_hist.append(design_space.normalize_grad(grad_value))
 
@@ -949,7 +949,7 @@ class LSTSQApprox(HessianApproximation):
         x_0 = zeros(input_dimension * input_dimension)
         LOGGER.debug("Start least squares problem..")
         x_opt, ier = leastsq(compute_error, x0=x_0)  # , cov_x, infodict, mesg, ier
-        LOGGER.debug("End least squares, msg=%s", str(ier))
+        LOGGER.debug("End least squares, msg=%s", ier)
         hessian = y_to_b(x_opt)
 
         if return_x_grad:

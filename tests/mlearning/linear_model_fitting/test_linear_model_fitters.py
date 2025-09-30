@@ -27,11 +27,10 @@ MONO_OUTPUT_ALGORITHMS = {
     "OrthogonalMatchingPursuitCV",
 }
 
+CLASS_NAMES = sorted(set(LinearModelFitterFactory().class_names) - {NullSpace.__name__})
 
-@pytest.mark.parametrize(
-    "class_name",
-    set(LinearModelFitterFactory().class_names) - {NullSpace.__name__},
-)
+
+@pytest.mark.parametrize("class_name", CLASS_NAMES)
 def test_default_settings(input_data, output_data, class_name, multioutput):
     """Check the linear model fitting algorithms with default settings."""
     if multioutput and class_name in MONO_OUTPUT_ALGORITHMS:
@@ -41,10 +40,7 @@ def test_default_settings(input_data, output_data, class_name, multioutput):
     assert coefficients.shape == (4 if multioutput else 1, 3)
 
 
-@pytest.mark.parametrize(
-    "class_name",
-    set(LinearModelFitterFactory().class_names) - {NullSpace.__name__},
-)
+@pytest.mark.parametrize("class_name", CLASS_NAMES)
 @pytest.mark.parametrize("fit_intercept", [False, True])
 def test_custom_settings(
     input_data, output_data, class_name, multioutput, fit_intercept

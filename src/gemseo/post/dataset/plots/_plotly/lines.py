@@ -54,7 +54,7 @@ class Lines(PlotlyPlot):
         line_index = -1
         for y_name, y_values in y_names_to_values.items():
             for yi_name, yi_values in zip(
-                self._common_dataset.get_columns(y_name), y_values
+                self._common_dataset.get_columns(y_name), y_values, strict=False
             ):
                 line_index += 1
                 mode = (

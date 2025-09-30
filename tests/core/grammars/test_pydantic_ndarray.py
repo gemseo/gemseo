@@ -14,10 +14,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
-from typing import Callable
 from typing import NamedTuple
-from typing import Union
 
 import pytest
 from numpy import array
@@ -57,24 +56,24 @@ TYPES_TO_VALUES = {
         ),
     ),
     # The following verifies Unions, Callable is just not a type of the data item.
-    Union[_NDArrayPydantic, Callable]: Data(array([0]), INVALID_DATA),
-    Union[NDArrayPydantic, Callable]: Data(array([0]), INVALID_DATA),
-    Union[NDArrayPydantic[Any], Callable]: Data(array([0]), INVALID_DATA),
-    Union[NDArrayPydantic[int], Callable]: Data(
+    _NDArrayPydantic | Callable: Data(array([0]), INVALID_DATA),
+    NDArrayPydantic | Callable: Data(array([0]), INVALID_DATA),
+    NDArrayPydantic[Any] | Callable: Data(array([0]), INVALID_DATA),
+    NDArrayPydantic[int] | Callable: Data(
         array([0]),
         (
             array([0.0]),
             array([False]),
         ),
     ),
-    Union[NDArrayPydantic[float], Callable]: Data(
+    NDArrayPydantic[float] | Callable: Data(
         array([0.0]),
         (
             array([0]),
             array([False]),
         ),
     ),
-    Union[NDArrayPydantic[float], NDArrayPydantic[int]]: Data(
+    NDArrayPydantic[float] | NDArrayPydantic[int]: Data(
         array([0], dtype=int),
         (array([False]),),
     ),

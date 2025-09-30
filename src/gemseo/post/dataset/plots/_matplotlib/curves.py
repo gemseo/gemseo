@@ -56,6 +56,7 @@ class Curves(MatplotlibPlot):
             self._common_settings.linestyle,
             self._common_settings.color,
             labels,
+            strict=False,
         ):
             ax.plot(mesh, sub_y_values, linestyle=line_style, color=color, label=label)
 

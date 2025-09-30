@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from collections.abc import MutableMapping
-from typing import Union
 
 from pydantic import Field
 
@@ -25,7 +24,7 @@ from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.settings.base_settings import BaseSettings
 from gemseo.typing import StrKeyMapping
 
-SubTransformerType = Union[str, tuple[str, StrKeyMapping], BaseTransformer]
+SubTransformerType = str | tuple[str, StrKeyMapping] | BaseTransformer
 TransformerType = MutableMapping[str, SubTransformerType]
 
 

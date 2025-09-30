@@ -22,9 +22,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Optional
 from typing import TextIO
-from typing import Union
 
 from scipy.stats.qmc import Halton
 from scipy.stats.qmc import LatinHypercube
@@ -54,7 +52,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
 
-OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
+OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
 LOGGER = logging.getLogger(__name__)
 

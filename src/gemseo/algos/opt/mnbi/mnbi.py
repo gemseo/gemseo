@@ -33,7 +33,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import NamedTuple
-from typing import Union
 
 from numpy import append
 from numpy import argwhere
@@ -85,7 +84,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-MNBIOptionsType = Union[bool, int, float]
+MNBIOptionsType = bool | int | float
 
 
 class IndividualSubOptimOutput(NamedTuple):
@@ -346,7 +345,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                     f_hist, x_hist = outputs.database.get_function_history(
                         f.name, with_x_vect=True
                     )
-                    for x_value, f_value in zip(x_hist, f_hist):
+                    for x_value, f_value in zip(x_hist, f_hist, strict=False):
                         self._problem.database.store(x_value, {f.name: f_value})
 
         if self._settings.debug:
@@ -530,7 +529,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             f_hist, x_hist = database.get_function_history(
                 self._problem.objective.name, with_x_vect=True
             )
-            for xi, fi in zip(x_hist, f_hist):
+            for xi, fi in zip(x_hist, f_hist, strict=False):
                 self._problem.database.store(xi, {self._problem.objective.name: fi})
 
             for functions in [self._problem.constraints, self._problem.observables]:
@@ -538,7 +537,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                     f_hist, x_hist = database.get_function_history(
                         f.name, with_x_vect=True
                     )
-                    for xi, fi in zip(x_hist, f_hist):
+                    for xi, fi in zip(x_hist, f_hist, strict=False):
                         self._problem.database.store(xi, {f.name: fi})
 
         f_min = outputs.f_min

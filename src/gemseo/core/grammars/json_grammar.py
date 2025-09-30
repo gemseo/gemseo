@@ -32,7 +32,6 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import cast
@@ -47,6 +46,7 @@ from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterator
 
     from typing_extensions import Self

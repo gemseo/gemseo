@@ -23,8 +23,8 @@ from typing import TYPE_CHECKING
 from numpy import atleast_2d
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any
-    from typing import Callable
 
     from numpy import ndarray
 

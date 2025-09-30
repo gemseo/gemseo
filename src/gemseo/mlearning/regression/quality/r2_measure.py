@@ -152,7 +152,7 @@ class R2Measure(BaseRegressorQuality):
                 var = var.mean()
         else:
             mse = 0
-            for prediction, split in zip(predictions, resampler.splits):
+            for prediction, split in zip(predictions, resampler.splits, strict=False):
                 mse += mean_squared_error(
                     output_data[split.test],
                     prediction,

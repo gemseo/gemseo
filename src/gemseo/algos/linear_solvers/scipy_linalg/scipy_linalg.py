@@ -23,7 +23,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 
@@ -61,6 +60,8 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import DEFAULTSett
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from gemseo.algos.linear_solvers.linear_problem import LinearProblem
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping

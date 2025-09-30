@@ -61,8 +61,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import NoReturn
-from typing import Optional
-from typing import Union
 
 from numpy import newaxis
 from numpy import nonzero
@@ -101,13 +99,11 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-SavedObjectType = Union[_SavedObjectType, str, dict]
+SavedObjectType = _SavedObjectType | str | dict
 
 MLAlgoType = dict[
     str,
-    Optional[
-        Union[str, DesignSpace, dict[str, Union[str, int]], list[MLAlgoSettingsType]]
-    ],
+    str | DesignSpace | dict[str, str | int] | list[MLAlgoSettingsType] | None,
 ]
 
 

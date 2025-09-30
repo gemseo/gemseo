@@ -124,7 +124,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
 
         # for each subplot
         for constraint_history, constraint_name, ax in zip(
-            constraint_histories.T, constraint_names, axs.ravel()
+            constraint_histories.T, constraint_names, axs.ravel(), strict=False
         ):
             cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]

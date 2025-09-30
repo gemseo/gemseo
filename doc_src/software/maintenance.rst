@@ -106,18 +106,7 @@ Run
 
    tox -e pypi-pyX
 
-for all the supported Python versions ``X``, e.g. ``tox -e pypi-py39``.
-
-Testing conda-forge packages
-----------------------------
-
-Run
-
-.. code-block:: shell
-
-   tox -e conda-forge-pyX
-
-for all the supported Python versions ``X``, e.g. ``tox -e conda-forge-py39``.
+for all the supported Python versions ``X``, e.g. ``tox -e pypi-py310``.
 
 Updating the changelog
 ----------------------

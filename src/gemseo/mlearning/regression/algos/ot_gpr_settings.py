@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from collections.abc import Sequence  # noqa: TC003
 from typing import Final
-from typing import Union
 
 from openturns import TNC as OT_TNC
 from openturns import CovarianceModelImplementation
@@ -68,11 +67,11 @@ class CovarianceModel(StrEnum):
     """The squared exponential kernel."""
 
 
-CovarianceModelType = Union[
-    CovarianceModelImplementation,
-    type[CovarianceModelImplementation],
-    CovarianceModel,
-]
+CovarianceModelType = (
+    CovarianceModelImplementation
+    | type[CovarianceModelImplementation]
+    | CovarianceModel
+)
 
 TNC: Final[TNC] = OT_TNC()
 """The TNC algorithm."""

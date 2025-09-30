@@ -83,7 +83,7 @@ def test_duplicate(data, transformers) -> None:
     pipeline.fit(data)
     pipeline_dup = pipeline.duplicate()
     for transformer, transformer_dup in zip(
-        pipeline.transformers, pipeline_dup.transformers
+        pipeline.transformers, pipeline_dup.transformers, strict=False
     ):
         assert transformer != transformer_dup
 
@@ -91,7 +91,7 @@ def test_duplicate(data, transformers) -> None:
     pipeline.fit(data)
     pipeline_dup = pipeline.duplicate()
     for transformer, transformer_dup in zip(
-        pipeline.transformers, pipeline_dup.transformers
+        pipeline.transformers, pipeline_dup.transformers, strict=False
     ):
         assert transformer != transformer_dup
 

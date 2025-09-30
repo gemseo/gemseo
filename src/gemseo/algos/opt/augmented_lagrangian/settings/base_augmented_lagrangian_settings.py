@@ -16,11 +16,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from collections.abc import Iterable  # noqa:TC003
 from functools import partial
 from typing import Annotated
 from typing import Any
-from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TC002

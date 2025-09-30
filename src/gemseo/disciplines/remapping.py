@@ -22,7 +22,6 @@ from collections.abc import Iterable
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
 from typing import NoReturn
-from typing import Union
 
 from numpy import empty
 
@@ -33,8 +32,8 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import StrKeyMapping
 
-Indices = tuple[str, Union[int, Iterable[int]]]
-NameMapping = dict[str, Union[str, Indices]]
+Indices = tuple[str, int | Iterable[int]]
+NameMapping = dict[str, str | Indices]
 
 
 class RemappingDiscipline(Discipline):

@@ -26,6 +26,7 @@ from __future__ import annotations
 import logging
 import sys
 from ast import literal_eval
+from collections.abc import Callable
 from collections.abc import Mapping
 from contextlib import contextmanager
 from contextlib import nullcontext
@@ -33,9 +34,7 @@ from copy import deepcopy
 from itertools import chain
 from itertools import islice
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
-from typing import Union
 from xml.etree.ElementTree import parse as parse_element
 
 from numpy import array
@@ -82,10 +81,10 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
 
-DatabaseKeyType = Union[ndarray, HashableNdarray]
+DatabaseKeyType = ndarray | HashableNdarray
 """The type of a :class:`.Database` key."""
 
-FunctionOutputValueType = Union[float, ndarray, list[int]]
+FunctionOutputValueType = float | ndarray | list[int]
 """The type of a function output value stored in a :class:`.Database`."""
 
 DatabaseValueType = Mapping[str, FunctionOutputValueType]
@@ -944,7 +943,7 @@ class Database(Mapping):
         names_to_flat_names = {}
         for values in history:
             flat_value = []
-            for value, name in zip(values, names):
+            for value, name in zip(values, names, strict=False):
                 value = atleast_1d(value)
                 size = value.size
                 flat_value.extend(value)

@@ -21,10 +21,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import NamedTuple
-from typing import Union
 
 from numpy import asarray
 from numpy import empty
@@ -39,8 +38,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-RHSFuncType = Callable[[Union[RealArray, float], RealArray], RealArray]
-RHSJacType = Union[Callable[[Union[RealArray, float], RealArray], RealArray], RealArray]
+RHSFuncType = Callable[[RealArray | float, RealArray], RealArray]
+RHSJacType = Callable[[RealArray | float, RealArray], RealArray] | RealArray
 
 
 class TimeInterval(NamedTuple):

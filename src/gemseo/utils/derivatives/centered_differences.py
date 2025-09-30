@@ -79,6 +79,7 @@ class CenteredDifferences(BaseGradientApproximator):
                 output_perturbations[:n_perturbations_],
                 input_perturbations[n_perturbations_ : 2 * n_perturbations_],
                 output_perturbations[n_perturbations_ : 2 * n_perturbations_],
+                strict=False,
             )
         ]
 
@@ -100,6 +101,7 @@ class CenteredDifferences(BaseGradientApproximator):
             for input_plus, input_minus in zip(
                 input_perturbations[:n_perturbations_],
                 input_perturbations[n_perturbations_ : 2 * n_perturbations_],
+                strict=False,
             )
         ]
 

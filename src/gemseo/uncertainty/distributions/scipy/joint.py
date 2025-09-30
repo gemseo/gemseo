@@ -78,7 +78,7 @@ class SPJointDistribution(BaseJointDistribution):
     ) -> RealArray:
         return array([
             marginal.distribution.cdf(value_)
-            for value_, marginal in zip(value, self.marginals)
+            for value_, marginal in zip(value, self.marginals, strict=False)
         ])
 
     def compute_inverse_cdf(  # noqa: D102
@@ -87,5 +87,5 @@ class SPJointDistribution(BaseJointDistribution):
     ) -> RealArray:
         return array([
             marginal.distribution.ppf(value_)
-            for value_, marginal in zip(value, self.marginals)
+            for value_, marginal in zip(value, self.marginals, strict=False)
         ])

@@ -173,7 +173,7 @@ class MLAlgoSelection:
         quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
 
         for prodvalues in product(*values):
-            params = dict(zip(keys, prodvalues))
+            params = dict(zip(keys, prodvalues, strict=False))
             if calib_space:
                 ml_algo_calibration = MLAlgoCalibration(
                     name,

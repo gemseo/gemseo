@@ -23,13 +23,13 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import singledispatchmethod
 from multiprocessing import RLock
 from multiprocessing import current_process
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import TypeVar
 

@@ -21,15 +21,14 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 from typing import cast
+from typing import get_origin
 
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import ValidationError
 from pydantic import create_model
 from pydantic.fields import FieldInfo
-from typing_extensions import get_origin
 
 from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.core.grammars.base_grammar import BaseGrammar
@@ -203,9 +202,7 @@ class PydanticGrammar(BaseGrammar):
             if merge and name in fields:
                 # Pydantic typing for the argument annotation does not handle Union,
                 # we cast it.
-                annotation = cast(
-                    "type[Any]", Union[fields[name].annotation, annotation]
-                )
+                annotation = cast("type[Any]", fields[name].annotation | annotation)
             fields[name] = FieldInfo(annotation=annotation)
         self.__model_needs_rebuild = True
 

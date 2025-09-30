@@ -164,7 +164,7 @@ def generate_pareto_plots(
     new_labels = []
     for ax in axs.flatten():
         handles, labels = ax.get_legend_handles_labels()
-        for label, handle in zip(labels, handles):
+        for label, handle in zip(labels, handles, strict=False):
             if label not in new_labels:
                 new_labels.append(label)
                 new_handles.append(handle)

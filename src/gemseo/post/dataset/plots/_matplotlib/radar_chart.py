@@ -60,6 +60,7 @@ class RadarChart(MatplotlibPlot):
             series_names,
             self._common_settings.linestyle,
             self._common_settings.color,
+            strict=False,
         ):
             data = data.tolist()
             data.append(data[0])
@@ -88,7 +89,7 @@ class RadarChart(MatplotlibPlot):
         ax.set_thetagrids(theta_degree, variable_names)
         if self._specific_settings.radial_ticks:
             labels = []
-            for label, angle in zip(ax.get_xticklabels(), theta_degree):
+            for label, angle in zip(ax.get_xticklabels(), theta_degree, strict=False):
                 x, y = label.get_position()
                 lab = ax.text(
                     x,

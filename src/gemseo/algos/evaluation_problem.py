@@ -27,10 +27,8 @@ import logging
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Literal
-from typing import Union
 from typing import overload
 
 from numpy import any as np_any
@@ -54,6 +52,7 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
 
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -61,7 +60,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-EvaluationType = tuple[dict[str, Union[float, RealArray]], dict[str, RealArray]]
+EvaluationType = tuple[dict[str, float | RealArray], dict[str, RealArray]]
 """The type of the output value of an evaluation."""
 
 
@@ -872,9 +871,11 @@ class EvaluationProblem(BaseProblem):
             self.__observables.reset()
             self.__new_iter_observables.reset()
             if not function_calls and ProblemFunction.enable_statistics:
-                for o, n_calls in zip(self.__observables, n_o_calls):
+                for o, n_calls in zip(self.__observables, n_o_calls, strict=False):
                     o.n_calls = n_calls
-                for nio, n_calls in zip(self.__new_iter_observables, n_nio_calls):
+                for nio, n_calls in zip(
+                    self.__new_iter_observables, n_nio_calls, strict=False
+                ):
                     nio.n_calls = n_calls
 
             self._functions_are_preprocessed = False

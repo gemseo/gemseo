@@ -20,7 +20,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from numpy import array
 from numpy import hstack
@@ -30,6 +29,7 @@ from numpy import stack
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Sequence
 
     from gemseo.typing import RealArray

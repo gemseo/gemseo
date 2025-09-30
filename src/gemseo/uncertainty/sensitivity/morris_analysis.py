@@ -330,6 +330,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             for x, y in zip(
                 ["mu", "mu_star", "sigma", "min", "max", "relative_sigma"],
                 [mu, mu_star, sigma, minimum, maximum, relative_sigma],
+                strict=False,
             )
         })
         return self._indices

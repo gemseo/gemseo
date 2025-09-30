@@ -18,12 +18,15 @@ from __future__ import annotations
 
 import contextlib
 from contextlib import nullcontext
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import Final
 
 import pytest
 from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 __ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 
