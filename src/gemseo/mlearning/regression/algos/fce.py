@@ -126,7 +126,9 @@ class FCERegressor(BaseFCERegressor):
                 ])
                 / variance
             )
-            for coefficients, variance in zip(self._coefficients.T, self._variance)
+            for coefficients, variance in zip(
+                self._coefficients.T, self._variance, strict=False
+            )
         ]
         get_multi_index = self.__basis.get_multi_index
         multi_indices = [
@@ -148,7 +150,9 @@ class FCERegressor(BaseFCERegressor):
                 ])
                 / variance
             )
-            for coefficients, variance in zip(self._coefficients.T, self._variance)
+            for coefficients, variance in zip(
+                self._coefficients.T, self._variance, strict=False
+            )
         ]
 
     def _compute_statistics(self, features: RealArray) -> None:

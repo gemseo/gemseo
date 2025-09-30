@@ -21,13 +21,13 @@ import string
 from io import StringIO
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 
 import tqdm
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from io import TextIOWrapper
     from numbers import Real
 

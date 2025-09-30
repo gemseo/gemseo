@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import Callable
 
 from gemseo.post.dataset._trend import TREND_FUNCTIONS
 from gemseo.post.dataset._trend import Trend

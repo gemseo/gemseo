@@ -109,7 +109,7 @@ def test_compute_jacobian(data, pca) -> None:
     expectation = tile(pca.algo.components_, shape)
     if pca.data_is_scaled:
         coefficient = 1 / data.std(0)
-        expectation @= tile(diag(coefficient), shape)
+        expectation = expectation @ tile(diag(coefficient), shape)
     assert allclose(jac, expectation)
 
 

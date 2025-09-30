@@ -269,7 +269,7 @@ class XLSDiscipline(Discipline):
             raise ValueError(msg)
 
         self.io.input_grammar.defaults = {
-            k: array([v]) for k, v in zip(self.input_names, inputs)
+            k: array([v]) for k, v in zip(self.input_names, inputs, strict=False)
         }
 
     def __write_inputs(self, input_data: Mapping[str, float]) -> None:
@@ -325,4 +325,6 @@ class XLSDiscipline(Discipline):
         if self._recreate_book_at_run:
             self.__reset_xls_objects()
 
-        return {k: array([v]) for k, v in zip(self.output_names, out_vals)}
+        return {
+            k: array([v]) for k, v in zip(self.output_names, out_vals, strict=False)
+        }

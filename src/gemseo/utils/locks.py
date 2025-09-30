@@ -21,8 +21,11 @@
 from __future__ import annotations
 
 import functools
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def synchronized(wrapped: Callable[..., Any]) -> Callable[..., Any]:

@@ -67,7 +67,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 from typing import Literal
-from typing import Optional
 from typing import overload
 
 import h5py
@@ -117,7 +116,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 BestInfeasiblePointType = tuple[
-    Optional[RealArray], Optional[RealArray], bool, dict[str, RealArray]
+    RealArray | None, RealArray | None, bool, dict[str, RealArray]
 ]
 
 
@@ -698,6 +697,7 @@ class OptimizationProblem(EvaluationProblem):
                 for functions, group in zip(
                     [self.__constraints, self.observables],
                     [self._CONSTRAINTS_GROUP, self._OBSERVABLES_GROUP],
+                    strict=False,
                 ):
                     if functions:
                         function_group = h5file.require_group(group)
@@ -789,6 +789,7 @@ class OptimizationProblem(EvaluationProblem):
             for name, functions in zip(
                 [problem._CONSTRAINTS_GROUP, problem._OBSERVABLES_GROUP],
                 [problem.constraints, problem.observables],
+                strict=False,
             ):
                 if name in h5file:
                     group = get_hdf5_group(h5file, name)
@@ -1016,7 +1017,9 @@ class OptimizationProblem(EvaluationProblem):
             self.__constraints.reset()
             if not function_calls:
                 self._objective.n_calls = n_obj_calls
-                for constraint, n_calls in zip(self.__constraints, n_constraint_calls):
+                for constraint, n_calls in zip(
+                    self.__constraints, n_constraint_calls, strict=False
+                ):
                     constraint.n_calls = n_calls
 
         super().reset(

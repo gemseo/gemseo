@@ -103,8 +103,6 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Optional
-from typing import Union
 
 from numpy import ndarray
 
@@ -129,11 +127,11 @@ if TYPE_CHECKING:
     from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
     from gemseo.mlearning.resampling.base_resampler import BaseResampler
 
-SavedObjectType = Union[
-    Dataset, dict[str, BaseTransformer], list[int], str, bool, int, IntegerArray
-]
-DataType = Union[RealArray, Mapping[str, ndarray]]
-MLAlgoSettingsType = Optional[Any]
+SavedObjectType = (
+    Dataset | dict[str, BaseTransformer] | list[int] | str | bool | int | IntegerArray
+)
+DataType = RealArray | Mapping[str, ndarray]
+MLAlgoSettingsType = Any | None
 DefaultTransformerType = ClassVar[Mapping[str, TransformerType]]
 
 

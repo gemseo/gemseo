@@ -243,7 +243,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         ]
         vk = [
             -g_i * (-g_i <= mu / self._rho) + mu / self._rho * (-g_i > mu / self._rho)
-            for g_i, mu in zip(gv, mu_vector)
+            for g_i, mu in zip(gv, mu_vector, strict=False)
         ]
         vk = concatenate(vk) if vk else vk
         hv = concatenate(hv) if hv else hv

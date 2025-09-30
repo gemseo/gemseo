@@ -76,7 +76,7 @@ def test_print_configuration(reset_factory) -> None:
         r"^\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error " r"message\s+\|$",
     ]
 
-    for pattern, line in zip(header_patterns, repr(factory).split("\n")):
+    for pattern, line in zip(header_patterns, repr(factory).split("\n"), strict=False):
         assert re.findall(pattern, line)
 
     # check table body

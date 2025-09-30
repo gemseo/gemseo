@@ -19,7 +19,6 @@ from __future__ import annotations
 from multiprocessing import Value
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import isnan
@@ -36,6 +35,7 @@ from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
 
     from gemseo.algos.design_space import DesignSpace
@@ -304,6 +304,7 @@ class ProblemFunction(MDOFunction, Serializable):
         for input_value, output_value in zip(
             input_values,
             output_values.reshape((len(input_values), -1)),
+            strict=False,
         ):
             hashed_xu = database.get_hashable_ndarray(input_value)
             self.check_function_output_includes_nan(

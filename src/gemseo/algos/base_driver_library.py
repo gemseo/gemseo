@@ -42,7 +42,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import TypeVar
-from typing import Union
 
 from numpy import ndarray
 
@@ -78,9 +77,16 @@ if TYPE_CHECKING:
     from gemseo.algos.database import ListenerType
     from gemseo.algos.design_space import DesignSpace
 
-DriverSettingType = Union[
-    str, float, int, bool, list[str], ndarray, Iterable[CallbackType], StrKeyMapping
-]
+DriverSettingType = (
+    str
+    | float
+    | int
+    | bool
+    | list[str]
+    | ndarray
+    | Iterable[CallbackType]
+    | StrKeyMapping
+)
 LOGGER = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseDriverSettings)

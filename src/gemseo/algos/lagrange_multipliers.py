@@ -453,7 +453,7 @@ class LagrangeMultipliers:
                 names_neg = array(self.active_lb_names)[wrong_inds]
                 LOGGER.warning(
                     "Negative Lagrange multipliers for lower bounds on variables%s !",
-                    str(names_neg),
+                    names_neg,
                 )
         n_act = len(self.active_ub_names)
         if n_act > 0:
@@ -465,7 +465,7 @@ class LagrangeMultipliers:
                 names_neg = array(self.active_ub_names)[wrong_inds]
                 LOGGER.warning(
                     "Negative Lagrange multipliers for upper bounds on variables%s !",
-                    str(names_neg),
+                    names_neg,
                 )
         n_act = len(self.active_ineq_names)
         if n_act > 0:
@@ -477,7 +477,7 @@ class LagrangeMultipliers:
                 names_neg = array(self.active_ineq_names)[wrong_inds]
                 LOGGER.warning(
                     "Negative Lagrange multipliers for inequality constraints%s !",
-                    str(names_neg),
+                    names_neg,
                 )
         n_act = len(self.active_eq_names)
         if n_act > 0:
@@ -532,7 +532,7 @@ class LagrangeMultipliers:
         multipliers = {}
         for label in self.CSTR_LABELS:
             names, mults = self.lagrange_multipliers.get(label, ([], array([])))
-            multipliers[label] = dict(zip(names, mults))
+            multipliers[label] = dict(zip(names, mults, strict=False))
 
         # Add the Lagrange multipliers equal to zero
         multipliers_init = self._initialize_multipliers()
@@ -586,7 +586,7 @@ class LagrangeMultipliers:
         ])
 
         for cstr_type, nam_val in self.lagrange_multipliers.items():
-            for name, value in zip(nam_val[0], nam_val[1]):
+            for name, value in zip(nam_val[0], nam_val[1], strict=False):
                 table.add_row([cstr_type, name, value])
 
         return table

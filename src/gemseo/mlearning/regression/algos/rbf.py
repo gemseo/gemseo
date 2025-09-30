@@ -39,11 +39,10 @@ The RBF model relies on the Rbf class of the
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import average
 from numpy import exp
@@ -61,7 +60,7 @@ from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressor_Settings
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
-SavedObjectType = Union[_SavedObjectType, float, Callable]
+SavedObjectType = _SavedObjectType | float | Callable
 
 
 class RBFRegressor(BaseRegressor):

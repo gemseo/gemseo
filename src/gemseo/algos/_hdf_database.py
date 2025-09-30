@@ -27,7 +27,6 @@ from collections.abc import Mapping
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Union
 
 import h5py
 from numpy import array
@@ -53,7 +52,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StringArray
 
 ReturnedHdfMissingOutputType = tuple[
-    Mapping[str, Union[float, ndarray, list[int]]], Mapping[str, int]
+    Mapping[str, float | ndarray | list[int]], Mapping[str, int]
 ]
 
 
@@ -214,7 +213,7 @@ class HDFDatabase:
 
         if not output_name_to_idx:
             output_name_to_idx = dict(
-                zip(output_keys_sorted, range(len(output_values)))
+                zip(output_keys_sorted, range(len(output_values)), strict=False)
             )
 
         # We separate scalar data from vector data in the hdf file.
@@ -288,7 +287,7 @@ class HDFDatabase:
 
         missing_ids = list(range(len(existing_output_names), len(output_values)))
         missing_names_idx_mapping = dict(
-            zip(sorted(missing_name_values.keys()), missing_ids)
+            zip(sorted(missing_name_values.keys()), missing_ids, strict=False)
         )
 
         return missing_name_values, missing_names_idx_mapping
@@ -618,6 +617,7 @@ class HDFDatabase:
                                 and k not in names_to_strings
                             ),
                             get_hdf5_group(values_group, str_index),
+                            strict=False,
                         )
                     )
                 else:

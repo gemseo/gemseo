@@ -17,12 +17,11 @@
 from __future__ import annotations
 
 from typing import TypeVar
-from typing import Union
 
 from gemseo.typing import NumberArray
 from gemseo.utils.metrics.base_metric import BaseMetric
 
-_InputT = TypeVar("_InputT", Union[float, int, complex], NumberArray)
+_InputT = TypeVar("_InputT", float | int | complex, NumberArray)
 
 
 class SquaredErrorMetric(BaseMetric[_InputT, _InputT]):

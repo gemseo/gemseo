@@ -23,8 +23,6 @@ from __future__ import annotations
 from collections.abc import Container
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Optional
-from typing import Union
 
 from numpy import hstack
 from numpy import linspace
@@ -40,7 +38,7 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.typing import RealArray
 
-OptionType = Optional[Union[str, int, float, bool, Container[str]]]
+OptionType = str | int | float | bool | Container[str] | None
 
 
 class DiagonalDOE(BaseDOELibrary[DiagonalDOE_Settings]):

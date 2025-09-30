@@ -105,17 +105,6 @@ def test_callback_error() -> None:
         )
 
 
-def test_task_submitted_callback_error() -> None:
-    function_list = [rosen] * 3
-    parallel_execution = CallableParallelExecution(function_list)
-
-    with pytest.raises(TypeError):
-        parallel_execution.execute(
-            [[0.5] * i for i in range(1, 3)],
-            task_submitted_callback="not_callable",
-        )
-
-
 def test_callable() -> None:
     """Test CallableParallelExecution with a Callable worker."""
     n = 2
@@ -236,7 +225,7 @@ def test_disc_parallel_threading_proc(sellar_with_2d_array, sellar_disciplines) 
     parallel_execution = DiscParallelExecution(disciplines, n_processes=2)
     outs2 = parallel_execution.execute([None] * 3)
 
-    for out_d1, out_d2 in zip(outs1, outs2):
+    for out_d1, out_d2 in zip(outs1, outs2, strict=False):
         for name, val in out_d2.items():
             assert equal(out_d1[name], val).all()
 
@@ -388,3 +377,14 @@ def test_multiprocessing_context(
         if use_threading:
             expected_n_calls /= 2
         assert getattr(sellar.execution_statistics, n_calls_attr) == expected_n_calls
+
+
+def test_task_submitted_callback_error() -> None:
+    function_list = [rosen] * 3
+    parallel_execution = CallableParallelExecution(function_list)
+
+    with pytest.raises(TypeError):
+        parallel_execution.execute(
+            [[0.5] * i for i in range(1, 3)],
+            task_submitted_callback="not_callable",
+        )

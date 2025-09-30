@@ -208,7 +208,9 @@ class MDOLinearFunction(MDOFunction):
             iterable = enumerate(self._coefficients[0, :])
         else:
             self._coefficients: csr_matrix
-            iterable = zip(self._coefficients.indices, self._coefficients.data)
+            iterable = zip(
+                self._coefficients.indices, self._coefficients.data, strict=False
+            )
 
         for index, coefficient in iterable:
             if coefficient != 0.0:

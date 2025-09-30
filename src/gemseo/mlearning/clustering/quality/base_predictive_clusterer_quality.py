@@ -107,6 +107,6 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
             store_sampling_result=store_resampling_result,
         )
         measure = 0
-        for prediction, split in zip(predictions, bootstrap.splits):
+        for prediction, split in zip(predictions, bootstrap.splits, strict=False):
             measure += self._compute_measure(data[split.test], prediction, multioutput)
         return measure / n_replicates

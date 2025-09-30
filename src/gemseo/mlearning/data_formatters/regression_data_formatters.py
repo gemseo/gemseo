@@ -23,8 +23,8 @@ from typing import TYPE_CHECKING
 from numpy import eye
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any
-    from typing import Callable
 
     from gemseo.mlearning.core.algos.ml_algo import DataType
     from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor

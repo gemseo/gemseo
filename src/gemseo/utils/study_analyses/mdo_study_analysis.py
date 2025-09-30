@@ -177,7 +177,9 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         options = {}
         if option_names is not None:
             option_values = scenario_description[XLSStudyParser.OPTION_VALUES]
-            for option_name, option_value in zip(option_names, option_values):
+            for option_name, option_value in zip(
+                option_names, option_values, strict=False
+            ):
                 if isinstance(option_value, str):
                     with contextlib.suppress(ValueError):
                         option_value = literal_eval(option_value)

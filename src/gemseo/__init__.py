@@ -41,7 +41,6 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from numpy import ndarray
 
@@ -77,6 +76,7 @@ from gemseo.utils.pickle import from_pickle  # noqa: F401
 from gemseo.utils.pickle import to_pickle  # noqa: F401
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence

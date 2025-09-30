@@ -22,7 +22,6 @@ from abc import abstractmethod
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import abs as np_abs
@@ -38,6 +37,7 @@ from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import 
 from gemseo.mda.base_mda import BaseMDA
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence

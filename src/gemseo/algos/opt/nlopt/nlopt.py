@@ -41,9 +41,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
-from typing import Union
 
 import nlopt
 from nlopt import LD_LBFGS
@@ -79,13 +77,15 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy import ndarray
 
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
-NLoptOptionsType = Union[bool, int, float]
+NLoptOptionsType = bool | int | float
 
 
 @dataclass

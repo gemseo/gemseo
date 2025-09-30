@@ -21,7 +21,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Union
 
 import pytest
 from matplotlib.figure import Figure
@@ -51,7 +50,7 @@ if TYPE_CHECKING:
 
 StatisticsType = tuple[
     dict[str, NDArray[float]],
-    dict[str, Union[FirstOrderIndicesType, SecondOrderIndicesType]],
+    dict[str, FirstOrderIndicesType | SecondOrderIndicesType],
 ]
 
 
@@ -99,7 +98,7 @@ def discipline_cv2() -> AutoPyDiscipline:
 def uncertain_space() -> ParameterSpace:
     """The uncertain space of interest."""
     parameter_space = ParameterSpace()
-    for name, size in zip(["x1", "x23"], [1, 2]):
+    for name, size in zip(["x1", "x23"], [1, 2], strict=False):
         parameter_space.add_random_variable(
             name, "OTUniformDistribution", minimum=-pi, maximum=pi, size=size
         )

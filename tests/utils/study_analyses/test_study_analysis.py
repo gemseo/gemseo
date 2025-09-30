@@ -184,7 +184,7 @@ def test_xls_study_parser(tmp_wd, caplog) -> None:
         line for (_, _, lines) in caplog.record_tuples for line in lines.split("\n")
     ]
     assert len(expected_lines) == len(lines)
-    for expected_line, line in zip(expected_lines, lines):
+    for expected_line, line in zip(expected_lines, lines, strict=False):
         assert line == expected_line
 
 

@@ -24,7 +24,6 @@ from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from strenum import StrEnum
 
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 FittingTestResultType = tuple[bool, Mapping[str, float]]
-MeasureType = Union[FittingTestResultType, float]
+MeasureType = FittingTestResultType | float
 _DistributionT = TypeVar("_DistributionT")
 
 

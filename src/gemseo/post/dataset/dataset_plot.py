@@ -35,7 +35,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import NamedTuple
-from typing import Union
 
 from strenum import StrEnum
 
@@ -55,7 +54,7 @@ if TYPE_CHECKING:
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
-DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
+DatasetPlotPropertyType = str | int | float | Sequence[str | int | float]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):

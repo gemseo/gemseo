@@ -192,7 +192,7 @@ def test_opt_step() -> None:
     funcs = [sin, cos, exp]
     jacs = [cos, lambda x: -sin(x), exp]
 
-    for func, jac in zip(funcs, jacs):
+    for func, jac in zip(funcs, jacs, strict=False):
         for mult in [1.0, 1e2, 1e-2]:
             for x in [0.0, 1.0, 3.0]:
                 f_p = func(mult * (x + step))

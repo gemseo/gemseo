@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from gemseo import create_design_space
 from gemseo import create_discipline
@@ -32,6 +32,9 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def create_sobieski_bilevel_scenario(

@@ -41,7 +41,6 @@ from typing import ClassVar
 from typing import Generic
 from typing import NamedTuple
 from typing import TypeVar
-from typing import Union
 
 from matplotlib import pyplot as plt
 from numpy import array
@@ -107,7 +106,7 @@ class BaseParametricStatistics(
         value: _DistributionT
         """The probability distribution."""
 
-    _DistributionType = dict[str, Union[str, _DistributionT]]
+    _DistributionType = dict[str, str | _DistributionT]
 
     DistributionName: ClassVar[StrEnum] = _DistributionNameT
     FittingCriterion: ClassVar[StrEnum] = _FittingCriterionT

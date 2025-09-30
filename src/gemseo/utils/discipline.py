@@ -623,6 +623,7 @@ def get_discipline_variable_properties(
     for grammar, names_to_properties in zip(
         (discipline.io.input_grammar, discipline.io.output_grammar),
         (input_names_to_properties, output_names_to_properties),
+        strict=False,
     ):
         from_namespaced = grammar.from_namespaced
         for current_name in grammar:

@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import Final
 
 import numpy as np
@@ -35,6 +34,7 @@ from gemseo.post.core.hessians import SR1Approx
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Sized
 
 

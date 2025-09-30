@@ -25,7 +25,6 @@ from abc import abstractmethod
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Union
 
 from matplotlib import pyplot as plt
 from numpy import arange
@@ -39,8 +38,8 @@ if TYPE_CHECKING:
 
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
-StandardParametersType = Mapping[str, Union[str, int, float]]
-ParametersType = Union[tuple[str, int, float], StandardParametersType]
+StandardParametersType = Mapping[str, str | int | float]
+ParametersType = tuple[str, int, float] | StandardParametersType
 
 
 class ScalarDistributionMixin:

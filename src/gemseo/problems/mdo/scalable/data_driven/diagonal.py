@@ -43,7 +43,6 @@ from __future__ import annotations
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Callable
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -71,6 +70,7 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
@@ -749,7 +749,9 @@ class ScalableDiagonalApproximation:
                 coefficients = io_dependency[output_index]
                 result[output_index] = sum(
                     coefficient * func(input_value)
-                    for coefficient, input_value in zip(coefficients, input_data)
+                    for coefficient, input_value in zip(
+                        coefficients, input_data, strict=False
+                    )
                 ) / sum(coefficients)
 
             return result
@@ -769,7 +771,9 @@ class ScalableDiagonalApproximation:
                 coefficients = io_dependency[output_index]
                 result[output_index, :] = array([
                     coefficient * func(input_value)
-                    for coefficient, input_value in zip(coefficients, input_data)
+                    for coefficient, input_value in zip(
+                        coefficients, input_data, strict=False
+                    )
                 ]) / sum(coefficients)
 
             return result

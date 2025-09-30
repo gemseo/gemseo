@@ -123,7 +123,7 @@ def traverse_add_diff_io_mda(
 
     # The sub MDAs where the strong couplings are handled here.
     strong_couplings = coupling_structure.strong_couplings
-    for group, disc_reduced in zip(strong_groups, reduced_disciplines):
+    for group, disc_reduced in zip(strong_groups, reduced_disciplines, strict=False):
         if disc_reduced in diff_ios_merged:
             diff_red_in = set(diff_ios_merged[disc_reduced][0])
             diff_red_out = set(diff_ios_merged[disc_reduced][1])

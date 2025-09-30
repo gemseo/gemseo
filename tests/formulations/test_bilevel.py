@@ -21,7 +21,7 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -51,6 +51,9 @@ from gemseo.utils.testing.bilevel_test_helper import (
 )
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @pytest.fixture(params=["BiLevel", "BiLevelBCD"])

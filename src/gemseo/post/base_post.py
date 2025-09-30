@@ -27,7 +27,6 @@ from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -49,7 +48,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.datasets.optimization_metadata import OptimizationMetadata
 
-BasePostOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
+BasePostOptionType = int | float | str | bool | Sequence[str] | FigSizeType
 
 
 T = TypeVar("T", bound=BasePostSettings)

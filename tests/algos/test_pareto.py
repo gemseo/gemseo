@@ -86,7 +86,7 @@ def test_pareto(problem_2obj):
         assert obj1 in pareto.f_optima
 
     # Check if the anchor points are in database.
-    for x_anchor, f_anchor in zip(pareto.x_anchors, pareto.f_anchors):
+    for x_anchor, f_anchor in zip(pareto.x_anchors, pareto.f_anchors, strict=False):
         assert_array_equal(
             database.get_function_value(problem_2obj.objective.name, x_anchor),
             f_anchor,

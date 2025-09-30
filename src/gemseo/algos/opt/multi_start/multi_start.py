@@ -108,7 +108,10 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         samples = doe_algo.compute_doe(design_space, **self._settings.doe_algo_settings)
 
         problems = execute(
-            self._optimize, (), n_processes, list(zip(samples, opt_algo_max_iter))
+            self._optimize,
+            (),
+            n_processes,
+            list(zip(samples, opt_algo_max_iter, strict=False)),
         )
 
         # The sub-optimizations use their own optimization problems
@@ -124,7 +127,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
                 f_hist, x_hist = database.get_function_history(
                     self._problem.objective.name, with_x_vect=True
                 )
-                for xi, fi in zip(x_hist, f_hist):
+                for xi, fi in zip(x_hist, f_hist, strict=False):
                     self._problem.database.store(xi, {self._problem.objective.name: fi})
 
                 for functions in [self._problem.constraints, self._problem.observables]:
@@ -132,7 +135,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
                         f_hist, x_hist = database.get_function_history(
                             f.name, with_x_vect=True
                         )
-                        for xi, fi in zip(x_hist, f_hist):
+                        for xi, fi in zip(x_hist, f_hist, strict=False):
                             self._problem.database.store(xi, {f.name: fi})
 
         file_path = self._settings.multistart_file_path

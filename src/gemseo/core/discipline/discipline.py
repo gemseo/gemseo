@@ -855,7 +855,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         # Compute approximated Jacobian elements.
         for output_name, input_name in zip(
-            outputs_names_to_approximate, input_names_to_approximate
+            outputs_names_to_approximate, input_names_to_approximate, strict=False
         ):
             jac_input_output = self._jac_approx.compute_approx_jac(
                 [output_name], [input_name]

@@ -114,7 +114,7 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
         # Replace infinite bounds with None
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        bounds = list(zip(l_b, u_b, strict=False))
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients

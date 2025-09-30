@@ -41,7 +41,7 @@ def test_wing_weight_space() -> None:
         "tc",
     ]
     for distribution, loc, scale in zip(
-        space.distributions.values(), loc_values, scale_values
+        space.distributions.values(), loc_values, scale_values, strict=False
     ):
         assert len(distribution.marginals) == 1
         distribution = distribution.marginals[0].distribution

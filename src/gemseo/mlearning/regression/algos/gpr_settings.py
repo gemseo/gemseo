@@ -16,9 +16,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from collections.abc import Mapping  # noqa: TC003
 from typing import Annotated
-from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeInt

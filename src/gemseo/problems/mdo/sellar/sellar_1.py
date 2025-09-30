@@ -127,7 +127,9 @@ class Sellar1(BaseSellar):
             jac[X_SHARED] = block_diag(
                 [
                     array([x_shared_i[0] * inv_denom_i, 0.5 * inv_denom_i]).T
-                    for x_shared_i, inv_denom_i in zip(x_shared, inv_denom)
+                    for x_shared_i, inv_denom_i in zip(
+                        x_shared, inv_denom, strict=False
+                    )
                 ],
                 format="csr",
             )
@@ -141,7 +143,7 @@ class Sellar1(BaseSellar):
             jac[GAMMA] = block_diag(
                 [
                     (-0.5 * self.__k * y_2_i * inv_denom_i).reshape((self._n, 1))
-                    for y_2_i, inv_denom_i in zip(y_2, inv_denom)
+                    for y_2_i, inv_denom_i in zip(y_2, inv_denom, strict=False)
                 ],
                 format="csr",
             )

@@ -183,7 +183,7 @@ def test_scalable_discipline_coefficients(default_scalable_problem) -> None:
     """Check the coefficients of the scalable disciplines."""
     rng = default_rng(SEED)
     for scalable_discipline, coupling_name in zip(
-        default_scalable_problem.scalable_disciplines, ["y_2", "y_1"]
+        default_scalable_problem.scalable_disciplines, ["y_2", "y_1"], strict=False
     ):
         coefficients = scalable_discipline.coefficients
         assert_equal(coefficients.D_i0, rng.random((1, 1)))
@@ -206,6 +206,7 @@ def test_coefficients_custom(custom_scalable_problem) -> None:
         [1, 2, 3],
         custom_scalable_problem.scalable_disciplines,
         [(("y_2", 2), ("y_3", 1)), (("y_1", 3), ("y_3", 1)), (("y_1", 3), ("y_2", 2))],
+        strict=False,
     ):
         coefficients = scalable_discipline.coefficients
         assert_equal(coefficients.D_i0, rng.random((p_i, 2)))

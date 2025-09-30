@@ -27,7 +27,6 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Optional
 
 from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.grammars.errors import InvalidDataError
@@ -52,7 +51,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.simple_grammar import SimpleGrammar
     from gemseo.core.namespaces import MutableNamespacesMapping
 
-    SimpleGrammarTypes = Mapping[str, Optional[type[Any]]]
+    SimpleGrammarTypes = Mapping[str, type[Any] | None]
 
 LOGGER = logging.getLogger(__name__)
 

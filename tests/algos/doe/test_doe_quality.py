@@ -107,7 +107,10 @@ def test_measures_comparison(
             sum(
                 operator(t(x), t(y))
                 for x, y, t in zip(
-                    quality_1.measures, quality_2.measures, transformations
+                    quality_1.measures,
+                    quality_2.measures,
+                    transformations,
+                    strict=False,
                 )
             )
             / 3

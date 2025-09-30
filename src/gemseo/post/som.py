@@ -89,8 +89,8 @@ class SOM(BasePost[SOM_Settings]):
             The self organizing map
         """
         LOGGER.info("Building Self Organizing Map from optimization history:")
-        LOGGER.info("    Number of neurons in x direction = %s", str(som_grid_nx))
-        LOGGER.info("    Number of neurons in y direction = %s", str(som_grid_ny))
+        LOGGER.info("    Number of neurons in x direction = %s", som_grid_nx)
+        LOGGER.info("    Number of neurons in y direction = %s", som_grid_ny)
 
         var_som = MiniSom(som_grid_nx + 1, som_grid_ny + 1, data.shape[1])
         var_som.pca_weights_init(data)
@@ -345,7 +345,7 @@ class SOM(BasePost[SOM_Settings]):
         coord_indx = som_coord[:, -1]
         y_vars = bincount(coord_indx)
         i = nonzero(y_vars)[0]
-        uniques_occ = array(list(zip(i, y_vars[i])))
+        uniques_occ = array(list(zip(i, y_vars[i], strict=False)))
         unique_indx = uniques_occ[:, 0]
         max_occ = np_max(uniques_occ[:, 1])
         max_subarr_size = floor(sqrt(max_occ)) + 1

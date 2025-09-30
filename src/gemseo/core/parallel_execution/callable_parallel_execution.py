@@ -35,7 +35,6 @@ from typing import ClassVar
 from typing import Final
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from strenum import StrEnum
@@ -65,9 +64,9 @@ ReturnT = TypeVar("ReturnT")
 
 CallableType = Callable[[ArgT], ReturnT]
 
-_QueueOutItem2 = Union[BaseException, ReturnT]
+_QueueOutItem2 = BaseException | ReturnT
 
-_QueueInType = queue.Queue[Union[tuple[int, ArgT], None]]
+_QueueInType = queue.Queue[tuple[int, ArgT] | None]
 _QueueOutType = queue.Queue[tuple[int, _QueueOutItem2[ReturnT]]]
 
 
@@ -329,7 +328,7 @@ class CallableParallelExecution(
         while n_outputs != n_tasks and not stop:
             index, output = queue_out.get()
             if isinstance(output, BaseException):
-                LOGGER.error("Failed to execute task indexed %s", str(index))
+                LOGGER.error("Failed to execute task indexed %s", index)
                 LOGGER.error(output)
                 # Condition to stop the execution only for required exceptions.
                 # Otherwise, keep getting outputs from the queue.

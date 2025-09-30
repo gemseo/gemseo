@@ -24,14 +24,13 @@ from __future__ import annotations
 import logging
 import re
 from ast import literal_eval
+from collections.abc import Callable
 from collections.abc import Mapping
 from collections.abc import MutableSequence
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Callable
-from typing import Union
 
 from numpy import array
 from numpy import ndarray
@@ -72,13 +71,13 @@ class Parser(StrEnum):
 
 
 OutputParser = Callable[
-    [Mapping[str, tuple[int]], Sequence[str]], Mapping[str, Union[ndarray, float]]
+    [Mapping[str, tuple[int]], Sequence[str]], Mapping[str, ndarray | float]
 ]
 """Output parser type."""
 
 InputWriter = Callable[
     [
-        Union[str, Path],
+        str | Path,
         Mapping[str, ndarray],
         Mapping[str, tuple[int, int, int]],
         MutableSequence[str],

@@ -20,7 +20,6 @@ import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import array
@@ -30,6 +29,7 @@ from numpy import ndarray
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace

@@ -138,7 +138,7 @@ class Correlations(BasePost[Correlations_Settings]):
         spec = GridSpec(n_plots_y, n_plots_x, wspace=0.3, hspace=0.75)
         spec.update(top=0.95, bottom=0.06, left=0.08, right=0.95)
 
-        for plot_index, (i, j) in enumerate(zip(i_corr, j_corr)):
+        for plot_index, (i, j) in enumerate(zip(i_corr, j_corr, strict=False)):
             plot_index_loc = plot_index % (n_plots_x * n_plots_y)
             if plot_index_loc == 0:
                 fig: Figure

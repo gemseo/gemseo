@@ -25,8 +25,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
-from typing import Optional
-from typing import Union
 
 from numpy.random import RandomState
 from pyDOE3.doe_box_behnken import bbdesign
@@ -54,9 +52,17 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_problem import OptimizationProblem
 
-OptionType = Optional[
-    Union[str, int, float, bool, Sequence[int], tuple[int, int], RealArray, RandomState]
-]
+OptionType = (
+    str
+    | int
+    | float
+    | bool
+    | Sequence[int]
+    | tuple[int, int]
+    | RealArray
+    | RandomState
+    | None
+)
 
 
 class PyDOEAlgorithmDescription(DOEAlgorithmDescription):

@@ -370,6 +370,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
             [input_names or self.input_names, output_names or self.output_names],
             [input_group, output_group],
             [False, True],
+            strict=False,
         ):
             cache_entries = defaultdict(list)
             for cache_entry in self.get_all_entries():

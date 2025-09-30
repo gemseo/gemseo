@@ -46,5 +46,5 @@ def test_idf_chain_is_mdo_chain():
 def test_idf_chain(execution_sequence, n_processes, use_threading, classes):
     """Check the types of the disciplines chained by IDFChain."""
     idf_chain = IDFChain(execution_sequence, n_processes, use_threading)
-    for discipline, cls in zip(idf_chain.disciplines, classes):
+    for discipline, cls in zip(idf_chain.disciplines, classes, strict=False):
         assert isinstance(discipline, cls)

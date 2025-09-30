@@ -1356,7 +1356,7 @@ def test_reset(rosenbrock_lhs) -> None:
         *problem.observables,
         *problem.new_iter_observables,
     ]
-    for func, nonproc_func in zip(functions, nonproc_functions):
+    for func, nonproc_func in zip(functions, nonproc_functions, strict=False):
         assert id(func) == id(nonproc_func)
         assert func.n_calls == 0
         assert nonproc_func.n_calls == 0
@@ -1373,7 +1373,7 @@ def test_reset(rosenbrock_lhs) -> None:
         *problem.observables,
         *problem.new_iter_observables,
     ]
-    for func, nonproc_func in zip(functions, nonproc_functions):
+    for func, nonproc_func in zip(functions, nonproc_functions, strict=False):
         assert id(func) == id(nonproc_func)
 
 
@@ -1434,7 +1434,7 @@ def test_reset_preprocess(rosenbrock_lhs) -> None:
         *problem.observables.get_originals(),
         *problem.new_iter_observables.get_originals(),
     ]
-    for func, nonproc_func in zip(functions, nonproc_functions):
+    for func, nonproc_func in zip(functions, nonproc_functions, strict=False):
         assert id(func) != id(nonproc_func)
 
     assert problem.objective.original is not None

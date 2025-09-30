@@ -26,7 +26,6 @@ from __future__ import annotations
 from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from gemseo.algos.aggregation.core import compute_iks_agg
 from gemseo.algos.aggregation.core import compute_lower_bound_ks_agg
@@ -42,6 +41,7 @@ from gemseo.algos.aggregation.core import compute_upper_bound_ks_agg
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Sequence
 
     from numpy import ndarray

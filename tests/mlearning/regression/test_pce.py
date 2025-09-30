@@ -550,7 +550,7 @@ def test_sobol(pce, order, expected) -> None:
     """Check the computation of Sobol' indices."""
     computed = getattr(pce, f"{order}_sobol_indices")
     assert len(computed) == len(expected)
-    for value1, value2 in zip(computed, expected):
+    for value1, value2 in zip(computed, expected, strict=False):
         assert compare_dict_of_arrays(value1, value2, 0.01)
 
 

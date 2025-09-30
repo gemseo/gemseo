@@ -216,7 +216,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         )
         output_data = self.algo.output_data
         measure = 0
-        for prediction, split in zip(predictions, bootstrap.splits):
+        for prediction, split in zip(predictions, bootstrap.splits, strict=False):
             measure += self._compute_measure(
                 output_data[split.test], prediction, multioutput
             )

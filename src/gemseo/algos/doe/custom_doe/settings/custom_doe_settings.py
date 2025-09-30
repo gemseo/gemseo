@@ -20,7 +20,6 @@ from collections.abc import Mapping
 from collections.abc import Sequence  # noqa: TC003
 from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
-from typing import Union
 
 from pydantic import Field
 from pydantic import NonNegativeInt
@@ -32,11 +31,11 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-SamplesType = Union[
-    NDArrayPydantic,
-    Mapping[str, NDArrayPydantic],
-    Sequence[Mapping[str, NDArrayPydantic]],
-]
+SamplesType = (
+    NDArrayPydantic
+    | Mapping[str, NDArrayPydantic]
+    | Sequence[Mapping[str, NDArrayPydantic]]
+)
 
 
 class CustomDOE_Settings(BaseDOESettings):  # noqa: N801

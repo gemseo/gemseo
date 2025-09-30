@@ -25,8 +25,8 @@ from gemseo.mlearning.data_formatters.regression_data_formatters import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any
-    from typing import Callable
 
     from numpy import ndarray
 

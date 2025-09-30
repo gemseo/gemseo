@@ -58,6 +58,7 @@ class BarPlot(PlotlyPlot):
             self._common_dataset.index,
             data,
             self._common_settings.color,
+            strict=False,
         ):
             text = series_data.tolist() if self._specific_settings.annotate else None
             fig.add_trace(

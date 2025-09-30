@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 
 from numpy import array
 from numpy import complex128
@@ -50,8 +49,8 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.post.factory import PostFactory
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
-from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.pydantic import get_class_name
 from gemseo.utils.string_tools import MultiLineString
@@ -71,12 +70,12 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
-    from gemseo.post.factory import PostFactory
+    from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
-ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, float]]]]
+ScenarioInputDataType = Mapping[str, str | int | Mapping[str, int | float]]
 
 
 class _ScenarioProcessFlow(BaseProcessFlow):
@@ -150,6 +149,15 @@ class BaseScenario(BaseMonitoredProcess):
     _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]]
     """The driver factory."""
 
+    post_factory: ClassVar[PostFactory] = PostFactory()
+    """The factory of post-processors."""
+
+    posts: ClassVar[list[str]] = post_factory.class_names
+    """The names of the post-processors."""
+
+    _formulation_factory: ClassVar[MDOFormulationFactory] = MDOFormulationFactory()
+    """The factory of MDO formulations."""
+
     # TODO: API: rename to settings_class.
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of :meth:`.execute`."""
@@ -170,9 +178,6 @@ class BaseScenario(BaseMonitoredProcess):
 
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
-
-    post_factory: PostFactory | None
-    """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
 
@@ -213,7 +218,6 @@ class BaseScenario(BaseMonitoredProcess):
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        self._form_factory = self._formulation_factory
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
 
         self.optimization_result = None
@@ -307,18 +311,6 @@ class BaseScenario(BaseMonitoredProcess):
     @use_standardized_objective.setter
     def use_standardized_objective(self, value: bool) -> None:
         self.formulation.optimization_problem.use_standardized_objective = value
-
-    # TODO: API: the factory is a global object, remove this property.
-    @property
-    def post_factory(self) -> PostFactory:
-        """The factory of post-processors."""
-        return ScenarioResult.POST_FACTORY
-
-    # TODO: API: the factory is a global object, remove this property.
-    @property
-    def _formulation_factory(self) -> MDOFormulationFactory:
-        """The factory of MDO formulations."""
-        return MDOFormulationFactory()
 
     @property
     def design_space(self) -> DesignSpace:
@@ -452,7 +444,7 @@ class BaseScenario(BaseMonitoredProcess):
             **formulation_settings: The formulation settings.
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
-        self.formulation = self._form_factory.create(
+        self.formulation = self._formulation_factory.create(
             formulation_name,
             disciplines,
             objective_name,
@@ -573,12 +565,6 @@ class BaseScenario(BaseMonitoredProcess):
                 show=False,
                 file_path=self._opt_hist_backup_path.stem,
             )
-
-    # TODO: use class attr.
-    @property
-    def posts(self) -> list[str]:
-        """The available post-processors."""
-        return self.post_factory.class_names
 
     def post_process(
         self, settings_model: BasePostSettings | None = None, **settings: Any

@@ -624,12 +624,12 @@ def test_namespaces(sellar_mda) -> None:
 
 def test_settings_type_error():
     settings = "toto"
+    BaseMDA.Settings = BaseMDASettings
     msg = (
         f"The Pydantic model must be a {BaseMDA.Settings.__name__}; "
         f"got {settings.__class__.__name__}"
     )
 
-    BaseMDA.Settings = BaseMDASettings
     with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
         BaseMDA([], settings_model=settings)
 

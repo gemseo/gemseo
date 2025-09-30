@@ -113,7 +113,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from numpy import array
 from numpy import hstack
@@ -124,6 +123,7 @@ from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalablePro
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence

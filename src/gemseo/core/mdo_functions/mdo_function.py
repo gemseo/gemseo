@@ -23,14 +23,13 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from collections.abc import Sized
 from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import abs as np_abs
 from numpy import ndarray
@@ -63,8 +62,8 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-OutputType = Union[NumberArray, Complex]
-OperatorType = Union[Callable[[OutputType, OutputType], OutputType], ufunc]
+OutputType = NumberArray | Complex
+OperatorType = Callable[[OutputType, OutputType], OutputType] | ufunc
 WrappedFunctionType = Callable[[NumberArray], OutputType]
 WrappedJacobianType = Callable[[NumberArray], NumberArray]
 
