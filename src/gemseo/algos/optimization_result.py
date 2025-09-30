@@ -132,7 +132,7 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         msg.indent()
         msg.add("Status: {}", self.status)
         msg.add("Message: {}", self.message)
-        if self.n_obj_call is not None:
+        if self.n_obj_call:
             msg.add(
                 "Number of calls to the objective function by the optimizer: {}",
                 self.n_obj_call,

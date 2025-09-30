@@ -29,12 +29,15 @@ from gemseo import configure
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.utils.global_configuration import _configuration
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
@@ -264,3 +267,13 @@ def test_opt_result_from_opt_problem(tmp_path):
     read_problem = OptimizationProblem.from_hdf(out_file)
     opt_result = OptimizationResult.from_optimization_problem(read_problem)
     assert isinstance(opt_result, OptimizationResult)
+
+
+@pytest.mark.parametrize("enable", [True, False])
+def test_no_obj_call_no_log(caplog, enable):
+    """Check that the number of calls to the objective is no logged when 0."""
+    enable_function_statistics = _configuration.enable_function_statistics
+    _configuration.enable_function_statistics = enable
+    execute_algo(Rosenbrock(), settings_model=SLSQP_Settings(max_iter=3))
+    assert ("Number of calls to the objective function" in caplog.text) is enable
+    _configuration.enable_function_statistics = enable_function_statistics

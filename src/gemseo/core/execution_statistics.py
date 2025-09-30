@@ -63,10 +63,13 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     whose number of calls is counted and time measured.
     Some have also a linearization method whose number of calls is counted too.
 
-    The recording of the statistics can be disabled all at once by setting
-    :attr:`is_enabled` to ``False``. By default, it is set to ``True``.
-    When enabled, the recording of time stamps can be enabled by setting
-    :attr:`is_time_stamps_enabled` to ``True``. By default, it is set to ``False``.
+    The recording of the statistics can be enabled all at once
+    by setting :attr:`is_enabled` to ``True``.
+    By default, it is set to ``False``.
+    When enabled,
+    the recording of time stamps can be enabled
+    by setting :attr:`is_time_stamps_enabled` to ``True``.
+    By default, it is set to ``False``.
     These switches are global and shall be modified from the class.
 
     If any of those switches are disabled, the recordings, if any, are not removed.
@@ -79,7 +82,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     :attr:`.n_linearizations`,
     :attr:`.duration`,
     :attr:`.time_stamps`.
-    The time stamps should be processed with :func:`create_gantt_chart`.
+    The time stamps should be processed with :func:`.create_gantt_chart`.
 
     The recorded statistics are not restored after pickling.
     """
