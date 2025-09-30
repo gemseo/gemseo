@@ -1,0 +1,1 @@
+``OptAsMDOScenario`` supports more than 2 strongly coupled disciplines by default.

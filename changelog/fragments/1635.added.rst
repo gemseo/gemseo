@@ -1,0 +1,1 @@
+``OptAsMDOScenario`` supports vectorial design variables.
