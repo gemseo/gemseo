@@ -31,7 +31,7 @@ class AccelerationMethod(PascalCaseStrEnum):
     """The acceleration method to be used to improve convergence rate.
 
     More details on each acceleration methods can be found in the dedicated module
-    :mod:`gemseo.algos.sequence_transformer.acceleration_methods`.
+    :mod:`gemseo.algos.sequence_transformer.acceleration`.
     """
 
     AITKEN = auto()

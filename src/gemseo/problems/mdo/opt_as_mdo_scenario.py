@@ -114,11 +114,14 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
 
-from numpy import array
+from numpy import eye
 from numpy import hstack
-from numpy import ones
+from numpy import ix_
 
 from gemseo.core.discipline.discipline import Discipline
+from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
+    ScalableDisciplineSettings,
+)
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
 from gemseo.scenarios.mdo_scenario import MDOScenario
 
@@ -267,7 +270,9 @@ class BaseLinkDiscipline(Discipline):
             return
 
         self._init_jacobian(input_names, output_names)
-        self.jac[self._original_x_names[0]][self._x_names[0]] = ones((1, 1))
+        self.jac[self._original_x_names[0]][self._x_names[0]] = eye(
+            self.io.data[self._original_x_names[0]].size
+        )
 
         # The derivatives of the coupling variables from the analytical MDA.
         input_data = self.io.get_input_data(with_namespaces=False)
@@ -304,24 +309,51 @@ class LinearLinkDiscipline(BaseLinkDiscipline):
         expected_y: RealArray,
     ) -> dict[str, RealArray]:
         output_data = {self._original_x_names[0]: x[0]}
+        start = 0
         for i in range(1, self._n_strongly_coupled_disciplines + 1):
             original_x_i_name = self._original_x_names[i]
+            approx = approximated_y[i - 1]
+            size = approx.size
             output_data[original_x_i_name] = (
-                x[i] + approximated_y[i - 1] - expected_y[i - 1]
+                x[i] + approx - expected_y[slice(start, start + size)]
             )
+            start += size
 
         return output_data
 
     def _compute_jacobian_from_intermediate_data(
         self, x: tuple[RealArray, ...], d_expected_y_dx: RealArray
     ) -> None:
+        data = self.io.data
+        x0_dim = data[self._original_x_names[0]].size
+        start_xi = 0
         for i in range(1, self._n_strongly_coupled_disciplines + 1):
             jac = self.jac[self._original_x_names[i]]
-            jac[self._y_names[i - 1]] = ones((1, 1))
-            jac[self._x_names[i]] = ones((1, 1)) - d_expected_y_dx[i - 1, i]
+            xi_dim = data[self._original_x_names[i]].size
+            jac[self._y_names[i - 1]] = eye(xi_dim)
+            jac[self._x_names[i]] = (
+                eye(xi_dim)
+                - d_expected_y_dx[
+                    ix_(
+                        range(start_xi, start_xi + xi_dim),
+                        range(x0_dim + start_xi, x0_dim + start_xi + xi_dim),
+                    )
+                ]
+            )
+            start_xj = 0
             for j in range(self._n_strongly_coupled_disciplines + 1):
+                xj_dim = data[self._original_x_names[j]].size
                 if j != i:
-                    jac[self._x_names[j]] = -array([[d_expected_y_dx[i - 1, j]]])
+                    jac[self._x_names[j]] = -d_expected_y_dx[
+                        ix_(
+                            range(start_xi, start_xi + xi_dim),
+                            range(start_xj, start_xj + xj_dim),
+                        )
+                    ]
+
+                start_xj += xj_dim
+
+            start_xi += xi_dim
 
 
 class OptAsMDOScenario(MDOScenario):
@@ -417,25 +449,28 @@ def create_disciplines(
         and the strongly coupled disciplines.
 
     Raises:
-        ValueError: When the design space includes less than three variables
-            or when a design variable is not scalar.
+        ValueError: When the design space includes less than three variables.
     """
     n_variables = len(design_space)
     if n_variables < 3:
         msg = (
-            "The design space must have at least three scalar design variables; "
+            "The design space must have at least three design variables; "
             f"got {n_variables}."
         )
-        raise ValueError(msg)
-
-    if design_space.dimension != n_variables:
-        msg = "The design space must include scalar variables only."
         raise ValueError(msg)
 
     if coupling_equations:
         strongly_coupled_disciplines, compute_y, differentiate_y = coupling_equations
     else:
-        scalable_problem = ScalableProblem()
+        sizes = design_space.variable_sizes
+        names = design_space.variable_names
+        scalable_problem = ScalableProblem(
+            discipline_settings=[
+                ScalableDisciplineSettings(d_i=(size := sizes[names[i]]), p_i=size)
+                for i in range(1, n_variables)
+            ],
+            d_0=sizes[names[0]],
+        )
         strongly_coupled_disciplines = scalable_problem.scalable_disciplines
         for i, strongly_coupled_discipline in enumerate(strongly_coupled_disciplines):
             strongly_coupled_discipline.name = f"D{i + 1}"
