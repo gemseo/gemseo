@@ -1,0 +1,2 @@
+The ``time_limit`` setting of the ``Scipy_MILP`` algorithm is now properly passed to ``scipy.optimize.milp``.
+The ``maxiter`` and ``tol`` settings of the SciPy linear programming library is now properly passed to ``scipy.optimize.linprog``.

@@ -48,7 +48,6 @@ from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
-from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -137,10 +136,6 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
         settings_ = self._filter_settings(
             self._settings.model_dump(), BaseOptimizerSettings
         )
-
-        # Deactivate stopping criteria which are handled by GEMSEO
-        settings_["tol"] = 0.0
-        settings_["maxiter"] = C_LONG_MAX
 
         linprog_result = linprog(
             c=obj_coeff.real,

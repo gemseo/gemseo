@@ -31,7 +31,7 @@ class INTERIOR_POINT_Settings(BaseSciPyLinProgSettings):  # noqa: N801
 
     dual_feasibility_tolerance: NonNegativeFloat = Field(
         default=1e-7,
-        description=("""The tolerance on the feasibility of the dual problem."""),
+        description="""The tolerance on the feasibility of the dual problem.""",
     )
 
     ipm_optimality_tolerance: NonNegativeFloat = Field(
