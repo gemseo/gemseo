@@ -137,13 +137,29 @@ from gemseo.settings.post import OptHistoryView_Settings
 # Note that there are no strong couplings in our expressions, which means we could also
 # compute both the objective and constraints with a single discipline if we wished to.
 def obj(x: ndarray, y: ndarray) -> float:
-    """A simple Python function to compute f(x,y)."""
+    """A simple Python function to compute f(x,y).
+
+    Args:
+        x: The first operand.
+        y: The second operand.
+
+    Returns:
+        The sum of the Euclidean norms of x and y.
+    """
     f = norm(x) + norm(y)
     return f  # noqa: RET504
 
 
 def const(x: ndarray, y: ndarray) -> ndarray:
-    """A simple Python function to compute g(x,y)."""
+    """A simple Python function to compute g(x,y).
+
+    Args:
+        x: The first operand.
+        y: The second operand.
+
+    Returns:
+        The sum of x and y.
+    """
     g = x + y
     return g  # noqa: RET504
 

@@ -203,10 +203,8 @@ class SobieskiBase:
         self.__mtx_shifted[2, 1] = s_bound[index]
         self.__mtx_shifted[0, 2] = self.__mtx_shifted[2, 2] = s_bound[index] ** 2
 
-    @staticmethod
     def __compute_a(
-        mtx_shifted: ndarray,
-        f_bound: ndarray,
+        self,
         ao_coeff: ndarray,
         ai_coeff: ndarray,
         aij_coeff: ndarray,
@@ -215,18 +213,19 @@ class SobieskiBase:
         """Compute the interpolation terms.
 
         Args:
-            mtx_shifted: The shift matrix.
-            f_bound: The f bound.
             ao_coeff: The a0 term.
             ai_coeff: The ai terms
             aij_coeff: The aij term
             index: The index.
         """
+        f_bound = self.__f_bound
         ao_coeff[:] = f_bound[1]
-        ai_coeff[index] = -(f_bound[2] - f_bound[0]) / (2 * mtx_shifted[0, 1])
+        ai_coeff[index] = -(f_bound[2, 0] - f_bound[0, 0]) / (
+            2 * self.__mtx_shifted[0, 1]
+        )
         aij_coeff[index, index] = (
-            f_bound[0] - f_bound[1] + (f_bound[2] - f_bound[0]) / 2
-        ) / mtx_shifted[0, 2]
+            f_bound[0, 0] - f_bound[1, 0] + (f_bound[2, 0] - f_bound[0, 0]) / 2
+        ) / self.__mtx_shifted[0, 2]
 
     def __update_aij(
         self,
@@ -369,9 +368,7 @@ class SobieskiBase:
             b_coeff = a_coeff
             self.__compute_mtx_shifted(s_bound, i)
             s_shifted = self.__compute_fbound(flag, s_shifted, a_coeff, b_coeff, i)
-            self.__compute_a(
-                self.__mtx_shifted, self.__f_bound, a0_coeff, ai_coeff, aij_coeff, i
-            )
+            self.__compute_a(a0_coeff, ai_coeff, aij_coeff, i)
 
         aij_coeff = self.__update_aij(aij_coeff, imax)
 
@@ -425,9 +422,7 @@ class SobieskiBase:
             b_coeff = a_coeff
             self.__compute_mtx_shifted(s_bound, i)
             s_shifted = self.__compute_fbound(flag, s_shifted, a_coeff, b_coeff, i)
-            self.__compute_a(
-                self.__mtx_shifted, self.__f_bound, a0_coeff, ai_coeff, aij_coeff, i
-            )
+            self.__compute_a(a0_coeff, ai_coeff, aij_coeff, i)
 
         aij_coeff = self.__update_aij(aij_coeff, imax)
 

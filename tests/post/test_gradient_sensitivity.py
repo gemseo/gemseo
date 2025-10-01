@@ -128,11 +128,11 @@ def f(x1=0.0, x2=0.0):
     return y  # noqa: RET504
 
 
-def dfdxy(x1=0.0, x2=0.0):
+def dfdxy(x1, x2):
     """Jacobian function of f."""
     jac = empty((1, 2))
     jac[0, 0] = 1
-    jac[0, 1] = 4 * x2
+    jac[0, 1] = 4 * x2[0]
     return jac
 
 

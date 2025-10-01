@@ -31,7 +31,7 @@ from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable
 
 
 class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
@@ -68,8 +68,8 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         MDOScenarioAdapter._compute_jacobian(self, input_names, output_names)
         # The gradient of the objective function cannot be computed by the

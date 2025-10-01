@@ -33,6 +33,7 @@ from numpy.random import default_rng
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.robustness_settings import Robustness_Settings
+from gemseo.utils.compatibility.matplotlib import boxplot
 from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import repr_variable
 
@@ -105,5 +106,5 @@ class Robustness(BasePost[Robustness_Settings]):
             "Boxplot of the optimization functions "
             f"with normalized stddev {standard_deviation}"
         )
-        plt.boxplot(function_samples, showfliers=False, labels=function_names)
+        boxplot(function_samples, showfliers=False, labels=function_names)
         fig.tight_layout()

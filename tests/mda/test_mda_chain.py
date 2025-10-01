@@ -46,7 +46,9 @@ from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.utils import get_initial_data
+from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 
 from .test_mda import analytic_disciplines_from_desc
 from .utils import generate_parallel_doe
@@ -496,3 +498,19 @@ def test_settings_precedence(coupled_disciplines, caplog):
         assert msg in caplog.text
 
     assert "linear_solver_settings" not in main_settings
+
+
+@pytest.mark.parametrize(
+    ("classes", "log"), [((Sellar1, SobieskiPropulsion), True), ((Sellar1,), False)]
+)
+def test_chain_linearize_warning(classes, log, caplog) -> None:
+    """Check the warning about switching chain_linearize."""
+    MDAChain([cls() for cls in classes])
+    if log:
+        assert caplog.record_tuples[0] == (
+            "gemseo.mda.mda_chain",
+            30,
+            "No coupling in MDA, switching chain_linearize to True.",
+        )
+    else:
+        assert not caplog.record_tuples

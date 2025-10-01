@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import pickle
 from pathlib import Path
 
 import numpy as np
@@ -52,9 +51,7 @@ def test_build_model(sobieski_aerodynamics) -> None:
     for k, value in sobieski_aerodynamics.io.input_grammar.defaults.items():
         sizes[k] = len(value)
 
-    with (Path(__file__).parent / "SobieskiAerodynamics.pkl").open("rb") as f:
-        pickler = pickle.Unpickler(f)
-        dataset = pickler.load()
+    dataset = from_pickle(Path(__file__).parent / "SobieskiAerodynamics.pkl")
 
     scd = DataDrivenScalableDiscipline(
         "ScalableDiagonalModel", dataset, sizes, fill_factor=0.7

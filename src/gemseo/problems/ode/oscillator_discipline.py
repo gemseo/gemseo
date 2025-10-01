@@ -92,6 +92,10 @@ class OscillatorDiscipline(ODEDiscipline):
         """
         Args:
             omega: The positive angular velocity of the oscillator.
+            cache_inner_discipline_is_none: If `False`,
+                the inner discipline
+                implementing the right-hand side of the ordinary differential equation
+                does not use a cache.
         """  # noqa: D205, D212, D415
         self.__omega_squared = omega**2
         rhs_discipline = AutoPyDiscipline(py_func=self._compute_rhs)

@@ -78,7 +78,7 @@ class ProgressOpt(BaseOptimizationLibrary):
     def _get_options(self, **options: Any) -> dict[str, Any]:
         return options
 
-    def _run(self, problem: OptimizationProblem, **options: Any) -> None:
+    def _run(self, problem: OptimizationProblem) -> None:
         x_0 = problem.design_space.get_current_value(
             complex_to_real=True, normalize=True
         )

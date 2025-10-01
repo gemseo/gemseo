@@ -49,6 +49,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
 
     def __init__(
         self,
+        # TODO: API: keep the name of the parent class, i.e., metric.
         composed_metric: BaseMetric[Any, Any],
         group_names: StrColumnType = (),
         variable_names: StrColumnType = (),
@@ -57,7 +58,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
     ) -> None:
         """
         Args:
-            metric_name: The name of the metric applied at element level.
+            composed_metric: The name of the metric applied at element level.
             group_names: The name(s) of the group(s) to compare.
                 If empty, consider all the groups.
             variable_names: The name(s) of the variables(s) to compare.

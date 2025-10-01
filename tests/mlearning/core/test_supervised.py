@@ -327,7 +327,7 @@ def test_fit_transformers_option(dataset, name, fit_transformers) -> None:
 
     algo._fit = lambda x, y: None
     algo.learn(fit_transformers=fit_transformers)
-    assert (float(algo.transformer[name].offset) == -1) is fit_transformers
+    assert all(algo.transformer[name].offset == -1) is fit_transformers
 
 
 @pytest.mark.parametrize(

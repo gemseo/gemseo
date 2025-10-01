@@ -37,19 +37,15 @@ def test_init() -> None:
 
 def test_compute_a() -> None:
     base = SobieskiBase("float64")
-    mtx_shifted = eye(3)
-    f_bound = array([[1], [2], [3.1]])
+    SobieskiBase._SobieskiBase__mtx_shifted = eye(3)
+    SobieskiBase._SobieskiBase__f_bound = array([[1], [2], [3.1]])
     ao_coeff = zeros([3])
     ai_coeff = zeros([3])
     aij_coeff = zeros([3, 3])
-    base._SobieskiBase__compute_a(
-        mtx_shifted, f_bound, ao_coeff, ai_coeff, aij_coeff, index=0
-    )
+    base._SobieskiBase__compute_a(ao_coeff, ai_coeff, aij_coeff, index=0)
 
-    mtx_shifted = zeros((3, 3))
-    base._SobieskiBase__compute_a(
-        mtx_shifted, f_bound, ao_coeff, ai_coeff, aij_coeff, index=0
-    )
+    SobieskiBase._SobieskiBase__mtx_shifted = zeros((3, 3))
+    base._SobieskiBase__compute_a(ao_coeff, ai_coeff, aij_coeff, index=0)
 
 
 def test_compute_fbound() -> None:
