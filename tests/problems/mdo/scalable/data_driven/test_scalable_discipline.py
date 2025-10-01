@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import pickle
 import unittest
 from os.path import exists
 from pathlib import Path
@@ -27,6 +26,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from gemseo import from_pickle
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.problems.mdo.scalable.data_driven.discipline import (
@@ -137,9 +137,7 @@ class ScalableProblem(unittest.TestCase):
 
                 sizes = ScalableProblem.sizes
                 fill_factor = ScalableProblem.fill_factor
-                with (Path(__file__).parent / f"{discipline.name}.pkl").open("rb") as f:
-                    pickler = pickle.Unpickler(f)
-                    dataset = pickler.load()
+                dataset = from_pickle(Path(__file__).parent / f"{discipline.name}.pkl")
                 scal_disc = DataDrivenScalableDiscipline(
                     ScalableProblem.scalable_model,
                     data=dataset,
@@ -236,9 +234,7 @@ class ScalableProblem(unittest.TestCase):
 
     def test_group_dep(self) -> None:
         hdf_node_path = ScalableProblem.original_disciplines[3].name
-        with (Path(__file__).parent / f"{hdf_node_path}.pkl").open("rb") as f:
-            pickler = pickle.Unpickler(f)
-            dataset = pickler.load()
+        dataset = from_pickle(Path(__file__).parent / f"{hdf_node_path}.pkl")
         DataDrivenScalableDiscipline(
             ScalableProblem.scalable_model,
             data=dataset,

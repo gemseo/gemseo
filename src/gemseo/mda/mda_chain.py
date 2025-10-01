@@ -116,7 +116,8 @@ class MDAChain(BaseMDA):
             not self.coupling_structure.all_couplings
             and not self.settings.chain_linearize
         ):
-            LOGGER.warning("No coupling in MDA, switching chain_linearize to True.")
+            if len(disciplines) > 1:
+                LOGGER.warning("No coupling in MDA, switching chain_linearize to True.")
             self.settings.chain_linearize = True
 
         self.inner_mdas = []
@@ -322,8 +323,8 @@ class MDAChain(BaseMDA):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         if self.settings.chain_linearize:
             self.mdo_chain.add_differentiated_inputs(input_names)

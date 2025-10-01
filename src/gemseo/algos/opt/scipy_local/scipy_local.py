@@ -156,15 +156,18 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
         if self._algo_name != "TNC":
             settings_["maxiter"] = C_LONG_MAX
 
+        kwargs = {}
+        if self.ALGORITHM_INFOS[self._algo_name].require_gradient:
+            kwargs["jac"] = problem.objective.jac
         opt_result = minimize(
             fun=lambda x: real(problem.objective.evaluate(x)),
             x0=x_0,
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
-            jac=problem.objective.jac,
             bounds=bounds,
             constraints=scipy_constraints,
             options=settings_,
             tol=tolerance,
+            **kwargs,
         )
 
         return opt_result.message, opt_result.status

@@ -20,11 +20,11 @@
 from __future__ import annotations
 
 import os
-import pickle
 from pathlib import Path
 
 import pytest
 
+from gemseo import from_pickle
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -48,9 +48,8 @@ def scalable_problem():
     disc_names = [disc.name for disc in disciplines]
     datasets = []
     for name in disc_names:
-        with (Path(__file__).parent / f"{name}.pkl").open("rb") as f:
-            pickler = pickle.Unpickler(f)
-            datasets.append(pickler.load())
+        dataset = from_pickle(Path(__file__).parent / f"{name}.pkl")
+        datasets.append(dataset)
     return ScalableProblem(
         datasets, design_variables, objective_function, eq_constraints, ineq_constraints
     )

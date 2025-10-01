@@ -67,8 +67,8 @@ def get_value_and_bounds(
     current_value = design_space.get_current_value(
         complex_to_real=True, as_dict=as_dict, normalize=True
     )
-    lower_bounds = design_space.normalize_vect(design_space.get_lower_bounds())
-    upper_bounds = design_space.normalize_vect(design_space.get_upper_bounds())
+    lower_bounds = design_space.normalize_vect(design_space.get_lower_bounds()).real
+    upper_bounds = design_space.normalize_vect(design_space.get_upper_bounds()).real
     if not as_dict:
         return current_value, lower_bounds, upper_bounds
 

@@ -38,6 +38,10 @@ if TYPE_CHECKING:
 
 class ScalableDiscipline(Discipline):
     def __init__(self, p: float) -> None:
+        """
+        Args:
+            p: The power used in the constraint.
+        """
         self.p = p
         super().__init__()
         self.io.input_grammar.update_from_names(["x"])

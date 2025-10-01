@@ -49,6 +49,8 @@ from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.typing import StrKeyMapping
 
 
@@ -221,7 +223,11 @@ class SelfCoupledDisc(Discipline):
         )
         self.io.data["o"] = self.io.data["y"] + self.io.data["x"]
 
-    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
         self.jac = {
             "y": {"y": self.coeff * array([[0.5]]), "x": array([[1.0]])},
             "o": {"y": array([[1.0]]), "x": array([[1.0]])},

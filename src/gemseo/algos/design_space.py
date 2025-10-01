@@ -85,6 +85,7 @@ from gemseo.algos._variable import TYPE_MAP
 from gemseo.algos._variable import DataType
 from gemseo.algos._variable import Variable
 from gemseo.algos.optimization_result import OptimizationResult
+from gemseo.utils._numpy import convert_array_type
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.hdf5 import get_hdf5_group
@@ -1417,7 +1418,7 @@ class DesignSpace:
             recast_to_int = True
 
         if out.dtype != current_x_dtype:
-            out = out.astype(current_x_dtype, copy=False)
+            out = convert_array_type(out, current_x_dtype, copy=False)
 
         if norm_inds.size:
             if isinstance(out, sparse_classes):
@@ -1434,7 +1435,7 @@ class DesignSpace:
         if not self.__no_integer:
             self.round_vect(out, copy=False)
             if recast_to_int:
-                out = out.astype(self.__INT_DTYPE)
+                out = convert_array_type(out, self.__INT_DTYPE)
 
         return out
 

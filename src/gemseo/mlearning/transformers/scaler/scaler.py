@@ -44,7 +44,6 @@ This method has to be overloaded.
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -58,8 +57,6 @@ from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 if TYPE_CHECKING:
     from gemseo.mlearning.transformers.base_transformer import TransformerFitOptionType
     from gemseo.typing import RealArray
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Scaler(BaseTransformer):
@@ -112,15 +109,6 @@ class Scaler(BaseTransformer):
             self.parameters[self.__OFFSET] = full(
                 data.shape[-1], self.parameters[self.__OFFSET][0]
             )
-        LOGGER.warning(
-            (
-                "The %s.fit() function does nothing; "
-                "the instance of %s uses the coefficient and offset "
-                "passed at its initialization"
-            ),
-            self.__class__.__name__,
-            self.__class__.__name__,
-        )
 
     @BaseTransformer._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102

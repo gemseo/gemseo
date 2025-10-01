@@ -33,7 +33,7 @@ from matplotlib import pyplot as plt
 from matplotlib import ticker
 from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
-from numpy.core.shape_base import hstack
+from numpy import hstack
 
 from gemseo.post.base_post import BasePost
 from gemseo.post.correlations_settings import Correlations_Settings

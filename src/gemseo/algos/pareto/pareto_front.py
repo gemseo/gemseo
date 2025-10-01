@@ -278,7 +278,7 @@ class ParetoFront:
         for obj_i in range(n_obj):
             anchor_points_index[obj_i] = argwhere(
                 pareto_front[:, obj_i] == min_pf[obj_i]
-            )[0]
+            )[0, 0]
 
         return pareto_front[anchor_points_index], pareto_set[anchor_points_index]
 

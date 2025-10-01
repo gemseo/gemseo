@@ -65,6 +65,8 @@ from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
     from gemseo.typing import StrKeyMapping
@@ -403,7 +405,20 @@ def test_matrix_free_linearization(
 
 
 class LinearImplicitDiscipline(Discipline):
-    def __init__(self, name, input_names, output_names, size=1) -> None:
+    def __init__(
+        self,
+        name: str,
+        input_names: Iterable[str],
+        output_names: Iterable[str],
+        size: int = 1,
+    ) -> None:
+        """
+        Args:
+            name: The name of the discipline.
+            input_names: The names of the input variables.
+            output_names: The names of the output variables.
+            size: The size of the input variables.
+        """  # noqa: D205, D212
         super().__init__(name=name)
         self.size = size
 
@@ -423,8 +438,12 @@ class LinearImplicitDiscipline(Discipline):
 
         self.io.data["r"] = self.mat.dot(self.io.data["w"]) - self.io.data["a"]
 
-    def _compute_jacobian(self, inputs, outputs) -> None:
-        self._init_jacobian(inputs, outputs, fill_missing_keys=True)
+    def _compute_jacobian(
+        self,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
+    ) -> None:
+        self._init_jacobian(input_names, output_names, fill_missing_keys=True)
 
         self.jac["r"]["w"] = self.mat
         self.jac["r"]["a"] = -eye(self.size)
@@ -488,8 +507,8 @@ class DiscWithNonNumericInputs1(Discipline):
 
     def _compute_jacobian(
         self,
-        input_names,
-        output_names,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         self.jac = {}
         self.jac["y"] = {}
@@ -517,8 +536,8 @@ class DiscWithNonNumericInputs2(Discipline):
 
     def _compute_jacobian(
         self,
-        input_names,
-        output_names,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         self.jac = {}
         self.jac["x"] = {}
@@ -548,8 +567,8 @@ class DiscWithNonNumericInputs3(Discipline):
 
     def _compute_jacobian(
         self,
-        input_names,
-        output_names,
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         x = self.io.data["x"][0]
         y = self.io.data["y"][0]

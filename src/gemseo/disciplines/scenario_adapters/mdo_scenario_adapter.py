@@ -510,8 +510,8 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """Compute the Jacobian of the adapted scenario outputs.
 

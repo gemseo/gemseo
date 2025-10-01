@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -36,6 +37,9 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 def test_get_values_array_from_dict() -> None:
@@ -117,8 +121,10 @@ def test_wrong_default_inputs() -> None:
 
 def test_wrong_jac() -> None:
     class SM(SobieskiMission):
-        def _compute_jacobian(self, inputs, outputs) -> None:
-            super()._compute_jacobian(inputs, outputs)
+        def _compute_jacobian(
+            self, input_names: Iterable[str] = (), output_names: Iterable[str] = ()
+        ) -> None:
+            super()._compute_jacobian(input_names, output_names)
             self.jac["y_4"]["x_shared"] = self.jac["y_4"]["x_shared"][:, :1]
 
     sr = SM()
@@ -130,8 +136,12 @@ def test_wrong_jac() -> None:
 
 def test_wrong_jac2() -> None:
     class SM(SobieskiMission):
-        def _compute_jacobian(self, inputs, outputs) -> None:
-            super()._compute_jacobian(inputs, outputs)
+        def _compute_jacobian(
+            self,
+            input_names: Iterable[str] = (),
+            output_names: Iterable[str] = (),
+        ) -> None:
+            super()._compute_jacobian(input_names, output_names)
             self.jac["y_4"]["x_shared"] = ones((1, 20))
 
     sr = SM()

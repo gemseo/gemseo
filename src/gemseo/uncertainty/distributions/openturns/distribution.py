@@ -141,6 +141,9 @@ class OTDistribution(
                 (`see OpenTURNS documentation
                 <http://openturns.github.io/openturns/latest/user_manual/
                 _generated/openturns.TruncatedDistribution.html>`_).
+            settings: The settings of the distributions.
+                If set, the other arguments are ignored.
+                If ``None``, the other arguments are used instead.
         """  # noqa: D205,D212,D415
         if settings is None:
             settings = OTDistribution_Settings(

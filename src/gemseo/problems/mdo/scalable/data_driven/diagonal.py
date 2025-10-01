@@ -113,7 +113,7 @@ class ScalableDiagonalModel(ScalableModel):
                 generate a random matrix.
             force_input_dependency: Whether to force the dependency of each output
                 with at least one input.
-            bool allow_unused_inputs: The possibility to have an input
+            allow_unused_inputs: The possibility to have an input
                 with no dependence with any output.
             seed: The seed for reproducible results.
             group_dep: The dependency between the inputs and outputs.

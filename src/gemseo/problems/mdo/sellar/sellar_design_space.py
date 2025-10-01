@@ -54,6 +54,7 @@ class SellarDesignSpace(DesignSpace):
 
     def __init__(
         self,
+        # TODO: API: remove dtype.
         dtype: RealOrComplexDType = RealOrComplexDType.COMPLEX,
         n: int = 1,
         add_couplings: bool = True,
@@ -65,31 +66,27 @@ class SellarDesignSpace(DesignSpace):
             add_couplings: Whether to add the coupling variables to the design space.
         """  # noqa: D205 D212
         super().__init__()
-        self.add_variable(
-            X_1, lower_bound=0.0, upper_bound=10.0, value=ones(n, dtype=dtype), size=n
-        )
-        self.add_variable(
-            X_2, lower_bound=0.0, upper_bound=10.0, value=ones(n, dtype=dtype), size=n
-        )
+        self.add_variable(X_1, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
+        self.add_variable(X_2, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
         self.add_variable(
             X_SHARED,
             2,
             lower_bound=(-10, 0.0),
             upper_bound=(10.0, 10.0),
-            value=array([4.0, 3.0], dtype=dtype),
+            value=array([4.0, 3.0]),
         )
         if add_couplings:
             self.add_variable(
                 Y_1,
                 lower_bound=-100.0,
                 upper_bound=100.0,
-                value=ones(n, dtype=dtype),
+                value=ones(n),
                 size=n,
             )
             self.add_variable(
                 Y_2,
                 lower_bound=-100.0,
                 upper_bound=100.0,
-                value=ones(n, dtype=dtype),
+                value=ones(n),
                 size=n,
             )

@@ -29,6 +29,7 @@ from scipy.sparse import csr_array
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.typing import StrKeyMapping
@@ -86,8 +87,8 @@ class Concatenater(Discipline):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """Compute the jacobian matrix.
 

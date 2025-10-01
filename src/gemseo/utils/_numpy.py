@@ -12,35 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or
-#                      initial documentation
-#        :author:  Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Dummy."""
+"""NumPy utilities."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.discipline import Discipline
-
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from numpy import dtype
+    from numpy import ndarray
 
 
-class DummyDisciplineIMP(Discipline):
-    """Dummy."""
+def convert_array_type(a: ndarray, dtype_: dtype, copy: bool = True) -> ndarray:
+    """Convert an array to a specific type.
 
-    def __init__(self, opts1=0, jac_approx_n_processes=1) -> None:
-        """
-        Args:
-            opts1: A dummy option.
-            jac_approx_n_processes: Another dummy option.
-        """  # noqa: D205, D212
-        super().__init__()
-        self.opts1 = opts1
-        self.jac_approx_n_processes = jac_approx_n_processes
+    Args:
+        a: The original array.
+        dtype_: The specific type.
+        copy: Whether to return a copy when it is possible.
 
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        """Dummy."""
+    Returns:
+        The array converted to the specific type.
+    """
+    return (a.real if dtype_.kind == "c" else a).astype(dtype_, copy=copy)

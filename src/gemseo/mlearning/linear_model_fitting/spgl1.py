@@ -37,7 +37,12 @@ if TYPE_CHECKING:
 class _SGPL1FittingFunction(_WrappedFittingFunction):
     """Interface to the SPGL1 fitting function."""
 
-    def fit(self, input_data: RealArray, output_data: RealArray) -> RealArray:
+    def fit(
+        self,
+        input_data: RealArray,
+        output_data: RealArray,
+        *extra_data: tuple[RealArray, RealArray],
+    ) -> RealArray:
         return vstack([spgl1(input_data, y, **self._kwargs)[0] for y in output_data.T])
 
 

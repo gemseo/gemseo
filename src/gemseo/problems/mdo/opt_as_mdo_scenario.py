@@ -393,8 +393,7 @@ class OptAsMDOScenario(MDOScenario):
                 the :math:`i`-th discipline is linear.
             link_discipline_class: The class of the link discipline.
 
-        .. note::
-
+        Notes:
            There is no naming convention
            for the input and output variables of ``discipline``.
            So,

@@ -30,6 +30,12 @@ from gemseo.utils.discipline import get_all_outputs
 
 class MyDiscipline(DummyDiscipline):
     def __init__(self, input_name: str, output_name: str, discipline_name: str) -> None:
+        """
+        Args:
+            input_name: The input name of the discipline.
+            output_name: The output name of the discipline.
+            discipline_name: The name of the discipline.
+        """
         super().__init__(discipline_name)
         self.io.input_grammar.update_from_names([input_name])
         self.io.output_grammar.update_from_names([output_name])
