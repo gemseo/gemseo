@@ -77,6 +77,25 @@ def test_fast():
     assert not settings.validate_input_data
     assert not settings.validate_output_data
 
+    settings.fast = False
+    assert settings.check_desvars_bounds
+    assert settings.enable_discipline_cache
+    assert not settings.enable_discipline_statistics
+    assert not settings.enable_discipline_status
+    assert not settings.enable_function_statistics
+    assert settings.enable_parallel_execution
+    assert settings.enable_progress_bar
+    assert not settings.fast
+    logging = settings.logging
+    assert logging.date_format == "%H:%M:%S"
+    assert settings.logging.enable
+    assert logging.file_path == ""
+    assert logging.file_mode == "a"
+    assert logging.level == INFO
+    assert logging.message_format == "%(levelname)8s - %(asctime)s: %(message)s"
+    assert settings.validate_input_data
+    assert settings.validate_output_data
+
 
 def test_environment_variable(monkeypatch):
     """Check the use of environment variables."""

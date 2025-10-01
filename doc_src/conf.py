@@ -30,8 +30,7 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 
 os.chdir((Path(__file__).resolve()).parent)
 
-for directory_name in ("_ext", "templates"):
-    sys.path.append(str(Path(directory_name).resolve()))
+sys.path.append(str(Path("_ext").resolve()))
 
 
 if TYPE_CHECKING:
@@ -95,6 +94,7 @@ if not os.environ.get("DOC_WITHOUT_GALLERY"):
         # objects to exclude from implicit backreferences. The default option
         # is an empty set, i.e. exclude nothing.
         "exclude_implicit_doc": {r"gemseo\.configure_logger"},
+        "reset_modules": ("sphinxext.reset_logging",),
     }
 
 # Add any paths that contain templates here, relative to this directory.

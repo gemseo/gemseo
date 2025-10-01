@@ -190,6 +190,8 @@ after execution.""",
 
     @model_validator(mode="after")
     def __validate_fast(self) -> Self:
+        # setattr would validate the field and lead to a RecursionError;
+        # so we use object.__setattr__ instead.
         if self.fast:
             for name in (
                 "check_desvars_bounds",
@@ -201,7 +203,26 @@ after execution.""",
                 "validate_input_data",
                 "validate_output_data",
             ):
-                # setattr would validate the field and lead to a RecursionError.
+                object.__setattr__(self, name, False)
+        elif "fast" in self.model_fields_set:
+            # The user sets fast to False.
+            # If fast is at False by default,
+            # do not do this,
+            # as you would overwrite the other field values the user have entered.
+            for name in (
+                "check_desvars_bounds",
+                "enable_discipline_cache",
+                "enable_parallel_execution",
+                "validate_input_data",
+                "validate_output_data",
+            ):
+                object.__setattr__(self, name, True)
+
+            for name in (
+                "enable_discipline_statistics",
+                "enable_discipline_status",
+                "enable_function_statistics",
+            ):
                 object.__setattr__(self, name, False)
 
         return self
