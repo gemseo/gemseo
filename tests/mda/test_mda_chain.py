@@ -488,9 +488,11 @@ def test_settings_precedence(coupled_disciplines, caplog):
 
     for name, setting in main_settings.items():
         msg = (
-            f"The '{name}' setting has been set for both the MDAChain "
-            f"and the inner MDA. The retained value is "
-            f"{setting}"
+            f"The {name!r} setting has been set for both the MDAChain "
+            "and the inner MDA. The retained value is that of the MDAChain, "
+            f"i.e. {setting}."
         )
 
         assert msg in caplog.text
+
+    assert "linear_solver_settings" not in main_settings

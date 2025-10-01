@@ -244,9 +244,10 @@ class MDAChain(BaseMDA):
             if name in self.settings.model_fields_set:
                 if name in inner_mda_settings.model_fields_set:
                     msg = (
-                        f"The '{name}' setting has been set for both the MDAChain "
-                        f"and the inner MDA. The retained value is "
-                        f"{getattr(self.settings, name)}"
+                        f"The {name!r} setting has been set for both the MDAChain "
+                        f"and the inner MDA. "
+                        f"The retained value is that of the MDAChain, "
+                        f"i.e. {getattr(self.settings, name)}."
                     )
 
                     LOGGER.warning(msg)
