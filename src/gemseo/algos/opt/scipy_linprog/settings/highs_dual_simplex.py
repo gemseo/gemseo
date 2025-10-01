@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TC002
 
@@ -39,10 +41,12 @@ class DUAL_SIMPLEX_Settings(BaseSciPyLinProgSettings):  # noqa: N801
         description="""The primal feasability tolerance.""",
     )
 
-    simplex_dual_edge_weight_strategy: str = Field(
+    simplex_dual_edge_weight_strategy: Literal[
+        "dantzig",
+        "devex",
+        "steepest",
+        "steepest-devex",
+    ] = Field(
         default="steepest-devex",
-        description="""Strategy for simplex dual edge weights.
-
-Available strategies: `dantzig`, `devex`, `steepest` and `steepest-devex`.
-""",
+        description="""Strategy for simplex dual edge weights.""",
     )

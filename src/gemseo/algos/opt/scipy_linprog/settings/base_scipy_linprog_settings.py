@@ -17,10 +17,11 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import ClassVar
 from typing import Literal
 
 from pydantic import Field
+from pydantic import NonNegativeFloat
+from pydantic import PositiveInt
 from pydantic import model_validator
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
@@ -40,6 +41,11 @@ class BaseSciPyLinProgSettings(BaseOptimizerSettings):
     disp: bool = Field(
         default=False,
         description="""Whether to print convergence messages.""",
+    )
+
+    maxiter: PositiveInt = Field(
+        default=1_000,
+        description="""The maximum number of iterations to perform.""",
     )
 
     presolve: bool = Field(
@@ -64,7 +70,11 @@ If ``None``, use “SVD” if the matrix is nearly full rank. If not, uses
 “pivot”. The behavior of this default is subject to change without prior notice.""",
     )
 
-    _redundant_settings: ClassVar[list[str]] = ["maxiter", "tol"]
+    tol: NonNegativeFloat = Field(
+        default=1e-8,
+        description="""A tolerance which determines when a residual is “close enough”
+to zero to be considered exactly zero.""",
+    )
 
     @model_validator(mode="after")
     def __check_scaling(self) -> Self:

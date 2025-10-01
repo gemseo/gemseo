@@ -31,13 +31,9 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_global.settings.dual_annealing import (
     DUAL_ANNEALING_Settings,
 )
-from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
-    BaseSciPyLinProgSettings,
-)
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
-from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -204,8 +200,6 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
         (DUAL_ANNEALING_Settings, "maxfun"),
         (SLSQP_Settings, "maxiter"),
         (TNC_Settings, "eps"),
-        (SciPyMILP_Settings, "time_limit"),
-        (BaseSciPyLinProgSettings, "maxiter"),
     ],
 )
 def test_removal_redundant_settings(caplog, settings_model, redundant_setting):
