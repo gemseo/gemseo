@@ -147,7 +147,7 @@ class CenteredDifferences(BaseGradientApproximator):
             t_e, c_e, opt_steps[i] = compute_best_step(
                 f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
             )
-            errors[i] = 0.0 if t_e is None else t_e + c_e
+            errors[i] = 0.0 if t_e is None else t_e[0] + c_e[0]
 
         max_i = argmax(errors)
         return errors[max_i], opt_steps[max_i]
@@ -191,14 +191,12 @@ class CenteredDifferences(BaseGradientApproximator):
 
             f_0 = outputs[0]
             for i in range(n_dim):
-                errs, opt_step = comp_step(
+                errors[i], opt_steps[i] = comp_step(
                     outputs[i + 1],
                     f_0,
                     outputs[n_dim + i + 1],
                     numerical_error=numerical_error,
                 )
-                errors[i] = errs
-                opt_steps[i] = opt_step
         else:
             compute_output = self.f_pointer
             f_0 = compute_output(x_vect, **kwargs)
