@@ -23,8 +23,7 @@ from gemseo.utils.global_configuration import GlobalConfiguration
 
 def test_default():
     """Check the GlobalConfiguration."""
-    settings = GlobalConfiguration()
-    assert settings.model_fields.keys() == {
+    assert GlobalConfiguration.model_fields.keys() == {
         "check_desvars_bounds",
         "enable_discipline_cache",
         "enable_discipline_statistics",
@@ -37,6 +36,7 @@ def test_default():
         "validate_input_data",
         "validate_output_data",
     }
+    settings = GlobalConfiguration()
     assert settings.check_desvars_bounds
     assert settings.enable_discipline_cache
     assert not settings.enable_discipline_statistics

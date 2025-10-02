@@ -309,7 +309,9 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
                     group_names=self.dataset.OUTPUT_GROUP,
                     variable_names=name,
                     components=i,
-                ).var()[0]
+                )
+                .var()
+                .iloc[0]
                 for i in range(output_sizes[name])
             ]
             for name in output_names
