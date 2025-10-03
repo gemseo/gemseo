@@ -390,15 +390,22 @@ class PCERegressor(BaseFCERegressor):
 
         return x
 
-    def _get_features_for_special_jacobian_data_use(self, *args: Any) -> None:
+    def _evaluate_basis_functions(
+        self, input_data: RealArray
+    ) -> tuple[RealArray, None]:  # noqa: D102
         pce_result = self.algo
         basis_functions = pce_result.getReducedBasis()
         input_sample = pce_result.getInputSample()
         transformation = self.algo.getTransformation()
         t_input_sample = transformation(input_sample)
-        return hstack([
+        features = hstack([
             array(basis_function(t_input_sample)) for basis_function in basis_functions
         ])
+        return features, None
+
+    def _get_features_for_special_jacobian_data_use(self, *args: Any) -> RealArray:
+        input_sample = self.algo.getInputSample()
+        return self._evaluate_basis_functions(input_sample)[0]
 
     def _compute_sobol_indices(self) -> None:
         names_to_positions = {}

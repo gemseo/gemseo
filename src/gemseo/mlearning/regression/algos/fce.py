@@ -169,10 +169,10 @@ class FCERegressor(BaseFCERegressor):
     ) -> tuple[RealArray]:
         """
         Returns:
-            The enumerate function and the features matrix.
+            The features matrix.
         """  # noqa: D205, D212
         self.__set_basis()
-        features = self.__basis.compute_output_data(input_data)
+        features, jac_features = self._evaluate_basis_functions(input_data)
         linear_model_fitter_settings = self._settings.linear_model_fitter_settings
         linear_model_fitter_settings.fit_intercept = False
         linear_model = LinearModelFitterFactory().create(
@@ -181,43 +181,29 @@ class FCERegressor(BaseFCERegressor):
         )
         output_scale = norm(output_data, axis=0)
         output_data /= output_scale
-        if self._settings.learn_jacobian_data:
-            jac_features, jac_data = self.__create_jacobian_for_linear_model_fitting(
-                input_data
-            )
+        if jac_features is None:
+            extra_data = ()
+        else:
+            jac_data = self._create_jacobian_for_linear_model_fitting(input_data)
             jac_data /= output_scale
             extra_data = ((jac_features, jac_data),)
-        else:
-            extra_data = ()
+
         unscaled_coefficients = linear_model.fit(features, output_data, *extra_data).T
         self._coefficients = unscaled_coefficients * output_scale
         return (features,)
 
-    def __create_jacobian_for_linear_model_fitting(
+    def _evaluate_basis_functions(  # noqa: D102
         self, input_data: RealArray
-    ) -> tuple[RealArray, RealArray]:
-        """Create the Jacobian data for the linear model fitting problem.
+    ) -> tuple[RealArray, RealArray | None]:
+        features = self.__basis.compute_output_data(input_data)
+        if self._settings.learn_jacobian_data:
+            jac_features = self.__basis.compute_jacobian_data(input_data)
+            # The shape of jac_features is (n_samples, input_dimension, n_features).
+            jac_features = jac_features.reshape((-1, len(self.__basis.basis_functions)))
+        else:
+            jac_features = None
 
-        Args:
-            input_data: The input data.
-
-        Returns:
-            The Jacobian matrix related to the basis functions,
-            and the Jacobian matrix related to the training dataset.
-        """
-        features = self.__basis.compute_jacobian_data(input_data)
-        # The shape of new_features is (n_samples, input_dimension, n_features).
-        features = features.reshape((-1, len(self.__basis.basis_functions)))
-        jacobian_data = self._jacobian_data[self._learning_samples_indices]
-        # The shape of jacobian_data is (n_samples, output_dimension * input_dimension).
-        jacobian_data = jacobian_data.reshape((
-            -1,
-            self._reduced_output_dimension,
-            self._reduced_input_dimension,
-        ))
-        jacobian_data = swapaxes(jacobian_data, 1, 2)
-        jacobian_data = jacobian_data.reshape((-1, self._reduced_output_dimension))
-        return features, jacobian_data
+        return features, jac_features
 
     def __set_basis(self) -> None:
         """Set the private attribute ``__basis``."""
