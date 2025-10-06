@@ -91,9 +91,8 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     A setuptools entry point is declared in a plugin :file:`pyproject.toml` file,
     with a section::
 
-        [options.entry_points]
-        gemseo_plugins =
-            a-name = plugin_package_name
+        [project.entry-points]
+        gemseo_plugins = { a-name = "plugin_package_name" }
 
     Above ``a-name`` is not used
     and can be any name,
