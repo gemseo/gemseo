@@ -395,9 +395,8 @@ class PCERegressor(BaseFCERegressor):
     ) -> tuple[RealArray, None]:  # noqa: D102
         pce_result = self.algo
         basis_functions = pce_result.getReducedBasis()
-        input_sample = pce_result.getInputSample()
         transformation = self.algo.getTransformation()
-        t_input_sample = transformation(input_sample)
+        t_input_sample = transformation(input_data)
         features = hstack([
             array(basis_function(t_input_sample)) for basis_function in basis_functions
         ])
