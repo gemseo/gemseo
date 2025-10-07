@@ -23,6 +23,7 @@ from typing import ClassVar
 
 from numpy import array
 from numpy import newaxis
+from numpy import swapaxes
 from numpy import vstack
 from scipy.linalg import solve
 
@@ -228,6 +229,48 @@ class BaseFCERegressor(BaseRegressor):
         Returns:
             The features matrix for using the special Jacobian data.
         """
+
+    @abstractmethod
+    def _evaluate_basis_functions(
+        self, input_data: RealArray
+    ) -> tuple[RealArray, RealArray | None]:
+        r"""Evaluate the :math:`p` basis functions and their partial derivatives.
+
+        Args:
+            input_data: The input data, shaped as :math:`(n, d)`,
+                where :math:`n` is the number of samples
+                and :math:`d` is the input dimension.
+
+        Returns:
+            The evaluations of the basis functions, shaped as :math:`(n, p)`,
+            and the evaluations of their partial derivatives, shaped as :math:`(nd, p)`,
+            if these derivative functions are implemented (otherwise ``None``).
+            In the evaluations of their partial derivatives,
+            the :math:`d` first rows correspond to the first sample,
+            the following :math:`d` rows correspond to the second sample,
+            and so on.
+        """
+
+    def _create_jacobian_for_linear_model_fitting(
+        self, input_data: RealArray
+    ) -> RealArray:
+        """Create the Jacobian data for the linear model fitting problem.
+
+        Args:
+            input_data: The input data.
+
+        Returns:
+            The Jacobian matrix related to the training dataset.
+        """
+        jacobian_data = self._jacobian_data[self._learning_samples_indices]
+        # The shape of jacobian_data is (n_samples, output_dimension * input_dimension).
+        jacobian_data = jacobian_data.reshape((
+            -1,
+            self._reduced_output_dimension,
+            self._reduced_input_dimension,
+        ))
+        jacobian_data = swapaxes(jacobian_data, 1, 2)
+        return jacobian_data.reshape((-1, self._reduced_output_dimension))
 
     @property
     def mean_jacobian_wrt_special_variables(self) -> RealArray:
