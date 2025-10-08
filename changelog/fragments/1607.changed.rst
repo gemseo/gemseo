@@ -1,0 +1,1 @@
+``BaseFormulation`` has a new argument, called ``minimize_objective``, to indicate whether the optimisation problem is a minimisation problem (default) or maximisation problem. This does not change the ``BaseScenario`` API, which still has its ``maximize_objective`` argument (default: ``False``).

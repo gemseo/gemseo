@@ -75,7 +75,9 @@ class TestPropaneScenario(unittest.TestCase):
         :param scenario:
 
         """
-        data_names = scenario.get_optim_variable_names()
+        data_names = (
+            scenario.formulation.optimization_problem.design_space.variable_names
+        )
         data = [self.io_data.data[name] for name in data_names]
         return concatenate(data)
 

@@ -29,6 +29,7 @@ from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDisci
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_formulation import BaseFormulation
+from gemseo.formulations.base_formulation import T
 from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline
 
 
-class BaseMDOFormulation(BaseFormulation):
+class BaseMDOFormulation(BaseFormulation[T]):
     """A base class for MDO formulations."""
 
     def add_observable(  # noqa: D102

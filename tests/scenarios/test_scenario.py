@@ -50,6 +50,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiPropulsionSG
@@ -1083,6 +1084,19 @@ def test_derivative_bug_1602():
         scenario.formulation.optimization_problem.database.last_item,
         {"a": 2.0, "c": 0.0, "@a": array([1.0, 2.0]), "@c": array([0.0, 0.0])},
     )
+
+
+def test_deprecated(mdf_scenario):
+    """Test for deprecated attributes."""
+    assert mdf_scenario.formulation_name == "MDF"
+    assert isinstance(mdf_scenario._formulation_factory, MDOFormulationFactory)
+    assert mdf_scenario.get_optim_variable_names() == ["x_shared", "x_1", "x_2", "x_3"]
+    assert mdf_scenario.formulation.get_optim_variable_names() == [
+        "x_shared",
+        "x_1",
+        "x_2",
+        "x_3",
+    ]
 
 
 def test_listener_dataset():

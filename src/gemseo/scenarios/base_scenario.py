@@ -173,9 +173,6 @@ class BaseScenario(BaseMonitoredProcess):
     formulation: BaseMDOFormulation
     """The MDO formulation."""
 
-    formulation_name: str
-    """The name of the MDO formulation."""
-
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
 
@@ -227,18 +224,15 @@ class BaseScenario(BaseMonitoredProcess):
             formulation_settings,
             class_name_arg="formulation_name",
         )
-
-        self._init_formulation(
-            disciplines,
+        self.formulation = MDOFormulationFactory().create(
             formulation_name,
+            disciplines,
             objective_name,
             design_space,
-            formulation_settings_model,
+            settings_model=formulation_settings_model,
+            minimize_objective=not maximize_objective,
             **formulation_settings,
         )
-        if maximize_objective:
-            self.formulation.optimization_problem.minimize_objective = False
-
         self.formulation.optimization_problem.database.name = self.name
         self.clear_history_before_run = False
         self.__history_backup_is_set = False
@@ -315,7 +309,7 @@ class BaseScenario(BaseMonitoredProcess):
     @property
     def design_space(self) -> DesignSpace:
         """The design space on which the scenario is performed."""
-        return self.formulation.design_space
+        return self.formulation.optimization_problem.design_space
 
     def set_differentiation_method(
         self,
@@ -364,7 +358,8 @@ class BaseScenario(BaseMonitoredProcess):
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
-        **kwargs,
+        # TODO: API: remove these arguments that are not used.
+        **kwargs: Any,
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
 
@@ -388,9 +383,7 @@ class BaseScenario(BaseMonitoredProcess):
                 from ``output_name``, ``constraint_type``, ``value`` and ``positive``.
             value: The value :math:`a`.
             positive: Whether the inequality constraint is positive.
-
-        Raises:
-            ValueError: If the constraint type is neither 'eq' nor 'ineq'.
+            **kwargs: The arguments are not used.
         """
         self.formulation.add_constraint(
             output_name,
@@ -398,7 +391,6 @@ class BaseScenario(BaseMonitoredProcess):
             constraint_name=constraint_name,
             value=value,
             positive=positive,
-            **kwargs,
         )
 
     def add_observable(
@@ -422,51 +414,24 @@ class BaseScenario(BaseMonitoredProcess):
         """
         self.formulation.add_observable(output_names, observable_name, discipline)
 
-    def _init_formulation(
-        self,
-        disciplines: Sequence[Discipline],
-        formulation_name: str,
-        objective_name: str,
-        design_space: DesignSpace,
-        formulation_settings_model: BaseFormulationSettings | None,
-        **formulation_settings: Any,
-    ) -> None:
-        """Initialize the MDO formulation.
+    @property
+    def formulation_name(self) -> str:
+        """The name of the MDO formulation."""
+        return self.formulation.__class__.__name__
 
-        Args:
-            disciplines: The disciplines.
-            formulation_name: The name of the MDO formulation,
-                also the name of a class inheriting from :class:`.BaseMDOFormulation`.
-            objective_name: The name of the objective.
-            design_space: The design space.
-            formulation_settings_model: The formulation settings as a Pydantic model.
-                If ``None``, use ``**settings``.
-            **formulation_settings: The formulation settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
-        """
-        self.formulation = self._formulation_factory.create(
-            formulation_name,
-            disciplines,
-            objective_name,
-            design_space,
-            settings_model=formulation_settings_model,
-            **formulation_settings,
-        )
-        self.formulation_name = formulation_name
-
+    # TODO: API: remove and use scenario.design_space.variable_names instead, or rename.
     def get_optim_variable_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
 
         Returns:
             The optimization variables of the scenario.
         """
-        return self.formulation.get_optim_variable_names()
+        return self.formulation.optimization_problem.design_space.variable_names
 
     def save_optimization_history(
         self,
         file_path: str | Path,
         file_format: OptimizationProblem.HistoryFileFormat = OptimizationProblem.HistoryFileFormat.HDF5,  # noqa: E501
-        # noqa: E501
         append: bool = False,
     ) -> None:
         """Save the optimization history of the scenario to a file.
