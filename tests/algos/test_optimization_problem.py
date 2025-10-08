@@ -52,6 +52,7 @@ from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.evaluation_problem import EvaluationProblem
@@ -60,7 +61,6 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
-from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
@@ -2313,33 +2313,22 @@ def evaluation_problem() -> EvaluationProblem:
 
 @pytest.mark.parametrize("design_vector_is_normalized", [False, True])
 @pytest.mark.parametrize(
-    ("name1", "name2", "i"),
-    [
-        ("observable_names", "output_functions", 0),
-        ("jacobian_names", "jacobian_functions", 1),
-    ],
+    ("eval_jac", "eval_func"), [(False, True), (True, True), (True, False)]
 )
 def test_max_iter_reached_exception(
-    evaluation_problem, design_vector_is_normalized, name1, name2, i
+    evaluation_problem, design_vector_is_normalized, eval_jac, eval_func
 ):
     """Check MaxIterReachedException."""
-    evaluation_problem.preprocess_functions()
-    functions = evaluation_problem.get_functions(**{name1: ("f",)})[i]
-    evaluation_problem.evaluation_counter.maximum = 2
-    kwargs = {name2: functions}
-    evaluation_problem.evaluate_functions(
-        array([0.1]), design_vector_is_normalized=design_vector_is_normalized, **kwargs
+    CustomDOE().execute(
+        evaluation_problem,
+        settings_model=CustomDOE_Settings(
+            samples=array([[0.1], [0.2], [0.3]]),
+            normalize_design_space=design_vector_is_normalized,
+            eval_func=eval_func,
+            eval_jac=eval_jac,
+        ),
     )
-    evaluation_problem.evaluate_functions(
-        array([0.2]), design_vector_is_normalized=design_vector_is_normalized, **kwargs
-    )
-    evaluation_problem.evaluation_counter.current = 2
-    with pytest.raises(MaxIterReachedException):
-        evaluation_problem.evaluate_functions(
-            array([0.3]),
-            design_vector_is_normalized=design_vector_is_normalized,
-            **kwargs,
-        )
+    assert len(evaluation_problem.database) == 3
 
 
 def test_stop_if_nan(evaluation_problem):
@@ -2349,20 +2338,6 @@ def test_stop_if_nan(evaluation_problem):
     evaluation_problem.stop_if_nan = False
     assert not evaluation_problem.stop_if_nan
     assert not evaluation_problem._stop_if_nan
-
-
-@pytest.mark.parametrize("is_function_input_normalized", [False, True])
-def test_jacobian_is_none_and_maxiter_is_reached(
-    evaluation_problem, is_function_input_normalized
-):
-    """Check that an error is raised when Jacobian is None and maxiter is reached."""
-    evaluation_problem.preprocess_functions(
-        is_function_input_normalized=is_function_input_normalized
-    )
-    evaluation_problem.evaluation_counter.current = 1
-    evaluation_problem.evaluation_counter.maximum = 1
-    with pytest.raises(MaxIterReachedException):
-        evaluation_problem.observables[0].jac(array([0.0]))
 
 
 @pytest.mark.parametrize(

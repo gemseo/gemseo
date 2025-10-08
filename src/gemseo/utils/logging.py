@@ -366,13 +366,13 @@ class OneLineLogging:
             logger = logger.parent
 
     def __enter__(self) -> None:
-        from gemseo import configuration
+        from gemseo.utils.global_configuration import _configuration
 
         if self.__handler is not None:
             self.__handler.terminator = ""
             self.__handler.formatter = Formatter(
-                fmt="\r" + configuration.logging.message_format,
-                datefmt=configuration.logging.date_format,
+                fmt="\r" + _configuration.logging.message_format,
+                datefmt=_configuration.logging.date_format,
             )
 
     def __exit__(

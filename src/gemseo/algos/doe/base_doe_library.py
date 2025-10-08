@@ -43,6 +43,7 @@ from gemseo.algos.base_driver_library import DriverDescription
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.evaluation_problem import EvaluationType
+from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
@@ -175,7 +176,11 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         self.__reset_integer_variables_normalization(
             design_space, integer_normalization_enabled
         )
-        self._init_iter_observer(problem, len(self.unit_samples))
+        self._init_iter_observer(
+            problem,
+            len(self.unit_samples),
+            progress_bar_data_name=self._settings.progress_bar_data_name,
+        )
 
     def __convert_unit_samples_to_samples(
         self, problem: EvaluationProblem
@@ -237,18 +242,27 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     def __run_in_serial_one_at_a_time(self) -> None:
         """Evaluate the functions in serial, sample by sample."""
         for index, input_value in enumerate(self.samples):
+            for preprocessor in self._settings.preprocessors:
+                preprocessor(index)
+
             try:
-                for preprocessor in self._settings.preprocessors:
-                    preprocessor(index)
                 result = self._evaluate_functions(input_value)
-                for callback in self._settings.callbacks:
-                    callback(index, result)
             except ValueError:  # noqa: PERF203
                 LOGGER.exception(
                     "The evaluation of the functions at point %s raised a"
                     " ValueError; skipping to the next point.",
                     input_value,
                 )
+                self._problem.evaluation_counter.enabled = False
+                continue
+
+            for callback in self._settings.callbacks:
+                callback(index, result)
+
+            if not self._settings.use_database:
+                self._problem.evaluation_counter.current += 1
+                if self._progress_bar is not None:
+                    self._progress_bar.update(HashableNdarray(input_value))
 
     def __run_in_serial_all_at_once(self) -> None:
         """Evaluate the functions in serial, with all the samples at once."""
@@ -298,16 +312,21 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         database = self._problem.database
         callbacks = list(self._settings.callbacks)
 
+        # Add a callback
+        # to store the samples in the database on the fly (when use_database=True)
+        # and update the progress bar.
+        callbacks.append(self.__store_in_database_and_finalize_iteration)
+
         if self._settings.use_database:
-            # Add a callback to store the samples in the database on the fly.
-            callbacks.append(self.__store_in_database)
-            # Initialize the order of samples
+            # Initialize the order of samples in the database
             # as parallel execution does not guarantee it.
             for sample in self.samples:
                 database.store(sample, {})
+
         # The list of inputs of the tasks is the list of samples
         # A callback function stores the samples on the fly
         # during the parallel execution.
+        self._problem.evaluation_counter.enabled = True
         parallel.execute(
             self.samples,
             exec_callback=callbacks,
@@ -331,7 +350,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             The output value and the Jacobian value.
         """
         if current_process().name == SUBPROCESS_NAME:
-            self._disable_progress_bar()
+            self._progress_bar = None
             self._problem.database.clear_listeners()
 
         return self._evaluate_functions(input_value)
@@ -354,23 +373,42 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         )
 
     @synchronized
-    def __store_in_database(
+    def __store_in_database_and_finalize_iteration(
         self,
         index: int,
         output_and_jacobian_data: EvaluationType,
     ) -> None:
-        """Store the output and Jacobian data in the database.
+        """Update the progress bar.
 
         Args:
             index: The sample index.
             output_and_jacobian_data: The output and Jacobian data.
         """
-        data, jacobian_data = output_and_jacobian_data
-        if jacobian_data:
-            for output_name, jacobian in jacobian_data.items():
-                data[self._problem.database.get_gradient_name(output_name)] = jacobian
+        if self._settings.use_database:
+            data, jacobian_data = output_and_jacobian_data
+            if jacobian_data:
+                for output_name, jacobian in jacobian_data.items():
+                    data[self._problem.database.get_gradient_name(output_name)] = (
+                        jacobian
+                    )
 
-        self._problem.database.store(self.samples[index], data)
+            input_value = self.samples[index]
+            self._problem.database.store(input_value, data)
+            input_value = HashableNdarray(input_value)
+        else:
+            input_value = None
+
+        self.__finalize_iteration(input_value)
+
+    def __finalize_iteration(self, input_value: HashableNdarray | None) -> None:
+        """Finalize the iteration.
+
+        Args:
+            input_value: The input value, if any.
+        """
+        self._problem.evaluation_counter.current += 1
+        if self._progress_bar is not None:
+            self._progress_bar.update(input_value)
 
     @classmethod
     def __check_unnormalization_capability(cls, design_space) -> None:

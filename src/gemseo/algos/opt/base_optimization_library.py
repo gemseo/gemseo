@@ -161,7 +161,12 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
             n_last_iterations=self._settings.stop_crit_n_x,
         )
 
-        self._init_iter_observer(problem, self._settings.max_iter)
+        self._init_iter_observer(
+            problem,
+            self._settings.max_iter,
+            message="",
+            progress_bar_data_name=self._settings.progress_bar_data_name,
+        )
 
         require_gradient = self.ALGORITHM_INFOS[self._algo_name].require_gradient
         if require_gradient:
@@ -236,8 +241,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
 
         return reason
 
-    def _new_iteration_callback(self, x_vect: ndarray) -> None:
-        super()._new_iteration_callback(x_vect)
+    def _check_stopping_criteria(self) -> None:
+        super()._check_stopping_criteria()
         self._f_tol_tester.check(self._problem, raise_exception=True)
         self._x_tol_tester.check(self._problem, raise_exception=True)
 

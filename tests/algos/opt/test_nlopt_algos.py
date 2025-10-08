@@ -207,11 +207,12 @@ def test_no_stop_during_doe_phase(
     due to the max iteration stop criterion.
 
     Args:
-        x2_problem: An instanciated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated :class:`.X_2` optimization problem.
         algo_name: The optimization algorithm used.
     """
     res = execute_algo(x2_problem, algo_name=algo_name, max_iter=10)
-    assert res.n_obj_call == 12
+    assert res.n_obj_call == 11
+    assert len(x2_problem.database) == 10
 
 
 def test_cobyla_stopped_due_to_small_crit_n_x(

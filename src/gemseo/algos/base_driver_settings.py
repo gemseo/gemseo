@@ -20,6 +20,8 @@ from pydantic import Field
 from pydantic.types import NonNegativeFloat  # noqa: TC002
 
 from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
+from gemseo.algos.progress_bar_data.data import ProgressBarData
+from gemseo.algos.progress_bar_data.factory import ProgressBarDataName  # noqa: TC001
 
 
 class BaseDriverSettings(BaseAlgorithmSettings):
@@ -62,6 +64,12 @@ If ``None``, use the global value of ``enable_progress_bar`` (see the
         ),
     )
 
+    progress_bar_data_name: ProgressBarDataName = Field(
+        default=ProgressBarData.__name__,
+        description="""The name of a :class:`.BaseProgressBarData` class
+to define the data of an evaluation problem to be displayed in the progress bar.""",
+    )
+
     reset_iteration_counters: bool = Field(
         default=True,
         description=(
@@ -74,6 +82,15 @@ If ``None``, use the global value of ``enable_progress_bar`` (see the
         description="""Whether to round the integer variables.""",
     )
 
+    store_jacobian: bool = Field(
+        default=True,
+        description="""Whether to store the Jacobian matrices in the database.
+
+    This argument is ignored when the ``use_database`` option is ``False``.
+    If a gradient-based algorithm is used,
+    this option cannot be set along with kkt options.""",
+    )
+
     use_database: bool = Field(
         default=True,
         description="""Whether to wrap the functions in the database.""",
@@ -82,13 +99,4 @@ If ``None``, use the global value of ``enable_progress_bar`` (see the
     use_one_line_progress_bar: bool = Field(
         default=False,
         description="""Whether to log the progress bar on a single line.""",
-    )
-
-    store_jacobian: bool = Field(
-        default=True,
-        description="""Whether to store the Jacobian matrices in the database.
-
-This argument is ignored when the ``use_database`` option is ``False``.
-If a gradient-based algorithm is used,
-this option cannot be set along with kkt options.""",
     )

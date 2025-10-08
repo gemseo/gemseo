@@ -1,1 +1,0 @@
-The number of calls to the objective function is no longer logged when the statistics are disabled.

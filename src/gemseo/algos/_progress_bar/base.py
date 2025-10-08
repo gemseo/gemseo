@@ -16,29 +16,25 @@
 
 from __future__ import annotations
 
-from abc import ABC
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
+from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+
 if TYPE_CHECKING:
-    from numpy import ndarray
+    from gemseo.algos.hashable_ndarray import HashableNdarray
 
 
-class BaseProgressBar(ABC):
+class BaseProgressBar(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The base progress bar."""
 
     @abstractmethod
-    def set_objective_value(self, x_vect: ndarray | None) -> None:
-        """Set the objective value.
+    def update(self, input_value: HashableNdarray | None) -> None:
+        """Update the progress bar.
 
         Args:
-            x_vect: The design variables values.
-                If ``None`` and the iteration has not been logged,
-                use the objective at the last iteration.
-                If ``None`` and the iteration has allready been logged,
-                do nothing.
+            input_value: The input value, if any.
         """
 
-    @abstractmethod
-    def finalize_iter_observer(self) -> None:
-        """Finalize the iteration observer."""
+    def close(self) -> None:
+        """Cleanup and close the progress bar."""

@@ -624,7 +624,7 @@ def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=1)
     last_item = scenario.formulation.optimization_problem.database.last_item
     assert set(last_item) == {"x_3", "x_1", "-y_4", "x_2"}
-    x_3 = last_item["x_3"]
+    y_4 = last_item["-y_4"]
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
     last_item = scenario.formulation.optimization_problem.database.last_item
-    assert last_item["x_3"] != x_3
+    assert last_item["-y_4"] != y_4

@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from time import sleep
 from typing import Any
@@ -31,13 +32,16 @@ from numpy import atleast_2d
 from numpy import zeros
 from tqdm import tqdm
 
-from gemseo.algos._progress_bars.custom_tqdm_progress_bar import CustomTqdmProgressBar
+from gemseo.algos._progress_bar.custom import CustomTqdmProgressBar
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.algos.progress_bar_data.data import ProgressBarData
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
 @pytest.fixture
@@ -86,6 +90,10 @@ class ProgressOpt(BaseOptimizationLibrary):
             if self.constraints_before_obj:
                 problem.constraints[0].evaluate(x_0 + off)
             problem.objective.evaluate(x_0 + off)
+
+
+class NewProgressBarData(ProgressBarData):
+    """The data of an optimization problem to be displayed in the progress bar."""
 
 
 def test_progress_bar(
@@ -183,3 +191,22 @@ def test_rate_expression(e, r) -> None:
     """Check CustomTqdmProgressBar.__get_rate_expression."""
     f = CustomTqdmProgressBar._CustomTqdmProgressBar__get_rate_expression
     assert f(1, e) == r
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+def test_feasibility(caplog, n_processes):
+    """Check that the feasibility is correctly logged."""
+    problem = Rosenbrock()
+    problem.add_constraint(MDOFunction(sum, "g"), value=0.0, constraint_type="ineq")
+    CustomDOE().execute(
+        problem,
+        settings_model=CustomDOE_Settings(
+            samples=array([[-1.0, -1.0], [0.5, 0.5], [-0.5, -0.5]]),
+            n_processes=n_processes,
+        ),
+    )
+    record_tuples = caplog.record_tuples
+    i = 0 if n_processes == 1 else 1
+    assert re.match(r".* feas=True, obj=404.*", record_tuples[3 + i][2])
+    assert re.match(r".* feas=False, obj=6.5*", record_tuples[4 + i][2])
+    assert re.match(r".* feas=True, obj=58.5.*", record_tuples[5 + i][2])
