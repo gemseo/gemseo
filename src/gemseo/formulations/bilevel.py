@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.core.chains.chain import MDOChain
@@ -43,10 +42,8 @@ from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Sequence
 
     from gemseo.algos.database import DatabaseKeyType
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.mda.base_mda import BaseMDA
@@ -56,7 +53,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class BiLevel(BaseMDOFormulation):
+class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     """A BiLevel formulation.
 
     This formulation draws an optimization architecture
@@ -107,8 +104,6 @@ class BiLevel(BaseMDOFormulation):
     coupling_structure: CouplingStructure
     """The coupling structure between the involved disciplines."""
 
-    _settings: BiLevel_Settings
-
     _scenario_adapters: list[MDOScenarioAdapter]
     """The adapters of the optimization sub-scenarios."""
 
@@ -124,21 +119,7 @@ class BiLevel(BaseMDOFormulation):
     __mda_factory: ClassVar[MDAFactory] = MDAFactory()
     """The MDA factory."""
 
-    def __init__(  # noqa: D107
-        self,
-        disciplines: Sequence[Discipline],
-        objective_name: str,
-        design_space: DesignSpace,
-        settings_model: BiLevel_Settings | None = None,
-        **settings: Any,
-    ) -> None:
-        super().__init__(
-            disciplines,
-            objective_name,
-            design_space,
-            settings_model=settings_model,
-            **settings,
-        )
+    def _init_before_design_space_and_objective(self) -> None:
         self._scenario_adapters = []
         self.coupling_structure = CouplingStructure(
             get_sub_disciplines(self.disciplines)
@@ -157,11 +138,6 @@ class BiLevel(BaseMDOFormulation):
         # Create the inner chain: MDA1 -> sub scenarios -> MDA2
         self.chain = self._create_inner_chain()
 
-        # Cleanup design space
-        self._update_design_space()
-
-        # Builds the objective function on top of the chain
-        self._build_objective_from_disc(self._objective_name)
         self.optimization_problem.database.add_new_iter_listener(
             self._store_optimal_local_design_values
         )
@@ -438,7 +414,6 @@ class BiLevel(BaseMDOFormulation):
         ]
 
     def _update_design_space(self) -> None:
-        """Update the design space by removing the coupling variables."""
         self._set_default_input_values_from_design_space()
         self._remove_sub_scenario_dv_from_ds()
         self._remove_couplings_from_ds()

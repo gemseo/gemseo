@@ -49,6 +49,11 @@ class NewMDOFormulationSettings(BaseFormulationSettings): ...
 class NewMDOFormulation(BaseMDOFormulation):
     Settings = NewMDOFormulationSettings
 
+    def get_top_level_disciplines(
+        self, include_sub_formulations: bool = False
+    ) -> tuple[Discipline, ...]:
+        return self.disciplines
+
 
 @pytest.fixture(scope="module")
 def patch_mdo_formulation():
@@ -212,7 +217,7 @@ def test_get_obj(patch_mdo_formulation) -> None:
     for name in dvs:
         design_space.add_variable(name)
 
-    f = NewMDOFormulation([sm], "Y5", design_space)
+    f = NewMDOFormulation([sm], "y_4", design_space)
     with pytest.raises(AttributeError):
         f.get_objective()
 
@@ -255,6 +260,7 @@ def test_get_sub_disciplines_recursive(
         d1 = Discipline("d1")
         d2 = Discipline("d2")
         d3 = Discipline("d3")
+    d1.io.output_grammar.update_from_names(["foo"])
     chain1 = MDOChain([d3], "chain1")
     chain2 = MDOChain([d2, chain1], "chain2")
     chain3 = MDOChain([d1, chain2], "chain3")

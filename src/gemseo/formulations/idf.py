@@ -41,10 +41,7 @@ from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Sequence
-    from typing import Any
 
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
     from gemseo.core.process_discipline import ProcessDiscipline
     from gemseo.typing import RealArray
@@ -52,7 +49,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class IDF(BaseMDOFormulation):
+class IDF(BaseMDOFormulation[IDF_Settings]):
     r"""The Individual Discipline Feasible (IDF) formulation.
 
     The IDF formulation expresses an MDO problem as
@@ -99,8 +96,6 @@ class IDF(BaseMDOFormulation):
 
     Settings: ClassVar[type[IDF_Settings]] = IDF_Settings
 
-    _settings: IDF_Settings
-
     __coupling_structure: CouplingStructure
     """The coupling structure of the disciplines."""
 
@@ -112,22 +107,8 @@ class IDF(BaseMDOFormulation):
     or when ``n_processes > 1``.
     """
 
-    def __init__(  # noqa: D107
-        self,
-        disciplines: Sequence[Discipline],
-        objective_name: str,
-        design_space: DesignSpace,
-        settings_model: IDF_Settings | None = None,
-        **settings: Any,
-    ) -> None:
-        super().__init__(
-            disciplines,
-            objective_name,
-            design_space,
-            settings_model=settings_model,
-            **settings,
-        )
-        self.__coupling_structure = CouplingStructure(disciplines)
+    def _init_before_design_space_and_objective(self) -> None:
+        self.__coupling_structure = CouplingStructure(self.disciplines)
         if not self._settings.include_weak_coupling_targets:
             self._process_discipline = IDFChain(
                 self.__coupling_structure.sequence,
@@ -148,12 +129,13 @@ class IDF(BaseMDOFormulation):
             self._process_discipline = None
 
         self._update_top_level_disciplines()
-        self._build_constraints()
-        self._build_objective_from_disc(objective_name)
+        self._build_consistency_constraints()
         if self._settings.start_at_equilibrium:
             self._compute_equilibrium()
 
+    def _update_design_space(self) -> None:
         strong_couplings = self.__coupling_structure.strong_couplings
+        design_space = self.optimization_problem.design_space
         if not self._settings.include_weak_coupling_targets:
             for coupling in self.__coupling_structure.all_couplings:
                 if coupling in design_space and coupling not in strong_couplings:
@@ -243,7 +225,7 @@ class IDF(BaseMDOFormulation):
             for name in output_couplings
         ])
 
-    def _build_constraints(self) -> None:
+    def _build_consistency_constraints(self) -> None:
         """Create the consistency constraints and add them to the optimization problem.
 
         The consistency constraints are equality constraints of the form "y = y_copy".
