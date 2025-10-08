@@ -850,6 +850,10 @@ class EvaluationProblem(BaseProblem):
         """
         if current_iter:
             self.evaluation_counter.current = 0
+            # This is the start of an evaluation process.
+            # Disable the evaluation counter
+            # to prevent the driver from finalizing the previous iteration.
+            self.evaluation_counter.enabled = False
 
         if database:
             self.database.clear()

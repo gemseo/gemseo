@@ -17,6 +17,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gemseo.algos.hashable_ndarray import HashableNdarray
 
 
 @dataclass
@@ -26,8 +30,14 @@ class EvaluationCounter:
     current: int = 0
     """The current number of evaluations."""
 
+    enabled: bool = False
+    """Whether the counter is enabled."""
+
     maximum: int = 0
     """The maximum number of evaluations allowed."""
+
+    input_value: HashableNdarray | None = None
+    """The current input value initialized at ``None``."""
 
     @property
     def maximum_is_reached(self) -> bool:

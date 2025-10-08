@@ -1,0 +1,1 @@
+The progress bar used by ``OptimizationProblem`` and ``MDOScenario`` objects can log whether an iteration is feasible.

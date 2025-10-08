@@ -196,7 +196,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
             return True, "The sub solver dealt with the constraints."
         if allequal(x_new, x):
             return True, "The solver stopped proposing new designs."
-        return False, "Maximun number of iterations reached."
+        return False, "Maximum number of iterations reached."
 
     def __compute_objective_function_and_active_constraint_residual(
         self,

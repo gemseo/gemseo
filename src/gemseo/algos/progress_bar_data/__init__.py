@@ -12,21 +12,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A progress bar not suffixed by metadata."""
-
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-from gemseo.algos._progress_bars.progress_bar import ProgressBar
-
-if TYPE_CHECKING:
-    from numpy import ndarray
-
-
-class UnsuffixedProgressBar(ProgressBar):
-    """A progress bar not suffixed by metadata."""
-
-    def _set_objective_value(self, x_vect: ndarray) -> None:
-        self._tqdm_progress_bar.n += 1
-        self._tqdm_progress_bar.set_postfix()
+"""Progress bar."""

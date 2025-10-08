@@ -12,24 +12,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A dummy progress bar."""
+"""Factory of classes for displaying data in progress bars."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Final
 
-from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
+from strenum import StrEnum
 
-if TYPE_CHECKING:
-    from numpy import ndarray
+from gemseo.algos.progress_bar_data.base import BaseProgressBarData
+from gemseo.core.base_factory import BaseFactory
 
 
-class DummyProgressBar(BaseProgressBar):
-    """A dummy progress bar.
+class ProgressBarDataFactory(BaseFactory):
+    """The factory for ``BaseProgressBarData`` objects."""
 
-    .. warning:: This progress bar is inactive.
-    """
+    _CLASS = BaseProgressBarData
+    _PACKAGE_NAMES = ("gemseo.algos.progress_bar_data",)
 
-    def set_objective_value(self, x_vect: ndarray | None) -> None: ...  # noqa: D102
 
-    def finalize_iter_observer(self) -> None: ...  # noqa: D102
+PROGRESS_BAR_DATA_FACTORY: Final[ProgressBarDataFactory] = ProgressBarDataFactory()
+"""The factory for ``BaseProgressBarData`` objects."""
+
+ProgressBarDataName = StrEnum(
+    "ProgressBarDataName", names=PROGRESS_BAR_DATA_FACTORY.class_names
+)
+"""A name of a :class:`.BaseProgressBarData` subclass."""

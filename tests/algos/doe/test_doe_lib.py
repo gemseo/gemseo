@@ -442,14 +442,19 @@ def test_callback(custom_doe, n_processes, problem):
 
 @pytest.mark.parametrize("n_processes", [1, 2])
 @pytest.mark.parametrize("use_database", [False, True])
-def test_use_database(custom_doe, n_processes, problem, use_database):
+@pytest.mark.parametrize("enable_progress_bar", [False, True])
+def test_use_database(
+    custom_doe, n_processes, problem, use_database, enable_progress_bar, caplog
+):
     """Check the option use_database."""
     custom_doe.execute(
         problem,
         samples=array([[1.0], [2.0]]),
         n_processes=n_processes,
         use_database=use_database,
+        enable_progress_bar=enable_progress_bar,
     )
+    assert ("100%" in caplog.text) is enable_progress_bar
     assert bool(problem.database) is use_database
 
 

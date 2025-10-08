@@ -31,15 +31,22 @@ import pytest
 from numpy import array
 from numpy import full
 
-from gemseo.algos._progress_bars.progress_bar import ProgressBar
+from gemseo import configuration
+from gemseo import execute_algo
+from gemseo.algos import base_driver_library
+from gemseo.algos._progress_bar.standard import ProgressBar
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.testing.helpers import concretize_classes
 
@@ -91,11 +98,30 @@ def test_empty_design_space() -> None:
         driver._check_algorithm(OptimizationProblem(DesignSpace()))
 
 
+@pytest.mark.parametrize("enable_progress_bar", [False, True])
+@pytest.mark.parametrize("enable_logging", [False, True])
+def test_progress_bar(enable_progress_bar, enable_logging, caplog) -> None:
+    """Check the activation of the progress bar from the options of a
+    BaseDriverLibrary."""
+    enable = configuration.logging.enable
+    configuration.logging.enable = enable_logging
+    driver = OptimizationLibraryFactory().create("SLSQP")
+    driver.execute(Power2(), enable_progress_bar=enable_progress_bar)
+    use_progress_bar = enable_logging and enable_progress_bar
+    assert isinstance(driver._progress_bar, ProgressBar) is use_progress_bar
+    assert (
+        "gemseo.algos._progress_bar.custom:custom.py:" in caplog.text
+    ) is use_progress_bar
+    configuration.logging.enable = enable
+
+
 @pytest.mark.parametrize(
     ("kwargs", "expected"), [({}, "    50%|"), ({"message": "foo"}, "foo  50%|")]
 )
-def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None:
+@pytest.mark.parametrize("parallelize", [False, True])
+def test_new_iteration_callback_xvect(caplog, kwargs, expected, parallelize) -> None:
     """Test the new iteration callback."""
+    power_2 = Power2()
     test_driver = ScipyOpt("SLSQP")
     test_driver._problem = power_2
     test_driver._settings = create_model(
@@ -103,24 +129,20 @@ def test_new_iteration_callback_xvect(caplog, power_2, kwargs, expected) -> None
     )
     test_driver._settings.max_time = 0
     test_driver._init_iter_observer(power_2, max_iter=2, **kwargs)
-    test_driver._new_iteration_callback(array([0, 0]))
-    test_driver._new_iteration_callback(array([0, 0]))
-    assert expected in caplog.text
-
-
-@pytest.mark.parametrize("enable_progress_bar", [False, True])
-def test_progress_bar(enable_progress_bar, caplog) -> None:
-    """Check the activation of the progress bar from the options of a
-    BaseDriverLibrary."""
-    driver = OptimizationLibraryFactory().create("SLSQP")
-    driver.execute(Power2(), enable_progress_bar=enable_progress_bar)
-    assert (
-        isinstance(driver._BaseDriverLibrary__progress_bar, ProgressBar)
-        is enable_progress_bar
+    test_driver._problem.preprocess_functions(is_function_input_normalized=False)
+    for function in test_driver._problem.functions:
+        function.pre_compute_at_new_point = test_driver._finalize_previous_iteration
+    test_driver._problem.evaluate_functions(
+        array([0.0, 0.0, 0.0]),
+        design_vector_is_normalized=False,
+        preprocess_design_vector=False,
     )
-    assert (
-        "Solving optimization problem with algorithm SLSQP" in caplog.text
-    ) is enable_progress_bar
+    test_driver._problem.evaluate_functions(
+        array([1.0, 0.0, 0.0]),
+        design_vector_is_normalized=False,
+        preprocess_design_vector=False,
+    )
+    assert expected in caplog.text
 
 
 @pytest.fixture
@@ -207,3 +229,65 @@ def test_max_design_space_dimension_to_log(max_dimension, caplog):
         )
         in caplog.record_tuples
     )
+
+
+class MockedTime:
+    """Mock time, returning 0 at first call, 10 at second call and 10 at other calls."""
+
+    def __init__(self):
+        self.n_calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.n_calls += 1
+        if self.n_calls in [1, 2]:
+            return 0.0
+
+        return 10
+
+
+def test_reaching_max_time_does_not_stop_storing():
+    """Check that reaching maximum time does not stop storing in the database."""
+    problem = Rosenbrock()
+    problem.add_constraint(
+        MDOFunction(sum, "sum"), constraint_type=MDOFunction.ConstraintType.EQ
+    )
+    n_samples = 100
+    with mock.patch.object(base_driver_library, "time", MockedTime()):
+        SciPyDOE("MC").execute(problem, n_samples=n_samples, max_time=1)
+
+    # Reaching maximum time stops iterating.
+    assert len(problem.database) < n_samples
+    # Reaching maximum time does not stop storing in the database.
+    assert len(problem.database.last_item) == 2
+
+
+class G:
+    def __init__(self):
+        self.value = 1.0
+
+    def __call__(self, x):
+        self.value *= -1
+        return self.value
+
+
+@pytest.mark.parametrize("use_database", [True, False])
+@pytest.mark.parametrize("n_processes", [1, 2])
+def test_progress_bar_database_n_processes(caplog, use_database, n_processes):
+    """Check that the progress bar is logged w/wo parallelization and w/wo database."""
+    problem = Rosenbrock()
+    problem.add_constraint(
+        MDOFunction(G(), "g"), value=1.0, constraint_type=problem.ConstraintType.EQ
+    )
+    execute_algo(
+        problem,
+        "doe",
+        settings_model=MC_Settings(
+            n_samples=3, n_processes=n_processes, use_database=use_database
+        ),
+    )
+    assert "33%" in caplog.text
+    assert ("obj=325" in caplog.text) is use_database
+    assert "67%" in caplog.text
+    assert ("obj=11.2" in caplog.text) is use_database
+    assert "100%" in caplog.text
+    assert ("obj=79.3" in caplog.text) is use_database
