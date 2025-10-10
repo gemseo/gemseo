@@ -48,7 +48,7 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 )
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.post.factory import PostFactory
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
 from gemseo.utils.discipline import get_sub_disciplines
@@ -66,8 +66,9 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.datasets.dataset import Dataset
+    from gemseo.formulations.base_formulation import BaseFormulation
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-    from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+    from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
@@ -155,8 +156,8 @@ class BaseScenario(BaseMonitoredProcess):
     posts: ClassVar[list[str]] = post_factory.class_names
     """The names of the post-processors."""
 
-    _formulation_factory: ClassVar[MDOFormulationFactory] = MDOFormulationFactory()
-    """The factory of MDO formulations."""
+    _formulation_factory: ClassVar[MDOFormulationFactory] = MDO_FORMULATION_FACTORY
+    """The factory of formulations."""
 
     # TODO: API: rename to settings_class.
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
@@ -170,7 +171,7 @@ class BaseScenario(BaseMonitoredProcess):
     clear_history_before_execute: bool
     """Whether to clear the history before execute."""
 
-    formulation: BaseMDOFormulation
+    formulation: BaseFormulation
     """The MDO formulation."""
 
     optimization_result: OptimizationResult | None
@@ -224,7 +225,7 @@ class BaseScenario(BaseMonitoredProcess):
             formulation_settings,
             class_name_arg="formulation_name",
         )
-        self.formulation = MDOFormulationFactory().create(
+        self.formulation = self._formulation_factory.create(
             formulation_name,
             disciplines,
             objective_name,

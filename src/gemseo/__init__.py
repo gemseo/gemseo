@@ -225,9 +225,9 @@ def get_available_formulations() -> list[str]:
         >>> from gemseo import get_available_formulations
         >>> get_available_formulations()
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    return MDOFormulationFactory().class_names
+    return MDO_FORMULATION_FACTORY.class_names
 
 
 def get_available_opt_algorithms() -> list[str]:
@@ -496,9 +496,9 @@ def get_formulation_options_schema(
         >>> from gemseo import get_formulation_options_schema
         >>> schema = get_formulation_options_schema("MDF", pretty_print=True)
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    grammar = MDOFormulationFactory().get_options_grammar(formulation_name)
+    grammar = MDO_FORMULATION_FACTORY.get_options_grammar(formulation_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -526,9 +526,9 @@ def get_formulation_sub_options_schema(
         >>>                                             main_mda_name='MDAJacobi',
         >>>                                             pretty_print=True)
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    grammar = MDOFormulationFactory().get_sub_options_grammar(
+    grammar = MDO_FORMULATION_FACTORY.get_sub_options_grammar(
         formulation_name, **formulation_settings
     )
     return _get_schema(grammar, output_json, pretty_print)
@@ -553,9 +553,9 @@ def get_formulations_sub_options_defaults(
         >>> get_formulations_sub_options_defaults('MDF',
         >>>                                       main_mda_name='MDAJacobi')
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    return MDOFormulationFactory().get_default_sub_option_values(
+    return MDO_FORMULATION_FACTORY.get_default_sub_option_values(
         formulation_name, **formulation_settings
     )
 
@@ -578,9 +578,9 @@ def get_formulations_options_defaults(
          'maximize_objective': False,
          'inner_mda_name': 'MDAJacobi'}
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    return MDOFormulationFactory().get_default_option_values(formulation_name)
+    return MDO_FORMULATION_FACTORY.get_default_option_values(formulation_name)
 
 
 def get_discipline_options_schema(
