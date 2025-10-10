@@ -169,7 +169,7 @@ def test_str(optimization_result) -> None:
    Optimizer info:
       Status: None
       Message: None
-      Number of calls to the objective function by the optimizer: 1
+      Number of calls to the objective function: 1
    Solution:
       The solution is not feasible.
       Objective: 0.5

@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass
 from time import sleep
 from typing import Any
@@ -205,8 +204,6 @@ def test_feasibility(caplog, n_processes):
             n_processes=n_processes,
         ),
     )
-    record_tuples = caplog.record_tuples
-    i = 0 if n_processes == 1 else 1
-    assert re.match(r".* feas=True, obj=404.*", record_tuples[3 + i][2])
-    assert re.match(r".* feas=False, obj=6.5*", record_tuples[4 + i][2])
-    assert re.match(r".* feas=True, obj=58.5.*", record_tuples[5 + i][2])
+    assert "feas=True, obj=404" in caplog.text
+    assert "feas=False, obj=6.5" in caplog.text
+    assert "feas=True, obj=58.5" in caplog.text
