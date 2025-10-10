@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.formulations.base_factory import BaseFormulationFactory
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 
@@ -30,3 +32,7 @@ class MDOFormulationFactory(BaseFormulationFactory):
 
     _CLASS = BaseMDOFormulation
     _PACKAGE_NAMES = ("gemseo.formulations",)
+
+
+MDO_FORMULATION_FACTORY: Final[MDOFormulationFactory] = MDOFormulationFactory()
+"""The factory for ``BaseMDOFormulation`` objects."""
