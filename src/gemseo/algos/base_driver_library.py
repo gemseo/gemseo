@@ -373,8 +373,11 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             vectorize=getattr(self._settings, "vectorize", False),
         )
         parallelize = getattr(self._settings, "n_processes", 1) > 1
-        if not parallelize:
-            for function in problem.functions:
+        functions = problem.functions
+
+        set_pre_compute_at_new_point = functions[0].pre_compute_at_new_point is None
+        if set_pre_compute_at_new_point and not parallelize:
+            for function in functions:
                 function.pre_compute_at_new_point = self._finalize_previous_iteration
 
         if problem.new_iter_observables:
@@ -442,8 +445,9 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             ),
             store_listeners=None,
         )
-        for function in problem.functions:
-            function.pre_compute_at_new_point = None
+        if set_pre_compute_at_new_point:
+            for function in problem.functions:
+                function.pre_compute_at_new_point = None
 
         if solve_optimization_problem:
             self._post_run(
