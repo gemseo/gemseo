@@ -32,14 +32,22 @@ from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manag
 @pytest.mark.parametrize("show", [True, False])
 @pytest.mark.parametrize("fig_size", [(10, 10), None])
 @pytest.mark.parametrize("use_save_show_figure", [True, False])
-def test_save_show_figure(tmp_wd, use_save_show_figure, file_path, show, fig_size):
+@pytest.mark.parametrize("close", [True, False, None])
+def test_save_show_figure(
+    tmp_wd, use_save_show_figure, file_path, show, fig_size, close
+):
     """Verify that a Matplotlib figure is correctly saved."""
     fig, _ = plt.subplots()
 
     file_path_manager = FilePathManager(FilePathManager.FileType.FIGURE)
-    with patch("matplotlib.pyplot.savefig"), patch("matplotlib.pyplot.show"):
+    with (
+        patch("matplotlib.pyplot.savefig"),
+        patch("matplotlib.pyplot.show"),
+        patch("gemseo.utils.matplotlib_figure.plt.close") as close_,
+    ):
         if use_save_show_figure:
-            save_show_figure(fig, show, file_path, fig_size=fig_size)
+            save_show_figure(fig, show, file_path, fig_size=fig_size, close=close)
+            close = bool(file_path) if close is None else close
         else:
             save_show_figure_from_file_path_manager(
                 fig,
@@ -47,7 +55,15 @@ def test_save_show_figure(tmp_wd, use_save_show_figure, file_path, show, fig_siz
                 show=show,
                 file_path=file_path,
                 fig_size=fig_size,
+                close=close,
             )
+            close = bool(file_path_manager) if close is None else close
+
+        if close:
+            close_.assert_called_once()
+            assert close_.call_args.args[0] == fig
+        else:
+            close_.assert_not_called()
 
         if fig_size is None:
             fig_size = rcParams["figure.figsize"]
@@ -56,5 +72,3 @@ def test_save_show_figure(tmp_wd, use_save_show_figure, file_path, show, fig_siz
 
     if file_path is not None:
         assert Path(file_path).exists()
-
-    plt.fignum_exists(fig.number)

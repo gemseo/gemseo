@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 from os.path import exists
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -86,6 +87,43 @@ def test_plot(dataset, tmp_wd) -> None:
     assert exists("sdm_sinus_y2_1D_interpolation_0.pdf")
     model.plot_dependency()
     assert exists("sdm_sinus_dependency.pdf")
+
+
+@pytest.mark.parametrize("save", [True, False])
+@pytest.mark.parametrize("show", [True, False])
+def test_show_close(dataset, save, show) -> None:
+    """Check the use of show and close."""
+    model = ScalableDiagonalModel(dataset)
+    with (
+        patch("gemseo.problems.mdo.scalable.data_driven.diagonal.plt.show") as show_,
+        patch("gemseo.problems.mdo.scalable.data_driven.diagonal.plt.close") as close_,
+        patch(
+            "gemseo.problems.mdo.scalable.data_driven.diagonal.save_show_figure"
+        ) as save_show_figure,
+    ):
+        file_names = model.plot_1d_interpolations(save=save, show=show)
+
+    assert save_show_figure.call_count == 2
+    assert save_show_figure.call_args.args[1] is False
+    assert save_show_figure.call_args.kwargs["close"] is False
+
+    if save:
+        close_.assert_called_once()
+    else:
+        close_.assert_not_called()
+
+    if show:
+        show_.assert_called_once()
+    else:
+        show_.assert_not_called()
+
+    if save:
+        assert file_names == [
+            "sdm_sinus_y1_1D_interpolation_0.pdf",
+            "sdm_sinus_y2_1D_interpolation_0.pdf",
+        ]
+    else:
+        assert file_names == []
 
 
 def test_force_io_dependency(dataset) -> None:
