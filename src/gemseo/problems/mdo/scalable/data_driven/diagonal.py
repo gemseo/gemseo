@@ -67,6 +67,7 @@ from gemseo.problems.mdo.scalable.data_driven.model import ScalableModel
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.matplotlib_figure import show_close_figures
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -382,7 +383,9 @@ class ScalableDiagonalModel(ScalableModel):
                     fnames.append(str(file_path))
                 else:
                     file_path = None
-                save_show_figure(fig, show, file_path)
+                save_show_figure(fig, False, file_path, close=False)
+
+        show_close_figures(show, save)
         return fnames
 
     def generate_random_dependency(

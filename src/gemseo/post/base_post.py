@@ -35,6 +35,7 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.matplotlib_figure import show_close_figures
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import repr_variable
@@ -199,6 +200,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         self._plot(settings_)
         self.__render(settings_)
+        show_close_figures(settings_.show, settings_.save)
         return self.__figures
 
     def __render(self, settings: T) -> None:
@@ -239,7 +241,11 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 )
             else:
                 save_show_figure(
-                    figure, settings.show, fig_file_path, settings.fig_size
+                    figure,
+                    False,
+                    fig_file_path,
+                    fig_size=settings.fig_size,
+                    close=False,
                 )
 
     @abstractmethod

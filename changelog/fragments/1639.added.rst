@@ -1,0 +1,2 @@
+- ``save_show_figure`` and ``save_show_figure_from_file_path_manager`` have a new argument, named ``close`` (default: ``None``), for closing the matplotlib figures.
+- ``show_close_figures`` is a helper function to show and close matplotlib figures.
