@@ -114,29 +114,21 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             list(zip(samples, opt_algo_max_iter, strict=False)),
         )
 
-        # The sub-optimizations use their own optimization problems
-        # and so their own databases.
-        # When the sub-optimizations are run sequentially,
-        # the evaluations are stored both in the main database and in the sub-databases.
-        # When the sub-optimizations are run in parallel,
-        # the evaluations are stored in the sub-databases only,
-        # and we need to store them manually in the main database.
-        if n_processes > 1:
-            for problem in problems:
-                database = problem.database
-                f_hist, x_hist = database.get_function_history(
-                    self._problem.objective.name, with_x_vect=True
-                )
-                for xi, fi in zip(x_hist, f_hist, strict=False):
-                    self._problem.database.store(xi, {self._problem.objective.name: fi})
+        for problem in problems:
+            database = problem.database
+            f_hist, x_hist = database.get_function_history(
+                self._problem.objective.name, with_x_vect=True
+            )
+            for xi, fi in zip(x_hist, f_hist, strict=False):
+                self._problem.database.store(xi, {self._problem.objective.name: fi})
 
-                for functions in [self._problem.constraints, self._problem.observables]:
-                    for f in functions:
-                        f_hist, x_hist = database.get_function_history(
-                            f.name, with_x_vect=True
-                        )
-                        for xi, fi in zip(x_hist, f_hist, strict=False):
-                            self._problem.database.store(xi, {f.name: fi})
+            for functions in [self._problem.constraints, self._problem.observables]:
+                for f in functions:
+                    f_hist, x_hist = database.get_function_history(
+                        f.name, with_x_vect=True
+                    )
+                    for xi, fi in zip(x_hist, f_hist, strict=False):
+                        self._problem.database.store(xi, {f.name: fi})
 
         file_path = self._settings.multistart_file_path
         if file_path:
@@ -163,9 +155,10 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         design_space.set_current_value(initial_point)
 
         problem = OptimizationProblem(design_space)
-        problem.objective = self._problem.objective
-        problem.constraints = self._problem.constraints
-        problem.observables = self._problem.observables
+        problem.differentiation_method = self._problem.differentiation_method
+        problem.objective = self._problem.objective.original
+        problem.constraints = (c.original for c in self._problem.constraints)
+        problem.observables = (o.original for o in self._problem.observables)
 
         factory = OptimizationLibraryFactory()
         opt_algo = factory.create(self._settings.opt_algo_name)
