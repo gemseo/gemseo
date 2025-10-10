@@ -36,6 +36,7 @@ from numpy import abs as np_abs
 from numpy import arange
 from numpy import argmin
 from numpy import array
+from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import isnan
 from numpy import max as np_max
@@ -112,7 +113,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         )
 
         self._create_obj_plot(
-            obj_history,
+            atleast_1d(obj_history),
             n_iter,
             settings.fig_size,
             x_xstar,
@@ -507,6 +508,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         Returns:
             The constraints figure.
         """
+        if cstr_matrix.shape[0] == len(x_xstar):
+            cstr_matrix = cstr_matrix.T
         cmap: str | ListedColormap
         if cstr_type == MDOFunction.ConstraintType.EQ:
             cmap = self.__EQ_CSTR_CMAP

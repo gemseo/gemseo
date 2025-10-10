@@ -35,6 +35,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+from gemseo import configuration
 from gemseo import execute_post
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -47,6 +48,8 @@ from gemseo.settings.formulations import MDF_Settings
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.opt import SLSQP_Settings
+
+configuration.enable_discipline_statistics = True
 
 # %%
 # Instantiate the  disciplines
@@ -257,3 +260,5 @@ for disc in [propulsion_disc, aerodynamics_disc, mission_disc, structure_disc]:
 
 for sub_sc in [propulsion_sc, aerodynamics_sc, structure_sc]:
     print(f"{sub_sc.name}: {sub_sc.execution_statistics.n_executions} calls.")
+
+configuration.enable_discipline_statistics = False
