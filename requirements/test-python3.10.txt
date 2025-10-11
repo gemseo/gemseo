@@ -158,7 +158,7 @@ sympy==1.14.0
     # via gemseo (pyproject.toml)
 threadpoolctl==3.6.0
     # via scikit-learn
-tomli==2.2.1
+tomli==2.3.0
     # via
     #   coverage
     #   pytest
