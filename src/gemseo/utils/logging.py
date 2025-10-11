@@ -35,6 +35,7 @@ from sys import stderr
 from sys import stdout
 from typing import TYPE_CHECKING
 from typing import Final
+from typing import TypeVar
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
     from logging import Logger
     from types import TracebackType
 
+    from _typeshed import SupportsWrite
     from typing_extensions import Self
 
 # TODO: API: remove this variable.
@@ -63,6 +65,8 @@ DEFAULT_MESSAGE_FORMAT: Final[str] = _LOGGING_MESSAGE_FORMAT
 # TODO: API: remove this variable.
 GEMSEO_LOGGER: Final[Logger] = getLogger("gemseo")
 """The GEMSEO's logger."""
+
+_StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")
 
 
 class LoggingConfiguration(BaseModel, validate_assignment=True):
@@ -148,6 +152,7 @@ def _configure_logger(
     date_format: str,
     file_path: str | Path,
     file_mode: str,
+    stream: _StreamT | None = None,
 ) -> Logger:
     """Configure a logger.
 
@@ -158,6 +163,7 @@ def _configure_logger(
         date_format: The logging date format.
         file_path: The path to the log file, if outputs must be written in a file.
         file_mode: The logging file mode.
+        stream: The stream to use for logging, if any.
 
     Returns:
         The configured logger.
@@ -170,7 +176,7 @@ def _configure_logger(
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
 
-    stream_handler = MultiLineStreamHandler()
+    stream_handler = MultiLineStreamHandler(stream)
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
 
