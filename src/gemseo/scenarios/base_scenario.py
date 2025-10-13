@@ -359,7 +359,6 @@ class BaseScenario(BaseMonitoredProcess):
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
-        # TODO: API: remove these arguments that are not used.
         **kwargs: Any,
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
@@ -384,7 +383,7 @@ class BaseScenario(BaseMonitoredProcess):
                 from ``output_name``, ``constraint_type``, ``value`` and ``positive``.
             value: The value :math:`a`.
             positive: Whether the inequality constraint is positive.
-            **kwargs: The arguments are not used.
+            **kwargs: Additional arguments specific to the MDO formulation.
         """
         self.formulation.add_constraint(
             output_name,
@@ -392,6 +391,7 @@ class BaseScenario(BaseMonitoredProcess):
             constraint_name=constraint_name,
             value=value,
             positive=positive,
+            **kwargs,
         )
 
     def add_observable(
