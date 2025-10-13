@@ -74,7 +74,7 @@ def test_print_configuration(reset_factory) -> None:
         r"^\+-+\+$",
         r"^\|\s+BaseMDOFormulation\s+\|$",
         r"^\+-+\+-+\+-+\+$",
-        r"^\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error " r"message\s+\|$",
+        r"^\|\s+Module\s+\|\s+Is avai.*\s+\|\s+Purpose or error " r"message\s+\|$",
     ]
 
     for pattern, line in zip(header_patterns, repr(factory).split("\n"), strict=False):

@@ -50,7 +50,7 @@ def test_create_with_wrong_formulation_name() -> None:
         ImportError,
         match="The class foo is not available; "
         # Prevent failure when testing in environments with plugins. (terminal .*)
-        r"the available ones are: BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.*",
+        r"the available ones are: .*BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.*",
     ):
         MDO_FORMULATION_FACTORY.create("foo", None, None, None)
 
