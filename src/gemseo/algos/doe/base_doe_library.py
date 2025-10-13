@@ -398,14 +398,6 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         else:
             input_value = None
 
-        self.__finalize_iteration(input_value)
-
-    def __finalize_iteration(self, input_value: HashableNdarray | None) -> None:
-        """Finalize the iteration.
-
-        Args:
-            input_value: The input value, if any.
-        """
         self._problem.evaluation_counter.current += 1
         if self._progress_bar is not None:
             self._progress_bar.update(input_value)
