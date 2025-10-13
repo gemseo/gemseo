@@ -181,8 +181,8 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
 
         self.__start_time = time()
 
-    def _finalize_previous_iteration(self) -> None:
-        """Finalize the previous iteration."""
+    def _finalize_previous_iteration_using_database(self) -> None:
+        """Finalize the previous iteration using the database."""
         # This is the start of the current iteration.
         counter = self._problem.evaluation_counter
         if not counter.enabled:
@@ -190,18 +190,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             self._check_stopping_criteria()
             return
 
-        # Set the counter to the current iteration.
-        counter.current += 1
-
-        # Search for the previous iteration.
-        input_values = iter(self._problem.database)
-        for _ in range(counter.current):
-            previous_input_value = next(input_values)
-
-        # Finalize the previous iteration.
-        if self._progress_bar is not None:
-            self._progress_bar.update(previous_input_value)
-
+        self._finalize_previous_iteration()
         self._check_stopping_criteria()
 
     def _check_stopping_criteria(self) -> None:
@@ -372,13 +361,18 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             # unlike certain specialized drivers, such as DOEs.
             vectorize=getattr(self._settings, "vectorize", False),
         )
+        # TODO: Have a better class hierarchy to avoid getattr,
+        # or have this field in all settings but forced to be 1 as needed.
         parallelize = getattr(self._settings, "n_processes", 1) > 1
+
         functions = problem.functions
 
         set_pre_compute_at_new_point = functions[0].pre_compute_at_new_point is None
         if set_pre_compute_at_new_point and not parallelize:
             for function in functions:
-                function.pre_compute_at_new_point = self._finalize_previous_iteration
+                function.pre_compute_at_new_point = (
+                    self._finalize_previous_iteration_using_database
+                )
 
         if problem.new_iter_observables:
             problem.database.add_new_iter_listener(
@@ -418,22 +412,18 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             except TerminationCriterion as termination_criterion:
                 args = (termination_criterion,)
                 get_result = self._get_early_stopping_result
+                # Disable the counter
+                # because the iteration has been finalized
+                # just before raising the TerminationCriterion
+                # (see the _finalize_previous_iteration_using_database method).
+                problem.evaluation_counter.enabled = False
 
             if solve_optimization_problem:
                 problem: OptimizationProblem
                 result = get_result(problem, *args)
 
-        if problem.evaluation_counter.enabled and not parallelize:
-            if self._settings.use_database and self._problem.database:
-                input_value = HashableNdarray(
-                    self._problem.database.get_last_n_x_vect(1)[0]
-                )
-                problem.evaluation_counter.current += 1
-            else:
-                input_value = None
-
-            if self._progress_bar is not None:
-                self._progress_bar.update(input_value)
+        if self._problem.evaluation_counter.enabled and not parallelize:
+            self._finalize_previous_iteration()
 
         problem.evaluation_counter.enabled = False
         if self._progress_bar is not None:
@@ -458,6 +448,14 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
 
         self._reset()
         return result
+
+    def _finalize_previous_iteration(self):
+        """Finalize the previous iteration."""
+        problem = self._problem
+        problem.evaluation_counter.current += 1
+        if self._progress_bar is not None:
+            input_value = HashableNdarray(problem.database.get_last_n_x_vect(1)[0])
+            self._progress_bar.update(input_value)
 
     @abstractmethod
     def _run(self, problem: EvaluationProblem) -> tuple[Any, Any]:

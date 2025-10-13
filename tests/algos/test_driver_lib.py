@@ -131,7 +131,9 @@ def test_new_iteration_callback_xvect(caplog, kwargs, expected, parallelize) -> 
     test_driver._init_iter_observer(power_2, max_iter=2, **kwargs)
     test_driver._problem.preprocess_functions(is_function_input_normalized=False)
     for function in test_driver._problem.functions:
-        function.pre_compute_at_new_point = test_driver._finalize_previous_iteration
+        function.pre_compute_at_new_point = (
+            test_driver._finalize_previous_iteration_using_database
+        )
     test_driver._problem.evaluate_functions(
         array([0.0, 0.0, 0.0]),
         design_vector_is_normalized=False,
