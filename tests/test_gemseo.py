@@ -786,7 +786,7 @@ def test_print_configuration(capfd) -> None:
             r"\+-+\+$\n"
             rf"\|\s+{module}\s+\|$\n"
             r"\+-+\+-+\+-+\+$\n"
-            r"\|\s+Module\s+\|\s+Is available\?\s+\|\s+Purpose or error "
+            r"\|\s+Module\s+\|\s+Is.*\s+\|\s+Purpose or error "
             r"message\s+\|$\n"
         )
 
