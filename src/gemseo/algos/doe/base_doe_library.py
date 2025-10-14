@@ -27,7 +27,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import singledispatchmethod
 from multiprocessing import RLock
-from multiprocessing import current_process
+from multiprocessing import parent_process
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -45,7 +45,6 @@ from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -349,7 +348,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         Returns:
             The output value and the Jacobian value.
         """
-        if current_process().name == SUBPROCESS_NAME:
+        if parent_process() is not None:
             self._progress_bar = None
             self._problem.database.clear_listeners()
 
