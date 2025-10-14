@@ -35,6 +35,12 @@ Contact
 
 You can contact the |g| team at contact@gemseo.org for any question related to |g|.
 
+Community Forums
+----------------
+
+The |g| community forums are available at https://gemseo.discourse.group.
+A place where users can connect, ask questions, and share ideas about |g|.
+
 Developer Certificate of Origin
 -------------------------------
 
