@@ -58,8 +58,7 @@ all = [
   "scikit-learn >=1.2,<=1.7.2",
   "spgl1 >= 0.0.3,<= 1.0.0",
   "sympy >=1.5,<=1.14.0",
-  # xlwings > 0.30.4 fails test with multi-threading.
-  "xlwings >=0.27.0,<=0.30.4 ; platform_system=='Windows'",
+  "xlwings >=0.27.0,<=0.33.16 ; platform_system=='Windows'",
 ]
 
 [dependency-groups]
