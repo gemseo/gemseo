@@ -1,1 +1,0 @@
-An example about batch sampling in the gallery of examples related to design of experiments (DOE).

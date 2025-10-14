@@ -1,2 +1,0 @@
-- ``BaseFCERegressor`` is the base class for defining functional chaos expansion regressors.
-- ``BaseFCERegressor_Settings`` is the base class for defining the settings of a ``BaseFCERegressor``.

@@ -1,5 +1,0 @@
-The following functions now include the argument ``delimiter`` which allows users to choose the
-delimiter character for CSV files: ``write_design_space``, ``read_design_space``, ``DesignSpace.from_file``, ``DesignSpace.to_file``, ``DesignSpace.from_csv`` and ``DesignSpace.to_csv``.
-- The ``**options`` argument in ``DesignSpace.from_file`` has been deprecated.
-- The ``**table_options`` argument in ``DesignSpace.to_csv`` has been deprecated.
-- The ``header_char`` argument in ``DesignSpace.to_csv`` has been deprecated.

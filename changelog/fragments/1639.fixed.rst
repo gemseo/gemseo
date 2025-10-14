@@ -1,1 +1,0 @@
-matplotlib-based post-processors no longer raise a ``TclError`` when showing more than one figure.

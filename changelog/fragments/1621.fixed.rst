@@ -1,1 +1,0 @@
-``Sellar2`` no longer crashes when ``y_1`` is a collection of samples.

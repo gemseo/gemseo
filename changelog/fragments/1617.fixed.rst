@@ -1,1 +1,0 @@
-The output values of an iteration are all stored in the database before the termination criteria are examined.

@@ -1,1 +1,0 @@
-The drivers have an new setting named ``progress_bar_data_name`` for overloading the information displayed at each iteration of the progress bar in the case of an ``OptimizationProblem``; this is the name of a ``BaseProgressBarData`` class. By default, only the objective value and feasibility are displayed when the option ``log_problem`` is ``True`` (default).

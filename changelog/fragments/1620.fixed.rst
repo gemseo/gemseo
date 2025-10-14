@@ -1,1 +1,0 @@
-The inner MDA settings model is now properly used to determine which inner MDA class to instantiate.

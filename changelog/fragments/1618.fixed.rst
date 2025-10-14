@@ -1,1 +1,0 @@
-The progress bar is logged, whether the calculations are performed in parallel or not, using the database or not.
