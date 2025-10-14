@@ -1,1 +1,0 @@
-DOE algorithms have a new option, called ``preprocessors``, to perform preprocessing before each sample generation.
