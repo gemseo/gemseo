@@ -25,7 +25,6 @@ Scenario
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
@@ -34,9 +33,6 @@ from gemseo import get_scenario_differentiation_modes
 from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
 from gemseo import monitor_scenario
-
-configure_logger()
-
 
 # %%
 # In this example, we will discover the different functions of the API to

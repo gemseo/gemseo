@@ -27,6 +27,98 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 6.3.0 (2025-10-14)
+**************************
+
+
+
+Added
+-----
+
+- The drivers have an new setting named ``progress_bar_data_name`` for overloading the information displayed at each iteration of the progress bar in the case of an ``OptimizationProblem``; this is the name of a ``BaseProgressBarData`` class. By default, only the objective value and feasibility are displayed when the option ``log_problem`` is ``True`` (default).
+  `#349 <https://gitlab.com/gemseo/dev/gemseo/-/issues/349>`_
+- The ``gemseo.configuration`` variable can be used to configure |g| instead of using ``gemseo.configure``.
+- The ``gemseo.configuration.logging`` variable can be used to configure logging for |g| and its plugins instead of using ``gemseo.configure_logger``.
+- The global configuration settings can be specified via environment variables of the form ``GEMSEO_{OPTION_NAME}`` and ``GEMSEO_LOGGING_{OPTION_NAME}``, and can also be defined in a file named ``.env``.
+- Configuring GEMSEO is documented in the user guide.
+  `#1474 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1474>`_
+- The progress bar used by ``OptimizationProblem`` and ``MDOScenario`` objects can log whether an iteration is feasible.
+  `#1574 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1574>`_
+- DOE algorithms have a new option, called ``preprocessors``, to perform preprocessing before each sample generation.
+  `#1601 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1601>`_
+- ``BaseScenario.post_process`` can handle output values stored in the database by listeners.
+- ``EvaluationProblem.add_listener``, ``Database.add_new_iter_listener`` and ``Database.add_store_listener`` have a new argument, called ``output_names``, to declare the names of the output variables whose values are stored in the database by the associated listener.
+- ``Database.listener_output_names`` lists the names of the output variables whose values are stored in the database by listeners.
+  `#1606 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1606>`_
+- ``FCERegressor`` can create functional chaos expansion (FCE) models from linear model fitting algorithms.
+- ``FCERegressor_Settings`` is the class for defining the settings of a ``FCERegressor``,
+  including the choice of the orthonormal function basis (polynomial (default), Fourier or Haar)
+  and the ability to learn Jacobian data (gradient-enhanced FCE).
+- ``gemseo.mlearning.linear_model_fitting`` is a sub-package containg linear model fitting algorithms.
+- ``BaseLinearModelFitter`` is the base class for interfacing linear model fitting algorithms, with a method ``fit(input_data, output_data) -> coefficients``
+- ``BaseLinearModelFitter_Settings`` is the base class for defining the settings of a ``BaseLinearModelFitter``.
+- ``BaseSKLearnLinearModelFitter`` is the base class for interfacing linear model fitting algorithms from scikit-learn.
+- ``BaseSKLearnLinearModelFitter_Settings`` is the base class for defining the settings of a ``BaseSKLearnLinearModelFitter_Settings``.
+- Classes interfacing linear model fitting algorithms from scikit-learn:
+  ``LinearRegression``, ``ElasticNet``, ``Lasso``, ``Ridge``, ``LARS``, and ``OrthogonalMatchingPursuit``,
+  these classes are equiped with settings classes of the form ``AlgoName_Settings``.
+- Classes interfacing linear model fitting algorithms with build-in cross-validation from scikit-learn:
+  ``LinearRegressionCV``, ``ElasticNetCV``, ``LassoCV``, ``RidgeCV``, ``LARSCV``, and ``OrthogonalMatchingPursuitCV``,
+  these classes are equiped with settings classes of the form ``AlgoName_Settings``.
+- ``SPGL1`` is the class for defining an SPGL1 (Spectral Projected Gradient for L1 minimization) algorithm.
+  `#1610 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1610>`_
+- ``BaseFCERegressor`` is the base class for defining functional chaos expansion regressors.
+- ``BaseFCERegressor_Settings`` is the base class for defining the settings of a ``BaseFCERegressor``.
+  `#1611 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1611>`_
+- An example about batch sampling in the gallery of examples related to design of experiments (DOE).
+  `#1613 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1613>`_
+- ``OptAsMDOScenario`` supports vectorial design variables.
+  `#1635 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1635>`_
+- ``save_show_figure`` and ``save_show_figure_from_file_path_manager`` have a new argument, named ``close`` (default: ``None``), for closing the matplotlib figures.
+- ``show_close_figures`` is a helper function to show and close matplotlib figures.
+  `#1639 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1639>`_
+
+Fixed
+-----
+
+- The ``BaseSettings`` class validates the default field values.
+  `#1608 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1608>`_
+- The output values of an iteration are all stored in the database before the termination criteria are examined.
+  `#1617 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1617>`_
+- The progress bar is logged, whether the calculations are performed in parallel or not, using the database or not.
+  `#1618 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1618>`_
+- The inner MDA settings model is now properly used to determine which inner MDA class to instantiate.
+  `#1620 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1620>`_
+- ``Sellar2`` no longer crashes when ``y_1`` is a collection of samples.
+  `#1621 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1621>`_
+- GlobalConfiguration now allows extra fields in .env files, preventing validation errors when third-party applications have their own environment variables.
+  `#1632 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1632>`_
+- ``OptAsMDOScenario`` supports more than 2 strongly coupled disciplines by default.
+  `#1634 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1634>`_
+- The ``time_limit`` setting of the ``Scipy_MILP`` algorithm is now properly passed to ``scipy.optimize.milp``.
+  The ``maxiter`` and ``tol`` settings of the SciPy linear programming library is now properly passed to ``scipy.optimize.linprog``.
+  `#1636 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1636>`_
+- matplotlib-based post-processors no longer raise a ``TclError`` when showing more than one figure.
+  `#1639 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1639>`_
+
+Changed
+-------
+
+- Logging is now enabled by default; use the following to disable it: ``from gemseo import configuration; configuration.logging.enable = False``.
+- The default value of the ``logger`` argument of ``LoggingContext`` is the GEMSEO logger.
+- The module ``gemseo.utils.logging_tools`` has been renamed ``gemseo.utils.logging``; the former is deprecated.
+  `#1474 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1474>`_
+- ``BaseFormulation`` has a new argument, called ``minimize_objective``, to indicate whether the optimisation problem is a minimisation problem (default) or maximisation problem. This does not change the ``BaseScenario`` API, which still has its ``maximize_objective`` argument (default: ``False``).
+  `#1607 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1607>`_
+- The gallery of examples about design of experiments (DOE) has been divided into generic features and algorithms.
+  `#1614 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1614>`_
+- The following functions now include the argument ``delimiter`` which allows users to choose the
+  delimiter character for CSV files: ``write_design_space``, ``read_design_space``, ``DesignSpace.from_file``, ``DesignSpace.to_file``, ``DesignSpace.from_csv`` and ``DesignSpace.to_csv``.
+- The ``**options`` argument in ``DesignSpace.from_file`` has been deprecated.
+- The ``**table_options`` argument in ``DesignSpace.to_csv`` has been deprecated.
+- The ``header_char`` argument in ``DesignSpace.to_csv`` has been deprecated.
+  `#1627 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1627>`_
+
 Version 6.2.0 (2025-08-06)
 **************************
 

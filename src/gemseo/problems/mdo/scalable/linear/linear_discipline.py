@@ -32,6 +32,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.typing import StrKeyMapping
@@ -153,8 +154,8 @@ class LinearDiscipline(Discipline):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         self.jac = split_array_to_dict_of_arrays(
             self.mat, self.__sizes_d, self.output_names, self.input_names

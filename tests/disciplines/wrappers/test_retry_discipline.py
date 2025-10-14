@@ -130,59 +130,6 @@ class SlowProcessDiscipline(Discipline):
         sleep(60)
 
 
-TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
-
-
-@pytest.mark.skipif(
-    PLATFORM_IS_WINDOWS,
-    reason="The windows CI has big troubles with this test.",
-)
-@pytest.mark.parametrize("wait_time", [0.01, 0.1])
-@pytest.mark.parametrize("n_trials", [1, 3])
-@pytest.mark.parametrize("disc_class", [SlowProcessDiscipline, SlowThreadDiscipline])
-def test_wait_time_and_n_trials(
-    n_trials, wait_time, disc_class, caplog, tmp_wd
-) -> None:
-    """Test failure of the discipline with a too much very short timeout."""
-    wrapped_disc = disc_class()
-    wrapped_disc.pid_path = pid_path = tmp_wd / "pid"
-
-    disc = RetryDiscipline(
-        wrapped_disc,
-        timeout=TIMEOUT,
-        n_trials=n_trials,
-        wait_time=wait_time,
-        timeout_with_process=disc_class == SlowProcessDiscipline,
-    )
-
-    with (
-        Timer() as timer,
-        pytest.raises(
-            TimeoutError,
-            match="Timeout reached during the execution"
-            rf" of discipline {disc_class.__name__}",
-        ),
-    ):
-        disc.execute()
-
-    if disc_class == SlowProcessDiscipline:
-        # The wrapped discipline process should have been killed.
-        assert not psutil.pid_exists(int(pid_path.read_text()))
-
-    # The offset accounts for the time it takes for the execution to reach the _run of
-    # retry discipline.
-    assert timer.elapsed_time > 0.01 + (n_trials - 1) * wait_time
-    assert disc.n_executions == n_trials
-    assert not disc.local_data
-
-    plural_suffix = "s" if n_trials > 1 else ""
-    log_message = (
-        f"Failed to execute discipline {disc_class.__name__} after {n_trials}"
-        f" attempt{plural_suffix}."
-    )
-    assert log_message in caplog.text
-
-
 def test_failure_zero_division_error(a_crashing_analytic_discipline, caplog) -> None:
     """Test failure of the discipline with a bad x entry.
 
@@ -291,7 +238,7 @@ def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> N
     assert log_message in caplog.text
 
 
-def test_2fails_then_succeed(caplog) -> None:
+def test_2fails_then_succeed() -> None:
     """Test a discipline crashing the 2 first times, then succeeding."""
     disc = RetryDiscipline(
         FictiveDiscipline(),
@@ -301,3 +248,57 @@ def test_2fails_then_succeed(caplog) -> None:
     assert disc.n_executions == 3
     assert disc.io.data == {}
     assert disc.execution_status.value == ExecutionStatus.Status.DONE
+
+
+TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
+
+
+# TODO: Fix this test on windows.
+@pytest.mark.skipif(
+    PLATFORM_IS_WINDOWS,
+    reason="The windows CI has big troubles with this test.",
+)
+@pytest.mark.parametrize("wait_time", [0.01, 0.1])
+@pytest.mark.parametrize("n_trials", [1, 3])
+@pytest.mark.parametrize("disc_class", [SlowProcessDiscipline, SlowThreadDiscipline])
+def test_wait_time_and_n_trials(
+    n_trials, wait_time, disc_class, caplog, tmp_wd
+) -> None:
+    """Test failure of the discipline with a too much very short timeout."""
+    wrapped_disc = disc_class()
+    wrapped_disc.pid_path = pid_path = tmp_wd / "pid"
+
+    disc = RetryDiscipline(
+        wrapped_disc,
+        timeout=TIMEOUT,
+        n_trials=n_trials,
+        wait_time=wait_time,
+        timeout_with_process=disc_class == SlowProcessDiscipline,
+    )
+
+    with (
+        Timer() as timer,
+        pytest.raises(
+            TimeoutError,
+            match="Timeout reached during the execution"
+            rf" of discipline {disc_class.__name__}",
+        ),
+    ):
+        disc.execute()
+
+    if disc_class == SlowProcessDiscipline:
+        # The wrapped discipline process should have been killed.
+        assert not psutil.pid_exists(int(pid_path.read_text()))
+
+    # The offset accounts for the time it takes for the execution to reach the _run of
+    # retry discipline.
+    assert timer.elapsed_time > 0.01 + (n_trials - 1) * wait_time
+    assert disc.n_executions == n_trials
+    assert not disc.local_data
+
+    plural_suffix = "s" if n_trials > 1 else ""
+    log_message = (
+        f"Failed to execute discipline {disc_class.__name__} after {n_trials}"
+        f" attempt{plural_suffix}."
+    )
+    assert log_message in caplog.text

@@ -24,8 +24,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import Optional
-from typing import Union
 
 from pydantic_core import PydanticUndefined
 
@@ -36,9 +34,9 @@ from gemseo.mda.base_mda import BaseMDA
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
-MDAOptionType = Optional[
-    Union[float, int, bool, str, Iterable[CouplingStructure], Sequence[BaseMDA]]
-]
+MDAOptionType = (
+    float | int | bool | str | Iterable[CouplingStructure] | Sequence[BaseMDA] | None
+)
 
 
 class MDAFactory(BaseFactory):

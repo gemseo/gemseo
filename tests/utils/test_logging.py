@@ -20,18 +20,21 @@
 from __future__ import annotations
 
 import logging
+from logging import getLogger
 from pathlib import Path
 
 import pytest
 
-from gemseo.utils.logging_tools import LoggingContext
-from gemseo.utils.logging_tools import OneLineLogging
+from gemseo.utils.logging import LoggingConfiguration
+from gemseo.utils.logging import LoggingContext
+from gemseo.utils.logging import LoggingContext as _LoggingContext
+from gemseo.utils.logging import OneLineLogging
 
 
 def test_default() -> None:
     """Check the default configuration of the LoggingContext."""
-    context = LoggingContext(logging.root)
-    assert context.logger == logging.root
+    context = LoggingContext()
+    assert context.logger == logging.getLogger("gemseo")
     assert context.level == logging.WARNING
     assert context.handler is None
     assert context.close
@@ -115,3 +118,23 @@ def test_while_false() -> None:
     context = OneLineLogging(logging.root)
     with context:
         pass
+
+
+def test_deprecated_logging_tools():
+    """Check the deprecated module logging_tools."""
+    assert _LoggingContext is LoggingContext
+
+
+def test_configured_loggers():
+    """Check that LoggingConfiguration configures the loggers for GEMSEO and plugins."""
+    gemseo_logger = getLogger("gemseo")
+    gemseo_logger.level = logging.NOTSET
+    gemseo_plugin_logger = getLogger("gemseo_plugin")
+    gemseo_module_logger = getLogger("gemseo.module")
+    for logger in (gemseo_logger, gemseo_plugin_logger, gemseo_module_logger):
+        assert logger.level == logging.NOTSET
+
+    LoggingConfiguration(level=logging.WARNING)
+    assert gemseo_module_logger.level == logging.NOTSET
+    for logger in (gemseo_logger, gemseo_plugin_logger):
+        assert logger.level == logging.WARNING

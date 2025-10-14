@@ -35,7 +35,6 @@ We would like to solve this MDO problem by means of an MDF formulation.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_n2_plot
@@ -43,8 +42,6 @@ from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings i
     ScalableDisciplineSettings,
 )
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
-
-configure_logger()
 
 # %%
 # Instantiation of the scalable problem

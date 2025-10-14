@@ -86,9 +86,6 @@ from strenum import StrEnum
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
@@ -109,6 +106,9 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.scenarios.backup_settings import BackupSettings
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
     from gemseo.utils.string_tools import VariableType
 
 
@@ -309,7 +309,9 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
                     group_names=self.dataset.OUTPUT_GROUP,
                     variable_names=name,
                     components=i,
-                ).var()[0]
+                )
+                .var()
+                .iloc[0]
                 for i in range(output_sizes[name])
             ]
             for name in output_names
@@ -330,6 +332,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             for x, y in zip(
                 ["mu", "mu_star", "sigma", "min", "max", "relative_sigma"],
                 [mu, mu_star, sigma, minimum, maximum, relative_sigma],
+                strict=False,
             )
         })
         return self._indices

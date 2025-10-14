@@ -71,7 +71,7 @@ class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     """The option validation model for SciPy linear programming library."""
 
 
-class ScipyMILP(BaseOptimizationLibrary):
+class ScipyMILP(BaseOptimizationLibrary[SciPyMILP_Settings]):
     """SciPy Mixed Integer Linear Programming library interface.
 
     See BaseOptimizationLibrary.
@@ -98,7 +98,7 @@ class ScipyMILP(BaseOptimizationLibrary):
         super().__init__(algo_name)
 
     def _run(
-        self, problem: OptimizationProblem, **settings: Any
+        self, problem: OptimizationProblem
     ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
@@ -142,10 +142,9 @@ class ScipyMILP(BaseOptimizationLibrary):
             )
 
         # Filter settings to get only the scipy.optimize.milp ones
-        settings_ = self._filter_settings(settings, BaseOptimizerSettings)
-
-        # Deactivate stopping criteria which are handled by GEMSEO
-        settings["time_limit"] = inf
+        settings_ = self._filter_settings(
+            self._settings.model_dump(), BaseOptimizerSettings
+        )
 
         # Pass the MILP to Scipy
         milp_result = milp(

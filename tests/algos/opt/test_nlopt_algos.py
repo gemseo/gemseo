@@ -26,12 +26,11 @@ from unittest import mock
 import pytest
 from numpy import array
 from numpy import inf
-from scipy.optimize.optimize import rosen
-from scipy.optimize.optimize import rosen_der
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.nlopt.nlopt import Nlopt
 from gemseo.algos.opt.nlopt.nlopt import nlopt
@@ -108,18 +107,18 @@ class TestNLOPT(TestCase):
             return res, problem
 
         for tol_name in (
-            OptLib._F_TOL_ABS,
-            OptLib._F_TOL_REL,
-            OptLib._X_TOL_ABS,
-            OptLib._X_TOL_REL,
+            "ftol_abs",
+            "ftol_rel",
+            "xtol_abs",
+            "xtol_rel",
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
             # Check that the criterion is activated asap
             assert len(pb.database) == 3
         for tol_name in (
-            OptLib._KKT_TOL_ABS,
-            OptLib._KKT_TOL_REL,
+            "kkt_tol_abs",
+            "kkt_tol_rel",
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
@@ -151,30 +150,30 @@ def get_options(algo_name):
 
     if algo_name == "NLOPT_SLSQP":
         return {
-            Nlopt._X_TOL_REL: 1e-5,
-            Nlopt._F_TOL_REL: 1e-5,
+            "xtol_rel": 1e-5,
+            "ftol_rel": 1e-5,
             "max_iter": 100,
-            Nlopt._KKT_TOL_REL: 1e-5,
-            Nlopt._KKT_TOL_ABS: 1e-5,
+            "kkt_tol_rel": 1e-5,
+            "kkt_tol_abs": 1e-5,
         }
     if algo_name == "NLOPT_MMA":
         return {
             "max_iter": 2700,
-            Nlopt._X_TOL_REL: 1e-8,
-            Nlopt._F_TOL_REL: 1e-8,
-            Nlopt._INNER_MAXEVAL: 10,
-            Nlopt._KKT_TOL_REL: 1e-8,
-            Nlopt._KKT_TOL_ABS: 1e-8,
+            "xtol_rel": 1e-8,
+            "ftol_rel": 1e-8,
+            "inner_maxeval": 10,
+            "kkt_tol_rel": 1e-8,
+            "kkt_tol_abs": 1e-8,
         }
     if algo_name == "NLOPT_COBYLA":
-        return {"max_iter": 10000, Nlopt._X_TOL_REL: 1e-8, Nlopt._F_TOL_REL: 1e-8}
+        return {"max_iter": 10000, "xtol_rel": 1e-8, "ftol_rel": 1e-8}
     if algo_name == "NLOPT_BOBYQA":
         return {"max_iter": 2200}
     return {
         "max_iter": 100,
-        Nlopt._EQ_TOLERANCE: 1e-10,
-        Nlopt._INEQ_TOLERANCE: 1e-10,
-        Nlopt._STOPVAL: 0.0,
+        "eq_tolerance": 1e-10,
+        "ineq_tolerance": 1e-10,
+        "stopval": 0.0,
     }
 
 
@@ -208,11 +207,12 @@ def test_no_stop_during_doe_phase(
     due to the max iteration stop criterion.
 
     Args:
-        x2_problem: An instanciated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated :class:`.X_2` optimization problem.
         algo_name: The optimization algorithm used.
     """
     res = execute_algo(x2_problem, algo_name=algo_name, max_iter=10)
-    assert res.n_obj_call == 12
+    assert res.n_obj_call == 11
+    assert len(x2_problem.database) == 10
 
 
 def test_cobyla_stopped_due_to_small_crit_n_x(

@@ -41,7 +41,6 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Union
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core._process_flow.execution_sequences.execution_sequence import (
@@ -75,7 +74,7 @@ LOGGER = logging.getLogger(__name__)
 OPT_NAME = OPT_ID = "Opt"
 USER_NAME = USER_ID = "_U_"
 
-EdgeType = dict[str, Union[Discipline, list[str]]]
+EdgeType = dict[str, Discipline | list[str]]
 NodeType = dict[str, str]
 IdsType = Any
 
@@ -456,7 +455,9 @@ class XDSMizer:
             function_varnames.extend(fvars)
 
         to_user = function_name
-        to_opt = self.scenario.get_optim_variable_names()
+        to_opt = (
+            self.scenario.formulation.optimization_problem.design_space.variable_names
+        )
 
         if self._is_scenario:
             user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
@@ -471,7 +472,9 @@ class XDSMizer:
                     continue
                 varnames = sorted(
                     set(atom.process.io.input_grammar)
-                    & set(self.scenario.get_optim_variable_names())
+                    & set(
+                        self.scenario.formulation.optimization_problem.design_space.variable_names
+                    )
                 )
 
                 if varnames:

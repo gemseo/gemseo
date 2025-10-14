@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING
 from numpy import absolute
 from numpy import atleast_2d
 from numpy import multiply
-from numpy import ndarray
 from numpy import ones_like
 from numpy import where
 from numpy import zeros_like
@@ -29,6 +28,8 @@ from numpy import zeros_like
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.typing import NumberArray
 
 

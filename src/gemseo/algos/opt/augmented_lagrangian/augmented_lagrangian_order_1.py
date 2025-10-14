@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
@@ -35,14 +34,16 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
+class AugmentedLagrangianOrder1(
+    AugmentedLagrangianPenaltyHeuristic[Augmented_Lagrangian_order_1_Settings]
+):
     """An augmented Lagrangian algorithm of order 1.
 
     The Lagrange multipliers are updated using gradient information
     computed using the :class:`.LagrangeMultipliers` class.
     """
 
-    __lagrange_multiplier_calculator: LagrangeMultipliers
+    __lagrange_multiplier_calculator: LagrangeMultipliers | None
     """The Lagrange multiplier calculator."""
 
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
@@ -66,11 +67,8 @@ class AugmentedLagrangianOrder1(AugmentedLagrangianPenaltyHeuristic):
         problem: OptimizationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
-        **settings: Any,
     ) -> None:
-        super()._post_run(
-            problem, result, max_design_space_dimension_to_log, **settings
-        )
+        super()._post_run(problem, result, max_design_space_dimension_to_log)
         # Reset this cached attribute since an algorithm shall be stateless to take
         # full advantage of the algorithm factory cache.
         self.__lagrange_multiplier_calculator = None

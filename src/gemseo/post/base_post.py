@@ -21,14 +21,12 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -37,11 +35,13 @@ from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.matplotlib_figure import show_close_figures
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
 
     from matplotlib.figure import Figure
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.datasets.optimization_metadata import OptimizationMetadata
 
-BasePostOptionType = Union[int, float, str, bool, Sequence[str], FigSizeType]
+BasePostOptionType = int | float | str | bool | Sequence[str] | FigSizeType
 
 
 T = TypeVar("T", bound=BasePostSettings)
@@ -61,6 +61,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     # Silencing mypy since the root cause does not seem legit,
     # and may be changed.
     # See https://github.com/python/mypy/issues/5144.
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[T]]
     """The Pydantic model for the settings."""
 
@@ -199,6 +200,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         self._plot(settings_)
         self.__render(settings_)
+        show_close_figures(settings_.show, settings_.save)
         return self.__figures
 
     def __render(self, settings: T) -> None:
@@ -239,7 +241,11 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 )
             else:
                 save_show_figure(
-                    figure, settings.show, fig_file_path, settings.fig_size
+                    figure,
+                    False,
+                    fig_file_path,
+                    fig_size=settings.fig_size,
+                    close=False,
                 )
 
     @abstractmethod

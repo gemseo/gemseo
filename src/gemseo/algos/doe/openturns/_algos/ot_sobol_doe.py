@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import array
 from openturns import SobolIndicesExperiment
@@ -25,6 +24,9 @@ from openturns import SobolIndicesExperiment
 from gemseo.algos.doe.openturns._algos.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
+    from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
+        OT_SOBOL_INDICES_Settings,
+    )
     from gemseo.typing import RealArray
 
 
@@ -35,15 +37,31 @@ class OTSobolDOE(BaseOTDOE):
     """
 
     def generate_samples(  # noqa: D102
-        self, n_samples: int, dimension: int, **settings: Any
+        self,
+        n_samples: int,
+        dimension: int,
+        eval_second_order: bool = True,
+        settings: OT_SOBOL_INDICES_Settings | None = None,
     ) -> RealArray:
+        """
+        Args:
+            eval_second_order: Whether to build a DOE
+                to evaluate also the second-order indices.
+                If ``False``,
+                the DOE is designed for first and total-order indices only.
+                Ignored if ``settings`` is not `None`.
+
+        """  # noqa: D205, D212
         # If eval_second_order is set to False, the input design is of size N(2+n_X).
         # If eval_second_order is set to False,
         #   if n_X = 2, the input design is of size N(2+n_X).
         #   if n_X != 2, the input design is of size N(2+2n_X).
         # Ref: https://openturns.github.io/openturns/latest/user_manual/_generated/
         # openturns.SobolIndicesExperiment.html#openturns.SobolIndicesExperiment
-        eval_second_order = settings["eval_second_order"]
+        if settings is not None:
+            n_samples = settings.n_samples
+            eval_second_order = settings.eval_second_order
+
         if eval_second_order and dimension > 2:
             sub_sample_size = int(n_samples / (2 * dimension + 2))
         else:

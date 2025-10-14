@@ -28,14 +28,10 @@ to create regression models from model class names.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning import get_regression_models
 from gemseo.mlearning import get_regression_options
-
-configure_logger()
-
 
 # %%
 # Available models

@@ -85,7 +85,7 @@ def test_original_reset(functions: Functions, mdo_functions: list[MDOFunction]):
         for i, mdo_function in enumerate(mdo_functions)
     ]
     for mdo_function, original_mdo_function in zip(
-        mdo_functions, original_mdo_functions
+        mdo_functions, original_mdo_functions, strict=False
     ):
         mdo_function.original = original_mdo_function
 

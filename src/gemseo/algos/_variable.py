@@ -19,7 +19,6 @@ from __future__ import annotations
 from numbers import Real
 from typing import TYPE_CHECKING
 from typing import Final
-from typing import Union
 
 from numpy import atleast_1d
 from numpy import float64
@@ -43,15 +42,15 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-ScalarBoundType = Union[int, float]
-BoundType = Union[
-    NDArrayPydantic[int],
-    NDArrayPydantic[float],
-    list[ScalarBoundType],
-    tuple[ScalarBoundType],
-    ScalarBoundType,
-]
-BoundArray = Union[IntegerArray, RealArray]
+ScalarBoundType = int | float
+BoundType = (
+    NDArrayPydantic[int]
+    | NDArrayPydantic[float]
+    | list[ScalarBoundType]
+    | tuple[ScalarBoundType]
+    | ScalarBoundType
+)
+BoundArray = IntegerArray | RealArray
 
 
 class DataType(StrEnum):

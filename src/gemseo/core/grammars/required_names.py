@@ -16,13 +16,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from collections.abc import Iterator
 from collections.abc import MutableSet
 from typing import TYPE_CHECKING
 from typing import Any
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+
     from typing_extensions import Self
 
     from gemseo.core.grammars.base_grammar import BaseGrammar

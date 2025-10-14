@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
-from numpy import ndarray
 from numpy.testing import assert_equal
 
 from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
@@ -33,6 +32,8 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    from numpy import ndarray
 
     from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.core.mdo_functions.mdo_function import MDOFunction

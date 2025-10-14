@@ -26,12 +26,8 @@ ZvsXY
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
-
-configure_logger()
-
 
 # %%
 # Load the Rosenbrock dataset

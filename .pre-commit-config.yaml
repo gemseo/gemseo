@@ -3,7 +3,7 @@ exclude: ^(src/gemseo/third_party|tests/.*\.tikz)
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
     - id: trailing-whitespace
     - id: end-of-file-fixer
@@ -65,16 +65,16 @@ repos:
         - ..|   |
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.12.7
+  rev: v0.14.0
   hooks:
-    - id: ruff
+    - id: ruff-check
       args: [
         --exit-non-zero-on-fix,
       ]
     - id: ruff-format
 
 - repo: https://github.com/commitizen-tools/commitizen
-  rev: v4.8.3
+  rev: v4.9.1
   hooks:
     - id: commitizen
       stages: [commit-msg]

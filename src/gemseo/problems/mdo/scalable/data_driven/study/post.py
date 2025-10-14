@@ -47,7 +47,6 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -62,6 +61,7 @@ from gemseo.problems.mdo.scalable.data_driven.study.result import ScalabilityRes
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Mapping
     from collections.abc import Sequence
 
@@ -597,7 +597,8 @@ class PostScalabilityStudy:
             value == optim_strategy for value in self.get_optimization_strategies()
         ]
         are_ok = [
-            is_rep and is_oo for is_rep, is_oo in zip(are_replicate, are_optim_strategy)
+            is_rep and is_oo
+            for is_rep, is_oo in zip(are_replicate, are_optim_strategy, strict=False)
         ]
         indices = [index for index, is_ok in enumerate(are_ok) if is_ok]
         scaling_levels = self.get_scaling_strategies()

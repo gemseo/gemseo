@@ -27,17 +27,21 @@
 from __future__ import annotations
 
 from math import pi
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import cos
-from numpy import ndarray
 from numpy import sin
 from numpy import sqrt
 from numpy import zeros
 
 from gemseo.problems.mdo.sobieski.core.discipline import SobieskiDiscipline
 from gemseo.problems.mdo.sobieski.core.utils import DEG_TO_RAD
-from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 
 
 class SobieskiAerodynamics(SobieskiDiscipline):

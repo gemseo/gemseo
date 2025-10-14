@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from functools import cache
 from typing import TYPE_CHECKING
+from typing import get_args
+from typing import get_origin
 
 from numpy import ndarray
-from typing_extensions import get_args
-from typing_extensions import get_origin
 
 from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic

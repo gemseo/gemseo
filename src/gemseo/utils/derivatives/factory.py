@@ -17,39 +17,24 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 
 if TYPE_CHECKING:
-    from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+    from gemseo.core.base_factory import _ClassInfo
 
 
-class GradientApproximatorFactory(BaseFactory):
+class GradientApproximatorFactory(BaseFactory[BaseGradientApproximator]):
     """A factory of gradient approximators."""
 
     _CLASS = BaseGradientApproximator
     _PACKAGE_NAMES = ("gemseo.utils.derivatives",)
 
-    def __init__(self) -> None:  # noqa:D107
-        super().__init__()
-        for class_info in tuple(self._names_to_class_info.values()):
+    @property
+    def _names_to_class_info(self) -> dict[str, _ClassInfo[BaseGradientApproximator]]:
+        names_to_class_info = super()._names_to_class_info
+        for class_info in tuple(names_to_class_info.values()):
             approximation_mode = class_info.class_._APPROXIMATION_MODE
-            self._names_to_class_info[approximation_mode] = class_info
-
-    def create(
-        self,
-        name: ApproximationMode,
-        *args: Any,
-        **kwargs: Any,
-    ) -> BaseGradientApproximator:
-        """Create a gradient approximator.
-
-        Args:
-            name: The name of the class or the approximation mode.
-
-        Returns:
-            The gradient approximator.
-        """
-        return super().create(name, *args, **kwargs)
+            names_to_class_info[approximation_mode] = class_info
+        return names_to_class_info

@@ -18,28 +18,28 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from collections.abc import Iterable
 from collections.abc import Mapping
-from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from strenum import StrEnum
 
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import MutableSequence
+
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
 FittingTestResultType = tuple[bool, Mapping[str, float]]
-MeasureType = Union[FittingTestResultType, float]
+MeasureType = FittingTestResultType | float
 _DistributionT = TypeVar("_DistributionT")
 
 

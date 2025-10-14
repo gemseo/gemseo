@@ -109,6 +109,9 @@ class SPDistribution(
                 while the string representation of
                 ``SPDistribution("uniform", parameters)``
                 is ``"uniform(loc=1, scale=2)"``.
+            settings: The settings of the distributions.
+                If set, the other arguments are ignored.
+                If ``None``, the other arguments are used instead.
         """  # noqa: D205 D212 D415
         if settings is None:
             settings = SPDistribution_Settings(

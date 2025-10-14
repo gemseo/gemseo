@@ -27,7 +27,6 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from matplotlib.tri import Triangulation
 
-from gemseo import configure_logger
 from gemseo.algos.design_space import DesignSpace
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
@@ -41,7 +40,6 @@ dataset = create_rosenbrock_dataset(opt_naming=False, n_samples=25)
 # %%
 # Define the measure
 # ------------------
-configure_logger()
 test_dataset = create_rosenbrock_dataset(opt_naming=False)
 measure_evaluation_method_name = "TEST"
 measure_options = {"test_data": test_dataset}

@@ -22,9 +22,6 @@ from __future__ import annotations
 
 import logging
 import pickle
-from collections.abc import Iterable
-from collections.abc import Mapping
-from collections.abc import Sequence
 from collections.abc import Sized
 from contextlib import contextmanager
 from pathlib import Path
@@ -47,9 +44,13 @@ from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from numbers import Number
 
     from matplotlib.pyplot import Figure
+    from numpy import ndarray
 
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline_data import DisciplineData
@@ -66,7 +67,6 @@ from numpy import arange
 from numpy import atleast_2d
 from numpy import concatenate
 from numpy import divide
-from numpy import ndarray
 from numpy import zeros
 
 LOGGER = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ class DisciplineJacApprox:
     approximator: BaseGradientApproximator | None
     """The gradient approximation method."""
 
+    # TODO: API remove this class attribute
     generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
         DisciplineAdapterGenerator
     )

@@ -55,16 +55,12 @@ from numpy import array
 from numpy import hstack
 from numpy import vstack
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo import sample_disciplines
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-
-configure_logger()
-
 
 # %%
 # Create a surrogate discipline

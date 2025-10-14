@@ -240,7 +240,7 @@ class ODEDiscipline(Discipline):
                 initial_name, rhs_discipline.default_input_data[state_name]
             )
             for (initial_name, state_name) in zip(
-                self.__initial_state_names, self.__state_names
+                self.__initial_state_names, self.__state_names, strict=False
             )
         }
 
@@ -346,11 +346,19 @@ class ODEDiscipline(Discipline):
             )
             raise RuntimeError(msg)
 
-        output_data = dict(zip(self.__final_state_names, result.final_state))
+        output_data = dict(
+            zip(self.__final_state_names, result.final_state, strict=False)
+        )
 
         if self._output_trajectory:
             output_data.update(
-                dict(zip(self.__trajectory_state_names, result.state_trajectories))
+                dict(
+                    zip(
+                        self.__trajectory_state_names,
+                        result.state_trajectories,
+                        strict=False,
+                    )
+                )
             )
 
         output_data[self.__TERMINATION_TIME] = result.termination_time

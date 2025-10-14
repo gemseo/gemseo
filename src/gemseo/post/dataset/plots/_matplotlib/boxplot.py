@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from matplotlib import pyplot as plt
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.utils.compatibility.matplotlib import boxplot as boxplot_
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -107,7 +108,7 @@ class Boxplot(MatplotlibPlot):
                 center=self._specific_settings.center,
                 scale=self._specific_settings.scale,
             )
-        boxplot = ax.boxplot(
+        boxplot = boxplot_(
             dataset.get_view(variable_names=variables).to_numpy(),
             vert=self._specific_settings.use_vertical_bars,
             notch=self._specific_settings.add_confidence_interval,
@@ -116,6 +117,7 @@ class Boxplot(MatplotlibPlot):
             sym="*",
             patch_artist=True,
             flierprops={"markeredgecolor": color},
+            ax=ax,
             **self._specific_settings.boxplot_options,
         )
         if self._common_settings.grid:

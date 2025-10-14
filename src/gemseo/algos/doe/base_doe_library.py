@@ -23,15 +23,15 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import singledispatchmethod
 from multiprocessing import RLock
-from multiprocessing import current_process
+from multiprocessing import parent_process
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
-from typing import Final
+from typing import TypeVar
 
 from numpy import array
 from numpy import dtype
@@ -40,24 +40,23 @@ from numpy import where
 
 from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.base_driver_library import DriverDescription
-from gemseo.algos.base_driver_library import DriverSettingType
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.evaluation_problem import EvaluationType
+from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.parallel_execution.callable_parallel_execution import SUBPROCESS_NAME
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
 from gemseo.core.serializable import Serializable
 from gemseo.utils.locks import synchronized
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.seeder import Seeder
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
+    from gemseo.algos.base_driver_library import DriverSettingType
+    from gemseo.algos.evaluation_problem import EvaluationProblem
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import RealArray
 
@@ -66,6 +65,8 @@ LOGGER = logging.getLogger(__name__)
 
 CallbackType = Callable[[int, EvaluationType], Any]
 """The type of a callback function."""
+
+T = TypeVar("T", bound=BaseDOESettings)
 
 
 @dataclass
@@ -82,7 +83,7 @@ class DOEAlgorithmDescription(DriverDescription):
     """The Pydantic model for the DOE library settings."""
 
 
-class BaseDOELibrary(BaseDriverLibrary, Serializable):
+class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     """Base class for libraries of DOEs."""
 
     samples: RealArray
@@ -107,9 +108,6 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     lock: RLock
     """The lock protecting database storage in multiprocessing."""
 
-    _N_SAMPLES: Final[str] = "n_samples"
-    _SEED: Final[str] = "seed"
-
     _seeder: Seeder
     """A seed generator."""
 
@@ -129,7 +127,6 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self.samples = array([])
         self.unit_samples = array([])
         self._seeder = Seeder()
-        self.__compute_jacobians = False
         self.__output_functions = []
         self.__jacobian_functions = []
         self.lock = RLock()
@@ -146,12 +143,16 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
     def seed(self, value: int) -> None:
         self._seeder.default_seed = value
 
+    @property
+    def _is_solving_optimization_problem(self) -> bool:
+        """Whether is solving an optimization problem."""
+        return super()._is_solving_optimization_problem and self._settings.eval_func
+
     def _pre_run(
         self,
         problem: EvaluationProblem,
-        **settings: DriverSettingType,
     ) -> None:
-        super()._pre_run(problem, **settings)
+        super()._pre_run(problem)
         problem.stop_if_nan = False
 
         design_space = problem.design_space
@@ -160,10 +161,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         )
         self.__check_unnormalization_capability(design_space)
 
-        # Filter settings to get only the ones of the global optimizer
-        settings = self._filter_settings(settings, BaseDOESettings)
-
-        self.unit_samples = self._generate_unit_samples(design_space, **settings)
+        self.unit_samples = self._generate_unit_samples(design_space)
         LOGGER.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
@@ -177,7 +175,11 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         self.__reset_integer_variables_normalization(
             design_space, integer_normalization_enabled
         )
-        self._init_iter_observer(problem, len(self.unit_samples))
+        self._init_iter_observer(
+            problem,
+            len(self.unit_samples),
+            progress_bar_data_name=self._settings.progress_bar_data_name,
+        )
 
     def __convert_unit_samples_to_samples(
         self, problem: EvaluationProblem
@@ -211,92 +213,58 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         return samples
 
     @abstractmethod
-    def _generate_unit_samples(
-        self, design_space: DesignSpace, **settings: Any
-    ) -> RealArray:
+    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         """Generate the samples of the design vector in the unit hypercube.
 
         Args:
             design_space: The design space to be sampled.
-            **settings: The settings of the DOE algorithm.
 
         Returns:
             The samples of the design vector in the unit hypercube.
         """
 
-    def _run(
-        self,
-        problem: EvaluationProblem,
-        eval_func: bool = True,
-        eval_jac: bool = False,
-        n_processes: int = 1,
-        wait_time_between_samples: float = 0.0,
-        use_database: bool = True,
-        callbacks: Iterable[CallbackType] = (),
-        vectorize: bool = False,
-        **settings: Any,
-    ) -> None:
-        """
-        Args:
-            eval_func: Whether to sample the functions computing the output data.
-            eval_jac: Whether to sample the functions computing the Jacobian data.
-            n_processes: The maximum simultaneous number of processes
-                used to parallelize the execution.
-            wait_time_between_samples: The time to wait between each evaluation,
-                in seconds.
-            use_database: Whether to store the evaluations in the database.
-            callbacks: The functions to be evaluated
-                after each call to :meth:`.EvaluationProblem.evaluate_functions`;
-                to be called as ``callback(index, (output, jacobian))``.
-            vectorize: Whether to vectorize the functions evaluations.
-            **settings: These options are not used.
-
-        Warnings:
-            This class relies on multiprocessing features when ``n_processes > 1``,
-            it is therefore necessary to protect its execution with an
-            ``if __name__ == '__main__':`` statement when working on Windows.
-        """  # noqa: D205, D212
+    def _run(self, problem: EvaluationProblem) -> None:
         output_functions, jacobian_functions = self._problem.get_functions(
-            jacobian_names=() if eval_jac else None, observable_names=()
+            jacobian_names=() if self._settings.eval_jac else None, observable_names=()
         )
         self.__output_functions = (
-            output_functions if eval_func and output_functions else None
+            output_functions if self._settings.eval_func and output_functions else None
         )
         self.__jacobian_functions = jacobian_functions or None
-        callbacks = list(callbacks)
-        if n_processes > 1:
-            self.__run_in_parallel_one_at_a_time(
-                callbacks, n_processes, problem, use_database, wait_time_between_samples
-            )
-        elif vectorize:
-            self.__run_in_serial_all_at_once(callbacks)
+        if self._settings.n_processes > 1:
+            self.__run_in_parallel_one_at_a_time()
+        elif self._settings.vectorize:
+            self.__run_in_serial_all_at_once()
         else:
-            self.__run_in_serial_one_at_a_time(callbacks)
+            self.__run_in_serial_one_at_a_time()
 
-    def __run_in_serial_one_at_a_time(self, callbacks: Iterable[CallbackType]) -> None:
-        """Evaluate the functions in serial, sample by sample.
-
-        Args:
-            callbacks: The callback functions.
-        """
+    def __run_in_serial_one_at_a_time(self) -> None:
+        """Evaluate the functions in serial, sample by sample."""
         for index, input_value in enumerate(self.samples):
+            for preprocessor in self._settings.preprocessors:
+                preprocessor(index)
+
             try:
                 result = self._evaluate_functions(input_value)
-                for callback in callbacks:
-                    callback(index, result)
             except ValueError:  # noqa: PERF203
                 LOGGER.exception(
                     "The evaluation of the functions at point %s raised a"
                     " ValueError; skipping to the next point.",
                     input_value,
                 )
+                self._problem.evaluation_counter.enabled = False
+                continue
 
-    def __run_in_serial_all_at_once(self, callbacks: Iterable[CallbackType]) -> None:
-        """Evaluate the functions in serial, with all the samples at once.
+            for callback in self._settings.callbacks:
+                callback(index, result)
 
-        Args:
-            callbacks: The callback functions.
-        """
+            if not self._settings.use_database:
+                self._problem.evaluation_counter.current += 1
+                if self._progress_bar is not None:
+                    self._progress_bar.update(HashableNdarray(input_value))
+
+    def __run_in_serial_all_at_once(self) -> None:
+        """Evaluate the functions in serial, with all the samples at once."""
         output_values, jacobian_values = self._evaluate_functions(self.samples)
         n_samples = len(self.samples)
         jacobian_shapes = {
@@ -307,7 +275,7 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
             for output_name, value in jacobian_values.items()
         }
         output_shape = (n_samples, -1)
-        for callback in callbacks:
+        for callback in self._settings.callbacks:
             output_values = {
                 name: value.reshape(output_shape)
                 for name, value in output_values.items()
@@ -327,47 +295,43 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
                     ),
                 )
 
-    def __run_in_parallel_one_at_a_time(
-        self,
-        callbacks: Iterable[CallbackType],
-        n_processes: int,
-        problem: EvaluationProblem,
-        use_database: bool,
-        wait_time_between_samples: float,
-    ) -> None:
-        """Evaluate the functions in parallel, sample by sample.
-
-        Args:
-            callbacks: The callback functions.
-            n_processes: The maximum simultaneous number of processes
-                used to parallelize the execution.
-            problem: The evaluation problem.
-            use_database: Whether to store the evaluations in the database.
-            wait_time_between_samples: The time to wait between each evaluation,
-                in seconds.
-        """
-        LOGGER.info("Running DOE in parallel on n_processes = %s", n_processes)
+    def __run_in_parallel_one_at_a_time(self) -> None:
+        """Evaluate the functions in parallel, sample by sample."""
+        LOGGER.info(
+            "Running DOE in parallel on n_processes = %s", self._settings.n_processes
+        )
         # Given a ndarray input value,
         # the worker evaluates the functions attached to the problem
         # with up to n_processes simultaneous processes.
         parallel = CallableParallelExecution(
             [self._worker],
-            n_processes=n_processes,
-            wait_time_between_fork=wait_time_between_samples,
+            n_processes=self._settings.n_processes,
+            wait_time_between_fork=self._settings.wait_time_between_samples,
         )
-        database = problem.database
-        if use_database:
-            # Add a callback to store the samples in the database on the fly.
-            callbacks.append(self.__store_in_database)
-            # Initialize the order of samples
+        database = self._problem.database
+        callbacks = list(self._settings.callbacks)
+
+        # Add a callback
+        # to store the samples in the database on the fly (when use_database=True)
+        # and update the progress bar.
+        callbacks.append(self.__store_in_database_and_finalize_iteration)
+
+        if self._settings.use_database:
+            # Initialize the order of samples in the database
             # as parallel execution does not guarantee it.
             for sample in self.samples:
                 database.store(sample, {})
+
         # The list of inputs of the tasks is the list of samples
         # A callback function stores the samples on the fly
         # during the parallel execution.
-        parallel.execute(self.samples, exec_callback=callbacks)
-        if use_database:
+        self._problem.evaluation_counter.enabled = True
+        parallel.execute(
+            self.samples,
+            exec_callback=callbacks,
+            preprocessors=self._settings.preprocessors,
+        )
+        if self._settings.use_database:
             # We added empty entries by default to keep order in the database
             # but when the DOE point is failed, this is not consistent
             # with the serial exec, so we clean the DB
@@ -384,8 +348,8 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         Returns:
             The output value and the Jacobian value.
         """
-        if current_process().name == SUBPROCESS_NAME:
-            self._disable_progress_bar()
+        if parent_process() is not None:
+            self._progress_bar = None
             self._problem.database.clear_listeners()
 
         return self._evaluate_functions(input_value)
@@ -408,23 +372,34 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
         )
 
     @synchronized
-    def __store_in_database(
+    def __store_in_database_and_finalize_iteration(
         self,
         index: int,
         output_and_jacobian_data: EvaluationType,
     ) -> None:
-        """Store the output and Jacobian data in the database.
+        """Update the progress bar.
 
         Args:
             index: The sample index.
             output_and_jacobian_data: The output and Jacobian data.
         """
-        data, jacobian_data = output_and_jacobian_data
-        if jacobian_data:
-            for output_name, jacobian in jacobian_data.items():
-                data[self._problem.database.get_gradient_name(output_name)] = jacobian
+        if self._settings.use_database:
+            data, jacobian_data = output_and_jacobian_data
+            if jacobian_data:
+                for output_name, jacobian in jacobian_data.items():
+                    data[self._problem.database.get_gradient_name(output_name)] = (
+                        jacobian
+                    )
 
-        self._problem.database.store(self.samples[index], data)
+            input_value = self.samples[index]
+            self._problem.database.store(input_value, data)
+            input_value = HashableNdarray(input_value)
+        else:
+            input_value = None
+
+        self._problem.evaluation_counter.current += 1
+        if self._progress_bar is not None:
+            self._progress_bar.update(input_value)
 
     @classmethod
     def __check_unnormalization_capability(cls, design_space) -> None:
@@ -480,13 +455,13 @@ class BaseDOELibrary(BaseDriverLibrary, Serializable):
 
             self.__check_unnormalization_capability(design_space)
 
-        # Validate and filter the settings
-        settings = self._filter_settings(
-            settings=self._validate_settings(settings_model=settings_model, **settings),
-            model_to_exclude=BaseDOESettings,
+        self._settings = create_model(
+            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            settings_model=settings_model,
+            **settings,
         )
 
-        unit_samples = self._generate_unit_samples(design_space, **settings)
+        unit_samples = self._generate_unit_samples(design_space)
         if unit_sampling:
             return unit_samples
 

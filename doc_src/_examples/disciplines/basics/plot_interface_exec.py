@@ -31,13 +31,10 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
-
-configure_logger()
 
 
 # %%

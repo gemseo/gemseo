@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import Final
 
 from numpy import atleast_1d
@@ -44,6 +43,8 @@ from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
     from gemseo.typing import StrKeyMapping
@@ -148,8 +149,8 @@ class ConstraintAggregation(Discipline):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         input_names = self.io.input_grammar
         evaluation_function = self._JACOBIAN_EVALUATION_FUNCTION_MAP[self.__method_name]

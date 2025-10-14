@@ -24,11 +24,7 @@ Generate an N2 from an Excel description of the coupling problem
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
-
-configure_logger()
-
 
 # %%
 # Describe your coupling problem in an Excel file

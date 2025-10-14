@@ -48,7 +48,6 @@ from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
-from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -77,7 +76,7 @@ class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     """The option validation model for SciPy linear programming library."""
 
 
-class ScipyLinprog(BaseOptimizationLibrary):
+class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
     """SciPy linear programming library interface.
 
     See BaseOptimizationLibrary.
@@ -107,14 +106,14 @@ class ScipyLinprog(BaseOptimizationLibrary):
     }
 
     def _run(
-        self, problem: OptimizationProblem, **settings: Any
+        self, problem: OptimizationProblem
     ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
         x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
         # Replace infinite bounds with None
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        bounds = list(zip(l_b, u_b, strict=False))
 
         # Build the functions matrices
         # N.B. use the non-processed functions to access the coefficients
@@ -134,11 +133,9 @@ class ScipyLinprog(BaseOptimizationLibrary):
         )
 
         # Filter settings to get only the scipy.optimize.linprog ones
-        settings_ = self._filter_settings(settings, BaseOptimizerSettings)
-
-        # Deactivate stopping criteria which are handled by GEMSEO
-        settings_["tol"] = 0.0
-        settings_["maxiter"] = C_LONG_MAX
+        settings_ = self._filter_settings(
+            self._settings.model_dump(), BaseOptimizerSettings
+        )
 
         linprog_result = linprog(
             c=obj_coeff.real,

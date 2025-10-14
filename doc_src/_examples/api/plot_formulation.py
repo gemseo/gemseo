@@ -28,15 +28,11 @@ related to MDO formulations: their names, their options and their sub-options.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import get_available_formulations
 from gemseo import get_formulation_options_schema
 from gemseo import get_formulation_sub_options_schema
 from gemseo import get_formulations_options_defaults
 from gemseo import get_formulations_sub_options_defaults
-
-configure_logger()
-
 
 # %%
 # Get available formulations

@@ -55,7 +55,7 @@ def test_len(splits) -> None:
 
 def test_iter(splits, first_split, second_split) -> None:
     """Check the objects returned when iterating Splits."""
-    for split, one_split in zip(splits, (first_split, second_split)):
+    for split, one_split in zip(splits, (first_split, second_split), strict=False):
         assert split == one_split
 
 

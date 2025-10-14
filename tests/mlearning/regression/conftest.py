@@ -19,12 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import hstack
-from numpy import ndarray
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture(scope="module")

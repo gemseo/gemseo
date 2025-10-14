@@ -327,8 +327,7 @@ def test_log(caplog, discipline, parameter_space, enable_discipline_statistics) 
     analysis = MorrisAnalysis()
     analysis.compute_samples([discipline], parameter_space, 4)
     result = "\n".join([line[2] for line in caplog.record_tuples])
-    pattern = r"""^No coupling in MDA, switching chain_linearize to True\.
-\*\*\* Start MorrisAnalysisSamplingPhase execution \*\*\*
+    pattern = r"""^\*\*\* Start MorrisAnalysisSamplingPhase execution \*\*\*
 MorrisAnalysisSamplingPhase
    Disciplines: my_function
    MDO formulation: MDF

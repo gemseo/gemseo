@@ -23,18 +23,12 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
-
-
-@pytest.fixture
-def factory(reset_factory) -> MDOFormulationFactory:
-    """The factory of BaseMDOFormulation."""
-    return MDOFormulationFactory()
 
 
 @pytest.fixture
@@ -44,28 +38,28 @@ def non_mdo_formulations(monkeypatch):
     )
 
 
-def test_is_available(non_mdo_formulations, factory) -> None:
+def test_is_available(non_mdo_formulations) -> None:
     """Check the method is_available."""
-    assert factory.is_available("MDF")
-    assert not factory.is_available("ANotMDOFormulation")
+    assert MDO_FORMULATION_FACTORY.is_available("MDF")
+    assert not MDO_FORMULATION_FACTORY.is_available("ANotMDOFormulation")
 
 
-def test_create_with_wrong_formulation_name(factory) -> None:
+def test_create_with_wrong_formulation_name() -> None:
     """Check that a BaseMDOFormulation cannot be instantiated with a wrong name."""
     with pytest.raises(
         ImportError,
         match="The class foo is not available; "
         # Prevent failure when testing in environments with plugins. (terminal .*)
-        r"the available ones are: BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.*",
+        r"the available ones are: .*BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.*",
     ):
-        factory.create("foo", None, None, None)
+        MDO_FORMULATION_FACTORY.create("foo", None, None, None)
 
 
-def test_create(factory) -> None:
+def test_create() -> None:
     """Check the creation of a BaseMDOFormulation."""
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 3)
-    formulation = factory.create(
+    formulation = MDO_FORMULATION_FACTORY.create(
         "MDF", [Sellar1(), Sellar2(), SellarSystem()], "obj", design_space
     )
     assert isinstance(formulation, MDF)

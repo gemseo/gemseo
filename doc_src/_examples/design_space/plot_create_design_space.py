@@ -30,11 +30,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_design_space
-
-configure_logger()
-
 
 # %%
 # Create a design space

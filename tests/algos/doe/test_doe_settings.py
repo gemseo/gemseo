@@ -34,10 +34,22 @@ def test_doe_settings_wait_time_between_samples(caplog):
     ]
 
 
-def test_doe_settings_vectorize_in_parallel(caplog):
+def test_doe_settings_vectorize_in_parallel():
     """Check the error when setting vectorize in parallel mode."""
     with pytest.raises(
         NotImplementedError,
-        match=re.escape("Vectorization in parallel is not yet supported."),
+        match=re.escape("Vectorization in parallel is not supported."),
     ):
         BaseDOESettings(vectorize=True, n_processes=2)
+
+
+def preprocessor(index: int) -> None: ...
+
+
+def test_doe_settings_preprocessors_and_vectorization():
+    """Check the error when combining preprocessors and vectorization."""
+    with pytest.raises(
+        NotImplementedError,
+        match=re.escape("Combining preprocessors and vectorization is not supported."),
+    ):
+        BaseDOESettings(vectorize=True, preprocessors=[preprocessor])

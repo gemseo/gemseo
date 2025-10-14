@@ -21,7 +21,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from functools import partial
-from typing import Union
 
 from numpy import allclose
 from numpy import array_equal
@@ -33,10 +32,10 @@ from gemseo.typing import SparseOrDenseRealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.data_conversion import flatten_nested_dict
 
-DataToCompare = Union[
-    Mapping[str, SparseOrDenseRealArray],
-    Mapping[str, Mapping[str, SparseOrDenseRealArray]],
-]
+DataToCompare = (
+    Mapping[str, SparseOrDenseRealArray]
+    | Mapping[str, Mapping[str, SparseOrDenseRealArray]]
+)
 
 
 # TODO: add runtime optimization to detect,

@@ -43,7 +43,6 @@ from __future__ import annotations
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Callable
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -61,7 +60,6 @@ from numpy import sqrt
 from numpy import vstack
 from numpy import where
 from numpy import zeros
-from numpy.random import Generator
 from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
@@ -69,14 +67,17 @@ from gemseo.problems.mdo.scalable.data_driven.model import ScalableModel
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.matplotlib_figure import show_close_figures
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
 
     from numpy._typing import NDArray
+    from numpy.random import Generator
 
     from gemseo.datasets.io_dataset import IODataset
 
@@ -113,7 +114,7 @@ class ScalableDiagonalModel(ScalableModel):
                 generate a random matrix.
             force_input_dependency: Whether to force the dependency of each output
                 with at least one input.
-            bool allow_unused_inputs: The possibility to have an input
+            allow_unused_inputs: The possibility to have an input
                 with no dependence with any output.
             seed: The seed for reproducible results.
             group_dep: The dependency between the inputs and outputs.
@@ -382,7 +383,9 @@ class ScalableDiagonalModel(ScalableModel):
                     fnames.append(str(file_path))
                 else:
                     file_path = None
-                save_show_figure(fig, show, file_path)
+                save_show_figure(fig, False, file_path, close=False)
+
+        show_close_figures(show, save)
         return fnames
 
     def generate_random_dependency(
@@ -749,7 +752,9 @@ class ScalableDiagonalApproximation:
                 coefficients = io_dependency[output_index]
                 result[output_index] = sum(
                     coefficient * func(input_value)
-                    for coefficient, input_value in zip(coefficients, input_data)
+                    for coefficient, input_value in zip(
+                        coefficients, input_data, strict=False
+                    )
                 ) / sum(coefficients)
 
             return result
@@ -769,7 +774,9 @@ class ScalableDiagonalApproximation:
                 coefficients = io_dependency[output_index]
                 result[output_index, :] = array([
                     coefficient * func(input_value)
-                    for coefficient, input_value in zip(coefficients, input_data)
+                    for coefficient, input_value in zip(
+                        coefficients, input_data, strict=False
+                    )
                 ]) / sum(coefficients)
 
             return result

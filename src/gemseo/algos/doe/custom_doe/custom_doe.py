@@ -24,14 +24,10 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Final
-from typing import Optional
 from typing import TextIO
-from typing import Union
 
 from numpy import apply_along_axis
 from numpy import ndarray
@@ -44,14 +40,16 @@ from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_S
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.design_space import DesignSpace
 
-OptionType = Optional[Union[str, int, float, bool, list[str], Path, TextIO, RealArray]]
+OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
 LOGGER = logging.getLogger(__name__)
 
 
-class CustomDOE(BaseDOELibrary):
+class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
     """A design of experiments from samples provided as a file or an array.
 
     The samples are provided either as a file in text or csv format or as a sequence of
@@ -60,12 +58,6 @@ class CustomDOE(BaseDOELibrary):
     A csv file format is assumed to have a header whereas a text file (extension .txt)
     does not.
     """
-
-    _COMMENTS_KEYWORD: Final[str] = "comments"
-    _DELIMITER_KEYWORD: Final[str] = "delimiter"
-    _DOE_FILE: Final[str] = "doe_file"
-    _SAMPLES: Final[str] = "samples"
-    _SKIPROWS_KEYWORD: Final[str] = "skiprows"
 
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = False
 
@@ -120,23 +112,21 @@ class CustomDOE(BaseDOELibrary):
 
         return samples
 
-    def _generate_unit_samples(
-        self, design_space: DesignSpace, **settings: OptionType
-    ) -> RealArray:
+    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         """
         Raises:
             ValueError: If the dimension of ``samples`` is different from the
                 one of the problem.
         """  # noqa: D205, D212, D415
-        samples = settings.get(self._SAMPLES)
-        doe_file = settings.get(self._DOE_FILE)
+        samples = self._settings.samples
+        doe_file = self._settings.doe_file
         dimension = design_space.dimension
         if doe_file:
             samples = self.read_file(
                 doe_file,
-                comments=settings[self._COMMENTS_KEYWORD],
-                delimiter=settings[self._DELIMITER_KEYWORD],
-                skiprows=settings[self._SKIPROWS_KEYWORD],
+                comments=self._settings.comments,
+                delimiter=self._settings.delimiter,
+                skiprows=self._settings.skiprows,
             )
 
         if isinstance(samples, Mapping):

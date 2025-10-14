@@ -27,6 +27,7 @@ import os
 import pkgutil
 import sys
 from abc import abstractmethod
+from importlib.metadata import entry_points
 from inspect import isabstract
 from typing import TYPE_CHECKING
 from typing import Any
@@ -38,7 +39,6 @@ from prettytable import PrettyTable
 from typing_extensions import NamedTuple
 
 from gemseo.utils.base_multiton import BaseABCMultiton
-from gemseo.utils.compatibility.python import entry_points
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
@@ -91,9 +91,8 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     A setuptools entry point is declared in a plugin :file:`pyproject.toml` file,
     with a section::
 
-        [options.entry_points]
-        gemseo_plugins =
-            a-name = plugin_package_name
+        [project.entry-points]
+        gemseo_plugins = { a-name = "plugin_package_name" }
 
     Above ``a-name`` is not used
     and can be any name,
@@ -112,6 +111,10 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     The created objects are cached:
     more calls to the constructor with the same call signature will return
     the object in cache instead of instantiating a new one.
+
+    For performance reason, this class does lazy initialization:
+    the search for sources is postponed to the very moment it is necessary
+    and not at instantiation.
     """
 
     _ENV_VAR_WITH_SEARCH_PATHS: ClassVar[str] = "GEMSEO_PATH"
@@ -121,16 +124,15 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
     """The name of the setuptools entry point for declaring plugins."""
 
-    _names_to_class_info: dict[str, _ClassInfo[T]]
+    __names_to_class_info: dict[str, _ClassInfo[T]]
     """The class names bound to the class information."""
 
-    failed_imports: dict[str, str]
+    __failed_imports: dict[str, str]
     """The class names bound to the import errors."""
 
     def __init__(self) -> None:  # noqa: D107
-        self._names_to_class_info = {}
-        self.failed_imports = {}
-        self.update()
+        self.__names_to_class_info = {}
+        self.__failed_imports = {}
 
     @property
     @abstractmethod
@@ -141,6 +143,19 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     @abstractmethod
     def _PACKAGE_NAMES(self) -> tuple[str, ...]:  # noqa: N802
         """The fully qualified names of the packages to search."""
+
+    @property
+    def _names_to_class_info(self) -> dict[str, _ClassInfo[T]]:
+        if not self.__names_to_class_info:
+            self.update()
+        return self.__names_to_class_info
+
+    @property
+    def failed_imports(self) -> dict[str, str]:
+        """Return the class names bound to the import errors."""
+        # Trigger the search.
+        self._names_to_class_info  # noqa: B018
+        return self.__failed_imports
 
     def update(self) -> None:
         """Search for the classes that can be instantiated.
@@ -178,7 +193,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         for name, cls in names_to_classes.items():
             if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
-                self._names_to_class_info[name] = _ClassInfo(
+                self.__names_to_class_info[name] = _ClassInfo(
                     cls, cls.__module__.split(".")[0]
                 )
 
@@ -242,7 +257,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             error: The exception object raised while importing the module or package.
         """
         LOGGER.debug("Failed to import module: %s", name)
-        self.failed_imports[name] = str(error)
+        self.__failed_imports[name] = str(error)
 
     def __get_sub_classes(self, cls: type[T]) -> dict[str, type[T]]:
         """Find all the subclasses of a class.
@@ -454,7 +469,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             class_name = cls.__name__
             names_to_import_statuses[class_name] = [class_name, "Yes", msg]
 
-        for package_name, err in self.failed_imports.items():
+        for package_name, err in self.__failed_imports.items():
             names_to_import_statuses[package_name] = [package_name, "No", err]
 
         # Take them all and then sort them for pretty printing

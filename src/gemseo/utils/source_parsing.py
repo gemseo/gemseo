@@ -25,8 +25,11 @@ import inspect
 import logging
 import re
 from inspect import getfullargspec
+from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 LOGGER = logging.getLogger(__name__)
 

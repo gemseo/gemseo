@@ -45,14 +45,11 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
-
-configure_logger()
 
 # %%
 # Material

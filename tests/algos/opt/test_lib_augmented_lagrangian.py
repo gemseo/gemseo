@@ -33,6 +33,7 @@ from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.pydantic import create_model
 
 
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
@@ -250,31 +251,33 @@ def test_solve_sub_problem_adds_constraints_with_rosenbrock(
     }
     optimizer.execute(rosenbrock_opt_problem, **options)
     optimizer._problem = rosenbrock_opt_problem
+    optimizer._settings = create_model(
+        optimizer.ALGORITHM_INFOS[optimizer.algo_name].Settings,
+        sub_problem_constraints=["c_eq"],
+        **options,
+    )
 
-    sub_problem_constraints = ["c_eq"]
-    lambda0 = {"c_eq": 0.0}
-    mu0 = {}
-
-    _, _x_new = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
-        lambda0=lambda0,
-        mu0=mu0,
-        normalize=options["normalize_design_space"],
-        sub_problem_constraints=sub_problem_constraints,
-        sub_algorithm_name=options["sub_algorithm_name"],
-        sub_algorithm_settings=options["sub_algorithm_settings"],
+    _ = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
+        lambda0={"c_eq": 0.0},
+        mu0={},
         x_init=x_init,
     )
 
     assert len(optimizer._sub_problems[-1].constraints) > 0
-    constraint_names = [c.name for c in optimizer._sub_problems[-1].constraints]
-    assert "c_eq" in constraint_names
+    assert "c_eq" in [c.name for c in optimizer._sub_problems[-1].constraints]
 
 
 def test_solve_sub_problem_triggers_update_options_callback(
     rosenbrock_opt_problem, optimizer
 ):
     """Test that sub-problem options are updated during sub-problem solving."""
-    sub_problem_options = {}
+
+    def mock_update_options_callback(sub_problems, sub_algorithm_settings):
+        sub_algorithm_settings.update({
+            "normalize_design_space": True,
+            "max_iter": 50,
+        })
+
     alm_options = {
         "normalize_design_space": True,
         "max_iter": 100,
@@ -282,41 +285,32 @@ def test_solve_sub_problem_triggers_update_options_callback(
         "ftol_rel": 1e-8,
         "xtol_abs": 1e-8,
         "xtol_rel": 1e-8,
+        "sub_algorithm_name": "SLSQP",
+        "sub_algorithm_settings": {},
+        "update_options_callback": mock_update_options_callback,
+        "sub_problem_constraints": ["c_eq"],
+        "initial_rho": 1.0,
     }
-
-    def mock_update_options_callback(sub_problems, sub_problem_options):
-        sub_problem_options.update({
-            "normalize_design_space": True,
-            "max_iter": 50,
-        })
 
     optimizer.execute(
         rosenbrock_opt_problem,
-        sub_algorithm_name="SLSQP",
-        sub_algorithm_settings=sub_problem_options,
-        update_options_callback=mock_update_options_callback,
         **alm_options,
     )
 
     optimizer._problem = rosenbrock_opt_problem
-    sub_problem_constraints = ["c_eq"]
-    lambda0 = {"c_eq": 0.0}
-    mu0 = {}
+    optimizer._settings = create_model(
+        optimizer.ALGORITHM_INFOS[optimizer.algo_name].Settings,
+        **alm_options,
+    )
 
-    _, _x_new = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
-        lambda0=lambda0,
-        mu0=mu0,
-        normalize=alm_options["normalize_design_space"],
-        sub_problem_constraints=sub_problem_constraints,
-        sub_algorithm_name="SLSQP",
-        sub_algorithm_settings=sub_problem_options,
+    _ = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
+        lambda0={"c_eq": 0.0},
+        mu0={},
         x_init=rosenbrock_opt_problem.design_space.get_current_value(),
     )
 
-    assert "normalize_design_space" in sub_problem_options
-    assert sub_problem_options["normalize_design_space"] is True
-    assert "max_iter" in sub_problem_options
-    assert sub_problem_options["max_iter"] == 50
+    assert optimizer._settings.sub_algorithm_settings["normalize_design_space"] is True
+    assert optimizer._settings.sub_algorithm_settings["max_iter"] == 50
 
 
 def test_preconditioner_logging_direct(optimizer, caplog):

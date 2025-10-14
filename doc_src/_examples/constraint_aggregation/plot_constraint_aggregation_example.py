@@ -22,14 +22,12 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from gemseo import configure_logger
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.concatenater import Concatenater
 from gemseo.settings.opt import NLOPT_MMA_Settings
 
-configure_logger()
 # %%
 # Number of constraints
 N = 100
@@ -41,7 +39,7 @@ function_names = ["o", *constraint_names]
 function_expressions = ["y"] + [f"{k + 1}*x*exp(1-{k + 1}*x)-y" for k in range(N)]
 disc = AnalyticDiscipline(
     name="function",
-    expressions=dict(zip(function_names, function_expressions)),
+    expressions=dict(zip(function_names, function_expressions, strict=False)),
 )
 # This step is required to put all constraints needed for aggregation in one variable.
 concat = Concatenater(constraint_names, "g")

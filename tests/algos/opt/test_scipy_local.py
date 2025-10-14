@@ -27,12 +27,11 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 from pydantic import ValidationError
-from scipy.optimize.optimize import rosen
-from scipy.optimize.optimize import rosen_der
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary as OptLib
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -40,6 +39,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 
@@ -196,10 +196,10 @@ class TestScipy(TestCase):
             return res, problem
 
         for tol_name in (
-            OptLib._F_TOL_ABS,
-            OptLib._F_TOL_REL,
-            OptLib._X_TOL_ABS,
-            OptLib._X_TOL_REL,
+            "ftol_abs",
+            "ftol_rel",
+            "xtol_abs",
+            "xtol_rel",
         ):
             res, pb = run_pb({tol_name: 1e10})
             assert tol_name in res.message
@@ -308,7 +308,10 @@ def test_stop_crit_n_x(algorithm_name) -> None:
     """Check that option stop_crit_n_x is supported."""
     library = ScipyOpt(algorithm_name)
     library._problem = Rosenbrock()
-    assert library._validate_settings(stop_crit_n_x=5)["stop_crit_n_x"] == 5
+    library._settings = create_model(
+        library.ALGORITHM_INFOS[library.algo_name].Settings, stop_crit_n_x=5
+    )
+    assert library._settings.stop_crit_n_x == 5
 
 
 @pytest.mark.skipif(
@@ -332,7 +335,10 @@ def test_initial_tr_radius_cobyqa() -> None:
     """Check that option initial_tr_radius is supported."""
     library = ScipyOpt("COBYQA")
     library._problem = Rosenbrock()
-    assert library._validate_settings(initial_tr_radius=1)["initial_tr_radius"] == 1
+    library._settings = create_model(
+        library.ALGORITHM_INFOS[library.algo_name].Settings, initial_tr_radius=1
+    )
+    assert library._settings.initial_tr_radius == 1
 
 
 def test_cannot_handle_inequality_constraints():

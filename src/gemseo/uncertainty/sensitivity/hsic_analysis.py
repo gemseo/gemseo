@@ -30,12 +30,9 @@ from typing import Final
 
 from numpy import array
 from numpy import newaxis
-from openturns import CovarianceModelImplementation
 from openturns import HSICEstimatorConditionalSensitivity
 from openturns import HSICEstimatorGlobalSensitivity
-from openturns import HSICEstimatorImplementation
 from openturns import HSICEstimatorTargetSensitivity
-from openturns import HSICStatImplementation
 from openturns import HSICUStat
 from openturns import HSICVStat
 from openturns import IndicatorFunction
@@ -48,9 +45,6 @@ from strenum import StrEnum
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
 
@@ -58,6 +52,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from openturns import CovarianceModelImplementation
+    from openturns import HSICEstimatorImplementation
+    from openturns import HSICStatImplementation
+
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
 
 
 class HSICAnalysis(BaseSensitivityAnalysis):
@@ -275,7 +277,8 @@ class HSICAnalysis(BaseSensitivityAnalysis):
 
         if analysis_type in {analysis_type.CONDITIONAL, analysis_type.TARGET}:
             output_bounds = {
-                name: tuple(zip(*value)) for name, value in output_bounds.items()
+                name: tuple(zip(*value, strict=False))
+                for name, value in output_bounds.items()
             }
             output_names = output_bounds.keys()
 

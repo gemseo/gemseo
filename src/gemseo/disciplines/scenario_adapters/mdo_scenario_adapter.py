@@ -40,8 +40,7 @@ from gemseo.core.parallel_execution.disc_parallel_linearization import (
 )
 from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.utils.discipline import update_default_input_values
-from gemseo.utils.logging_tools import LOGGING_SETTINGS
-from gemseo.utils.logging_tools import LoggingContext
+from gemseo.utils.logging import LoggingContext
 from gemseo.utils.name_generator import NameGenerator
 from gemseo.utils.string_tools import pretty_repr
 
@@ -49,7 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from numpy.core.multiarray import ndarray
+    from numpy import ndarray
 
     from gemseo.algos.database import Database
     from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
@@ -384,7 +383,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _execute(self) -> None:
         self._pre_run()
-        with LoggingContext(LOGGING_SETTINGS.logger, level=self.__scenario_log_level):
+        with LoggingContext(level=self.__scenario_log_level):
             self.scenario.execute()
         self._post_run()
 
@@ -511,8 +510,8 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         """Compute the Jacobian of the adapted scenario outputs.
 

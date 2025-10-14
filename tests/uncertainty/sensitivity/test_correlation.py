@@ -21,15 +21,12 @@ from __future__ import annotations
 
 from dataclasses import fields
 from pathlib import Path
-from unittest import mock
 
 import pytest
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.uncertainty.sensitivity import correlation_analysis
 from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
-from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -57,13 +54,7 @@ def test_indices(correlation) -> None:
     # Check the methods for which the indices have been computed.
     all_methods = {method.name.lower() for method in correlation.Method}
     available_methods = {field.name for field in fields(indices)}
-    if IS_OT_LOWER_THAN_1_20:
-        assert available_methods == all_methods - {
-            correlation.Method.KENDALL,
-            correlation.Method.SSRC,
-        }
-    else:
-        assert available_methods == all_methods
+    assert available_methods == all_methods
 
     # Check the names and sizes of the outputs.
     pearson = indices.pearson
@@ -125,17 +116,6 @@ def test_main_indices_keys(correlation, output_names, expected_keys) -> None:
     """Check that the keys of the main_indices are the requested output names."""
     correlation.compute_indices(output_names)
     assert list(correlation.main_indices) == expected_keys
-
-
-def test_mock_ot_version(correlation) -> None:
-    """Check that KENDALL and SSRC are not available with openturns < 1.20."""
-    correlation.compute_indices()
-    assert correlation.indices.kendall
-    assert correlation.indices.ssrc
-    with mock.patch.object(correlation_analysis, "IS_OT_LOWER_THAN_1_20", new=True):
-        correlation.compute_indices()
-        assert not correlation.indices.kendall
-        assert not correlation.indices.ssrc
 
 
 def test_from_samples(correlation, tmp_wd):

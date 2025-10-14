@@ -26,16 +26,21 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from numpy import append
 from numpy import array
 from numpy import nan
-from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 
 from gemseo.problems.mdo.sobieski.core.discipline import SobieskiDiscipline
 from gemseo.problems.mdo.sobieski.core.utils import DEG_TO_RAD
-from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 
 
 class SobieskiStructure(SobieskiDiscipline):

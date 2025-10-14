@@ -37,36 +37,49 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Collection
-from collections.abc import Iterable
-from collections.abc import Mapping
-from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from numpy import ndarray
 
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus as _ExecutionStatus
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_mda_settings import (
+    BaseParallelMDASettings as BaseParallelMDASettings,
+)
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
-from gemseo.utils.constants import N_CPUS as N_CPUS
+from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATUS
+from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
+from gemseo.utils.constants import _ENABLE_PARALLEL_EXECUTION
+from gemseo.utils.constants import _ENABLE_PROGRESS_BAR
+from gemseo.utils.constants import _LOGGING_DATE_FORMAT
+from gemseo.utils.constants import _LOGGING_FILE_MODE
+from gemseo.utils.constants import _LOGGING_FILE_PATH
+from gemseo.utils.constants import _LOGGING_LEVEL
+from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
+from gemseo.utils.constants import _VALIDATE_INPUT_DATA
+from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.logging_tools import DEFAULT_DATE_FORMAT
-from gemseo.utils.logging_tools import DEFAULT_MESSAGE_FORMAT
-from gemseo.utils.logging_tools import LOGGING_SETTINGS
+from gemseo.utils.global_configuration import _configuration as configuration
+from gemseo.utils.logging import _configure_logger
 from gemseo.utils.pickle import from_pickle  # noqa: F401
 from gemseo.utils.pickle import to_pickle  # noqa: F401
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from logging import Logger
 
     from pydantic import BaseModel
@@ -212,9 +225,9 @@ def get_available_formulations() -> list[str]:
         >>> from gemseo import get_available_formulations
         >>> get_available_formulations()
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    return MDOFormulationFactory().class_names
+    return MDO_FORMULATION_FACTORY.class_names
 
 
 def get_available_opt_algorithms() -> list[str]:
@@ -483,9 +496,9 @@ def get_formulation_options_schema(
         >>> from gemseo import get_formulation_options_schema
         >>> schema = get_formulation_options_schema("MDF", pretty_print=True)
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    grammar = MDOFormulationFactory().get_options_grammar(formulation_name)
+    grammar = MDO_FORMULATION_FACTORY.get_options_grammar(formulation_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -513,9 +526,9 @@ def get_formulation_sub_options_schema(
         >>>                                             main_mda_name='MDAJacobi',
         >>>                                             pretty_print=True)
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    grammar = MDOFormulationFactory().get_sub_options_grammar(
+    grammar = MDO_FORMULATION_FACTORY.get_sub_options_grammar(
         formulation_name, **formulation_settings
     )
     return _get_schema(grammar, output_json, pretty_print)
@@ -540,9 +553,9 @@ def get_formulations_sub_options_defaults(
         >>> get_formulations_sub_options_defaults('MDF',
         >>>                                       main_mda_name='MDAJacobi')
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    return MDOFormulationFactory().get_default_sub_option_values(
+    return MDO_FORMULATION_FACTORY.get_default_sub_option_values(
         formulation_name, **formulation_settings
     )
 
@@ -565,9 +578,9 @@ def get_formulations_options_defaults(
          'maximize_objective': False,
          'inner_mda_name': 'MDAJacobi'}
     """
-    from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 
-    return MDOFormulationFactory().get_default_option_values(formulation_name)
+    return MDO_FORMULATION_FACTORY.get_default_option_values(formulation_name)
 
 
 def get_discipline_options_schema(
@@ -877,13 +890,14 @@ def create_scenario(
     )
 
 
+# TODO: API: remove and use gemseo.configuration.logging instead.
 def configure_logger(
     logger_name: str = "",
-    level: str | int = logging.INFO,
-    date_format: str = DEFAULT_DATE_FORMAT,
-    message_format: str = DEFAULT_MESSAGE_FORMAT,
-    filename: str | Path = "",
-    filemode: str = "a",
+    level: str | int = _LOGGING_LEVEL,
+    date_format: str = _LOGGING_DATE_FORMAT,
+    message_format: str = _LOGGING_MESSAGE_FORMAT,
+    filename: str | Path = _LOGGING_FILE_PATH,
+    filemode: str = _LOGGING_FILE_MODE,
 ) -> Logger:
     """Configure |g| logging.
 
@@ -912,32 +926,9 @@ def configure_logger(
         >>> import logging
         >>> configure_logger(level=logging.WARNING)
     """
-    from gemseo.utils.logging_tools import MultiLineFileHandler
-    from gemseo.utils.logging_tools import MultiLineStreamHandler
-
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    formatter = logging.Formatter(fmt=message_format, datefmt=date_format)
-
-    # remove all existing handlers
-    for handler in logger.handlers[:]:
-        logger.removeHandler(handler)
-
-    stream_handler = MultiLineStreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-
-    if filename:
-        file_handler = MultiLineFileHandler(
-            filename, mode=filemode, delay=True, encoding="utf-8"
-        )
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-    LOGGING_SETTINGS.message_format = message_format
-    LOGGING_SETTINGS.date_format = date_format
-    LOGGING_SETTINGS.logger = logger
-    return logger
+    return _configure_logger(
+        logger_name, level, message_format, date_format, filename, filemode
+    )
 
 
 # TODO: rename to create_disciplines (plural)
@@ -1299,6 +1290,7 @@ def print_configuration() -> None:
 def read_design_space(
     file_path: str | Path,
     header: Iterable[str] = (),
+    delimiter: str = "",
 ) -> DesignSpace:
     """Read a design space from a CSV or HDF file.
 
@@ -1314,6 +1306,8 @@ def read_design_space(
         file_path: The path to the file.
         header: The names of the fields saved in the CSV file.
             If empty, read them in the first row of the CSV file.
+        delimiter: The string used to separate values for CSV files. If empty, any
+            consecutive whitespaces act as delimiter.
 
     Returns:
         The design space.
@@ -1337,14 +1331,17 @@ def read_design_space(
     """
     from gemseo.algos.design_space import DesignSpace
 
-    return DesignSpace.from_file(file_path, header=header)
+    return DesignSpace.from_file(file_path, header=header, delimiter=delimiter)
 
 
 def write_design_space(
     design_space: DesignSpace,
     output_file: str | Path,
     fields: Sequence[str] = (),
+    delimiter: str = " ",
+    # TODO: API: remove.
     header_char: str = "",
+    # TODO: API: remove.
     **table_options: Any,
 ) -> None:
     """Save a design space to a CSV or HDF file.
@@ -1354,10 +1351,20 @@ def write_design_space(
         output_file: The path to the file.
         fields: The fields to be exported.
             If empty, export all fields.
+        delimiter: The string used to separate values for CSV files.
+            This argument is not compatible with ``header_char`` nor
+            ``**table_options``.
         header_char: The header character.
-        **table_options: The names and values of additional attributes
-            for the :class:`.PrettyTable` view
-            generated by :meth:`.DesignSpace.get_pretty_table`.
+        **table_options:
+            For HDF files:
+                The ``append`` option may be passed here.
+                See :meth:`.DesignSpace.to_hdf`.
+            For CSV files:
+                The names and values of additional attributes
+                for the :class:`.PrettyTable` view
+                generated by :meth:`.DesignSpace.get_pretty_table`.
+                These options will be removed in GEMSEO 7.
+
 
     Examples:
         >>> from gemseo import create_design_space, write_design_space
@@ -1366,7 +1373,11 @@ def write_design_space(
         >>> write_design_space(design_space, "file.csv")
     """
     design_space.to_file(
-        output_file, fields=fields, header_char=header_char, **table_options
+        output_file,
+        fields=fields,
+        delimiter=delimiter,
+        header_char=header_char,
+        **table_options,
     )
 
 
@@ -1683,24 +1694,19 @@ def _log_settings() -> str:
     return str(text)
 
 
+# TODO: API: remove and use gemseo.configuration instead.
 def configure(
-    enable_discipline_statistics: bool = False,
-    enable_function_statistics: bool = False,
-    enable_progress_bar: bool = True,
-    enable_discipline_cache: bool = True,
-    validate_input_data: bool = True,
-    validate_output_data: bool = True,
-    check_desvars_bounds: bool = True,
-    enable_parallel_execution: bool = True,
-    enable_discipline_status: bool = False,
+    enable_discipline_statistics: bool = _ENABLE_DISCIPLINE_STATISTICS,
+    enable_function_statistics: bool = _ENABLE_FUNCTION_STATISTICS,
+    enable_progress_bar: bool = _ENABLE_PROGRESS_BAR,
+    enable_discipline_cache: bool = _ENABLE_DISCIPLINE_CACHE,
+    validate_input_data: bool = _VALIDATE_INPUT_DATA,
+    validate_output_data: bool = _VALIDATE_OUTPUT_DATA,
+    check_desvars_bounds: bool = _CHECK_DESVARS_BOUNDS,
+    enable_parallel_execution: bool = _ENABLE_PARALLEL_EXECUTION,
+    enable_discipline_status: bool = _ENABLE_DISCIPLINE_STATUS,
 ) -> None:
-    """Update the configuration of |g| if needed.
-
-    This could be useful to speed up calculations in presence of cheap disciplines
-    such as analytic formula and surrogate models.
-
-    Warnings:
-        This function should be called before calling anything from |g|.
+    """Set the configuration of |g|.
 
     Args:
         enable_discipline_statistics: Whether to record execution statistics of the
@@ -1724,25 +1730,15 @@ def configure(
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
     """
-    from gemseo.algos.base_driver_library import BaseDriverLibrary
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.algos.problem_function import ProblemFunction
-    from gemseo.core.discipline import Discipline
-
-    _ExecutionStatus.is_enabled = enable_discipline_status
-    _ExecutionStatistics.is_enabled = enable_discipline_statistics
-    ProblemFunction.enable_statistics = enable_function_statistics
-    BaseDriverLibrary.enable_progress_bar = enable_progress_bar
-    Discipline.validate_input_data = validate_input_data
-    Discipline.validate_output_data = validate_output_data
-    Discipline.default_cache_type = (
-        Discipline.CacheType.SIMPLE
-        if enable_discipline_cache
-        else Discipline.CacheType.NONE
-    )
-    OptimizationProblem.check_bounds = check_desvars_bounds
-    default_n_processes = N_CPUS if enable_parallel_execution else 1
-    BaseParallelMDASettings.set_default_n_processes(default_n_processes)
+    configuration.check_desvars_bounds = check_desvars_bounds
+    configuration.enable_discipline_cache = enable_discipline_cache
+    configuration.enable_discipline_statistics = enable_discipline_statistics
+    configuration.enable_discipline_status = enable_discipline_status
+    configuration.enable_function_statistics = enable_function_statistics
+    configuration.enable_parallel_execution = enable_parallel_execution
+    configuration.enable_progress_bar = enable_progress_bar
+    configuration.validate_input_data = validate_input_data
+    configuration.validate_output_data = validate_output_data
 
 
 def wrap_discipline_in_job_scheduler(

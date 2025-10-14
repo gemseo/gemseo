@@ -18,14 +18,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from strenum import StrEnum
 
 from gemseo.core.serializable import Serializable
+from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATUS
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
 
 # TODO: use BaseExecutionStatusObserver.
@@ -40,13 +42,18 @@ class ExecutionStatus(Serializable):
 
     The possible statuses are defined in :attr:`.Status`.
     The status rules are:
+
     - the initial status is ``DONE``,
-    - the status ``RUNNING`` or ``LINEARIZING`` can only be set when the current one is
-        ``DONE``,
+    - the status ``RUNNING`` or ``LINEARIZING`` can only be set
+      when the current one is ``DONE``,
     - the status ``DONE`` can only be set when the current one is ``RUNNING``.
 
-    Helper methods should be used to handle the statuses when running or linearizing
-    a process: :meth:`.run` and :meth:`linearize`.
+    Helper methods should be used to handle the statuses
+    when executing a monitored process,
+    e.g., a :class:`.Discipline` or an :class:`.MDOScenario`,
+    using the method :meth:`execute`,
+    or linearizing a :class:`.Discipline`
+    using the method :meth:`~.Discipline.linearize`.
 
     Observers can be attached and are notified when the value of the status is changed.
     The observers are not restored after pickling.
@@ -60,7 +67,7 @@ class ExecutionStatus(Serializable):
         FAILED = "FAILED"
         DONE = "DONE"
 
-    is_enabled: ClassVar[bool] = False
+    is_enabled: ClassVar[bool] = _ENABLE_DISCIPLINE_STATUS
     """Whether to handle statuses when calling :meth:`.handle`."""
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"__observers"}

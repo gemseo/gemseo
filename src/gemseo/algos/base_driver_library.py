@@ -41,22 +41,22 @@ from time import time
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Final
-from typing import Union
+from typing import TypeVar
 
 from numpy import ndarray
 
-from gemseo.algos._progress_bars.custom_tqdm_progress_bar import LOGGER as TQDM_LOGGER
-from gemseo.algos._progress_bars.dummy_progress_bar import DummyProgressBar
-from gemseo.algos._progress_bars.progress_bar import ProgressBar
-from gemseo.algos._progress_bars.unsuffixed_progress_bar import UnsuffixedProgressBar
+from gemseo.algos._progress_bar.custom import LOGGER as TQDM_LOGGER
+from gemseo.algos._progress_bar.standard import ProgressBar
+from gemseo.algos._progress_bar.unsuffixed import UnsuffixedProgressBar
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
 from gemseo.algos.base_driver_settings import BaseDriverSettings
 from gemseo.algos.evaluation_problem import EvaluationProblem
+from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
+from gemseo.algos.progress_bar_data.data import ProgressBarData
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FtolReached
 from gemseo.algos.stop_criteria import FunctionIsNan
@@ -67,19 +67,30 @@ from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.typing import StrKeyMapping
+from gemseo.utils.constants import _ENABLE_PROGRESS_BAR
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.logging_tools import OneLineLogging
+from gemseo.utils.logging import OneLineLogging
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
-    from gemseo.algos._progress_bars.base_progress_bar import BaseProgressBar
-    from gemseo.algos.database import ListenerType
+    from gemseo.algos._progress_bar.base import BaseProgressBar
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.progress_bar_data.factory import ProgressBarDataName
 
-DriverSettingType = Union[
-    str, float, int, bool, list[str], ndarray, Iterable[CallbackType], StrKeyMapping
-]
+DriverSettingType = (
+    str
+    | float
+    | int
+    | bool
+    | list[str]
+    | ndarray
+    | Iterable[CallbackType]
+    | StrKeyMapping
+)
 LOGGER = logging.getLogger(__name__)
+
+T = TypeVar("T", bound=BaseDriverSettings)
 
 
 @dataclass
@@ -93,7 +104,7 @@ class DriverDescription(AlgorithmDescription):
     """The Pydantic model for the driver library settings."""
 
 
-class BaseDriverLibrary(BaseAlgorithmLibrary):
+class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
     """Base class for libraries of drivers."""
 
     ApproximationMode = ApproximationMode
@@ -109,58 +120,22 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
     """Whether the library support sparse Jacobians."""
 
-    # Settings names.
-    _ENABLE_PROGRESS_BAR: Final[str] = "enable_progress_bar"
-    _EQ_TOLERANCE: Final[str] = "eq_tolerance"
-    _INEQ_TOLERANCE: Final[str] = "ineq_tolerance"
-    _MAX_TIME: Final[str] = "max_time"
-    _NORMALIZE_DESIGN_SPACE: Final[str] = "normalize_design_space"
-    __LOG_PROBLEM: Final[str] = "log_problem"
-    __RESET_ITERATION_COUNTERS: Final[str] = "reset_iteration_counters"
-    __ROUND_INTS: Final[str] = "round_ints"
-    __USE_DATABASE: Final[str] = "use_database"
-    __USE_ONLINE_PROGRESS_BAR: Final[str] = "use_one_line_progress_bar"
-    __STORE_JACOBIAN: Final[str] = "store_jacobian"
-
-    enable_progress_bar: bool = True
+    enable_progress_bar: bool = _ENABLE_PROGRESS_BAR
     """Whether to enable the progress bar in the evaluation log."""
 
     _problem: EvaluationProblem | None
     """The optimization problem the driver library is bonded to."""
 
-    _normalize_ds: bool = True
-    """Whether to normalize the design space variables between 0 and 1."""
-
-    __log_problem: bool
-    """Whether to log the definition and result of the problem."""
-
-    __max_time: float
-    """The maximum duration of the execution."""
-
-    __new_iter_listeners: set[ListenerType]
-    """The functions to be called when a new iteration is stored to the database."""
-
-    __one_line_progress_bar: bool
-    """Whether to log the progress bar on a single line."""
-
-    __progress_bar: BaseProgressBar
-    """The progress bar used during the execution."""
-
-    __reset_iteration_counters: bool
-    """Whether to reset the iteration counters before each execution."""
+    _progress_bar: BaseProgressBar | None
+    """The progress bar used during the execution, if any."""
 
     __start_time: float
     """The time at which the execution begins."""
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
-        self._disable_progress_bar()
+        self._progress_bar = None
         self.__start_time = 0.0
-        self.__max_time = 0.0
-        self.__reset_iteration_counters = True
-        self.__log_problem = True
-        self.__one_line_progress_bar = False
-        self.__new_iter_listeners = set()
 
     @classmethod
     def _get_unsuitability_reason(
@@ -172,63 +147,72 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
 
         return _UnsuitabilityReason.EMPTY_DESIGN_SPACE
 
-    def _disable_progress_bar(self) -> None:
-        """Disable the progress bar."""
-        self.__progress_bar = DummyProgressBar()
-
     def _init_iter_observer(
         self,
         problem: EvaluationProblem,
         max_iter: int,
         message: str = "",
+        progress_bar_data_name: ProgressBarDataName = ProgressBarData.__name__,
     ) -> None:
         """Initialize the iteration observer.
 
-        It will handle the stopping criterion and the logging of the progress bar.
+        It will handle the stopping criteria and the update of the progress bar.
 
         Args:
+            problem: The evaluation problem.
             max_iter: The maximum number of iterations.
             message: The message to display at the beginning of the progress bar status.
+            progress_bar_data_name: The name
+                of a :class:`.BaseProgressBarData` class
+                to define the data of an optimization problem
+                to be displayed in the progress bar.
         """
+        from gemseo.utils.global_configuration import _configuration
+
         problem.evaluation_counter.maximum = max_iter
-        problem.evaluation_counter.current = (
-            0 if self.__reset_iteration_counters else problem.evaluation_counter.current
-        )
-        if self.enable_progress_bar:
-            cls = ProgressBar if self.__log_problem else UnsuffixedProgressBar
-            self.__progress_bar = cls(
-                max_iter,
-                problem,
-                message,
-            )
+        if self._settings.reset_iteration_counters:
+            problem.evaluation_counter.current = 0
+
+        if self.enable_progress_bar and _configuration.logging.enable:
+            cls = ProgressBar if self._settings.log_problem else UnsuffixedProgressBar
+            self._progress_bar = cls(max_iter, problem, message, progress_bar_data_name)
         else:
-            self._disable_progress_bar()
+            self._progress_bar = None
 
         self.__start_time = time()
 
-    def _new_iteration_callback(self, x_vect: ndarray) -> None:
-        """Iterate the progress bar, implement the stop criteria.
+    def _finalize_previous_iteration_using_database(self) -> None:
+        """Finalize the previous iteration using the database."""
+        # This is the start of the current iteration.
+        counter = self._problem.evaluation_counter
+        if not counter.enabled:
+            counter.enabled = True
+            self._check_stopping_criteria()
+            return
 
-        Args:
-            x_vect: The design variables values.
+        self._finalize_previous_iteration()
+        self._check_stopping_criteria()
+
+    def _check_stopping_criteria(self) -> None:
+        """Check the stopping criteria at the current iteration.
 
         Raises:
-            MaxTimeReached: If the elapsed time is greater than the maximum
-                execution time.
+            MaxTimeReached: If the elapsed time is greater
+                than the maximum execution time.
+            MaxTimeReached If the maximum number of evaluations is reached.
         """
-        self.__progress_bar.set_objective_value(None)
-        self._problem.evaluation_counter.current += 1
-        if 0 < self.__max_time < time() - self.__start_time:
+        t = time()
+        if 0 < self._settings.max_time < t - self.__start_time:
             raise MaxTimeReached
 
-        self.__progress_bar.set_objective_value(x_vect)
+        if self._problem.evaluation_counter.maximum_is_reached:
+            raise MaxIterReachedException
 
     def _post_run(
         self,
         problem: OptimizationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
-        **settings: Any,
     ) -> None:
         """
         Args:
@@ -243,7 +227,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         if result.x_opt is not None:
             problem.design_space.set_current_value(result)
 
-        if self.__log_problem:
+        if self._settings.log_problem:
             self._log_result(problem, max_design_space_dimension_to_log)
 
     def _log_result(
@@ -316,6 +300,16 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 "integer variables."
             )
 
+    # TODO: API: state this in the class hierarchy instead of at runtime.
+    @property
+    def _is_solving_optimization_problem(self) -> bool:
+        """Whether is solving an optimization problem."""
+        return isinstance(self._problem, OptimizationProblem)
+
+    # TODO: API: move the following arguments into the settings_model
+    # - eval_obs_jac
+    # - skip_int_check
+    # - max_design_space_dimension_to_log
     def execute(
         self,
         problem: EvaluationProblem,
@@ -339,54 +333,52 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         self._check_algorithm(problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
 
-        # Validation of the settings
-        settings = self._validate_settings(settings_model=settings_model, **settings)
+        self._settings = create_model(
+            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            settings_model=settings_model,
+            **settings,
+        )
 
-        solve_optimization_problem = isinstance(
-            problem, OptimizationProblem
-        ) and settings.get("eval_func", True)
+        solve_optimization_problem = self._is_solving_optimization_problem
         if solve_optimization_problem:
             problem: OptimizationProblem
-            problem.tolerances.equality = settings[self._EQ_TOLERANCE]
-            problem.tolerances.inequality = settings[self._INEQ_TOLERANCE]
+            problem.tolerances.equality = self._settings.eq_tolerance
+            problem.tolerances.inequality = self._settings.ineq_tolerance
 
-        enable_progress_bar = settings[self._ENABLE_PROGRESS_BAR]
+        enable_progress_bar = self._settings.enable_progress_bar
         if enable_progress_bar is not None:
             self.enable_progress_bar = enable_progress_bar
-        self.__max_time = settings[self._MAX_TIME]
-        self._normalize_ds = settings[self._NORMALIZE_DESIGN_SPACE]
-        self.__log_problem = settings[self.__LOG_PROBLEM]
-        self.__one_line_progress_bar = settings[self.__USE_ONLINE_PROGRESS_BAR]
-        self.__reset_iteration_counters = settings[self.__RESET_ITERATION_COUNTERS]
 
         problem.check()
         problem.preprocess_functions(
-            is_function_input_normalized=self._normalize_ds,
-            use_database=settings[self.__USE_DATABASE],
-            round_ints=settings[self.__ROUND_INTS],
+            is_function_input_normalized=self._settings.normalize_design_space,
+            use_database=self._settings.use_database,
+            round_ints=self._settings.round_ints,
             eval_obs_jac=eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
-            store_jacobian=settings[self.__STORE_JACOBIAN],
+            store_jacobian=self._settings.store_jacobian,
             # Base drivers have no 'vectorize' option,
             # unlike certain specialized drivers, such as DOEs.
-            vectorize=settings.get("vectorize", False),
+            vectorize=getattr(self._settings, "vectorize", False),
         )
-        # A database contains both shared listeners
-        # and listeners specific to a BaseDriverLibrary instance.
-        # At execution,
-        # a BaseDriverLibrary instance must be able
-        # to list the listeners it has added to the database
-        # in order to remove them at the end of the execution.
-        listeners = []
-        if problem.new_iter_observables:
-            listeners.append(problem.new_iter_observables.evaluate)
-        listeners.append(self._new_iteration_callback)
-        for listener in listeners:
-            if problem.database.add_new_iter_listener(listener):
-                # The listener was not in the database.
-                self.__new_iter_listeners.add(listener)
+        # TODO: Have a better class hierarchy to avoid getattr,
+        # or have this field in all settings but forced to be 1 as needed.
+        parallelize = getattr(self._settings, "n_processes", 1) > 1
 
-        if self.__log_problem:
+        functions = problem.functions
+
+        set_pre_compute_at_new_point = functions[0].pre_compute_at_new_point is None
+        if set_pre_compute_at_new_point and not parallelize:
+            for function in functions:
+                function.pre_compute_at_new_point = (
+                    self._finalize_previous_iteration_using_database
+                )
+
+        if problem.new_iter_observables:
+            problem.database.add_new_iter_listener(
+                problem.new_iter_observables.evaluate
+            )
+        if self._settings.log_problem:
             LOGGER.info("%s", problem)
             if problem.design_space.dimension <= max_design_space_dimension_to_log:
                 log = MultiLineString()
@@ -398,7 +390,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 log.dedent()
                 LOGGER.info("%s", log)
 
-        if self.__log_problem and solve_optimization_problem:
+        if self._settings.log_problem and solve_optimization_problem:
             progress_bar_title = "Solving optimization problem with algorithm %s:"
         else:
             progress_bar_title = "Running the algorithm %s:"
@@ -409,52 +401,68 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
         result = None
         with (
             OneLineLogging(TQDM_LOGGER)
-            if self.__one_line_progress_bar
+            if self._settings.use_one_line_progress_bar
             else nullcontext()
         ):
-            # Term criteria such as max iter or max_time can be triggered in pre_run
+            get_result = self._get_result
             try:
-                self._pre_run(problem, **settings)
-                args = self._run(problem, **settings) or (None, None)
-                if solve_optimization_problem:
-                    result = self._get_result(problem, *args)
+                # pre_run can trigger stopping criteria, e.g., max_iter or max_time.
+                self._pre_run(problem)
+                args = self._run(problem) or (None, None)
             except TerminationCriterion as termination_criterion:
-                if solve_optimization_problem:
-                    problem: OptimizationProblem
-                    result = self._get_early_stopping_result(
-                        problem, termination_criterion
-                    )
+                args = (termination_criterion,)
+                get_result = self._get_early_stopping_result
+                # Disable the counter
+                # because the iteration has been finalized
+                # just before raising the TerminationCriterion
+                # (see the _finalize_previous_iteration_using_database method).
+                problem.evaluation_counter.enabled = False
 
-        self.__progress_bar.finalize_iter_observer()
-        self._clear_listeners(problem)
+            if solve_optimization_problem:
+                problem: OptimizationProblem
+                result = get_result(problem, *args)
+
+        if self._problem.evaluation_counter.enabled and not parallelize:
+            self._finalize_previous_iteration()
+
+        problem.evaluation_counter.enabled = False
+        if self._progress_bar is not None:
+            self._progress_bar.close()
+
+        problem.database.clear_listeners(
+            new_iter_listeners=(
+                (o.evaluate,) if (o := problem.new_iter_observables) else None
+            ),
+            store_listeners=None,
+        )
+        if set_pre_compute_at_new_point:
+            for function in problem.functions:
+                function.pre_compute_at_new_point = None
+
         if solve_optimization_problem:
             self._post_run(
                 problem,
                 result,
                 max_design_space_dimension_to_log,
-                **settings,
             )
-        # Clear the state of _problem; the cache of the AlgoFactory can be used.
-        self._problem = None
+
+        self._reset()
         return result
 
+    def _finalize_previous_iteration(self):
+        """Finalize the previous iteration."""
+        problem = self._problem
+        problem.evaluation_counter.current += 1
+        if self._progress_bar is not None:
+            input_value = HashableNdarray(problem.database.get_last_n_x_vect(1)[0])
+            self._progress_bar.update(input_value)
+
     @abstractmethod
-    def _run(self, problem: EvaluationProblem, **settings: Any) -> tuple[Any, Any]:
+    def _run(self, problem: EvaluationProblem) -> tuple[Any, Any]:
         """
         Returns:
             The message and status of the algorithm if any.
         """  # noqa: D205 D212
-
-    def _clear_listeners(self, problem: EvaluationProblem) -> None:
-        """Remove the listeners from the :attr:`.database`.
-
-        Args:
-            problem: The problem to be solved.
-        """
-        problem.database.clear_listeners(
-            new_iter_listeners=self.__new_iter_listeners or None, store_listeners=None
-        )
-        self.__new_iter_listeners.clear()
 
     def _get_early_stopping_result(
         self, problem: OptimizationProblem, termination_criterion: TerminationCriterion
@@ -488,7 +496,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary):
                 "are closer than ftol_rel or ftol_abs. "
             )
         elif isinstance(termination_criterion, MaxTimeReached):
-            message = f"Maximum time reached: {self.__max_time} seconds. "
+            message = f"Maximum time reached: {self._settings.max_time} seconds. "
         elif isinstance(termination_criterion, KKTReached):
             message = (
                 "The KKT residual norm is smaller than the tolerance "

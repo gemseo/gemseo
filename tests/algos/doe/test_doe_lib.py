@@ -51,6 +51,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from gemseo.scenarios.doe_scenario import DOEScenario
@@ -254,7 +255,7 @@ def test_transformation(doe_database, var) -> None:
 
 def test_pre_run_debug(lhs, caplog) -> None:
     """Check a DEBUG message logged just after sampling the input unit hypercube."""
-    caplog.set_level("DEBUG")
+    caplog.set_level("DEBUG", logger="gemseo")
     problem = Power2()
     lhs.execute(problem, n_samples=2)
     message = (
@@ -441,14 +442,19 @@ def test_callback(custom_doe, n_processes, problem):
 
 @pytest.mark.parametrize("n_processes", [1, 2])
 @pytest.mark.parametrize("use_database", [False, True])
-def test_use_database(custom_doe, n_processes, problem, use_database):
+@pytest.mark.parametrize("enable_progress_bar", [False, True])
+def test_use_database(
+    custom_doe, n_processes, problem, use_database, enable_progress_bar, caplog
+):
     """Check the option use_database."""
     custom_doe.execute(
         problem,
         samples=array([[1.0], [2.0]]),
         n_processes=n_processes,
         use_database=use_database,
+        enable_progress_bar=enable_progress_bar,
     )
+    assert ("100%" in caplog.text) is enable_progress_bar
     assert bool(problem.database) is use_database
 
 
@@ -589,3 +595,57 @@ def test_value_error_filtering(formulation, caplog):
     assert driver_message in caplog.text
     discipline_message = "The sample is undefined for x < 0."
     assert discipline_message in caplog.text
+
+
+class Preprocessor:
+    """A function called before each sample generation."""
+
+    def __init__(self, database: Database, parallelize: bool) -> None:
+        """
+        Args:
+            database: The database attached to a problem.
+        """
+        self.database = database
+        if parallelize:
+            self.tuples = get_multi_processing_manager().list()
+        else:
+            self.tuples = []
+
+    def __call__(self, index: int) -> None:
+        """Store (index, n_entries_with_output_values) at index.
+
+        Args:
+            index: The sample index.
+        """
+        self.tuples.insert(
+            index, (index, sum(bool(value) for value in self.database.values()))
+        )
+
+
+@pytest.mark.parametrize("n_processes", [1, 2])
+@pytest.mark.parametrize("add_pre_processors", [False, True])
+def test_preprocessors(custom_doe, n_processes, add_pre_processors):
+    """Test the option preprocessors."""
+    problem = Power2()
+    if add_pre_processors:
+        preprocessor = Preprocessor(problem.database, n_processes > 1)
+        preprocessors = (preprocessor,)
+    else:
+        preprocessors = ()
+    custom_doe.execute(
+        problem,
+        samples=array([[1.0, 1.0, 1.0]]),
+        preprocessors=preprocessors,
+        n_processes=n_processes,
+    )
+    assert len(problem.database) == 1
+    if add_pre_processors:
+        assert list(preprocessor.tuples) == [(0, 0)]
+    custom_doe.execute(
+        problem,
+        samples=array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]),
+        preprocessors=preprocessors,
+    )
+    assert len(problem.database) == 3
+    if add_pre_processors:
+        assert list(preprocessor.tuples) == [(0, 1), (1, 1), (2, 2), (0, 0)]

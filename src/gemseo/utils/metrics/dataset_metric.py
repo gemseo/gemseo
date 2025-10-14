@@ -22,13 +22,13 @@ from typing import Any
 
 from numpy import vstack
 
-from gemseo.datasets.dataset import ComponentType
 from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.dataset import IndexType
-from gemseo.datasets.dataset import StrColumnType
 from gemseo.utils.metrics.base_composite_metric import BaseCompositeMetric
 
 if TYPE_CHECKING:
+    from gemseo.datasets.dataset import ComponentType
+    from gemseo.datasets.dataset import IndexType
+    from gemseo.datasets.dataset import StrColumnType
     from gemseo.utils.metrics.base_metric import BaseMetric
 
 
@@ -49,6 +49,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
 
     def __init__(
         self,
+        # TODO: API: keep the name of the parent class, i.e., metric.
         composed_metric: BaseMetric[Any, Any],
         group_names: StrColumnType = (),
         variable_names: StrColumnType = (),
@@ -57,7 +58,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
     ) -> None:
         """
         Args:
-            metric_name: The name of the metric applied at element level.
+            composed_metric: The name of the metric applied at element level.
             group_names: The name(s) of the group(s) to compare.
                 If empty, consider all the groups.
             variable_names: The name(s) of the variables(s) to compare.
@@ -117,7 +118,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
             data=vstack([
                 self._metric.compute(a, b)
                 for name in variable_names
-                for a, b in zip(*name_to_a_b_data[name])
+                for a, b in zip(*name_to_a_b_data[name], strict=False)
             ]).T,
             variable_names=variable_names,
             variable_names_to_group_names={

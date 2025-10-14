@@ -26,6 +26,9 @@ class EvaluationCounter:
     current: int = 0
     """The current number of evaluations."""
 
+    enabled: bool = False
+    """Whether the counter is enabled."""
+
     maximum: int = 0
     """The maximum number of evaluations allowed."""
 

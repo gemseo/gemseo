@@ -58,7 +58,6 @@ Application: Sobieski's Super-Sonic Business Jet (MDO)
 # Note that some of the imports are related to the Python 2/3 compatibility.
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
@@ -68,8 +67,6 @@ from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_SLSQP_Settings
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.discipline import get_all_outputs
-
-configure_logger()
 
 # %%
 # Step 1: :class:`.Discipline` creation.

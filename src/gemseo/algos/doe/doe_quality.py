@@ -102,7 +102,10 @@ class DOEQuality:
         return repr(self.measures)
 
     def __eq__(self, other_doe_quality: DOEQuality) -> bool:
-        return all(x == y for x, y in zip(self.measures, other_doe_quality.measures))
+        return all(
+            x == y
+            for x, y in zip(self.measures, other_doe_quality.measures, strict=False)
+        )
 
     def __lt__(self, other_doe_quality: DOEQuality) -> bool:
         return self.__compare(gt, other_doe_quality)
@@ -135,6 +138,7 @@ class DOEQuality:
                     self.measures,
                     other_doe_quality.measures,
                     _measure_transformations,
+                    strict=False,
                 )
             )
             / len(self.measures)

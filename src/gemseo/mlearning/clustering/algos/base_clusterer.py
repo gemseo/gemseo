@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Union
 
 from numpy import array
 from numpy import ndarray
@@ -39,7 +38,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-SavedObjectType = Union[MLAlgoSavedObjectType, ndarray, int]
+SavedObjectType = MLAlgoSavedObjectType | ndarray | int
 
 
 class BaseClusterer(BaseMLUnsupervisedAlgo):

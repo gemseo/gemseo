@@ -20,12 +20,13 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import empty
-from numpy import ndarray
 
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+    from numpy import ndarray
 
     from gemseo.typing import NumberArray
 

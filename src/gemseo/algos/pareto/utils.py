@@ -28,7 +28,6 @@ import matplotlib.pyplot as plt
 from numpy import all as np_all
 from numpy import any as np_any
 from numpy import full
-from numpy import ndarray
 from numpy import vstack
 
 from gemseo.algos.pareto.pareto_plot_biobjective import ParetoPlotBiObjective
@@ -37,6 +36,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from matplotlib.figure import Figure
+    from numpy import ndarray
 
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -164,7 +164,7 @@ def generate_pareto_plots(
     new_labels = []
     for ax in axs.flatten():
         handles, labels = ax.get_legend_handles_labels()
-        for label, handle in zip(labels, handles):
+        for label, handle in zip(labels, handles, strict=False):
             if label not in new_labels:
                 new_labels.append(label)
                 new_handles.append(handle)

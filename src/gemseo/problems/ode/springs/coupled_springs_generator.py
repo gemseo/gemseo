@@ -238,7 +238,7 @@ class CoupledSpringsGenerator:
 
         return ODEDiscipline(
             rhs_discipline=mda_dynamics,
-            state_names=dict(zip(self.state_names, self.state_dot_names)),
+            state_names=dict(zip(self.state_names, self.state_dot_names, strict=False)),
             return_trajectories=True,
             times=self._times,
             **ode_solver_options,

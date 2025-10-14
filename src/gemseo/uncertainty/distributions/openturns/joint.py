@@ -24,12 +24,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from openturns import ComposedDistribution
-from openturns import Distribution
 from openturns import IndependentCopula
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+
+    from openturns import Distribution
 
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
@@ -84,7 +85,7 @@ class OTJointDistribution(BaseJointDistribution):
         # because computeCDF does not support numpy.int32.
         return array([
             marginal.distribution.computeCDF(float(value_))
-            for value_, marginal in zip(value, self.marginals)
+            for value_, marginal in zip(value, self.marginals, strict=False)
         ])
 
     def compute_inverse_cdf(  # noqa: D102
@@ -93,5 +94,5 @@ class OTJointDistribution(BaseJointDistribution):
     ) -> RealArray:
         return array([
             marginal.distribution.computeQuantile(value_)[0]
-            for value_, marginal in zip(value, self.marginals)
+            for value_, marginal in zip(value, self.marginals, strict=False)
         ])

@@ -31,7 +31,7 @@ def test_default():
 
 def test_custom():
     """Check the values of the EvaluationCounter with custom settings."""
-    counter = EvaluationCounter(1, 3)
+    counter = EvaluationCounter(current=1, maximum=3)
     assert counter.current == 1
     assert counter.maximum == 3
     assert not counter.maximum_is_reached
@@ -49,7 +49,7 @@ def test_setters():
 
 def test_maximum_is_reached():
     """Check that the property maximum_is_reached."""
-    assert EvaluationCounter(3, 3).maximum_is_reached
+    assert EvaluationCounter(current=3, maximum=3).maximum_is_reached
 
 
 def test_error():
@@ -61,4 +61,4 @@ def test_error():
             "less than or equal to the maximum number of evaluations (2)."
         ),
     ):
-        EvaluationCounter(3, 2)
+        EvaluationCounter(current=3, maximum=2)

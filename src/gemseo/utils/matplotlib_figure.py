@@ -36,6 +36,7 @@ def save_show_figure(
     show: bool,
     file_path: str | Path,
     fig_size: FigSizeType = (),
+    close: bool | None = None,
 ) -> None:
     """Save or show a Matplotlib figure.
 
@@ -46,6 +47,8 @@ def save_show_figure(
             If empty, do not save the figure.
         fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
             If empty, use the current size of the figure.
+        close: Whether to close the figure at the end of the function.
+            If ``None``, close it if the figure is saved.
     """
     save = bool(file_path)
 
@@ -55,11 +58,8 @@ def save_show_figure(
     if save:
         fig.savefig(str(file_path), bbox_inches="tight")
 
-    if show:
-        plt.show()
-
-    if save:
-        plt.close(fig)
+    close = save if close is None else close
+    show_close_figures(show, close, fig)
 
 
 def save_show_figure_from_file_path_manager(
@@ -71,6 +71,7 @@ def save_show_figure_from_file_path_manager(
     file_name: str = "",
     file_format: str = "",
     fig_size: FigSizeType = (),
+    close: bool | None = None,
 ) -> Figure:
     """Save or show the plot.
 
@@ -92,6 +93,8 @@ def save_show_figure_from_file_path_manager(
             If empty, use a default file extension.
         fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
             If empty, use the current size of the figure.
+        close: Whether to close the figure at the end of the function.
+            If ``None``, close it if the figure is saved.
 
     Returns:
         The figure.
@@ -106,5 +109,21 @@ def save_show_figure_from_file_path_manager(
             file_extension=file_format,
         )
 
-    save_show_figure(fig, show, file_path, fig_size)
+    save_show_figure(fig, show, file_path, fig_size=fig_size, close=close)
     return fig
+
+
+def show_close_figures(show: bool, close: bool, fig: Figure | None = None) -> None:
+    """Show and close the matplotlib figures if required.
+
+    Args:
+        show: Whether to show the figures.
+        close: Whether to close the figures.
+        fig: The figure to close.
+            If ``None``, close all the figures.
+    """
+    if show:
+        plt.show()
+
+    if close:
+        plt.close(fig)

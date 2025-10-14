@@ -30,7 +30,6 @@ we use the :class:`.ScalabilityStudy` and :class:`.PostScalabilityStudy` classes
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
@@ -38,9 +37,6 @@ from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
 )
 from gemseo.problems.mdo.scalable.data_driven import create_scalability_study
 from gemseo.problems.mdo.scalable.data_driven import plot_scalability_results
-
-configure_logger()
-
 
 # %%
 # Create the disciplinary datasets

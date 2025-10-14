@@ -193,13 +193,16 @@ class BaseRegressor(BaseMLSupervisedAlgo):
     def _check_jacobian_learning_data(self, attribute_name: str) -> None:
         """Check whether the attribute can be used.
 
+        Args:
+            attribute_name: The name of the attribute.
+
         Raises:
             ValueError: When the training dataset does not include gradient information.
         """
         if self._jacobian_data is None:
             msg = (
                 f"You cannot use {attribute_name} "
-                "because the training dataset does not include gradient information."
+                "because use_special_jacobian_data is False."
             )
             raise ValueError(msg)
 

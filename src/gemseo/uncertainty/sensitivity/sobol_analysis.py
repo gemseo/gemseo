@@ -103,8 +103,6 @@ Saltelli in :cite:`saltelli2010`.
 from __future__ import annotations
 
 import logging
-from collections.abc import Collection
-from collections.abc import Iterable
 from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
@@ -136,12 +134,6 @@ from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    SecondOrderIndicesType,
-)
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
@@ -150,6 +142,8 @@ from gemseo.utils.string_tools import filter_names
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
     from pathlib import Path
 
     from matplotlib.figure import Figure
@@ -160,6 +154,12 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        SecondOrderIndicesType,
+    )
     from gemseo.utils.string_tools import VariableType
 
 LOGGER = logging.getLogger(__name__)

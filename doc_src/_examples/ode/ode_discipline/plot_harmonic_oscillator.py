@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy import cos
 from numpy import linspace
-from numpy import ndarray
+from numpy import ndarray  # noqa: TC002
 from numpy import pi
 from numpy import sin
 

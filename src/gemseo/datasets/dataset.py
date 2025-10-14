@@ -41,11 +41,9 @@ from collections.abc import Iterable
 from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 from typing import Literal
-from typing import Union
 from typing import overload
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -67,15 +65,16 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from pandas._typing import Axes
     from pandas._typing import Dtype
 
-StrColumnType = Union[str, Iterable[str]]
-IndexType = Union[str, int, Iterable[Union[str, int]]]
-DataType = Union[ndarray, Iterable[Any], Any]
-ComponentType = Union[int, Iterable[int]]
+StrColumnType = str | Iterable[str]
+IndexType = str | int | Iterable[str | int]
+DataType = ndarray | Iterable[Any] | Any
+ComponentType = int | Iterable[int]
 
 
 class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
@@ -564,7 +563,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
 
         self.__check_data_shape_consistency(data, n_rows, len(variables))
-        for (variable_name, component), data_column in zip(variables, data.T):
+        for (variable_name, component), data_column in zip(
+            variables, data.T, strict=False
+        ):
             self.add_variable(
                 variable_name,
                 data_column[:, newaxis],

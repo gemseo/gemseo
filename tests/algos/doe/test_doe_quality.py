@@ -21,16 +21,19 @@ from operator import gt
 from operator import le
 from operator import lt
 from operator import neg
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
-from numpy import ndarray
 
 from gemseo.algos.doe.doe_quality import DOEMeasures
 from gemseo.algos.doe.doe_quality import DOEQuality
 from gemseo.algos.doe.doe_quality import compute_discrepancy
 from gemseo.algos.doe.doe_quality import compute_mindist_criterion
 from gemseo.algos.doe.doe_quality import compute_phip_criterion
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture(scope="module")
@@ -104,7 +107,10 @@ def test_measures_comparison(
             sum(
                 operator(t(x), t(y))
                 for x, y, t in zip(
-                    quality_1.measures, quality_2.measures, transformations
+                    quality_1.measures,
+                    quality_2.measures,
+                    transformations,
+                    strict=False,
                 )
             )
             / 3

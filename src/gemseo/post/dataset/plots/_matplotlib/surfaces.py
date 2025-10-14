@@ -51,7 +51,9 @@ class Surfaces(MatplotlibPlot):
             options["levels"] = levels
 
         figs = []
-        for sample, sample_name in zip(samples, self._common_dataset.index):
+        for sample, sample_name in zip(
+            samples, self._common_dataset.index, strict=False
+        ):
             fig = plt.figure(figsize=self._common_settings.fig_size)
             ax = fig.add_subplot(1, 1, 1)
             func = ax.tricontourf if self._specific_settings.fill else ax.tricontour

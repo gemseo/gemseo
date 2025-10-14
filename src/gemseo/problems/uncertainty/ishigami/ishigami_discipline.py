@@ -58,6 +58,7 @@ class IshigamiDiscipline(Discipline):
                 for input_name, derivative in zip(
                     self.io.input_grammar,
                     compute_gradient(inputs_array),
+                    strict=False,
                 )
             }
         }

@@ -25,7 +25,6 @@ from dataclasses import fields
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 
 from numpy import ndarray
 
@@ -37,7 +36,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_problem import OptimizationProblem
 
-Value = Union[str, int, bool, ndarray]
+Value = str | int | bool | ndarray
 
 
 @dataclass
@@ -124,6 +123,8 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         The second one can be logged with either an INFO or a WARNING level according to
         the feasibility of the solution.
         """
+        from gemseo.utils.global_configuration import _configuration
+
         strings = []
         msg = MultiLineString()
         msg.add("Optimization result:")
@@ -132,9 +133,9 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         msg.indent()
         msg.add("Status: {}", self.status)
         msg.add("Message: {}", self.message)
-        if self.n_obj_call is not None:
+        if _configuration.enable_function_statistics:
             msg.add(
-                "Number of calls to the objective function by the optimizer: {}",
+                "Number of calls to the objective function: {}",
                 self.n_obj_call,
             )
         msg.dedent()

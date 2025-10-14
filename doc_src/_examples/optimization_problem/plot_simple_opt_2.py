@@ -32,16 +32,12 @@ from numpy import cos
 from numpy import exp
 from numpy import sin
 
-from gemseo import configure_logger
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-
-configure_logger()
-
 
 # %%
 # Define the objective function

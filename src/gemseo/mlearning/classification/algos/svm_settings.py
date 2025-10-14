@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Annotated
-from typing import Callable
 
 from pydantic import Field
 from pydantic import NonNegativeInt

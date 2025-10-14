@@ -37,7 +37,6 @@ from openturns import Log
 from openturns import MaternModel
 from openturns import Mesh
 from openturns import MultiStart
-from openturns import OptimizationAlgorithmImplementation
 from openturns import Point
 from openturns import QuadraticBasisFactory
 from openturns import RandomGenerator
@@ -56,8 +55,6 @@ from gemseo.mlearning.regression.algos.base_random_process_regressor import (
     BaseRandomProcessRegressor,
 )
 from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModel
-from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModelType
-from gemseo.mlearning.regression.algos.ot_gpr_settings import DOEAlgorithmName
 from gemseo.mlearning.regression.algos.ot_gpr_settings import (
     OTGaussianProcessRegressor_Settings,
 )
@@ -66,7 +63,11 @@ from gemseo.utils.compatibility.openturns import create_trend_basis
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
+    from openturns import OptimizationAlgorithmImplementation
+
     from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModelType
+    from gemseo.mlearning.regression.algos.ot_gpr_settings import DOEAlgorithmName
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 

@@ -39,7 +39,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import NoReturn
-from typing import Union
 
 from numpy import atleast_2d
 from numpy import ndarray
@@ -50,14 +49,13 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-    from typing_extensions import ParamSpecArgs
-    from typing_extensions import ParamSpecKwargs
+    from typing import ParamSpecArgs
+    from typing import ParamSpecKwargs
 
     from gemseo.typing import RealArray
 
-ParameterType = Union[bool, int, float, ndarray, str, None]
-TransformerFitOptionType = Union[float, int, str]
+ParameterType = bool | int | float | ndarray | str | None
+TransformerFitOptionType = float | int | str
 
 
 class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):

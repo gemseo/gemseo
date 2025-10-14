@@ -53,9 +53,6 @@ from typing import TYPE_CHECKING
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality import (
-    OptionType as MeasureOptionType,
-)
 from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -65,6 +62,9 @@ if TYPE_CHECKING:
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import (
+        OptionType as MeasureOptionType,
+    )
     from gemseo.scenarios.base_scenario import ScenarioInputDataType
 
 
@@ -173,7 +173,7 @@ class MLAlgoSelection:
         quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
 
         for prodvalues in product(*values):
-            params = dict(zip(keys, prodvalues))
+            params = dict(zip(keys, prodvalues, strict=False))
             if calib_space:
                 ml_algo_calibration = MLAlgoCalibration(
                     name,

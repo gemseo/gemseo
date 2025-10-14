@@ -31,14 +31,13 @@ from html import escape
 from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import NamedTuple
-from typing import Union
 
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterator
 
 
@@ -64,7 +63,7 @@ DEFAULT_DELIMITER = ", "
 DEFAULT_KEY_VALUE_SEPARATOR = "="
 """A string to separate key and value in a key-value pair of a mapping."""
 
-VariableType = Union[str, tuple[str, int]]
+VariableType = str | tuple[str, int]
 
 
 def __stringify(

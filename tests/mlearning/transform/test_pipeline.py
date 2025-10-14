@@ -28,12 +28,13 @@ from numpy import arange
 from numpy import array
 from numpy import diag
 from numpy import eye
-from numpy import ndarray
 
 from gemseo.mlearning.transformers.pipeline import Pipeline
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 
 
@@ -82,7 +83,7 @@ def test_duplicate(data, transformers) -> None:
     pipeline.fit(data)
     pipeline_dup = pipeline.duplicate()
     for transformer, transformer_dup in zip(
-        pipeline.transformers, pipeline_dup.transformers
+        pipeline.transformers, pipeline_dup.transformers, strict=False
     ):
         assert transformer != transformer_dup
 
@@ -90,7 +91,7 @@ def test_duplicate(data, transformers) -> None:
     pipeline.fit(data)
     pipeline_dup = pipeline.duplicate()
     for transformer, transformer_dup in zip(
-        pipeline.transformers, pipeline_dup.transformers
+        pipeline.transformers, pipeline_dup.transformers, strict=False
     ):
         assert transformer != transformer_dup
 

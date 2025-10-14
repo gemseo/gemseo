@@ -25,12 +25,10 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 from typing import Literal
 
 from numpy import array
-from numpy import ndarray
 from scipy.optimize import root
 
 from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
@@ -38,8 +36,11 @@ from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Sequence
     from typing import Any
+
+    from numpy import ndarray
 
     from gemseo.core.discipline import Discipline
 

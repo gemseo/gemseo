@@ -131,7 +131,7 @@ class Animation(BasePost[Animation_Settings]):
                 Image.open(fp=frame_file_path) for frame_file_path in frame_file_paths
             ]
 
-            for figure_name, frame in zip(figure_names, frames):
+            for figure_name, frame in zip(figure_names, frames, strict=False):
                 if figure_name not in figure_names_to_frames:
                     figure_names_to_frames[figure_name] = []
                 figure_names_to_frames[figure_name].append(frame)

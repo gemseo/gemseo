@@ -48,7 +48,7 @@ class ScenarioResult:
     __obj_to_be_post_processed: BaseScenario | OptimizationProblem
     """The object to be post-processed."""
 
-    _POST_FACTORY: ClassVar[PostFactory | None] = None
+    POST_FACTORY: ClassVar[PostFactory] = PostFactory()
     """The factory of :class:`.BasePost`, if created."""
 
     def __init__(self, scenario: BaseScenario | str | Path) -> None:
@@ -74,15 +74,6 @@ class ScenarioResult:
         self.optimization_problems_to_results = {
             self._MAIN_PROBLEM_LABEL: optimization_result
         }
-
-    # TODO: API: the factory is a global object, remove this property.
-    @classmethod
-    @property
-    def POST_FACTORY(cls) -> PostFactory:  # noqa: N802
-        """The factory of post-processors."""
-        if cls._POST_FACTORY is None:
-            cls._POST_FACTORY = PostFactory()
-        return cls._POST_FACTORY
 
     @property
     def optimization_result(self) -> OptimizationResult:

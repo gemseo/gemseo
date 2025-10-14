@@ -21,10 +21,10 @@
 from __future__ import annotations
 
 from math import ceil
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from matplotlib import pyplot
-from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
@@ -40,6 +40,9 @@ from numpy import sign
 from gemseo.post.base_post import BasePost
 from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
 from gemseo.post.core.colormaps import RG_SEISMIC
+
+if TYPE_CHECKING:
+    from matplotlib.colors import ListedColormap
 
 
 class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
@@ -121,7 +124,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
 
         # for each subplot
         for constraint_history, constraint_name, ax in zip(
-            constraint_histories.T, constraint_names, axs.ravel()
+            constraint_histories.T, constraint_names, axs.ravel(), strict=False
         ):
             cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]

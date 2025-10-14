@@ -37,13 +37,10 @@ from numpy import array
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.gaussian_process.kernels import Matern
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.mlearning import create_regression_model
-
-configure_logger()
 
 # %%
 # Problem

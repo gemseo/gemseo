@@ -23,9 +23,6 @@ from __future__ import annotations
 
 import pickle
 from abc import abstractmethod
-from collections.abc import Collection
-from collections.abc import Iterable
-from collections.abc import Mapping
 from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import asdict
@@ -34,7 +31,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 
 from numpy import array
 from numpy import hstack
@@ -63,6 +59,10 @@ from gemseo.utils.string_tools import get_variables_with_components
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
     from matplotlib.figure import Figure
 
     from gemseo.algos.base_driver_library import DriverSettingType
@@ -73,9 +73,9 @@ if TYPE_CHECKING:
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.utils.string_tools import VariableType
 
-OutputsType = Union[str, tuple[str, int], Sequence[Union[str, tuple[str, int]]]]
-FirstOrderIndicesType = dict[str, list[Union[dict[str, RealArray], None]]]
-SecondOrderIndicesType = dict[str, list[Union[dict[str, dict[str, RealArray]], None]]]
+OutputsType = str | tuple[str, int], Sequence[str | tuple[str, int]]
+FirstOrderIndicesType = dict[str, list[dict[str, RealArray] | None]]
+SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]] | None]]
 
 
 class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):

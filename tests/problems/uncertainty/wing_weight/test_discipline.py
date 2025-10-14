@@ -15,13 +15,17 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 from numpy import array
 from numpy import cos
-from numpy import ndarray
 from numpy import pi
 
 from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 def compute_output(input_values):

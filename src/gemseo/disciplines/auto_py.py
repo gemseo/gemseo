@@ -26,16 +26,14 @@ import logging
 from inspect import getsource
 from inspect import signature
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import Final
-from typing import Union
+from typing import get_args
+from typing import get_origin
 from typing import get_type_hints
 
 from numpy import array
 from numpy import atleast_2d
 from numpy import ndarray
-from typing_extensions import get_args
-from typing_extensions import get_origin
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.data_processor import DataProcessor
@@ -45,11 +43,12 @@ from gemseo.utils.source_parsing import get_options_doc
 from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
 
     from gemseo.typing import StrKeyMapping
 
-DataType = Union[float, ndarray]
+DataType = float | ndarray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -272,6 +271,7 @@ class AutoPyDiscipline(Discipline):
                             zip(
                                 self.__output_names,
                                 map(self.__get_original_type, type_args),
+                                strict=False,
                             )
                         )
 
@@ -352,7 +352,7 @@ class AutoPyDiscipline(Discipline):
         if len(self.__output_names) == 1:
             output_values = {self.__output_names[0]: output_values}
         else:
-            output_values = dict(zip(self.__output_names, output_values))
+            output_values = dict(zip(self.__output_names, output_values, strict=False))
         return output_values
 
     def _compute_jacobian(

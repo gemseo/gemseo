@@ -30,8 +30,7 @@ from sphinx_gallery.sorting import ExampleTitleSortKey
 
 os.chdir((Path(__file__).resolve()).parent)
 
-for directory_name in ("_ext", "templates"):
-    sys.path.append(str(Path(directory_name).resolve()))
+sys.path.append(str(Path("_ext").resolve()))
 
 
 if TYPE_CHECKING:
@@ -42,6 +41,7 @@ extensions = [
     "add_toctree_functions",
     "autodocsumm",
     "default_kwargs_values",
+    "reload_gemseo",
     "gemseo_pre_processor",
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
@@ -94,6 +94,7 @@ if not os.environ.get("DOC_WITHOUT_GALLERY"):
         # objects to exclude from implicit backreferences. The default option
         # is an empty set, i.e. exclude nothing.
         "exclude_implicit_doc": {r"gemseo\.configure_logger"},
+        "reset_modules": ("sphinxext.reset_logging",),
     }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -186,6 +187,12 @@ html_theme_options = {
             "name": "GitLab",
             "url": "https://gitlab.com/gemseo/dev/gemseo",
             "icon": "fa-brands fa-square-gitlab",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Discourse",
+            "url": "https://gemseo.discourse.group",
+            "icon": "fa-brands fa-discourse",
             "type": "fontawesome",
         },
     ],
@@ -387,6 +394,10 @@ if not os.environ.get("DOC_WITHOUT_PLUGINS"):
     html_context["plugins"] = {
         "gemseo-benchmark": (
             "A GEMSEO-based package to benchmark optimization algorithm.",
+            True,
+        ),
+        "gemseo-bilevel-outer-approximation": (
+            "GEMSEO plugin for the bi-level outer approximation (shortened as bi-level OA) algorithm.",
             True,
         ),
         "gemseo-calibration": (

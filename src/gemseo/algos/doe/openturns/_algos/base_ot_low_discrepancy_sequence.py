@@ -26,6 +26,9 @@ from gemseo.algos.doe.openturns._algos.base_ot_doe import BaseOTDOE
 if TYPE_CHECKING:
     from openturns import LowDiscrepancySequenceImplementation
 
+    from gemseo.algos.doe.base_n_samples_based_doe_settings import (
+        BaseNSamplesBasedDOESettings,
+    )
     from gemseo.typing import RealArray
 
 
@@ -35,6 +38,11 @@ class BaseOTLowDiscrepancySequence(BaseOTDOE):
     _ALGO_CLASS: ClassVar[type[LowDiscrepancySequenceImplementation]]
 
     def generate_samples(  # noqa: D102
-        self, n_samples: int, dimension: int
+        self,
+        n_samples: int,
+        dimension: int,
+        settings: BaseNSamplesBasedDOESettings | None = None,
     ) -> RealArray:
+        if settings is not None:
+            n_samples = settings.n_samples
         return array(self._ALGO_CLASS(dimension).generate(n_samples))

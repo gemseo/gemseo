@@ -43,6 +43,7 @@ from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mlearning.regression.algos.linreg import LinearRegressor
 from gemseo.mlearning.regression.algos.pce import CleaningOptions
 from gemseo.mlearning.regression.algos.pce import PCERegressor
+from gemseo.mlearning.regression.algos.pce_settings import PCERegressor_Settings
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -121,7 +122,7 @@ def ishigami_pce(ishigami_dataset, ishigami_probability_space) -> PCERegressor:
 @pytest.fixture(scope="module")
 def pce(dataset, probability_space) -> PCERegressor:
     """A PCERegressor trained from the dataset associated with the linear discipline."""
-    model = PCERegressor(dataset, probability_space=probability_space)
+    model = PCERegressor(dataset, PCERegressor_Settings(use_special_jacobian_data=True))
     model.learn()
     return model
 
@@ -182,13 +183,7 @@ def test_lars_with_quadrature(discipline, probability_space) -> None:
         ValueError,
         match=re.escape("LARS is not applicable with the quadrature rule."),
     ):
-        PCERegressor(
-            None,
-            probability_space=probability_space,
-            discipline=discipline,
-            use_quadrature=True,
-            use_lars=True,
-        )
+        PCERegressor_Settings(use_quadrature=True, use_lars=True)
 
 
 def test_no_dataset_with_least_square(probability_space, discipline) -> None:
@@ -206,9 +201,7 @@ def test_discipline_with_least_square(probability_space, dataset, discipline) ->
         ValueError,
         match=re.escape("The least-squares regression does not require a discipline."),
     ):
-        PCERegressor(
-            dataset, probability_space=probability_space, discipline=discipline
-        )
+        PCERegressor_Settings(discipline=discipline)
 
 
 def test_input_names_with_least_square(dataset, probability_space) -> None:
@@ -557,7 +550,7 @@ def test_sobol(pce, order, expected) -> None:
     """Check the computation of Sobol' indices."""
     computed = getattr(pce, f"{order}_sobol_indices")
     assert len(computed) == len(expected)
-    for value1, value2 in zip(computed, expected):
+    for value1, value2 in zip(computed, expected, strict=False):
         assert compare_dict_of_arrays(value1, value2, 0.01)
 
 
@@ -741,8 +734,7 @@ def test_differentiation_wrt_special_variables_error(ishigami_pce, name):
     with pytest.raises(  # noqa: PT012
         ValueError,
         match=re.escape(
-            f"You cannot use {name} "
-            "because the training dataset does not include gradient information."
+            f"You cannot use {name} because use_special_jacobian_data is False."
         ),
     ):
         attr = getattr(ishigami_pce, name)
@@ -773,6 +765,25 @@ def test_differentiation_wrt_special_variable_sub_samples(dataset, probability_s
     because PCERegressor.learn uses the whole PCERegressor._jacobian_data matrix
     instead of the sub-matrix corresponding to the samples [0, 2, 3, 4, 7].
     """
-    pce = PCERegressor(dataset, probability_space=probability_space)
+    pce = PCERegressor(dataset, PCERegressor_Settings(use_special_jacobian_data=True))
     pce.learn(samples=[0, 2, 3, 4, 7])
     assert pce.standard_deviation_jacobian_wrt_special_variables.shape == (2, 2)
+
+
+def test_basis_functions(ishigami_pce):
+    """Check the basis_functions attribute."""
+    basis_functions = ishigami_pce._basis_functions
+    assert len(basis_functions) == 10
+    result = array(basis_functions[1](array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0]])))
+    assert_almost_equal(result, array([[1.7320508], [3.4641016]]))
+
+
+def test_isoprobabilistic_transformation(ishigami_pce):
+    """Check the isoprobabilistic_transformation attribute."""
+    result = ishigami_pce._isoprobabilistic_transformation(
+        array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0]])
+    )
+    assert_almost_equal(
+        result,
+        array([[0.3183099, 0.3183099, 0.3183099], [0.6366198, 0.6366198, 0.6366198]]),
+    )

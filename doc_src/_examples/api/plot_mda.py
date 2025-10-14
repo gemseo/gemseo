@@ -30,14 +30,10 @@ implementing MDAs inherit from :class:`.BaseMDA` which is an abstract class.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo import get_available_mdas
 from gemseo import get_mda_options_schema
-
-configure_logger()
-
 
 # %%
 # Get available MDA

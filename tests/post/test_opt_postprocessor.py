@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from dataclasses import fields
+from unittest.mock import patch
 
 import matplotlib.pyplot as plt
 import pytest
@@ -74,6 +75,33 @@ def test_settings_as_pydantic_model(problem):
     figure = post.execute(settings_model=settings)["my_figure"]
     assert figure.get_figwidth() == 10.0
     assert figure.get_figheight() == 20.0
+
+
+@pytest.mark.parametrize("save", [True, False])
+@pytest.mark.parametrize("show", [True, False])
+def test_show_close(problem, save, show) -> None:
+    """Check the use of show and close."""
+    post = NewBasePost(problem)
+    with (
+        patch("gemseo.utils.matplotlib_figure.plt.show") as show_,
+        patch("gemseo.utils.matplotlib_figure.plt.close") as close_,
+        patch("gemseo.post.base_post.save_show_figure") as save_show_figure,
+    ):
+        post.execute(save=save, show=show)
+
+    save_show_figure.assert_called_once()
+    assert save_show_figure.call_args.args[1] is False
+    assert save_show_figure.call_args.kwargs["close"] is False
+
+    if save:
+        close_.assert_called_once()
+    else:
+        close_.assert_not_called()
+
+    if show:
+        show_.assert_called_once()
+    else:
+        show_.assert_not_called()
 
 
 def test_dataset_as_input_for_post(problem):

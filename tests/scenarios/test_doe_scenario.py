@@ -22,7 +22,7 @@ import pickle
 
 import pytest
 from numpy import array
-from numpy import ndarray
+from numpy import ndarray  # noqa: TC002
 from pydantic import ValidationError
 
 from gemseo import create_discipline

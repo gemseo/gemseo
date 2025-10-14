@@ -28,7 +28,6 @@ from numpy import arange
 from numpy import array
 from numpy import atleast_2d
 from numpy import hstack
-from numpy import ndarray
 
 from gemseo import create_dataset
 from gemseo.algos.design_space import DesignSpace
@@ -50,6 +49,8 @@ from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.datasets.dataset import Dataset
 
 LEARNING_SIZE = 9

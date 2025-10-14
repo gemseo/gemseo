@@ -26,7 +26,6 @@ import logging
 from collections import defaultdict
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import NamedTuple
 
@@ -40,7 +39,6 @@ from numpy.linalg import norm
 from scipy.sparse import bmat
 from scipy.sparse import csc_matrix
 from scipy.sparse import csr_matrix
-from scipy.sparse import dok_matrix
 from scipy.sparse import eye
 from scipy.sparse import vstack
 from scipy.sparse.linalg import LinearOperator
@@ -57,12 +55,14 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Mapping
+    from typing import TypeAlias
 
-    from typing_extensions import TypeAlias
+    from scipy.sparse import dok_matrix
 
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline import Discipline

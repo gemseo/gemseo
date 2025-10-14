@@ -22,7 +22,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import empty
-from numpy import ndarray
 from numpy import zeros
 from scipy.sparse import csr_array
 from strenum import StrEnum
@@ -45,6 +44,8 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from enum import EnumType
     from pathlib import Path
+
+    from numpy import ndarray
 
     from gemseo.caches.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
@@ -854,7 +855,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         # Compute approximated Jacobian elements.
         for output_name, input_name in zip(
-            outputs_names_to_approximate, input_names_to_approximate
+            outputs_names_to_approximate, input_names_to_approximate, strict=False
         ):
             jac_input_output = self._jac_approx.compute_approx_jac(
                 [output_name], [input_name]

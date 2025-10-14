@@ -27,10 +27,8 @@ import logging
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Literal
-from typing import Union
 from typing import overload
 
 from numpy import any as np_any
@@ -47,12 +45,14 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
 
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-EvaluationType = tuple[dict[str, Union[float, RealArray]], dict[str, RealArray]]
+EvaluationType = tuple[dict[str, float | RealArray], dict[str, RealArray]]
 """The type of the output value of an evaluation."""
 
 
@@ -77,7 +77,7 @@ class EvaluationProblem(BaseProblem):
     __observables: Observables
     """The observables."""
 
-    check_bounds: ClassVar[bool] = True
+    check_bounds: ClassVar[bool] = _CHECK_DESVARS_BOUNDS
     """Whether to check if a point is in the design space before calling functions."""
 
     database: Database
@@ -328,6 +328,7 @@ class EvaluationProblem(BaseProblem):
         listener: Callable[[RealArray], Any],
         at_each_iteration: bool = True,
         at_each_function_call: bool = False,
+        output_names: Iterable[str] = (),
     ) -> None:
         """Add a listener for some events.
 
@@ -342,11 +343,13 @@ class EvaluationProblem(BaseProblem):
                 for a given point and storing their values in the :attr:`.database`.
             at_each_function_call: Whether to evaluate the listeners
                 after storing any new value in the :attr:`.database`.
+            output_names: The names of the output variables
+                whose values are to be stored in the database by this listener.
         """
         if at_each_function_call:
-            self.database.add_store_listener(listener)
+            self.database.add_store_listener(listener, output_names=output_names)
         if at_each_iteration:
-            self.database.add_new_iter_listener(listener)
+            self.database.add_new_iter_listener(listener, output_names=output_names)
 
     def get_functions(
         self,
@@ -847,6 +850,10 @@ class EvaluationProblem(BaseProblem):
         """
         if current_iter:
             self.evaluation_counter.current = 0
+            # This is the start of an evaluation process.
+            # Disable the evaluation counter
+            # to prevent the driver from finalizing the previous iteration.
+            self.evaluation_counter.enabled = False
 
         if database:
             self.database.clear()
@@ -868,9 +875,11 @@ class EvaluationProblem(BaseProblem):
             self.__observables.reset()
             self.__new_iter_observables.reset()
             if not function_calls and ProblemFunction.enable_statistics:
-                for o, n_calls in zip(self.__observables, n_o_calls):
+                for o, n_calls in zip(self.__observables, n_o_calls, strict=False):
                     o.n_calls = n_calls
-                for nio, n_calls in zip(self.__new_iter_observables, n_nio_calls):
+                for nio, n_calls in zip(
+                    self.__new_iter_observables, n_nio_calls, strict=False
+                ):
                     nio.n_calls = n_calls
 
             self._functions_are_preprocessed = False

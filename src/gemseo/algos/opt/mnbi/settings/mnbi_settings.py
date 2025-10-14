@@ -108,7 +108,11 @@ This setting is relevant only for problems with more than 2 objectives.""",  # n
         description="""Whether to skip the sub-optimizations of relevant.
 
 The sub-optimizations are skipped if they correspond to values of beta for
-which the theoretical result has already been found.""",
+which the theoretical result has already been found.
+This can accelerate the main optimization by avoiding redundant sub-optimizations.
+But in cases where some sub-optimizations do not properly converge, some values of
+betas will be skipped based on false assumptions, and some parts of the Pareto front
+can be incorrectly resolved.""",
     )
 
     custom_anchor_points: Sequence[NDArrayPydantic] = Field(

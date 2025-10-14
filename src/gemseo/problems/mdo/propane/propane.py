@@ -99,7 +99,6 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import complex128
-from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 
@@ -107,6 +106,8 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.typing import StrKeyMapping
 
 

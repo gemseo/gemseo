@@ -62,7 +62,7 @@ def test_creation(descriptions) -> None:
     """Test that the disciplines are well generated according to spec."""
     disciplines = create_disciplines_from_desc(descriptions)
     assert len(disciplines) == len(descriptions)
-    for disc, description in zip(disciplines, descriptions):
+    for disc, description in zip(disciplines, descriptions, strict=False):
         assert disc.name == description[0]
         out = disc.execute()
         assert sorted(out.keys()) == sorted(list(description[2]) + list(description[1]))

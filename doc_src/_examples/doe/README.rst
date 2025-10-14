@@ -9,4 +9,5 @@
 Design of experiments (DOE)
 ===========================
 
-Solve a design problem using a DOE.
+The first examples show generic features common to all DOE algorithms.
+Some of these algorithms are then illustrated below in a dedicated section.

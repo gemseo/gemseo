@@ -36,7 +36,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
-from numpy import ndarray
 
 from gemseo import create_discipline
 from gemseo import create_mda
@@ -44,6 +43,8 @@ from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.core.discipline import Discipline
 
 

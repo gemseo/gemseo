@@ -29,15 +29,12 @@ This abstract class has to be overloaded by concrete ones implementing at least 
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from collections.abc import Mapping
 from collections.abc import Sequence
 from inspect import getfullargspec
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import NamedTuple
-from typing import Union
 
 from strenum import StrEnum
 
@@ -47,6 +44,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
     from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset
@@ -55,7 +54,7 @@ if TYPE_CHECKING:
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
-DatasetPlotPropertyType = Union[str, int, float, Sequence[Union[str, int, float]]]
+DatasetPlotPropertyType = str | int | float | Sequence[str | int | float]
 
 
 class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):

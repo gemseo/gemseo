@@ -39,9 +39,7 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.initialization_chain import MDOInitializationChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.base_mda import BaseProcessFlow
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.factory import MDAFactory
 from gemseo.mda.mda_chain_settings import MDAChain_Settings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -53,6 +51,8 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
+    from gemseo.mda.base_mda import BaseProcessFlow
+    from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.mda.base_mda_solver import BaseMDASolver
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
@@ -100,7 +100,7 @@ class MDAChain(BaseMDA):
     settings: MDAChain_Settings
     """The settings of the MDA"""
 
-    __inner_mda_class: BaseMDASolver
+    __inner_mda_class: type[BaseMDASolver]
     """The inner MDA class."""
 
     def __init__(  # noqa: D107
@@ -116,20 +116,19 @@ class MDAChain(BaseMDA):
             not self.coupling_structure.all_couplings
             and not self.settings.chain_linearize
         ):
-            LOGGER.warning("No coupling in MDA, switching chain_linearize to True.")
+            if len(disciplines) > 1:
+                LOGGER.warning("No coupling in MDA, switching chain_linearize to True.")
             self.settings.chain_linearize = True
 
         self.inner_mdas = []
-        self.__inner_mda_class = MDAFactory().get_class(self.settings.inner_mda_name)
+        self.__inner_mda_class = MDAFactory().get_class(
+            self.settings.inner_mda_settings._TARGET_CLASS_NAME
+        )
         self.mdo_chain = self._create_mdo_chain()
 
         self._initialize_grammars()
         self._check_consistency()
         self._compute_input_coupling_names()
-
-        # cascade the tolerance
-        for mda in self.inner_mdas:
-            mda.settings.tolerance = self.settings.tolerance
 
     @BaseMDA.scaling.setter
     def scaling(self, scaling: BaseMDA.ResidualScaling) -> None:  # noqa: D102
@@ -240,12 +239,23 @@ class MDAChain(BaseMDA):
 
     def __create_inner_mda_settings(self) -> BaseMDASettings:
         """Create the inner MDA settings model."""
-        inner_settings = dict(self.settings.inner_mda_settings) | {
-            name: setting
-            for name, setting in self.settings
-            if name in BaseMDASettings.model_fields
-        }
-        return self.__inner_mda_class.Settings(**inner_settings)
+        inner_mda_settings = self.settings.inner_mda_settings.model_copy()
+
+        for name, _ in inner_mda_settings:
+            if name in self.settings.model_fields_set:
+                if name in inner_mda_settings.model_fields_set:
+                    msg = (
+                        f"The {name!r} setting has been set for both the MDAChain "
+                        f"and the inner MDA. "
+                        f"The retained value is that of the MDAChain, "
+                        f"i.e. {getattr(self.settings, name)}."
+                    )
+
+                    LOGGER.warning(msg)
+
+                setattr(inner_mda_settings, name, getattr(self.settings, name))
+
+        return inner_mda_settings
 
     def __requires_mda(self, disciplines: tuple[Discipline, ...]) -> bool:
         """Whether the disciplines require to be embed in an MDA.
@@ -313,8 +323,8 @@ class MDAChain(BaseMDA):
 
     def _compute_jacobian(
         self,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
+        input_names: Iterable[str] = (),
+        output_names: Iterable[str] = (),
     ) -> None:
         if self.settings.chain_linearize:
             self.mdo_chain.add_differentiated_inputs(input_names)

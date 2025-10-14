@@ -24,7 +24,6 @@ MDO formulations for a toy example in aerostructure
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
@@ -34,8 +33,6 @@ from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
 from gemseo.settings.mda import MDAChain_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.opt import NLOPT_SLSQP_Settings
-
-configure_logger()
 
 # Passed to algo settings
 cobyla_settings = NLOPT_COBYLA_Settings(

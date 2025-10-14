@@ -26,7 +26,6 @@ import pytest
 from numpy import array
 from numpy import concatenate
 from numpy import diag
-from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.testing import assert_array_equal
@@ -34,6 +33,8 @@ from numpy.testing import assert_array_equal
 from gemseo import create_discipline
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.disciplines.concatenater import Concatenater
 
 

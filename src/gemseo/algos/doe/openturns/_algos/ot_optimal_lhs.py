@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Final
 
 from numpy import array
@@ -27,15 +26,17 @@ from openturns import LinearProfile
 from openturns import MonteCarloLHS
 from openturns import SimulatedAnnealingLHS
 from openturns import SpaceFillingC2
-from openturns import SpaceFillingImplementation
 from openturns import SpaceFillingMinDist
 from openturns import SpaceFillingPhiP
-from openturns import TemperatureProfileImplementation
 from strenum import StrEnum
 
 from gemseo.algos.doe.openturns._algos.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
+    from openturns import SpaceFillingImplementation
+    from openturns import TemperatureProfileImplementation
+
+    from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
     from gemseo.typing import RealArray
 
 
@@ -58,11 +59,6 @@ class OTOptimalLHS(BaseOTDOE):
         PHIP = "PhiP"
         MINDIST = "MinDist"
 
-    __ANNEALING: Final[str] = "annealing"
-    __SPACE_FILLING_CRITERION: Final[str] = "criterion"
-    __N_REPLICATES: Final[str] = "n_replicates"
-    __TEMPERATURE_PROFILE: Final[str] = "temperature"
-
     __TEMPERATURE_PROFILES: Final[str, TemperatureProfileImplementation] = {
         TemperatureProfile.GEOMETRIC: GeometricProfile(),
         TemperatureProfile.LINEAR: LinearProfile(),
@@ -75,21 +71,46 @@ class OTOptimalLHS(BaseOTDOE):
     }
 
     def generate_samples(  # noqa: D102
-        self, n_samples: int, dimension: int, **settings: Any
+        self,
+        n_samples: int,
+        dimension: int,
+        annealing: bool = True,
+        criterion: SpaceFillingCriterion = SpaceFillingCriterion.C2,
+        n_replicates: int = 1_000,
+        temperature: TemperatureProfile = TemperatureProfile.GEOMETRIC,
+        settings: OT_OPT_LHS_Settings | None = None,
     ) -> RealArray:
+        """
+        Args:
+            annealing: Whether to use simulated annealing to optimize the LHS.
+                If ``False``, the crude Monte Carlo method is used.
+                Ignored if ``settings`` is not `None`.
+            criterion: The space-filling criterion.
+                Ignored if ``settings`` is not `None`.
+            n_replicates: The number of Monte Carlo replicates to optimize LHS.
+                Ignored if ``settings`` is not `None`.
+            temperature: The temperature profile for simulated annealing.
+                Either "Geometric" or "Linear".
+                Ignored if ``settings`` is not `None`.
+        """  # noqa: D205, D212
+        if settings is not None:
+            n_samples = settings.n_samples
+            annealing = settings.annealing
+            criterion = settings.criterion
+            n_replicates = settings.n_replicates
+            temperature = settings.temperature
+
         lhs_experiment = LHSExperiment(
             self._get_uniform_distribution(dimension), n_samples
         )
         lhs_experiment.setAlwaysShuffle(True)
-        if settings[self.__ANNEALING]:
+        if annealing:
             lhs_experiment = SimulatedAnnealingLHS(
                 lhs_experiment,
-                self.__SPACE_FILLING_CRITERIA[settings[self.__SPACE_FILLING_CRITERION]],
-                self.__TEMPERATURE_PROFILES[settings[self.__TEMPERATURE_PROFILE]],
+                self.__SPACE_FILLING_CRITERIA[criterion],
+                self.__TEMPERATURE_PROFILES[temperature],
             )
         else:
-            lhs_experiment = MonteCarloLHS(
-                lhs_experiment, settings[self.__N_REPLICATES]
-            )
+            lhs_experiment = MonteCarloLHS(lhs_experiment, n_replicates)
 
         return array(lhs_experiment.generate())

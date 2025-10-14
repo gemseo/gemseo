@@ -24,10 +24,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from numpy import bool_
 from numpy import complex128
-from numpy import dtype
-from numpy import ndarray
 from numpy import where
 from numpy import zeros
 from numpy.linalg import norm
@@ -40,6 +37,10 @@ from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientAppr
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from numpy import bool_
+    from numpy import dtype
+    from numpy import ndarray
 
 
 class ComplexStep(BaseGradientApproximator):

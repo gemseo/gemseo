@@ -23,6 +23,9 @@ from numpy import array
 from gemseo.algos.doe.openturns._algos.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
+    from gemseo.algos.doe.base_n_samples_based_doe_settings import (
+        BaseNSamplesBasedDOESettings,
+    )
     from gemseo.typing import RealArray
 
 
@@ -33,7 +36,13 @@ class OTMonteCarlo(BaseOTDOE):
     """
 
     def generate_samples(  # noqa: D102
-        self, n_samples: int, dimension: int
+        self,
+        n_samples: int,
+        dimension: int,
+        settings: BaseNSamplesBasedDOESettings | None = None,
     ) -> RealArray:
+        if settings is not None:
+            n_samples = settings.n_samples
+
         samples = self._STANDARD_UNIFORM_DISTRIBUTION.getSample(dimension * n_samples)
         return array(samples).reshape((n_samples, dimension))

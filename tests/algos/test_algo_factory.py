@@ -23,6 +23,7 @@ import pytest
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.utils.pydantic import create_model
 
 
 def test_is_available_error() -> None:
@@ -33,7 +34,8 @@ def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
     algo = OptimizationLibraryFactory().create("L-BFGS-B")
     assert algo._algo_name == "L-BFGS-B"
-    assert "max_iter" in algo._validate_settings()
+    algo._settings = create_model(algo.ALGORITHM_INFOS[algo.algo_name].Settings)
+    assert algo._settings.max_iter == 1000
 
 
 def test_create_ko() -> None:

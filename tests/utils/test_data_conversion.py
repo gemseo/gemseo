@@ -19,11 +19,11 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
 from numpy import array_equal
-from numpy import ndarray
 
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -33,6 +33,9 @@ from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.data_conversion import nest_flat_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture

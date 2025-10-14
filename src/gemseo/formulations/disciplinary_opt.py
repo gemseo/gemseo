@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.core.chains.chain import MDOChain
@@ -30,13 +29,10 @@ from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settin
 from gemseo.utils.discipline import get_all_inputs
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.algos.design_space import DesignSpace
     from gemseo.core.discipline import Discipline
 
 
-class DisciplinaryOpt(BaseMDOFormulation):
+class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
     """The disciplinary optimization.
 
     This formulation draws the architecture of a mono-disciplinary optimization process
@@ -48,36 +44,20 @@ class DisciplinaryOpt(BaseMDOFormulation):
     __top_level_disciplines: tuple[Discipline]
     """The top-level disciplines."""
 
-    def __init__(  # noqa:D107
-        self,
-        disciplines: Sequence[Discipline],
-        objective_name: str,
-        design_space: DesignSpace,
-        settings_model: DisciplinaryOpt_Settings | None = None,
-        **settings: Any,
-    ) -> None:
-        super().__init__(
-            disciplines,
-            objective_name,
-            design_space,
-            settings_model=settings_model,
-            **settings,
-        )
+    def _init_before_design_space_and_objective(self) -> None:
+        disciplines = self.disciplines
         self.__top_level_disciplines = (
             MDOChain(disciplines) if len(disciplines) > 1 else disciplines[0],
         )
-        self._filter_design_space()
-        self._set_default_input_values_from_design_space()
-        self._build_objective_from_disc(objective_name)
 
     def get_top_level_disciplines(  # noqa:D102
         self, include_sub_formulations: bool = False
     ) -> tuple[Discipline]:
         return self.__top_level_disciplines
 
-    def _filter_design_space(self) -> None:
-        """Filter the design space to keep only available variables."""
+    def _update_design_space(self) -> None:
         all_input_names = get_all_inputs(self.get_top_level_disciplines())
         design_space = self.optimization_problem.design_space
         kept_variable_names = set(all_input_names).intersection(design_space)
         design_space.filter(kept_variable_names)
+        self._set_default_input_values_from_design_space()

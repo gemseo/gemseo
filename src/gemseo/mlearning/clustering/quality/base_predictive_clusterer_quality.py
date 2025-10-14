@@ -27,7 +27,6 @@ from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
     BaseClustererQuality,
 )
 from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
         BasePredictiveClusterer,
     )
+    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
 
 
 class BasePredictiveClustererQuality(BaseClustererQuality):
@@ -107,6 +107,6 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
             store_sampling_result=store_resampling_result,
         )
         measure = 0
-        for prediction, split in zip(predictions, bootstrap.splits):
+        for prediction, split in zip(predictions, bootstrap.splits, strict=False):
             measure += self._compute_measure(data[split.test], prediction, multioutput)
         return measure / n_replicates

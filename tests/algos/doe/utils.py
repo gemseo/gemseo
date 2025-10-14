@@ -22,12 +22,13 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from gemseo.algos.doe.doe_library import DOELibrary
 
 

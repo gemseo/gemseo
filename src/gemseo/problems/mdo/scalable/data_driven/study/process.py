@@ -57,8 +57,7 @@ from numpy import inf
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.scalable.data_driven.study.result import ScalabilityResult
-from gemseo.utils.logging_tools import LOGGING_SETTINGS
-from gemseo.utils.logging_tools import LoggingContext
+from gemseo.utils.logging import LoggingContext
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
@@ -667,7 +666,7 @@ class ScalabilityStudy:
                     msg.add("Save dependency matrices in {}", path)
                     problem.plot_dependencies(True, False, str(path))
                     msg.add("Create MDO Scenario")
-                    with LoggingContext(LOGGING_SETTINGS.logger):
+                    with LoggingContext():
                         self.__create_scenario(problem, formulation, opt_index)
                         msg.add("Execute MDO Scenario")
                         formulation_options = self.formulations_options[opt_index]

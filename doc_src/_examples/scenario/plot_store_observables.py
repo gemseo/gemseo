@@ -46,13 +46,9 @@ from __future__ import annotations
 from numpy import array
 from numpy import ones
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
-
-configure_logger()
-
 
 # %%
 # Create the problem disciplines

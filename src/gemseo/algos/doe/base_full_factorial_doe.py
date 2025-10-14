@@ -24,8 +24,9 @@ from typing import Any
 from gemseo.algos.doe.base_doe import BaseDOE
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
+    from gemseo.algos.doe.base_n_samples_based_doe_settings import (
+        BaseNSamplesBasedDOESettings,
+    )
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
@@ -35,25 +36,24 @@ class BaseFullFactorialDOE(BaseDOE):
     """The base class of a full-factorial DOE."""
 
     def generate_samples(
-        self, n_samples: int, dimension: int, **settings: Any
-    ) -> RealArray:
-        """Generate samples.
-
-        Args:
-            n_samples: The number of samples.
-            dimension: The dimension of the sampling space.
-            **settings: The settings of the DOE algorithm.
-
-        Returns:
-            The samples.
-        """
-        return self._generate_fullfact(n_samples, dimension, **settings)
-
-    def _generate_fullfact(
         self,
         n_samples: int,
         dimension: int,
-        **settings: int | Iterable[int] | None,
+        settings: BaseNSamplesBasedDOESettings | None = None,
+        # TODO: API: remove.
+        **options: Any,
+    ) -> RealArray:
+        """
+        Args:
+            **options: These options are ignored.
+        """  # noqa: D205, D212
+        return self._generate_fullfact(dimension, settings)
+
+    # TODO: Propagate a settings pydantic model.
+    def _generate_fullfact(
+        self,
+        dimension: int,
+        settings: BaseNSamplesBasedDOESettings,
     ) -> RealArray:
         """Generate a full-factorial DOE.
 
@@ -85,24 +85,24 @@ class BaseFullFactorialDOE(BaseDOE):
                 * If neither ``n_samples`` nor ``levels`` are provided.
                 * If both ``n_samples`` and ``levels`` are provided.
         """
-        levels = settings.pop("levels")
+        levels = settings.levels
 
-        if not levels and n_samples == 0:
+        if not levels and settings.n_samples == 0:
             msg = (
                 "Either 'n_samples' or 'levels' is required as an input "
                 "parameter for the full-factorial DOE."
             )
             raise ValueError(msg)
 
-        if levels and n_samples > 0:
+        if levels and settings.n_samples > 0:
             msg = (
                 "Only one input parameter among 'n_samples' and 'levels' "
                 "must be given for the full-factorial DOE."
             )
             raise ValueError(msg)
 
-        if n_samples > 0:
-            levels = self._compute_fullfact_levels(n_samples, dimension)
+        if settings.n_samples > 0:
+            levels = self._compute_fullfact_levels(settings.n_samples, dimension)
 
         if isinstance(levels, int):
             levels = [levels] * dimension

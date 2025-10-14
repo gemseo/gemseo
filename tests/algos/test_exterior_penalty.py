@@ -15,8 +15,8 @@
 from __future__ import annotations
 
 from numpy import allclose
+from numpy import concatenate
 from numpy import vstack
-from numpy.core._multiarray_umath import concatenate
 
 from gemseo import execute_algo
 from gemseo.core.mdo_functions.mdo_function import MDOFunction

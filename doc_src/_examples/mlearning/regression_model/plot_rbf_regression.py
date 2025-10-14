@@ -35,14 +35,11 @@ from __future__ import annotations
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.regression.algos.rbf_settings import RBF
-
-configure_logger()
 
 # %%
 # Problem

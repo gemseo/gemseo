@@ -23,13 +23,11 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from collections.abc import Sequence
 from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Union
 
 from numpy import array
 from numpy import complex128
@@ -50,15 +48,17 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 )
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+from gemseo.post.factory import PostFactory
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
-from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.pydantic import get_class_name
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.driver_library import DriverLibraryFactory
@@ -66,16 +66,17 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.datasets.dataset import Dataset
+    from gemseo.formulations.base_formulation import BaseFormulation
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-    from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+    from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
-    from gemseo.post.factory import PostFactory
+    from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
 
-ScenarioInputDataType = Mapping[str, Union[str, int, Mapping[str, Union[int, float]]]]
+ScenarioInputDataType = Mapping[str, str | int | Mapping[str, int | float]]
 
 
 class _ScenarioProcessFlow(BaseProcessFlow):
@@ -149,6 +150,16 @@ class BaseScenario(BaseMonitoredProcess):
     _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]]
     """The driver factory."""
 
+    post_factory: ClassVar[PostFactory] = PostFactory()
+    """The factory of post-processors."""
+
+    posts: ClassVar[list[str]] = post_factory.class_names
+    """The names of the post-processors."""
+
+    _formulation_factory: ClassVar[MDOFormulationFactory] = MDO_FORMULATION_FACTORY
+    """The factory of formulations."""
+
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of :meth:`.execute`."""
 
@@ -160,17 +171,11 @@ class BaseScenario(BaseMonitoredProcess):
     clear_history_before_execute: bool
     """Whether to clear the history before execute."""
 
-    formulation: BaseMDOFormulation
+    formulation: BaseFormulation
     """The MDO formulation."""
-
-    formulation_name: str
-    """The name of the MDO formulation."""
 
     optimization_result: OptimizationResult | None
     """The optimization result if the scenario has been executed; otherwise ``None``."""
-
-    post_factory: PostFactory | None
-    """The factory for post-processors if any."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
 
@@ -211,7 +216,6 @@ class BaseScenario(BaseMonitoredProcess):
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        self._form_factory = self._formulation_factory
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
 
         self.optimization_result = None
@@ -221,18 +225,15 @@ class BaseScenario(BaseMonitoredProcess):
             formulation_settings,
             class_name_arg="formulation_name",
         )
-
-        self._init_formulation(
-            disciplines,
+        self.formulation = self._formulation_factory.create(
             formulation_name,
+            disciplines,
             objective_name,
             design_space,
-            formulation_settings_model,
+            settings_model=formulation_settings_model,
+            minimize_objective=not maximize_objective,
             **formulation_settings,
         )
-        if maximize_objective:
-            self.formulation.optimization_problem.minimize_objective = False
-
         self.formulation.optimization_problem.database.name = self.name
         self.clear_history_before_run = False
         self.__history_backup_is_set = False
@@ -306,22 +307,10 @@ class BaseScenario(BaseMonitoredProcess):
     def use_standardized_objective(self, value: bool) -> None:
         self.formulation.optimization_problem.use_standardized_objective = value
 
-    # TODO: API: the factory is a global object, remove this property.
-    @property
-    def post_factory(self) -> PostFactory:
-        """The factory of post-processors."""
-        return ScenarioResult.POST_FACTORY
-
-    # TODO: API: the factory is a global object, remove this property.
-    @property
-    def _formulation_factory(self) -> MDOFormulationFactory:
-        """The factory of MDO formulations."""
-        return MDOFormulationFactory()
-
     @property
     def design_space(self) -> DesignSpace:
         """The design space on which the scenario is performed."""
-        return self.formulation.design_space
+        return self.formulation.optimization_problem.design_space
 
     def set_differentiation_method(
         self,
@@ -370,7 +359,7 @@ class BaseScenario(BaseMonitoredProcess):
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
 
@@ -394,9 +383,7 @@ class BaseScenario(BaseMonitoredProcess):
                 from ``output_name``, ``constraint_type``, ``value`` and ``positive``.
             value: The value :math:`a`.
             positive: Whether the inequality constraint is positive.
-
-        Raises:
-            ValueError: If the constraint type is neither 'eq' nor 'ineq'.
+            **kwargs: Additional arguments specific to the MDO formulation.
         """
         self.formulation.add_constraint(
             output_name,
@@ -428,51 +415,24 @@ class BaseScenario(BaseMonitoredProcess):
         """
         self.formulation.add_observable(output_names, observable_name, discipline)
 
-    def _init_formulation(
-        self,
-        disciplines: Sequence[Discipline],
-        formulation_name: str,
-        objective_name: str,
-        design_space: DesignSpace,
-        formulation_settings_model: BaseFormulationSettings | None,
-        **formulation_settings: Any,
-    ) -> None:
-        """Initialize the MDO formulation.
+    @property
+    def formulation_name(self) -> str:
+        """The name of the MDO formulation."""
+        return self.formulation.__class__.__name__
 
-        Args:
-            disciplines: The disciplines.
-            formulation_name: The name of the MDO formulation,
-                also the name of a class inheriting from :class:`.BaseMDOFormulation`.
-            objective_name: The name of the objective.
-            design_space: The design space.
-            formulation_settings_model: The formulation settings as a Pydantic model.
-                If ``None``, use ``**settings``.
-            **formulation_settings: The formulation settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
-        """
-        self.formulation = self._form_factory.create(
-            formulation_name,
-            disciplines,
-            objective_name,
-            design_space,
-            settings_model=formulation_settings_model,
-            **formulation_settings,
-        )
-        self.formulation_name = formulation_name
-
+    # TODO: API: remove and use scenario.design_space.variable_names instead, or rename.
     def get_optim_variable_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
 
         Returns:
             The optimization variables of the scenario.
         """
-        return self.formulation.get_optim_variable_names()
+        return self.formulation.optimization_problem.design_space.variable_names
 
     def save_optimization_history(
         self,
         file_path: str | Path,
         file_format: OptimizationProblem.HistoryFileFormat = OptimizationProblem.HistoryFileFormat.HDF5,  # noqa: E501
-        # noqa: E501
         append: bool = False,
     ) -> None:
         """Save the optimization history of the scenario to a file.
@@ -571,12 +531,6 @@ class BaseScenario(BaseMonitoredProcess):
                 show=False,
                 file_path=self._opt_hist_backup_path.stem,
             )
-
-    # TODO: use class attr.
-    @property
-    def posts(self) -> list[str]:
-        """The available post-processors."""
-        return self.post_factory.class_names
 
     def post_process(
         self, settings_model: BasePostSettings | None = None, **settings: Any

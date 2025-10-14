@@ -18,20 +18,27 @@ from __future__ import annotations
 
 from importlib.metadata import version
 from typing import TYPE_CHECKING
+from typing import Final
 
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 from packaging.version import parse as parse_version
 
 if TYPE_CHECKING:
-    from matplotlib.colors import Colormap
-    from matplotlib.colors import ListedColormap
+    from packaging.version import Version
 
-if parse_version(version("matplotlib")) < parse_version("3.5.0"):
+MATPLOTLIB_VERSION: Final[Version] = parse_version(version("matplotlib"))
 
-    def get_color_map(colormap: Colormap | str | None) -> ListedColormap:  # noqa: D103
-        return plt.cm.get_cmap(colormap)
 
-else:
+def boxplot(x, labels=None, vert=None, ax=None, **kwargs):  # noqa: D103
+    plot = (plt if ax is None else ax).boxplot
+    if parse_version(version("matplotlib")) < parse_version("3.9"):
+        kwargs["labels"] = labels
+    else:
+        kwargs["tick_labels"] = labels
 
-    def get_color_map(colormap: str) -> ListedColormap:  # noqa: D103
-        return plt.colormaps[colormap]
+    if parse_version(version("matplotlib")) < parse_version("3.11"):
+        kwargs["vert"] = vert
+    else:
+        kwargs["orientation"] = "vertical" if vert in [True, None] else "horizontal"
+
+    return plot(x, **kwargs)

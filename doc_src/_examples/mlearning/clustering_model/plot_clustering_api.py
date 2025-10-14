@@ -29,14 +29,10 @@ to create clustering models from model class names.
 
 from __future__ import annotations
 
-from gemseo import configure_logger
 from gemseo import create_benchmark_dataset
 from gemseo.mlearning import create_clustering_model
 from gemseo.mlearning import get_clustering_models
 from gemseo.mlearning import get_clustering_options
-
-configure_logger()
-
 
 # %%
 # Available models

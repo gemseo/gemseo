@@ -19,11 +19,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from collections.abc import Sequence
 
+from matplotlib import pyplot as plt
 from numpy import linspace
 from pydantic import BaseModel
 from pydantic import Field
 
-from gemseo.utils.compatibility.matplotlib import get_color_map
 from gemseo.utils.matplotlib_figure import FigSizeType
 
 
@@ -156,7 +156,7 @@ class PlotSettings(BaseModel):
             return
 
         if not self.color:
-            color_map = get_color_map(self.colormap)
+            color_map = plt.colormaps[self.colormap]
             self.color = [color_map(c) for c in linspace(0, 1, self.n_items)]
 
         if isinstance(self.color, str):

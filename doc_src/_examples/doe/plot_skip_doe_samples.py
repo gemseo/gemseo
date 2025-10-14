@@ -18,8 +18,8 @@
 #        :author: Gilberto Ruiz Jiménez
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-Skip samples when using DOE.
-============================
+Skip samples when using DOE
+===========================
 """
 
 from __future__ import annotations
@@ -29,7 +29,6 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import sqrt
 
-from gemseo import configure_logger
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo.core.discipline import Discipline
@@ -39,7 +38,6 @@ from gemseo.settings.post import BasicHistory_Settings
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
-configure_logger()
 
 # %%
 # In this example, we show how to skip the evaluation at a DOE point during a

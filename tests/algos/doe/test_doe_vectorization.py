@@ -32,7 +32,6 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.evaluation_problem import EvaluationProblem
-from gemseo.algos.evaluation_problem import EvaluationType
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline.discipline import Discipline
@@ -46,6 +45,7 @@ from gemseo.scenarios.mdo_scenario import MDOScenario
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.algos.evaluation_problem import EvaluationType
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 

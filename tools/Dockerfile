@@ -5,10 +5,10 @@ FROM fedora:$FEDORA_VERSION
 RUN  dnf -y update \
   && dnf -y install python-unversioned-command \
                     python3-pip \
-                    python39 \
                     python310 \
                     python311 \
                     python312 \
+                    python313 \
                     graphviz \
                     git \
   && dnf clean all \

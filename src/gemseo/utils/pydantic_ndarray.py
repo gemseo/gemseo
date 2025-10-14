@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import TypeVar
 from typing import cast
 
@@ -34,17 +33,20 @@ except (ModuleNotFoundError, ImportError):  # pragma: no cover
     _DType_co = TypeVar("_DType_co", covariant=True, bound=dtype[Any])  # type: ignore[misc] # mypy seems to ignore the except block.
     _ScalarType_co = TypeVar("_ScalarType_co", bound=generic, covariant=True)  # type: ignore[misc] # mypy seems to ignore the except block.
 
-from pydantic_core import CoreSchema
+from typing import get_args
+
 from pydantic_core import core_schema
-from typing_extensions import get_args
 
 # This type is defined in a .pyi file of NumPy,
 # it cannot be imported, so it is defined here.
 _ShapeType = TypeVar("_ShapeType", bound=Any)
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy.typing import NDArray
     from pydantic import GetCoreSchemaHandler
+    from pydantic_core import CoreSchema
 
 
 class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):

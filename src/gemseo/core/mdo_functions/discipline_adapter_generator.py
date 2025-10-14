@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -47,7 +48,10 @@ class DisciplineAdapterGenerator:
     discipline: Discipline
     """The discipline from which to generate discipline adapters."""
 
-    _names_to_sizes: MutableMapping[str, int]
+    _adapter_class: ClassVar[type[DisciplineAdapter]] = DisciplineAdapter
+    """The class of discipline adapter generated."""
+
+    __names_to_sizes: MutableMapping[str, int]
     """The names of the inputs bound to their sizes, if known."""
 
     def __init__(
@@ -63,7 +67,7 @@ class DisciplineAdapterGenerator:
                 determine them from the default inputs and local data of the discipline.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
-        self._names_to_sizes = names_to_sizes or {}
+        self.__names_to_sizes = names_to_sizes or {}
 
     def get_function(
         self,
@@ -102,18 +106,18 @@ class DisciplineAdapterGenerator:
                 a differentiated input name is not a discipline input name
                 or an output name is not a discipline output name.
         """
-        input_names = self._get_names(
+        input_names = self.__get_names(
             "inputs",
             input_names,
             self.discipline.io.input_grammar,
         )
-        output_names = self._get_names(
+        output_names = self.__get_names(
             "outputs",
             output_names,
             self.discipline.io.output_grammar,
         )
         if differentiated_input_names_substitute:
-            self._get_names(
+            self.__get_names(
                 "inputs",
                 differentiated_input_names_substitute,
                 self.discipline.io.input_grammar,
@@ -127,16 +131,16 @@ class DisciplineAdapterGenerator:
             )
             self.discipline.add_differentiated_outputs(output_names)
 
-        return DisciplineAdapter(
+        return self._adapter_class(
             input_names,
             output_names,
             default_input_data or {},
             self.discipline,
-            self._names_to_sizes,
+            self.__names_to_sizes,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
 
-    def _get_names(
+    def __get_names(
         self,
         group_name: str,
         names: Sequence[str],

@@ -28,12 +28,8 @@ from __future__ import annotations
 from numpy import hstack
 from numpy import linspace
 
-from gemseo import configure_logger
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.post.dataset.boxplot import Boxplot
-
-configure_logger()
-
 
 # %%
 # Build a dataset

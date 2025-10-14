@@ -50,23 +50,23 @@ labeled.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Union
 
 from matplotlib.pyplot import colormaps
 from strenum import StrEnum
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.datasets.dataset import Dataset
+    from gemseo.post.dataset._trend import TrendFunctionCreator
 
 from gemseo.post.dataset._trend import Trend as _Trend
-from gemseo.post.dataset._trend import TrendFunctionCreator
 from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-ScatterMatrixOption = Union[bool, int, str, Sequence[str], None]
+ScatterMatrixOption = bool | int | str | Sequence[str] | None
 ColormapName = StrEnum("ColormapName", sorted(colormaps.keys()))
 
 

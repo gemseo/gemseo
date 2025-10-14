@@ -69,13 +69,10 @@ through the :class:`.BaseMLSupervisedAlgo` class based on an :class:`.IODataset`
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Iterable
-from collections.abc import Mapping
 from collections.abc import Sequence
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Union
 
 from numpy import concatenate
 from numpy import hstack
@@ -84,8 +81,6 @@ from numpy import ndarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-from gemseo.mlearning.core.algos.ml_algo import DataType
-from gemseo.mlearning.core.algos.ml_algo import DefaultTransformerType
 from gemseo.mlearning.core.algos.ml_algo import SavedObjectType as MLAlgoSaveObjectType
 from gemseo.mlearning.core.algos.supervised_settings import BaseMLSupervisedAlgoSettings
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
@@ -98,10 +93,15 @@ from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.mlearning.core.algos.ml_algo import DefaultTransformerType
     from gemseo.mlearning.transformers.base_transformer import BaseTransformer
     from gemseo.typing import RealArray
 
-SavedObjectType = Union[MLAlgoSaveObjectType, Sequence[str], dict[str, ndarray]]
+SavedObjectType = MLAlgoSaveObjectType | Sequence[str] | dict[str, ndarray]
 
 
 class BaseMLSupervisedAlgo(BaseMLAlgo):

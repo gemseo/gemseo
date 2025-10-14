@@ -27,15 +27,14 @@ import threading as th
 import time
 import traceback
 from collections.abc import Callable
-from multiprocessing import current_process
 from multiprocessing import get_context
+from multiprocessing import get_start_method
+from multiprocessing import parent_process
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-from typing import Final
 from typing import Generic
 from typing import TypeVar
-from typing import Union
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from strenum import StrEnum
@@ -52,8 +51,6 @@ if TYPE_CHECKING:
     from multiprocessing.context import SpawnProcess
     from multiprocessing.managers import ListProxy
 
-SUBPROCESS_NAME: Final[str] = "subprocess"
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -65,9 +62,9 @@ ReturnT = TypeVar("ReturnT")
 
 CallableType = Callable[[ArgT], ReturnT]
 
-_QueueOutItem2 = Union[BaseException, ReturnT]
+_QueueOutItem2 = BaseException | ReturnT
 
-_QueueInType = queue.Queue[Union[tuple[int, ArgT], None]]
+_QueueInType = queue.Queue[tuple[int, ArgT] | None]
 _QueueOutType = queue.Queue[tuple[int, _QueueOutItem2[ReturnT]]]
 
 
@@ -102,12 +99,22 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
     callables: Sequence[CallableType[ArgT, ReturnT]]
     """The callables."""
 
-    def __init__(self, callables: Sequence[CallableType[ArgT, ReturnT]]) -> None:
+    preprocessors: Iterable[Callable[[int], None]]
+    """The preprocessors."""
+
+    def __init__(
+        self,
+        callables: Sequence[CallableType[ArgT, ReturnT]],
+        preprocessors: Iterable[Callable[[int], None]],
+    ) -> None:
         """
         Args:
             callables: The callables.
+            preprocessors: The functions called before the execution,
+                whose unique argument is the task index.
         """  # noqa: D205, D212, D415
         self.callables = callables
+        self.preprocessors = preprocessors
 
     def __call__(self, task_index: int, input_: ArgT) -> ReturnT:
         """Call a callable.
@@ -118,11 +125,10 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
         Returns:
             The output of callable.
         """
-        if len(self.callables) > 1:
-            callable_ = self.callables[task_index]
-        else:
-            callable_ = self.callables[0]
-        return callable_(input_)
+        index = task_index if len(self.callables) > 1 else 0
+        for preprocessor in self.preprocessors:
+            preprocessor(index)
+        return self.callables[index](input_)
 
 
 class CallableParallelExecution(
@@ -140,17 +146,11 @@ class CallableParallelExecution(
         SPAWN = "spawn"
         FORKSERVER = "forkserver"
 
-    MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod]
-    """The start method used for multiprocessing.
-
-    The default is :attr:`.MultiProcessingStartMethod.SPAWN` on Windows,
-    :attr:`.MultiProcessingStartMethod.FORK` otherwise.
-    """
-
-    if PLATFORM_IS_WINDOWS:  # pragma: win32 cover
-        MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.SPAWN
-    else:  # pragma: win32 no cover
-        MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.FORK
+    # TODO: remove since it should be done globally with set_start_method().
+    MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod] = (
+        get_start_method()
+    )  # noqa: E501
+    """The start method used for multiprocessing."""
 
     workers: Sequence[CallableType[ArgT, ReturnT]]
     """The objects that perform the tasks."""
@@ -231,6 +231,7 @@ class CallableParallelExecution(
         inputs: Sequence[ArgT],
         exec_callback: CallbackType | Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
+        preprocessors: Iterable[Callable[[int], None]] = (),
     ) -> list[ReturnT | None]:
         """Execute all the processes.
 
@@ -244,6 +245,8 @@ class CallableParallelExecution(
             task_submitted_callback: A callback function called when all the
                 tasks are submitted, but not done yet. If ``None``, no function
                 is called.
+            preprocessors: The functions called before the execution,
+                whose unique argument is the task index.
 
         Returns:
             The computed outputs.
@@ -278,21 +281,20 @@ class CallableParallelExecution(
             self.__check_multiprocessing_start_method()
             processor = get_context(method=self.MULTI_PROCESSING_START_METHOD).Process  # type: ignore[attr-defined]
 
-        task_callables = _TaskCallables(self.workers)
+        task_callables = _TaskCallables(self.workers, preprocessors)
 
         processes = []
         for _ in range(min(n_tasks, self.n_processes)):
             process = processor(
                 target=_execute_workers,
                 args=(task_callables, queue_in, queue_out),
-                name=SUBPROCESS_NAME,
             )
             process.daemon = True
             process.start()
             processes.append(process)
 
-        if current_process().name == SUBPROCESS_NAME and not self.use_threading:
-            # The subprocesses do nothing here.
+        if not self.use_threading and parent_process() is not None:
+            # The child processes do nothing here.
             return []
 
         # Fill the input queue.
@@ -317,7 +319,7 @@ class CallableParallelExecution(
         while n_outputs != n_tasks and not stop:
             index, output = queue_out.get()
             if isinstance(output, BaseException):
-                LOGGER.error("Failed to execute task indexed %s", str(index))
+                LOGGER.error("Failed to execute task indexed %s", index)
                 LOGGER.error(output)
                 # Condition to stop the execution only for required exceptions.
                 # Otherwise, keep getting outputs from the queue.

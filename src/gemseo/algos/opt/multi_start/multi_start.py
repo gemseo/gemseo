@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.algos.doe.factory import DOELibraryFactory
@@ -32,13 +31,10 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.utils.multiprocessing.execution import execute
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.typing import RealArray
 
 
-class MultiStart(BaseOptimizationLibrary):
+class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
     """Multi-start optimization."""
 
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
@@ -62,26 +58,17 @@ class MultiStart(BaseOptimizationLibrary):
         )
     }
 
-    __opt_algo_settings: Mapping[str, DriverSettingType]
-    """The settings of the sub-optimization algorithm."""
-
     def __init__(self, algo_name: str = "MultiStart") -> None:  # noqa: D107
         super().__init__(algo_name)
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> None:
-        """
-        Raises:
-            ValueError: When ``max_iter``, ``n_start`` and ``opt_algo_max_iter``
-                are not consistent.
-        """  # noqa: D205 D212
+    def _run(self, problem: OptimizationProblem) -> None:
         design_space = problem.design_space
         # We decrement the maximum number of iterations by one
         # as a first iteration has already been done in OptimizationLibrary._pre_run.
-        max_iter = settings["max_iter"] - 1
-        n_processes = settings["n_processes"]
-        n_start = settings["n_start"]
-        opt_algo_max_iter = settings["opt_algo_max_iter"]
-        opt_algo_settings = settings["opt_algo_settings"]
+        max_iter = self._settings.max_iter - 1
+        n_processes = self._settings.n_processes
+        n_start = self._settings.n_start
+        opt_algo_max_iter = self._settings.opt_algo_max_iter
 
         if opt_algo_max_iter == 0:
             if max_iter < n_start:
@@ -110,54 +97,40 @@ class MultiStart(BaseOptimizationLibrary):
             )
             raise ValueError(msg)
 
-        self.__opt_algo_settings = settings
-        opt_algo_settings[self._EQ_TOLERANCE] = self._problem.tolerances.equality
-        opt_algo_settings[self._INEQ_TOLERANCE] = self._problem.tolerances.inequality
-        opt_algo_settings[self._STOP_CRIT_NX] = self._f_tol_tester.n_last_iterations
-        opt_algo_settings[self._F_TOL_ABS] = self._f_tol_tester.absolute
-        opt_algo_settings[self._F_TOL_REL] = self._f_tol_tester.relative
-        opt_algo_settings[self._X_TOL_ABS] = self._x_tol_tester.absolute
-        opt_algo_settings[self._X_TOL_REL] = self._x_tol_tester.relative
-        opt_algo_settings["log_problem"] = False
-        opt_algo_settings[self._ENABLE_PROGRESS_BAR] = False
-
-        doe_algo = DOELibraryFactory().create(settings["doe_algo_name"])
+        doe_algo = DOELibraryFactory().create(self._settings.doe_algo_name)
         if (
             "n_samples"
-            in doe_algo.ALGORITHM_INFOS[settings["doe_algo_name"]].Settings.model_fields
+            in doe_algo.ALGORITHM_INFOS[
+                self._settings.doe_algo_name
+            ].Settings.model_fields
         ):
-            settings["doe_algo_settings"]["n_samples"] = n_start
-        samples = doe_algo.compute_doe(design_space, **settings["doe_algo_settings"])
+            self._settings.doe_algo_settings["n_samples"] = n_start
+        samples = doe_algo.compute_doe(design_space, **self._settings.doe_algo_settings)
 
         problems = execute(
-            self._optimize, (), n_processes, list(zip(samples, opt_algo_max_iter))
+            self._optimize,
+            (),
+            n_processes,
+            list(zip(samples, opt_algo_max_iter, strict=False)),
         )
 
-        # The sub-optimizations use their own optimization problems
-        # and so their own databases.
-        # When the sub-optimizations are run sequentially,
-        # the evaluations are stored both in the main database and in the sub-databases.
-        # When the sub-optimizations are run in parallel,
-        # the evaluations are stored in the sub-databases only,
-        # and we need to store them manually in the main database.
-        if n_processes > 1:
-            for problem in problems:
-                database = problem.database
-                f_hist, x_hist = database.get_function_history(
-                    self._problem.objective.name, with_x_vect=True
-                )
-                for xi, fi in zip(x_hist, f_hist):
-                    self._problem.database.store(xi, {self._problem.objective.name: fi})
+        for problem in problems:
+            database = problem.database
+            f_hist, x_hist = database.get_function_history(
+                self._problem.objective.name, with_x_vect=True
+            )
+            for xi, fi in zip(x_hist, f_hist, strict=False):
+                self._problem.database.store(xi, {self._problem.objective.name: fi})
 
-                for functions in [self._problem.constraints, self._problem.observables]:
-                    for f in functions:
-                        f_hist, x_hist = database.get_function_history(
-                            f.name, with_x_vect=True
-                        )
-                        for xi, fi in zip(x_hist, f_hist):
-                            self._problem.database.store(xi, {f.name: fi})
+            for functions in [self._problem.constraints, self._problem.observables]:
+                for f in functions:
+                    f_hist, x_hist = database.get_function_history(
+                        f.name, with_x_vect=True
+                    )
+                    for xi, fi in zip(x_hist, f_hist, strict=False):
+                        self._problem.database.store(xi, {f.name: fi})
 
-        file_path = settings["multistart_file_path"]
+        file_path = self._settings.multistart_file_path
         if file_path:
             problem = OptimizationProblem(design_space)
             problem.objective = self._problem.objective
@@ -182,15 +155,16 @@ class MultiStart(BaseOptimizationLibrary):
         design_space.set_current_value(initial_point)
 
         problem = OptimizationProblem(design_space)
-        problem.objective = self._problem.objective
-        problem.constraints = self._problem.constraints
-        problem.observables = self._problem.observables
+        problem.differentiation_method = self._problem.differentiation_method
+        problem.objective = self._problem.objective.original
+        problem.constraints = (c.original for c in self._problem.constraints)
+        problem.observables = (o.original for o in self._problem.observables)
 
         factory = OptimizationLibraryFactory()
-        opt_algo = factory.create(self.__opt_algo_settings["opt_algo_name"])
+        opt_algo = factory.create(self._settings.opt_algo_name)
         opt_algo.execute(
             problem,
             max_iter=max_iter,
-            **self.__opt_algo_settings["opt_algo_settings"],
+            **self._settings.opt_algo_settings,
         )
         return problem

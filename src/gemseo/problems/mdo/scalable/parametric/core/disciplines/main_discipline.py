@@ -99,7 +99,9 @@ class MainDiscipline(BaseDiscipline):
             input_name: default_value.size
             for input_name, default_value in default_input_values.items()
         }
-        for cstr_name, cpl_name in zip(self.__c_i_names, self.__y_i_names):
+        for cstr_name, cpl_name in zip(
+            self.__c_i_names, self.__y_i_names, strict=False
+        ):
             self.names_to_sizes[cstr_name] = self.names_to_sizes[cpl_name]
         self.names_to_sizes[OBJECTIVE_NAME] = 1
 
@@ -140,7 +142,9 @@ class MainDiscipline(BaseDiscipline):
                 }
 
             jacobian[OBJECTIVE_NAME][SHARED_DESIGN_VARIABLE_NAME] = 2 * x_0[newaxis, :]
-            for y_i_name, c_i_name in zip(self.__y_i_names, self.__c_i_names):
+            for y_i_name, c_i_name in zip(
+                self.__y_i_names, self.__c_i_names, strict=False
+            ):
                 jacobian[OBJECTIVE_NAME][y_i_name] = 2 * y_i_[y_i_name][newaxis, :]
                 jacobian[c_i_name][y_i_name] = -eye(self.names_to_sizes[y_i_name])
 
@@ -151,7 +155,9 @@ class MainDiscipline(BaseDiscipline):
                 sum((__y_i**2).sum() for __y_i in y_i_.values()) + (x_0**2).sum()
             ])
         }
-        for c_i_name, __y_i, t_i in zip(self.__c_i_names, y_i_.values(), self.__t_i):
+        for c_i_name, __y_i, t_i in zip(
+            self.__c_i_names, y_i_.values(), self.__t_i, strict=False
+        ):
             output_names_to_values[c_i_name] = t_i - __y_i
 
         return output_names_to_values

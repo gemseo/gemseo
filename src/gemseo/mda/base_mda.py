@@ -112,6 +112,7 @@ class BaseMDA(ProcessDiscipline):
     """Whether to update the local data from the input data before linearizing."""
 
     # TODO: use generics to handle the type of the settings
+    # TODO: API: rename to settings_class.
     Settings: ClassVar[type[BaseMDASettings]]
     """The Pydantic model for the settings."""
 

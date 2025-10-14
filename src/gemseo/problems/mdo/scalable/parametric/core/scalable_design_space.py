@@ -24,16 +24,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import full
-from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 
 from gemseo.problems.mdo.scalable.parametric.core.default_settings import DEFAULT_D_0
 from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
     DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
-)
-from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
-    ScalableDisciplineSettings,
 )
 from gemseo.problems.mdo.scalable.parametric.core.variable import Variable
 from gemseo.problems.mdo.scalable.parametric.core.variable_names import (
@@ -49,6 +45,11 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
+    from numpy import ndarray
+
+    from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (  # noqa: E501
+        ScalableDisciplineSettings,
+    )
     from gemseo.typing import RealArray
 
 

@@ -24,7 +24,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import Union
 
 from numpy import unique
 from numpy import zeros
@@ -37,14 +36,14 @@ from gemseo.mlearning.core.algos.supervised import (
     SavedObjectType as MLSupervisedAlgoSavedObjectType,
 )
 from gemseo.typing import NumberArray
-from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.typing import RealArray
 
-SavedObjectType = Union[
-    MLSupervisedAlgoSavedObjectType, Sequence[str], dict[str, NumberArray], int
-]
+SavedObjectType = (
+    MLSupervisedAlgoSavedObjectType | Sequence[str] | dict[str, NumberArray] | int
+)
 
 
 class BaseClassifier(BaseMLSupervisedAlgo):

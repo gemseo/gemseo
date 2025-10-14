@@ -19,17 +19,18 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
 from numpy import concatenate
 from numpy import full
 from numpy import hstack
-from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_allclose
 from pandas._testing import assert_frame_equal
 
+from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -48,6 +49,9 @@ from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
 from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.pickle import to_pickle
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture(params=[1, 2])
@@ -226,6 +230,51 @@ def test_vectorization(eval_jac, cls, output_names, n):
     )
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
+    scenario.execute(
+        algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
+    )
+    result = scenario.formulation.optimization_problem.database.to_dataset(
+        export_gradients=True
+    )
+
+    # Compare the results
+    # in terms of input values, output values and gradient values.
+    assert_frame_equal(result, reference)
+
+
+@pytest.mark.parametrize("eval_jac", [False, True])
+@pytest.mark.parametrize("n", [1, 2])
+def test_vectorization_sellar2_y_1(eval_jac, n):
+    """Check that Sellar2 does not crash when y_1 is a collection of samples."""
+    n_samples = 3
+
+    input_space = DesignSpace()
+    input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
+
+    # Create the reference results without vectorization.
+    scenario = MDOScenario(
+        [Sellar2(n=n)],
+        "y_2",
+        input_space,
+        formulation_name="DisciplinaryOpt",
+    )
+    scenario.execute(
+        algo_name="MC", n_samples=n_samples, vectorize=False, eval_jac=eval_jac
+    )
+    reference = scenario.formulation.optimization_problem.database.to_dataset(
+        export_gradients=True
+    )
+
+    input_space = DesignSpace()
+    input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
+
+    # Create the results with vectorization.
+    scenario = MDOScenario(
+        [Sellar2(n=n)],
+        "y_2",
+        input_space,
+        formulation_name="DisciplinaryOpt",
+    )
     scenario.execute(
         algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
     )

@@ -19,7 +19,6 @@ from __future__ import annotations
 from multiprocessing import Value
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import isnan
@@ -29,18 +28,19 @@ from numpy import str_
 from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
-from gemseo.algos.stop_criteria import MaxIterReachedException
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_function import OutputType
-from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
 from gemseo.core.serializable import Serializable
+from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.evaluation_counter import EvaluationCounter
+    from gemseo.core.mdo_functions.mdo_function import OutputType
+    from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
     from gemseo.typing import NumberArray
     from gemseo.typing import RealOrComplexArrayT
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 class ProblemFunction(MDOFunction, Serializable):
     """A function to be attached to a problem."""
 
-    enable_statistics: ClassVar[bool] = False
+    enable_statistics: ClassVar[bool] = _ENABLE_FUNCTION_STATISTICS
     """Whether to count the number of function evaluations."""
 
     stop_if_nan: bool
@@ -63,6 +63,9 @@ class ProblemFunction(MDOFunction, Serializable):
 
     _output_evaluation_sequence: Iterable[Callable[[NumberArray], NumberArray]]
     """The execution sequence to compute an output value from an input value."""
+
+    pre_compute_at_new_point: Callable[[], None] | None
+    """A function to be called before evaluating an output at a new point, if any."""
 
     _gradient_name: str
     """The name of the gradient variable."""
@@ -161,7 +164,7 @@ class ProblemFunction(MDOFunction, Serializable):
                 **differentiation_method_options,
             )
             self._jacobian_evaluation_sequence = (gradient_approximator.f_gradient,)
-
+        self.pre_compute_at_new_point = None
         super().__init__(
             compute_output,
             function.name,
@@ -185,13 +188,13 @@ class ProblemFunction(MDOFunction, Serializable):
         super(__class__, self.__class__).func.fset(self, f_pointer)
 
     def evaluate(self, x_vect: NumberArray) -> OutputType:  # noqa: D102
+        value = super().evaluate(x_vect)
         if self.enable_statistics:
             # This evaluation is both multiprocess- and multithread-safe,
             # thanks to a locking process.
             with self._n_calls.get_lock():
                 self._n_calls.value += 1
-
-        return super().evaluate(x_vect)
+        return value
 
     def _compute_output(self, input_value: NumberArray) -> NumberArray:
         """Compute the output value from an input value.
@@ -234,23 +237,35 @@ class ProblemFunction(MDOFunction, Serializable):
         """
         name = self.name
         self.check_function_output_includes_nan(input_value)
-        database = self._database
-        hashed_xu = database.get_hashable_ndarray(input_value)
-        output_value = database.get_function_value(name, hashed_xu)
+        hashed_xu, output_value = self.__get_output_value(name, input_value)
         if output_value is None:
-            if (
-                not database.get(hashed_xu)
-                and self._evaluation_counter.maximum_is_reached
-            ):
-                raise MaxIterReachedException
-
             output_value = self._compute_output(input_value)
             self.check_function_output_includes_nan(
                 output_value, self.stop_if_nan, name, input_value
             )
-            database.store(hashed_xu, {name: output_value})
+            self._database.store(hashed_xu, {name: output_value})
 
         return output_value
+
+    def __get_output_value(
+        self, name: str, input_value: NumberArray
+    ) -> NumberArray | None:
+        """Return the output value related to a name and an input value.
+
+        Args:
+            name: The name.
+            input_value: The input point.
+
+        Returns:
+            The hashed input value and the output value.
+        """
+        database = self._database
+        hashed_input_value = database.get_hashable_ndarray(input_value)
+        output_values = database.get(hashed_input_value)
+        if not output_values and self.pre_compute_at_new_point is not None:
+            self.pre_compute_at_new_point()
+        output_value = None if output_values is None else output_values.get(name)
+        return hashed_input_value, output_value
 
     def _compute_jacobian_db(self, input_value: NumberArray) -> NumberArray:
         """Compute the Jacobian from a database and an input value.
@@ -265,22 +280,14 @@ class ProblemFunction(MDOFunction, Serializable):
         """
         name = self._gradient_name
         self.check_function_output_includes_nan(input_value)
-        database = self._database
-        hashed_xu = database.get_hashable_ndarray(input_value)
-        jacobian = database.get_function_value(name, hashed_xu)
+        hashed_input_value, jacobian = self.__get_output_value(name, input_value)
         if jacobian is None:
-            if (
-                not database.get(hashed_xu)
-                and self._evaluation_counter.maximum_is_reached
-            ):
-                raise MaxIterReachedException
-
             jacobian = self._compute_jacobian(input_value).real
             self.check_function_output_includes_nan(
                 jacobian, self.stop_if_nan, name, input_value
             )
             if self.__store_jacobian:
-                database.store(hashed_xu, {name: jacobian})
+                self._database.store(hashed_input_value, {name: jacobian})
 
         return jacobian
 
@@ -296,13 +303,13 @@ class ProblemFunction(MDOFunction, Serializable):
             The output values of the form (n_samples * output_dimension,).
         """
         name = self.name
-
         self.check_function_output_includes_nan(input_values)
         output_values = self._compute_output(input_values)
         database = self._database
         for input_value, output_value in zip(
             input_values,
             output_values.reshape((len(input_values), -1)),
+            strict=False,
         ):
             hashed_xu = database.get_hashable_ndarray(input_value)
             self.check_function_output_includes_nan(
@@ -356,21 +363,13 @@ class ProblemFunction(MDOFunction, Serializable):
         self.check_function_output_includes_nan(input_value)
         xn_vect = input_value
         xu_vect = self._unnormalize_vect(xn_vect)
-        database = self._database
-        hashed_xu = database.get_hashable_ndarray(xu_vect)
-        output_value = database.get_function_value(self.name, hashed_xu)
+        hashed_xu, output_value = self.__get_output_value(self.name, xu_vect)
         if output_value is None:
-            if (
-                not database.get(hashed_xu)
-                and self._evaluation_counter.maximum_is_reached
-            ):
-                raise MaxIterReachedException
-
             output_value = self._compute_output(xn_vect)
             self.check_function_output_includes_nan(
                 output_value, self.stop_if_nan, self.name, xu_vect
             )
-            database.store(hashed_xu, {self.name: output_value})
+            self._database.store(hashed_xu, {self.name: output_value})
 
         return output_value
 
@@ -388,16 +387,8 @@ class ProblemFunction(MDOFunction, Serializable):
         self.check_function_output_includes_nan(input_value)
         xn_vect = input_value
         xu_vect = self._unnormalize_vect(xn_vect)
-        database = self._database
-        hashed_xu = database.get_hashable_ndarray(xu_vect)
-        jac_u = database.get_function_value(self._gradient_name, hashed_xu)
+        hashed_xu, jac_u = self.__get_output_value(self._gradient_name, xu_vect)
         if jac_u is None:
-            if (
-                not database.get(hashed_xu)
-                and self._evaluation_counter.maximum_is_reached
-            ):
-                raise MaxIterReachedException
-
             jac_n = self._compute_jacobian(xn_vect)
             jac_u = self._unnormalize_grad(jac_n)
             self.check_function_output_includes_nan(
@@ -407,7 +398,7 @@ class ProblemFunction(MDOFunction, Serializable):
                 xu_vect,
             )
             if self.__store_jacobian:
-                database.store(hashed_xu, {self._gradient_name: jac_u})
+                self._database.store(hashed_xu, {self._gradient_name: jac_u})
         else:
             jac_n = self._normalize_grad(jac_u)
 

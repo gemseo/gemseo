@@ -63,8 +63,6 @@ from gemseo.scenarios.mdo_scenario import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.xdsm.xdsm_to_pdf import XDSM
-from gemseo.utils.xdsm.xdsmizer import EdgeType
-from gemseo.utils.xdsm.xdsmizer import NodeType
 from gemseo.utils.xdsm.xdsmizer import XDSMizer
 from gemseo.utils.xdsm.xdsmizer import expand
 
@@ -75,6 +73,8 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
+    from gemseo.utils.xdsm.xdsmizer import EdgeType
+    from gemseo.utils.xdsm.xdsmizer import NodeType
 
 
 def build_sobieski_scenario(

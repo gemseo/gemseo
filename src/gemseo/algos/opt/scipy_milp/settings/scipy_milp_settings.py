@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from gemseo.algos.opt.base_milp_settings import BaseMILPSettings
 
 
@@ -25,5 +23,3 @@ class SciPyMILP_Settings(BaseMILPSettings):  # noqa: N801
     """The SciPy mixed-integer linear programming library setting."""
 
     _TARGET_CLASS_NAME = "Scipy_MILP"
-
-    _redundant_settings: ClassVar[list[str]] = ["time_limit"]

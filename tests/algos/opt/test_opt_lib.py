@@ -31,16 +31,13 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_global.settings.dual_annealing import (
     DUAL_ANNEALING_Settings,
 )
-from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
-    BaseSciPyLinProgSettings,
-)
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
-from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.pydantic import create_model
 
 OPT_LIB_NAME = "ScipyOpt"
 
@@ -182,10 +179,12 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
     library = ScipyOpt("SLSQP")
     library._problem = power
     library._problem.preprocess_functions()
-    settings = library._validate_settings(
-        max_iter=2, scaling_threshold=scaling_threshold
+    library._settings = create_model(
+        library.ALGORITHM_INFOS[library.algo_name].Settings,
+        max_iter=2,
+        scaling_threshold=scaling_threshold,
     )
-    library._pre_run(power, **settings)
+    library._pre_run(power)
     current_value = power.design_space.get_current_value()
     assert library._problem.objective.evaluate(current_value) == pow2
     assert library._problem.constraints[0].evaluate(current_value) == ineq1
@@ -201,8 +200,6 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
         (DUAL_ANNEALING_Settings, "maxfun"),
         (SLSQP_Settings, "maxiter"),
         (TNC_Settings, "eps"),
-        (SciPyMILP_Settings, "time_limit"),
-        (BaseSciPyLinProgSettings, "maxiter"),
     ],
 )
 def test_removal_redundant_settings(caplog, settings_model, redundant_setting):

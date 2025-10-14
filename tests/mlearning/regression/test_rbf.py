@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import allclose
 from numpy import array
-from scipy.interpolate.rbf import Rbf
+from scipy.interpolate import Rbf
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline

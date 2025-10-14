@@ -21,15 +21,18 @@ algorithms."""
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import array
-from numpy import ndarray
 from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class X2(OptimizationProblem):

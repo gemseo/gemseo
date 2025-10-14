@@ -29,10 +29,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo import configure_logger
 from gemseo.caches.hdf5_cache import HDF5Cache
-
-configure_logger()
 
 # %%
 #

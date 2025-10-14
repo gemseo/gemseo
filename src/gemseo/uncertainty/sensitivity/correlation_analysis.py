@@ -25,7 +25,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
-from typing import Callable
 from typing import ClassVar
 from typing import Final
 
@@ -40,19 +39,7 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import OutputsType
-from gemseo.utils.compatibility.openturns import IS_OT_LOWER_THAN_1_20
-from gemseo.utils.compatibility.openturns import compute_kendall_tau
-from gemseo.utils.compatibility.openturns import compute_pcc
-from gemseo.utils.compatibility.openturns import compute_pearson_correlation
-from gemseo.utils.compatibility.openturns import compute_prcc
-from gemseo.utils.compatibility.openturns import compute_spearman_correlation
-from gemseo.utils.compatibility.openturns import compute_squared_src
-from gemseo.utils.compatibility.openturns import compute_src
-from gemseo.utils.compatibility.openturns import compute_srrc
+from gemseo.utils.compatibility.openturns import PEARSON_METHOD_NAME
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import filter_names
 from gemseo.utils.string_tools import get_name_and_component
@@ -63,7 +50,13 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
+        FirstOrderIndicesType,
+    )
+    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import OutputsType
     from gemseo.utils.string_tools import VariableType
+
+from openturns import CorrelationAnalysis as OTCorrelationAnalysis
 
 
 class CorrelationAnalysis(BaseSensitivityAnalysis):
@@ -143,17 +136,17 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         SSRC = "SSRC"
         """The squared standard regression coefficient."""
 
-    __METHODS_TO_FUNCTIONS: Final[dict[Method, Callable]] = {
-        Method.KENDALL: compute_kendall_tau,
-        Method.PCC: compute_pcc,
-        Method.PEARSON: compute_pearson_correlation,
-        Method.PRCC: compute_prcc,
-        Method.SPEARMAN: compute_spearman_correlation,
-        Method.SRC: compute_src,
-        Method.SRRC: compute_srrc,
-        Method.SSRC: compute_squared_src,
+    __METHODS_TO_OT_METHOD_NAMES: Final[dict[Method, str]] = {
+        Method.KENDALL: "computeKendallTau",
+        Method.PCC: "computePCC",
+        Method.PEARSON: PEARSON_METHOD_NAME,
+        Method.PRCC: "computePRCC",
+        Method.SPEARMAN: "computeSpearmanCorrelation",
+        Method.SRC: "computeSRC",
+        Method.SRRC: "computeSRRC",
+        Method.SSRC: "computeSquaredSRC",
     }
-    """The mapping from the method names to the functions."""
+    """The mapping from the sensitivity method names to the OpenTURNS method names."""
 
     _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.SPEARMAN
 
@@ -167,38 +160,39 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         input_samples = Sample(
             self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
         )
+        correlation_analyses = {
+            output_name: [
+                None
+                if (data := output_component_samples[:, newaxis]).var() == 0.0
+                else OTCorrelationAnalysis(input_samples, Sample(data))
+                # For each component of the output variable
+                for output_component_samples in self.dataset.get_view(
+                    group_names=self.dataset.OUTPUT_GROUP,
+                    variable_names=output_name,
+                )
+                .to_numpy()
+                .T
+            ]
+            # For each output variable
+            for output_name in output_names
+        }
         indices = {}
         # For each correlation method
-        new_methods = [self.Method.KENDALL, self.Method.SSRC]
+        sizes = self.dataset.variable_names_to_n_components
         for method in self.Method:
-            if IS_OT_LOWER_THAN_1_20 and method in new_methods:
-                indices[str(method).lower()] = {}
-                continue
-
             # The version of OpenTURNS offers this correlation method.
-            get_indices = self.__METHODS_TO_FUNCTIONS[method]
-            sizes = self.dataset.variable_names_to_n_components
+            method_name = self.__METHODS_TO_OT_METHOD_NAMES[method]
             indices[str(method).lower()] = {
                 output_name: [
                     None
-                    if (data := output_component_samples[:, newaxis]).var() == 0.0
+                    if correlation_analysis is None
                     else split_array_to_dict_of_arrays(
-                        array(
-                            get_indices(
-                                input_samples,
-                                Sample(data),
-                            )
-                        ),
+                        array(getattr(correlation_analysis, method_name)()),
                         sizes,
                         self._input_names,
                     )
                     # For each component of the output variable
-                    for output_component_samples in self.dataset.get_view(
-                        group_names=self.dataset.OUTPUT_GROUP,
-                        variable_names=output_name,
-                    )
-                    .to_numpy()
-                    .T
+                    for correlation_analysis in correlation_analyses[output_name]
                 ]
                 # For each output variable
                 for output_name in output_names

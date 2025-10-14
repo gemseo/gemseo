@@ -192,7 +192,7 @@ def test_opt_step() -> None:
     funcs = [sin, cos, exp]
     jacs = [cos, lambda x: -sin(x), exp]
 
-    for func, jac in zip(funcs, jacs):
+    for func, jac in zip(funcs, jacs, strict=False):
         for mult in [1.0, 1e2, 1e-2]:
             for x in [0.0, 1.0, 3.0]:
                 f_p = func(mult * (x + step))
@@ -266,7 +266,11 @@ def test_load_and_dump(tmp_wd, method) -> None:
 class ToyDiscipline(Discipline):
     default_grammar_type = Discipline.GrammarType.SIMPLE
 
-    def __init__(self, dtype) -> None:
+    def __init__(self, dtype: type) -> None:
+        """
+        Args:
+            dtype: The type of x1 and y1.
+        """
         super().__init__()
         self.io.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
         self.io.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})

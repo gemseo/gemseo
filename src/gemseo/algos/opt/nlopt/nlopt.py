@@ -41,10 +41,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
-from typing import Final
-from typing import Union
 
 import nlopt
 from nlopt import LD_LBFGS
@@ -64,7 +61,6 @@ except ImportError:  # pragma: no cover
 from numpy import array
 from numpy import atleast_1d
 from numpy import atleast_2d
-from numpy import ndarray
 
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
@@ -81,11 +77,15 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from numpy import ndarray
+
     from gemseo.algos.optimization_problem import OptimizationProblem
 
 LOGGER = logging.getLogger(__name__)
 
-NLoptOptionsType = Union[bool, int, float]
+NLoptOptionsType = bool | int | float
 
 
 @dataclass
@@ -98,12 +98,8 @@ class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
     """The option validation model for NLopt optimization library."""
 
 
-class Nlopt(BaseOptimizationLibrary):
+class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
     """The library of NLopt optimization algorithms."""
-
-    _INIT_STEP: Final[str] = "init_step"
-    _INNER_MAXEVAL: Final[str] = "inner_maxeval"
-    _STOPVAL: Final[str] = "stopval"
 
     __NLOPT_MESSAGES: ClassVar[dict[int, str]] = {
         1: "NLOPT_SUCCESS: Generic success return value",
@@ -294,12 +290,11 @@ class Nlopt(BaseOptimizationLibrary):
 
         return cstr_fun_grad
 
-    def __add_constraints(self, nlopt_problem: opt, **settings: Any) -> None:
+    def __add_constraints(self, nlopt_problem: opt) -> None:
         """Add all the constraints to the optimization problem.
 
         Args:
             nlopt_problem: The optimization problem.
-            **settings: The NLopt optimizer settings.
         """
         for constraint in self._problem.constraints:
             f_type = constraint.f_type
@@ -310,19 +305,18 @@ class Nlopt(BaseOptimizationLibrary):
                 nl_fun = self.__make_constraint(func, jac, idim)
                 if f_type == MDOFunction.ConstraintType.INEQ:
                     nlopt_problem.add_inequality_constraint(
-                        nl_fun, settings[self._INEQ_TOLERANCE]
+                        nl_fun, self._settings.ineq_tolerance
                     )
                 elif f_type == MDOFunction.ConstraintType.EQ:
                     nlopt_problem.add_equality_constraint(
-                        nl_fun, settings[self._EQ_TOLERANCE]
+                        nl_fun, self._settings.eq_tolerance
                     )
 
-    def __set_prob_options(self, nlopt_problem: opt, **settings: Any) -> None:
+    def __set_prob_options(self, nlopt_problem: opt) -> None:
         """Set the options for the NLopt algorithm.
 
         Args:
             nlopt_problem: The optimization problem from NLopt.
-            **settings: The NLopt optimizer settings.
         """
         # Deactivate stopping criteria which are handled by GEMSEO
         nlopt_problem.set_ftol_abs(0.0)
@@ -335,22 +329,21 @@ class Nlopt(BaseOptimizationLibrary):
 
         # Only set an initial step size for derivative-free optimization algorithms.
         if not self.ALGORITHM_INFOS[self.algo_name].require_gradient:
-            nlopt_problem.set_initial_step(settings[self._INIT_STEP])
+            nlopt_problem.set_initial_step(self._settings.init_step)
 
-        max_eval = int(1.5 * settings[self._MAX_ITER])
+        max_eval = int(1.5 * self._settings.max_iter)
         nlopt_problem.set_maxeval(max_eval)  # Anti-cycling
-        nlopt_problem.set_stopval(settings[self._STOPVAL])
+        nlopt_problem.set_stopval(self._settings.stopval)
 
         if self.algo_name == "NLOPT_MMA":
-            nlopt_problem.set_param(self._INNER_MAXEVAL, settings[self._INNER_MAXEVAL])
+            nlopt_problem.set_param("inner_maxeval", self._settings.inner_maxeval)
 
-        if (seed := settings.get("seed")) is not None:
+        if (seed := getattr(self._settings, "seed", None)) is not None:
             nlopt.srand(seed)
 
     def _pre_run(
         self,
         problem: OptimizationProblem,
-        **settings: NLoptOptionsType,
     ) -> None:
         """Set ``"stop_crit_n_x"`` depending on the algorithm.
 
@@ -366,26 +359,29 @@ class Nlopt(BaseOptimizationLibrary):
         preliminary Design of Experiment phase of the algorithm.
         """
         algo_name = self._algo_name
-        if algo_name == "NLOPT_COBYLA" and not settings[self._STOP_CRIT_NX]:
-            settings[self._STOP_CRIT_NX] = problem.design_space.dimension + 1
-        elif algo_name == "NLOPT_BOBYQA" and not settings[self._STOP_CRIT_NX]:
-            settings[self._STOP_CRIT_NX] = 2 * problem.design_space.dimension + 1
+        if algo_name == "NLOPT_COBYLA" and self._settings.stop_crit_n_x is None:
+            stop_crit_n_x = problem.design_space.dimension + 1
+        elif algo_name == "NLOPT_BOBYQA" and self._settings.stop_crit_n_x is None:
+            stop_crit_n_x = 2 * problem.design_space.dimension + 1
         else:
-            settings[self._STOP_CRIT_NX] = settings[self._STOP_CRIT_NX] or 3
+            stop_crit_n_x = self._settings.stop_crit_n_x or 3
 
-        super()._pre_run(problem, **settings)
+        self._settings.stop_crit_n_x = stop_crit_n_x
+
+        super()._pre_run(problem)
 
     def _run(
         self,
         problem: OptimizationProblem,
-        **settings: NLoptOptionsType,
     ) -> tuple[str, Any]:
         """
         Raises:
             TerminationCriterion: If the driver stops for some reason.
         """  # noqa: D205, D212
         # Get the bounds anx x0
-        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
+        x_0, l_b, u_b = get_value_and_bounds(
+            problem.design_space, self._settings.normalize_design_space
+        )
 
         nlopt_problem = opt(
             self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name, x_0.shape[0]
@@ -397,8 +393,8 @@ class Nlopt(BaseOptimizationLibrary):
 
         nlopt_problem.set_min_objective(self.__opt_objective_grad_nlopt)
 
-        self.__set_prob_options(nlopt_problem, **settings)
-        self.__add_constraints(nlopt_problem, **settings)
+        self.__set_prob_options(nlopt_problem)
+        self.__add_constraints(nlopt_problem)
         try:
             nlopt_problem.optimize(x_0.real)
         except self.__EXCEPTION_CLASSES as err:

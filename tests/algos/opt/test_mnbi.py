@@ -20,10 +20,10 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
-from numpy import ndarray
 from numpy.testing import assert_allclose
 from numpy.testing import assert_array_equal
 
@@ -36,6 +36,9 @@ from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaF
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
 from gemseo.problems.multiobjective_optimization.viennet import Viennet
 from gemseo.problems.optimization.power_2 import Power2
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture

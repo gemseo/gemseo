@@ -31,12 +31,8 @@ from numpy import linspace
 from numpy import pi
 from numpy import sin
 
-from gemseo import configure_logger
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
-
-configure_logger()
-
 
 # %%
 # Build a dataset

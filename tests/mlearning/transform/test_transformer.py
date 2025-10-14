@@ -20,15 +20,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
 from numpy import arange
 from numpy import array
-from numpy import ndarray
 
 from gemseo.mlearning.transformers.base_transformer import BaseTransformer
 from gemseo.utils.testing.helpers import concretize_classes
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 @pytest.fixture

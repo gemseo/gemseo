@@ -33,6 +33,11 @@ class DummyDisciplineIMP(Discipline):
     """Dummy."""
 
     def __init__(self, opts1=0, jac_approx_n_processes=1) -> None:
+        """
+        Args:
+            opts1: A dummy option.
+            jac_approx_n_processes: Another dummy option.
+        """  # noqa: D205, D212
         super().__init__()
         self.opts1 = opts1
         self.jac_approx_n_processes = jac_approx_n_processes

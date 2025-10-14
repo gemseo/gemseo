@@ -30,7 +30,6 @@ import openturns as ots
 from openturns import DistributionFactory
 from openturns import FittingTest
 from openturns import Sample
-from openturns import TestResult
 from strenum import StrEnum
 
 from gemseo.uncertainty.distributions.base_distribution_fitter import (
@@ -39,6 +38,8 @@ from gemseo.uncertainty.distributions.base_distribution_fitter import (
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 if TYPE_CHECKING:
+    from openturns import TestResult
+
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 

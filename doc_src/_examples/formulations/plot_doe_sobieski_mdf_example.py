@@ -26,14 +26,11 @@ from __future__ import annotations
 
 from os import name as os_name
 
-from gemseo import configure_logger
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.doe import PYDOE_LHS_Settings
-
-configure_logger()
 
 # %%
 # Instantiate the  disciplines

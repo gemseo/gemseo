@@ -62,7 +62,7 @@ class SciPyAlgorithmDescription(OptimizationAlgorithmDescription):
     """The option validation model for SciPy local optimization library."""
 
 
-class ScipyOpt(BaseOptimizationLibrary):
+class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
     """The library of SciPy optimization algorithms."""
 
     __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
@@ -126,13 +126,15 @@ class ScipyOpt(BaseOptimizationLibrary):
             Settings=COBYQA_Settings,
         )
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
+    def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
         # Get the normalized bounds:
-        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
+        x_0, l_b, u_b = get_value_and_bounds(
+            problem.design_space, self._settings.normalize_design_space
+        )
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        bounds = list(zip(l_b, u_b, strict=False))
 
         # Get constraint in SciPy format
         scipy_constraints = [
@@ -145,22 +147,27 @@ class ScipyOpt(BaseOptimizationLibrary):
         ]
 
         # Filter settings to get only the scipy.optimize.minimize ones
-        options_ = self._filter_settings(settings, BaseOptimizerSettings)
+        settings_ = self._filter_settings(
+            self._settings.model_dump(), BaseOptimizerSettings
+        )
 
         # Deactivate stopping criteria which are handled by GEMSEO
         tolerance = 0.0
         if self._algo_name != "TNC":
-            options_["maxiter"] = C_LONG_MAX
+            settings_["maxiter"] = C_LONG_MAX
 
+        kwargs = {}
+        if self.ALGORITHM_INFOS[self._algo_name].require_gradient:
+            kwargs["jac"] = problem.objective.jac
         opt_result = minimize(
             fun=lambda x: real(problem.objective.evaluate(x)),
             x0=x_0,
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
-            jac=problem.objective.jac,
             bounds=bounds,
             constraints=scipy_constraints,
-            options=options_,
+            options=settings_,
             tol=tolerance,
+            **kwargs,
         )
 
         return opt_result.message, opt_result.status

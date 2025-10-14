@@ -128,7 +128,9 @@ class ConsistencyConstraint(MDOFunction):
             # coupling, at the right place.
             output_size = y_jac.shape[0]
             yt_jac = zeros((output_size, len(x_vect)), dtype=x_vect.dtype)
-            input_names = self.__formulation.get_optim_variable_names()
+            input_names = (
+                self.__formulation.optimization_problem.design_space.variable_names
+            )
             o_min = 0
             o_max = 0
             for output_name in self.__output_couplings:

@@ -40,11 +40,8 @@ from __future__ import annotations
 from numpy import vstack
 from numpy.random import default_rng
 
-from gemseo import configure_logger
 from gemseo import create_dataset
 from gemseo.uncertainty import create_statistics
-
-configure_logger()
 
 # %%
 # Create synthetic data

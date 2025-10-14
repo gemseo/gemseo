@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import float64
 from numpy import inf as np_inf
@@ -63,7 +62,7 @@ if TYPE_CHECKING:
     from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
     from gemseo.core.mdo_functions.mdo_function import WrappedJacobianType
 
-InputType = NDArray[Union[float64, int32]]
+InputType = NDArray[float64 | int32]
 
 
 @dataclass
@@ -80,7 +79,7 @@ class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
     """The option validation model for SciPy global optimization library."""
 
 
-class ScipyGlobalOpt(BaseOptimizationLibrary):
+class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
     """The library of SciPy global optimization algorithms."""
 
     __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
@@ -127,7 +126,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         Args:
             x_vect: The input data with which to call the functions.
         """
-        if self._normalize_ds:
+        if self._settings.normalize_design_space:
             x_vect = self._problem.design_space.normalize_vect(x_vect)
 
         self._problem.objective.evaluate(x_vect)
@@ -144,13 +143,15 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
         """
         return real(self._problem.objective.evaluate(x_vect))
 
-    def _run(self, problem: OptimizationProblem, **settings: Any) -> tuple[str, Any]:
+    def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
         # Get the normalized bounds:
-        _, l_b, u_b = get_value_and_bounds(problem.design_space, self._normalize_ds)
+        _, l_b, u_b = get_value_and_bounds(
+            problem.design_space, self._settings.normalize_design_space
+        )
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
-        bounds = list(zip(l_b, u_b))
+        bounds = list(zip(l_b, u_b, strict=False))
 
         # This is required because some algorithms do not
         # call the objective very often when the problem
@@ -160,7 +161,9 @@ class ScipyGlobalOpt(BaseOptimizationLibrary):
             problem.add_listener(self._iter_callback)
 
         # Filter settings to get only the ones of the global optimizer
-        settings_ = self._filter_settings(settings, BaseOptimizerSettings)
+        settings_ = self._filter_settings(
+            self._settings.model_dump(), BaseOptimizerSettings
+        )
 
         if self._algo_name == "SHGO":
             constraints = self.__get_constraints_as_scipy_dictionary(problem)

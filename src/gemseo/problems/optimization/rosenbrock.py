@@ -21,7 +21,8 @@
 
 from __future__ import annotations
 
-from numpy import ndarray
+from typing import TYPE_CHECKING
+
 from numpy import ones
 from numpy import zeros
 from scipy.optimize import rosen
@@ -30,6 +31,9 @@ from scipy.optimize import rosen_der
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class Rosenbrock(OptimizationProblem):

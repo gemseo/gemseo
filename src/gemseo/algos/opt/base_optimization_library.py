@@ -24,9 +24,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
-from typing import Final
+from typing import TypeVar
 
 import numpy
 from numpy import isinf
@@ -45,6 +44,8 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
+
+T = TypeVar("T", bound=BaseOptimizerSettings)
 
 
 @dataclass
@@ -73,7 +74,7 @@ class OptimizationAlgorithmDescription(DriverDescription):
     """The settings validation model."""
 
 
-class BaseOptimizationLibrary(BaseDriverLibrary):
+class BaseOptimizationLibrary(BaseDriverLibrary[T]):
     """Base class for libraries of optimizers.
 
     Typically used as:
@@ -88,17 +89,6 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         are automatically initialized
         with the method :meth:`.DesignSpace.initialize_missing_current_values`.
     """
-
-    # Option names
-    _F_TOL_REL: Final[str] = "ftol_rel"
-    _F_TOL_ABS: Final[str] = "ftol_abs"
-    _KKT_TOL_ABS: Final[str] = "kkt_tol_abs"
-    _KKT_TOL_REL: Final[str] = "kkt_tol_rel"
-    _MAX_ITER: Final[str] = "max_iter"
-    _SCALING_THRESHOLD: Final[str] = "scaling_threshold"
-    _STOP_CRIT_NX: Final[str] = "stop_crit_n_x"
-    _X_TOL_REL: Final[str] = "xtol_rel"
-    _X_TOL_ABS: Final[str] = "xtol_abs"
 
     _f_tol_tester: ObjectiveToleranceTester
     """A tester for the termination criterion associated to the objective function."""
@@ -154,38 +144,41 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
             return [-constraint for constraint in problem.constraints]
         return problem.constraints
 
-    def _pre_run(self, problem: OptimizationProblem, **settings: Any) -> None:
-        super()._pre_run(problem, **settings)
+    def _pre_run(self, problem: OptimizationProblem) -> None:
+        super()._pre_run(problem)
 
         self._check_constraints_handling(problem)
 
-        n_points = settings[self._STOP_CRIT_NX]
-
         self._f_tol_tester = ObjectiveToleranceTester(
-            absolute=settings[self._F_TOL_ABS],
-            relative=settings[self._F_TOL_REL],
-            n_last_iterations=n_points,
+            absolute=self._settings.ftol_abs,
+            relative=self._settings.ftol_rel,
+            n_last_iterations=self._settings.stop_crit_n_x,
         )
 
         self._x_tol_tester = DesignToleranceTester(
-            absolute=settings[self._X_TOL_ABS],
-            relative=settings[self._X_TOL_REL],
-            n_last_iterations=n_points,
+            absolute=self._settings.xtol_abs,
+            relative=self._settings.xtol_rel,
+            n_last_iterations=self._settings.stop_crit_n_x,
         )
 
-        self._init_iter_observer(problem, settings[self._MAX_ITER])
+        self._init_iter_observer(
+            problem,
+            self._settings.max_iter,
+            message="",
+            progress_bar_data_name=self._settings.progress_bar_data_name,
+        )
 
         require_gradient = self.ALGORITHM_INFOS[self._algo_name].require_gradient
         if require_gradient:
-            kkt_abs_tol = settings[self._KKT_TOL_ABS]
-            kkt_rel_tol = settings[self._KKT_TOL_REL]
+            kkt_abs_tol = self._settings.kkt_tol_abs
+            kkt_rel_tol = self._settings.kkt_tol_rel
             if not isinf(kkt_abs_tol) or not isinf(kkt_rel_tol):
                 problem.add_listener(
                     _KKTChecker(
                         problem,
                         kkt_abs_tol,
                         kkt_rel_tol,
-                        settings[self._INEQ_TOLERANCE],
+                        self._settings.ineq_tolerance,
                     ),
                     at_each_iteration=False,
                     at_each_function_call=True,
@@ -202,12 +195,12 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
         )
 
         function_values, _ = problem.evaluate_functions(
-            design_vector_is_normalized=self._normalize_ds,
+            design_vector_is_normalized=self._settings.normalize_design_space,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )
 
-        scaling_threshold = settings[self._SCALING_THRESHOLD]
+        scaling_threshold = self._settings.scaling_threshold
         if scaling_threshold is not None:
             self._problem.objective = self.__scale(
                 self._problem.objective,
@@ -248,8 +241,8 @@ class BaseOptimizationLibrary(BaseDriverLibrary):
 
         return reason
 
-    def _new_iteration_callback(self, x_vect: ndarray) -> None:
-        super()._new_iteration_callback(x_vect)
+    def _check_stopping_criteria(self) -> None:
+        super()._check_stopping_criteria()
         self._f_tol_tester.check(self._problem, raise_exception=True)
         self._x_tol_tester.check(self._problem, raise_exception=True)
 

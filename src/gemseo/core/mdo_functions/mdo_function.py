@@ -23,17 +23,13 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
-from collections.abc import Sequence
+from collections.abc import Callable
 from collections.abc import Sized
 from numbers import Complex
-from numbers import Number
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 from typing import Final
-from typing import Union
 
 from numpy import abs as np_abs
 from numpy import ndarray
@@ -57,13 +53,17 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+    from numbers import Number
+
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
 
 LOGGER = logging.getLogger(__name__)
 
-OutputType = Union[NumberArray, Complex]
-OperatorType = Union[Callable[[OutputType, OutputType], OutputType], ufunc]
+OutputType = NumberArray | Complex
+OperatorType = Callable[[OutputType, OutputType], OutputType] | ufunc
 WrappedFunctionType = Callable[[NumberArray], OutputType]
 WrappedJacobianType = Callable[[NumberArray], NumberArray]
 

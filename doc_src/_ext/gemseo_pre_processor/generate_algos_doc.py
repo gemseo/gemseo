@@ -25,7 +25,6 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import NamedTuple
 
 import jinja2
@@ -49,6 +48,8 @@ from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pydantic import BaseModel
     from pydantic.fields import FieldInfo
 

@@ -22,14 +22,12 @@ from abc import abstractmethod
 from copy import copy
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Callable
 from typing import ClassVar
 
 from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
 from numpy import inf
-from numpy import ndarray
 from numpy import ones
 from numpy.linalg import norm
 
@@ -39,9 +37,12 @@ from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import 
 from gemseo.mda.base_mda import BaseMDA
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from numpy import ndarray
 
     from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
     from gemseo.core.discipline import Discipline

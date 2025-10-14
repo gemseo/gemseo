@@ -27,10 +27,9 @@ from typing import TYPE_CHECKING
 import pandera as pa
 from pandas import DataFrame
 from pandera.typing import DataFrame as DataFrameType
-from pandera.typing import Series
+from pandera.typing import Series  # noqa: TC002
 from pydantic import BaseModel
 
-from gemseo import configure_logger
 from gemseo.core.data_converters.pydantic import PydanticGrammarDataConverter
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
@@ -41,8 +40,6 @@ if TYPE_CHECKING:
 # %%
 # Import
 # ------
-
-configure_logger()
 
 
 # %%
