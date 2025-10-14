@@ -189,6 +189,12 @@ html_theme_options = {
             "icon": "fa-brands fa-square-gitlab",
             "type": "fontawesome",
         },
+        {
+            "name": "Discourse",
+            "url": "https://gemseo.discourse.group",
+            "icon": "fa-brands fa-discourse",
+            "type": "fontawesome",
+        },
     ],
     # If "prev-next" is included in article_footer_items, then setting show_prev_next
     # to True would repeat prev and next links. See

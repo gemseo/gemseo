@@ -54,6 +54,12 @@ Please use the gitlab issue tracker at
 https://gitlab.com/gemseo/dev/gemseo/-/issues
 to submit bugs or questions.
 
+Community
+---------
+
+The GEMSEO community forums are available at https://gemseo.discourse.group.
+A place where users can connect, ask questions, and share ideas about GEMSEO.
+
 License
 -------
 
