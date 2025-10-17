@@ -17,9 +17,6 @@
 .. image:: https://img.shields.io/conda/vn/conda-forge/gemseo
    :target: https://anaconda.org/conda-forge/gemseo
    :alt: Conda (channel only)
-.. image:: https://img.shields.io/badge/code%20style-black-000000
-   :target: https://black.readthedocs.io
-   :alt: Code Style
 .. image:: https://img.shields.io/codecov/c/gitlab/gemseo:dev/gemseo/develop
    :target: https://app.codecov.io/gl/gemseo:dev/gemseo/branch/develop
    :alt: Codecov branch
