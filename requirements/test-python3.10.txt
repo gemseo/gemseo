@@ -10,7 +10,7 @@ contourpy==1.3.2
     # via matplotlib
 covdefaults==2.3.0
     # via gemseo (pyproject.toml:dev)
-coverage==7.10.7
+coverage==7.11.0
     # via
     #   covdefaults
     #   pytest-cov
