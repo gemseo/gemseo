@@ -36,7 +36,7 @@ h5py==3.14.0
     # via gemseo (pyproject.toml)
 idna==3.11
     # via requests
-iniconfig==2.1.0
+iniconfig==2.3.0
     # via pytest
 jinja2==3.1.6
     # via gemseo (pyproject.toml)

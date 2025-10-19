@@ -34,7 +34,7 @@ graphviz==0.19
     # via gemseo (pyproject.toml)
 h5py==3.6.0
     # via gemseo (pyproject.toml)
-iniconfig==2.1.0
+iniconfig==2.3.0
     # via pytest
 jinja2==3.0.0
     # via gemseo (pyproject.toml)
