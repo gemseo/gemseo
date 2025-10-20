@@ -20,6 +20,7 @@ from abc import abstractmethod
 from itertools import chain
 from multiprocessing import RLock
 from multiprocessing import Value
+from multiprocessing import parent_process
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Literal
@@ -37,7 +38,6 @@ from gemseo.caches.utils import hash_data
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
 from gemseo.utils.locks import synchronized
-from gemseo.utils.locks import synchronized_hashes
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
@@ -66,13 +66,13 @@ class BaseFullCache(BaseCache):
     E.g. ``"output!d$_$d!input"``.
     """
 
-    lock: RLockType
+    _lock: RLockType
     """The lock used for both multithreading and multiprocessing.
 
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
     """
 
-    lock_hashes: RLockType
+    __hashes_lock: RLockType
     """The lock used for both multithreading and multiprocessing.
 
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
@@ -93,14 +93,14 @@ class BaseFullCache(BaseCache):
         name: str = "",
     ) -> None:
         super().__init__(tolerance, name)
-        self.lock_hashes = RLock()
+        self.__hashes_lock = RLock()
         self._hashes_to_indices = get_multi_processing_manager().dict()
         self._max_index = cast("Synchronized[int]", Value("i", 0))
         self._last_accessed_index = cast("Synchronized[int]", Value("i", 0))
-        self.lock = self._set_lock()
+        self._lock = self._get_lock()
 
     @abstractmethod
-    def _set_lock(self) -> RLockType:
+    def _get_lock(self) -> RLockType:
         """Set a lock for multithreading.
 
         Either from an external object or internally by using RLock().
@@ -310,7 +310,6 @@ class BaseFullCache(BaseCache):
             The output and Jacobian data corresponding to these index and group.
         """
 
-    @synchronized_hashes
     def __has_hash(
         self,
         data_hash: int,
@@ -323,7 +322,11 @@ class BaseFullCache(BaseCache):
         Returns:
             The indices corresponding to this data hash.
         """
-        return self._hashes_to_indices.get(data_hash)
+        # Only need synchronization if we are in a multiprocessing context.
+        if parent_process() is None:
+            return self._hashes_to_indices.get(data_hash)
+        with self.__hashes_lock:
+            return self._hashes_to_indices.get(data_hash)
 
     def _read_input_output_data(
         self,

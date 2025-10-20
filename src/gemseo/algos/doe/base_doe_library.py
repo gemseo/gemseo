@@ -105,7 +105,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     use :attr:`.samples`.
     """
 
-    lock: RLock
+    _lock: RLock
     """The lock protecting database storage in multiprocessing."""
 
     _seeder: Seeder
@@ -120,7 +120,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     __jacobian_functions: list[MDOFunction] | None
     """The functions to compute the Jacobians, if any."""
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"lock"}
+    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"_lock"}
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
@@ -129,10 +129,10 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         self._seeder = Seeder()
         self.__output_functions = []
         self.__jacobian_functions = []
-        self.lock = RLock()
+        self._lock = RLock()
 
     def _init_shared_memory_attrs_after(self) -> None:
-        self.lock = RLock()
+        self._lock = RLock()
 
     @property
     def seed(self) -> int:

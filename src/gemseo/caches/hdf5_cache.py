@@ -136,7 +136,7 @@ class HDF5Cache(BaseFullCache):
             name=self.name,
         )
 
-    def _set_lock(self) -> RLockType:
+    def _get_lock(self) -> RLockType:
         return self.__hdf_file.lock
 
     @synchronized

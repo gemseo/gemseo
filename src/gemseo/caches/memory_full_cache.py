@@ -87,7 +87,7 @@ class MemoryFullCache(BaseFullCache):
     ) -> None:
         self.__data[index] = {}
 
-    def _set_lock(self) -> RLockType:
+    def _get_lock(self) -> RLockType:
         return RLock()
 
     def _has_group(

@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import functools
+from multiprocessing import parent_process
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -32,37 +33,18 @@ def synchronized(wrapped: Callable[..., Any]) -> Callable[..., Any]:
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
-    with a :attr:`lock` attribute
+    with a :attr:`_lock` attribute
 
     Args:
         wrapped: The function to be protected.
     """
 
     @functools.wraps(wrapped)
-    def _wrapper(*args: Any, **kwargs: Any) -> Any:
-        """Definition of the synchronization decorator."""
-        with args[0].lock:
-            return wrapped(*args, **kwargs)
-
-    return _wrapper
-
-
-def synchronized_hashes(
-    wrapped: Callable[..., Any],
-) -> Callable[..., Any]:
-    """A synchronization decorator to avoid concurrent access of critical sections.
-
-    The wrapped function must be a method of an object
-    with a self.lock_hashes attribute
-
-    Args:
-        wrapped: The function to be protected.
-    """
-
-    @functools.wraps(wrapped)
-    def _wrapper(*args: Any, **kwargs: Any) -> Any:
-        """Definition of the synchronization decorator."""
-        with args[0].lock_hashes:
-            return wrapped(*args, **kwargs)
+    def _wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
+        # Only need synchronization if we are in a multiprocessing context.
+        if parent_process() is None:
+            return wrapped(self, *args, **kwargs)
+        with self._lock:
+            return wrapped(self, *args, **kwargs)
 
     return _wrapper

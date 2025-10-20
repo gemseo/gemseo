@@ -68,8 +68,8 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     hdf_file_path: str
     """The path to the HDF file."""
 
-    lock: RLockType
-    """The lock used for multithreading."""
+    _lock: RLockType
+    """The lock used for multiprocessing."""
 
     HASH_TAG: ClassVar[str] = "hash"
     """The label for the hash."""
@@ -104,7 +104,12 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         self.hdf_file_path = hdf_file_path
         self.__check_file_format_version()
         # Attach the lock to the file and NOT the Cache because it is a singleton.
-        self.lock = RLock()
+        self._lock = RLock()
+
+    @property
+    def lock(self) -> RLockType:
+        """The lock used for multiprocessing."""
+        return self._lock
 
     def write_data(
         self,

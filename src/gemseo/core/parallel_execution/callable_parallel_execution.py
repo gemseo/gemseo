@@ -289,7 +289,6 @@ class CallableParallelExecution(
                 target=_execute_workers,
                 args=(task_callables, queue_in, queue_out),
             )
-            process.daemon = True
             process.start()
             processes.append(process)
 
