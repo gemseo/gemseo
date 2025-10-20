@@ -134,7 +134,7 @@ class XDSMizer:
         self.scenario = discipline
         self.level = level
         self.hashref = hashref
-        self.lock = RLock()
+        self._lock = RLock()
         self._monitor = None
         self.directory_path = ".."
         self.json_file_name = "xdsm.json"
