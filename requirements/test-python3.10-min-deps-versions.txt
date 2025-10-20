@@ -98,7 +98,7 @@ pluggy==1.6.0
     # via pytest
 prettytable==2.3.0
     # via gemseo (pyproject.toml)
-psutil==7.1.0
+psutil==7.1.1
     # via openturns
 py==1.11.0
     # via pytest
@@ -182,7 +182,7 @@ tzdata==2025.2
     # via pandas
 wcwidth==0.2.14
     # via prettytable
-wrapt==1.17.3
+wrapt==2.0.0
     # via pandera
 xdsmjs==1.0.0
     # via gemseo (pyproject.toml)

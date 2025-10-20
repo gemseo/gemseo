@@ -116,7 +116,7 @@ plotly==6.3.0
     # via gemseo (pyproject.toml)
 prettytable==3.16.0
     # via gemseo (pyproject.toml)
-psutil==7.1.0
+psutil==7.1.1
     # via openturns
 pybtex==0.25.1
     # via
