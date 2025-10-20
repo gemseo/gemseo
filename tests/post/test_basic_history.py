@@ -59,3 +59,23 @@ def test_large_common_scenario(baseline_images, large_common_problem) -> None:
     """Check BasicHistory with a common problem and many iterations."""
     opt = BasicHistory(large_common_problem)
     opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)
+
+
+@pytest.mark.parametrize(
+    ("options", "baseline_images"),
+    [
+        ({"use_best_iteration_history": False}, ["BasicHistory_full_history"]),
+        ({"use_best_iteration_history": True}, ["BasicHistory_best_candidate"]),
+    ],
+)
+@image_comparison(None)
+def test_use_best_iteration_history(
+    options, baseline_images, common_problem_lhs_
+) -> None:
+    """Check the effect of use_best_iteration_history."""
+    opt = BasicHistory(common_problem_lhs_)
+    opt.execute(
+        variable_names=["rosen", "x"],
+        save=False,
+        **options,
+    )

@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import arange
+from numpy import inf
+from numpy import maximum
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -30,6 +32,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import ComponentType
     from gemseo.datasets.dataset import DataType
     from gemseo.datasets.dataset import StrColumnType
+    from gemseo.datasets.optimization_metadata import OptimizationMetadata
 
 
 class OptimizationDataset(Dataset):
@@ -473,6 +476,86 @@ class OptimizationDataset(Dataset):
             variable_names=variable_names,
             variable_names_to_n_components=variable_names_to_n_components,
         )
+
+    def get_best_iteration_history(
+        self, ineq_tolerance: float = 0.0, eq_tolerance: float = 0.0
+    ) -> list[int]:
+        """Return the best iteration history.
+
+        Given an iteration,
+        the best iteration is
+        either the best feasible iteration up to this iteration
+        in terms of objective
+        or the least unfeasible solution.
+
+        Args:
+            ineq_tolerance: The tolerance on the inequality constraints,
+                if not defined in the optimization metadata.
+            eq_tolerance: The tolerance on the equality constraints,
+                if not defined in the optimization metadata.
+
+        Returns:
+            The best iteration history.
+        """
+        if self.empty or not self.objective_names:
+            return []
+
+        metadata: OptimizationMetadata = self.misc.get("optimization_metadata")
+        if metadata is not None:
+            ineq_tolerance = metadata.tolerances.inequality
+            eq_tolerance = metadata.tolerances.equality
+
+        objective_history = self.get_view(group_names=self.OBJECTIVE_GROUP)
+        best_objective = inf
+        best_iteration_history = []
+        there_are_equality_constraints = self.EQUALITY_CONSTRAINT_GROUP in self
+        there_are_inequality_constraints = self.INEQUALITY_CONSTRAINT_GROUP in self
+        if there_are_equality_constraints or there_are_inequality_constraints:
+            best_unfeasible_constraint = inf
+            max_constraint = []
+            if there_are_equality_constraints:
+                eq = self.get_view(group_names=self.EQUALITY_CONSTRAINT_GROUP)
+                max_constraint.append((eq.abs() - eq_tolerance).max(axis=1))
+            if there_are_inequality_constraints:
+                ineq = self.get_view(group_names=self.INEQUALITY_CONSTRAINT_GROUP)
+                max_constraint.append((ineq - ineq_tolerance).max(axis=1))
+
+            if len(max_constraint) == 1:
+                max_constraint = max_constraint[0]
+            else:
+                max_constraint = maximum(max_constraint[0], max_constraint[1])
+
+            is_feasible = max_constraint <= 0
+
+            for iteration, objectives in objective_history.iterrows():
+                objective = objectives.iloc[0]
+                constraint = max_constraint[iteration]
+                if is_feasible[iteration] or iteration == 0:
+                    if (
+                        objective < best_objective
+                        or not is_feasible[best_iteration_history[-1]]
+                    ):
+                        best_objective = objective
+                        best_unfeasible_constraint = constraint
+                        best_iteration_history.append(iteration)
+                    else:
+                        best_iteration_history.append(best_iteration_history[-1])
+                elif constraint < best_unfeasible_constraint:
+                    best_objective = objective
+                    best_unfeasible_constraint = constraint
+                    best_iteration_history.append(iteration)
+                else:
+                    best_iteration_history.append(best_iteration_history[-1])
+        else:
+            for iteration, objectives in objective_history.iterrows():
+                objective = objectives.iloc[0]
+                if objective < best_objective:
+                    best_objective = objective
+                    best_iteration_history.append(iteration)
+                else:
+                    best_iteration_history.append(best_iteration_history[-1])
+
+        return best_iteration_history
 
     def _reindex(self) -> None:
         self.index = arange(1, len(self) + 1)
