@@ -18,8 +18,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import arange
+from numpy import array
+from numpy import linspace
 
 if TYPE_CHECKING:
+    from numpy import float64 as np_float
     from numpy import int64 as np_int
     from numpy.typing import NDArray
 
@@ -52,3 +55,31 @@ def small_data() -> NDArray[np_int]:
     The values are:     [         [0, 1, 2],         [3, 4, 5],         [6, 7, 8],     ]
     """
     return arange(9).reshape(3, 3)
+
+
+@pytest.fixture(scope="module")
+def optim_data() -> tuple[
+    NDArray[np_float], NDArray[np_float], NDArray[np_float], NDArray[np_float]
+]:
+    """4 data arrays simulating an optimization result."""
+    obj = array([1.0, 0.8, 0.7, 1.2, 1.1, 0.5, 0.9])
+
+    eq = array([
+        [2.0, 0.0, 0.0],
+        [0.0, 0.9, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+    ])
+    ineq = array([
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0],
+    ])
+    return (linspace(0, 1, 7), obj, eq, ineq)

@@ -18,6 +18,8 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
+from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.openturns.openturns import OT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -96,4 +98,16 @@ def common_problem_():
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
     lib.execute(problem, n_samples=10, eval_jac=True)
+    return problem
+
+
+@pytest.fixture
+def common_problem_lhs_():
+    """A dummy optimization problem to check post-processors."""
+    problem = Rosenbrock()
+    lib = DOELibraryFactory()
+    lib.execute(
+        problem,
+        settings_model=OT_LHS_Settings(n_samples=20, eval_jac=True),
+    )
     return problem

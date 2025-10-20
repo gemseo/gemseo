@@ -35,6 +35,11 @@ class BasePostSettings(BaseSettings):
         False,
         description="Whether to display the figure.",
     )
+    use_best_iteration_history: bool = Field(
+        default=False,
+        description="Whether to use the best iteration history "
+        "rather than the iteration history.",
+    )
     file_path: Path | str = Field(
         default="",
         description="The path of the file to save the figures. If the extension is "

@@ -295,3 +295,44 @@ def test_inequality_constraint_dataset(dataset) -> None:
 def test_iterations(dataset) -> None:
     """Test the property iterations."""
     assert_equal(dataset.iterations, [1])
+
+
+def test_get_best_iter_history(optim_data) -> None:
+    """Test the method get_best_iter_history."""
+    dv, obj, eq, ineq = optim_data
+
+    dataset = OptimizationDataset()
+    best_iteration_history = dataset.get_best_iteration_history()
+    assert_equal(best_iteration_history, [])
+
+    dataset.add_design_group(dv, "x")
+
+    best_iteration_history = dataset.get_best_iteration_history()
+    assert_equal(best_iteration_history, [])
+
+    dataset.add_objective_group(obj, "obj")
+    best_iteration_history = dataset.get_best_iteration_history()
+    assert_equal(best_iteration_history, [1, 2, 3, 3, 3, 6, 6])
+
+    dataset.add_equality_constraint_group(
+        eq, ("ec1", "ec2"), variable_names_to_n_components={"ec1": 1, "ec2": 2}
+    )
+    best_iteration_history = dataset.get_best_iteration_history()
+    assert_equal(best_iteration_history, [1, 2, 2, 4, 5, 6, 6])
+
+    dataset.add_inequality_constraint_group(
+        ineq, ("ic1", "ic2"), variable_names_to_n_components={"ic1": 1, "ic2": 2}
+    )
+    best_iteration_history = dataset.get_best_iteration_history()
+    assert_equal(best_iteration_history, [1, 2, 2, 2, 2, 2, 7])
+
+    dataset_2 = dataset.get_view(
+        group_names=(
+            dataset.DESIGN_GROUP,
+            dataset.OBJECTIVE_GROUP,
+            dataset.INEQUALITY_CONSTRAINT_GROUP,
+        )
+    )
+
+    best_iteration_history = dataset_2.get_best_iteration_history()
+    assert_equal(best_iteration_history, [1, 2, 3, 3, 3, 3, 3])

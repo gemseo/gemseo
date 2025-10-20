@@ -198,6 +198,11 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         settings_ = create_model(
             self.Settings, settings_model=settings_model, **settings
         )
+
+        if settings_.use_best_iteration_history:
+            best_iteration_history = self._dataset.get_best_iteration_history()
+            self._dataset = self._dataset.get_view(indices=best_iteration_history)
+
         self._plot(settings_)
         self.__render(settings_)
         show_close_figures(settings_.show, settings_.save)

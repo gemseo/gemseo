@@ -210,7 +210,7 @@ def test_get_post_processing_options_schema() -> None:
     """Test that all available options are printed."""
     schema_dict = get_post_processing_options_schema("OptHistoryView")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 11
+    assert len(schema_dict["properties"]) == 12
 
     schema_json = get_post_processing_options_schema("OptHistoryView", output_json=True)
     out_dict = json.loads(schema_json)
