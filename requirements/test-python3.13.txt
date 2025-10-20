@@ -100,7 +100,7 @@ pluggy==1.6.0
     #   pytest-cov
 prettytable==3.16.0
     # via gemseo (pyproject.toml)
-psutil==7.1.0
+psutil==7.1.1
     # via openturns
 pydantic==2.11.9
     # via
