@@ -41,7 +41,7 @@ space are good according to some criteria and not for others, and where compromi
 should be made. A white neuron has no sample associated with it: not enough evaluations
 were provided to train the SOM.
 
-SOM's provide a qualitative view of the :term:`objective function`, the
+SOMs provide a qualitative view of the :term:`objective function`, the
 :term:`constraints`, and of their relative behaviors.
 """
 
@@ -64,7 +64,7 @@ execute_post(
 # :cite:`kumano2006multidisciplinary` on wing MDO post-processing
 # using SOM.
 #
-# .. figure:: /tutorials/ssbj/figs/MDOScenario_SOM_v100.png
+# .. figure:: /_examples/post_process/algorithms/MDOScenario_SOM_v500.png
 #
 #     SOM example on the Sobieski problem.
 #
@@ -72,6 +72,6 @@ execute_post(
 # The following figure shows an example with 10000 points on
 # the same test case. This produces more relevant SOM plots.
 #
-# .. figure:: /tutorials/ssbj/figs/som_fine.png
+# .. figure:: /_examples/post_process/algorithms/DOEScenario_SOM_10000_samples.png
 #
 #     SOM example on the Sobieski problem with a 10 000 samples DOE.
