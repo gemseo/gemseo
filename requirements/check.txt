@@ -18,5 +18,5 @@ pyyaml==6.0.3
     # via pre-commit
 ruff==0.14.2
     # via -r requirements/check.in
-virtualenv==20.35.3
+virtualenv==20.35.4
     # via pre-commit
