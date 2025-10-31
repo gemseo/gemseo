@@ -104,7 +104,7 @@ pandas==2.3.2
     # via gemseo (pyproject.toml)
 pandera==0.26.1
     # via gemseo (pyproject.toml:doc)
-pbr==7.0.1
+pbr==7.0.2
     # via sphinxcontrib-apidoc
 pillow==11.3.0
     # via
