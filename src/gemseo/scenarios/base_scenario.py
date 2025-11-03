@@ -570,7 +570,7 @@ class BaseScenario(BaseMonitoredProcess):
                 These arguments are ignored when ``settings_model`` is not ``None``.
         """
         LOGGER.info("*** Start %s execution ***", self.name)
-        LOGGER.info("%s", repr(self))
+        LOGGER.info("%r", self)
         initial_duration = self.execution_statistics.duration
 
         if algo_settings_model is not None or algo_settings:
