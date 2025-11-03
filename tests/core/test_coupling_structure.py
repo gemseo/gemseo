@@ -31,7 +31,9 @@ from gemseo import create_discipline
 from gemseo.core import coupling_structure
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.post._graph_view import GraphView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
@@ -277,3 +279,43 @@ def test_check_disciplines_consistency() -> None:
         CouplingStructure(disciplines)
 
     assert func.call_args.args == (disciplines, True, False)
+
+
+class D1(BaseDiscipline):
+    def __init__(self):
+        super().__init__()
+        self.io.input_grammar.update_from_names(["a"])
+        self.io.output_grammar.update_from_names(["b"])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"b": input_data["a"]}
+
+
+class D2(BaseDiscipline):
+    def __init__(self):
+        super().__init__()
+        self.io.input_grammar.update_from_names(["b"])
+        self.io.output_grammar.update_from_names(["c"])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"c": input_data["b"]}
+
+
+def test_from_base_discipline():
+    """Verify that a CouplingStructure can be created from BaseDiscipline objects,
+    and not only from Discipline objects.
+    """
+    coupling_structure = CouplingStructure((D1(), D2()))
+    graph_view = coupling_structure.graph.render_full_graph("")
+    assert isinstance(graph_view, GraphView)
+    expected = """digraph {
+	D1 -> D2 [label=b color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D1', Name in discipline 'D2'
+
+b, b, b" penwidth=1.0]
+	D2 -> _D2 [label=c color=black dir=forward fontcolor=black labeltooltip="Global name, Name in discipline 'D2'
+
+c, c" penwidth=1.0]
+	_D2 [style=invis]
+}
+"""  # noqa: E501
+    assert str(graph_view) == expected
