@@ -93,6 +93,7 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.caches.base_cache import BaseCache
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.datasets.dataset import Dataset
@@ -135,7 +136,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 
 def generate_n2_plot(
-    disciplines: Sequence[Discipline],
+    disciplines: Sequence[BaseDiscipline],
     file_path: str | Path = "n2.pdf",
     show_data_names: bool = True,
     save: bool = True,
@@ -183,7 +184,7 @@ def generate_n2_plot(
 
 
 def generate_coupling_graph(
-    disciplines: Sequence[Discipline],
+    disciplines: Sequence[BaseDiscipline],
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
     clean_up: bool = True,

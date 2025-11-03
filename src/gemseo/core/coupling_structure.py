@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from matplotlib.text import Text
 
     from gemseo.core.dependency_graph import ExecutionSequence
-    from gemseo.core.discipline import Discipline
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 NodeType = tuple[list[str], list[str]]
@@ -58,7 +58,7 @@ class CouplingStructure:
     The methods of this class include the computation of weak, strong or all couplings.
     """
 
-    disciplines: Sequence[Discipline]
+    disciplines: Sequence[BaseDiscipline]
     """The disciplines."""
 
     graph: DependencyGraph
@@ -67,15 +67,15 @@ class CouplingStructure:
     sequence: ExecutionSequence
     """The sequence of execution of the disciplines."""
 
-    _strongly_coupled_disc: list[Discipline] | None
-    _weakly_coupled_disc: list[Discipline] | None
+    _strongly_coupled_disc: list[BaseDiscipline] | None
+    _weakly_coupled_disc: list[BaseDiscipline] | None
     _all_couplings: list[str] | None
     _weak_couplings: list[str] | None
     _strong_couplings: list[str] | None
 
     def __init__(
         self,
-        disciplines: Sequence[Discipline],
+        disciplines: Sequence[BaseDiscipline],
     ) -> None:
         """
         Args:
@@ -94,7 +94,7 @@ class CouplingStructure:
 
     @staticmethod
     def is_self_coupled(
-        discipline: Discipline,
+        discipline: BaseDiscipline,
     ) -> bool:
         """Test if the discipline is self-coupled.
 
@@ -116,7 +116,7 @@ class CouplingStructure:
         return len(self_c_vars) > 0
 
     @property
-    def strongly_coupled_disciplines(self) -> list[Discipline]:
+    def strongly_coupled_disciplines(self) -> list[BaseDiscipline]:
         """The disciplines that are strongly coupled.
 
         The disciplines that lie in cycles in the coupling graphs.
@@ -130,28 +130,28 @@ class CouplingStructure:
         self,
         add_self_coupled: bool = ...,
         by_group: Literal[False] = ...,
-    ) -> list[Discipline]: ...
+    ) -> list[BaseDiscipline]: ...
 
     @overload
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: Literal[True] = ...,
-    ) -> list[tuple[Discipline, ...]]: ...
+    ) -> list[tuple[BaseDiscipline, ...]]: ...
 
     @overload
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = ...,
         by_group: bool = ...,
-    ) -> list[Discipline] | list[tuple[Discipline, ...]]: ...
+    ) -> list[BaseDiscipline] | list[tuple[BaseDiscipline, ...]]: ...
 
     # TODO: API: this method is rarely used, remove the kwargs and fix the overloads.
     def get_strongly_coupled_disciplines(
         self,
         add_self_coupled: bool = True,
         by_group: bool = False,
-    ) -> list[Discipline] | list[tuple[Discipline, ...]]:
+    ) -> list[BaseDiscipline] | list[tuple[BaseDiscipline, ...]]:
         """Determines the strongly coupled disciplines.
 
         That is the disciplines that occur in (possibly different) MDAs.
@@ -168,7 +168,7 @@ class CouplingStructure:
         Returns:
             The coupled disciplines.
         """
-        strong_disciplines: list[tuple[Discipline, ...]] | list[Discipline] = []
+        strong_disciplines: list[tuple[BaseDiscipline, ...]] | list[BaseDiscipline] = []
         if by_group:
             strong_disc_update = strong_disciplines.append
         else:
@@ -187,7 +187,7 @@ class CouplingStructure:
         return strong_disciplines
 
     @property
-    def weakly_coupled_disciplines(self) -> list[Discipline]:
+    def weakly_coupled_disciplines(self) -> list[BaseDiscipline]:
         """The disciplines that do not appear in cycles in the coupling graph."""
         if self._weakly_coupled_disc is None:
             self._compute_weakly_coupled()
@@ -279,7 +279,7 @@ class CouplingStructure:
 
     def get_output_couplings(
         self,
-        discipline: Discipline,
+        discipline: BaseDiscipline,
         strong: bool = True,
     ) -> list[str]:
         """Return the names of the output coupling variables.
@@ -298,7 +298,7 @@ class CouplingStructure:
 
     def get_input_couplings(
         self,
-        discipline: Discipline,
+        discipline: BaseDiscipline,
         strong: bool = True,
     ) -> list[str]:
         """Compute all the input coupling variables of a discipline.
@@ -318,7 +318,7 @@ class CouplingStructure:
     def find_discipline(
         self,
         output: str,
-    ) -> Discipline:
+    ) -> BaseDiscipline:
         """Find which discipline produces a given output.
 
         Args:
@@ -504,7 +504,7 @@ class CouplingStructure:
 
     def __add_couplings(
         self,
-        couplings: Sequence[tuple[Discipline, Discipline, list[str]]],
+        couplings: Sequence[tuple[BaseDiscipline, BaseDiscipline, list[str]]],
         show_data_names: bool,
         n_disciplines: int,
         fig: Figure,

@@ -542,7 +542,7 @@ class VariableTranslation(NamedTuple):
 
 
 def rename_discipline_variables(
-    disciplines: Iterable[Discipline], translators: Mapping[str, Mapping[str, str]]
+    disciplines: Iterable[BaseDiscipline], translators: Mapping[str, Mapping[str, str]]
 ) -> None:
     """Rename input and output variables of disciplines.
 
