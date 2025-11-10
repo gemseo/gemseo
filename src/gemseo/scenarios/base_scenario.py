@@ -472,7 +472,7 @@ class BaseScenario(BaseMonitoredProcess):
                 The plots will be generated only after the first two iterations.
 
         Raises:
-            ValueError: If both ``erase`` and ``pre_load`` are ``True``.
+            ValueError: If both ``erase`` and ``load`` are ``True``.
         """
         opt_pb = self.formulation.optimization_problem
         self.__history_backup_is_set = True
