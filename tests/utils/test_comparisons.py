@@ -118,6 +118,8 @@ def test_array_are_close(
         ("string", "bad", False),
         (array(["string"]), array(["string"]), True),
         (array(["string"]), array(["bad"]), False),
+        (array(["string", "other_string"]), array(["string", "other_string"]), True),
+        (array(["string", "other_string"]), array(["string", "bad"]), False),
         ("string", array(["string"]), False),
     ],
 )
