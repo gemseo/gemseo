@@ -41,6 +41,7 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import overload
 
 from numpy import ndarray
 
@@ -930,6 +931,18 @@ def configure_logger(
     return _configure_logger(
         logger_name, level, message_format, date_format, filename, filemode
     )
+
+
+@overload
+def create_discipline(
+    discipline_name: str, *args: Any, **kwargs: Any
+) -> Discipline: ...
+
+
+@overload
+def create_discipline(
+    discipline_name: Iterable[str], *args: Any, **kwargs: Any
+) -> list[Discipline]: ...
 
 
 # TODO: rename to create_disciplines (plural)
