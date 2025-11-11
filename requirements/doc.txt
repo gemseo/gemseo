@@ -70,7 +70,7 @@ mpmath==1.3.0
     # via sympy
 mypy-extensions==1.1.0
     # via typing-inspect
-narwhals==2.10.2
+narwhals==2.11.0
     # via plotly
 networkx==3.5
     # via gemseo (pyproject.toml)
