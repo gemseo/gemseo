@@ -39802,8 +39802,8 @@
 <h1 id="how-to-manually-create-a-discipline-interfacing-an-external-executable">How to manually create a discipline interfacing an external executable?<a class="headerlink" href="#how-to-manually-create-a-discipline-interfacing-an-external-executable" title="Permanent link">&para;</a></h1>
 <h2 id="presentation-of-the-problem">Presentation of the problem<a class="headerlink" href="#presentation-of-the-problem" title="Permanent link">&para;</a></h2>
 <p>Let's consider a binary software computing the float output <span class="arithmatex">\(c = a^2 + b^2\)</span> from two float inputs : <code>'a'</code> and <code>'b'</code>.</p>
-<p>The inputs are read in the <code>inputs.txt</code> file which looks like: <code>a=1 b=2</code> and the output is written to: <code>outputs.txt</code> which looks like <code>c=5</code>.</p>
-<p>Then, the executable can be run using the shell command <code>./run.ksh</code>:</p>
+<p>The inputs are read in the <strong><code>inputs.txt</code></strong> file which looks like: <code>a=1 b=2</code> and the output is written to: <strong><code>outputs.txt</code></strong> which looks like <code>c=5</code>.</p>
+<p>Then, the executable can be run using the shell command <strong><code>./run.ksh</code></strong>:</p>
 <div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
 <span class="nb">set</span><span class="w"> </span>-i
 
@@ -39821,17 +39821,17 @@
 
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Wrote output file &#39;outputs.txt&#39;&quot;</span>
 </code></pre></div>
-<p>Let's make a discipline out of this from an initial <code>'inputs.txt'</code>.</p>
+<p>Let's make a discipline out of this from an initial <strong><code>'inputs.txt'</code></strong>.</p>
 <h2 id="implementation-of-the-discipline">Implementation of the discipline<a class="headerlink" href="#implementation-of-the-discipline" title="Permanent link">&para;</a></h2>
 <p>The construction of an <a class="autorefs autorefs-internal" title="            Discipline" href="../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> consists in three steps:</p>
 <ol>
 <li>Instantiate the <a class="autorefs autorefs-internal" title="            Discipline" href="../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> using the super constructor,</li>
 <li>Initialize the grammars using the <a class="autorefs autorefs-internal" title="            update_from_names" href="../../reference/gemseo/core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar.update_from_names">BaseGrammar.update_from_names</a> method,</li>
-<li>Set the default inputs from the initial <code>inputs.txt</code>.</li>
+<li>Set the default inputs from the initial <strong><code>inputs.txt</code></strong>.</li>
 </ol>
 <p>The <code>Discipline._run()</code> method consists in three steps:</p>
 <ol>
-<li>Write the <code>inputs.txt</code> file,</li>
+<li>Write the <strong><code>inputs.txt</code></strong> file,</li>
 <li>Run the executable using the <code>os.system()</code> command (<a href="https://docs.python.org/3/library/os.html#os.system">https://docs.python.org/3/library/os.html#os.system</a>),</li>
 <li>Return the outputs.</li>
 </ol>

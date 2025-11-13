@@ -40081,7 +40081,7 @@ matrices.</p>
             <span class="n">other_array</span> <span class="o">=</span> <span class="n">other_array</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">array_</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="n">str_</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">array_</span> <span class="o">!=</span> <span class="n">other_array</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">array_</span> <span class="o">!=</span> <span class="n">other_array</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">compare_arrays</span><span class="p">(</span><span class="n">array_</span><span class="p">,</span> <span class="n">other_array</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
