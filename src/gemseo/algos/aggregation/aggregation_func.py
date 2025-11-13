@@ -53,7 +53,7 @@ def check_constraint_type(
     """Decorate a function to check whether it is of the expected type.
 
     Args:
-        function_type: The expected function type, ``"ineq"`` or ``"eq"``.
+        function_type: The expected function type, `"ineq"` or `"eq"`.
 
     Returns:
         The decorated function.
@@ -76,7 +76,7 @@ def check_constraint_type(
             *args: Any,
             **kwargs: Any,
         ) -> Any:
-            """Check that ``func`` has the type `function_type``.
+            """Check that `func` has the type `function_type`.
 
             Args:
                 *args: The positional arguments.
@@ -86,7 +86,7 @@ def check_constraint_type(
                 ValueError: If the type is not correct.
 
             Returns:
-                The return value of ``func``.
+                The return value of `func`.
             """
             constr = args[0]
 
@@ -116,7 +116,7 @@ def aggregate_sum_square(
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         output_suffix: The suffix to add to the output names. Useful for cases in which
             the same aggregation method is used multiple times on the same constraint
@@ -158,7 +158,7 @@ def aggregate_positive_sum_square(
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         output_suffix: The suffix to add to the output names. Useful for cases in which
             the same aggregation method is used multiple times on the same constraint
@@ -200,7 +200,7 @@ def aggregate_max(
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         output_suffix: The suffix to add to the output names. Useful for cases in which
             the same aggregation method is used multiple times on the same constraint
@@ -238,12 +238,15 @@ def aggregate_iks(
 ) -> MDOFunction:
     """Constraints aggregation method for inequality constraints.
 
-    See :cite:`kennedy2015improved`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
 
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         rho: The multiplicative parameter in the exponential.
         output_suffix: The suffix to add to the output names. Useful for cases in which
@@ -288,12 +291,20 @@ def aggregate_lower_bound_ks(
 ) -> MDOFunction:
     """Aggregate constraints for inequality constraints.
 
-    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         rho: The multiplicative parameter in the exponential.
         output_suffix: The suffix to add to the output names. Useful for cases in which
@@ -338,12 +349,20 @@ def aggregate_upper_bound_ks(
 ) -> MDOFunction:
     """Aggregate constraints for inequality constraints.
 
-    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
         rho: The multiplicative parameter in the exponential.
         output_suffix: The suffix to add to the output names. Useful for cases in which

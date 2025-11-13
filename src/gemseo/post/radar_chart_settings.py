@@ -28,8 +28,8 @@ class RadarChart_Settings(BasePostSettings):  # noqa: D101, N801
     _TARGET_CLASS_NAME = "RadarChart"
     iteration: int | None = Field(
         default=None,
-        description=r"Either an iteration in :math:`\{-N,\ldots,-1,1,\ldots,N\}` or "
-        "``None`` for the iteration at which the optimum is located, where :math:`N` "
+        description=r"Either an iteration in $\{-N,\ldots,-1,1,\ldots,N\}$ or "
+        "`None` for the iteration at which the optimum is located, where $N$ "
         "is the length of the database.",
     )
     constraint_names: Sequence[str] = Field(

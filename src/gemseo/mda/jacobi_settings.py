@@ -22,7 +22,7 @@ from gemseo.utils.pydantic import copy_field
 
 
 class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
-    """The settings for :class:`.MDAJacobi`."""
+    """The settings for [MDAJacobi][gemseo.mda.jacobi.MDAJacobi]."""
 
     _TARGET_CLASS_NAME = "MDAJacobi"
 

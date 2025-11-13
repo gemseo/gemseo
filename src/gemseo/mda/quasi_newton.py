@@ -18,7 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A set of quasi Newton algorithm variants for solving MDAs.
 
-`quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
+[quasi-Newton methods](https://en.wikipedia.org/wiki/Quasi-Newton_method)
 """
 
 from __future__ import annotations
@@ -50,10 +50,10 @@ LOGGER = logging.getLogger(__name__)
 class MDAQuasiNewton(BaseParallelMDASolver):
     r"""Quasi-Newton solver for MDA.
 
-    `Quasi-Newton methods <https://en.wikipedia.org/wiki/Quasi-Newton_method>`__
+    [Quasi-Newton methods](https://en.wikipedia.org/wiki/Quasi-Newton_method)
     include numerous variants (
-    `Broyden <https://en.wikipedia.org/wiki/Broyden%27s_method>`__,
-    `Levenberg-Marquardt <https://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm>`
+    [Broyden](https://en.wikipedia.org/wiki/Broyden%27s_method),
+    [Levenberg-Marquardt](https://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm)
     __, ...).
 
     The name of the variant should be provided via the :code:`method` parameter of the
@@ -61,13 +61,11 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
     The new iterate is given by:
 
-    .. math::
+    $$x_{k+1} = x_k - \\rho_k B_k f(x_k)$$
 
-       x_{k+1} = x_k - \\rho_k B_k f(x_k)
-
-    where :math:`\\rho_k` is a coefficient chosen in order to minimize the convergence
-    and :math:`B_k` is an approximation of :math:`Df(x_k)^{-1}`, the inverse of the
-    Jacobian of :math:`f` at :math:`x_k`.
+    where $\\rho_k$ is a coefficient chosen in order to minimize the convergence
+    and $B_k$ is an approximation of $Df(x_k)^{-1}$, the inverse of the
+    Jacobian of $f$ at $x_k$.
     """
 
     Settings: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings

@@ -20,18 +20,24 @@
 """A scalable methodology to test MDO formulation on benchmark or real problems.
 
 This API facilitates
-the use of the :mod:`gemseo.problems.mdo.scalable.data_driven.study`
+the use of the
+[gemseo.problems.mdo.scalable.data_driven.study][gemseo.problems.mdo.scalable.data_driven.study]
 package implementing classes to benchmark MDO formulations
 based on scalable disciplines.
 
-:class:`.ScalabilityStudy` class implements the concept of scalability study:
+The
+[ScalabilityStudy][gemseo.problems.mdo.scalable.data_driven.study.process.ScalabilityStudy]
+class implements the concept of scalability study:
 
-1. By instantiating a :class:`.ScalabilityStudy`, the user defines
-   the MDO problem in terms of design parameters, objective function and
-   constraints.
+1. By instantiating a
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel],
+   the user defines the MDO problem in terms of design parameters,
+   objective function and constraints.
 2. For each discipline, the user adds a dataset stored
-   in a :class:`.Dataset` and select a type of
-   :class:`.ScalableModel` to build the :class:`.ScalableDiscipline`
+   in a [Dataset][gemseo.datasets.dataset.Dataset] and select a type of
+   [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel]
+   to build the
+   [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]
    associated with this discipline.
 3. The user adds different optimization strategies, defined in terms
    of both optimization algorithms and MDO formulation.
@@ -39,13 +45,14 @@ based on scalable disciplines.
    design parameters, coupling variables and equality and inequality
    constraints. The user can also define a scaling strategies according to
    particular parameters rather than groups of parameters.
-5. Lastly, the user executes the :class:`.ScalabilityStudy` and the results
-   are written in several files and stored into directories
+5. Lastly, the user executes the
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+   and the results are written in several files and stored into directories
    in a hierarchical way, where names depend on both MDO formulation,
    scaling strategy and replications when it is necessary. Different kinds
    of files are stored: optimization graphs, dependency matrix plots and
    of course, scalability results by means of a dedicated class:
-   :class:`.ScalabilityResult`.
+   [ScalabilityResult][gemseo.problems.mdo.scalable.data_driven.study.result.ScalabilityResult].
 """
 
 from __future__ import annotations
@@ -74,24 +81,24 @@ def create_scalability_study(
     early_stopping: bool = True,
     coupling_variables: Iterable[str] | None = None,
 ) -> ScalabilityStudy:
-    """This method creates a :class:`.ScalabilityStudy`.
+    """This method creates a scalability study.
 
     It requires two mandatory arguments:
 
-    - the ``'objective'`` name,
-    - the list of ``'design_variables'`` names.
+    - the `'objective'` name,
+    - the list of `'design_variables'` names.
 
     Concerning output files, we can specify:
 
-    - the ``directory`` which is ``'study'`` by default,
+    - the `directory` which is `'study'` by default,
     - the prefix of output file names (default: no prefix).
 
     Regarding optimization parametrization, we can specify:
 
-    - the list of equality constraints names (``eq_constraints``),
-    - the list of inequality constraints names (``ineq_constraints``),
+    - the list of equality constraints names (`eq_constraints`),
+    - the list of inequality constraints names (`ineq_constraints`),
     - the choice of maximizing the objective function
-      (``maximize_objective``).
+      (`maximize_objective`).
 
     By default, the objective function is minimized and the MDO problem
     is unconstrained.
@@ -100,15 +107,15 @@ def create_scalability_study(
     we can overwrite:
 
     - the default fill factor of the input-output dependency matrix
-      ``ineq_constraints``,
+      `ineq_constraints`,
     - the probability to set the inequality constraints as active at
-      initial step of the optimization ``active_probability``,
+      initial step of the optimization `active_probability`,
     - the offset of satisfaction for inequality constraints
-      ``feasibility_level``,
+      `feasibility_level`,
     - the use of a preliminary MDA to start at equilibrium
-      ``start_at_equilibrium``,
+      `start_at_equilibrium`,
     - the post-processing of the optimization database to get results
-      earlier than final step ``early_stopping``.
+      earlier than final step `early_stopping`.
 
     Args:
         objective: The name of the objective.
@@ -148,7 +155,7 @@ def create_scalability_study(
 
 
 def plot_scalability_results(study_directory: str) -> PostScalabilityStudy:
-    """Plot :class:`.ScalabilityResult`s generated by a :class:`.ScalabilityStudy`.
+    """Plot scalability results generated by a scalable diagonal model.
 
     Args:
         study_directory: The directory of the scalability study.

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Connect the observations of variables stored in a :class:`.Dataset` with lines."""
+"""Connect the observations of variables stored in a dataset with lines."""
 
 from __future__ import annotations
 
@@ -50,13 +50,13 @@ class Lines(DatasetPlot):
             variables: The names of the variables to plot.
                 If empty, use all the variables.
             abscissa_variable: The name of the variable used in abscissa.
-                The observations of the ``variables`` are plotted
-                in function of the observations of this ``abscissa_variable``.
+                The observations of the `variables` are plotted
+                in function of the observations of this `abscissa_variable`.
                 If empty,
-                the observations of the ``variables`` are plotted
+                the observations of the `variables` are plotted
                 in function of the indices of the observations.
             add_markers: Whether to mark the observations with dots.
-            set_xticks_from_data: Whether to use the values of ``abscissa_variable``
+            set_xticks_from_data: Whether to use the values of `abscissa_variable`
                 as locations of abscissa ticks.
             use_integer_xticks: Whether to use integer xticks.
             plot_abscissa_variable: Whether to plot the abscissa variable.

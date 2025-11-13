@@ -70,7 +70,7 @@ _StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")
 
 
 class LoggingConfiguration(BaseModel, validate_assignment=True):
-    """The configuration for |g| loggers."""
+    """The configuration for GEMSEO loggers."""
 
     date_format: str = Field(
         default=_LOGGING_DATE_FORMAT,
@@ -93,14 +93,14 @@ either 'w' (overwrite) or 'a' (append).""",
     level: str | int = Field(
         default=_LOGGING_LEVEL,
         description="""The numerical value or name of the logging level,
-as defined in :py:mod:`logging`.
+as defined in `logging`.
 Values can either be
-``logging.NOTSET`` (``"NOTSET"``),
-``logging.DEBUG`` (``"DEBUG"``),
-``logging.INFO`` (``"INFO"``),
-``logging.WARNING`` (``"WARNING"`` or ``"WARN"``),
-``logging.ERROR`` (``"ERROR"``), or
-``logging.CRITICAL`` (``"FATAL"`` or ``"CRITICAL"``).""",
+`logging.NOTSET` (`"NOTSET"`),
+`logging.DEBUG` (`"DEBUG"`),
+`logging.INFO` (`"INFO"`),
+`logging.WARNING` (`"WARNING"` or `"WARN"`),
+`logging.ERROR` (`"ERROR"`), or
+`logging.CRITICAL` (`"FATAL"` or `"CRITICAL"`).""",
     )
 
     message_format: str = Field(
@@ -209,7 +209,7 @@ class LoggingSettings:
 LOGGING_SETTINGS = LoggingSettings()
 """The logging settings.
 
-The parameters are changed by :func:`.configure_logger`.
+The parameters are changed by [configure_logger][gemseo.configure_logger].
 """
 
 
@@ -249,7 +249,7 @@ class MultiLineFileHandler(MultiLineHandlerMixin, FileHandler):
 class LoggingContext:
     """Context manager for selective logging.
 
-    Change the level of the logger in a ``with`` block.
+    Change the level of the logger in a `with` block.
 
     Examples:
         >>> import logging
@@ -262,9 +262,7 @@ class LoggingContext:
         >>>
         >>> logger.info("This should appear.")
 
-    Source: `Logging Cookbook
-    <https://docs.python.org/3/howto/
-    logging-cookbook.html#using-a-context-manager-for-selective-logging>`_
+    Source: [Logging Cookbook](https://docs.python.org/3/howto/logging-cookbook.html#using-a-context-manager-for-selective-logging)
     """
 
     logger: Logger
@@ -273,7 +271,7 @@ class LoggingContext:
     level: int | None
     """The level of the logger to be used on block entry.
 
-    If ``None``, do not change the level of the logger.
+    If `None`, do not change the level of the logger.
     """
 
     handler: StreamHandler
@@ -293,7 +291,7 @@ class LoggingContext:
         Args:
             logger: The logger.
             level: The level of the logger to be used on block entry.
-                If ``None``, do not change the level of the logger.
+                If `None`, do not change the level of the logger.
             handler: An additional handler to be used on block entry.
             close: Whether to close the handler on block exit.
         """  # noqa:D205 D212 D415
@@ -340,7 +338,7 @@ class OneLineLogging:
     """One formatter per stream handler."""
 
     __logger: Logger
-    """The logger used by the context manager when the handler is not ``None``."""
+    """The logger used by the context manager when the handler is not `None`."""
 
     def __init__(self, logger: Logger) -> None:
         """

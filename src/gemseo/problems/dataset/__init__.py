@@ -14,21 +14,28 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Examples of datasets.
 
-|g| proposes several datasets containing academic data
+GEMSEO proposes several datasets containing academic data
 to illustrate its capabilities:
 
-- :func:`.create_iris_dataset` returns a collection of iris plants,
+- the function
+  [create_iris_dataset()][gemseo.problems.dataset.iris.create_iris_dataset]
+  returns a collection of iris plants,
   mainly used to benchmark clustering and classification algorithms,
-- :func:`.create_rosenbrock_dataset` returns a set of evaluations of
-  the `Rosenbrock function <https://en.wikipedia.org/wiki/Rosenbrock_function>`__
+- the function
+  [create_rosenbrock_dataset()][gemseo.problems.dataset.rosenbrock.create_rosenbrock_dataset]
+  returns a set of evaluations of
+  the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
   over a regular grid,
   initially introduced to illustrate visualization tools dedicated to surfaces
-  such as :class:`.ZvsXY`,
-- :func:`.create_burgers_dataset` returns a set of solutions of
-  the `Burgers' equation <https://en.wikipedia.org/wiki/Burgers%27_equation>`__
+  such as [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY],
+- the function
+  [create_burgers_dataset()][gemseo.problems.dataset.burgers.create_burgers_dataset]
+  returns a set of solutions of
+  the [Burgers' equation](https://en.wikipedia.org/wiki/Burgers%27_equation)
   at given times,
   initially introduced to illustrate dimension reduction methods,
-  e.g. :class:`.PCA` or :class:`.KLSVD`.
+  e.g. [PCA][gemseo.mlearning.transformers.dimension_reduction.pca.PCA] or
+  [KLSVD][gemseo.mlearning.transformers.dimension_reduction.klsvd.KLSVD].
 """
 
 from __future__ import annotations

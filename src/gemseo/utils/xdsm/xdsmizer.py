@@ -18,10 +18,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Creation of a XDSM diagram from a scenario.
 
-The :class:`.XDSMizer` generates a JSON file.
+The [XDSMizer][gemseo.utils.xdsm.xdsmizer.XDSMizer] generates a JSON file.
 
 The latter is used by the
-`XDSMjs javascript library <https://github.com/OneraHub/XDSMjs>`_
+[XDSMjs javascript library](https://github.com/OneraHub/XDSMjs)
 to produce an interactive web XDSM
 and by the pyxdsm python library
 to produce TIKZ and PDF versions of the XDSM.
@@ -104,7 +104,9 @@ class XDSMizer:
             level: The depth of the scenario. Root scenario is level 0.
             expected_workflow: The expected workflow,
                 describing the sequence of execution of the different disciplines
-                (:class:`.Discipline`, :class:`.Scenario`, :class:`.BaseMDA`, etc.)
+                ([Discipline][gemseo.core.discipline.discipline.Discipline],
+                [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario],
+                 [BaseMDA][gemseo.mda.base_mda.BaseMDA], etc.)
         """  # noqa:D205 D212 D415
         if isinstance(discipline, BaseScenario):
             self._is_scenario = True
@@ -154,7 +156,7 @@ class XDSMizer:
 
         Args:
             workflow: The composite execution sequence.
-                If ``None``, use the scenario's one.
+                If `None`, use the scenario's one.
         """
         self.sub_xdsmizers = []
         # Find disciplines from workflow structure
@@ -236,7 +238,7 @@ class XDSMizer:
         pdf_cleanup: bool = True,
         pdf_batchmode: bool = True,
     ) -> XDSM:
-        """Generate a XDSM diagram of the :attr:`.scenario`.
+        """Generate a XDSM diagram of the scenario.
 
         By default,
         a self-contained HTML file is generated,
@@ -249,10 +251,10 @@ class XDSMizer:
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
             save_pdf: Whether to save the XDSM as
-                a TikZ file ``"{file_name}.tikz"`` containing its definition and
-                a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+                a TikZ file `"{file_name}.tikz"` containing its definition and
+                a LaTeX file `"{file_name}.tex"` including this TikZ file.
                 The LaTeX file can be compiled to a PDF file.
-            pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+            pdf_build: Whether to compile the LaTeX file `"{file_name}.tex"`
                 to a PDF file using pdflatex.
             pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
             pdf_batchmode: Whether to suppress compilation logs.

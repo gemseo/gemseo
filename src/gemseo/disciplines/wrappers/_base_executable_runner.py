@@ -56,7 +56,7 @@ class _BaseExecutableRunner(Serializable):
     """The object generating directories with unique names."""
 
     __subprocess_run_options: StrKeyMapping
-    """The options of the ``subprocess.run`` method."""
+    """The options of the `subprocess.run` method."""
 
     def __init__(
         self,
@@ -70,7 +70,7 @@ class _BaseExecutableRunner(Serializable):
         """
         Args:
             command_line: The command line to run the executable.
-                E.g. ``python my_script.py -i input.txt -o output.txt``
+                E.g. `python my_script.py -i input.txt -o output.txt`
             root_directory: The path to the root directory,
                 wherein unique directories will be created at each execution.
                 If empty, use the current working directory.
@@ -79,7 +79,7 @@ class _BaseExecutableRunner(Serializable):
                 directory.
             working_directory: The directory within to execute the command line.
                 If empty, execute the command line into the unique generated directory.
-            **subprocess_run_options: The options of the ``subprocess.run`` method.
+            **subprocess_run_options: The options of the `subprocess.run` method.
         """  # noqa:D205 D212 D415
         self.__directory_creator = DirectoryCreator(
             root_directory=root_directory,
@@ -94,15 +94,15 @@ class _BaseExecutableRunner(Serializable):
         self,
         subprocess_run_options: StrKeyMapping,
     ) -> None:
-        """Set the ``subprocess.run`` options.
+        """Set the `subprocess.run` options.
 
-        By default, the ``stderr`` option is set to ``subprocess.STDOUT``.
+        By default, the `stderr` option is set to `subprocess.STDOUT`.
 
         Args:
-            subprocess_run_options: The options for the ``subprocess.run`` method.
+            subprocess_run_options: The options for the `subprocess.run` method.
 
         Raises:
-            KeyError: When the options ``cwd``, ``args`` or ``shell`` are given.
+            KeyError: When the options `cwd`, `args` or `shell` are given.
         """
         self.__subprocess_run_options = {"stderr": subprocess.STDOUT}
 

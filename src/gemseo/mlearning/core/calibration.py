@@ -30,14 +30,23 @@ Classically, the generalization one decreases before growing again as
 the model becomes more complex, while the learning error keeps decreasing. This
 phenomenon is called the curse of dimensionality.
 
-In this module, the :class:`.MLAlgoCalibration` class aims to calibrate the hyper-
-parameters in order to minimize this measure of the generalization quality over a
-calibration parameter space. This class relies on the :class:`.MLAlgoAssessor` class
-which is a discipline (:class:`.Discipline`) built from a machine learning algorithm
-(:class:`.BaseMLAlgo`), a dataset (:class:`.Dataset`), a quality measure
-(:class:`.BaseMLAlgoQuality`) and various options for the data scaling, the quality
-measure and the machine learning algorithm. The inputs of this discipline are hyper-
-parameters of the machine learning algorithm while the output is the quality criterion.
+In this module,
+the
+[MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration]
+class aims to calibrate the hyper-parameters
+in order to minimize this measure of the generalization quality
+over a calibration parameter space.
+This class relies on the
+[MLAlgoAssessor][gemseo.mlearning.core.calibration.MLAlgoAssessor] class
+which is a discipline ([Discipline][gemseo.core.discipline.discipline.Discipline])
+built from a machine learning algorithm
+([BaseMLAlgo][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo]),
+a dataset ([Dataset][gemseo.datasets.dataset.Dataset]), a quality measure
+([BaseMLAlgoQuality][gemseo.mlearning.core.quality.base_ml_algo_quality.BaseMLAlgoQuality])
+and various options for the data scaling, the quality
+measure and the machine learning algorithm.
+The inputs of this discipline are hyper-parameters of the machine learning algorithm
+while the output is the quality criterion.
 """
 
 from __future__ import annotations
@@ -75,7 +84,7 @@ class MLAlgoAssessor(Discipline):
     """Discipline assessing the quality of a machine learning algorithm.
 
     This quality depends on the values of parameters to calibrate with the
-    :class:`.MLAlgoCalibration`.
+    [MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration].
     """
 
     algo: str
@@ -129,16 +138,20 @@ class MLAlgoAssessor(Discipline):
                 If empty, do not use quality measure options.
             transformer: The strategies
                 to transform the variables.
-                The values are instances of :class:`.BaseTransformer`
+                The values are instances of
+                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
-                e.g. ``"inputs"`` or ``"outputs"``
+                e.g. `"inputs"` or `"outputs"`
                 in the case of the regression algorithms.
                 If a group is specified,
-                the :class:`.BaseTransformer` will be applied
-                to all the variables of this group.
-                If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
+                the
+                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
+                will be applied to all the variables of this group.
+                If
+                [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+                do not transform the variables.
             **algo_settings: The settings of the machine learning algorithm.
 
         Raises:
@@ -166,8 +179,10 @@ class MLAlgoAssessor(Discipline):
 
         This method creates a new instance of the machine learning algorithm, from the
         hyper-parameters stored in the data attribute of the
-        :class:`.MLAlgoAssessor`. It trains it on the training dataset and measures its
-        quality with the :class:`.BaseMLAlgoQuality`.
+        [MLAlgoAssessor][gemseo.mlearning.core.calibration.MLAlgoAssessor].
+        It trains it on the training dataset and measures its
+        quality with the
+        [BaseMLAlgoQuality][gemseo.mlearning.core.quality.base_ml_algo_quality.BaseMLAlgoQuality].
         """
         inputs = self.io.get_input_data()
         for index in inputs:
@@ -245,16 +260,21 @@ class MLAlgoCalibration:
                 If empty, do not use the quality measure options.
             transformer: The strategies
                 to transform the variables.
-                The values are instances of :class:`.BaseTransformer`
+                The values are instances of
+                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
-                e.g. ``"inputs"`` or ``"outputs"``
+                e.g. `"inputs"` or `"outputs"`
                 in the case of the regression algorithms.
                 If a group is specified,
-                the :class:`.BaseTransformer` will be applied
+                the
+                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
+                will be applied
                 to all the variables of this group.
-                If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
+                If
+                [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+                do not transform the variables.
             **algo_settings: The settings of the machine learning algorithm.
         """  # noqa: D205 D212
         disc = MLAlgoAssessor(

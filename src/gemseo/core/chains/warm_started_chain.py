@@ -49,7 +49,7 @@ class MDOWarmStartedChain(MDOChain):
                 These names must be outputs of the disciplines in the chain.
                 If the list is empty, no variables are warm started.
             name: The name of the discipline.
-                If ``None``, use the class name.
+                If `None`, use the class name.
 
         Raises:
             ValueError: If the variable names to warm start are not outputs of the

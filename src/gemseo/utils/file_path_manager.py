@@ -66,7 +66,7 @@ class FilePathManager:
         Args:
             file_type: The type of file,
                 defined by its default file name and format;
-                select a file type by iterating over ``FileType``.
+                select a file type by iterating over `FileType`.
             default_name: The default file name.
                 If empty, use the default file name related to the given type of file.
             default_directory: The default directory path.
@@ -121,7 +121,7 @@ class FilePathManager:
         Args:
             file_path: The path of the file to be returned.
                 If empty, create a file path
-                from ``directory_path``, ``file_name`` and ``file_extension``.
+                from `directory_path`, `file_name` and `file_extension`.
             directory_path: The path of the directory.
                 If empty, use the default directory path.
             file_name: The file name to be used.
@@ -160,7 +160,7 @@ class FilePathManager:
         1. Split the message.
         2. Lowercase the resulting elements.
 
-        ``-`` and `` `` are replaced with ``_``.
+        `-` and ` ` are replaced with `_`.
 
         Args:
             message: The message to be snake-cased.

@@ -35,7 +35,8 @@ if TYPE_CHECKING:
 class BaseDiscipline(Discipline):
     """Base class for the disciplines of the scalable problem.
 
-    This :class:`.Discipline` relies on a |g|-free core discipline.
+    This [Discipline][gemseo.core.discipline.discipline.Discipline]
+    relies on a GEMSEO-free core discipline.
     """
 
     _CORE_DISCIPLINE_CLASS: type[_BaseDiscipline]
@@ -53,7 +54,7 @@ class BaseDiscipline(Discipline):
         Args:
             *core_discipline_parameters: The parameters
                 to instantiate the core discipline
-                as ``CoreDiscipline(*core_discipline_parameters)``.
+                as `CoreDiscipline(*core_discipline_parameters)`.
             **default_input_values: The default values of the input variables.
         """  # noqa: D205 D212
         self._discipline = self._CORE_DISCIPLINE_CLASS(

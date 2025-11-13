@@ -17,32 +17,29 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw parallel coordinates from a :class:`.Dataset`.
+r"""Draw parallel coordinates from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-The :class:`.ParallelCoordinates` class implements the parallel coordinates
-plot, a.k.a. cowebplot, which is a way to visualize :math:`n` samples of a
-high-dimensional vector
+The [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates]
+class implements the parallel coordinates plot, a.k.a. cowebplot,
+which is a way to visualize $n$ samples of a high-dimensional vector
 
-.. math::
-
-   x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d
+$$x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d$$
 
 in a 2D referential by representing each sample
 
-.. math::
-
-   x^{(i)}=(x_1^{(i)},x_2^{(i)},\ldots,x_d^{(i)})
+$$x^{(i)}=(x_1^{(i)},x_2^{(i)},\ldots,x_d^{(i)})$$
 
 as a piece-wise line where the x-values of the nodes from left to right
-are the values of :math:`x_1`, :math:`x_2`, ... and :math:`x_d^{(i)}`.
+are the values of $x_1$, $x_2$, ... and $x_d^{(i)}$.
 
-A variable name is required by the :meth:`.DatasetPlot.execute` method
-by means of the ``classifier`` keyword in order to color the curves
+A variable name is required by the
+[DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute] method
+by means of the `classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled or when we are looking for the samples for which the classifier value
-is comprised in some interval specified by the ``lower`` and ``upper``
+is comprised in some interval specified by the `lower` and `upper`
 arguments
-(default values are set to ``-inf`` and ``inf`` respectively).
+(default values are set to `-inf` and `inf` respectively).
 In the latter case, the color scale is composed of only two values: one for
 the samples positively classified and one for the others.
 """

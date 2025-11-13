@@ -53,7 +53,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
     _seed: int | None
     """The seed to initialize the random generator.
 
-    If ``None``,
+    If `None`,
     then fresh, unpredictable entropy will be pulled from the OS.
     """
 
@@ -78,7 +78,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
             sample_indices: The original indices of the samples.
             n_splits: The number of train-test splits.
             seed: The seed to initialize the random generator.
-                If ``None``,
+                If `None`,
                 then fresh, unpredictable entropy will be pulled from the OS.
         """  # noqa: D205 D212
         self._n_splits = n_splits
@@ -133,15 +133,16 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
                 (first the predictions of the first sub-model,
                 then the prediction of the second sub-model,
                 etc.).
-                This argument is ignored when ``input_data`` is ``None``.
+                This argument is ignored when `input_data` is `None`.
             fit_transformers: Whether to re-fit the transformers.
             store_sampling_result: Whether to store the sampling results
-                in the attribute :class:`~.BaseMLAlgo.resampling_results`
+                in the attribute
+                [BaseMLAlgo.resampling_results][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.resampling_results]
                 of the original model.
 
         Returns:
             First the sub-models resulting from resampling
-            if ``return_models`` is ``True``
+            if `return_models` is `True`
             then the predictions, either per fold or stacked.
 
         Raises:

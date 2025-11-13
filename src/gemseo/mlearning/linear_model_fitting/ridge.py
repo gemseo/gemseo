@@ -29,15 +29,13 @@ class Ridge(BaseSKLearnLinearModelFitter[SKLearnRidge, Ridge_Settings]):
     r"""Scikit-learn ridge algorithm.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm solves a penalized least squares problem of the form:
 
-    .. math::
+    $$\min_w \|Xw-y\|_2^2 + \alpha \|w\|_2^2, \qquad \alpha \geq 0$$
 
-       \min_w \|Xw-y\|_2^2 + \alpha \|w\|_2^2, \qquad \alpha \geq 0
-
-    where :math:`\|w\|_2` is the :math:`\ell_2`-norm of the coefficients :math:`w`
-    and :math:`\|Xw-y\|_2` is the :math:`\ell_2`-norm of the residual :math:`Xw-y`.
+    where $\|w\|_2$ is the $\ell_2$-norm of the coefficients $w$
+    and $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
     """
 
     Settings = Ridge_Settings

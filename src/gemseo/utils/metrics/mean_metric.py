@@ -15,7 +15,8 @@
 """A mean metric.
 
 A mean metric applies the mean operator on the result
-returned by :meth:`.ElementWiseMetric.compute`.
+returned by
+[ElementWiseMetric.compute()][gemseo.utils.metrics.element_wise_metric.ElementWiseMetric.compute].
 """
 
 from __future__ import annotations

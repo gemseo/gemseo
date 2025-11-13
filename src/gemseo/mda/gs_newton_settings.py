@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class MDAGSNewton_Settings(MDASequential_Settings):  # noqa: N801
-    """The settings for :class:`.MDAGSNewton`."""
+    """The settings for [MDAGSNewton][gemseo.mda.gs_newton.MDAGSNewton]."""
 
     _TARGET_CLASS_NAME = "MDAGSNewton"
 

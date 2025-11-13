@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 class PyDOEFullFactorialDOE(BaseFullFactorialDOE):
     """The pyDOE based full-factorial DOE.
 
-    .. note:: This class is a singleton.
+    Note:
+        This class is a singleton.
     """
 
     def _generate_fullfact_from_levels(self, levels: int | Sequence[int]) -> RealArray:

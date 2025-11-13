@@ -55,9 +55,9 @@ class MatplotlibPlot(BasePlot):
         """
         Args:
             fig: The figure.
-                If ``None``, create a new one.
-            ax: The :class:`~matplotlib.axes.Axes` object.
-                If ``None``, create a new one.
+                If `None`, create a new one.
+            ax: The [Axes][matplotlib.axes.Axes`] object.
+                If `None`, create a new one.
         """  # noqa: D205 D212 D415
         super().__init__(dataset, common_settings, specific_settings, fig=fig, ax=ax)
         self.__figures = self.__create_figures(fig, ax, *specific_data)
@@ -74,9 +74,9 @@ class MatplotlibPlot(BasePlot):
 
         Args:
             fig: The figure.
-                If ``None``, create a new one.
-            ax: The :class:`~matplotlib.axes.Axes` object.
-                If ``None``, create a new one.
+                If `None`, create a new one.
+            ax: The [Axes][matplotlib.axes.Axes`] object.
+                If `None`, create a new one.
             *specific_data: The data specific to this plot class.
 
         Returns:
@@ -96,9 +96,9 @@ class MatplotlibPlot(BasePlot):
 
         Args:
             fig: The figure.
-                If ``None``, create a new one.
-            ax: The :class:`~matplotlib.axes.Axes` object.
-                If ``None``, create a new one.
+                If `None`, create a new one.
+            ax: The [Axes][matplotlib.axes.Axes`] object.
+                If `None`, create a new one.
             *specific_data: The data specific to this plot class.
 
         Returns:
@@ -135,11 +135,11 @@ class MatplotlibPlot(BasePlot):
 
         Args:
             fig: The figure.
-                If ``None``, create a new one.
-            ax: The :class:`~matplotlib.axes.Axes` object.
-                If ``None``, create a new one.
+                If `None`, create a new one.
+            ax: The [Axes][matplotlib.axes.Axes`] object.
+                If `None`, create a new one.
             fig_size: The width and height of the figure in inches.
-                If empty, use the default ``fig_size``.
+                If empty, use the default `fig_size`.
             n_rows: The number of rows of the subplot grid.
             n_cols: The number of cols of the subplot grid.
 

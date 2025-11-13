@@ -55,8 +55,9 @@ class ProgressBar(BaseProgressBar):
             max_iter: The maximum number of iterations.
             problem: The problem for which the driver will evaluate the functions.
             description: The text prefixing the progress bar.
-            progress_bar_data_name: The name
-                of a :class:`.BaseProgressBarData` class
+            progress_bar_data_name: The name of a
+                [BaseProgressBarData][gemseo.algos.progress_bar_data.base.BaseProgressBarData]
+                class
                 to define the data of an optimization problem
                 to be displayed in the progress bar.
         """  # noqa: D205 D212 D415

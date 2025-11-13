@@ -113,7 +113,7 @@ class BaseToleranceTester:
 
         Raises:
             TerminationCriterion: When the tolerance criterion is not met
-                and ``raise_exception`` is ``True``.
+                and `raise_exception` is `True`.
         """
         tolerance_criterion_is_reached = self._check(problem, **kwargs)
         if raise_exception and tolerance_criterion_is_reached:
@@ -127,6 +127,7 @@ class BaseToleranceTester:
 
         Args:
             problem: The optimization problem to which the database is attached.
+            *args: The positional arguments of the tester.
             **kwargs: The options of the tester.
 
         Returns:
@@ -221,8 +222,8 @@ def kkt_residual_computation(
 ) -> float:
     """Compute the KKT residual norm.
 
-    This implementation is inspired from Svanberg Matlab implementation of
-    MMA algorithm see :cite:`svanberg1998method`
+    This implementation is inspired
+    from Svanberg's Matlab implementation of MMA algorithm.
 
     Args:
         opt_problem: The optimization problem containing an optimization history.
@@ -231,6 +232,13 @@ def kkt_residual_computation(
 
     Returns:
         The KKT residual norm.
+
+    !!! quote "References"
+
+        Krister Svanberg.
+        The method of moving asymptotes-modelling aspects and solution schemes.
+        Lecture Notes for the DCAMM course Advanced Topics in Structural Optimization,
+        1998.
     """
     res = opt_problem.database.get_function_value(KKT_RESIDUAL_NORM, x_vect)
     if res is not None:
@@ -260,16 +268,11 @@ def is_x_tol_reached(
     within the distance of the center with relative and absolute tolerances specified by
     the user.
 
-    Parameters
-    ----------
-    opt_problem: OptimizationProblem
-        the optimization problem containing the iterations
-    x_tol_rel: float
-        relative tolerance
-    x_tol_abs: float
-        absolute tolerance
-    n_x: int
-        number of design vectors to account for
+    Args:
+        opt_problem: The optimization problem containing the iterations.
+        x_tol_rel: The relative tolerance.
+        x_tol_abs: The absolute tolerance.
+        n_x: The number of design vectors to account for.
     """
     tester = DesignToleranceTester(
         absolute=x_tol_abs, relative=x_tol_rel, n_last_iterations=n_x
@@ -290,16 +293,11 @@ def is_f_tol_reached(
     the distance of the center with relative and absolute tolerances specified by the
     user.
 
-    Parameters
-    ----------
-    opt_problem: OptimizationProblem
-        the optimization problem containing the iterations
-    f_tol_rel: float
-        relative tolerance
-    f_tol_abs: float
-        absolute tolerance
-    n_x: int
-        number of design vectors to account for
+    Args:
+        opt_problem: The optimization problem containing the iterations.
+        f_tol_rel: The relative tolerance.
+        f_tol_abs: The absolute tolerance.
+        n_x: The number of design vectors to account for.
     """
     tester = ObjectiveToleranceTester(
         absolute=f_tol_abs, relative=f_tol_rel, n_last_iterations=n_x

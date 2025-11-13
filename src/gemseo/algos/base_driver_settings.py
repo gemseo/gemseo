@@ -32,8 +32,8 @@ class BaseDriverSettings(BaseAlgorithmSettings):
         description=(
             """Whether to enable the progress bar in the optimization log.
 
-If ``None``, use the global value of ``enable_progress_bar`` (see the
-``configure`` function to change it globally)."""
+If `None`, use the global value of `enable_progress_bar` (see the
+`configure` function to change it globally)."""
         ),
     )
 
@@ -66,7 +66,8 @@ If ``None``, use the global value of ``enable_progress_bar`` (see the
 
     progress_bar_data_name: ProgressBarDataName = Field(
         default=ProgressBarData.__name__,
-        description="""The name of a :class:`.BaseProgressBarData` class
+        description="""The name of a
+[BaseProgressBarData][gemseo.algos.progress_bar_data.base.BaseProgressBarData] class
 to define the data of an evaluation problem to be displayed in the progress bar.""",
     )
 
@@ -86,9 +87,9 @@ to define the data of an evaluation problem to be displayed in the progress bar.
         default=True,
         description="""Whether to store the Jacobian matrices in the database.
 
-    This argument is ignored when the ``use_database`` option is ``False``.
-    If a gradient-based algorithm is used,
-    this option cannot be set along with kkt options.""",
+This argument is ignored when the `use_database` option is `False`.
+If a gradient-based algorithm is used,
+this option cannot be set along with kkt options.""",
     )
 
     use_database: bool = Field(

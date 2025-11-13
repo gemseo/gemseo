@@ -23,32 +23,33 @@
 Machine learning is used to find relations or underlying structures in data.
 There is however no algorithm that is universally better than the others
 for an arbitrary problem.
-As for optimization, there is *no free lunch* for machine learning :cite:`wolpert`.
 
 Provided a quality measure,
 one can thus compare the performances of different machine learning algorithms.
 
-This process can be easily performed using the class :class:`.MLAlgoSelection`.
+This process can be easily performed
+using the class [MLAlgoSelection][gemseo.mlearning.core.selection.MLAlgoSelection].
 
 A machine learning algorithm is built using a set of (hyper)parameters,
 before the learning takes place.
 In order to choose the best hyperparameters,
 a simple grid search over different values may be sufficient.
-The :class:`.MLAlgoSelection` does this.
+The [MLAlgoSelection][gemseo.mlearning.core.selection.MLAlgoSelection] does this.
 It can also perform a more advanced form of optimization
 than a simple grid search over predefined values,
-using the class :class:`.MLAlgoCalibration`.
+using the class
+[MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration].
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.core.ml_algo`
-   :mod:`~gemseo.mlearning.core.calibration`
+See Also:
+   [gemseo.mlearning.core.algos.ml_algo][gemseo.mlearning.core.algos.ml_algo]
+   [gemseo.mlearning.core.calibration][gemseo.mlearning.core.calibration]
 """
 
 from __future__ import annotations
 
 from itertools import product
 from typing import TYPE_CHECKING
+from typing import Any
 
 from gemseo.mlearning.core.algos.factory import MLAlgoFactory
 from gemseo.mlearning.core.calibration import MLAlgoCalibration
@@ -138,7 +139,7 @@ class MLAlgoSelection:
         name: str,
         calib_space: DesignSpace | None = None,
         calib_algo: ScenarioInputDataType = READ_ONLY_EMPTY_DICT,
-        **option_lists,
+        **option_lists: Any,
     ) -> None:
         """Add a machine learning algorithm candidate.
 
@@ -146,8 +147,9 @@ class MLAlgoSelection:
             name: The name of a machine learning algorithm.
             calib_space: The design space
                 defining the parameters to be calibrated
-                with an :class:`.MLAlgoCalibration`.
-                If ``None``, do not perform calibration.
+                with an
+                [MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration].
+                If `None`, do not perform calibration.
             calib_algo: The name and the parameters
                 of the optimization algorithm,
                 e.g. {"algo_name": "PYDOE_FULLFACT", "n_samples": 10}.

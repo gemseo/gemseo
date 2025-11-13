@@ -22,19 +22,18 @@ r"""The RBF network for regression.
 The radial basis function surrogate discipline expresses the model output
 as a weighted sum of kernel functions centered on the learning input data:
 
-.. math::
-
+$$
     y = w_1K(\|x-x_1\|;\epsilon) + w_2K(\|x-x_2\|;\epsilon) + \ldots
         + w_nK(\|x-x_n\|;\epsilon)
+$$
 
-and the coefficients :math:`(w_1, w_2, \ldots, w_n)` are estimated
+and the coefficients $(w_1, w_2, \ldots, w_n)$ are estimated
 by least squares minimization.
 
-Dependence
-----------
+## Dependence
+
 The RBF model relies on the Rbf class of the
-`scipy library
-<https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html>`_.
+[scipy library](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html).
 """
 
 from __future__ import annotations
@@ -66,7 +65,7 @@ SavedObjectType = _SavedObjectType | float | Callable
 class RBFRegressor(BaseRegressor):
     r"""Regression based on radial basis functions (RBFs).
 
-    This model relies on the SciPy class :class:`scipy.interpolate.Rbf`.
+    This model relies on the SciPy class [Rbf][scipy.interpolate.Rbf].
     """
 
     der_function: Callable[[RealArray], RealArray]
@@ -88,15 +87,15 @@ class RBFRegressor(BaseRegressor):
         self.der_function = self._settings.der_function
 
     class RBFDerivatives:
-        r"""Derivatives of functions used in :class:`.RBFRegressor`.
+        r"""Derivatives of radial basis functions.
 
-        For an RBF of the form :math:`f(r)`, :math:`r` scalar,
-        the derivative functions are defined by :math:`d(f(r))/dx`,
-        with :math:`r=|x|/\epsilon`. The functions are thus defined
-        by :math:`df/dx = \epsilon^{-1} x/|x| f'(|x|/\epsilon)`.
-        This convention is chosen to avoid division by :math:`|x|` when
-        the terms may be cancelled out, as :math:`f'(r)` often has a term
-        in :math:`r`.
+        For an RBF of the form $f(r)$, $r$ scalar,
+        the derivative functions are defined by $d(f(r))/dx$,
+        with $r=|x|/\epsilon$. The functions are thus defined
+        by $df/dx = \epsilon^{-1} x/|x| f'(|x|/\epsilon)$.
+        This convention is chosen to avoid division by $|x|$ when
+        the terms may be cancelled out, as $f'(r)$ often has a term
+        in $r$.
         """
 
         TOL = finfo(float).eps
@@ -108,7 +107,7 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            r"""Compute derivative of :math:`f(r) = \sqrt{r^2 + 1}` w.r.t. :math:`x`.
+            r"""Compute derivative of $f(r) = \sqrt{r^2 + 1}$ w.r.t. $x$.
 
             Args:
                 input_data: The 1D input data.
@@ -127,7 +126,7 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            r"""Compute derivative of :math:`f(r)=1/\sqrt{r^2 + 1}` w.r.t. :math:`x`.
+            r"""Compute derivative of $f(r)=1/\sqrt{r^2 + 1}$ w.r.t. $x$.
 
             Args:
                 input_data: The 1D input data.
@@ -146,7 +145,7 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            r"""Compute derivative of :math:`f(r)=\exp(-r^2)` w.r.t. :math:`x`.
+            r"""Compute derivative of $f(r)=\exp(-r^2)$ w.r.t. $x$.
 
             Args:
                 input_data: The 1D input data.
@@ -165,9 +164,9 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            """Compute derivative of :math:`f(r)=r` w.r.t. :math:`x`.
+            """Compute derivative of $f(r)=r$ w.r.t. $x$.
 
-            If :math:`x=0`, return 0 (determined up to a tolerance).
+            If $x=0$, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.
@@ -191,7 +190,7 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^3`.
+            """Compute derivative w.r.t. $x$ of the function $f(r) = r^3$.
 
             Args:
                 input_data: The 1D input data.
@@ -210,11 +209,11 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            """Compute derivative w.r.t. :math:`x` of the function :math:`f(r) = r^5`.
+            """Compute derivative w.r.t. $x$ of the function $f(r) = r^5$.
 
             Args:
                 input_data: The 1D input data.
-                norm_input_data : The norm of the input variable.
+                norm_input_data: The norm of the input variable.
                 eps: The correlation length.
 
             Returns:
@@ -229,9 +228,9 @@ class RBFRegressor(BaseRegressor):
             norm_input_data: float,
             eps: float,
         ) -> RealArray:
-            r"""Compute derivative of :math:`f(r) = r^2\log(r)` w.r.t. :math:`x`.
+            r"""Compute derivative of $f(r) = r^2\log(r)$ w.r.t. $x$.
 
-            If :math:`x=0`, return 0 (determined up to a tolerance).
+            If $x=0$, return 0 (determined up to a tolerance).
 
             Args:
                 input_data: The 1D input data.

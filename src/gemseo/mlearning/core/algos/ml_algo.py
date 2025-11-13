@@ -31,10 +31,9 @@ This is referred to as clustering,
 a branch of unsupervised learning
 dedicated to the detection of patterns in unlabeled data.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.core.unsupervised`,
-   :mod:`~gemseo.mlearning.clustering.clustering`
+See Also:
+   [gemseo.mlearning.core.algos.unsupervised][gemseo.mlearning.core.algos.unsupervised],
+   [gemseo.mlearning.clustering][gemseo.mlearning.clustering]
 
 When data can be separated into at least two categories by a human,
 supervised learning can start with classification
@@ -44,23 +43,22 @@ Once trained,
 a classification model can predict the category
 corresponding to new property values.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.core.supervised`,
-   :mod:`~gemseo.mlearning.classification.classification`
+See Also:
+   [gemseo.mlearning.core.algos.supervised][gemseo.mlearning.core.algos.supervised]
+   [gemseo.mlearning.classification][gemseo.mlearning.classification]
 
 When the distinction between inputs and outputs can be made among the data properties,
 another branch of supervised learning can be considered: regression modeling.
 Once trained,
 a regression model can predict the outputs corresponding to new inputs values.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.core.supervised`,
-   :mod:`~gemseo.mlearning.regression.regression`
+See Also:
+   [gemseo.mlearning.core.algos.supervised][gemseo.mlearning.core.algos.supervised]
+   [gemseo.mlearning.regression][gemseo.mlearning.regression]
 
 The quality of a machine learning algorithm can be measured
-using a :class:`.BaseMLAlgoQuality`
+using a
+[BaseMLAlgoQuality][gemseo.mlearning.core.quality.base_ml_algo_quality.BaseMLAlgoQuality]
 either with respect to the training dataset
 or to a test dataset or using resampling methods,
 such as K-folds or leave-one-out cross-validation techniques.
@@ -79,19 +77,17 @@ by building machine learning models from standardized data
 in such a way that the data properties have the same order of magnitude.
 
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.quality_measures.quality_measure`,
-   :mod:`~gemseo.mlearning.transformers.transformer`
+See Also:
+   [gemseo.mlearning.core.quality.base_ml_algo_quality][gemseo.mlearning.core.quality.base_ml_algo_quality],
+   [gemseo.mlearning.transformers.base_transformer][gemseo.mlearning.transformers.base_transformer]
 
 Lastly,
 a machine learning algorithm often depends on hyperparameters
 to be carefully tuned in order to maximize the generalization power of the model.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.core.calibration`
-   :mod:`~gemseo.mlearning.core.selection`
+See Also:
+   [gemseo.mlearning.core.calibration][gemseo.mlearning.core.calibration]
+   [gemseo.mlearning.core.selection][gemseo.mlearning.core.selection]
 """
 
 from __future__ import annotations
@@ -143,14 +139,15 @@ class BaseMLAlgo(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     ]
     """The resampler class names bound to the resampling results.
 
-    A resampling result is formatted as ``(resampler, ml_algos, predictions)``
-    where ``resampler`` is a :class:`.BaseResampler`,
-    ``ml_algos`` is the list of the associated machine learning algorithms
+    A resampling result is formatted as `(resampler, ml_algos, predictions)`
+    where `resampler` is a
+    [BaseResampler][gemseo.mlearning.resampling.base_resampler.BaseResampler],
+    `ml_algos` is the list of the associated machine learning algorithms
     built during the resampling stage
-    and ``predictions`` are the predictions obtained with the latter.
+    and `predictions` are the predictions obtained with the latter.
 
-    ``resampling_results`` stores only one resampling result per resampler type
-    (e.g., ``"CrossValidation"``, ``"LeaveOneOut"`` and ``"Boostrap"``).
+    `resampling_results` stores only one resampling result per resampler type
+    (e.g., `"CrossValidation"`, `"LeaveOneOut"` and `"Boostrap"`).
     """
 
     learning_set: Dataset
@@ -159,11 +156,13 @@ class BaseMLAlgo(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     transformer: dict[str, BaseTransformer]
     """The strategies to transform the variables, if any.
 
-    The values are instances of :class:`.BaseTransformer`
+    The values are instances of
+    [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
     while the keys are the names of
     either the variables or the groups of variables, e.g. "inputs" or "outputs" in the
     case of the regression algorithms. If a group is specified, the
-    :class:`.BaseTransformer` will be applied to all the variables of this group.
+    [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
+    will be applied to all the variables of this group.
     """
 
     algo: Any
@@ -173,8 +172,8 @@ class BaseMLAlgo(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     """The short name of the machine learning algorithm, often an acronym.
 
     Typically used for composite names, e.g.
-    ``f"{algo.SHORT_ALGO_NAME}_{dataset.name}"`` or
-    ``f"{algo.SHORT_ALGO_NAME}_{discipline.name}"``.
+    `f"{algo.SHORT_ALGO_NAME}_{dataset.name}"` or
+    `f"{algo.SHORT_ALGO_NAME}_{discipline.name}"`.
     """
 
     LIBRARY: ClassVar[str] = ""
@@ -204,9 +203,9 @@ class BaseMLAlgo(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
             data: The training dataset.
             settings_model: The  machine learning algorithm settings
                 as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The machine learning algorithm settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                These arguments are ignored when `settings_model` is not `None`.
 
         Raises:
             ValueError: When both the variable and the group it belongs to

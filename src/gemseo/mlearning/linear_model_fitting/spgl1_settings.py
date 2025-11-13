@@ -44,17 +44,17 @@ class SPGL1_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     tau: NonNegativeFloat = Field(
         default=0.0,
         description="""The Lasso threshold.
-If ``0`` and ``sigma`` is ``0``, spgl1 solves a BP problem.
-If different from ``0``, spgl1 solves a Lasso problem.
-``tau`` and ``sigma`` cannot both be positive.""",
+If `0` and `sigma` is `0`, spgl1 solves a BP problem.
+If different from `0`, spgl1 solves a Lasso problem.
+`tau` and `sigma` cannot both be positive.""",
     )
 
     sigma: NonNegativeFloat = Field(
         default=0.0,
         description="""The BPDN threshold.
-If ``0`` and ``sigma`` is ``0``, spgl1 solves a BP problem.
-If different from ``0``, spgl1 solves a BPDN problem.
-``tau`` and ``sigma`` cannot both be positive.""",
+If `0` and `sigma` is `0`, spgl1 solves a BP problem.
+If different from `0`, spgl1 solves a BPDN problem.
+`tau` and `sigma` cannot both be positive.""",
     )
 
     x0: ndarray | None = Field(
@@ -71,7 +71,7 @@ If different from ``0``, spgl1 solves a BPDN problem.
 
     iter_lim: PositiveInt | None = Field(
         default=None,
-        description="The maximum number of iterations (default if ``10*m``).",
+        description="The maximum number of iterations (default if `10*m`).",
     )
 
     n_prev_vals: PositiveInt = Field(
@@ -89,7 +89,7 @@ If different from ``0``, spgl1 solves a BPDN problem.
         description="""The tolerance for least-squares solution.
 Iterations are stopped when the ratio
 between the dual norm of the gradient and the L2 norm of the residual
-becomes smaller or equal to ``ls_tol``.""",
+becomes smaller or equal to `ls_tol`.""",
     )
 
     opt_tol: PositiveFloat = Field(
@@ -98,13 +98,13 @@ becomes smaller or equal to ``ls_tol``.""",
 More specifically,
 when using basis pursuit denoise,
 the optimality condition is met when the absolute difference
-between the L2 norm of the residual and the ``sigma`` is smaller than``opt_tol``.""",
+between the L2 norm of the residual and the `sigma` is smaller than`opt_tol`.""",
     )
 
     dec_tol: PositiveFloat = Field(
         default=1e-4,
         description="""The required relative change in primal objective for Newton.
-Larger ``decTol`` means more frequent Newton updates.""",
+Larger `decTol` means more frequent Newton updates.""",
     )
 
     step_min: PositiveFloat = Field(
@@ -121,7 +121,7 @@ Larger ``decTol`` means more frequent Newton updates.""",
         default=inf,
         description="""The maximum number of iterations
 where no change in support is tolerated.
-Exit with EXIT_ACTIVE_SET if no change is observed for ``activeSetIt`` iterations""",
+Exit with EXIT_ACTIVE_SET if no change is observed for `activeSetIt` iterations""",
     )
 
     subspace_min: bool = Field(
@@ -141,7 +141,7 @@ Exit with EXIT_ACTIVE_SET if no change is observed for ``activeSetIt`` iteration
 
     weights: float | ndarray | None = Field(
         default=None,
-        description="The weights ``W`` in ``||Wx||_1``. If ``None``, use 1.",
+        description="The weights `W` in `||Wx||_1`. If `None`, use 1.",
     )
 
     project: Callable[[ndarray, float | ndarray, float], ndarray] = Field(

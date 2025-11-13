@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 class ParetoFront(BasePost[ParetoFront_Settings]):
     """Compute the Pareto front for a multi-objective problem.
 
-    The Pareto front of an optimization problem is the set of ``non-dominated`` points
+    The Pareto front of an optimization problem is the set of `non-dominated` points
     of the design space for which there is no other point that improves an objective
     without damaging another.
 
@@ -50,7 +50,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
     For a given plot, the red markers are the non-dominated points according to the
     objectives of this plot and the green markers are the non-dominated points
     according to all the objectives.
-    The latter are also called ``Pareto optimal points``.
+    The latter are also called `Pareto optimal points`.
     """
 
     Settings: ClassVar[type[ParetoFront_Settings]] = ParetoFront_Settings
@@ -210,7 +210,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
             sample_values: The sample values.
 
         Returns:
-            An array of size ``n_samples``, True if the point is non-feasible.
+            An array of size `n_samples`, True if the point is non-feasible.
         """
         feasible_indexes = [
             iteration - 1

@@ -50,10 +50,10 @@ class JobSchedulerDisciplineWrapper(Discipline):
     by the wrapper.
 
     Each execution of the wrapped discipline is done in a unique directory within the
-    ``workdir_path`` directory passed when instantiating this class.
+    `workdir_path` directory passed when instantiating this class.
 
-    .. warning::
-        See :ref:`platform-paths` to handle paths for cross-platforms.
+    Warning:
+        See [Handling paths for cross-platforms][handling-paths-for-different-oses].
     """
 
     DISC_PICKLE_FILE_NAME: ClassVar[str] = "discipline.pckl"
@@ -103,7 +103,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         job_template_path: Path | str = "",
         use_template: bool = True,
         setup_cmd: str = "",
-        **options,
+        **options: Any,
     ) -> None:
         """
         Args:
@@ -119,7 +119,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
             **options: The job scheduler specific options to be used in the template.
 
         Raises:
-            OSError: If ``job_template_path`` does not exist.
+            OSError: If `job_template_path` does not exist.
         """  # noqa:D205 D212 D415
         super().__init__(discipline.name)
         self._discipline = discipline
@@ -160,7 +160,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         the templates' directory. The file name must then be the class name.
 
         Raises:
-            FileNotFoundError: If ``job_template_path`` does not exist.
+            FileNotFoundError: If `job_template_path` does not exist.
         """
         if not self._job_template_path.exists():
             msg = (

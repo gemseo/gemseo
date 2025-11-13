@@ -20,36 +20,32 @@
 r"""A harmonic oscillator.
 
 In classical mechanics,
-the position :math:`x` of a harmonic oscillator is described by the equation
+the position $x$ of a harmonic oscillator is described by the equation
 
-.. math::
-
-    \frac{d^2x}{dt^2} = -\omega^2 x
+$$\frac{d^2x}{dt^2} = -\omega^2 x$$
 
 
-with :math:`\omega \in \mathbb{R}_+^*`.
+with $\omega \in \mathbb{R}_+^*$.
 This second-order Ordinary Differential Equation (ODE)
 has an analytical solution:
 
-.. math::
-
-    x(t) = \lambda \sin(\omega t) + \mu \cos(\omega t)
+$$x(t) = \lambda \sin(\omega t) + \mu \cos(\omega t)$$
 
 
-where :math:`\lambda` and :math:`\mu` are two constants
+where $\lambda$ and $\mu$ are two constants
 defined by the initial conditions.
 
 This solution can be re-written
 as a two-dimensional first-order ODE:
 
-.. math::
-
+$$
     \begin{cases}
     \frac{dx}{dt} = v, \\
     \frac{dv}{dt} = -\omega^2 x.
     \end{cases}
+$$
 
-where :math:`v` represents the velocity of the oscillator.
+where $v$ represents the velocity of the oscillator.
 """
 
 from __future__ import annotations
@@ -87,7 +83,7 @@ class OscillatorDiscipline(ODEDiscipline):
         times: RealArray,
         return_trajectories: bool = False,
         final_state_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
-        cache_inner_discipline_is_none=True,
+        cache_inner_discipline_is_none: bool = True,
     ):
         """
         Args:
@@ -122,12 +118,12 @@ class OscillatorDiscipline(ODEDiscipline):
 
         Args:
             time: The value of the time.
-            position: The position of the system at ``time``.
-            velocity: The velocity of the system at ``time``.
+            position: The position of the system at `time`.
+            velocity: The velocity of the system at `time`.
 
         Returns:
-            The derivative of the position at ``time``.
-            The derivative of the velocity at ``time``.
+            The derivative of the position at `time`.
+            The derivative of the velocity at `time`.
         """
         position_dot = velocity
         velocity_dot = -self.__omega_squared * position

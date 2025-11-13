@@ -124,7 +124,7 @@ class CustomTqdmProgressBar(tqdm.tqdm):
         Args:
             file: The output stream.
                 This argument defined in the parent class is not used.
-                Use ``logging`` instead.
+                Use `logging` instead.
 
         Returns:
             The function logging the progress bar statuses.

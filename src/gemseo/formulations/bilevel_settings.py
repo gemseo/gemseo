@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class BiLevel_Settings(MDF_Settings):  # noqa: N801
-    """Settings of the :class:`.BiLevel` formulation."""
+    """Settings of the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""
 
     _TARGET_CLASS_NAME = "BiLevel"
 
@@ -39,22 +39,22 @@ class BiLevel_Settings(MDF_Settings):  # noqa: N801
 
     multithread_scenarios: bool = Field(
         default=True,
-        description="""If ``True`` and parallel_scenarios=True,
+        description="""If `True` and parallel_scenarios=True,
 the sub-scenarios are run in parallel using multi-threading;
 if False and parallel_scenarios=True, multiprocessing is used.""",
     )
 
     apply_cstr_tosub_scenarios: bool = Field(
         default=True,
-        description="""Whether the :meth:`.add_constraint` method
-adds the constraint to the optimization problem of the sub-scenario
+        description="""Whether the constraints are added
+to the optimization problem of the sub-scenario
 capable of computing the constraint.""",
     )
 
     apply_cstr_to_system: bool = Field(
         default=True,
-        description="""Whether the :meth:`.add_constraint` method adds
-the constraint to the optimization problem of the system scenario.""",
+        description="""Whether the constraints are added
+to the optimization problem of the system scenario.""",
     )
 
     reset_x0_before_opt: bool = Field(
@@ -73,7 +73,7 @@ from the disciplines' data, otherwise from the design space.""",
         default=None,
         description="""The level of the root logger
 during the sub-scenarios executions.
-If ``None``, do not change the level of the root logger.""",
+If `None`, do not change the level of the root logger.""",
     )
 
     keep_opt_history: bool = Field(
@@ -83,7 +83,7 @@ after each execution.
 Depending on the size of the databases and the number of consecutive
 executions, this can be very memory consuming. If the adapter will be executed in
 parallel, the databases will not be saved to the main process by the
-sub-processes, so this setting should be set to ``False`` to avoid
+sub-processes, so this setting should be set to `False` to avoid
 unnecessary memory use in the sub-processes.""",
     )
 
@@ -97,7 +97,7 @@ to an HDF5 file after each execution.""",
         default=NameGenerator.Naming.NUMBERED,
         description="""The way of naming the database files.
 When the adapter will be executed in parallel, this method shall be set
-to ``UUID`` because this method is multiprocess-safe.""",
+to `UUID` because this method is multiprocess-safe.""",
     )
 
     @model_validator(mode="after")

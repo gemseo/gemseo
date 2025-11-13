@@ -33,7 +33,7 @@ class PlotSettings(BaseModel):
     color: str | Sequence[str] = ""
     """The color.
 
-    Either a global one or one per item if ``n_items`` is non-zero.
+    Either a global one or one per item if `n_items` is non-zero.
 
     If empty, use a default one.
     """
@@ -53,7 +53,7 @@ class PlotSettings(BaseModel):
     linestyle: str | Sequence[str] = ""
     """The line style.
 
-    Either a global one or one per item if ``n_items`` is non-zero.
+    Either a global one or one per item if `n_items` is non-zero.
 
     If empty, use a default one.
     """
@@ -61,7 +61,7 @@ class PlotSettings(BaseModel):
     marker: str | Sequence[str] = ""
     """The marker.
 
-    Either a global one or one per item if ``n_items`` is non-zero.
+    Either a global one or one per item if `n_items` is non-zero.
     If empty, use a default one.
     """
 
@@ -77,13 +77,13 @@ class PlotSettings(BaseModel):
     xmin: float | None = None
     """The minimum value on the x-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     xmax: float | None = None
     """The maximum value on the x-axis.".
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     ylabel: str = ""
@@ -92,13 +92,13 @@ class PlotSettings(BaseModel):
     ymin: float | None = None
     """The minimum value on the y-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     ymax: float | None = None
     """The maximum value on the y-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     zlabel: str = ""
@@ -107,25 +107,25 @@ class PlotSettings(BaseModel):
     zmin: float | None = None
     """The minimum value on the z-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     zmax: float | None = None
     """The maximum value on the z-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     rmin: float | None = None
     """The minimum value on the r-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     rmax: float | None = None
     """The maximum value on the r-axis.
 
-    If ``None``, compute it from data.
+    If `None`, compute it from data.
     """
 
     labels: Mapping[str, str] = Field(default_factory=dict)
@@ -146,7 +146,7 @@ class PlotSettings(BaseModel):
     """Whether to add a grid."""
 
     def set_colors(self, color: str | list[str]) -> None:
-        """Set one color per item if ``n_items`` is non-zero or a unique one.
+        """Set one color per item if `n_items` is non-zero or a unique one.
 
         Args:
             color: The color(s).
@@ -163,7 +163,7 @@ class PlotSettings(BaseModel):
             self.color = [self.color] * self.n_items
 
     def set_linestyles(self, linestyle: str | Sequence[str]) -> None:
-        """Set the line style(s) if ``n_items`` is non-zero or a unique one.
+        """Set the line style(s) if `n_items` is non-zero or a unique one.
 
         Args:
             linestyle: The line style(s).
@@ -176,7 +176,7 @@ class PlotSettings(BaseModel):
             self.linestyle = [self.linestyle] * self.n_items
 
     def set_markers(self, marker: str | Sequence[str]) -> None:
-        """Set the marker(s) if ``n_items`` is non-zero or a unique one.
+        """Set the marker(s) if `n_items` is non-zero or a unique one.
 
         Args:
             marker: The marker(s).

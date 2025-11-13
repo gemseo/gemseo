@@ -19,34 +19,34 @@ from __future__ import annotations
 from typing import Final
 
 Y_1: Final[str] = "y_1"
-"""The name of the coupling variable computed by :class:`.Sellar1`."""
+"""The name of the coupling variable computed by [Sellar1][gemseo.problems.mdo.sellar.sellar_1.Sellar1]."""  # noqa: E501
 
 Y_2: Final[str] = "y_2"
-"""The name of the coupling variable computed by :class:`.Sellar2`."""
+"""The name of the coupling variable computed by [Sellar2][gemseo.problems.mdo.sellar.sellar_2.Sellar2]."""  # noqa: E501
 
 X_SHARED: Final[str] = "x_shared"
 """The name of the shared design variable."""
 
 X_1: Final[str] = "x_1"
-"""The name of the local design variable specific to :class:`.Sellar1`."""
+"""The name of the local design variable specific to [Sellar1][gemseo.problems.mdo.sellar.sellar_1.Sellar1]."""  # noqa: E501
 
 X_2: Final[str] = "x_2"
-"""The name of the local design variable specific to :class:`.Sellar2`."""
+"""The name of the local design variable specific to [Sellar2][gemseo.problems.mdo.sellar.sellar_2.Sellar2]."""  # noqa: E501
 
 OBJ: Final[str] = "obj"
 """The name of the objective to minimize."""
 
 C_1: Final[str] = "c_1"
-"""The name of the constraint based on ``"y_1"``."""
+"""The name of the constraint based on `"y_1"`."""
 
 C_2: Final[str] = "c_2"
-"""The name of the constraint based on ``"y_2"``."""
+"""The name of the constraint based on `"y_2"`."""
 
 ALPHA: Final[str] = "alpha"
-"""The name of the tunable parameter in the constraint ``"c_1"``."""
+"""The name of the tunable parameter in the constraint `"c_1"`."""
 
 BETA: Final[str] = "beta"
-"""The name of the tunable parameter in the constraint ``"c_2"``."""
+"""The name of the tunable parameter in the constraint `"c_2"`."""
 
 GAMMA: Final[str] = "gamma"
-"""The name of the tunable parameter in the discipline :class:`.Sellar1`."""
+"""The name of the tunable parameter in the discipline [Sellar1][gemseo.problems.mdo.sellar.sellar_1.Sellar1]."""  # noqa: E501

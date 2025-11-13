@@ -62,7 +62,7 @@ class BaseFlow(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The data exchange arcs of the form
-            ``(first_discipline, second_discipline, coupling_names)``.
+            `(first_discipline, second_discipline, coupling_names)`.
         """
         return []
 

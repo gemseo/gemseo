@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A metric for comparing :class:`.Dataset` objects row-wisely."""
+"""A metric for comparing datasets row-wisely."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
-    """A metric for comparing :class:`.Dataset` objects row-wisely."""
+    """A metric for comparing datasets row-wisely."""
 
     __group_names: StrColumnType
     """The name(s) of the group(s) for which the metric is computed."""

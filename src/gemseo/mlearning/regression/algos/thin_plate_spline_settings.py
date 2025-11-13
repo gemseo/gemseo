@@ -31,5 +31,5 @@ class TPSRegressor_Settings(RBFRegressor_Settings):  # noqa: N801
 
     function: Literal[RBF.THIN_PLATE] = Field(
         default=RBF.THIN_PLATE,
-        description=r"The thin plate radial basis function for :math:`r^2\log(r)`.",
+        description=r"The thin plate radial basis function for $r^2\log(r)$.",
     )

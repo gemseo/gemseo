@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 class MDF_Settings(BaseFormulationSettings):  # noqa: N801
-    """Settings of the :class:`.MDF` formulation."""
+    """Settings of the [MDF][gemseo.formulations.mdf.MDF] formulation."""
 
     _TARGET_CLASS_NAME = "MDF"
 
@@ -41,10 +41,11 @@ class MDF_Settings(BaseFormulationSettings):  # noqa: N801
         default=MDAChain.__name__,
         description="""The name of the class of the main MDA.
 
-Typically the :class:`.MDAChain`,
-but one can force to use :class:`.MDAGaussSeidel` for instance.
+Typically the [MDAChain][gemseo.mda.mda_chain.MDAChain],
+but one can force to use [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel]
+for instance.
 
-This field is ignored when ``main_mda_settings`` is a Pydantic model.""",
+This field is ignored when `main_mda_settings` is a Pydantic model.""",
     )
 
     main_mda_settings: StrKeyMapping | BaseMDASettings = Field(

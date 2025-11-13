@@ -47,13 +47,11 @@ class FCERegressor(BaseFCERegressor):
     including sparse techniques,
     to fit a functional chaos expansion (FCE) model of the form
 
-    .. math::
+    $$y = \sum_{i\in\mathcal{I}\subset\mathbb{N}^d} w_i\Psi_i(x)$$
 
-       y = \sum_{i\in\mathcal{I}\subset\mathbb{N}^d} w_i\Psi_i(x)
-
-    where :math:`\Psi_i(x)=\prod_{j=1}^d\psi_{i,j}(x_j)`
-    and :math:`\mathbb{E}[\Psi_i(x)\Psi_j(x)]=\delta_{ij}`
-    with :math:`\delta` the Kronecker delta.
+    where $\Psi_i(x)=\prod_{j=1}^d\psi_{i,j}(x_j)$
+    and $\mathbb{E}[\Psi_i(x)\Psi_j(x)]=\delta_{ij}$
+    with $\delta$ the Kronecker delta.
     """
 
     SHORT_ALGO_NAME: ClassVar[str] = "FCE"
@@ -62,7 +60,7 @@ class FCERegressor(BaseFCERegressor):
     Settings: ClassVar[type[FCERegressor_Settings]] = FCERegressor_Settings
 
     __basis: BaseBasis | None
-    """The orthonormal multivariate basis after training, ``None`` before."""
+    """The orthonormal multivariate basis after training, `None` before."""
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = (
         BaseFCERegressor._ATTR_NOT_TO_SERIALIZE.union({
@@ -81,9 +79,11 @@ class FCERegressor(BaseFCERegressor):
         """
         Args:
             data: The training dataset
-                whose input space ``data.misc["input_space"]``
-                is expected to be a :class:`.ParameterSpace`
-                defining the random input variables as :class:`.OTDistribution` objects.
+                whose input space `data.misc["input_space"]`
+                is expected to be a
+                [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+                defining the random input variables as
+                [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
         """  # noqa: D205 D212
         super().__init__(
             data,
@@ -206,7 +206,7 @@ class FCERegressor(BaseFCERegressor):
         return features, jac_features
 
     def __set_basis(self) -> None:
-        """Set the private attribute ``__basis``."""
+        """Set the private attribute `__basis`."""
         self.__basis = BasisFactory().create(
             self._settings.basis,
             self.learning_set.misc["input_space"].distribution,

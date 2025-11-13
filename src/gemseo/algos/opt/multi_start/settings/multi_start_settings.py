@@ -47,7 +47,7 @@ class MultiStart_Settings(BaseOptimizerSettings):  # noqa: N801
         default=0,
         description="""The maximum number of iterations for each sub-optimization.
 
-If 0, this number is ``int(max_iter/n_start)``.""",
+If 0, this number is `int(max_iter/n_start)`.""",
     )
 
     opt_algo_name: str = Field(

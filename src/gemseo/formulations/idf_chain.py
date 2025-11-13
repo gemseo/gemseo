@@ -85,7 +85,7 @@ class IDFChain(MDOChain):
         Args:
             execution_sequence: The execution sequence.
             n_processes: The maximum simultaneous number of threads
-                if ``use_threading`` is ``True``,
+                if `use_threading` is `True`,
                 or processes otherwise,
                 used to parallelize the execution.
             use_threading: Whether to use threads instead of processes

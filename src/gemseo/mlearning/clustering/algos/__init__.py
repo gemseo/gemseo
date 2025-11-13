@@ -23,8 +23,14 @@ Wherever possible,
 these algorithms should be able to predict the class of a new data,
 as well as the probability of belonging to each class.
 
-Use the :class:`.ClustererFactory` to access all the available clusterers
-or derive either the :class:`.BaseClusterer` or :class:`.BasePredictiveClusterer`  class
+Use the
+[ClustererFactory][gemseo.mlearning.clustering.algos.factory.ClustererFactory]
+to access all the available clusterers
+or derive either the
+[BaseClusterer][gemseo.mlearning.clustering.algos.base_clusterer.BaseClusterer]
+or
+[BasePredictiveClusterer][gemseo.mlearning.clustering.algos.base_predictive_clusterer.BasePredictiveClusterer]
+class
 to add a new one.
 """
 

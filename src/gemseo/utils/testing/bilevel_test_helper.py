@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Provide base test class stub for testing BiLevel also for |g| plugins."""
+"""Provide base test class stub for testing BiLevel also for GEMSEO plugins."""
 
 from __future__ import annotations
 
@@ -35,6 +35,8 @@ from gemseo.utils.testing.disciplines_creator import create_disciplines_from_des
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 def create_sobieski_bilevel_scenario(
@@ -235,7 +237,7 @@ def create_dummy_bilevel_scenario(formulation_name: str) -> MDOScenario:
     )
 
 
-def create_aerostructure_scenario(formulation_name: str):
+def create_aerostructure_scenario(formulation_name: str) -> BaseScenario:
     """Create an Aerostructure scenario.
 
     Args:

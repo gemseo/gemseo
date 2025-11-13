@@ -45,14 +45,14 @@ class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
         default=None,
         description="The lower limit of the *y*-axis on which the objective is "
         "plotted. This limit must be less than or equal to the minimum "
-        "value of the objective history. If ``None``, use the minimum "
+        "value of the objective history. If `None`, use the minimum "
         "value of the objective history.",
     )
     obj_max: float | None = Field(
         default=None,
         description="The upper limit of the *y*-axis on which the objective is "
         "plotted. This limit must be greater than or equal to the maximum "
-        "value of the objective history. If ``None``, use the maximum "
+        "value of the objective history. If `None`, use the maximum "
         "value of the objective history.",
     )
 

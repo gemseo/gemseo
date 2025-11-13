@@ -101,7 +101,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
             function: The function name to build the quadratic approximation.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
-                If ``None`` and if the output is multidimensional, an error is raised.
+                If `None` and if the output is multidimensional, an error is raised.
 
         Returns:
              The approximation.

@@ -47,9 +47,9 @@ def compute_pareto_optimal_points(
 ) -> ndarray:
     """Compute the Pareto optimal points.
 
-    Search for all the non-dominated points, i.e. there exists ``j`` such that
-    there is no lower value for ``obj_values[:,j]`` that does not degrade
-    at least one other objective ``obj_values[:,i]``.
+    Search for all the non-dominated points, i.e. there exists `j` such that
+    there is no lower value for `obj_values[:,j]` that does not degrade
+    at least one other objective `obj_values[:,i]`.
 
     Args:
         obj_values: The objective function array of size `(n_samples, n_objs)`.
@@ -103,8 +103,8 @@ def generate_pareto_plots(
         fig_size: The matplotlib figure sizes in x and y directions, in inches.
         non_feasible_samples: The array of bool of size n_samples,
             True if the current sample is non-feasible.
-            If ``None``, all the samples are considered feasible.
-        show_non_feasible: If ``True``, show the non-feasible points in
+            If `None`, all the samples are considered feasible.
+        show_non_feasible: If `True`, show the non-feasible points in
             the Pareto front plot.
 
     Raises:

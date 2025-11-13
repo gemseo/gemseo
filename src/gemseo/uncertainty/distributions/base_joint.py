@@ -19,9 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Joint probability distribution.
 
-The base class :class:`.BaseJointDistribution`
-implements the concept of `joint probability distribution
-<https://en.wikipedia.org/wiki/Joint_probability_distribution>`_.
+The base class
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+implements the concept of [joint probability distribution](https://en.wikipedia.org/wiki/Joint_probability_distribution).
 
 The joint probability distribution of a set of random variables
 is the probability distribution of the random vector
@@ -31,48 +31,64 @@ It takes into account
 both the marginal probability distributions of these random variables
 and their dependency structure.
 
-A :class:`.BaseJointDistribution` is defined
-from a list of :class:`.BaseDistribution` objects
+A
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+is defined
+from a list of
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+objects
 defining the marginals of the random variables
 and a copula defining the dependency structure between them.
 
-.. note::
-
+Note:
    A copula is a mathematical function used to define the dependence
    between random variables from their cumulative distribution functions.
-   `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`_.
+   [See more](https://en.wikipedia.org/wiki/Copula_(probability_theory)).
 
 By definition, a joint probability distribution is a probability distribution.
-Therefore, :class:`.BaseJointDistribution` inherits
-from the abstract class :class:`.BaseDistribution`.
+Therefore,
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+inherits from the abstract class
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution].
 
-The :class:`.BaseJointDistribution` of a list of given uncertain variables is built
-from a list of :class:`.BaseDistribution` objects
+The
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+of a list of given uncertain variables is built
+from a list of
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+objects
 implementing the probability distributions of these variables
 and from a copula.
 
-Because :class:`.BaseJointDistribution` inherits from :class:`.BaseDistribution`,
-we can easily get statistics, such as :attr:`.mean`,
-:attr:`.standard_deviation`.
-We can also get the numerical :attr:`.range` and
-mathematical :attr:`.support`.
+Because
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+inherits from
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution],
+we can easily get statistics, such as
+[mean][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.mean] and
+[standard_deviation][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.standard_deviation].
+We can also get the numerical
+[range][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.range]
+and the mathematical
+[support][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.support].
 
-.. note::
-
+Note:
     We call mathematical *support* the set of values that the random variable
-    can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
+    can take in theory, e.g. $]-\infty,+\infty[$ for a Gaussian variable,
     and numerical *range* the set of values that it can take in practice,
     taking into account the values rounded to zero double precision.
     Both support and range are described in terms of lower and upper bounds
 
 We can also evaluate the cumulative density function
-(:meth:`.compute_cdf`)
+([compute_cdf()][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.compute_cdf])
 for the different marginals of the random variable,
 as well as the inverse cumulative density function
-(:meth:`.compute_inverse_cdf`).
+([compute_inverse_cdf()][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.compute_inverse_cdf]).
 
 Lastly, we can compute realizations of the random variable
-by means of the :meth:`.compute_samples` method.
+by means of the
+[compute_samples()][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.compute_samples]
+method.
 """
 
 from __future__ import annotations
@@ -96,12 +112,12 @@ if TYPE_CHECKING:
 class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
     r"""The base class for joint probability distributions.
 
-    The joint probability distribution of a random vector :math:`U=(U_1,\ldots,U_d)`
+    The joint probability distribution of a random vector $U=(U_1,\ldots,U_d)$
     is characterized by
     the marginal probability distributions
-    of :math:`U_1`, :math:`U_1`, ... and :math:`U_d`
+    of $U_1$, $U_1$, ... and $U_d$
     and a copula
-    used to describe the dependence between these :math:`d` random variables.
+    used to describe the dependence between these $d$ random variables.
     """
 
     __dimension: int
@@ -123,7 +139,7 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
             distributions: The marginal distributions.
             copula: A copula distribution
                 defining the dependency structure between random variables;
-                if ``None``, consider an independent copula.
+                if `None`, consider an independent copula.
         """  # noqa: D205,D212,D415
         self.__dimension = len(distributions)
         self.__marginals = distributions

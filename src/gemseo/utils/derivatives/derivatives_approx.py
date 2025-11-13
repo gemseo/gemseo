@@ -83,7 +83,7 @@ class DisciplineJacApprox:
     generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
         DisciplineAdapterGenerator
     )
-    """The generator class used to create ``MDOFunction`` from an ``Discipline``."""
+    """The generator class used to create `MDOFunction` from an `Discipline`."""
 
     def __init__(
         self,
@@ -100,13 +100,13 @@ class DisciplineJacApprox:
             discipline: The discipline
                 for which the Jacobian approximation shall be made.
             approx_method: The approximation method,
-                either ``complex_step`` or ``finite_differences``.
-            step: The differentiation step. The ``finite_differences`` takes either
+                either `complex_step` or `finite_differences`.
+            step: The differentiation step. The `finite_differences` takes either
                 a float or an iterable of floats with the same length as the inputs.
-                The ``complex_step`` method takes either a complex or a float as input.
+                The `complex_step` method takes either a complex or a float as input.
             parallel: Whether to differentiate the discipline in parallel.
             n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
+                if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
@@ -175,7 +175,7 @@ class DisciplineJacApprox:
         The optimal step is reached when the truncation error
         (cut in the Taylor development),
         and the numerical cancellation errors
-        (round-off when doing :math:`f(x+step)-f(x))` are equal.
+        (round-off when doing $f(x+step)-f(x))$ are equal.
 
         Args:
             input_names: The names of the inputs used to differentiate the outputs.
@@ -183,10 +183,10 @@ class DisciplineJacApprox:
             print_errors: Whether to log the cancellation
                 and truncation error estimates.
             numerical_error: The numerical error
-                associated to the calculation of :math:`f`.
+                associated to the calculation of $f$.
                 By default, Machine epsilon (appx 1e-16),
                 but can be higher.
-                when the calculation of :math:`f` requires a numerical resolution.
+                when the calculation of $f$ requires a numerical resolution.
 
         See Also:
             https://en.wikipedia.org/wiki/Numerical_differentiation
@@ -280,7 +280,8 @@ class DisciplineJacApprox:
                 If empty, use all the components.
             input_data: The input data needed to approximate the Jacobian
                 according to the discipline input grammar.
-                If empty, use the :attr:`.Discipline.default_input_data`.
+                If empty, use the
+                [Discipline.default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
 
         Returns:
             The approximated Jacobian.
@@ -376,7 +377,7 @@ class DisciplineJacApprox:
             threshold: The acceptance threshold for the Jacobian error.
             plot_result: Whether to plot the result of the validation
                 (computed vs approximated Jacobians).
-            file_path: The path to the output file if ``plot_result`` is ``True``.
+            file_path: The path to the output file if `plot_result` is `True`.
             show: Whether to open the figure.
             fig_size_x: The x-size of the figure in inches.
             fig_size_y: The y-size of the figure in inches.
@@ -384,19 +385,20 @@ class DisciplineJacApprox:
             save_reference_jacobian: Whether to save the reference Jacobian.
             indices: The indices of the inputs and outputs
                 for the different sub-Jacobian matrices,
-                formatted as ``{variable_name: variable_components}``
-                where ``variable_components`` can be either
+                formatted as `{variable_name: variable_components}`
+                where `variable_components` can be either
                 an integer, e.g. `2`
                 a sequence of integers, e.g. `[0, 3]`,
                 a slice, e.g. `slice(0,3)`,
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If ``None``,
-                consider all the components of all the ``inputs`` and ``outputs``.
+                If `None`,
+                consider all the components of all the `inputs` and `outputs`.
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If empty, use the :attr:`.Discipline.default_input_data`.
+                If empty, use the
+                [Discipline.default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
 
         Returns:
             Whether the analytical Jacobian is correct.
@@ -529,8 +531,8 @@ class DisciplineJacApprox:
 
         Args:
             indices: The indices for variables
-                formatted as ``{variable_name: variable_components}``
-                where ``variable_components`` can be either
+                formatted as `{variable_name: variable_components}`
+                where `variable_components` can be either
                 an integer, e.g. `2`
                 a sequence of integers, e.g. `[0, 3]`,
                 a slice, e.g. `slice(0,3)`,
@@ -578,15 +580,15 @@ class DisciplineJacApprox:
 
         Args:
             analytic_jacobian: The reference Jacobian
-                of the form ``{output_name: {input_name: sub_jacobian}}``.
+                of the form `{output_name: {input_name: sub_jacobian}}`.
             approximated_jacobian: The approximated Jacobian
-                of the form ``{output_name: {input_name: sub_jacobian}}``.
+                of the form `{output_name: {input_name: sub_jacobian}}`.
 
         Returns:
-            The analytic Jacobian of the form ``{output_name: sub_jacobian}``,
-            the approximated Jacobian of the form ``{output_name: sub_jacobian}``
+            The analytic Jacobian of the form `{output_name: sub_jacobian}`,
+            the approximated Jacobian of the form `{output_name: sub_jacobian}`
             and the names of the output components
-            corresponding to the columns of ``sub_jacobian``.
+            corresponding to the columns of `sub_jacobian`.
         """
         approx_jacobian = {}
         analytic_jacobian_ = {}
@@ -653,7 +655,7 @@ class DisciplineJacApprox:
         Args:
             computed_jac: The Jacobian to validate.
             approx_jac: The approximated Jacobian.
-            file_path: The path to the output file if ``plot_result`` is ``True``.
+            file_path: The path to the output file if `plot_result` is `True`.
             show: Whether to open the figure.
             fig_size_x: The x-size of the figure in inches.
             fig_size_y: The y-size of the figure in inches.

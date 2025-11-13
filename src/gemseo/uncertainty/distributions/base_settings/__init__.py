@@ -15,10 +15,14 @@
 """Base settings for defining probability distributions.
 
 These settings are abstract Pydantic models
-whose :attr:`_TARGET_CLASS_NAME` class argument must be defined.
+whose `_TARGET_CLASS_NAME` class argument must be defined.
 For example,
-the Pydantic model :class:`.SPNormalDistribution_Settings`
-deriving from  :class:`.BaseNormalDistribution_Settings`
+the Pydantic model
+[SPNormalDistribution_Settings][gemseo.uncertainty.distributions.scipy.normal_settings.SPNormalDistribution_Settings]
+deriving from
+[BaseNormalDistribution_Settings][gemseo.uncertainty.distributions.base_settings.normal_settings.BaseNormalDistribution_Settings]
 can be used for defining a normal distribution based on SciPy
-(see :class:`.SPNormalDistribution`).
+(see
+[SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
+).
 """

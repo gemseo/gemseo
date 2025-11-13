@@ -48,7 +48,7 @@ class ODEFunction:
     """
 
     _adapter: DisciplineAdapter
-    """The :class:`MDOFunction` wrapping the discipline."""
+    """The `MDOFunction` wrapping the discipline."""
 
     __parameter_names: tuple[str, ...]
     """The names of the parameters."""
@@ -71,7 +71,7 @@ class ODEFunction:
             state_names: The names of the state variables.
             output_names: The names of the output variables.
                 If empty,
-                use all ``discipline``'s output variables.
+                use all `discipline`'s output variables.
             terminal: Whether this is a termination function.
         """  # noqa: D205, D212, D415
         self.terminal = False

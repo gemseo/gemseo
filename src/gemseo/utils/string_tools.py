@@ -45,16 +45,16 @@ class MessageLine(NamedTuple):
     """Store the raw ingredient of a string to be formatted later."""
 
     str_format: str
-    """The string to be processed by the ``format()`` method."""
+    """The string to be processed by the `format()` method."""
 
     level: int
     """The indentation level."""
 
     args: Any
-    """The positional arguments passed to the ``format()`` method."""
+    """The positional arguments passed to the `format()` method."""
 
     kwargs: Any
-    """The keyword arguments passed to the ``format()`` method."""
+    """The keyword arguments passed to the `format()` method."""
 
 
 DEFAULT_DELIMITER = ", "
@@ -81,9 +81,9 @@ def __stringify(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         function: A function to represent an object with a string,
-            e.g. :func:`str` or :func:`repr`.
+            e.g. `str()` or `repr()`.
         sort: Whether to sort the elements when the object if a collection.
-        use_and: Whether to replace the last delimiter occurrence by ``"and"``.
+        use_and: Whether to replace the last delimiter occurrence by `"and"`.
 
     Returns:
         A string representing the object.
@@ -113,7 +113,7 @@ def pretty_repr(
     sort: bool = True,
     use_and: bool = False,
 ) -> str:
-    """Return an unambiguous string representation of an object based on :func:`repr`.
+    """Return an unambiguous string representation of an object based on `repr()`.
 
     Args:
         obj: The object to represent.
@@ -121,7 +121,7 @@ def pretty_repr(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         sort: Whether to sort the elements when the object if a collection.
-        use_and: Whether to replace the last delimiter occurrence by ``" and "``.
+        use_and: Whether to replace the last delimiter occurrence by `" and "`.
 
     Returns:
          An unambiguous string representation of the object.
@@ -136,7 +136,7 @@ def pretty_str(
     sort: bool = True,
     use_and: bool = False,
 ) -> str:
-    """Return a readable string representation of an object based on :func:`str`.
+    """Return a readable string representation of an object based on `str()`.
 
     Args:
         obj: The object to represent.
@@ -144,7 +144,7 @@ def pretty_str(
         key_value_separator: The string to separate key and value
             in a key-value pair of a mapping.
         sort: Whether to sort the elements when the object if a collection.
-        use_and: Whether to replace the last delimiter occurrence by ``"and"``.
+        use_and: Whether to replace the last delimiter occurrence by `"and"`.
 
     Returns:
          A readable string representation of the object.
@@ -159,8 +159,8 @@ def repr_variable(name: str, index: int, size: int = 0, simplify: bool = False) 
         name: The name of the variable.
         index: The component of the variable.
         size: The size of the variable if known.
-            Use ``0`` if unknown.
-        simplify: Whether to return ``"[i]"`` when ``i>0`` instead of ``"name[i]"``.
+            Use `0` if unknown.
+        simplify: Whether to return `"[i]"` when `i>0` instead of `"name[i]"`.
 
     Returns:
         The string representation of the variable.
@@ -204,7 +204,7 @@ def filter_names(
 
     Args:
         names: The original names.
-        names_to_keep: The names to keep. If ``None``, keep all.
+        names_to_keep: The names to keep. If `None`, keep all.
 
     Returns:
         The filtered names.
@@ -218,15 +218,15 @@ def filter_names(
 def get_variables_with_components(
     variables: VariableType | Iterable[VariableType], names_to_sizes: Mapping[str, int]
 ) -> Iterator[tuple[str, int]]:
-    """Convert a set of variables to ``tuple(str, int)`` objects.
+    """Convert a set of variables to `tuple(str, int)` objects.
 
     Args:
-        variables: One or several variable defined as ``name`` or ``(name, component)``.
-            When ``name``, all the components of the variable are considered.
+        variables: One or several variable defined as `name` or `(name, component)`.
+            When `name`, all the components of the variable are considered.
         names_to_sizes: The sizes of the variables.
 
     Returns:
-        The variables defined as ``(name, component)``.
+        The variables defined as `(name, component)`.
     """
     return chain.from_iterable(
         (variable,)
@@ -291,9 +291,9 @@ class MultiLineString:
         """Add a line.
 
         Args:
-            str_format: The string to be processed by the ``format()`` method.
-            args: The args passed to the ``format()`` method.
-            kwargs: The kwargs passed to the ``format()`` method.
+            str_format: The string to be processed by the `format()` method.
+            args: The args passed to the `format()` method.
+            kwargs: The kwargs passed to the `format()` method.
         """
         self.__lines.append(MessageLine(str_format, self.__level, args, kwargs))
 

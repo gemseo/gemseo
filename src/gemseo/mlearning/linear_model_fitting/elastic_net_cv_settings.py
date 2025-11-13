@@ -35,22 +35,22 @@ class ElasticNetCV_Settings(_ElasticNetMixin, BaseLinearModelFitter_Settings):  
 
     alphas: tuple[NonNegativeFloat, ...] = Field(
         default=(0.001, 0.01, 0.1, 1.0, 10.0),
-        description=r"""Values of :math:`\alpha` to try.
-The constant :math:`\alpha` multiplies the L1 and 2 terms,
+        description=r"""Values of $\alpha$ to try.
+The constant $\alpha$ multiplies the L1 and 2 terms,
 controlling regularization strength.""",
     )
 
     l1_ratio: tuple[NonNegativeFloat, ...] = Field(
         default=(0.1, 0.5, 0.7, 0.9, 0.95, 0.99, 1),
-        description=r"""Values of :math:`\rho` to try.
-The ElasticNet mixing parameter :math:`\rho`.
-For ``l1_ratio = 0``, the penalty is an L2 penalty.
-For ``l1_ratio = 1``, it is an L1 penalty.
-For ``0 < l1_ratio < 1``, the penalty is a combination of L1 and L2.""",
+        description=r"""Values of $\rho$ to try.
+The ElasticNet mixing parameter $\rho$.
+For `l1_ratio = 0`, the penalty is an L2 penalty.
+For `l1_ratio = 1`, it is an L1 penalty.
+For `0 < l1_ratio < 1`, the penalty is a combination of L1 and L2.""",
     )
 
     cv: int | None = Field(
         default=None,
         description="""The number of folds.
-If ``None``, use the efficient Leave-One-Out cross-validation.""",
+If `None`, use the efficient Leave-One-Out cross-validation.""",
     )

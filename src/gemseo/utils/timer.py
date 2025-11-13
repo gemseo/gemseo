@@ -26,7 +26,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A timer to measure the time spent within a ``with`` statement."""
+"""A timer to measure the time spent within a `with` statement."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Timer:
-    """A timer to measure the time spent within a ``with`` statement.
+    """A timer to measure the time spent within a `with` statement.
 
     Examples:
         with Timer() as timer:
@@ -64,13 +64,13 @@ class Timer:
     """The exiting timestamp."""
 
     __log_level: int | None
-    """The logging level, ``None`` means no logging."""
+    """The logging level, `None` means no logging."""
 
     def __init__(self, log_level: int | None = None) -> None:
         """
         Args:
             log_level: The level of the logger.
-                If ``None``, do not log the elapsed time.
+                If `None`, do not log the elapsed time.
         """  # noqa:D205 D212 D415
         self.__elapsed_time = 0.0
         now = datetime.now()
@@ -80,17 +80,17 @@ class Timer:
 
     @property
     def elapsed_time(self) -> float:
-        """The time spent within the ``with`` statement."""
+        """The time spent within the `with` statement."""
         return self.__elapsed_time
 
     @property
     def entering_timestamp(self) -> datetime:
-        """The entering timestamp of the ``with`` statement."""
+        """The entering timestamp of the `with` statement."""
         return self.__entering_timestamp
 
     @property
     def exiting_timestamp(self) -> datetime:
-        """The exiting timestamp of the ``with`` statement."""
+        """The exiting timestamp of the `with` statement."""
         return self.__exiting_timestamp
 
     def __enter__(self) -> Self:

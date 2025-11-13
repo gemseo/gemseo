@@ -21,23 +21,23 @@ r"""Approximation of the Hessian matrix from an optimization history.
 
 Notations:
 
-- :math:`f`: the function of interest for which to approximate the Hessian matrix,
-- :math:`y`: the output value of :math:`f`,
-- :math:`x\in\mathbb{R}^d`: the :math:`d` input variables of :math:`f`,
-- :math:`k`: the :math:`k`-th iteration of the optimization history,
-- :math:`K`: the iteration of the optimization history
+- $f$: the function of interest for which to approximate the Hessian matrix,
+- $y$: the output value of $f$,
+- $x\in\mathbb{R}^d$: the $d$ input variables of $f$,
+- $k$: the $k$-th iteration of the optimization history,
+- $K$: the iteration of the optimization history
   at which to approximate the Hessian matrix,
-- :math:`x_k`: the input value at iteration :math:`k`,
-- :math:`\Delta x_k=x_{k+1}-x_k`: the variation of :math:`x`
-  from iteration :math:`k` to iteration :math:`k+1`,
-- :math:`y_k`: the output value at iteration :math:`k`,
-- :math:`\Delta y_k=y_{k+1}-y_k`: the variation of the function output
-  from iteration :math:`k` to iteration :math:`k+1`,
-- :math:`g_k`: the gradient of :math:`f` at :math:`x_k`,
-- :math:`\Delta g_k=g_{k+1}-g_k`: the variation of the gradient
-  from iteration :math:`k` to iteration :math:`k+1`,
-- :math:`B_k`: the approximation of the Hessian of :math:`f` at :math:`x_k`,
-- :math:`H_k`: the inverse of :math:`B_k`.
+- $x_k$: the input value at iteration $k$,
+- $\Delta x_k=x_{k+1}-x_k$: the variation of $x$
+  from iteration $k$ to iteration $k+1$,
+- $y_k$: the output value at iteration $k$,
+- $\Delta y_k=y_{k+1}-y_k$: the variation of the function output
+  from iteration $k$ to iteration $k+1$,
+- $g_k$: the gradient of $f$ at $x_k$,
+- $\Delta g_k=g_{k+1}-g_k$: the variation of the gradient
+  from iteration $k$ to iteration $k+1$,
+- $B_k$: the approximation of the Hessian of $f$ at $x_k$,
+- $H_k$: the inverse of $B_k$.
 """
 
 from __future__ import annotations
@@ -86,24 +86,24 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
     values."""
 
     x_ref: ndarray | None
-    """The value :math:`x_K` of the input variables :math:`x` at the iteration :math:`K`
+    """The value $x_K$ of the input variables $x$ at the iteration $K$
     of the optimization history; this is the point at which the Hessian matrix and its
     inverse are approximated."""
 
     fgrad_ref: ndarray | None
-    """The value :math:`g_K` of the gradient function :math:`g` of :math:`f` at
-    :math:`x_K`."""
+    """The value $g_K$ of the gradient function $g$ of $f$ at
+    $x_K$."""
 
     f_ref: ndarray | None
-    """The value :math:`y_K` of the output of :math:`f` at :math:`x_K`."""
+    """The value $y_K$ of the output of $f$ at $x_K$."""
 
     b_mat_history: list[ndarray]
-    r"""The history :math:`B_0,B_1,\ldots,B_K` of the approximations of the Hessian
-    matrix :math:`B`."""
+    r"""The history $B_0,B_1,\ldots,B_K$ of the approximations of the Hessian
+    matrix $B$."""
 
     h_mat_history: list[ndarray]
-    r"""The history :math:`H_0,H_1,\ldots,H_K` of the approximations of the inverse
-    Hessian matrix :math:`H`."""
+    r"""The history $H_0,H_1,\ldots,H_K$ of the approximations of the inverse
+    Hessian matrix $H$."""
 
     def __init__(
         self,
@@ -137,16 +137,16 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             funcname: The name of the function for which to get the gradient.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             at_most_niter: The maximum number of iterations to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
-                If ``None`` and if the output is multidimensional, an error is raised.
+                If `None` and if the output is multidimensional, an error is raised.
             normalize_design_space: Whether to scale the input values between 0 and 1
                 to work in a normalized input space.
             design_space: The input space used to scale the input values
-                if ``normalize_design_space`` is ``True``.
+                if `normalize_design_space` is `True`.
 
         Returns:
             * The history of the input variables.
@@ -157,8 +157,8 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             ValueError: When either
                 the gradient history contains a single element,
-                ``func_index`` is ``None`` while the function output is a vector,
-                ``func_index`` is not an output index,
+                `func_index` is `None` while the function output is a vector,
+                `func_index` is not an output index,
                 the shape of the history of the input variables
                 is not consistent with the shape of the history of the gradient
                 or the optimization history size is insufficient.
@@ -283,7 +283,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             * The history of the gradient.
 
         Raises:
-            ValueError: When the input space is ``None``.
+            ValueError: When the input space is `None`.
         """
         if design_space is None:
             msg = (
@@ -307,10 +307,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
     ) -> tuple[ndarray, ndarray]:
         r"""Compute the variation of the input variables and gradient from an iteration.
 
-        The variations from the iteration :math:`k` are defined by:
+        The variations from the iteration $k$ are defined by:
 
-        - :math:`\Delta x_k = x_{k+1}-x_k` for the input variables,
-        - :math:`\Delta g_k = g_{k+1} - g_k` for the gradient.
+        - $\Delta x_k = x_{k+1}-x_k$ for the input variables,
+        - $\Delta g_k = g_{k+1} - g_k$ for the gradient.
 
         Args:
             x_hist: The history of the input variables.
@@ -318,10 +318,10 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             iteration: The optimization iteration at which to compute the variations.
 
         Returns:
-            * The difference between the input variables at iteration ``iteration+1``
-              and the input variables at iteration ``iteration``.
-            * The difference between the gradient at iteration ``iteration+1``
-              and the gradient at iteration ``iteration``.
+            * The difference between the input variables at iteration `iteration+1`
+              and the input variables at iteration `iteration`.
+            * The difference between the gradient at iteration `iteration+1`
+              and the gradient at iteration `iteration`.
 
         Raises:
             ValueError: When the iteration is not stored in the database.
@@ -345,20 +345,20 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
     ) -> Generator[tuple[ndarray, ndarray]]:
         r"""Compute the variations of the input variables and gradient.
 
-        The variations from the iteration :math:`k` are defined by:
+        The variations from the iteration $k$ are defined by:
 
-        - :math:`\Delta x_k = x_{k+1}-x_k` for the input variables,
-        - :math:`\Delta g_k = g_{k+1} - g_k` for the gradient.
+        - $\Delta x_k = x_{k+1}-x_k$ for the input variables,
+        - $\Delta g_k = g_{k+1} - g_k$ for the gradient.
 
         Args:
             x_hist: The history of the input variables.
             x_grad_hist: The history of the gradient.
 
         Returns:
-            * The difference between the input variables at iteration ``iteration``
-              and the input variables at iteration ``iteration+1``.
-            * The difference between the gradient at iteration ``iteration``
-              and the gradient at iteration ``iteration+1``.
+            * The difference between the input variables at iteration `iteration`
+              and the input variables at iteration `iteration+1`.
+            * The difference between the gradient at iteration `iteration`
+              and the gradient at iteration `iteration+1`.
         """
         for iteration in range(len(x_hist) - 1):
             input_diff, grad_diff = HessianApproximation.get_s_k_y_k(
@@ -382,7 +382,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         design_space: DesignSpace | None = None,
     ) -> tuple[ndarray, ndarray, ndarray | None, ndarray | None]:
         # pylint: disable=W0221
-        """Compute :math:`B`, the approximation of the Hessian matrix.
+        """Compute $B$, the approximation of the Hessian matrix.
 
         Args:
             funcname: The name of the function
@@ -390,28 +390,28 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             save_diag: Whether to return the approximations of the Hessian's diagonal.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             b_mat0: The initial approximation of the Hessian matrix.
             at_most_niter: The maximum number of iterations to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
             func_index: The index of the output of interest
                 to be defined if the function has a multidimensional output.
-                If ``None`` and if the output is multidimensional, an error is raised.
-            save_matrix: Whether to store the approximations of the Hessian
-                in :attr:`.HessianApproximation.b_mat_history`.
+                If `None` and if the output is multidimensional, an error is raised.
+            save_matrix: Whether to store the approximations of the Hessian in
+                [b_mat_history][gemseo.post.core.hessians.HessianApproximation.b_mat_history].
             scaling: do scaling step
             normalize_design_space: Whether to scale the input values between 0 and 1
                 to work in a normalized input space.
             design_space: The input space used to scale the input values
-                if ``normalize_design_space`` is ``True``.
+                if `normalize_design_space` is `True`.
 
         Returns:
-            * :math:`B`, the approximation of the Hessian matrix.
-            * The diagonal of :math:`B`.
-            * The history of the input variables if ``return_x_grad`` is ``True``.
-            * The history of the gradient if ``return_x_grad`` is ``True``.
+            * $B$, the approximation of the Hessian matrix.
+            * The diagonal of $B$.
+            * The history of the input variables if `return_x_grad` is `True`.
+            * The history of the gradient if `return_x_grad` is `True`.
         """
         x_hist, grad_hist, _, _ = self.get_x_grad_history(
             funcname,
@@ -454,20 +454,20 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         dyk: ndarray,
         dyt_dsk: ndarray,
     ) -> tuple[float, float]:
-        r"""Compute the scaling coefficients :math:`c_1` and :math:`c_2`.
+        r"""Compute the scaling coefficients $c_1$ and $c_2$.
 
-        - :math:`c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
-          {\Delta x_k^T B_k\Delta x_k}}`,
-        - :math:`c_2=\frac{\Delta g_k^T\Delta x_k}{\|\Delta g_k\|_2^2}`.
+        - $c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
+          {\Delta x_k^T B_k\Delta x_k}}$,
+        - $c_2=\frac{\Delta g_k^T\Delta x_k}{\|\Delta g_k\|_2^2}$.
 
         Args:
-            hessk: The approximation :math:`B_k` of the Hessian matrix
-                at iteration :math:`k`.
-            hessk_dsk: The product :math:`B_k\Delta x_k`.
-            dskt_hessk_dsk: The product :math:`\Delta x_k^T B_k\Delta x_k`.
-            dyk: The variation of the gradient :math:`\Delta g_k`.
+            hessk: The approximation $B_k$ of the Hessian matrix
+                at iteration $k$.
+            hessk_dsk: The product $B_k\Delta x_k$.
+            dskt_hessk_dsk: The product $\Delta x_k^T B_k\Delta x_k$.
+            dyk: The variation of the gradient $\Delta g_k$.
             dyt_dsk: The product
-                :math:`\Delta g_k^T\Delta x_k`.
+                $\Delta g_k^T\Delta x_k$.
 
         Returns:
             * coeff1: TODO
@@ -486,34 +486,33 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         dyk: ndarray,
         scaling: bool = False,
     ) -> None:
-        r"""Update :math:`B` from iteration :math:`k` to iteration :math:`k+1`.
+        r"""Update $B$ from iteration $k$ to iteration $k+1$.
 
         Based on an iteration of the BFGS algorithm:
 
-        :math:`B_{k+1} =
+        $B_{k+1} =
         B_k
         - c_1\frac{B_k\Delta x_k\Delta x_k^TB_k}{\Delta x_k^TB_k\Delta x_k}
-        + c_2\frac{\Delta g_k\Delta g_k^T}{\Delta g_k^T\Delta x_k}`
+        + c_2\frac{\Delta g_k\Delta g_k^T}{\Delta g_k^T\Delta x_k}$
 
-        where :math:`c_1=c_2=1` if ``scaling`` is ``False``, otherwise:
+        where $c_1=c_2=1$ if `scaling` is `False`, otherwise:
 
-        - :math:`c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
-          {\Delta x_k^T B_k\Delta x_k}}`,
-        - :math:`c_2=\frac{\Delta g_k^T\Delta x_k}{\|\Delta g_k\|_2^2}`.
+        - $c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
+          {\Delta x_k^T B_k\Delta x_k}}$,
+        - $c_2=\frac{\Delta g_k^T\Delta x_k}{\|\Delta g_k\|_2^2}$.
 
-        .. note::
-            ``hessk`` represents :math:`B_k` initially
-            before to be overwritten by :math:`B_{k+1}` when passed to this method.
+        Note:
+            `hessk` represents $B_k$ initially
+            before to be overwritten by $B_{k+1}$ when passed to this method.
 
-        .. seealso::
-            `BFGS algorithm.
-            <https://en.wikipedia.org/wiki/Broyden-Fletcher-Goldfarb-Shanno_algorithm>`_
+        See Also:
+            [BFGS algorithm.](https://en.wikipedia.org/wiki/Broyden-Fletcher-Goldfarb-Shanno_algorithm)
 
         Args:
-            hessk: The approximation :math:`B_k` of the Hessian matrix
-                at iteration :math:`k`.
-            dsk: The variation :math:`\Delta x_k` of the input variables.
-            dyk: The variation :math:`\Delta g_k` of the gradient.
+            hessk: The approximation $B_k$ of the Hessian matrix
+                at iteration $k$.
+            dsk: The variation $\Delta x_k$ of the input variables.
+            dyk: The variation $\Delta g_k$ of the gradient.
             scaling: Whether to use a scaling stage.
         """
         dyt_dsk = dyk.T @ dsk
@@ -549,7 +548,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         normalize_design_space: bool = False,
         design_space: DesignSpace | None = None,
     ) -> tuple[ndarray, ndarray, ndarray | None, ndarray | None]:
-        r"""Compute :math:`H`, the approximation of the inverse of the Hessian matrix.
+        r"""Compute $H$, the approximation of the inverse of the Hessian matrix.
 
         Args:
             funcname: The name of the function
@@ -557,46 +556,46 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             save_diag: Whether to return the list of diagonal approximations.
             first_iter: The first iteration of the history to be considered.
             last_iter: The last iteration of the history to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             h_mat0: The initial approximation of the inverse of the Hessian matrix.
-                If ``None``,
-                use :math:`H_0=\frac{\Delta g_k^T\Delta x_k}
-                {\Delta g_k^T\Delta g_k}I_d`.
+                If `None`,
+                use $H_0=\frac{\Delta g_k^T\Delta x_k}
+                {\Delta g_k^T\Delta g_k}I_d$.
             at_most_niter: The maximum number of iterations to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             return_x_grad: Whether to return the input variables and gradient
                 at the last iteration.
             func_index: The output index of the function
                 to be provided if the function output is a vector.
-            save_matrix: Whether to store the approximations of the inverse Hessian
-                in :attr:`.HessianApproximation.h_mat_history`.
+            save_matrix: Whether to store the approximations of the inverse Hessian in
+                [h_mat_history][gemseo.post.core.hessians.HessianApproximation.h_mat_history].
             factorize: Whether to factorize the approximations of the Hessian matrix
-                and its inverse, as :math:`A=A_{1/2}A_{1/2}^T` for a matrix :math:`A`.
+                and its inverse, as $A=A_{1/2}A_{1/2}^T$ for a matrix $A$.
             scaling: do scaling step
             angle_tol: The significativity level for
-                :math:`\Delta g_k^T\Delta x_k`.
+                $\Delta g_k^T\Delta x_k$.
             step_tol: The significativity level for
-                :math:`\|\Delta g_k\|_{\infty}`.
+                $\|\Delta g_k\|_{\infty}$.
             normalize_design_space: Whether to scale the input values between 0 and 1
                 to work in a normalized input space.
             design_space: The input space used to scale the input values
-                if ``normalize_design_space`` is ``True``.
+                if `normalize_design_space` is `True`.
 
         Returns:
-            * :math:`H`, the approximation of the inverse of the Hessian matrix.
-            * The diagonal of :math:`H`.
-            * The history of the input variables if ``return_x_grad`` is ``True``.
-            * The history of the gradient if ``return_x_grad`` is ``True``.
-            * The matrix :math:`H_{1/2}` such that :math:`H=H_{1/2}H_{1/2}^T`
-              if ``factorize`` is ``True``.
-            * :math:`B`, the approximation of the Hessian matrix.
-            * A matrix :math:`B_{1/2}` such that :math:`B=B_{1/2}B_{1/2}^T`
-              if ``factorize`` is ``True``.
+            * $H$, the approximation of the inverse of the Hessian matrix.
+            * The diagonal of $H$.
+            * The history of the input variables if `return_x_grad` is `True`.
+            * The history of the gradient if `return_x_grad` is `True`.
+            * The matrix $H_{1/2}$ such that $H=H_{1/2}H_{1/2}^T$
+              if `factorize` is `True`.
+            * $B$, the approximation of the Hessian matrix.
+            * A matrix $B_{1/2}$ such that $B=B_{1/2}B_{1/2}^T$
+              if `factorize` is `True`.
 
         Raises:
             LinAlgError: When either
-                the inversion of :math:`H` fails
-                or the Cholesky decomposition of :math:`H` or :math:`B` fails.
+                the inversion of $H$ fails
+                or the Cholesky decomposition of $H$ or $B$ fails.
         """
         x_hist, grad_hist, _, _ = self.get_x_grad_history(
             funcname,
@@ -733,52 +732,51 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
         factorize: bool = False,
         scaling: bool = False,
     ) -> None:
-        r"""Update :math:`H` and :math:`B` from step :math:`k` to step :math:`k+1`.
+        r"""Update $H$ and $B$ from step $k$ to step $k+1$.
 
         Use an iteration of the BFGS algorithm:
 
-        :math:`B_{k+1} =
+        $B_{k+1} =
         B_k
         - c_1\frac{B_k\Delta x_k\Delta x_k^TB_k}{\Delta x_k^TB_k\Delta x_k}
-        + c_2\frac{\Delta g_k\Delta g_k^T}{\Delta g_k^T\Delta x_k}`
+        + c_2\frac{\Delta g_k\Delta g_k^T}{\Delta g_k^T\Delta x_k}$
 
         and
 
-        :math:`H_{k+1}=c_1^{-1}\Pi_{k+1}H_k\Pi_{k+1}^T
-        +c_2^{-1}\frac{\Delta x_k\Delta x_k^T}{\Delta g_k^T\Delta x_k}`
+        $H_{k+1}=c_1^{-1}\Pi_{k+1}H_k\Pi_{k+1}^T
+        +c_2^{-1}\frac{\Delta x_k\Delta x_k^T}{\Delta g_k^T\Delta x_k}$
 
         where:
 
-        :math:`\Pi_{k+1}=I_d-\frac{\Delta x_k\Delta g_k^T}
-        {\Delta g_k^T\Delta x_k}`
+        $\Pi_{k+1}=I_d-\frac{\Delta x_k\Delta g_k^T}
+        {\Delta g_k^T\Delta x_k}$
 
-        and where :math:`c_1=c_2=1` if ``scaling`` is ``False``, otherwise:
+        and where $c_1=c_2=1$ if `scaling` is `False`, otherwise:
 
-        - :math:`c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
-          {\Delta x_k^T B_k\Delta x_k}}`,
-        - :math:`c_2=\frac{\Delta g_k^T\Delta x_k}{\|\Delta g_k\|_2^2}`.
+        - $c_1=\frac{d-1}{\mathrm{Tr}(B_k)-\frac{\|B_k\Delta x_k\|_2^2}
+          {\Delta x_k^T B_k\Delta x_k}}$,
+        - $c_2=\frac{\Delta g_k^T\Delta x_k}{\|\Delta g_k\|_2^2}$.
 
-        .. note::
-            ``h_mat`` and ``b_mat`` represent :math:`H_k` and :math:`B_k` initially
-            before to be overwritten by :math:`H_{k+1}` and :math:`B_{k+1}`
+        Note:
+            `h_mat` and `b_mat` represent $H_k$ and $B_k$ initially
+            before to be overwritten by $H_{k+1}$ and $B_{k+1}$
             when passed to this method.
 
-        .. seealso::
-            `BFGS algorithm.
-            <https://en.wikipedia.org/wiki/Broyden-Fletcher-Goldfarb-Shanno_algorithm>`_
+        See Also:
+            [BFGS algorithm.](https://en.wikipedia.org/wiki/Broyden-Fletcher-Goldfarb-Shanno_algorithm)
 
         Args:
-            h_mat: The approximation :math:`H_k` of the inverse of the Hessian matrix
-                at iteration :math:`k`.
-            s_k: The variation :math:`\Delta x_k` of the input variables.
-            y_k: The variation :math:`\Delta g_k` of the gradient.
-            h_factor: The square root of the :math:`H_k` at iteration :math:`k`.
-            b_mat: The approximation :math:`B_k` of the Hessian matrix
-                at iteration :math:`k` if ``factorize`` is ``True``.
-            b_factor: The square root of the :math:`B_k` at iteration :math:`k`
-                if ``factorize`` is ``True``.
+            h_mat: The approximation $H_k$ of the inverse of the Hessian matrix
+                at iteration $k$.
+            s_k: The variation $\Delta x_k$ of the input variables.
+            y_k: The variation $\Delta g_k$ of the gradient.
+            h_factor: The square root of the $H_k$ at iteration $k$.
+            b_mat: The approximation $B_k$ of the Hessian matrix
+                at iteration $k$ if `factorize` is `True`.
+            b_factor: The square root of the $B_k$ at iteration $k$
+                if `factorize` is `True`.
             factorize: Whether to update the approximations of the Hessian matrix
-                and its inverse, as :math:`A=A_{1/2}A_{1/2}^T` for a matrix :math:`A`.
+                and its inverse, as $A=A_{1/2}A_{1/2}^T$ for a matrix $A$.
             scaling: do scaling step
         """
         # Compute the two terms of the non-scaled updated matrix:
@@ -841,22 +839,21 @@ class BFGSApprox(HessianApproximation):
 class SR1Approx(HessianApproximation):
     r"""Hessian matrix approximation with the Symmetric Rank One (SR1) algorithm.
 
-    The approximation at iteration :math:`k+1` is:
+    The approximation at iteration $k+1$ is:
 
-    .. math::
-
+    $$
        B_{k+1}=B_k +
        \frac{(\Delta g_k-B_k\Delta x_k)(\Delta g_k-B_k\Delta x_k)^T}
        {(\Delta g_k-B_k\Delta x_k)^T\Delta x_k}
+    $$
 
-    This update from iteration :math:`k` to iteration :math:`k+1` is applied only if
-    :math:`|(\Delta g_k-B_k\Delta x_k)^T\Delta x_k|
-    \geq \varepsilon\|\Delta x_k\|\|\Delta g_k\|`
-    where :math:`\varepsilon` is a small number, e.g. :math:`10^{-8}`.
+    This update from iteration $k$ to iteration $k+1$ is applied only if
+    $|(\Delta g_k-B_k\Delta x_k)^T\Delta x_k|
+    \geq \varepsilon\|\Delta x_k\|\|\Delta g_k\|$
+    where $\varepsilon$ is a small number, e.g. $10^{-8}$.
 
-    .. seealso::
-
-       `SR1 algorithm. <https://en.wikipedia.org/wiki/Symmetric_rank-one>`_
+    See Also:
+       [SR1 algorithm.](https://en.wikipedia.org/wiki/Symmetric_rank-one)
     """
 
     EPSILON = 1e-8

@@ -23,6 +23,7 @@ r"""The discipline describing the dynamics of a single mass connected by springs
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import asarray
 from numpy import isscalar
@@ -126,14 +127,14 @@ class SpringsDynamicsDiscipline(Discipline):
         times: RealArray | None = None,
         left_position: RealArray | float = 0.0,
         right_position: RealArray | float = 0.0,
-        is_left_position_fixed=False,
-        is_right_position_fixed=False,
+        is_left_position_fixed: bool = False,
+        is_right_position_fixed: bool = False,
         state_names: Sequence[str] = STATE_NAMES,
         state_dot_var_names: Sequence[str] = STATE_DOT_NAMES,
         left_position_name: str = "",
         right_position_name: str = "",
         # TODO: API: replace by name.
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Args:
             mass: The value of the mass.
@@ -156,7 +157,8 @@ class SpringsDynamicsDiscipline(Discipline):
                 on the left, if is_left_position_fixed is False.
             right_position_name: Name of the input describing the position of the mass
                 on the right, if is_right_position_fixed is False.
-            **kwargs: The arguments passed to the constructor of :class:`.Discipline`.
+            **kwargs: The arguments passed to the constructor of
+                [Discipline][gemseo.core.discipline.discipline.Discipline].
 
         Returns:
             The Discipline describing a single point mass.

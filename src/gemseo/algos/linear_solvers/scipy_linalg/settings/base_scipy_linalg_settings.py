@@ -73,7 +73,7 @@ Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
         description="""The user-supplied function to call after each iteration.
 
 It is called as callback(xk), where xk is the current solution vector.
-If ``None``, no function is called.""",
+If `None`, no function is called.""",
     )
 
     maxiter: PositiveInt = Field(
@@ -86,7 +86,7 @@ If ``None``, no function is called.""",
         default=None,
         description="""Starting guess for the solution.
 
-If ``None``, start from a matrix of zeros.""",
+If `None`, start from a matrix of zeros.""",
     )
 
     M: LinearOperator | ndarray | sparray | None = Field(

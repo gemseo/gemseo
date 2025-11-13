@@ -44,10 +44,11 @@ class SimpleGrammar(BaseGrammar):
     The types are pure Python types, type annotations are not supported.
 
     The grammar could be empty, in that case the data validation always pass. If the
-    type bound to a name is ``None`` then the type of the corresponding data name is
+    type bound to a name is `None` then the type of the corresponding data name is
     always valid.
 
-    .. warning:: This grammar cannot merge elements. Merging will raise an error.
+    Warning:
+         This grammar cannot merge elements. Merging will raise an error.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"
@@ -66,9 +67,9 @@ class SimpleGrammar(BaseGrammar):
         Args:
             names_to_types: The mapping defining the data names as keys,
                 and data types as values.
-                If ``None``, the grammar is empty.
+                If `None`, the grammar is empty.
             required_names: The names of the required elements.
-                If ``None``, all the elements are required.
+                If `None`, all the elements are required.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
@@ -104,8 +105,9 @@ class SimpleGrammar(BaseGrammar):
     ) -> None:
         """
         Raises:
-            ValueError: When merge is ``True``,
-                since it is not supported for :class:`.SimpleGrammar`.
+            ValueError: When merge is `True`,
+                since it is not supported
+                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
         self.__update(grammar.to_simple_grammar(), excluded_names)
@@ -117,8 +119,9 @@ class SimpleGrammar(BaseGrammar):
     ) -> None:
         """
         Raises:
-            ValueError: When merge is ``True``,
-                since it is not supported for :class:`.SimpleGrammar`.
+            ValueError: When merge is `True`,
+                since it is not supported
+                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
         self.__update(dict.fromkeys(names, ndarray))
@@ -130,22 +133,24 @@ class SimpleGrammar(BaseGrammar):
     ) -> None:
         """
         Raises:
-            ValueError: When merge is ``True``,
-                since it is not supported for :class:`.SimpleGrammar`.
+            ValueError: When merge is `True`,
+                since it is not supported
+                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
         self.__update(names_to_types)
 
     @classmethod
     def __check_merge(cls, merge: bool) -> None:
-        """Check that merge is not ``True`` since it is not supported.
+        """Check that merge is not `True` since it is not supported.
 
         Args:
             merge: Whether to merge or update the grammar.
 
         Raises:
-            ValueError: When merge is ``True``,
-                since it is not supported for :class:`.SimpleGrammar`.
+            ValueError: When merge is `True`,
+                since it is not supported
+                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
         """
         if merge:
             msg = f"Merge is not supported for {cls.__name__}."
@@ -159,8 +164,8 @@ class SimpleGrammar(BaseGrammar):
         """Update the elements from another grammar or elements.
 
         When elements are provided names and types instead of a
-        :class:`.BaseGrammar`,
-        for consistency with :class:`.__init__` behavior
+        [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar],
+        for consistency with the constructor's behavior
         it is assumed that all of them are required.
 
         Args:
@@ -226,7 +231,7 @@ class SimpleGrammar(BaseGrammar):
         """Check that the type of object is a valid element type.
 
         Raises:
-            TypeError: If the object is neither a type nor ``None``.
+            TypeError: If the object is neither a type nor `None`.
         """
         if obj is not None and not isinstance(obj, type):
             msg = f"The element {name} must be a type or None: it is {obj}."

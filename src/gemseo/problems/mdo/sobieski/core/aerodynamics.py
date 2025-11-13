@@ -211,7 +211,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             sweep: The wing sweep.
             fo1: The coefficient for the engine size.
             c_4: The minimum drag coefficient.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The 2D minimum drag coefficient.
@@ -423,10 +424,10 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         return -self.__lift_coeff / wing_area
 
     def __compute_rhov2(self) -> float:
-        r"""Compute :math:`\rho v^2` (2*dynamic pressure).
+        r"""Compute $\rho v^2$ (2*dynamic pressure).
 
         Returns:
-            :math:`\rho v^2`.
+            $\rho v^2$.
         """
         self.__rhov2 = self.__rho * self.__velocity * self.__velocity
         return self.__rhov2
@@ -436,14 +437,14 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         altitude: float,
         mach: float,
     ) -> float:
-        r"""Derive :math:`\rho v^2` with respect to the altitude.
+        r"""Derive $\rho v^2$ with respect to the altitude.
 
         Args:
             altitude: The altitude.
             mach: The Mach number.
 
         Returns:
-            The derivative of :math:`\rho v^2` with respect to the altitude.
+            The derivative of $\rho v^2$ with respect to the altitude.
         """
         drho_dh, dv_dh = self.__compute_drho_dh_dv_dh(mach, altitude)
         return (
@@ -455,13 +456,13 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         self,
         altitude: float,
     ) -> float:
-        r"""Derive :math:`\rho v^2` with respect to the Mach number.
+        r"""Derive $\rho v^2$ with respect to the Mach number.
 
         Args:
             altitude: The altitude.
 
         Returns:
-            The derivative of :math:`\rho v^2` with respect to the Mach number.
+            The derivative of $\rho v^2$ with respect to the Mach number.
         """
         dv_dmach = self.__compute_dv_dmach(altitude)
         return 2.0 * self.__rho * dv_dmach * self.__velocity
@@ -569,36 +570,37 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
         Args:
             x_shared: The values of the shared design variables,
-                where ``x_shared[0]`` is the thickness/chord ratio,
-                ``x_shared[1]`` is the altitude,
-                ``x_shared[2]`` is the Mach number,
-                ``x_shared[3]`` is the aspect ratio,
-                ``x_shared[4]`` is the wing sweep and
-                ``x_shared[5]`` is the wing surface area.
+                where `x_shared[0]` is the thickness/chord ratio,
+                `x_shared[1]` is the altitude,
+                `x_shared[2]` is the Mach number,
+                `x_shared[3]` is the aspect ratio,
+                `x_shared[4]` is the wing sweep and
+                `x_shared[5]` is the wing surface area.
             y_12: The coupling variable from the structure disciplines,
-                where ``y_12[0]`` is the total aircraft weight
-                and ``y_12[1]`` is the wing twist.
+                where `y_12[0]` is the total aircraft weight
+                and `y_12[1]` is the wing twist.
             y_32: The coupling variable (engine scale factor)
                 from the propulsion discipline,
             x_2: The friction coefficient.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_4: The minimum drag coefficient.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The aerodynamics outputs:
-                - ``y_2``: The outputs of the aerodynamics analysis:
-                    - ``y_2[0]``: the lift,
-                    - ``y_2[1]``: the drag,
-                    - ``y_2[2]``: the lift/drag ratio,
-                - ``y_21``: The coupling variable (lift) for the structure discipline,
-                - ``y_23``: The coupling variable (drag) for the propulsion discipline,
-                - ``y_24``: The coupling variable (lift/drag ratio)
+                - `y_2`: The outputs of the aerodynamics analysis:
+                    - `y_2[0]`: the lift,
+                    - `y_2[1]`: the drag,
+                    - `y_2[2]`: the lift/drag ratio,
+                - `y_21`: The coupling variable (lift) for the structure discipline,
+                - `y_23`: The coupling variable (drag) for the propulsion discipline,
+                - `y_24`: The coupling variable (lift/drag ratio)
                    for the mission discipline,
-                - ``g_2``: The pressure gradient to be constrained.
+                - `g_2`: The pressure gradient to be constrained.
         """
         return self._execute(
             x_shared[0],
@@ -640,24 +642,25 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             twist: The wing twist.
             esf: The engine scale factor.
             c_f: The friction coefficient.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_4: The minimum drag coefficient.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The aerodynamics outputs:
-                - ``y_2``: The outputs of the aerodynamics analysis:
-                    - ``y_2[0]``: the lift,
-                    - ``y_2[1]``: the drag,
-                    - ``y_2[2]``: the lift/drag ratio,
-                - ``y_21``: The coupling variable (lift) for the structure discipline,
-                - ``y_23``: The coupling variable (drag) for the propulsion discipline,
-                - ``y_24``: The coupling variable (lift/drag ratio)
+                - `y_2`: The outputs of the aerodynamics analysis:
+                    - `y_2[0]`: the lift,
+                    - `y_2[1]`: the drag,
+                    - `y_2[2]`: the lift/drag ratio,
+                - `y_21`: The coupling variable (lift) for the structure discipline,
+                - `y_23`: The coupling variable (drag) for the propulsion discipline,
+                - `y_24`: The coupling variable (lift/drag ratio)
                    for the mission discipline,
-                - ``g_2``: The pressure gradient to be constrained.
+                - `g_2`: The pressure gradient to be constrained.
         """
         c_4 = c_4 or self.constants[4]
 
@@ -801,20 +804,21 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
         Args:
             x_shared: The values of the shared design variables,
-                where ``x_shared[0]`` is the thickness/chord ratio,
-                ``x_shared[1]`` is the altitude,
-                ``x_shared[2]`` is the Mach number,
-                ``x_shared[3]`` is the aspect ratio,
-                ``x_shared[4]`` is the wing sweep and
-                ``x_shared[5]`` is the wing surface area.
+                where `x_shared[0]` is the thickness/chord ratio,
+                `x_shared[1]` is the altitude,
+                `x_shared[2]` is the Mach number,
+                `x_shared[3]` is the aspect ratio,
+                `x_shared[4]` is the wing sweep and
+                `x_shared[5]` is the wing surface area.
             y_12: The coupling variable from the structure disciplines,
-                where ``y_12[0]`` is the total aircraft weight
-                and ``y_12[1]`` is the wing twist.
+                where `y_12[0]` is the total aircraft weight
+                and `y_12[1]` is the wing twist.
             y_32: The coupling variable (engine scale factor)
                 from the propulsion discipline,
             x_2: The friction coefficient.
             c_4: The minimum drag coefficient.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The Jacobian of the outputs.
@@ -858,7 +862,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             esf: The engine scale factor.
             c_f: The friction coefficient.
             c_4: The minimum drag coefficient.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The Jacobian of the outputs.

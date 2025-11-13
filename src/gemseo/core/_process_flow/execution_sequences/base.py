@@ -25,6 +25,7 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.core._base_monitored_process import BaseMonitoredProcess
+    from gemseo.core._process_flow.execution_sequences.execution_sequence import Visitor
     from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
 
 _Status = ExecutionStatus.Status
@@ -34,9 +35,9 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base class for discipline execution sequences.
 
     The execution sequence structure is introduced to reflect the main process flow
-    implicitly executed by |g| regarding the given scenario/formulation executed. That
-    structure allows to identify single executions of a same discipline that may be run
-    several times at various stages in the given scenario/formulation.
+    implicitly executed by GEMSEO regarding the given scenario/formulation executed.
+    That structure allows to identify single executions of a same discipline
+    that may be run several times at various stages in the given scenario/formulation.
     """
 
     _PREFIX = "["
@@ -69,7 +70,7 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         self._parent = None
 
     @abstractmethod
-    def accept(self, visitor):
+    def accept(self, visitor: Visitor) -> None:
         """Accept a visitor object.
 
         See the Visitor pattern.
@@ -79,11 +80,12 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
 
     @abstractmethod
-    def set_observer(self, obs: BaseExecutionStatusObserver):
+    def set_observer(self, obs: BaseExecutionStatusObserver) -> None:
         """Register an observer.
 
-        This observer is intended to be notified via its :meth:`update` method
-        each time an underlying discipline changes its status.
+        This observer is intended to be notified via its
+        [update_status()][gemseo.core.base_execution_status_observer.BaseExecutionStatusObserver.update_status]
+        method each time an underlying discipline changes its status.
 
         Returns:
             The disciplines.

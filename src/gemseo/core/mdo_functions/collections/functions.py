@@ -43,7 +43,9 @@ class Functions(MutableSequence[MDOFunction]):
     """
 
     evaluate_jacobian: bool
-    """Whether the :meth:`.evaluate` method has to evaluate the Jacobian."""
+    """Whether the
+    [evaluate()][gemseo.core.mdo_functions.collections.functions.Functions.evaluate]
+    method has to evaluate the Jacobian."""
 
     def __init__(self) -> None:  # noqa: D107
         self._functions = []
@@ -80,7 +82,7 @@ class Functions(MutableSequence[MDOFunction]):
         """Check if the function type is authorized.
 
         Args:
-            function: The function.
+            _function: The function.
 
         Raises:
             ValueError: When the function type is not authorized.
@@ -99,7 +101,7 @@ class Functions(MutableSequence[MDOFunction]):
         """Check if the function name is available.
 
         Args:
-            function: The function.
+            _function: The function.
             all_functions: All the kept functions to be compared with the function.
 
         Raises:
@@ -125,7 +127,7 @@ class Functions(MutableSequence[MDOFunction]):
             function: The function.
 
         Returns:
-            A formatted function or ``None``.
+            A formatted function or `None`.
         """
         return function
 
@@ -183,7 +185,8 @@ class Functions(MutableSequence[MDOFunction]):
         Args:
             input_value: The input value at which to evaluate the functions.
 
-        .. note:: This method does not return the output values.
+        Note:
+            This method does not return the output values.
         """
         for function in self._functions:
             function.evaluate(input_value)

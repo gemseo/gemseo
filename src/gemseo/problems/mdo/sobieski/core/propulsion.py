@@ -322,7 +322,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
         Args:
             esf: The engine scale factor.
             c_3: The reference engine weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Return:
             The engine weight.
@@ -342,31 +343,32 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
         Args:
             x_shared: The values of the shared design variables,
-                where ``x_shared[0]`` is the thickness/chord ratio,
-                ``x_shared[1]`` is the altitude,
-                ``x_shared[2]`` is the Mach number,
-                ``x_shared[3]`` is the aspect ratio,
-                ``x_shared[4]`` is the wing sweep and
-                ``x_shared[5]`` is the wing surface area.
+                where `x_shared[0]` is the thickness/chord ratio,
+                `x_shared[1]` is the altitude,
+                `x_shared[2]` is the Mach number,
+                `x_shared[3]` is the aspect ratio,
+                `x_shared[4]` is the wing sweep and
+                `x_shared[5]` is the wing surface area.
             y_23: The drag coefficient.
             x_3: The throttle.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_3: The reference engine weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The propulsion outputs:
-                - ``y_3``: The outputs of the propulsion analysis:
-                    - ``y_3[0]``: the specific fuel consumption,
-                    - ``y_3[1]``: the engine weight,
-                    - ``y_3[2]``: the engine scale factor,
-                - ``g_3``: The propulsion outputs to be constrained:
-                    - ``g_3[0]``: the engine scale factor,
-                    - ``g_3[1]``: the engine temperature,
-                    - ``g_3[2]``: the throttle setting.
+                - `y_3`: The outputs of the propulsion analysis:
+                    - `y_3[0]`: the specific fuel consumption,
+                    - `y_3[1]`: the engine weight,
+                    - `y_3[2]`: the engine scale factor,
+                - `g_3`: The propulsion outputs to be constrained:
+                    - `g_3[0]`: the engine scale factor,
+                    - `g_3[1]`: the engine temperature,
+                    - `g_3[2]`: the throttle setting.
         """
         return self._execute(
             x_shared[1],
@@ -393,23 +395,24 @@ class SobieskiPropulsion(SobieskiDiscipline):
             mach: The Mach number.
             throttle: The throttle.
             drag: The drag coefficient.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_3: The reference engine weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The propulsion outputs:
-                - ``y_3``: The outputs of the propulsion analysis:
-                    - ``y_3[0]``: the specific fuel consumption,
-                    - ``y_3[1]``: the engine weight,
-                    - ``y_3[2]``: the engine scale factor,
-                - ``g_3``: The propulsion outputs to be constrained:
-                    - ``g_3[0]``: the engine scale factor,
-                    - ``g_3[1]``: the engine temperature,
-                    - ``g_3[2]``: the throttle setting.
+                - `y_3`: The outputs of the propulsion analysis:
+                    - `y_3[0]`: the specific fuel consumption,
+                    - `y_3[1]`: the engine weight,
+                    - `y_3[2]`: the engine scale factor,
+                - `g_3`: The propulsion outputs to be constrained:
+                    - `g_3[0]`: the engine scale factor,
+                    - `g_3[1]`: the engine temperature,
+                    - `g_3[2]`: the throttle setting.
         """
         c_3 = ref_weight or self.constants[3]
         y_3 = zeros(3, dtype=self.dtype)
@@ -451,16 +454,17 @@ class SobieskiPropulsion(SobieskiDiscipline):
         desf_dx: ndarray,
         c_3: float | None = None,
     ) -> float:
-        """Derive the engine weight with respect to an input variable ``x``.
+        """Derive the engine weight with respect to an input variable `x`.
 
         Args:
             esf: The engine scale factor (ESF).
             desf_dx: The partial derivative of ESF with respect to an input variable.
             c_3: The reference engine weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
-            The derivative of the engine weight wrt the variable ``x``.
+            The derivative of the engine weight wrt the variable `x`.
         """
         c_3 = c_3 or self.constants[3]
         return 3 * c_3 * 1.05 * desf_dx * esf**0.05
@@ -573,7 +577,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         """Initialize the Jacobian structure.
 
         Args:
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
@@ -608,20 +612,21 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
         Args:
             x_shared: The values of the shared design variables,
-                where ``x_shared[0]`` is the thickness/chord ratio,
-                ``x_shared[1]`` is the altitude,
-                ``x_shared[2]`` is the Mach number,
-                ``x_shared[3]`` is the aspect ratio,
-                ``x_shared[4]`` is the wing sweep and
-                ``x_shared[5]`` is the wing surface area.
+                where `x_shared[0]` is the thickness/chord ratio,
+                `x_shared[1]` is the altitude,
+                `x_shared[2]` is the Mach number,
+                `x_shared[3]` is the aspect ratio,
+                `x_shared[4]` is the wing sweep and
+                `x_shared[5]` is the wing surface area.
             y_23: The drag coefficient.
             x_3: The throttle.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_3: The reference engine weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The Jacobian of the discipline.
@@ -651,12 +656,13 @@ class SobieskiPropulsion(SobieskiDiscipline):
             mach: The Mach number.
             throttle: The throttle.
             drag: The drag coefficient.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_3: The reference engine weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The Jacobian of the discipline.

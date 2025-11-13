@@ -54,8 +54,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
 
     The IDF formulation expresses an MDO problem as
 
-    .. math::
-
+    $$
        \begin{aligned}
        & \underset{x,z,y^t}{\text{min}} & & f(x, z, y^t) \\
        & \text{subject to}     & & g(x, z, y^t) \le 0 \\
@@ -63,23 +62,24 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
        &                       & & y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0,
                                    \quad \forall i \in \{1,\ldots, N\}
        \end{aligned}
+    $$
 
     where
 
-    - :math:`N` is the number of disciplines,
-    - :math:`f` is the objective function,
-    - :math:`g` are the inequality constraint functions,
-    - :math:`h` are the equality constraint functions,
-    - :math:`z` are the global design variables,
-    - :math:`x=(x_1,x_2,\ldots,x_N)` are the local design variables,
-    - :math:`x_i` are the design variables specific to the :math:`i`-th discipline,
-    - :math:`y=(y_1,y_2,\ldots,y_N)` are the coupling variables
+    - $N$ is the number of disciplines,
+    - $f$ is the objective function,
+    - $g$ are the inequality constraint functions,
+    - $h$ are the equality constraint functions,
+    - $z$ are the global design variables,
+    - $x=(x_1,x_2,\ldots,x_N)$ are the local design variables,
+    - $x_i$ are the design variables specific to the $i$-th discipline,
+    - $y=(y_1,y_2,\ldots,y_N)$ are the coupling variables
       outputted by the disciplines,
-    - :math:`y_i` are the coupling variables outputted by the :math:`i`-th discipline,
-    - :math:`y^t=(y_1^t,y_2^t,\ldots,y_N^t)` are the *target* coupling variables
+    - $y_i$ are the coupling variables outputted by the $i$-th discipline,
+    - $y^t=(y_1^t,y_2^t,\ldots,y_N^t)$ are the *target* coupling variables
       used by the disciplines in input,
-    - :math:`y_i^t` are the target coupling variables
-      used by the :math:`i`-th discipline,
+    - $y_i^t$ are the target coupling variables
+      used by the $i$-th discipline,
 
     Note that:
 
@@ -88,7 +88,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
     2. the original constraints are supplemented
        by equality constraints called *consistency constraints*.
     3. the disciplinary analysis is made at each optimization iteration
-       while the multidisciplinary analysis, i.e. :math:`y=y^t`, is made at the optimum.
+       while the multidisciplinary analysis, i.e. $y=y^t$, is made at the optimum.
     4. the use of the target coupling variables in input of the disciplines
        instead of the coupling variables decouples the multidisciplinary process
        and makes it possible to evaluate the disciplines in parallel.
@@ -103,8 +103,8 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
     """The process to execute the disciplines.
 
     This argument is used
-    when ``include_weak_coupling_targets`` is ``False``
-    or when ``n_processes > 1``.
+    when `include_weak_coupling_targets` is `False`
+    or when `n_processes > 1`.
     """
 
     def _init_before_design_space_and_objective(self) -> None:

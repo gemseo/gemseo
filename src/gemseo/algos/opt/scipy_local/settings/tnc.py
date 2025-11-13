@@ -38,7 +38,7 @@ class TNC_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings): 
         default=None,
         description="""The value to subtract from each variable.
 
-If ``None``, the offsets are (up+low)/2 for interval bounded variables and
+If `None`, the offsets are (up+low)/2 for interval bounded variables and
 x for the others.""",
     )
 

@@ -32,7 +32,8 @@ if TYPE_CHECKING:
 class OTMonteCarlo(BaseOTDOE):
     """The Monte Carlo algorithm.
 
-    .. note:: This class is a singleton.
+    Note:
+         This class is a singleton.
     """
 
     def generate_samples(  # noqa: D102

@@ -56,14 +56,16 @@ class BaseFullCache(BaseCache):
     """Base cache to store all the data, either in memory or on the disk.
 
     See Also:
-        :class:`.MemoryFullCache`: store all the data in memory.
-        :class:`.HDF5Cache`: store all the data in an HDF5 file.
+        [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache]:
+        store all the data in memory.
+        [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache]:
+        store all the data in an HDF5 file.
     """
 
     _JACOBIAN_SEPARATOR: ClassVar[str] = "!d$_$d!"
     """The string separating the input and output names in a derivative name.
 
-    E.g. ``"output!d$_$d!input"``.
+    E.g. `"output!d$_$d!input"`.
     """
 
     _lock: RLockType
@@ -110,20 +112,20 @@ class BaseFullCache(BaseCache):
         self,
         input_data: StrKeyMapping,
     ) -> bool:
-        """Ensure ``input_data`` associated with ``data_hash`` exists.
+        """Ensure `input_data` associated with `data_hash` exists.
 
-        If ``input_data`` is cached,
-        return ``True``.
-        If ``data_hash`` is missing,
-        store this hash and index ``input_data`` before caching later at this index.
-        If ``data_hash`` exists but ``input_data`` is not cached,
-        add ``data_hash`` and then index ``input_data``.
+        If `input_data` is cached,
+        return `True`.
+        If `data_hash` is missing,
+        store this hash and index `input_data` before caching later at this index.
+        If `data_hash` exists but `input_data` is not cached,
+        add `data_hash` and then index `input_data`.
 
         Args:
             input_data: The input data to cache.
 
         Returns:
-            Whether ``input_data`` exists.
+            Whether `input_data` exists.
         """
         data_hash = hash_data(input_data)
 
@@ -138,7 +140,7 @@ class BaseFullCache(BaseCache):
             self._initialize_entry(self._max_index.value)
             return False
 
-        # If yes, look if there is a corresponding input data equal to ``input_data``.
+        # If yes, look if there is a corresponding input data equal to `input_data`.
         for index in indices:
             if self.compare_dict_of_arrays(
                 input_data, self._read_data(index, self.Group.INPUTS)
@@ -147,8 +149,8 @@ class BaseFullCache(BaseCache):
                 self._last_accessed_index.value = index
                 return True
 
-        # If there is no an input data equal ``input_data``,
-        # update the indices related to the ``data_hash``.
+        # If there is no an input data equal `input_data`,
+        # update the indices related to the `data_hash`.
         self._max_index.value += 1
         self._last_accessed_index.value = self._max_index.value
         self._hashes_to_indices[data_hash] = append(indices, self._max_index.value)
@@ -204,7 +206,7 @@ class BaseFullCache(BaseCache):
         """Cache input data and increment group if needed.
 
         Cache inputs and increment group if needed.
-        Check if ``group`` exists for these inputs.
+        Check if `group` exists for these inputs.
 
         This method avoids duplicate storage.
 
@@ -213,7 +215,7 @@ class BaseFullCache(BaseCache):
             group: The group.
 
         Returns:
-            Whether ``group`` exists.
+            Whether `group` exists.
         """
         if not self.__ensure_input_data_exists(input_data):
             self._write_data(input_data, self.Group.INPUTS, self._max_index.value)
@@ -340,7 +342,7 @@ class BaseFullCache(BaseCache):
             input_data: The input data.
 
         Returns:
-            The output and Jacobian data if they exist, ``None`` otherwise.
+            The output and Jacobian data if they exist, `None` otherwise.
         """
         for index in indices:
             if self.compare_dict_of_arrays(
@@ -494,7 +496,7 @@ class BaseFullCache(BaseCache):
             other_cache: A cache to be concatenated to a copy of the current one.
 
         Returns:
-            A new cache concatenating the current one and ``other_cache``.
+            A new cache concatenating the current one and `other_cache`.
         """
         new_cache = self._copy_empty_cache()
         new_cache.update(self)

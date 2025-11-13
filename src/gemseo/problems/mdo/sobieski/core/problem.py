@@ -74,30 +74,30 @@ class SobieskiProblem:
     The objective and constraint functions come from a system of four disciplines:
 
     1. the structure,
-       computing the total aircraft mass :math:`y_{1,4,0}` and :math:`y_{1,2,0}`,
-       the fuel mass :math:`y_{1,4,1}`,
-       the wing twist :math:`y_{1,2,1}`
-       and the five stress constraints :math:`g_{1,0},\ldots,g_{4,0}`.
+       computing the total aircraft mass $y_{1,4,0}$ and $y_{1,2,0}$,
+       the fuel mass $y_{1,4,1}$,
+       the wing twist $y_{1,2,1}$
+       and the five stress constraints $g_{1,0},\ldots,g_{4,0}$.
     2. the aerodynamics discipline,
-       computing the lift :math:`y_{2,1}`,
-       drag :math:`y_{2,3}`,
+       computing the lift $y_{2,1}$,
+       drag $y_{2,3}$,
        lift-to-drag ratio
-       and pressure gradient constraint :math:`g_2`,
+       and pressure gradient constraint $g_2$,
     3. the propulsion,
-       computing the engine mass :math:`y_{3,1,0}`,
-       the engine scale factor :math:`y_{3,2,0}`,
-       which is also the constraint :math:`g_{3,0}`,
-       the specific fuel consumption :math:`y_{3,4,0}`,
-       the engine temperature constraint :math:`g_{3,1}`,
-       and the throttle setting constraint :math:`g_{3,2}`
+       computing the engine mass $y_{3,1,0}$,
+       the engine scale factor $y_{3,2,0}$,
+       which is also the constraint $g_{3,0}$,
+       the specific fuel consumption $y_{3,4,0}$,
+       the engine temperature constraint $g_{3,1}$,
+       and the throttle setting constraint $g_{3,2}$
     4. the mission,
-       computing the range :math:`y_{4,0}`.
+       computing the range $y_{4,0}$.
 
     Notes:
         - The structure, aerodynamics, propulsion and mission disciplines
           are numbered from 1 to 4.
-        - The variable :math:`y_{i,j,k}` is a coupling variable
-          from the discipline :math:`i` to the discipline :math:`j`.
+        - The variable $y_{i,j,k}$ is a coupling variable
+          from the discipline $i$ to the discipline $j$.
         - The aerodynamics, structure and propulsion disciplines are strongly coupled,
           i.e. each of them depends directly or indirectly on the others,
           and provide inputs to the mission discipline.
@@ -106,34 +106,34 @@ class SobieskiProblem:
 
     - the design variables which are inputs to at least two disciplines,
 
-        - :math:`x_{0,0}`: the thickness-to-chord ratio,
-        - :math:`x_{0,1}`: the altitude (ft),
-        - :math:`x_{0,2}`: the Mach number,
-        - :math:`x_{0,3}`: the aspect ratio,
-        - :math:`x_{0,4}`: the wing sweep (deg),
-        - :math:`x_{0,5}`: the wing surface area (ft :sup:`2`\),
+        - $x_{0,0}$: the thickness-to-chord ratio,
+        - $x_{0,1}$: the altitude (ft),
+        - $x_{0,2}$: the Mach number,
+        - $x_{0,3}$: the aspect ratio,
+        - $x_{0,4}$: the wing sweep (deg),
+        - $x_{0,5}$: the wing surface area (ft :sup:`2`\),
 
     - the design variables which are inputs of the structure discipline only:
 
-        - :math:`x_{1,0}`: the wing taper ratio,
-        - :math:`x_{1,1}`: the wingbox x-sectional area
+        - $x_{1,0}$: the wing taper ratio,
+        - $x_{1,1}$: the wingbox x-sectional area
 
     - the design variables which are inputs of the aerodynamics discipline only:
 
-        - :math:`x_{2,0}`: the skin friction coefficient,
+        - $x_{2,0}$: the skin friction coefficient,
 
     - the design variables which are inputs of the propulsion discipline only:
 
-        - :math:`x_{3,0}`: the throttle setting (engin mass flow).
+        - $x_{3,0}$: the throttle setting (engin mass flow).
 
     Lastly,
     this problem is based on five constants:
 
-    - :math:`c_0`: the minimum fuel weight,
-    - :math:`c_1`: the miscellaneous weight,
-    - :math:`c_2`: the maximum load factor,
-    - :math:`c_3`: the reference engine weight,
-    - :math:`c_4`: the minimum drag coefficient.
+    - $c_0$: the minimum fuel weight,
+    - $c_1$: the miscellaneous weight,
+    - $c_2$: the maximum load factor,
+    - $c_3$: the reference engine weight,
+    - $c_4$: the minimum drag coefficient.
     """
 
     CONTRAINTS_NAMES_INEQUALITY = (
@@ -203,10 +203,10 @@ class SobieskiProblem:
     __DESIGN_VARIABLE_NAMES: Final[tuple[str]] = ("x_1", "x_2", "x_3", "x_shared")
 
     USE_ORIGINAL_DESIGN_VARIABLES_ORDER: ClassVar[bool] = False
-    """Whether to sort the :attr:`.DesignSpace` as in :cite:`SobieskiBLISS98`.
+    """Whether to sort the design space as in the original paper.
 
-    If so, the order of the design variables will be ``"x_1"``, ``"x_2"``, ``"x_3"`` and
-    ``"x_shared"``. Otherwise, ``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``.
+    If so, the order of the design variables will be `"x_1"`, `"x_2"`, `"x_3"` and
+    `"x_shared"`. Otherwise, `"x_shared"`, `"x_1"`, `"x_2"` and `"x_3"`.
     """
 
     STRESS_LIMIT = SobieskiStructure.STRESS_LIMIT
@@ -277,7 +277,7 @@ class SobieskiProblem:
 
     @property
     def initial_design(self) -> ndarray:
-        """The initial design :math:`x`."""
+        """The initial design $x$."""
         return self.__base.initial_design.copy()
 
     @property
@@ -467,7 +467,7 @@ class SobieskiProblem:
             names: The names of the variables.
                 If empty, use all the input variables.
             seed: The seed for the random number generation.
-                If ``None``, do not set the seed.
+                If `None`, do not set the seed.
 
         Returns:
             The randomized starting point.
@@ -548,21 +548,21 @@ class SobieskiProblem:
 
         Args:
             g_1: The constraints from the structure discipline:
-                ``g_1[0]`` to ``g_1[4]`` are the stresses on wing
-                and ``g_1[5]`` is the wing twist.
+                `g_1[0]` to `g_1[4]` are the stresses on wing
+                and `g_1[5]` is the wing twist.
             g_2: The constraint (pressure gradient) from the aerodynamics discipline.
             g_3: The constraints from the propulsion discipline:
-                ``g_3[0]`` is the engine scale factor,
-                ``g_3[1]`` is the engine temperature
-                and ``g_3[2]`` is the throttle setting constraint.
-            true_cstr: If ``True``,
+                `g_3[0]` is the engine scale factor,
+                `g_3[1]` is the engine temperature
+                and `g_3[2]` is the throttle setting constraint.
+            true_cstr: If `True`,
                 return the value of the outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
 
         Returns:
             The constraints or the distance to the thresholds,
-            according to ``true_cstr``.
+            according to `true_cstr`.
         """
         if true_cstr:
             return concatenate((
@@ -593,7 +593,7 @@ class SobieskiProblem:
             input_vector: The input vector.
 
         Returns:
-            The normalized input vector with components in :math:`[0,1]`.
+            The normalized input vector with components in $[0,1]$.
         """
         lower_bound, upper_bound = self.design_bounds
         return (input_vector - lower_bound) / (upper_bound - lower_bound)
@@ -623,7 +623,7 @@ class SobieskiProblem:
 
         Args:
             design_vector: The design vector.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
@@ -631,40 +631,40 @@ class SobieskiProblem:
 
         Returns:
             The output variables at equilibrium:
-            - ``y_1``: The weight analysis outputs:
-                - ``y_1[0]``: The total aircraft weight,
-                - ``y_1[1]``: The fuel weight,
-                - ``y_1[2]``: The wing twist,
-            - ``y_2``: The outputs of the aerodynamics analysis:
-                - ``y_2[0]``: the lift,
-                - ``y_2[1]``: the drag,
-                - ``y_2[2]``: the lift/drag ratio,
-            - ``y_3``: The outputs of the propulsion analysis, namely
-                - ``y_3[0]``: the specific fuel consumption (SFC),
-                - ``y_3[1]``: the engine weight (EW),
-                - ``y_3[2]``: the engine scale factor (ESF),
-            - ``y_4``: The A/C range,
-            - ``y_12``: The coupling variables for the aerodynamics discipline:
-                - ``y_12[0]``: The total aircraft weight,
-                - ``y_12[1]``: The wing twist,
-            - ``y_14``: The coupling variables for the mission discipline:
-                - ``y_14[0]``: The total aircraft weight
-                - ``y_14[1]``: The fuel weight
-            - ``y_21``: The coupling variable (lift) for the structure discipline,
-            - ``y_23``: The coupling variable (drag) for the propulsion discipline,
-            - ``y_24``: The coupling variable (lift/drag ratio)
+            - `y_1`: The weight analysis outputs:
+                - `y_1[0]`: The total aircraft weight,
+                - `y_1[1]`: The fuel weight,
+                - `y_1[2]`: The wing twist,
+            - `y_2`: The outputs of the aerodynamics analysis:
+                - `y_2[0]`: the lift,
+                - `y_2[1]`: the drag,
+                - `y_2[2]`: the lift/drag ratio,
+            - `y_3`: The outputs of the propulsion analysis, namely
+                - `y_3[0]`: the specific fuel consumption (SFC),
+                - `y_3[1]`: the engine weight (EW),
+                - `y_3[2]`: the engine scale factor (ESF),
+            - `y_4`: The A/C range,
+            - `y_12`: The coupling variables for the aerodynamics discipline:
+                - `y_12[0]`: The total aircraft weight,
+                - `y_12[1]`: The wing twist,
+            - `y_14`: The coupling variables for the mission discipline:
+                - `y_14[0]`: The total aircraft weight
+                - `y_14[1]`: The fuel weight
+            - `y_21`: The coupling variable (lift) for the structure discipline,
+            - `y_23`: The coupling variable (drag) for the propulsion discipline,
+            - `y_24`: The coupling variable (lift/drag ratio)
                for the mission discipline,
-            - ``y_34``: The couping variable SFC for the mission discipline,
-            - ``y_31``: The coupling variable (EW) for the structure discipline,
-            - ``y_32``: The coupling variable (ESG) for the aerodynamics discipline,
-            - ``g_1``: the outputs to be constrained,
-                where ``g_1[0]`` to ``g_1[4]`` are stresses on the wing
-                and ``g_1[5]`` is the wing twist,
-            - ``g_2``: The pressure gradient to be constrained.
-            - ``g_3``: The propulsion constraints,
-                where ``g_3[0]`` is the engine scale factor constraint,
-                `g_3[1]``is the engine temperature,
-                and ``g_3[2]`` is the throttle setting constraint.
+            - `y_34`: The couping variable SFC for the mission discipline,
+            - `y_31`: The coupling variable (EW) for the structure discipline,
+            - `y_32`: The coupling variable (ESG) for the aerodynamics discipline,
+            - `g_1`: the outputs to be constrained,
+                where `g_1[0]` to `g_1[4]` are stresses on the wing
+                and `g_1[5]` is the wing twist,
+            - `g_2`: The pressure gradient to be constrained.
+            - `g_3`: The propulsion constraints,
+                where `g_3[0]` is the engine scale factor constraint,
+                `g_3[1]` is the engine temperature,
+                and `g_3[2]` is the throttle setting constraint.
         """
         dtype = self.__dtype
         x_1 = design_vector[:2]
@@ -728,13 +728,13 @@ class SobieskiProblem:
 
         Args:
             design_vector: The design vector.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
 
         Returns:
-            The value of the constraints :math:`g_1`, :math:`g_2` and :math:`g_3`.
+            The value of the constraints $g_1$, $g_2$ and $g_3$.
         """
         outputs = self.__compute_mda(design_vector, true_cstr=true_cstr)
         return outputs[-3], outputs[-2], outputs[-1]

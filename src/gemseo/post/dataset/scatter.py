@@ -17,10 +17,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a scatter plot from a :class:`.Dataset`.
+r"""Draw a scatter plot from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-A :class:`.Scatter` plot represents a set of points
-:math:`\{x_i,y_i\}_{1\leq i \leq n}` as markers on a classical plot
+A [Scatter][gemseo.post.dataset.scatter.Scatter] plot represents a set of points
+$\{x_i,y_i\}_{1\leq i \leq n}$ as markers on a classical plot
 where the color of points can be heterogeneous.
 """
 
@@ -56,11 +56,11 @@ class Scatter(DatasetPlot):
         """
         Args:
             x: The name of the variable on the x-axis,
-                with its optional component if not ``0``,
-                e.g. ``("foo", 3)`` for the fourth component of the variable ``"foo"``.
+                with its optional component if not `0`,
+                e.g. `("foo", 3)` for the fourth component of the variable `"foo"`.
             y: The name of the variable on the y-axis,
-                with its optional component if not ``0``,
-                e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
+                with its optional component if not `0`,
+                e.g. `("bar", 3)` for the fourth component of the variable `"bar"`.
             trend: The trend function to be added on the scatter plots
                 or a function creating a trend function from a set of *xy*-points.
         """  # noqa: D205, D212, D415

@@ -52,31 +52,31 @@ if TYPE_CHECKING:
 class ParetoFront:
     """A Pareto front.
 
-    The design and objective vectors are noted ``x`` and ``f`` respectively.
+    The design and objective vectors are noted `x` and `f` respectively.
     """
 
     distance_from_utopia: float
     """The shortest Euclidean distance from the Pareto front to the
-    :attr:`.f_utopia`."""
+    [f_utopia][gemseo.algos.pareto.pareto_front.ParetoFront.f_utopia]."""
 
     f_anchors: RealArray
     """The values of the objectives of all anchor points.
 
     At those points, each objective is minimized one at a time.
 
-    Its shape is ``(n_anchors, f_dimension)``.
+    Its shape is `(n_anchors, f_dimension)`.
     """
 
     f_anti_utopia: RealArray
     """The anti-utopia point, i.e. the maximum objective vector.
 
-    Its shape is ``(f_dimension,)``.
+    Its shape is `(f_dimension,)`.
     """
 
     f_optima: RealArray
     """The objective values of the Pareto optima.
 
-    Its shape is ``(n_optima, f_dimension)``.
+    Its shape is `(n_optima, f_dimension)`.
     """
 
     f_utopia: RealArray
@@ -85,16 +85,17 @@ class ParetoFront:
     In most Pareto fronts, there is no design value for which the objective is equal to
     the utopia.
 
-    Its shape is ``(f_dimension,)``.
+    Its shape is `(f_dimension,)`.
     """
 
     f_utopia_neighbors: RealArray
-    """The objectives value of the closest point(s) to the :attr:`.f_utopia`.
+    """The objectives value of the closest point(s) to the utopia.
 
-    The distance separating them from :attr:`.f_utopia` is
-    :attr:`.distance_from_utopia`.
+    The distance separating them from
+    [f_utopia][gemseo.algos.pareto.pareto_front.ParetoFront.f_utopia] is
+    [distance_from_utopia][gemseo.algos.pareto.pareto_front.ParetoFront.distance_from_utopia]
 
-    Its shape is ``(n_neighbors, f_dimension)``.
+    Its shape is `(n_neighbors, f_dimension)`.
     """
 
     x_anchors: RealArray
@@ -102,22 +103,23 @@ class ParetoFront:
 
     At those points, each objective is minimized one at a time.
 
-    Its shape is ``(n_anchors, x_dimension)``.
+    Its shape is `(n_anchors, x_dimension)`.
     """
 
     x_optima: RealArray
     """The values of the design variables of the Pareto optima.
 
-    Its shape is ``(n_optima, x_dimension)``.
+    Its shape is `(n_optima, x_dimension)`.
     """
 
     x_utopia_neighbors: RealArray
-    """The design variables value of the closest point(s) to the :attr:`.f_utopia`.
+    """The design variables value of the closest point(s) to the utopia.
 
-    The distance separating them from :attr:`.f_utopia` is
-    :attr:`.distance_from_utopia`.
+    The distance separating them from
+    [f_utopia][gemseo.algos.pareto.pareto_front.ParetoFront.f_utopia] is
+    [distance_from_utopia][gemseo.algos.pareto.pareto_front.ParetoFront.distance_from_utopia].
 
-    Its shape is ``(n_neighbors, x_dimension)``.
+    Its shape is `(n_neighbors, x_dimension)`.
     """
 
     _anchors_neighbors: DataFrame = field(init=False)
@@ -127,8 +129,8 @@ class ParetoFront:
     """The optimization problem associated to the Pareto front."""
 
     @classmethod
-    def from_optimization_problem(cls, problem) -> ParetoFront:
-        """Create a :class:`.ParetoFront` from an :class:`.OptimizationProblem`.
+    def from_optimization_problem(cls, problem: OptimizationProblem) -> ParetoFront:
+        """Create a Pareto front from an optimization problem.
 
         Args:
             problem: The optimization problem.

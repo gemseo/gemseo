@@ -30,40 +30,41 @@ while for a discrete output variable,
 a *classification* is performed.
 
 Given a set of input variables
-:math:`x \in \mathbb{R}^{n_{\text{samples}}\times n_{\text{inputs}}}` and
+$x \in \mathbb{R}^{n_{\text{samples}}\times n_{\text{inputs}}}$ and
 a set of output variables
-:math:`y \in \mathbb{K}^{n_{\text{samples}}\times n_{\text{outputs}}}`,
-where :math:`n_{\text{inputs}}` is the dimension of the input variable,
-:math:`n_{\text{outputs}}` is the dimension of the output variable,
-:math:`n_{\text{samples}}` is the number of training samples and
-:math:`\mathbb{K}` is either :math:`\mathbb{R}` or :math:`\mathbb{N}`
+$y \in \mathbb{K}^{n_{\text{samples}}\times n_{\text{outputs}}}$,
+where $n_{\text{inputs}}$ is the dimension of the input variable,
+$n_{\text{outputs}}$ is the dimension of the output variable,
+$n_{\text{samples}}$ is the number of training samples and
+$\mathbb{K}$ is either $\mathbb{R}$ or $\mathbb{N}$
 for regression and classification tasks respectively,
 a supervised learning algorithm seeks to find a function
-:math:`f: \mathbb{R}^{n_{\text{inputs}}} \to
-\mathbb{K}^{n_{\text{outputs}}}` such that :math:`y=f(x)`.
+$f: \mathbb{R}^{n_{\text{inputs}}} \to
+\mathbb{K}^{n_{\text{outputs}}}$ such that $y=f(x)$.
 
 In addition,
-we often want to impose some additional constraints on the function :math:`f`,
+we often want to impose some additional constraints on the function $f$,
 mainly to ensure that it has a generalization capacity beyond the training data,
 i.e. it is able to correctly predict output values of new input values.
 This is called regularization.
-Assuming :math:`f` is parametrized by a set of parameters :math:`\theta`,
-and denoting :math:`f_\theta` the parametrized function,
+Assuming $f$ is parametrized by a set of parameters $\theta$,
+and denoting $f_\theta$ the parametrized function,
 one typically seeks to minimize a function of the form
 
-.. math::
+$$\mu(y, f_\theta(x)) + \Omega(\theta),$$
 
-    \mu(y, f_\theta(x)) + \Omega(\theta),
-
-where :math:`\mu` is a distance-like measure,
+where $\mu$ is a distance-like measure,
 typically a mean squared error,
 a cross entropy in the case of a regression,
 or a probability to be maximized in the case of a classification,
-and :math:`\Omega` is a regularization term that limits the parameters
+and $\Omega$ is a regularization term that limits the parameters
 from over-fitting, typically some norm of its argument.
 
-The :mod:`~gemseo.mlearning.core.supervised` module implements this concept
-through the :class:`.BaseMLSupervisedAlgo` class based on an :class:`.IODataset`.
+The [gemseo.mlearning.core.algos.supervised][gemseo.mlearning.core.algos.supervised]
+module implements this concept through the
+[BaseMLSupervisedAlgo][gemseo.mlearning.core.algos.supervised.BaseMLSupervisedAlgo]
+class based on an
+[IODataset][gemseo.datasets.io_dataset.IODataset].
 """
 
 from __future__ import annotations
@@ -107,8 +108,8 @@ SavedObjectType = MLAlgoSaveObjectType | Sequence[str] | dict[str, ndarray]
 class BaseMLSupervisedAlgo(BaseMLAlgo):
     """Supervised machine learning algorithm.
 
-    Inheriting classes shall overload the :meth:`!BaseMLSupervisedAlgo._fit` and
-    :meth:`!BaseMLSupervisedAlgo._predict` methods.
+    Inheriting classes shall overload the `BaseMLSupervisedAlgo._fit()` and
+    `BaseMLSupervisedAlgo._predict()` methods.
     """
 
     input_names: list[str]
@@ -511,9 +512,9 @@ class BaseMLSupervisedAlgo(BaseMLAlgo):
         """Predict output data from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;

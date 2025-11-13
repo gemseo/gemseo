@@ -79,7 +79,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
         """Check that main_mda_name is available.
 
         Args:
-            options: The options.
+            **options: The options.
 
         Returns:
             The main MDA.

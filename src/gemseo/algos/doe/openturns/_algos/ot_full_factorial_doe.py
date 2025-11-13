@@ -33,7 +33,8 @@ if TYPE_CHECKING:
 class OTFullFactorialDOE(BaseFullFactorialDOE):
     """The full-factorial DOE.
 
-    .. note:: This class is a singleton.
+    Note:
+        This class is a singleton.
     """
 
     def _generate_fullfact_from_levels(self, levels: Iterable[int]) -> RealArray:

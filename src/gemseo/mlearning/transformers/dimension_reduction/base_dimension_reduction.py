@@ -19,12 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Dimension reduction as a generic transformer.
 
-The :class:`.BaseDimensionReduction` class implements
+The
+[BaseDimensionReduction][gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction.BaseDimensionReduction]
+class implements
 the concept of dimension reduction.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.transformers.dimension_reduction.pca`
+See Also:
+   [gemseo.mlearning.transformers.dimension_reduction.pca][gemseo.mlearning.transformers.dimension_reduction.pca]
 """
 
 from __future__ import annotations
@@ -45,9 +46,9 @@ class BaseDimensionReduction(BaseTransformer):
         Args:
             name: A name for this transformer.
             n_components: The number of components of the latent space.
-                If ``None``,
+                If `None`,
                 use the maximum number allowed by the technique,
-                typically ``min(n_samples, n_features)``.
+                typically `min(n_samples, n_features)`.
             **parameters: The parameters of the transformer.
         """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)

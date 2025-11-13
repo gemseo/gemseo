@@ -19,27 +19,29 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Scaling a variable with a statistical linear transformation.
 
-The :class:`.StandardScaler` class implements the Standard scaling method
-applying to some parameter :math:`z`:
+The
+[StandardScaler][gemseo.mlearning.transformers.scaler.standard_scaler.StandardScaler]
+class implements the Standard scaling method
+applying to some parameter $z$:
 
-.. math::
-
+$$
     \bar{z} := \text{offset} + \text{coefficient}\times z
     = \frac{z-\text{mean}(z)}{\text{std}(z)}
+$$
 
-where :math:`\text{offset}=-\text{mean}(z)/\text{std}(z)` and
-:math:`\text{coefficient}=1/\text{std}(z)`.
+where $\text{offset}=-\text{mean}(z)/\text{std}(z)$ and
+$\text{coefficient}=1/\text{std}(z)$.
 
 In this standard scaling method,
 the scaling operation linearly transforms the original variable math:`z`
 such that in the scaled space,
 the original data have zero mean and unit standard deviation.
 
-Warnings:
-    When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)\neq 0`,
-    we use :math:`\bar{z}=\frac{z}{\text{mean}(z)}-1`.
-    When :math:`\text{std}(z)=0` and :math:`\text{mean}(z)=0`,
-    we use :math:`\bar{z}=z`.
+Warning:
+    When $\text{std}(z)=0$ and $\text{mean}(z)\neq 0$,
+    we use $\bar{z}=\frac{z}{\text{mean}(z)}-1$.
+    When $\text{std}(z)=0$ and $\text{mean}(z)=0$,
+    we use $\bar{z}=z$.
 """
 
 from __future__ import annotations

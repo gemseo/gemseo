@@ -29,12 +29,12 @@ if TYPE_CHECKING:
 
 
 class BiLevelScenarioResult(ScenarioResult):
-    """The result of a :class:`.Scenario` using a :class:`.BiLevel` formulation."""
+    """The result of a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] using a [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""  # noqa: E501
 
     __SUB_LABEL_FORMATTER: Final[str] = "sub_{}"
     """The formatter to get the name of the key of a sub-problem from its index.
 
-    To be used as ``__SUB_LABEL_FORMATTER.format(i)`` where ``i`` is an integer.
+    To be used as `__SUB_LABEL_FORMATTER.format(i)` where `i` is an integer.
     """
 
     __n_sub_problems: int

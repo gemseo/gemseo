@@ -12,4 +12,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Plots implementing the :class:`.DatasetPlot` classes."""
+"""Plots implementing the [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot] classes."""  # noqa: E501

@@ -53,9 +53,8 @@ if xlwings is not None:
 class XLSDiscipline(Discipline):
     """Wraps an Excel workbook into a discipline.
 
-    .. warning::
-
-        As this wrapper relies on the `xlwings library <https://www.xlwings.org>`__
+    Warning:
+        As this wrapper relies on the [xlwings library](https://www.xlwings.org)
         to handle macros and interprocess communication, it
         is only working under Windows and macOS.
     """
@@ -113,22 +112,22 @@ class XLSDiscipline(Discipline):
            Inputs sheet, and write the outputs to the "Outputs" sheet.
 
            Alternatively, the user may provide a macro name to the constructor,
-           or ``None`` if no macro shall be executed.
+           or `None` if no macro shall be executed.
 
         Args:
             xls_file_path: The path to the Excel file. If the file is a XLSM,
                 a macro named "execute" must exist and will be called by the
-                :meth:`~.XLSDiscipline._run` method before retrieving the outputs.
+                `XLSDiscipline._run()` method before retrieving the outputs.
             macro_name: The name of the macro to be executed for a XLSM file.
                 If empty, do not run a macro.
-            copy_xls_at_setstate: If ``True``, create a copy of the original Excel file
+            copy_xls_at_setstate: If `True`, create a copy of the original Excel file
                 for each of the pickled parallel processes. This option is required
-                to be set to ``True`` for parallelization in Windows platforms.
-            recreate_book_at_run: Whether to rebuild the xls objects at each ``_run``
+                to be set to `True` for parallelization in Windows platforms.
+            recreate_book_at_run: Whether to rebuild the xls objects at each `_run`
                 call.
 
         Raises:
-            ImportError: If ``xlwings`` cannot be imported.
+            ImportError: If `xlwings` cannot be imported.
         """
         if xlwings is None:
             msg = "cannot import xlwings"

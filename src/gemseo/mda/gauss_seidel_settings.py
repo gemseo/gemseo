@@ -20,6 +20,6 @@ from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
 
 
 class MDAGaussSeidel_Settings(BaseMDASolverSettings):  # noqa: N801
-    """The settings for :class:`.MDAGaussSeidel`."""
+    """The settings for [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel]."""
 
     _TARGET_CLASS_NAME = "MDAGaussSeidel"

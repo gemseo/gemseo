@@ -19,93 +19,99 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Sensitivity analysis using control variates (CV) for Sobol' indices computation.
 
-Introduction to CV
-------------------
+## Introduction to CV
 
-The CV estimator of a statistic :math:`\theta` is defined as
+The CV estimator of a statistic $\theta$ is defined as
 
-.. math::
+$$
     \hat{\theta}^{\textnormal{CV}}(\boldsymbol{\alpha}) = \hat{\theta} -
     \boldsymbol{\alpha^\intercal} (\hat{\boldsymbol{\tau}} - \boldsymbol{\tau}),
+$$
 
 where
 
-- :math:`\hat{\theta}` is the Monte Carlo estimator of :math:`\theta`,
-- :math:`\boldsymbol{\tau} = (\tau_1,\dots,\tau_M)` with :math:`\tau_i` the statistic
-  of the random variable :math:`Z_i`,
-- :math:`\hat{\boldsymbol{\tau}} = (\hat{\tau_1},\dots,\hat{\tau_M})` with
-  :math:`\hat{\tau_i}` the Monte Carlo estimator of the statistic :math:`\tau_i`,
-- :math:`\boldsymbol{\alpha}  \in \mathbb{R}^M` is a control parameter.
+- $\hat{\theta}$ is the Monte Carlo estimator of $\theta$,
+- $\boldsymbol{\tau} = (\tau_1,\dots,\tau_M)$ with $\tau_i$ the statistic
+  of the random variable $Z_i$,
+- $\hat{\boldsymbol{\tau}} = (\hat{\tau_1},\dots,\hat{\tau_M})$ with
+  $\hat{\tau_i}$ the Monte Carlo estimator of the statistic $\tau_i$,
+- $\boldsymbol{\alpha}  \in \mathbb{R}^M$ is a control parameter.
 
-The statistics :math:`\tau_1,\dots,\tau_M` corresponds to :math:`\theta`
-and the random variables :math:`Z_1,\ldots,Z_M` are used as control variates.
+The statistics $\tau_1,\dots,\tau_M$ corresponds to $\theta$
+and the random variables $Z_1,\ldots,Z_M$ are used as control variates.
 
-The control parameter :math:`\boldsymbol{\alpha}` minimizing the variance of the CV
-estimator :math:`\hat{\theta}^{\textnormal{CV}}(\boldsymbol{\alpha})` is given by
+The control parameter $\boldsymbol{\alpha}$ minimizing the variance of the CV
+estimator $\hat{\theta}^{\textnormal{CV}}(\boldsymbol{\alpha})$ is given by
 
-.. math::
-    \boldsymbol{\alpha}^* = \boldsymbol{\Sigma}^{-1} \mathbf{c},
+$$\boldsymbol{\alpha}^* = \boldsymbol{\Sigma}^{-1} \mathbf{c},$$
 
-with :math:`\mathbf{c} = \mathbb{C}[\hat{\boldsymbol{\tau}},\hat{\theta}]
-\in \mathbb{R}^{M}` and :math:`\boldsymbol{\Sigma} =
-\mathbb{C}[\hat{\boldsymbol{\tau}},\hat{\boldsymbol{\tau}}] \in \mathbb{R}^{M \times M}`
-where :math:`\mathbb{C}` is the covariance operator.
+with $\mathbf{c} = \mathbb{C}[\hat{\boldsymbol{\tau}},\hat{\theta}]
+\in \mathbb{R}^{M}$ and $\boldsymbol{\Sigma} =
+\mathbb{C}[\hat{\boldsymbol{\tau}},\hat{\boldsymbol{\tau}}] \in \mathbb{R}^{M \times M}$
+where $\mathbb{C}$ is the covariance operator.
 
-CV estimation of Sobol' indices
--------------------------------
+## CV estimation of Sobol' indices
 
-Given the function of interest :math:`f` from :math:`\mathbb{R}^d` to
-:math:`\mathbb{R}`, the :math:`d` independent input random variables
-:math:`X_1,\ldots,X_d` and the output random variable :math:`Y=f(X_1,\ldots,X_d)`,
-the numerator of the first-order index of :math:`X_i` is
-:math:`\theta := V_{i} = \mathbb{V}[\mathbb{E}[Y|X_i]]`.
+Given the function of interest $f$ from $\mathbb{R}^d$ to
+$\mathbb{R}$, the $d$ independent input random variables
+$X_1,\ldots,X_d$ and the output random variable $Y=f(X_1,\ldots,X_d)$,
+the numerator of the first-order index of $X_i$ is
+$\theta := V_{i} = \mathbb{V}[\mathbb{E}[Y|X_i]]$.
 
-Its Monte Carlo estimator proposed by Saltelli in :cite:`saltelli2010` is
+Its Monte Carlo estimator proposed by Saltelli is
 
-.. math::
-   \hat{\theta} := \hat{V}_{i} = \hat{E}[Y(Y^{(i)}-Y')]
+$$\hat{\theta} := \hat{V}_{i} = \hat{E}[Y(Y^{(i)}-Y')]$$
 
-with :math:`Y'=f(X'_1,\ldots,X'_d)` and
-:math:`Y^{(i)}=f(X'_1,\ldots,X'_{i-1},X_{i},X'_{i+1},\ldots,X'_{d})`
+with $Y'=f(X'_1,\ldots,X'_d)$ and
+$Y^{(i)}=f(X'_1,\ldots,X'_{i-1},X_{i},X'_{i+1},\ldots,X'_{d})$
 where the random vectors
-:math:`(X'_1,\ldots,X'_d)`
+$(X'_1,\ldots,X'_d)$
 and
-:math:`(X_1,\ldots,X_d)`
+$(X_1,\ldots,X_d)$
 are independent and identically distributed.
 
-Given :math:`M` surrogate models :math:`f_1,\ldots,f_M` of :math:`f`,
-the elements of the optimal control parameter :math:`\boldsymbol{\alpha}^*`
+!!! quote "References"
+
+    Andrea Saltelli, Paola Annoni, Ivano Azzini,
+    Francesca Campolongo, Marco Ratto, and Stefano Tarantola.
+    Variance based sensitivity analysis of model output design
+    and estimator for the total sensitivity index.
+    Computer physics communications, 181(2):259--270, 2010.
+
+Given $M$ surrogate models $f_1,\ldots,f_M$ of $f$,
+the elements of the optimal control parameter $\boldsymbol{\alpha}^*$
 are given by
 
-.. math::
+$$
    \mathbf{c} = \frac{1}{n} \mathbb{C}[Y (Y^{(i)}-Y'),
    \mathbf{Z} \odot (\mathbf{Z}^{(i)}-\mathbf{Z}')], \\
    \boldsymbol{\Sigma} = \frac{1}{n} \mathbb{V}[\mathbf{Z}
    \odot (\mathbf{Z}^{(i)}-\mathbf{Z}')].
+$$
 
-where :math:`\odot` denotes the element-wise multiplication,
-:math:`Z_j=f_j(X_1,\ldots,X_d)`,
-:math:`Z_j'=f_j(X_1',\ldots,X_d')` and
-:math:`Z_j^{(i)}=f_j(X'_1,\ldots,X'_{i-1},X_{i},X'_{i+1},\ldots,X'_{d})`.
+where $\odot$ denotes the element-wise multiplication,
+$Z_j=f_j(X_1,\ldots,X_d)$,
+$Z_j'=f_j(X_1',\ldots,X_d')$ and
+$Z_j^{(i)}=f_j(X'_1,\ldots,X'_{i-1},X_{i},X'_{i+1},\ldots,X'_{d})$.
 
 For the numerator of the total-order index
-:math:`T_{i} = \mathbb{V}[Y] - \mathbb{V}[
-\mathbb{E}[Y|X_1,...,X_{i-1},X_{i+1},...,X_{d}]]`,
+$T_{i} = \mathbb{V}[Y] - \mathbb{V}[
+\mathbb{E}[Y|X_1,...,X_{i-1},X_{i+1},...,X_{d}]]$,
 a Monte Carlo estimator is
 
-.. math::
-   \hat{T}_{i}  = \frac{1}{2} \hat{E}[(Y' - Y^{(i)})^2]
+$$\hat{T}_{i}  = \frac{1}{2} \hat{E}[(Y' - Y^{(i)})^2]$$
 
-and the elements of the optimal control parameter :math:`\boldsymbol{\alpha}^*`
+and the elements of the optimal control parameter $\boldsymbol{\alpha}^*$
 are given by
 
-.. math::
+$$
    \mathbf{c} = \frac{1}{n} \mathbb{C}[(Y' - Y^{(i)})^2,
    (\mathbf{Z}' - \mathbf{Z}^{(i)})^{\odot 2}], \\
    \boldsymbol{\Sigma} = \frac{1}{n} \mathbb{V}[
    (\mathbf{Z}' - \mathbf{Z}^{(i)})^{\odot 2}].
+$$
 
-where :math:`\mathbf{A}^{\odot 2}` is the element-wise square of :math:`\mathbf{A}`.
+where $\mathbf{A}^{\odot 2}$ is the element-wise square of $\mathbf{A}$.
 """
 
 from __future__ import annotations
@@ -143,63 +149,63 @@ class CVSobolAlgorithm:
     """The level of the confidence intervals."""
 
     __cv_indices: tuple[dict[str, dict[str, RealArray]]]
-    """The output Sobol' indices of the ``n_control_variates`` control variates."""
+    """The output Sobol' indices of the `n_control_variates` control variates."""
 
     __cv_variance: tuple[float]
-    """The output variance of the ``n_control_variates`` control variates."""
+    """The output variance of the `n_control_variates` control variates."""
 
     __f_a: RealArray
-    """The discipline output data for the samples ``1`` to ``sample_size``.
+    """The discipline output data for the samples `1` to `sample_size`.
 
-    Shape: ``(sample_size,)``.
+    Shape: `(sample_size,)`.
     """
 
     __f_b: RealArray
-    """The discipline output data for the samples ``sample_size`` to ``2*sample_size``.
+    """The discipline output data for the samples `sample_size` to `2*sample_size`.
 
-    Shape: ``(sample_size,)``.
+    Shape: `(sample_size,)`.
     """
 
     __f_ab: RealArray
-    """The centered discipline output data for the samples ``1`` to ``2*sample_size``.
+    """The centered discipline output data for the samples `1` to `2*sample_size`.
 
-    Shape: ``(2*sample_size,)``.
+    Shape: `(2*sample_size,)`.
     """
 
     __f_mix: RealArray
     """The discipline output data for the PF-based samples.
 
-    Shape: ``(n_inputs, sample_size)``.
+    Shape: `(n_inputs, sample_size)`.
     """
 
     __first_indices_interval: RealArray
     """The bootstrap confidence intervals for the first-order Sobol' indices.
 
-    Shape: ``(2, n_inputs)``.
+    Shape: `(2, n_inputs)`.
     """
 
     __g_a: RealArray
-    """The CV output data for the samples ``1`` to ``sample_size``.
+    """The CV output data for the samples `1` to `sample_size`.
 
-    Shape: ``(n_control_variates, sample_size)``.
+    Shape: `(n_control_variates, sample_size)`.
     """
 
     __g_b: RealArray
-    """The CV output data for the samples ``sample_size`` to ``2*sample_size``.
+    """The CV output data for the samples `sample_size` to `2*sample_size`.
 
-    Shape: ``(n_control_variates, sample_size)``.
+    Shape: `(n_control_variates, sample_size)`.
     """
 
     __g_ab: RealArray
-    """The centered CV output data for the samples ``1`` to ``2*sample_size``.
+    """The centered CV output data for the samples `1` to `2*sample_size`.
 
-    Shape: ``(n_control_variates, 2*sample_size)``.
+    Shape: `(n_control_variates, 2*sample_size)`.
     """
 
     __g_mix: RealArray
     """The CV output data for the PF-based samples.
 
-    Shape: ``(n_inputs, n_control_variates, sample_size)``.
+    Shape: `(n_inputs, n_control_variates, sample_size)`.
     """
 
     __sample_size: int
@@ -209,7 +215,7 @@ class CVSobolAlgorithm:
     __total_indices_interval: RealArray
     """The bootstrap confidence intervals for the total-order Sobol' indices.
 
-    Shape: ``(2, n_inputs)``.
+    Shape: `(2, n_inputs)`.
     """
 
     variance: float
@@ -228,11 +234,11 @@ class CVSobolAlgorithm:
         Args:
             n_inputs: The dimension of the input data to estimate the sensitivity
                 indices.
-            output_data: The discipline output data shaped as ``(n_samples,)``.
+            output_data: The discipline output data shaped as `(n_samples,)`.
             cv_output_data: The output data of the control variates to estimate the
-                sensitivity indices shaped as ``(n_control_variates, n_samples)``.
+                sensitivity indices shaped as `(n_control_variates, n_samples)`.
             cv_statistics: For each control variate, the variance of the output
-                and the Sobol' indices of the form ``{order: {input_name: numerator}``.
+                and the Sobol' indices of the form `{order: {input_name: numerator}`.
             bootstrap_samples: The bootstrap samples used for the computation of the
                 confidence intervals.
             confidence_level: The level of the confidence intervals.
@@ -279,16 +285,16 @@ class CVSobolAlgorithm:
         Args:
             mc_stats: The Monte Carlo estimation of the statistics.
             mc_cv_stats: The Monte Carlo estimations of the CV statistics,
-                shaped as ``(n_statistics, n_control_variates)``.
+                shaped as `(n_statistics, n_control_variates)`.
             cv_stats: The CV statistics
-                shaped as ``(n_statistics, n_control_variates)``.
+                shaped as `(n_statistics, n_control_variates)`.
             covariances: The covariance matrices
                 of the estimator output and the control variates;
                 one matrix per control variate.
 
         Returns:
             The statistics estimated using control variates shaped as
-            ``(n_statistics,)``.
+            `(n_statistics,)`.
         """
         alpha_star = zeros([len(covariances), mc_cv_stats.shape[1]])
         for i, covariance in enumerate(covariances):
@@ -309,15 +315,15 @@ class CVSobolAlgorithm:
 
         Args:
             f_s: The statistics output data;
-                one matrix shaped as ``(n_samples,)`` per control variate.
+                one matrix shaped as `(n_samples,)` per control variate.
             g_s: The statistics output data of the control variates;
-                one matrix shaped as ``(n_control_variates, n_samples)`` per control
+                one matrix shaped as `(n_control_variates, n_samples)` per control
                 variate.
             cv_stats: The CV statistics
-                shaped as ``(n_statistics, n_control_variates)``.
+                shaped as `(n_statistics, n_control_variates)`.
 
         Returns:
-            The confidence intervals shaped as ``(2, n_inputs,)``.
+            The confidence intervals shaped as `(2, n_inputs,)`.
         """
         n_statistics = cv_stats.shape[0]
         stats = zeros([len(list(self.__bootstrap_samples)), n_statistics])
@@ -355,7 +361,7 @@ class CVSobolAlgorithm:
         """Compute the variance using control variates.
 
         Returns:
-            The variance estimated using control variates shaped as ``(1,)``.
+            The variance estimated using control variates shaped as `(1,)`.
         """
         n = 2 * self.__sample_size
         cov_f_g = cov(self.__f_ab, self.__g_ab)
@@ -378,8 +384,8 @@ class CVSobolAlgorithm:
             associated to the estimator of the Sobol' indices.
 
         Returns:
-            The Sobol' indices of the given order shaped as ``(n_inputs,)`` and their
-            confidence intervals shaped as ``(2, n_inputs)``.
+            The Sobol' indices of the given order shaped as `(n_inputs,)` and their
+            confidence intervals shaped as `(2, n_inputs)`.
         """
         cv_indices_numerator = (
             self.variance
@@ -409,7 +415,7 @@ class CVSobolAlgorithm:
         """Compute the first-order Sobol' indices.
 
         Returns:
-            The first-order Sobol' indices shaped as ``(n_inputs,)``.
+            The first-order Sobol' indices shaped as `(n_inputs,)`.
         """
         first_indices, self.__first_indices_interval = self.__compute_indices(
             "first", lambda f_a, f_b, f_mix: f_b * (f_mix - f_a)
@@ -420,7 +426,7 @@ class CVSobolAlgorithm:
         """Compute the total-order Sobol' indices.
 
         Returns:
-            The total-order Sobol' indices shaped as ``(n_inputs,)``.
+            The total-order Sobol' indices shaped as `(n_inputs,)`.
         """
         total_indices, self.__total_indices_interval = self.__compute_indices(
             "total", lambda f_a, f_b, f_mix: (f_a - f_mix) ** 2 / 2
@@ -431,11 +437,11 @@ class CVSobolAlgorithm:
     def first_indices_interval(self) -> RealArray:
         """The confidence interval of the first-order Sobol' indices.
 
-        Warnings:
-            You must first call :meth:`.compute_first_indices`.
+        Warning:
+            You must first call `.compute_first_indices()`.
 
         Returns:
-            The confidence intervals shaped as ``(2, n_inputs)``.
+            The confidence intervals shaped as `(2, n_inputs)`.
         """
         return self.__first_indices_interval
 
@@ -443,10 +449,10 @@ class CVSobolAlgorithm:
     def total_indices_interval(self) -> RealArray:
         """The confidence intervals of the total-order Sobol' indices.
 
-        Warnings:
-            You must first call :meth:`.compute_total_indices`.
+        Warning:
+            You must first call `.compute_total_indices()`.
 
         Returns:
-            The confidence intervals shaped as ``(2, n_inputs)``.
+            The confidence intervals shaped as `(2, n_inputs)`.
         """
         return self.__total_indices_interval

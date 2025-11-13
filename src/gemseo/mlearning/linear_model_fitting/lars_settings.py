@@ -39,7 +39,7 @@ class LARS_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
 
     copy_X: bool = Field(  # noqa: N815
         default=True,
-        description="""If ``True``, input data will be copied;
+        description="""If `True`, input data will be copied;
 else, it may be overwritten""",
     )
 
@@ -48,16 +48,16 @@ else, it may be overwritten""",
         description="""The machine-precision regularization
 in the computation of the Cholesky diagonal factors.
 Increase this for very ill-conditioned systems.
-Unlike the ``tol`` parameter in some iterative optimization-based algorithms,
+Unlike the `tol` parameter in some iterative optimization-based algorithms,
 this parameter does not control the tolerance of the optimization.""",
     )
 
     fit_path: bool = Field(
         default=False,
-        description="""If ``True`` the full path is stored
-in the ``coef_path_`` attribute.
+        description="""If `True` the full path is stored
+in the `coef_path_` attribute.
 If you compute the solution for a large problem or many targets,
-setting ``fit_path`` to ``False`` will lead to a speedup,
+setting `fit_path` to `False` will lead to a speedup,
 especially with a small alpha.""",
     )
 
@@ -72,7 +72,7 @@ Might help with stability.""",
     n_nonzero_coefs: PositiveInt = Field(
         default=500,
         description="""Target number of non-zero coefficients.
-Use ``np.inf`` for no limit.""",
+Use `np.inf` for no limit.""",
     )
 
     precompute: Literal["auto"] | ndarray = Field(
@@ -86,7 +86,7 @@ The Gram matrix can also be passed as argument.""",
         default=None,
         description="""Determines random number generation for jittering.
 Pass an int for reproducible output across multiple function calls.
-Ignored if jitter is ``None``.""",
+Ignored if jitter is `None`.""",
     )
 
     verbose: bool = Field(default=False, description="Sets the verbosity amount.")

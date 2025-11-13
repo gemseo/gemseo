@@ -79,15 +79,22 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
 
     Typically used as:
 
-    #. Instantiate an :class:`.BaseOptimizationLibrary`.
-    #. Select the algorithm with :attr:`._algo_name`.
-    #. Solve an :class:`.OptimizationProblem` with :meth:`.execute`.
+    #. Instantiate an
+       [BaseOptimizationLibrary][gemseo.algos.opt.base_optimization_library.BaseOptimizationLibrary].
+    #. Select the algorithm with the attribute `_algo_name`.
+    #. Solve an
+       [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+       with
+       [BaseOptimizationLibrary.execute()][gemseo.algos.opt.base_optimization_library.BaseOptimizationLibrary.execute].
 
     Notes:
         The missing current values
-        of the :class:`.DesignSpace` attached to the :class:`.OptimizationProblem`
+        of the [DesignSpace][gemseo.algos.design_space.DesignSpace]
+        attached to the
+        [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
         are automatically initialized
-        with the method :meth:`.DesignSpace.initialize_missing_current_values`.
+        with the method
+        [DesignSpace.initialize_missing_current_values()][gemseo.algos.design_space.DesignSpace.initialize_missing_current_values].
     """
 
     _f_tol_tester: ObjectiveToleranceTester

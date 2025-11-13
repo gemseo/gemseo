@@ -1,0 +1,579 @@
+<!--
+ Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+ International License. To view a copy of this license, visit
+ http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+ Commons, PO Box 1866, Mountain View, CA 94042, USA.
+-->
+
+# Developer information
+
+This page contains information about GEMSEO development and how to contribute to it. The source code of GEMSEO is available on [gitlab](https://gitlab.com/gemseo/dev/gemseo), this is the place where code contributions shall be submitted. Note also that it is required to accompany any contribution with a Developer Certificate of Origin, certifying that the contribution is compatible with GEMSEO software licence.
+
+We aim to have industrial quality standards for software, in order to:
+
+- have a good and running software,
+- be confident about it,
+- facilitate collaborative work with the team,
+- facilitate distribution to our partners.
+
+To meet these goals, we use best practices described below, these practices are not optional, they are fully part of the development job.
+
+## Quick start
+
+First time setup:
+
+- Clone the repository:
+
+    ``` console
+    git clone https://gitlab.com/gemseo/dev/gemseo.git
+    ```
+
+- Install the [Requirements](developing.md#requirements).
+- From the root of the git clone, run the tests for Python 3.10 and create a development environment under `.tox/py310`:
+
+    ``` console
+    tox run -e py310
+    ```
+
+- Run the checks:
+
+    ``` console
+    tox run -e check
+    ```
+
+- Configure your IDE:
+    - [PyCharm](#configure-pycharm)
+    - [VSCode](#configure-vscode)
+
+## Environments
+
+We use [tox](https://tox.readthedocs.io) for handling the environments related to the development, be it for coding, testing, documenting, checking, etc.
+This tool offers a simplified and high level interface to many ingredients used in development, while providing reproducible and isolated outcomes that are as much independent as possible of the platform and environment from which it is used.
+
+All the settings of [tox](https://tox.readthedocs.io) are defined in the file `tox.ini`. It contains the descriptions of the environments:
+
+- version of Python to use,
+- packages to install,
+- environment variables to set or pass from the current environment,
+- commands to execute.
+
+All the directories created by [tox](https://tox.readthedocs.io) are stored under `.tox` next to `tox.ini`. In particular, `.tox` contains the environments in directories named after the environments.
+
+### Requirements
+
+Make sure Python 3 is installed, preferably 3.10
+
+First install [uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer), then install [tox](https://tox.readthedocs.io) and [pre-commit](https://pre-commit.com):
+
+``` console
+uv tool install tox --with tox-uv
+uv tool install pre-commit
+```
+
+Finally, make sure that [graphviz](https://graphviz.org/download) is installed (for rendering graphs).
+
+### How to use tox
+
+The environments created by [tox](https://tox.readthedocs.io) and their usage are described in the different sections below. In this section we give the common command line usages and tips.
+
+Create and execute the environment named `env` and run its commands with:
+
+``` console
+tox run -e env
+```
+
+The first invocation of this command line may take some time to proceed, further invocations will be faster because [tox](https://tox.readthedocs.io) shall not create a new environment from scratch unless, for instance, some of the dependencies have been modified.
+
+You may run (sequentially) more than one environment with:
+
+``` console
+tox run -e env,env2,env3
+```
+
+Activate the [tox](https://tox.readthedocs.io) environment named `env` with:
+
+- On Linux and MacOS:
+
+    ``` console
+    source .tox/env/bin/activate
+    ```
+
+- On Windows:
+
+    ``` console
+    .tox\env\Scripts\activate.bat
+    ```
+
+Activating environments may be useful for instance to investigate a particular issue that happens in a specific environment and not others. You may modify an activated environment just like any other environment, in case of trouble just recreate it. Be aware that the environment variables defined in `tox.ini` will not be set with a manually activated environment.
+
+Show available environments with:
+
+``` console
+tox -a
+```
+
+Use a double `--` to pass options to an underlying command, for example:
+
+``` console
+tox run -e env -- ARG1 --opt1
+```
+
+Not all the environments allow this feature, see the specific topics below for more information.
+
+## Coding
+
+### Coding environment
+
+Create a development environment:
+
+``` console
+tox run -e py310
+```
+
+This will create an environment based on Python 3.10 with GEMSEO installed in [editable mode](https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs), With an editable installation, GEMSEO appears installed in the development environment created by [tox](https://tox.readthedocs.io), but yet is still editable in the source tree.
+
+!!! note
+    You do not need to activate this environment for coding into GEMSEO.
+
+### Coding style
+
+We use the [pep8](https://pep8.org) convention. The checking and formatting of the source code is done with [ruff](https://docs.astral.sh/ruff). A git commit shall have no checkers violations.
+
+All these tools are used:
+
+- either automatically by the git hooks when creating a commit,
+- or manually by running `tox run -e check`.
+
+### Coding guidelines
+
+#### Enumerations
+
+Use `StrEnum` from the `strenum` package for creating collections of constants that are compatible with strings. This allows to easily work with non-Python API like REST.
+
+#### Error messages
+
+Error messages will be read by humans: they shall be explicit and valid sentences.
+
+#### Logging
+
+Loggers shall be defined at module level and named after the module with:
+
+``` python
+LOGGER = logging.getLogger(__name__)
+```
+
+This means that logger names track the package/module hierarchy, and it's intuitively obvious where events are logged just from the logger name.
+
+#### Naming convention
+
+- A factory of `Thing`'s instances is named `ThingFactory` and put in a module `path.things.factory`.
+- The name of an abstract class is `Base`-prefixed, *e.g.* `BaseThing` is an abstract class of things.
+- A module should not include more than one public class.
+- A module including a class named `ClassName` is named `class_name`.
+- In the absence of a better name for a module that does not contain a class, use `utils`.
+- Avoid the use of `__call__`; add a method named as `compute_quantity` instead.
+
+#### String formatting
+
+Do not format strings with `+` or with the old [printf-style](https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting) formatting: format strings with f-strings first ([documentation](https://docs.python.org/3/reference/lexical_analysis.html#formatted-string-literals)), or `format()` otherwise ([documentation](https://docs.python.org/3/library/stdtypes.html#str.format)).
+
+## Git
+
+### Workflow
+
+We use the [gitflow](https://nvie.com/posts/a-successful-git-branching-model) for managing git branches. For the daily work, this basically means that evolutions of GEMSEO are done in feature branches created from the [develop branch](https://gitlab.com/gemseo/dev/gemseo/-/tree/develop) and merged back into it when finished.
+
+#### Initial setup
+
+- [Create your fork](https://docs.gitlab.com/ee/user/project/repository/forking_workflow.html#creating-a-fork) of the gemseo repository on gitlab.com.
+- Clone your fork to your local machine:
+
+  ``` console
+  git clone <url of your fork>
+  ```
+
+- Go to the directory of your fork.
+- Add the reference upstream repository to you fork with:
+
+  ``` console
+  git remote add upstream git@gitlab.com:gemseo/dev/gemseo.git
+  ```
+
+- Get access to the IRT CI by contacting a maintainer.
+
+##### Working on a new feature
+
+- Update your local copy of the upstream repository:
+
+  ``` console
+  git fetch upstream
+  ```
+
+- Create a new feature branch on your local clone from the up to date upstream develop branch:
+
+  ``` console
+  git checkout upstream/develop -b my_new_feature_branch
+  ```
+
+- Add commits to your feature branch.
+- On a regular basis (ideally everyday), keep your feature branch up to date with the upstream evolution of the develop branch so to make the future merge into develop easier:
+
+  ``` console
+  git fetch upstream
+  git rebase upstream/develop
+  ```
+
+- When rebasing turns to be to cumbersome, you may use merge:
+
+  ``` console
+  git rebase --abort
+  git merge upstream/develop
+  ```
+
+- Push your current local feature branch to your fork at least once a day:
+
+  ``` console
+  git push origin HEAD
+  ```
+
+- Once pushed, the gitlab CI will run the tests on your branch, you will receive an email notification in case of failure.
+
+##### Finishing a feature
+
+- When your feature branch is ready to be merged in the upstream develop branch, your branch shall become a merge request (MR).
+- If applicable, add a changelog fragment that will be later inserted into the changelog. To do so, create one or more files named after the issue number and kind of change (*added*, *changed*, *deprecated*, *fixed*, *removed* or *security*), for instance `123.fixed.md`, in `changelog/fragments`.
+- [MR basic information](https://docs.gitlab.com/user/project/merge_requests/).
+- How to [create a MR](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html#new-merge-request-from-a-fork).
+- Assign the MR to a maintainer (AntoineD by default) which will handle the choice of the reviewers (discussed during the scrum meeting).
+- Set the milestone.
+- Set the [issue relating or closing the MR](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically), if any.
+- If for some reasons the branch of the MR requires more work, the MR may be [set to Draft](https://docs.gitlab.com/ee/user/project/merge_requests/drafts.html).
+- If a review discussion goes beyond the scope of a branch, [one](https://docs.gitlab.com/ee/user/discussions/index.html#moving-a-single-thread-to-a-new-issue) or [several](https://docs.gitlab.com/ee/user/discussions/index.html#move-all-unresolved-threads-in-a-merge-request-to-an-issue) review threads of a MR may be turned into a new issue to be resolved in a future branch.
+- If a review thread has not been resolved by a new commit to the reviewed branch and shall not be dealt with in a new issue, it shall be [marked as resolved by the reviewer](https://docs.gitlab.com/ee/user/discussions/index.html#marking-a-comment-or-thread-as-resolved).
+- If changes have been pushed to the branch of a MR, [the reviewers shall be notified](https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#requesting-a-new-review).
+- When all the MR discussion threads are resolved:
+
+    - The reviewers shall approve the MR,
+    - The MR creator shall ask the branch to be merged.
+
+##### Reviewing a MR
+
+- You can choose how the changes of the MR branch are [displayed](https://docs.gitlab.com/ee/user/project/merge_requests/changes.html).
+- You may leave reviews or comments on [one](https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#review-a-merge-request) or [more lines](https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#comment-on-multiple-lines).
+- You may make code [suggestions](https://docs.gitlab.com/ee/user/project/merge_requests/reviews/suggestions.html) that could be committed as is the reviewed branch.
+- Once done, you shall [submit your review](https://docs.gitlab.com/ee/user/project/merge_requests/reviews/index.html#submit-a-review).
+- You shall check that your review comments have been addressed, if so you shall mark them as resolved.
+- When all the reviews have been resolved, you shall approve the MR.
+
+### Git hooks
+
+When a commit is being created, git will perform predefined actions:
+
+- remove the trailing whitespaces,
+- fix the end of files,
+- check toml, yaml and json files are well formed,
+- check that no big file is committed,
+- check bad symbolic links,
+- check or fix some of the python docstrings formatting,
+- fix the Python import order,
+- fix the Python code formatting,
+- check for Python coding issues (see [Coding style](developing.md#coding-style)),
+- fix some of the above coding issues.
+- fix outdated Python syntax,
+- check the commit message (see [Commit message](developing.md#commit-message)),
+- check for forbidden `print` usage,
+- check for misused `logging` formatting,
+- check for `.md` files issues.
+- check or fix license headers,
+- check for docstrings formatting,
+- check for docstrings coverage,
+
+Those actions will eventually modify the files about to be committed. In this case your commit is denied and you have to check that the modifications are OK, then add the modifications to the commit staged files before creating the commit again.
+
+### Commit message
+
+We use [conventional commits](https://www.conventionalcommits.org) for writing clear and useful git commit messages. The commit message should be structured as follows:
+
+``` shell
+<type>(optional scope): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+where:
+
+- `<type>` defines the type of change you are committing
+    - feat: A new feature
+    - fix: A bug fix
+    - docs: Documentation only changes
+    - style: Changes that do not affect the meaning of the code
+    - refactor: A code change that neither fixes a bug nor adds a feature
+    - perf: A code change that improves performance
+    - test: Adding missing tests or correcting existing tests
+    - build: Changes that affect the build system or external dependencies
+    - ci: Changes to our CI configuration files and scripts
+- `(optional scope)` provide additional contextual information and is contained within parentheses
+- `<description>` is a concise description of the changes, imperative, lower case and no final dot
+- `[optional body]` with the motivation for the change and contrast this with previous behavior
+- `[optional footer(s)]` with information about Breaking Changes and reference issues that this commit closes
+
+You may use [commitizen](https://commitizen-tools.github.io/commitizen) to easily create commits that follow [conventional commits](https://www.conventionalcommits.org). Install it with:
+
+``` console
+uv tool install commitizen
+```
+
+Run it and and let it drive you through with:
+
+``` console
+cz commit
+```
+
+Commit message examples:
+
+``` shell
+feat(study): open browser when generating XDSM
+```
+
+``` shell
+fix(scenario): xdsm put back filename arg
+```
+
+### Commit best practices
+
+The purpose of these best practices is to ease the code reviews, commit reverting (rollback changes) bisecting (find regressions), branch merging or rebasing.
+
+#### Write atomic commits
+
+Commits should be logical, atomic units of change that represent a specific idea as well as its tests. Do not rename and modify a file in a single commit. Do not combine cosmetic and functional changes in a single commit.
+
+#### Commits history
+
+Try to keep the commit history as linear as possible by avoiding unnecessary merge commit. When possible, prefer rebasing over merging, git can help to achieve this with:
+
+``` console
+git config pull.rebase true git config rerere.enabled true
+```
+
+#### Rework commit history
+
+You may reorder, split or combine the commits of a branch. Such history modifications shall be done before the branch has been pushed to the main repository.
+
+#### Tests
+
+Avoid commits that break tests, only push a branch that passes all the tests for py310 on your machine.
+
+## Testing
+
+Testing is mandatory in any engineering activity, which is based on trial and error. All developments shall be tested:
+
+- this gives confidence to the code,
+- this enables code refactoring with mastered consequences: tests must pass!
+
+### Tests writing guidelines
+
+We use [pytest](https://docs.pytest.org) for writing and executing all the GEMSEO tests. Older tests were written with the unittest module from the Python standard library but newer tests shall be written with [pytest](https://docs.pytest.org).
+
+#### Logic
+
+Follow the [Arrange, Act, Assert, Cleanup](https://docs.pytest.org/en/stable/fixture.html#what-fixtures-are) steps by splitting the testing code accordingly. Limit the number of assertions per test functions in a consistent manner by writing more test functions. Use the [pytest fixtures](https://docs.pytest.org/en/stable/fixture.html) or import the GEMSEO ones in a `conftest.py` file:
+
+``` python
+from gemseo.utils.pytest_conftest import skip_under_windows
+```
+
+Tests shall be independent, any test function shall be executable alone.
+
+#### Logging
+
+Do no create loggers in the tests, instead let [pytest](https://docs.pytest.org) manage the logging and use its builtin [features](https://docs.pytest.org/en/stable/logging.html). Some pytest logging settings are already defined in `pyproject.toml`.
+
+#### Messages
+
+The information provided to the user by the error and logging messages shall be correct. Use the [caplog fixture](https://docs.pytest.org/en/stable/logging.html#caplog-fixture) for checking the logging messages. Use [pytest.raises](https://docs.pytest.org/en/stable/assert.html#assertraises) for checking the error messages.
+
+#### Skipping under Windows
+
+Use the [pytest](https://docs.pytest.org) marker like:
+
+```python
+@pytest.mark.skip_under_windows
+def test_foo():
+```
+
+#### Validation of images
+
+For images generated by matplotlib, use the `image_comparison` decorator provided by the [matplotlib testing tools](https://matplotlib.org/stable/devel/testing.html#writing-an-image-comparison-test). See `tests/post/dataset/test_surfaces.py` for an example. When image comparison fails, set the environment variable `GEMSEO_KEEP_IMAGE_COMPARISONS` such that the `result_images` directory with the comparisons is available at the root of the repository.
+
+#### Validation of arrays
+
+For NumPy arrays, use the [NumPy testing tools](https://numpy.org/doc/stable/reference/routines.testing.html).
+
+#### Generated files
+
+Tests that create files shall use the `tmp_wd` fixture such that the files are created in a temporary directory instead of polluting the root directory.
+
+### Executing tests
+
+For Python 3.10 run the tests with:
+
+``` console
+tox run -e py310
+```
+
+Replace py310 by py310 for testing with Python 3.10. With [tox](https://tox.readthedocs.io), you can pass options to [pytest](https://docs.pytest.org) after `--`, for instance:
+
+``` console
+tox run -e py310 -- --last-failed --step-wise
+```
+
+Run the tests for several Python versions with for instancer:
+
+``` console
+tox run -e py310,py311,py312
+```
+
+To speed up the execution of the tests, you may execute exclusively or skip some of them by using the following pytest marks: - `post`: tests that post processing compare images - `slow`: tests that are slow - `integration`: integration tests
+
+For instance, skip all the post with
+
+``` console
+tox run -e py310 -- -m 'not post'
+```
+
+### Tests coverage
+
+For a selected python version, get the coverage information with:
+
+``` console
+tox run -e py310-coverage
+```
+
+See [pytest-cov](https://pytest-cov.readthedocs.io) for more information.
+
+## Documentation
+
+The documentation of the [develop branch](https://gitlab.com/gemseo/dev/gemseo/-/tree/develop) is available online: [develop documentation](https://gemseo.readthedocs.io/en/develop/index.html).
+
+### Generating the doc
+
+The documentation is build with [mkdocs](https://www.mkdocs.org). Generate the documentation with:
+
+``` console
+tox run -e doc
+```
+
+### Writing guidelines
+
+Documenting classes, functions, methods, attributes, modules, etc\... is mandatory. End users and developers shall not have to guess the purpose of an API and how to use it.
+
+#### Style
+
+Use the Google Style Docstrings format for documenting the code.
+This [example module][example-google-style-docstrings] shows how to write such docstrings.
+
+#### Type hints
+
+The type hints are used when generating the functions and methods documentation, they will also be used gradually to check and improved the code quality with the help of a type checker like [mypy](http://mypy-lang.org). See [this example module][example-google-style-docstrings] for a typical example.
+
+Functions and methods arguments shall use [standard duck typing](https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html?highlight=Sequence#standard-duck-types). In practice, use [Iterable][collections.abc.Iterable] or [Sequence][collections.abc.Sequence] etc\... instead of `list` when appropriate, similarly for [Mapping][collections.abc.Mapping] instead of `dict`. For `*args` and `**kwargs` arguments, use only the value types with no container.
+
+Return types shall match exactly the type of the returned object.
+
+Type hinting may cause circular imports, if so, use the special constant `TYPE_CHECKING` that's `False` by default and `True` when type checking:
+
+``` python
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gemseo import create_discipline
+```
+
+#### Line feeds
+
+Use [semantic line feeds](https://rhodesmill.org/brandon/2012/one-sentence-per-line) by starting a new line at the end of each sentence, and splitting sentences themselves at natural breaks between clauses, a text file becomes far easier to edit and version control. You can have a look at the current page's source for instance.
+
+#### Example
+
+Have a look to the uncertainty module for an example of proper code documentation.
+
+Check that the examples run correctly with:
+
+``` console
+tox run -e py310 -- tests/test_doc_examples.py -m doc_examples
+```
+
+## Versioning
+
+We use [semantic versioning](https://semver.org) for defining the version numbers of GEMSEO. Given a version number MAJOR.MINOR.PATCH, we increment the:
+
+1. MAJOR version when we make incompatible API changes,
+2. MINOR version when we add functionality in a backwards compatible manner, and
+3. PATCH version when we make backwards compatible bug fixes.
+
+## Benchmarking
+
+Use [pyperf](https://pyperf.readthedocs.io) to create valid benchmark, mind properly tuning the system for the benchmark (see the docs).
+
+## Profiling
+
+The Python standard library provides a [profiler](https://docs.python.org/3/library/profile.html), mind using it with controlled system like for benchmarking. The profiling data could be analyzed with one of these tools:
+
+- [snakeviz](https://jiffyclub.github.io/snakeviz)
+- [kcachegrind](https://kcachegrind.github.io/html/Home.html), after having converted the profiling data with [pyprof2calltree](https://github.com/pwaller/pyprof2calltree/)
+
+## Configure PyCharm
+
+[PyCharm](https://www.jetbrains.com/pycharm) is one of the best tools for writing Python code. We provide some configuration files to help configuring it for developing GEMSEO.
+
+### Code style
+
+Configure [PyCharm](https://www.jetbrains.com/pycharm) to match the code style used by GEMSEO. Download [this file](../_static/pycharm/python-code-style.xml), open the [PyCharm](https://www.jetbrains.com/pycharm) settings, go to `Editor > Code Style > Python` and select `Import Scheme...`:
+
+![image](../_images/pycharm/configure-code-style.png)
+
+### Check and format
+
+Some tools used by the `git hooks` can be executed in order to be notified of code issues earlier and avoid having to fix files when creating a commit.
+
+Install the `Ruff` plugin by opening the [PyCharm](https://www.jetbrains.com/pycharm) settings, and searching in `Plugins > Marketplace`. Then, activate all the options and provide the path to the `ruff` executable that shall be in the following directory relative to the root of the git clone of gemseo:
+
+- On Linux and MacOS: `.tox/check/bin/ruff`.
+- On Windows: `.tox\check\Scripts\ruff.exe`.
+
+!!! warning
+    For [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] functions, `ruff` will refactor the `return` line in an incompatible manner. You shall append `# noqa: RET504` to the `return` line.
+
+### Environment variables
+
+Configure [PyCharm](https://www.jetbrains.com/pycharm) so that the test environments do not open graphical windows during test execution:
+
+1. Click on `Run > Edit Configurations\...` in the main menu.
+2. Click
+    - on `Edit configuration templates\...` on the bottom left and then on `Python tests > pytest` in the tree on the left to set the environment variables for all the Python test environments,
+    - or on `Python tests > {configuration name}` to set the environment variables for a specific Python test environment.
+3. Open the section `Configuration > Environment` on the right.
+4. Write `MPLBACKEND=AGG` in the text field `Environment variables` (or click on the button in this field and add a new environment variable with `MPLBACKEND` as name and `AGG` as value).
+
+## Configure VSCode
+
+[vscode](https://code.visualstudio.com/) could serve as an alternative to [PyCharm](https://www.jetbrains.com/pycharm). To configure it for developing GEMSEO, we offer the base `settings.json` and `extensions.json`, which need to be placed within the local `.vscode` directory.
+
+### Download Configuration Files
+
+- `settings.json`: This file primarily contains Python rules for code style, formatting, debugging, testing, and indexing. You can [download it](../_static/vscode/settings.json){:download}.
+- `extensions.json`: This file provides useful extension recommendations when browsing the Marketplace. You can [download it](../_static/vscode/extensions.json){:download}.
+
+### Configuration
+
+Place both downloaded files in the `.vscode` directory of your project.
+
+Modify `settings.json` according to your preferences. You can adjust the settings either globally (User parameters) or per project (Workspace parameters).
+
+### Extensions
+
+Ensure you install all recommended extensions mentioned in `extensions.json`. These extensions enhance the functionality and productivity of [vscode](https://code.visualstudio.com/) for Python development.

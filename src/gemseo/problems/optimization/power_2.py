@@ -35,14 +35,20 @@ if TYPE_CHECKING:
 
 
 class Power2(OptimizationProblem):
-    """**Power2** is a very basic quadratic analytical :class:`.OptimizationProblem`.
+    """**Power2** is a very basic quadratic analytical optimization problem.
 
-    - Objective to minimize: :math:`x_0^2 + x_1^2 + x_2^2`
-    - Inequality constraint 1: :math:`x_0^3 - 0.5 > 0`
-    - Inequality constraint 2: :math:`x_1^3 - 0.5 > 0`
-    - Equality constraint: :math:`x_2^3 - 0.9 = 0`
-    - Analytical optimum: :math:`x^*=(0.5^{1/3}, 0.5^{1/3}, 0.9^{1/3})`
+    - Objective to minimize: $x_0^2 + x_1^2 + x_2^2$
+    - Inequality constraint 1: $x_0^3 - 0.5 > 0$
+    - Inequality constraint 2: $x_1^3 - 0.5 > 0$
+    - Equality constraint: $x_2^3 - 0.9 = 0$
+    - Analytical optimum: $x^*=(0.5^{1/3}, 0.5^{1/3}, 0.9^{1/3})$
     """
+
+    exception_error: bool
+    """Whether to raise an error when calling the objective; useful for tests."""
+
+    iter_error: int
+    """The number of calls to the method `pow2()`."""
 
     def __init__(
         self, exception_error: bool = False, initial_value: float = 1.0
@@ -103,7 +109,7 @@ class Power2(OptimizationProblem):
         self.exception_error = exception_error
 
     def pow2(self, x_dv: ndarray) -> ndarray:
-        """Compute the objective :math:`x_0^2 + x_1^2 + x_2^2`.
+        """Compute the objective $x_0^2 + x_1^2 + x_2^2$.
 
         Args:
             x_dv: The design variable vector.
@@ -112,7 +118,9 @@ class Power2(OptimizationProblem):
             The objective value.
 
         Raises:
-            ValueError: When :attr:`.exception_error` is ``True``
+            ValueError: When
+                [exception_error][gemseo.problems.optimization.power_2.Power2.exception_error]
+                is `True`
                 and the method has already been called three times.
         """
         if self.exception_error:
@@ -138,7 +146,7 @@ class Power2(OptimizationProblem):
 
     @staticmethod
     def ineq_constraint1(x_dv: ndarray) -> ndarray:
-        """Compute the first inequality constraint :math:`x_0^3 - 0.5 > 0`.
+        """Compute the first inequality constraint $x_0^3 - 0.5 > 0$.
 
         Args:
             x_dv: The design variable vector.
@@ -150,7 +158,7 @@ class Power2(OptimizationProblem):
 
     @staticmethod
     def ineq_constraint2(x_dv: ndarray) -> ndarray:
-        """Compute the second inequality constraint :math:`x_1^3 - 0.5 > 0`.
+        """Compute the second inequality constraint $x_1^3 - 0.5 > 0$.
 
         Args:
             x_dv: The design variable vector.
@@ -162,7 +170,7 @@ class Power2(OptimizationProblem):
 
     @staticmethod
     def eq_constraint(x_dv: ndarray) -> ndarray:
-        """Compute the equality constraint :math:`x_2^3 - 0.9 = 0`.
+        """Compute the equality constraint $x_2^3 - 0.9 = 0$.
 
         Args:
             x_dv: The design variable vector.

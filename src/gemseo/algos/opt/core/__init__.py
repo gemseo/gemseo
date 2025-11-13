@@ -12,9 +12,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""|g| optimization algorithms core package.
+"""GEMSEO optimization algorithms core package.
 
-Contains the source code of algorithms developed with |g|.
+Contains the source code of algorithms developed with GEMSEO.
 """
 
 from __future__ import annotations

@@ -24,11 +24,11 @@ A support vector machine (SVM) passes the data through a kernel
 in order to increase its dimension
 and thereby make the classes linearly separable.
 
-Dependence
-----------
+## Dependence
+
 The classifier relies on the SVC class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.svm.SVC.html>`_.
+of the
+[scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html).
 """
 
 from __future__ import annotations

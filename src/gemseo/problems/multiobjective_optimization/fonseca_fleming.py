@@ -20,10 +20,13 @@
 #        :author:  François Gallard - minor improvements for integration
 r"""Fonseca-Fleming bi-objective optimization problem.
 
-See :cite:`fonseca1995overview`.
+!!! quote "References"
 
-.. math::
+    Carlos M Fonseca and Peter J Fleming.
+    An overview of evolutionary algorithms in multiobjective optimization.
+    Evolutionary computation, 3(1):1--16, 1995.
 
+$$
    \begin{aligned}
    \text{minimize the objective function}
    & f_1(x) = 1 - exp(-\sum_{i=1}^{d}((x_i - 1 / sqrt(d)) ^ 2)) \\
@@ -32,6 +35,7 @@ See :cite:`fonseca1995overview`.
    \text{subject to the bound constraints}
    & x\in[-4,4]^d
    \end{aligned}
+$$
 """
 
 from __future__ import annotations

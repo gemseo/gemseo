@@ -22,19 +22,29 @@
 A design space is used to represent the optimization's unknowns,
 a.k.a. the design variables.
 
-A :class:`.DesignSpace` describes this design space at a given state, in terms of names,
-sizes, types, bounds and current values of the design variables.
+A [DesignSpace][gemseo.algos.design_space.DesignSpace] describes this design space
+at a given state,
+in terms of names, sizes, types, bounds and current values of the design variables.
 
-Variables can easily be added to the :class:`.DesignSpace` using the
-:meth:`.DesignSpace.add_variable` method or removed using the
-:meth:`.DesignSpace.remove_variable` method.
+Variables can easily be added
+to the [DesignSpace][gemseo.algos.design_space.DesignSpace]
+using the
+[DesignSpace.add_variable()][gemseo.algos.design_space.DesignSpace.add_variable]
+method
+or removed using the
+[DesignSpace.remove_variable()][gemseo.algos.design_space.DesignSpace.remove_variable]
+method.
 
-We can also filter the design variables using the :meth:`.DesignSpace.filter` method.
+We can also filter the design variables using the
+[DesignSpace.filter()][gemseo.algos.design_space.DesignSpace.filter]
+method.
 
 Getters and setters are also available to get or set the value of a given variable
 property.
 
-Lastly, an instance of :class:`.DesignSpace` can be stored in a txt or HDF file.
+Lastly,
+an instance of [DesignSpace][gemseo.algos.design_space.DesignSpace] can be stored
+in a CSV or HDF file.
 """
 
 from __future__ import annotations
@@ -118,7 +128,8 @@ class DesignSpace:
 
     In addition,
     it provides the current values of these variables
-    that can be used as the initial solution of an :class:`.OptimizationProblem`.
+    that can be used as the initial solution of
+    an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem].
     """
 
     name: str
@@ -139,7 +150,7 @@ class DesignSpace:
 
     # TODO: API: the values are not dtypes but types, either fix the values or the name.
     VARIABLE_TYPES_TO_DTYPES: Final[dict[str, type[int64 | float64]]] = TYPE_MAP
-    """One NumPy ``dtype`` per design variable type."""
+    """One NumPy `dtype` per design variable type."""
 
     MINIMAL_FIELDS: ClassVar[list[str]] = ["name", "lower_bound", "upper_bound"]
     TABLE_NAMES: ClassVar[list[str]] = [
@@ -308,7 +319,7 @@ class DesignSpace:
 
         Args:
             keep_variables: The names of the variables to be kept.
-            copy: If ``True``, then a copy of the design space is filtered,
+            copy: If `True`, then a copy of the design space is filtered,
                 otherwise the design space itself is filtered.
 
         Returns:
@@ -332,8 +343,8 @@ class DesignSpace:
         Args:
             name: The name of the variable.
             dimensions: The dimensions of the variable to be kept,
-                between :math:`0` and :math:`d-1`
-                where :math:`d` is the number of dimensions of the variable.
+                between $0$ and $d-1$
+                where $d$ is the number of dimensions of the variable.
 
         Returns:
             The filtered design space.
@@ -400,11 +411,11 @@ class DesignSpace:
             type_: Either the type of the variable
                 or the types of its components.
             lower_bound: The lower bound of the variable.
-                If ``None``, use :math:`-\infty`.
+                If `None`, use $-\infty$.
             upper_bound: The upper bound of the variable.
-                If ``None``, use :math:`+\infty`.
+                If `None`, use $+\infty$.
             value: The default value of the variable.
-                If ``None``, do not use a default value.
+                If `None`, do not use a default value.
 
         Raises:
             ValueError: Either if the variable already exists
@@ -555,8 +566,8 @@ class DesignSpace:
                 if the value is not numerizable,
                 if the value is nan
                 or if there is a component value which is not an integer
-                while the variable type is integer and ``allow_inf_int_bound``
-                is set to ``False``.
+                while the variable type is integer and `allow_inf_int_bound`
+                is set to `False`.
         """
         all_indices = set(range(len(value)))
         # OK if the variable value is one-dimensional
@@ -846,7 +857,7 @@ class DesignSpace:
 
         Args:
             x_vec: The design value at which to check the bounds.
-                If ``None``, use the current design value.
+                If `None`, use the current design value.
             tol: The tolerance of comparison of a scalar with a bound.
 
         Returns:
@@ -854,8 +865,7 @@ class DesignSpace:
             the first returned value representing the lower bounds
             and the second one the upper bounds, e.g.
 
-            .. code-block:: python
-
+            ```python
                    (
                        {
                            "x": array(are_x_lower_bounds_active),
@@ -866,15 +876,16 @@ class DesignSpace:
                            "y": array(are_y_upper_bounds_active),
                        },
                    )
+            ```
 
             where:
 
-            .. code-block:: python
-
+            ```python
                 are_x_lower_bounds_active = [True, False]
                 are_x_upper_bounds_active = [False, False]
                 are_y_lower_bounds_active = [False]
                 are_y_upper_bounds_active = [True]
+            ```
         """
         if x_vec is None:
             current_x = self.__current_value
@@ -938,11 +949,11 @@ class DesignSpace:
 
         Args:
             variable_names: The names of the design variables.
-                If ``None``, use all the design variables.
+                If `None`, use all the design variables.
             complex_to_real: Whether to cast complex numbers to real ones.
             as_dict: Whether to return the current design value
-                as a dictionary of the form ``{variable_name: variable_value}``.
-            normalize: Whether to normalize the design values in :math:`[0,1]`
+                as a dictionary of the form `{variable_name: variable_value}`.
+            normalize: Whether to normalize the design values in $[0,1]$
                 with the bounds of the variables.
                 N.B. Normalization is possible if and only if
                 *all* the current design values are set.
@@ -951,23 +962,29 @@ class DesignSpace:
             The current design value.
 
         Raises:
-            ValueError: If names in ``variable_names`` are not in the design space.
+            ValueError: If names in `variable_names` are not in the design space.
             KeyError: If one of the required design variables has no current value.
 
-        Warnings:
+        Warning:
             For performance purposes,
-            :meth:`.get_current_value` does not return a copy of the current value.
+            [DesignSpace.get_current_value()][gemseo.algos.design_space.DesignSpace.get_current_value]
+            does not return a copy of the current value.
             This means that modifying the returned object
-            will make the :class:`.DesignSpace` inconsistent
+            will make
+            the [DesignSpace][gemseo.algos.design_space.DesignSpace] inconsistent
             (the current design value stored as a NumPy array
             and the current design value stored as a dictionary of NumPy arrays
             will be different).
-            To modify the returned object without impacting the :class:`.DesignSpace`,
+            To modify the returned object
+            without impacting the [DesignSpace][gemseo.algos.design_space.DesignSpace],
             you shall copy this object and modify the copy.
 
         See Also:
             To modify the current value,
-            please use :meth:`.set_current_value` or :meth:`.set_current_variable`.
+            please use
+            [DesignSpace.set_current_value()][gemseo.algos.design_space.DesignSpace.set_current_value]
+            or
+            [DesignSpace.set_current_variable()][gemseo.algos.design_space.DesignSpace.set_current_variable].
         """
         if variable_names is not None and not variable_names:
             return {} if as_dict else array([])
@@ -988,8 +1005,8 @@ class DesignSpace:
                 # This will break the API because an exception will be raised (as in the
                 # case `as_dict is False`) instead of returning an empty dictionary.
                 # N.B. the good practice is for the user to either catch the exception
-                # or, even better, to check the ``DesignSpace.has_current_value`` flag
-                # before calling the ``DesignSpace.get_current_value``.
+                # or, even better, to check the `DesignSpace.has_current_value` flag
+                # before calling the `DesignSpace.get_current_value`.
                 # This break is simple to handle in GEMSEO, but make sure to take care
                 # of the plugins as well.
                 return self._current_value
@@ -1139,7 +1156,7 @@ class DesignSpace:
 
         Args:
             variable_names: The names of the design variables.
-                If ``empty``, use all the design variables.
+                If `empty`, use all the design variables.
 
         Returns:
             The name of the components of the variables.
@@ -1215,25 +1232,21 @@ class DesignSpace:
 
         If `minus_lb` is True:
 
-        .. math::
+        $$x_u = \frac{x-l_b}{u_b-l_b}$$
 
-           x_u = \frac{x-l_b}{u_b-l_b}
-
-        where :math:`l_b` and :math:`u_b` are the lower and upper bounds of :math:`x`.
+        where $l_b$ and $u_b$ are the lower and upper bounds of $x$.
 
         Otherwise:
 
-        .. math::
-
-           x_u = \frac{x}{u_b-l_b}
+        $$x_u = \frac{x}{u_b-l_b}$$
 
         Unbounded variables are not normalized.
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If ``True``, remove the lower bounds at normalization.
+            minus_lb: If `True`, remove the lower bounds at normalization.
             out: The array to store the normalized vector.
-                If ``None``, create a new array.
+                If `None`, create a new array.
 
         Returns:
             The normalized vector.
@@ -1287,25 +1300,22 @@ class DesignSpace:
 
         This method is based on the chain rule:
 
-        .. math::
-
-           \frac{df(x)}{dx}
+        $$\frac{df(x)}{dx}
            = \frac{df(x)}{dx_u}\frac{dx_u}{dx}
            = \frac{df(x)}{dx_u}\frac{1}{u_b-l_b}
+        $$
 
         where
-        :math:`x_u = \frac{x-l_b}{u_b-l_b}` is the normalized input vector,
-        :math:`x` is the unnormalized input vector
-        and :math:`l_b` and :math:`u_b` are the lower and upper bounds of :math:`x`.
+        $x_u = \frac{x-l_b}{u_b-l_b}$ is the normalized input vector,
+        $x$ is the unnormalized input vector
+        and $l_b$ and $u_b$ are the lower and upper bounds of $x$.
 
         Then,
         the normalized gradient reads:
 
-        .. math::
+        $$\frac{df(x)}{dx_u} = (u_b-l_b)\frac{df(x)}{dx}$$
 
-           \frac{df(x)}{dx_u} = (u_b-l_b)\frac{df(x)}{dx}
-
-        where :math:`\frac{df(x)}{dx}` is the unnormalized one.
+        where $\frac{df(x)}{dx}$ is the unnormalized one.
 
         Args:
             g_vect: The gradient to be normalized.
@@ -1323,18 +1333,18 @@ class DesignSpace:
 
         This method is based on the chain rule:
 
-        .. math::
-
+        $$
            \frac{df(x)}{dx}
            = \frac{df(x)}{dx_u}\frac{dx_u}{dx}
            = \frac{df(x)}{dx_u}\frac{1}{u_b-l_b}
+        $$
 
         where
-        :math:`x_u = \frac{x-l_b}{u_b-l_b}` is the normalized input vector,
-        :math:`x` is the unnormalized input vector,
-        :math:`\frac{df(x)}{dx_u}` is the unnormalized gradient
-        :math:`\frac{df(x)}{dx}` is the normalized one,
-        and :math:`l_b` and :math:`u_b` are the lower and upper bounds of :math:`x`.
+        $x_u = \frac{x-l_b}{u_b-l_b}$ is the normalized input vector,
+        $x$ is the unnormalized input vector,
+        $\frac{df(x)}{dx_u}$ is the unnormalized gradient
+        $\frac{df(x)}{dx}$ is the normalized one,
+        and $l_b$ and $u_b$ are the lower and upper bounds of $x$.
 
         Args:
             g_vect: The gradient to be unnormalized.
@@ -1355,27 +1365,23 @@ class DesignSpace:
 
         If `minus_lb` is True:
 
-        .. math::
-
-           x = x_u(u_b-l_b) + l_b
+        $$x = x_u(u_b-l_b) + l_b$$
 
         where
-        :math:`x_u` is the normalized input vector,
-        :math:`x` is the unnormalized input vector
-        and :math:`l_b` and :math:`u_b` are the lower and upper bounds of :math:`x`.
+        $x_u$ is the normalized input vector,
+        $x$ is the unnormalized input vector
+        and $l_b$ and $u_b$ are the lower and upper bounds of $x$.
 
         Otherwise:
 
-        .. math::
-
-           x = x_u(u_b-l_b)
+        $$x = x_u(u_b-l_b)$$
 
         Args:
             x_vect: The values of the design variables.
             minus_lb: Whether to remove the lower bounds at normalization.
-            no_check: Whether to check if the components are in :math:`[0,1]`.
+            no_check: Whether to check if the components are in $[0,1]$.
             out: The array to store the unnormalized vector.
-                If ``None``, create a new array.
+                If `None`, create a new array.
 
         Returns:
             The unnormalized vector.
@@ -1444,15 +1450,15 @@ class DesignSpace:
         vector: ndarray,
         out: ndarray | None = None,
     ) -> ndarray:
-        """Map a point of the design space to a vector with components in :math:`[0,1]`.
+        """Map a point of the design space to a vector with components in $[0,1]$.
 
         Args:
             vector: A point of the design space.
             out: The array to store the transformed vector.
-                If ``None``, create a new array.
+                If `None`, create a new array.
 
         Returns:
-            A vector with components in :math:`[0,1]`.
+            A vector with components in $[0,1]$.
         """
         return self.normalize_vect(vector, out=out)
 
@@ -1462,13 +1468,13 @@ class DesignSpace:
         no_check: bool = False,
         out: ndarray | None = None,
     ) -> ndarray:
-        """Map a vector with components in :math:`[0,1]` to the design space.
+        """Map a vector with components in $[0,1]$ to the design space.
 
         Args:
-            vector: A vector with components in :math:`[0,1]`.
-            no_check: Whether to check if the components are in :math:`[0,1]`.
+            vector: A vector with components in $[0,1]$.
+            no_check: Whether to check if the components are in $[0,1]$.
             out: The array to store the untransformed vector.
-                If ``None``, create a new array.
+                If `None`, create a new array.
 
         Returns:
             A point of the variables space.
@@ -1484,7 +1490,7 @@ class DesignSpace:
 
         Args:
             x_vect: The values to be rounded.
-            copy: Whether to round a copy of ``x_vect``.
+            copy: Whether to round a copy of `x_vect`.
 
         Returns:
             The rounded values.
@@ -1513,7 +1519,8 @@ class DesignSpace:
         Raises:
             ValueError: If the value has a wrong dimension.
             TypeError: If the value is neither a mapping of NumPy arrays,
-                a NumPy array nor an :class:`.OptimizationResult`.
+                a NumPy array nor an
+                [OptimizationResult][gemseo.algos.optimization_result.OptimizationResult].
         """
         if isinstance(value, dict):
             self.__current_value = {k: v for k, v in value.items() if k in self}
@@ -1661,7 +1668,7 @@ class DesignSpace:
             variable_names: The names of the design variables.
                 If empty, the lower bounds of all the design variables are returned.
             as_dict: Whether to return the lower bounds
-                as a dictionary of the form ``{variable_name: variable_lower_bound}``.
+                as a dictionary of the form `{variable_name: variable_lower_bound}`.
 
         Returns:
             The lower bounds of the design variables.
@@ -1698,7 +1705,7 @@ class DesignSpace:
             variable_names: The names of the design variables.
                 If empty, the upper bounds of all the design variables are returned.
             as_dict: Whether to return the upper bounds
-                as a dictionary of the form ``{variable_name: variable_upper_bound}``.
+                as a dictionary of the form `{variable_name: variable_upper_bound}`.
 
         Returns:
             The upper bounds of the design variables.
@@ -1742,7 +1749,7 @@ class DesignSpace:
                 If empty, then the values of all the design variables are returned.
                 If empty, then the values of all the design variables are returned.
             as_dict: Whether to return the value
-                as a dictionary of the form ``{variable_name: variable_value}``.
+                as a dictionary of the form `{variable_name: variable_value}`.
             value_as_dict: A dictionary of the values of all the design variables.
             value_as_array: The NumPy array of the values of all the design variables
 
@@ -1868,8 +1875,8 @@ class DesignSpace:
 
         Notes:
             The data type of the returned NumPy array is the most general data type
-            of the values of the mapping ``design_values`` corresponding to
-            the keys iterable from ``variables_names``.
+            of the values of the mapping `design_values` corresponding to
+            the keys iterable from `variables_names`.
         """
         if not variable_names:
             variable_names = self
@@ -1893,7 +1900,7 @@ class DesignSpace:
             with_index: Whether to show index of names for arrays.
                 This is ignored for scalars.
             capitalize: Whether to capitalize the field names
-                and replace ``"_"`` by ``" "``.
+                and replace `"_"` by `" "`.
             simplify: Whether to return a simplified tabular view.
 
         Returns:
@@ -1950,7 +1957,7 @@ class DesignSpace:
 
         Args:
             file_path: The path to the file to export the design space.
-            append: If ``True``, appends the data in the file.
+            append: If `True`, appends the data in the file.
             hdf_node_path: The path of the HDF node in which
                 the design space should be exported.
                 If empty, the root node is considered.
@@ -2111,15 +2118,17 @@ class DesignSpace:
                 If the extension starts with `"hdf"`,
                 the design space will be saved in an HDF file.
             delimiter: The string used to separate values for CSV files. This argument
-                is not compatible with the argument ``**options``.
+                is not compatible with the argument `**options`.
             **options: The keyword reading options.
                 For HDF files:
-                    The ``append`` option may be passed here.
-                    See :meth:`.DesignSpace.to_hdf`.
+                    The `append` option may be passed here.
+                    See
+                    [DesignSpace.to_hdf()][gemseo.algos.design_space.DesignSpace.to_hdf].
                 For CSV files:
                     The names and values of additional attributes
-                    for the :class:`.PrettyTable` view
-                    generated by :meth:`.DesignSpace.get_pretty_table`.
+                    for the `prettytable.PrettyTable` view
+                    generated by
+                    [DesignSpace.get_pretty_table()][gemseo.algos.design_space.DesignSpace.get_pretty_table].
                     These options will be removed in GEMSEO 7.
         """
         file_path = Path(file_path)
@@ -2147,10 +2156,11 @@ class DesignSpace:
             header_char: The header character.
                 This argument will be removed in GEMSEO 7.
             delimiter: The string used to separate values. This argument is not
-                compatible with ``header_char`` nor ``**table_options``.
+                compatible with `header_char` nor `**table_options`.
             **table_options: The names and values of additional attributes
-                for the :class:`.PrettyTable` view
-                generated by :meth:`.DesignSpace.get_pretty_table`.
+                for the `prettytable.PrettyTable` view
+                generated by
+                [DesignSpace.get_pretty_table()][gemseo.algos.design_space.DesignSpace.get_pretty_table].
                 These options will be removed in GEMSEO 7.
         """
         output_file = Path(output_file)
@@ -2174,10 +2184,10 @@ class DesignSpace:
             )
 
     def __to_dataframe(self) -> DataFrame:
-        """Export the design space to a ``DataFrame``.
+        """Export the design space to a `DataFrame`.
 
         Returns:
-            The ``DesignSpace`` as a ``DataFrame``.
+            The `DesignSpace` as a `DataFrame`.
         """
         variable_names = []
         variable_values = []
@@ -2341,7 +2351,7 @@ class DesignSpace:
         """Project a vector onto the bounds, using a simple coordinate wise approach.
 
         Args:
-            normalized: If ``True``, then the vector is assumed to be normalized.
+            normalized: If `True`, then the vector is assumed to be normalized.
             x_c: The vector to be projected onto the bounds.
 
         Returns:

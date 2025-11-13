@@ -62,11 +62,14 @@ class PCERegressor_Settings(BaseFCERegressor_Settings):  # noqa: N801
     # TODO: API: remove in gemseo v7.
     probability_space: ParameterSpace | None = Field(
         default=None,
-        description="""The random input variables using :class:`.OTDistribution`.
+        description="""The random input variables using
+[OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
 
-If ``None``,
-:class:`.PCERegressor` uses ``data.misc["input_space"]``
-where ``data`` is the :class:`.IODataset` passed at instantiation.
+If `None`,
+[PCERegressor][gemseo.mlearning.regression.algos.pce.PCERegressor]
+uses `data.misc["input_space"]`
+where `data` is the [IODataset][gemseo.datasets.io_dataset.IODataset]
+passed at instantiation.
 """,
     )
 
@@ -74,7 +77,7 @@ where ``data`` is the :class:`.IODataset` passed at instantiation.
         default=None,
         description="""The discipline to be sampled.
 
-Used only when ``use_quadrature`` is ``True`` and ``data`` is ``None``.""",
+Used only when `use_quadrature` is `True` and `data` is `None`.""",
     )
 
     use_quadrature: bool = Field(
@@ -82,7 +85,7 @@ Used only when ``use_quadrature`` is ``True`` and ``data`` is ``None``.""",
         description="""Whether to estimate the coefficients of the PCE by quadrature.
 
 If so,
-use the quadrature points stored in ``data`` or sample ``discipline``.
+use the quadrature points stored in `data` or sample `discipline`.
 Otherwise,
 estimate the coefficients by least-squares regression.""",
     )
@@ -91,7 +94,7 @@ estimate the coefficients by least-squares regression.""",
         default=False,
         description="""Whether to use the `LARS`_ algorithm.
 
-This argument is ignored when ``use_quadrature`` is ``True``.""",
+This argument is ignored when `use_quadrature` is `True`.""",
     )
 
     use_cleaning: bool = Field(
@@ -104,8 +107,8 @@ use a fixed truncation strategy (`FixedStrategy`_).""",
 
     hyperbolic_parameter: PositiveFloat = Field(
         default=1.0,
-        description="""The :math:`q`-quasi norm parameter of the `hyperbolic and
-anisotropic enumerate function`_, defined over the interval:math:`]0,1]`.""",
+        description="""The $q$-quasi norm parameter of the `hyperbolic and
+anisotropic enumerate function`_, defined over the interval$]0,1]$.""",
     )
 
     n_quadrature_points: NonNegativeInt = Field(
@@ -114,17 +117,17 @@ anisotropic enumerate function`_, defined over the interval:math:`]0,1]`.""",
 
 These points are used
 to compute the marginal number of points by input dimension
-when ``discipline`` is not ``None``.
-If ``0``, use :math:`(1+P)^d` points,
-where :math:`d` is the dimension of the input space
-and :math:`P` is the polynomial degree of the PCE.""",
+when `discipline` is not `None`.
+If `0`, use $(1+P)^d$ points,
+where $d$ is the dimension of the input space
+and $P$ is the polynomial degree of the PCE.""",
     )
 
     cleaning_options: CleaningOptions | None = Field(
         default=None,
         description="""The options of the `CleaningStrategy`_.
 
-        If ``None``, use :attr:`.DEFAULT_CLEANING_OPTIONS`.
+        If `None`, use the default cleaning options.
         """,
     )
 

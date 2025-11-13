@@ -39,7 +39,9 @@ class BaseMonitoredProcess(Serializable, metaclass=ABCGoogleDocstringInheritance
     with an execution method,
     an execution status
     and execution statistics,
-    e.g. :class:`.Discipline`, :class:`.ProcessDiscipline` and :class:`.Scenario`.
+    e.g. [Discipline][gemseo.core.discipline.discipline.Discipline],
+    [ProcessDiscipline][gemseo.core.process_discipline.ProcessDIscipline]
+    and [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
     """
 
     name: str
@@ -112,9 +114,9 @@ class BaseMonitoredProcess(Serializable, metaclass=ABCGoogleDocstringInheritance
     def _execute_monitored(self) -> None:
         """Execute and monitor the internal business logic.
 
-        This method handles the execution of :meth:`._execute` eventually monitored with
+        This method handles the execution of `_execute()` eventually monitored with
         the execution status and/or statistics.
-        It shall be called by :meth:`.execute`.
+        It shall be called by `.execute()`.
         """
         self._call_monitored(
             self._execute,
@@ -127,7 +129,7 @@ class BaseMonitoredProcess(Serializable, metaclass=ABCGoogleDocstringInheritance
         """Execute the internal business logic.
 
         This shall contain the actual processing specific to a discipline.
-        It shall be called by :meth:`._execute_monitored``.
+        It shall be called by `_execute_monitored()`.
         """
 
     @abstractmethod

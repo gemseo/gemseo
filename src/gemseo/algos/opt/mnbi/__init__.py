@@ -19,5 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Modified Normal Boundary Intersection (mNBI) algorithm.
 
-Based on :cite:`shukla2007normal`.
+!!! quote "References"
+
+    Pradyumn Kumar Shukla.
+    On the normal boundary intersection method for generation of efficient front.
+    In Computational Science--ICCS 2007: 7th International Conference,
+    Beijing, China, May 27-30, 2007, Proceedings, Part I 7, 310--317. Springer, 2007.
 """

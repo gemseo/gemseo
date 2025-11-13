@@ -21,4 +21,4 @@ from strenum import StrEnum
 from gemseo.datasets.factory import DatasetFactory
 
 DatasetClassName = StrEnum("DatasetClassName", DatasetFactory().class_names)
-"""The enumeration of :class:`.Dataset` class names."""
+"""The enumeration of [Dataset][gemseo.datasets.dataset.Dataset] class names."""

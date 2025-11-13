@@ -44,13 +44,13 @@ class BaseLogNormalDistribution_Settings(BaseDistribution_Settings):  # noqa: N8
     mu: float = Field(
         default=_MU,
         description="""Either the mean of the log-normal random variable
-or that of its logarithm when ``set_log`` is ``True``.""",
+or that of its logarithm when `set_log` is `True`.""",
     )
 
     sigma: PositiveFloat = Field(
         default=_SIGMA,
         description="""Either the standard deviation of the log-normal random variable
-or that of its logarithm when ``set_log`` is ``True``.""",
+or that of its logarithm when `set_log` is `True`.""",
     )
 
     location: float = Field(
@@ -60,8 +60,8 @@ or that of its logarithm when ``set_log`` is ``True``.""",
 
     set_log: bool = Field(
         default=_SET_LOG,
-        description="""Whether ``mu`` and ``sigma`` apply
+        description="""Whether `mu` and `sigma` apply
 to the logarithm of the log-normal random variable.
 Otherwise,
-``mu`` and ``sigma`` apply to the log-normal random variable directly.""",
+`mu` and `sigma` apply to the log-normal random variable directly.""",
     )

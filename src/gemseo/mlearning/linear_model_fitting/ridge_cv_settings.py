@@ -44,8 +44,8 @@ class RidgeCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
 
     alphas: tuple[NonNegativeFloat, ...] = Field(
         default=(0.001, 0.01, 0.1, 1.0, 10.0),
-        description=r"""Values of :math:`\alpha` to try.
-The constant :math:`\alpha` multiplies the L2 term,
+        description=r"""Values of $\alpha$ to try.
+The constant $\alpha$ multiplies the L2 term,
 controlling regularization strength.""",
     )
 
@@ -57,22 +57,22 @@ when performing Leave-One-Out Cross-Validation.""",
 
     alpha_per_target: bool = Field(
         default=False,
-        description="""The flag indicating whether to optimize the :math:`alpha` value
-(picked from the ``alphas`` parameter list) for each target separately
+        description="""The flag indicating whether to optimize the $alpha$ value
+(picked from the `alphas` parameter list) for each target separately
 (for multi-output settings: multiple prediction targets).""",
     )
 
     scoring: str | Callable | None = Field(
         default=None,
         description="""The scoring method to use for cross-validation.
-If ``None``,
-use the mean squared error when ``cv`` is ``None``
-and the coefficient of determination :math:`R^2` otherwise
+If `None`,
+use the mean squared error when `cv` is `None`
+and the coefficient of determination $R^2$ otherwise
 """,
     )
 
     cv: int | None = Field(
         default=None,
         description="""The number of folds.
-If ``None``, use the efficient Leave-One-Out cross-validation.""",
+If `None`, use the efficient Leave-One-Out cross-validation.""",
     )

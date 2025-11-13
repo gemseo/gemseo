@@ -32,5 +32,5 @@ class OT_SOBOL_INDICES_Settings(BaseOpenTURNSSettings):  # noqa: N801
         default=True,
         description="""Whether to build a DOE to evaluate also the second-order indices.
 
-If ``False``, the DOE is designed for first and total-order indices only.""",
+If `False`, the DOE is designed for first and total-order indices only.""",
     )

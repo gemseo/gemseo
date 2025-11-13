@@ -17,40 +17,36 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw Andrews curves from a :class:`.Dataset`.
+r"""Draw Andrews curves from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-The :class:`.AndrewsCurves` class implements the Andrew plot, a.k.a. Andrews curves,
-which is a way to visualize :math:`n` samples of a high-dimensional vector
+The [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves] class
+implements the Andrew plot, a.k.a. Andrews curves,
+which is a way to visualize $n$ samples of a high-dimensional vector
 
-.. math::
-
-   x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d
+$$x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d$$
 
 in a 2D referential by projecting each sample
 
-.. math::
-
-   x^{(i)}=(x_1^{(i)},x_2^{(i)},\ldots,x_d^{(i)})
+$$x^{(i)}=(x_1^{(i)},x_2^{(i)},\ldots,x_d^{(i)})$$
 
 onto the vector
 
-.. math::
+$$\left(\frac{1}{\sqrt{2}},\sin(t),\cos(t),\sin(2t),\cos(2t), \ldots\right)$$
 
-   \left(\frac{1}{\sqrt{2}},\sin(t),\cos(t),\sin(2t),\cos(2t), \ldots\right)
+which is composed of the $d$ first elements of the Fourier series:
 
-which is composed of the :math:`d` first elements of the Fourier series:
-
-.. math::
-
+$$
    f_i(t)=\left(\frac{x_1^{(i)}}{\sqrt{2}},x_2^{(i)}\sin(t),x_3^{(i)}\cos(t),
    x_4^{(i)}\sin(2t),x_5^{(i)}\cos(2t),\ldots\right)
+$$
 
-Each curve :math:`t\mapsto f_i(t)` is plotted
-over the interval :math:`[-\pi,\pi]`
-and structure in the data may be visible in these :math:`n` Andrews curves.
+Each curve $t\mapsto f_i(t)$ is plotted
+over the interval $[-\pi,\pi]$
+and structure in the data may be visible in these $n$ Andrews curves.
 
-A variable name can be passed to the :meth:`.DatasetPlot.execute` method
-by means of the ``classifier`` keyword
+A variable name can be passed to the
+[DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute]
+method by means of the `classifier` keyword
 in order to color the curves according to the value of the variable name.
 This is useful when the data is labeled.
 """

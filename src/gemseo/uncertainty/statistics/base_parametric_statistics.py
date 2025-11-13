@@ -14,22 +14,37 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Parametric estimation of statistics from a dataset.
 
-The base class :class:`.BaseParametricStatistics` aims
+The base class
+[BaseParametricStatistics][gemseo.uncertainty.statistics.base_parametric_statistics.BaseParametricStatistics]
 to estimate statistics parametrically,
-using probability distributions fitted to a :class:`Dataset` at instantiation
+using probability distributions fitted to
+a [Dataset][gemseo.datasets.dataset.Dataset] at instantiation.
 
-For each variable of this :class:`Dataset`,
+For each variable of this [Dataset][gemseo.datasets.dataset.Dataset],
 
-1. the parameters of the distributions are calibrated from this :class:`.Dataset`,
+1. the parameters of the distributions are calibrated
+   from this [Dataset][gemseo.datasets.dataset.Dataset],
 2. the fitted parametric distribution which is optimal
    in the sense of a goodness-of-fit criterion and a selection criterion
    is selected to estimate the statistics associated with this variable.
 
-Its subclass :class:`.OTParametricStatistics` uses the OpenTURNS distributions
-through the :class:`.OTDistribution` and :class:`.OTDistributionFitter` classes
+Its subclass
+[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics]
+uses the OpenTURNS distributions
+through the
+[OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
 and
-its subclass :class:`.SPParametricStatistics` uses the SciPy distributions
-through the :class:`.SPDistribution` and :class:`.SPDistributionFitter` classes.
+[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.fitting.OTDistributionFitter]
+classes
+and
+its subclass
+[SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric_statistics.SPParametricStatistics]
+uses the SciPy distributions
+through the
+[SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+and
+[SPDistributionFitter][gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter]
+classes.
 """
 
 from __future__ import annotations
@@ -109,9 +124,16 @@ class BaseParametricStatistics(
     _DistributionType = dict[str, str | _DistributionT]
 
     DistributionName: ClassVar[StrEnum] = _DistributionNameT
+    """The enumeration of distribution names."""
+
     FittingCriterion: ClassVar[StrEnum] = _FittingCriterionT
+    """The enumeration of fitting criteria."""
+
     SignificanceTest: ClassVar[StrEnum] = _SignificanceTestT
+    """The enumeration of significance tests."""
+
     SelectionCriterion: ClassVar[StrEnum] = BaseDistributionFitter.SelectionCriterion
+    """The enumeration of selection criteria."""
 
     _DISTRIBUTION_FITTER: ClassVar[type[BaseDistributionFitter]]
     """The distribution fitter class."""
@@ -153,13 +175,15 @@ class BaseParametricStatistics(
             fitting_criterion: The name of the fitting criterion
                 to measure the goodness-of-fit of the probability distributions.
                 If empty, use the default one.
-                Use :meth:`.get_criteria` to get the available criteria.
+                Use
+                [get_criteria()][gemseo.uncertainty.statistics.base_parametric_statistics.BaseParametricStatistics.get_criteria]
+                to get the available criteria.
             level: A test level,
                 i.e. the risk of committing a Type 1 error,
                 that is an incorrect rejection of a true null hypothesis,
                 for criteria based on test hypothesis.
             selection_criterion: The name of the criterion
-                to select a distribution among ``distributions``.
+                to select a distribution among `distributions`.
         """  # noqa: D205,D212,D415
         super().__init__(dataset, variable_names, name)
         self.fitting_criterion = (
@@ -244,11 +268,11 @@ class BaseParametricStatistics(
         Args:
             variable: The name of the variable.
             title: The title of the plot, if any.
-            save: If ``True``, save the plot on the disk.
-            show: If ``True``, show the plot.
+            save: If `True`, save the plot on the disk.
+            show: If `True`, show the plot.
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
-            fig_size: The width and height of the figure in inches, e.g. ``(w, h)``.
+            fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
 
         Raises:
             ValueError: If the variable is missing from the dataset.

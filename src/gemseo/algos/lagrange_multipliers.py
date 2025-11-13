@@ -53,10 +53,10 @@ LOGGER = logging.getLogger(__name__)
 class LagrangeMultipliers:
     r"""Class that implements the computation of Lagrange Multipliers.
 
-    Denote :math:`x^\ast` an optimal solution of the optimization problem
+    Denote $x^\ast$ an optimal solution of the optimization problem
     below.
 
-    .. math::
+    $$
 
         \begin{aligned}
             & \text{Minimize}    & & f(x) \\
@@ -67,13 +67,13 @@ class LagrangeMultipliers:
                                                 & \ell\le x\le u.
                                      \end{aligned}\right.
         \end{aligned}
+    $$
 
-    If the constraints are qualified at :math:`x^\ast` then the Lagrange
-    multipliers of :math:`x^\ast` are the vectors :math:`\lambda_g`,
-    :math:`\lambda_h`, :math:`\lambda_\ell` and :math:`\lambda_u` satisfying
+    If the constraints are qualified at $x^\ast$ then the Lagrange
+    multipliers of $x^\ast$ are the vectors $\lambda_g$,
+    $\lambda_h$, $\lambda_\ell$ and $\lambda_u$ satisfying
 
-    .. math::
-
+    $$
         \left\{\begin{aligned}
             &\frac{\partial f}{\partial x}(x^\ast)
             +\lambda_g^\top\frac{\partial g}{\partial x}(x^\ast)
@@ -87,13 +87,14 @@ class LagrangeMultipliers:
             &\lambda_{u,j}\ge0\text{ if }x^\ast_j=u_j,
             \text{ otherwise }\lambda_{u,j}=0.
         \end{aligned}\right.
+    $$
     """
 
     kkt_residual: float | None
-    """The residual of the KKT conditions, ``None`` if not computed."""
+    """The residual of the KKT conditions, `None` if not computed."""
 
     constraint_violation: float | None
-    """The maximum constraint violation (taking tolerances into account), ``None`` if
+    """The maximum constraint violation (taking tolerances into account), `None` if
     not computed."""
 
     LOWER_BOUNDS = "lower_bounds"
@@ -141,7 +142,7 @@ class LagrangeMultipliers:
             x_vect: The optimal point on which the multipliers shall be computed.
             ineq_tolerance: The tolerance on inequality constraints.
             rcond: The cut-off ratio for small singular values of the Jacobian
-               (see scipy.linalg.lsq).
+                (see scipy.linalg.lsq).
 
         Returns:
             The Lagrange multipliers.
@@ -435,7 +436,7 @@ class LagrangeMultipliers:
         return None, names
 
     def _store_multipliers(self, multipliers: ndarray) -> None:
-        """Store the Lagrange multipliers in the attribute :attr:`lagrange_multipliers`.
+        """Store the Lagrange multipliers in the attribute `lagrange_multipliers`.
 
         Args:
             multipliers: The Lagrange multipliers.

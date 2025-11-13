@@ -49,7 +49,7 @@ class XLSStudyParser:
 
     - the name of the sheet shall have the discipline name,
     - the sheet shall define the input names of the discipline
-      as a vertical succession of cells starting with ``"Inputs"``:
+      as a vertical succession of cells starting with `"Inputs"`:
 
         .. table:: Inputs
 
@@ -64,7 +64,7 @@ class XLSStudyParser:
             +--------------+
 
     - the sheet shall define the output names of the discipline
-      as a vertical succession of cells starting with ``"Outputs"``:
+      as a vertical succession of cells starting with `"Outputs"`:
 
     .. table:: Outputs
 
@@ -78,12 +78,12 @@ class XLSStudyParser:
             | output_name_N |
             +---------------+
 
-    - the empty lines of the series ``Inputs`` and ``Outputs`` are ignored,
+    - the empty lines of the series `Inputs` and `Outputs` are ignored,
     - the sheet may contain other data, but these will not be taken into account.
 
-    If ``has_scenario`` is ``True``,
+    If `has_scenario` is `True`,
     the Excel file shall contain one sheet per scenario
-    with a name starting by ``Scenario``.
+    with a name starting by `Scenario`.
     Distributed formulations shall contain one sheet for the main scenario
     and one sheet per sub-scenario.
 
@@ -111,10 +111,10 @@ class XLSStudyParser:
     - all the design variables must be inputs of a discipline,
       not necessarily the one of the current sheet.
 
-    The columns ``Options`` and ``Options values`` are used
+    The columns `Options` and `Options values` are used
     to pass the formulation options.
-    Note that for string type ``Option values``,
-    the value can be written with or without the ``""`` characters.
+    Note that for string type `Option values`,
+    the value can be written with or without the `""` characters.
 
     To use multi-level MDO formulations,
     create multiple scenarios,
@@ -247,7 +247,7 @@ class XLSStudyParser:
         Args:
             frame: The pandas frame of the sheet.
             series_name: The name of the series.
-            raise_error: Whether to raise a ``ValueError``
+            raise_error: Whether to raise a `ValueError`
                 when the series does not exist;
                 otherwise, return an empty list.
 
@@ -255,7 +255,7 @@ class XLSStudyParser:
             The names of the columns, if the series exist.
 
         Raises:
-            ValueError: If the sheet has no name and ``raise_error`` is ``True``.
+            ValueError: If the sheet has no name and `raise_error` is `True`.
         """
         series = frame.get(series_name)
         if series is None:
@@ -273,11 +273,11 @@ class XLSStudyParser:
 
         Raises:
             ValueError: If at least one of following elements is missing:
-                * ``disciplines`` column,
-                * ``design variables`` column,
-                * ``objectives`` column,
-                * ``constraints`` column,
-                * ``formulations`` column,
+                * `disciplines` column,
+                * `design variables` column,
+                * `objectives` column,
+                * `constraints` column,
+                * `formulations` column,
                 * if a scenario has more than one formulation,
                 * if a scenario has different number of option values.
         """
@@ -366,7 +366,7 @@ class XLSStudyParser:
                 otherwise, a scenario.
 
         Returns:
-            The worksheets defining a discipline if ``is_discipline`` is ``True``;
+            The worksheets defining a discipline if `is_discipline` is `True`;
             otherwise the others that are supposed to define scenarios.
         """
         worksheets = {

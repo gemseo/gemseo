@@ -21,15 +21,15 @@ r"""The R2 score to assess the quality of a regressor.
 
 The R2 score s defined by
 
-.. math::
-
+$$
     R_2(\hat{y}) = 1 - \frac{\sum_i (\hat{y}_i - y_i)^2}
                               {\sum_i (y_i-\bar{y})^2},
+$$
 
 where
-:math:`\hat{y}` are the predictions,
-:math:`y` are the data points and
-:math:`\bar{y}` is the mean of :math:`y`.
+$\hat{y}$ are the predictions,
+$y$ are the data points and
+$\bar{y}$ is the mean of $y$.
 """
 
 from __future__ import annotations
@@ -118,14 +118,14 @@ class R2Measure(BaseRegressorQuality):
         Args:
             as_dict: Whether to express the measure as a dictionary
                 whose keys are the output names.
-            multioutput: If ``True``, return the quality measure for each
+            multioutput: If `True`, return the quality measure for each
                 output component. Otherwise, average these measures.
             update_seed: Whether to update the seed before resampling.
             resampler_class: The class of the resampler.
             samples: The indices of the learning samples.
-                If ``None``, use the whole training dataset.
+                If `None`, use the whole training dataset.
             seed: The seed of the pseudo-random number generator.
-                If ``None``,
+                If `None`,
                 then an unpredictable generator will be used.
             **kwargs: The options to instantiate the resampler.
 

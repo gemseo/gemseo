@@ -16,22 +16,36 @@
 
 This package contains:
 
-- an abstract class :class:`.BaseDistribution`
+- an abstract class
+  [BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
   to define the concept of probability distribution,
-- an abstract class :class:`.BaseJointDistribution`
+- an abstract class
+  [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
   to define the concept of joint probability distribution
-  by composing several instances of :class:`.BaseDistribution`,
-- a factory :class:`.DistributionFactory`
-  to create instances of :class:`.BaseDistribution`,
+  by composing several instances of
+  [BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution],
+- a factory
+  [DistributionFactory][gemseo.uncertainty.distributions.factory.DistributionFactory]
+  to create instances of
+  [BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution],
 - concrete classes implementing these abstracts concepts, by interfacing:
 
   - the OpenTURNS library:
-    :class:`.OTDistribution` and :class:`.OTJointDistribution`,
+    [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+    and
+    [OTJointDistribution][gemseo.uncertainty.distributions.openturns.joint.OTJointDistribution],
   - the Scipy library:
-    :class:`.SPDistribution` and :class:`.SPJointDistribution`.
+    [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+    and
+    [SPJointDistribution][gemseo.uncertainty.distributions.scipy.joint.SPJointDistribution].
 
-Lastly, the class :class:`.OTDistributionFitter` offers the possibility
-to fit an :class:`.OTDistribution` from data based on OpenTURNS.
+Lastly,
+the class
+[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.fitting.OTDistributionFitter]
+offers the possibility
+to fit an
+[OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+from data based on OpenTURNS.
 """
 
 from __future__ import annotations

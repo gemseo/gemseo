@@ -57,14 +57,14 @@ class OTWeibullDistribution(OTDistribution):
     ) -> None:
         r"""
         Args:
-            location: The location parameter :math:`\gamma` of the Weibull distribution.
+            location: The location parameter $\gamma$ of the Weibull distribution.
             scale: The scale parameter of the Weibull distribution.
             shape: The shape parameter of the Weibull distribution.
             use_weibull_min: Whether to use
                 the Weibull minimum extreme value distribution
-                (the support of the random variable is :math:`[\gamma,+\infty[`)
+                (the support of the random variable is $[\gamma,+\infty[$)
                 or the Weibull maximum extreme value distribution
-                (the support of the random variable is :math:`]-\infty[,\gamma]`).
+                (the support of the random variable is $]-\infty[,\gamma]$).
         """  # noqa: D205,D212,D415
         if settings is None:
             settings = OTWeibullDistribution_Settings(

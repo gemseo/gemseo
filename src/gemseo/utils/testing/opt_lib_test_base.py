@@ -32,8 +32,11 @@ from gemseo.problems.optimization.rastrigin import Rastrigin
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy._typing import NDArray
 
+    from gemseo.algos.base_algo_factory import BaseAlgorithmLibrary
     from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
     from gemseo.algos.optimization_problem import OptimizationProblem
 
@@ -90,7 +93,9 @@ class OptLibraryTestBase:
         return opt_library, problem
 
     @staticmethod
-    def generate_one_test_unconstrained(opt_lib_name, algo_name, **settings):
+    def generate_one_test_unconstrained(
+        opt_lib_name: str, algo_name: str, **settings: Any
+    ) -> Rosenbrock | Power2 | Rastrigin:
         """Solve the Rosenbrock problem with an optimization library.
 
         This optimization problem has no constraints.
@@ -109,7 +114,9 @@ class OptLibraryTestBase:
         return problem
 
     @staticmethod
-    def generate_error_test(opt_lib_name, algo_name, **settings):
+    def generate_error_test(
+        opt_lib_name: str, algo_name: str, **settings: Any
+    ) -> BaseAlgorithmLibrary:
         """Solve the Power 2 problem with an optimization library.
 
         This optimization problem has constraints.
@@ -142,7 +149,7 @@ class OptLibraryTestBase:
 
         Returns:
             The error message if the optimizer cannot find the solution,
-            otherwise ``None``.
+            otherwise `None`.
         """
         opt = OptimizationLibraryFactory().execute(
             problem, algo_name=algo_name, **settings
@@ -165,7 +172,7 @@ class OptLibraryTestBase:
         problem: OptimizationProblem,
         algo_name: str,
         settings: dict[str, Any],
-    ):
+    ) -> Callable[[Any], None]:
         """Create a function to run and test an optimization algorithm.
 
         Args:
@@ -175,7 +182,7 @@ class OptLibraryTestBase:
 
         Returns:
             The error message if the optimizer cannot find the solution,
-            otherwise ``None``.
+            otherwise `None`.
         """
 
         def test_algo(self=None) -> None:
@@ -218,7 +225,12 @@ class OptLibraryTestBase:
         msg = f"Bad pb_name argument: {pb_name}"
         raise ValueError(msg)
 
-    def generate_test(self, opt_lib_name, get_settings=None, get_problem_options=None):
+    def generate_test(
+        self,
+        opt_lib_name: str,
+        get_settings: Any = None,
+        get_problem_options: Any = None,
+    ) -> list:
         """Generates the tests for an opt library Filters algorithms adapted to the
         benchmark problems.
 

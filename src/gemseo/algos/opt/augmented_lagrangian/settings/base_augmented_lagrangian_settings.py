@@ -54,7 +54,7 @@ class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
         default=(),
         description="""The constraints to keep in the sub-problem.
 
-If ``empty``, all constraints are handled by the Augmented Lagrangian method
+If `empty`, all constraints are handled by the Augmented Lagrangian method
 which implies that the sub-problem is unconstrained.""",
     )
 

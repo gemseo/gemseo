@@ -127,7 +127,9 @@ class BaseDistributionFitter(
         """Measure a goodness-of-fit of a probability distribution fitted to data.
 
         Args:
-            distribution: Either a |g| probability distribution fitted to :attr:`.data`
+            distribution: Either a GEMSEO probability distribution
+                fitted to
+                [data][gemseo.uncertainty.distributions.base_distribution_fitter.BaseDistributionFitter.data]
                 or the name of a probability distribution in the UQ library.
             criterion: The name of the fitting criterion
                 to measure the goodness-of-fit of the probability distribution.
@@ -157,10 +159,10 @@ class BaseDistributionFitter(
         """Compute a goodness-of-fit of a probability distribution fitted to data.
 
         This method does not format the result,
-        unlike its caller :meth:`.compute_measure`.
+        unlike its caller `compute_measure()`.
 
         Args:
-            distribution: Either a |g| probability distribution fitted to :attr:`.data`
+            distribution: Either a GEMSEO probability distribution fitted to `data`
                 or the name of a probability distribution in the UQ library.
             criterion: The name of the fitting criterion
                 to measure the goodness-of-fit of the probability distribution.
@@ -201,8 +203,9 @@ class BaseDistributionFitter(
         """Select the best probability distribution according to a fitting criterion.
 
         Args:
-            distributions: A collection of |g| probability distributions
-                fitted to :attr:`.data`
+            distributions: A collection of GEMSEO probability distributions
+                fitted to
+                [data][gemseo.uncertainty.distributions.base_distribution_fitter.BaseDistributionFitter.data]
                 or names of probability distributions in the UQ library.
             fitting_criterion: The name of the fitting criterion
                 to measure the goodness-of-fit of the probability distribution.

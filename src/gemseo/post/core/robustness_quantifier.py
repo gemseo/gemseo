@@ -37,6 +37,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Sized
 
+    from numpy import ndarray
+
+    from gemseo.datasets.optimization_dataset import OptimizationDataset
+    from gemseo.typing import RealArray
+
 
 class RobustnessQuantifier:
     """classdocs."""
@@ -55,7 +60,9 @@ class RobustnessQuantifier:
     }
 
     def __init__(
-        self, history, approximation_method: Approximation = Approximation.SR1
+        self,
+        history: OptimizationDataset,
+        approximation_method: Approximation = Approximation.SR1,
     ) -> None:
         """
         Args:
@@ -76,20 +83,20 @@ class RobustnessQuantifier:
         funcname: str,
         first_iter: int = 0,
         last_iter: int | None = None,
-        b0_mat=None,
+        b0_mat: ndarray | None = None,
         at_most_niter: int | None = None,
-        func_index=None,
-    ):
+        func_index: int | None = None,
+    ) -> ndarray:
         """Build the BFGS approximation for the Hessian.
 
         Args:
             funcname: The name of the function.
             first_iter: The index of the first iteration.
             last_iter: The last iteration of the history to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             b0_mat: The Hessian matrix at the first iteration.
             at_most_niter: The maximum number of iterations to be considered.
-                If ``None``, consider all the iterations.
+                If `None`, consider all the iterations.
             func_index: The component of the function.
 
         Returns:
@@ -109,12 +116,12 @@ class RobustnessQuantifier:
         self.fgrad_ref = grad_ref
         return self.b_mat
 
-    def compute_expected_value(self, expect: Sized, cov):
+    def compute_expected_value(self, expect: Sized, cov: RealArray) -> RealArray:
         r"""Compute the expected value of the output.
 
-        Equal to :math:`0.5\mathbb{E}[e^TBe]`
-        where :math:`e` is the expected values
-        and :math:`B` the covariance matrix.
+        Equal to $0.5\mathbb{E}[e^TBe]$
+        where $e$ is the expected values
+        and $B$ the covariance matrix.
 
         Args:
             expect: The expected value of the inputs.
@@ -140,12 +147,12 @@ class RobustnessQuantifier:
         exp_val += delta.T @ (b_approx @ delta)
         return exp_val
 
-    def compute_variance(self, expect: Sized, cov):
+    def compute_variance(self, expect: Sized, cov: RealArray) -> RealArray:
         r"""Compute the variance of the output.
 
-        Equal to :math:`0.5\mathbb{E}[e^TBe]`
-        where :math:`e` is the expected values
-        and :math:`B` the covariance matrix.
+        Equal to $0.5\mathbb{E}[e^TBe]$
+        where $e$ is the expected values
+        and $B$ the covariance matrix.
 
         Args:
             expect: The expected value of the inputs.
@@ -173,7 +180,7 @@ class RobustnessQuantifier:
         v_mat += 4 * b_approx_mu_cent.T @ (cov @ b_approx_mu_cent)
         return 2 * np.trace(v_mat)
 
-    def compute_function_approximation(self, x_vars) -> float:
+    def compute_function_approximation(self, x_vars: RealArray) -> float:
         """Compute a second order approximation of the function.
 
         Args:
@@ -188,11 +195,14 @@ class RobustnessQuantifier:
         x_l = x_vars - self.x_ref
         return 0.5 * x_l.T @ (self.b_mat @ x_l) + self.fgrad_ref.T @ x_l + self.f_ref
 
-    def compute_gradient_approximation(self, x_vars):
+    def compute_gradient_approximation(self, x_vars: RealArray) -> RealArray:
         """Computes a first order approximation of the gradient based on the hessian.
 
         Args:
             x_vars: The point on which the approximation is evaluated.
+
+        Returns:
+            The first order approximation of the gradient.
         """
         if self.b_mat is None or self.fgrad_ref is None:
             msg = "Build Hessian approximation before computing function approximation"
@@ -201,16 +211,23 @@ class RobustnessQuantifier:
         return self.b_mat @ x_l + self.fgrad_ref
 
     def montecarlo_average_var(
-        self, mean: Sized, cov, n_samples: int = 100000, func=None
-    ):
+        self,
+        mean: Sized,
+        cov: RealArray,
+        n_samples: int = 100000,
+        func: Callable[[RealArray], float] | None = None,
+    ) -> tuple[float, float]:
         """Computes the variance and expected value using Monte Carlo approach.
 
         Args:
             mean: The mean value.
             cov: The covariance matrix.
             n_samples: The number of samples for the distribution.
-            func: If ``None``, the ``compute_function_approximation`` function,
+            func: If `None`, the `compute_function_approximation` function,
                 otherwise a user function.
+
+        Returns:
+            The mean value and the variance.
         """
         n_dv = len(mean)
         if not cov.shape == (n_dv, n_dv):

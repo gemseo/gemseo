@@ -55,30 +55,30 @@ class BaseOTStratifiedDOE(BaseOTDOE):
         r"""
         Args:
             n_samples: The maximum number of samples.
-                If 0, deduce this number from ``dimension`` and ``levels``.
+                If 0, deduce this number from `dimension` and `levels`.
                 Otherwise,
                 the DOE will use the center of the unit hypercube
                 and the levels and the effective number of samples
                 will depend on the stratified DOE type.
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
             centers: The center of the DOE in the unit hypercube.
-                This argument is used when ``n_samples`` is greater than 0.
+                This argument is used when `n_samples` is greater than 0.
                 If a real number is passed,
-                create a ``dimension``-length vector filled with this value.
-                Otherwise, the length of ``centers`` must be equal to ``dimension``.
-                Ignored if ``settings`` is not `None`.
+                create a `dimension`-length vector filled with this value.
+                Otherwise, the length of `centers` must be equal to `dimension`.
+                Ignored if `settings` is not `None`.
             levels: The relative positions of the levels
-                This argument is used when ``n_samples`` is greater than 0.
+                This argument is used when `n_samples` is greater than 0.
                 between the center and the bounds
                 E.g. [0.2, 0.8] with [0.5] as center
                 will generate the values [0.1, 0.4, 0.5, 0.6, 0.9].
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
             settings: The settings of the DOE algorithm.
 
         Raises:
             ValueError: When the number of centers is different from the dimension,
-                when a center is outside :math:`]0,1[`
-                or when a level is outside :math:`[0,1]`.
+                when a center is outside $]0,1[$
+                or when a level is outside $[0,1]$.
         """  # noqa: D205, D212
         if settings is not None:
             n_samples = settings.n_samples

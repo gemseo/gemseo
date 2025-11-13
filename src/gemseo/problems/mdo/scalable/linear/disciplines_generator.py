@@ -131,7 +131,7 @@ def create_disciplines_from_sizes(
     matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
     matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
 ) -> list[LinearDiscipline]:
-    """Generate a :class:`.LinearDiscipline` according to a specification.
+    """Generate linear disciplines according to a specification.
 
     The names of the disciplines will be automatic combinations of capital letters.
     The names of the inputs and outputs are generated from string representations of
@@ -160,7 +160,7 @@ def create_disciplines_from_sizes(
         matrix_density: The percentage of non-zero elements when the matrix is sparse.
 
     Returns:
-        The :class:`.LinearDiscipline`.
+        The linear disciplines.
 
     Raises:
         ValueError: If the number of disciplines is inconsistent with the
@@ -249,16 +249,16 @@ def create_disciplines_from_desc(
     matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
     matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
 ) -> list[LinearDiscipline]:
-    """Generate :class:`.LinearDiscipline` classes according to a specification.
+    """Generate linear disciplines according to a specification.
 
     The specification is as follows:
 
-    .. code-block:: python
-
+    ```python
         [
             ("Disc_name1", ["in1"], ["out1", "out2"]),
             ("Disc_name2", ["in2", "out1"], ["out3", "out2"]),
         ]
+    ```
 
     This will generate two disciplines:
 
@@ -279,7 +279,7 @@ def create_disciplines_from_desc(
         matrix_density: The percentage of non-zero elements when the matrix is sparse.
 
     Returns:
-        The :class:`.LinearDiscipline`.
+        The linear disciplines.
     """
     # TODO: use factory instead of managing the grammar type.
     old_grammar_type = LinearDiscipline.default_grammar_type

@@ -32,7 +32,7 @@ class ConstraintsHistory_Settings(BasePostSettings):  # noqa: D101, N801
     )
     line_style: str = Field(
         default="--",
-        description='The style of the line, e.g. ``"-"`` or ``"--"``. ""If ``""``, '
+        description='The style of the line, e.g. `"-"` or `"--"`. ""If `""`, '
         "do not plot the line.",
     )
     add_points: bool = Field(

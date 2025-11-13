@@ -299,7 +299,7 @@ class DependencyGraph:
             clean_up: Whether to remove the DOT source file.
 
         Returns:
-            Either the graph or ``None`` when graphviz is not installed.
+            Either the graph or `None` when graphviz is not installed.
         """
         if GRAPHVIZ_IS_MISSING:
             LOGGER.warning(
@@ -475,7 +475,7 @@ class DependencyGraph:
             clean_up: Whether to remove the DOT source file.
 
         Returns:
-            Either the full graph or ``None`` when graphviz is not installed.
+            Either the full graph or `None` when graphviz is not installed.
         """
         return self.__render_graph(self.__graph, file_path, True, clean_up)
 
@@ -491,7 +491,7 @@ class DependencyGraph:
             clean_up: Whether to remove the DOT source file.
 
         Returns:
-            Either the condensed graph or ``None`` when graphviz is not installed.
+            Either the condensed graph or `None` when graphviz is not installed.
         """
         return self.__render_graph(
             self.__create_condensed_graph(), file_path, False, clean_up

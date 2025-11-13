@@ -31,7 +31,7 @@ class BaseMetric(
 ):
     """A base class to implement metrics.
 
-    A metric is used to compare two quantities ``a`` and ``b``.
+    A metric is used to compare two quantities `a` and `b`.
     """
 
     @abstractmethod
@@ -43,5 +43,5 @@ class BaseMetric(
             b: A second quantity.
 
         Returns:
-            The metric associated with ``a`` and ``b``.
+            The metric associated with `a` and `b`.
         """

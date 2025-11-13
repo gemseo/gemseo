@@ -19,11 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """This module contains the base class for the unsupervised machine learning algorithms.
 
-The :mod:`~gemseo.mlearning.core.unsupervised` module implements the concept of
+The
+[gemseo.mlearning.core.algos.unsupervised][gemseo.mlearning.core.algos.unsupervised]
+module implements the concept of
 unsupervised machine learning models, where the data has no notion of input or output.
 
-This concept is implemented through the :class:`.BaseMLUnsupervisedAlgo` class, which
-inherits from the :class:`.BaseMLAlgo` class.
+This concept is implemented through the
+[BaseMLUnsupervisedAlgo][gemseo.mlearning.core.algos.unsupervised.BaseMLUnsupervisedAlgo]
+class deriving from
+[BaseMLAlgo][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo].
 """
 
 from __future__ import annotations
@@ -48,7 +52,7 @@ if TYPE_CHECKING:
 class BaseMLUnsupervisedAlgo(BaseMLAlgo):
     """Unsupervised machine learning algorithm.
 
-    Inheriting classes shall overload the :meth:`!BaseMLUnsupervisedAlgo._fit` method.
+    Inheriting classes shall overload the `BaseMLUnsupervisedAlgo._fit()` method.
     """
 
     input_names: list[str]

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 
 class SleepingCounter:
-    """A class mocking ``time.perf_counter`` ."""
+    """A class mocking `time.perf_counter` ."""
 
     __sleep_duration: float
     """The sleep duration."""

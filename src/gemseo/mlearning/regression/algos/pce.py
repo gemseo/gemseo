@@ -32,31 +32,27 @@ The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal
 in the stochastic input space spanned by the random input variables:
 
-.. math::
+$$Y = w_0 + w_1\phi_1(X) + w_2\phi_2(X) + ... + w_K\phi_K(X)$$
 
-    Y = w_0 + w_1\phi_1(X) + w_2\phi_2(X) + ... + w_K\phi_K(X)
+where $\phi_i(x)=\psi_{\tau_1(i),1}(x_1)\times\ldots\times
+\psi_{\tau_d(i),d}(x_d)$
+and $d$ is the number of input variables.
 
-where :math:`\phi_i(x)=\psi_{\tau_1(i),1}(x_1)\times\ldots\times
-\psi_{\tau_d(i),d}(x_d)`
-and :math:`d` is the number of input variables.
+## Enumeration strategy
 
-Enumeration strategy
---------------------
+The choice of the function $\tau=(\tau_1,\ldots,\tau_d)$ is an
+enumeration strategy and $\tau_j(i)$ is the polynomial degree of
+$\psi_{\tau_j(i),j}$.
 
-The choice of the function :math:`\tau=(\tau_1,\ldots,\tau_d)` is an
-enumeration strategy and :math:`\tau_j(i)` is the polynomial degree of
-:math:`\psi_{\tau_j(i),j}`.
-
-Distributions
--------------
+## Distributions
 
 PCE models depend on random input variables
 and are often used to deal with uncertainty quantification problems.
 
-If :math:`X_j` is a Gaussian random variable,
-:math:`(\psi_{ij})_{i\geq 0}` is the Legendre basis.
-If :math:`X_j` is a uniform random variable,
-:math:`(\psi_{ij})_{i\geq 0}` is the Hermite basis.
+If $X_j$ is a Gaussian random variable,
+$(\psi_{ij})_{i\geq 0}$ is the Legendre basis.
+If $X_j$ is a uniform random variable,
+$(\psi_{ij})_{i\geq 0}$ is the Hermite basis.
 
 When the problem is deterministic,
 we can still use PCE models under the assumption that
@@ -64,24 +60,22 @@ the input variables are independent uniform random variables.
 Then,
 the orthonormal function basis is the Hermite one.
 
-Degree
-------
+## Degree
 
-The degree :math:`P` of a PCE model is defined
-in such a way that :math:`\max_i \text{degree}(\phi_i)=\sum_{j=1}^d\tau_j(i)=P`.
+The degree $P$ of a PCE model is defined
+in such a way that $\max_i \text{degree}(\phi_i)=\sum_{j=1}^d\tau_j(i)=P$.
 
-Estimation
-----------
+## Estimation
 
-The coefficients :math:`(w_1, w_2, ..., w_K)` and the intercept :math:`w_0`
+The coefficients $(w_1, w_2, ..., w_K)$ and the intercept $w_0$
 are estimated either by least-squares regression or a quadrature rule.
 In the case of least-squares regression,
 a sparse strategy can be considered with the `LARS`_ algorithm
 and in both cases,
 the `CleaningStrategy`_ can also remove the non-significant coefficients.
 
-Dependence
-----------
+## Dependence
+
 The PCE model relies on the OpenTURNS class `FunctionalChaosAlgorithm`_.
 """  # noqa: E501
 
@@ -166,11 +160,12 @@ class PCERegressor(BaseFCERegressor):
         """
         Args:
             data: The training dataset
-                whose input space ``data.misc["input_space"]``
-                is expected to be a :class:`.ParameterSpace`
+                whose input space `data.misc["input_space"]`
+                is expected to be a
+                [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
                 defining the random input variables.
                 The training dataset can be empty
-                in the case of quadrature when ``discipline`` is not ``None``.
+                in the case of quadrature when `discipline` is not `None`.
 
         Raises:
             ValueError: When both data and discipline are missing,
@@ -180,7 +175,8 @@ class PCERegressor(BaseFCERegressor):
                 when the probability space does not contain the distribution
                 of an input variable,
                 when an input variable has a data transformer
-                or when a probability distribution is not an :class:`.OTDistribution`.
+                or when a probability distribution is not an
+                [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
         """  # noqa: D205 D212
         settings_ = create_model(
             self.Settings, settings_model=settings_model, **settings
@@ -290,7 +286,7 @@ class PCERegressor(BaseFCERegressor):
     def __instantiate_functional_chaos_algorithm(
         self, input_data: RealArray, output_data: RealArray
     ) -> FunctionalChaosAlgorithm:
-        """Instantiate the :class:`FunctionalChaosAlgorithm`.
+        """Instantiate the `openturns.FunctionalChaosAlgorithm`.
 
         Args:
             input_data: The learning input data.
@@ -610,11 +606,11 @@ class PCERegressor(BaseFCERegressor):
     def covariance(self) -> RealArray:
         """The covariance matrix of the PCE model output.
 
-        .. warning::
-
+        Warning:
            This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
-           to estimate it in relation to the original output space
+           You can sample the
+           [predict()][gemseo.mlearning.regression.algos.pce.PCERegressor.predict]
+           method to estimate it in relation to the original output space
            if it is different from the transformed output space.
         """
         self._check_is_trained()
@@ -624,10 +620,10 @@ class PCERegressor(BaseFCERegressor):
     def second_sobol_indices(self) -> list[dict[str, dict[str, float]]]:
         """The second-order Sobol' indices for the different output components.
 
-        .. warning::
-
+        Warning:
            These statistics are expressed in relation to the transformed output space.
-           You can use a :class:`.SobolAnalysis`
+           You can use a
+           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
            to estimate them in relation to the original output space
            if it is different from the transformed output space.
         """

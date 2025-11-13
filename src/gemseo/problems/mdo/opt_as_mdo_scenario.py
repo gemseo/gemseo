@@ -19,9 +19,10 @@ than the literature on problems to benchmark MDO algorithms.
 This difference is even greater in the case of MDO under uncertainties.
 
 Faced with this limitation,
-the :class:`.OptAsMDOScenario` allows the user to
+the [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
+allows the user to
 rewrite a monodisciplinary optimization problem
-into an MDO problem :cite:`AzizAlaoui2025`.
+into an MDO problem.
 
 The original discipline
 
@@ -30,10 +31,10 @@ The original discipline
 - may have as outputs one or more observables,,
 - must have as inputs at least three design variables.
 
-The MDO problem will include :math:`2+N` disciplines,
+The MDO problem will include $2+N$ disciplines,
 namely
 
-- :math:`N` strongly coupled disciplines
+- $N$ strongly coupled disciplines
   computing the values of some coupling variables
   from the values of the other coupling variables
   and the values of the design variables,
@@ -46,66 +47,70 @@ namely
 
 This scenario will also modify the design space passed as argument
 by renaming
-the first design variable as :math:`x_0`,
-the second design variable as :math:`x_1`,
+the first design variable as $x_0$,
+the second design variable as $x_1$,
 and so on.
 Then,
-:math:`x_0` will be the global design variable
-and :math:`x_i` will be the local design variable
-specific to the :math:`i`-th discipline.
+$x_0$ will be the global design variable
+and $x_i$ will be the local design variable
+specific to the $i$-th discipline.
 
 In other words,
 an optimization problem of the form
 
-.. math::
-
-   \min_{z\in Z} f(z_0,z_1,\ldots,z_N) \text{ s.t. } g(z_0,z_1,\ldots,z_N) \leq 0
+$$\min_{z\in Z} f(z_0,z_1,\ldots,z_N) \text{ s.t. } g(z_0,z_1,\ldots,z_N) \leq 0$$
 
 will be transformed into an MDO problem of the form
 
-.. math::
-
+$$
    \min_{x\in Z, y\in Y} F(x_0,x_1,\ldots,x_N,y_1,\ldots,y_N)
    \text{ s.t. } G(x_0,x_1,\ldots,x_N,y_1,\ldots,y_N) \leq 0
+$$
 
 where
-:math:`y_i=h_i(x_0,x_i,y_{-i})` is the coupling variable
-outputted by the :math:`i`-th strongly coupled discipline
-and where :math:`F = f \circ L` and :math:`G = f \circ L`,
-with :math:`L` the link discipline.
+$y_i=h_i(x_0,x_i,y_{-i})$ is the coupling variable
+outputted by the $i$-th strongly coupled discipline
+and where $F = f \circ L$ and $G = f \circ L$,
+with $L$ the link discipline.
 
-The function :math:`h_i` is defined as
+The function $h_i$ is defined as
 
-.. math::
-
+$$
    h_i(x_0,x_i,y_{-i})
    =a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j
+$$
 
-where :math:`a_i`, :math:`D_{i,0}`, :math:`D_{i,i}`
-and :math:`\left(C_{i,j}\right)_{j=1\atop j\neq i}`
+where $a_i$, $D_{i,0}$, $D_{i,i}$
+and $\left(C_{i,j}\right)_{j=1\atop j\neq i}$
 are realizations of independent random variables
 uniformly distributed between 0 and 1,
-and the link discipline :math:`L` is defined as
+and the link discipline $L$ is defined as
 
-.. math::
+$$z = L(x, y) = x + y - c(x)$$
 
-   z = L(x, y) = x + y - c(x)
-
-where :math:`c` is the implicit function
-such that :math:`c_i(x)=h_i(x_0,x_i,c_{-i}(x))` for all :math:`i\in\{1,\ldots,N\}`.
+where $c$ is the implicit function
+such that $c_i(x)=h_i(x_0,x_i,c_{-i}(x))$ for all $i\in\{1,\ldots,N\}$.
 
 If the original discipline is analytically differentiable,
 so are the objective and constraint functions of this MDO problem.
 
 By default,
 this scenario uses linear coupling and link disciplines,
-using the previous expressions of :math:`h_1,\ldots,h_N` and :math:`L`.
+using the previous expressions of $h_1,\ldots,h_N$ and $L$.
 More advanced disciplines could be imagined,
-using the arguments ``coupling_equations`` and ``link_discipline``.
+using the arguments `coupling_equations` and `link_discipline`.
 
-:ref:`This example <sphx_glr_examples_mdo_plot_opt_as_mdo.py>`
+[This example][make-a-monodisciplinary-optimization-problem-multidisciplinary]
 from the documentation
 illustrates this feature.
+
+!!! quote "References"
+
+    Amine Aziz Alaoui.
+    Contributions to multidisciplinary design optimization under uncertainty,
+    with applications to aircraft design.
+    Theses, Université de Toulouse, February 2025.
+    URL: https://theses.hal.science/tel-05059696.
 """
 
 from __future__ import annotations
@@ -137,21 +142,21 @@ if TYPE_CHECKING:
 
 
 class BaseLinkDiscipline(Discipline):
-    r"""The base class for the link discipline :math:`c`.
+    r"""The base class for the link discipline $c$.
 
     This discipline computes
-    the values of the design variables :math:`z_0,z_1,\ldots,z_N`
+    the values of the design variables $z_0,z_1,\ldots,z_N$
     of the original optimization problem
     from
-    the values of the design variables :math:`x_0,x_1,\ldots,x_N`
-    and coupling variables :math:`y_0,y_1,\ldots,y_N`
+    the values of the design variables $x_0,x_1,\ldots,x_N$
+    and coupling variables $y_0,y_1,\ldots,y_N$
     of the MDO problem.
     """
 
     _differentiate_mda_analytically: Callable[[RealArray], RealArray] | None
     """The function differentiating the MDA analytically at a given design point.
 
-    If ``None``, the discipline is not differentiable.
+    If `None`, the discipline is not differentiable.
     """
 
     _n_strongly_coupled_disciplines: int
@@ -169,7 +174,7 @@ class BaseLinkDiscipline(Discipline):
     _differentiate_mda_analytically: Callable[[RealArray], RealArray] | None
     """The function differentiating the MDA analytically at a given design point.
 
-    If ``None``, the discipline is not differentiable.
+    If `None`, the discipline is not differentiable.
     """
 
     _n_strongly_coupled_disciplines: int
@@ -196,13 +201,13 @@ class BaseLinkDiscipline(Discipline):
         r"""
         Args:
             design_space: The design space of the original optimization problem.
-            perform_mda_analytically: The function :math:`c`
+            perform_mda_analytically: The function $c$
                 performing the MDA analytically
-                at a given design point :math:`x=(x_0,x_1,\ldots,x_N)`.
-            differentiate_mda_analytically: The function :math:`\nabla c`
+                at a given design point $x=(x_0,x_1,\ldots,x_N)$.
+            differentiate_mda_analytically: The function $\nabla c$
                 differentiating the MDA analytically
-                at a given design point :math:`x=(x_0,x_1,\ldots,x_N)`.
-                If ``None``, the discipline will not be differentiable.
+                at a given design point $x=(x_0,x_1,\ldots,x_N)$.
+                If `None`, the discipline will not be differentiable.
 
         """  # noqa: D205 D212
         super().__init__(name="L")
@@ -248,16 +253,16 @@ class BaseLinkDiscipline(Discipline):
         r"""Compute the design variable values in the original optimization problem.
 
         Args:
-            x: The values of the design variables :math:`x_0,x_1,\ldots,x_N`
+            x: The values of the design variables $x_0,x_1,\ldots,x_N$
                 in the MDO problem.
-            approximated_y: The values of the coupling variables :math:`y_1,\ldots,y_N`
+            approximated_y: The values of the coupling variables $y_1,\ldots,y_N$
                 from a numerical MDA.
             expected_y: The values of the coupling variables
-                :math:`c_1(x),\ldots,c_N(x)`
+                $c_1(x),\ldots,c_N(x)$
                 from the analytical MDA.
 
         Returns:
-            The values of the design variables :math:`z_0,z_1,\ldots,z_N`
+            The values of the design variables $z_0,z_1,\ldots,z_N$
                 in the original optimization problem.
         """
 
@@ -284,10 +289,10 @@ class BaseLinkDiscipline(Discipline):
     def _compute_jacobian_from_intermediate_data(
         self, x: tuple[RealArray, ...], d_expected_y_dx: RealArray
     ) -> None:
-        r"""Compute the Jacobian :attr:`.jac`.
+        r"""Compute the Jacobian `jac`.
 
         Args:
-            x: The values of the design variables :math:`x_0,x_1,\ldots,x_N`
+            x: The values of the design variables $x_0,x_1,\ldots,x_N$
                 in the MDO problem.
             d_expected_y_dx: The derivatives of the coupling variables
                 from the analytical MDA.
@@ -295,11 +300,11 @@ class BaseLinkDiscipline(Discipline):
 
 
 class LinearLinkDiscipline(BaseLinkDiscipline):
-    r"""A linear link discipline of the form :math:`L(x, y) = x + y - c(x)`.
+    r"""A linear link discipline of the form $L(x, y) = x + y - c(x)$.
 
     In more details,
-    :math:`L_0(x, y) = x_0`
-    and :math:`L_i(x, y) = x_i + y_i - c_i(x)` for :math:`i\in\{1,\ldots,N\}`.
+    $L_0(x, y) = x_0$
+    and $L_i(x, y) = x_i + y_i - c_i(x)$ for $i\in\{1,\ldots,N\}$.
     """
 
     def _run_from_intermediate_data(
@@ -381,23 +386,23 @@ class OptAsMDOScenario(MDOScenario):
                 computing the objective, constraints and observables
                 from the design variables.
             design_space: The design space
-                including the design variables :math:`z_0,z_1,\ldots,z_N`
-                which will be replaced by :math:`x_0,x_1,\ldots,x_N` respectively
+                including the design variables $z_0,z_1,\ldots,z_N$
+                which will be replaced by $x_0,x_1,\ldots,x_N$ respectively
                 in the MDO problem.
             coupling_equations: The material
                 to evaluate and solve the coupling equations,
-                namely the disciplines :math:`h_1,\ldots,h_N`,
-                the function :math:`c`
-                and the Jacobian function :math:`\nabla c(x)`.
+                namely the disciplines $h_1,\ldots,h_N$,
+                the function $c$
+                and the Jacobian function $\nabla c(x)$.
                 If empty,
-                the :math:`i`-th discipline is linear.
+                the $i$-th discipline is linear.
             link_discipline_class: The class of the link discipline.
 
         Notes:
            There is no naming convention
-           for the input and output variables of ``discipline``.
+           for the input and output variables of `discipline`.
            So,
-           you can use :math:`a,b,c` in ``design_space`` instead of :math:`z_0,z_1,z_2`.
+           you can use $a,b,c$ in `design_space` instead of $z_0,z_1,z_2$.
         """  # noqa: D205, D212, E501
         disciplines = create_disciplines(
             discipline, design_space, coupling_equations, link_discipline_class
@@ -430,16 +435,16 @@ def create_disciplines(
             computing the objective, constraints and observables
             from the design variables.
         design_space: The design space
-            including the design variables :math:`z_0,z_1,\ldots,z_N`
-            which will be replaced by :math:`x_0,x_1,\ldots,x_N` respectively
+            including the design variables $z_0,z_1,\ldots,z_N$
+            which will be replaced by $x_0,x_1,\ldots,x_N$ respectively
             in the MDO problem.
         coupling_equations: The material
             to evaluate and solve the coupling equations,
-            namely the disciplines :math:`h_1,\ldots,h_N`,
-            the function :math:`c`
-            and the Jacobian function :math:`\nabla c(x)`.
+            namely the disciplines $h_1,\ldots,h_N$,
+            the function $c$
+            and the Jacobian function $\nabla c(x)$.
             If empty,
-            the :math:`i`-th discipline is linear.
+            the $i$-th discipline is linear.
         link_discipline_class: The class of the link discipline.
 
     Returns:

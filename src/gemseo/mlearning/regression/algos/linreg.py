@@ -22,32 +22,34 @@ r"""Linear regression model.
 The linear regression model expresses the output variables
 as a weighted sum of the input ones:
 
-.. math::
-
+$$
     y = w_0 + w_1x_1 + w_2x_2 + ... + w_dx_d
     + \alpha \left( \lambda \|w\|_2 + (1-\lambda) \|w\|_1 \right),
+$$
 
-where the coefficients :math:`(w_1, w_2, ..., w_d)` and the intercept
-:math:`w_0` are estimated by least square regression. They are easily
-accessible via the arguments :attr:`.coefficients` and :attr:`.intercept`.
+where the coefficients $(w_1, w_2, ..., w_d)$ and the intercept
+$w_0$ are estimated by least square regression. They are easily
+accessible via the arguments
+[coefficients][gemseo.mlearning.regression.algos.linreg.LinearRegressor.coefficients]
+and
+[intercept][gemseo.mlearning.regression.algos.linreg.LinearRegressor.intercept].
 
-The penalty level :math:`\alpha` is a non-negative parameter intended to
-prevent overfitting, while the penalty ratio :math:`\lambda\in [0, 1]`
-expresses the ratio between :math:`\ell_2`- and :math:`\ell_1`-regularization.
-When :math:`\lambda=1`, there is no :math:`\ell_1`-regularization, and a Ridge
-regression is performed. When :math:`\lambda=0`, there is no
-:math:`\ell_2`-regularization, and a Lasso regression is performed. For
-:math:`\lambda` between 0 and 1, an Elastic Net regression is performed.
+The penalty level $\alpha$ is a non-negative parameter intended to
+prevent overfitting, while the penalty ratio $\lambda\in [0, 1]$
+expresses the ratio between $\ell_2$- and $\ell_1$-regularization.
+When $\lambda=1$, there is no $\ell_1$-regularization, and a Ridge
+regression is performed. When $\lambda=0$, there is no
+$\ell_2$-regularization, and a Lasso regression is performed. For
+$\lambda$ between 0 and 1, an Elastic Net regression is performed.
 
 One may also choose not to penalize the regression at all, by setting
-:math:`\alpha=0`. In this case, a simple least squares regression is performed.
+$\alpha=0$. In this case, a simple least squares regression is performed.
 
-Dependence
-----------
-The linear model relies on the ``LinearRegression``,
-``Ridge``, ``Lasso`` and ``ElasticNet``
-classes of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-linear_model.html>`_.
+## Dependence
+
+The linear model relies on the `LinearRegression`,
+`Ridge`, `Lasso` and `ElasticNet`
+classes of the [scikit-learn library](https://scikit-learn.org/stable/modules/linear_model.html).
 """
 
 from __future__ import annotations
@@ -157,7 +159,7 @@ class LinearRegressor(BaseRegressor):
         """Return the regression coefficients of the linear model.
 
         Args:
-            as_dict: If ``True``, return the coefficients as a dictionary.
+            as_dict: If `True`, return the coefficients as a dictionary.
                 Otherwise, return the coefficients as a numpy.array
 
         Returns:
@@ -187,7 +189,7 @@ class LinearRegressor(BaseRegressor):
         """Return the regression intercepts of the linear model.
 
         Args:
-            as_dict: If ``True``, return the intercepts as a dictionary.
+            as_dict: If `True`, return the intercepts as a dictionary.
                 Otherwise, return the intercepts as a numpy.array
 
         Returns:

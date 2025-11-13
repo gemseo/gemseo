@@ -36,9 +36,7 @@ class OTWeibullDistribution_Settings(  # noqa: N801
 
     location: float = Field(
         default=0.0,
-        description=(
-            r"The location parameter :math:`\gamma` of the Weibull distribution."
-        ),
+        description=(r"The location parameter $\gamma$ of the Weibull distribution."),
     )
 
     scale: PositiveFloat = Field(
@@ -55,7 +53,7 @@ class OTWeibullDistribution_Settings(  # noqa: N801
         default=True,
         description=r"""Whether to use
 the Weibull minimum extreme value distribution
-(the support of the random variable is :math:`[\gamma,+\infty[`)
+(the support of the random variable is $[\gamma,+\infty[$)
 or the Weibull maximum extreme value distribution
-(the support of the random variable is :math:`]-\infty[,\gamma]`).""",
+(the support of the random variable is $]-\infty[,\gamma]$).""",
     )

@@ -28,15 +28,15 @@ if TYPE_CHECKING:
 class LinearCompositeFunction(MDOFunction):
     r"""Linear composite function.
 
-    Given a matrix :math:`A`, a function :math:`f` and an input vector :math:`x`,
-    the linear composite function outputs :math:`f(Ax)`.
+    Given a matrix $A$, a function $f$ and an input vector $x$,
+    the linear composite function outputs $f(Ax)$.
     """
 
     _function: MDOFunction
-    r"""The function :math:`f`."""
+    r"""The function $f$."""
 
     _matrix: RealArray
-    r"""The matrix :math:`A`."""
+    r"""The matrix $A$."""
 
     def __init__(
         self,
@@ -45,8 +45,8 @@ class LinearCompositeFunction(MDOFunction):
     ) -> None:
         r"""
         Args:
-            function: The function :math:`f`.
-            matrix: The matrix :math:`A`.
+            function: The function $f$.
+            matrix: The matrix $A$.
         """  # noqa: D205, D212, D415
         self._function = function
         self._matrix = matrix

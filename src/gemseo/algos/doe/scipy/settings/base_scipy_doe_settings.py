@@ -48,11 +48,11 @@ class Strength(IntEnum):
 
 
 class BaseSciPyDOESettings(BaseNSamplesBasedDOESettings):
-    """The settings for the ``OpenTURNS`` DOE."""
+    """The settings for the `OpenTURNS` DOE."""
 
     seed: int | None = Field(
         default=None,
         description="""The seed used for reproducibility reasons.
 
-If ``None``, use :attr:`.seed`.""",
+If `None`, use [seed][gemseo.algos.doe.base_doe_library.BaseDOELibrary.seed].""",
     )

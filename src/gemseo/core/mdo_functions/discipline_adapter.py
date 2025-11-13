@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
 
 class DisciplineAdapter(MDOFunction):
-    """An :class:`.MDOFunction` executing a discipline for some inputs and outputs."""
+    """An function executing a discipline for some inputs and outputs."""
 
     __is_linear: bool
     """Whether the function is linear."""
@@ -78,13 +78,13 @@ class DisciplineAdapter(MDOFunction):
             output_names: The names of the outputs.
             default_input_data: The default input values
                 to overload the ones of the discipline
-                at each evaluation of the outputs with :meth:`._fun`
-                or their derivatives with :meth:`._jac`.
+                at each evaluation of the outputs with `_fun()`
+                or their derivatives with `_jac()`.
                 If empty, do not overload them.
             discipline: The discipline to be adapted.
             names_to_sizes: The sizes of the input variables.
                 If empty, determine them from the default inputs and local data
-                of the discipline :class:`.Discipline`.
+                of the discipline.
             differentiated_input_names_substitute: The names of the inputs
                 with respect to which to differentiate the functions.
                 If empty, consider the variables of their input space.
@@ -131,11 +131,11 @@ class DisciplineAdapter(MDOFunction):
         """Compute the input dimension.
 
         Args:
-            default_input_data: : The default input values
+            default_input_data: The default input values
                 to overload the ones of the discipline
-                at each evaluation of the outputs with :meth:`._fun`
-                or their derivatives with :meth:`._jac`.
-                If ``None``, do not overload them.
+                at each evaluation of the outputs with `_fun()`
+                or their derivatives with `_jac()`.
+                If `None`, do not overload them.
 
         Returns:
             The input dimension.
@@ -350,7 +350,7 @@ class DisciplineAdapter(MDOFunction):
     def __initialize_jacobian(
         self, jacobian_data: JacobianData, n_samples: int
     ) -> None:
-        """Initialize the attribute ``__jacobian``.
+        """Initialize the attribute `__jacobian`.
 
         Args:
             jacobian_data: The discipline's Jacobian data.

@@ -19,13 +19,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Partial Least Square (PLS) regression to reduce the dimension of a variable.
 
-The :class:`.PLS` class wraps the PCA from Scikit-learn.
+The
+[PLS][gemseo.mlearning.transformers.dimension_reduction.pls.PLS] class
+wraps the PLS from Scikit-learn.
 
-Dependence
-----------
+## Dependence
+
 This dimension reduction algorithm relies on the PLSRegression class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.cross_decomposition.PLSRegression.html>`_.
+of the
+[scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.cross_decomposition.PLSRegression.html).
 """
 
 from __future__ import annotations

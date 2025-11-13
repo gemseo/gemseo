@@ -35,13 +35,13 @@ class LassoCV_Settings(_LassoSettingsMixin, BaseLinearModelFitter_Settings):  # 
 
     alphas: tuple[NonNegativeFloat, ...] = Field(
         default=(0.001, 0.01, 0.1, 1.0, 10.0),
-        description=r"""Values of :math:`\alpha` to try.
-The constant :math:`\alpha` multiplies the L1 term,
+        description=r"""Values of $\alpha$ to try.
+The constant $\alpha$ multiplies the L1 term,
 controlling regularization strength.""",
     )
 
     cv: int | None = Field(
         default=None,
         description="""The number of folds.
-If ``None``, use the efficient Leave-One-Out cross-validation.""",
+If `None`, use the efficient Leave-One-Out cross-validation.""",
     )

@@ -49,18 +49,18 @@ class IO:
     __linear_relationships: tuple[()] | tuple[set[str], set[str]]
     """The linear relationships between the inputs and outputs.
 
-    Expressed as ``(input_names, output_names)``.
+    Expressed as `(input_names, output_names)`.
     """
 
     data_processor: DataProcessor | None
     """A pre- and post-processor for the discipline data.
 
     This mechanism requires that
-    the ``_run()`` method of the discipline
-    for which the :class:`.IO` is an attribute
+    the `_run()` method of the discipline
+    for which the [IO][gemseo.core.discipline.io.IO] is an attribute
     uses input data,
     returns input data
-    and does not use the ``io.data`` or ``local_data`` attributes.
+    and does not use the `io.data` or `local_data` attributes.
     """
 
     input_grammar: BaseGrammar
@@ -217,14 +217,15 @@ class IO:
         """Update the output in data, taking care of the namespaces if any.
 
         The namespaces of the output data, if any, are automatically handled:
-        if the key of an item of ``output_data`` is in a namespace and the key is a name
+        if the key of an item of `output_data` is in a namespace and the key is a name
         without the namespace prefix then the item will be stored with the namespace
         prefix.
 
-        If an item of ``output_data`` is not an output then it is ignored.
+        If an item of `output_data` is not an output then it is ignored.
 
         Args:
-            output_data: The output data to update :attr:`.data` with.
+            output_data: The output data to update
+                [data][gemseo.core.discipline.io.IO.data] with.
         """
         out_ns = self.output_grammar.to_namespaced
         out_names = self.output_grammar
@@ -245,7 +246,7 @@ class IO:
 
         Args:
             input_data: The input data.
-            validate: Whether to validate ``input_data``.
+            validate: Whether to validate `input_data`.
         """
         if validate:
             self.input_grammar.validate(input_data)

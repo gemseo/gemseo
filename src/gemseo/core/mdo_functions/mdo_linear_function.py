@@ -45,11 +45,11 @@ if TYPE_CHECKING:
 class MDOLinearFunction(MDOFunction):
     r"""Linear multivariate function defined by.
 
-    * a matrix :math:`A` of first-order coefficients
-      :math:`(a_{ij})_{\substack{i = 1, \dots m \\ j = 1, \dots n}}`
-    * and a vector :math:`b` of zero-order coefficients :math:`(b_i)_{i = 1, \dots m}`
+    * a matrix $A$ of first-order coefficients
+      $(a_{ij})_{\substack{i = 1, \dots m \\ j = 1, \dots n}}$
+    * and a vector $b$ of zero-order coefficients $(b_i)_{i = 1, \dots m}$
 
-    .. math::
+    $$
 
         F(x)
         =
@@ -63,12 +63,13 @@ class MDOLinearFunction(MDOFunction):
         \begin{bmatrix} x_1 \\ \vdots \\ x_n \end{bmatrix}
         +
         \begin{bmatrix} b_1 \\ \vdots \\ b_m \end{bmatrix}.
+    $$
     """
 
     __initial_expression: str | None
     """The initially provided expression.
 
-    If ``None`` the expression is computed.
+    If `None` the expression is computed.
     """
 
     def __init__(
@@ -83,10 +84,10 @@ class MDOLinearFunction(MDOFunction):
     ) -> None:
         """
         Args:
-            coefficients: The coefficient matrix :math:`A` of the linear function.
-            value_at_zero: The value :math:`b` of the linear function output at zero.
+            coefficients: The coefficient matrix $A$ of the linear function.
+            value_at_zero: The value $b$ of the linear function output at zero.
             expr: The expression of the function, if any.
-                If ``None``,
+                If `None`,
                 create an expression
                 from the coefficients and the value at zero.
         """  # noqa: D205, D212, D415
@@ -124,7 +125,7 @@ class MDOLinearFunction(MDOFunction):
     def _func_to_wrap(self, x_vect: NumberArray) -> OutputType:
         """Return the linear combination with an offset.
 
-        :math:`sum_{i=1}^n a_i * x_i + b`
+        $sum_{i=1}^n a_i * x_i + b$
 
         Args:
             x_vect: The design variables values.
@@ -152,7 +153,7 @@ class MDOLinearFunction(MDOFunction):
     def coefficients(self) -> NumberArray:
         """The coefficient matrix of the linear function.
 
-        This is the matrix :math:`A` in the expression :math:`y=Ax+b`.
+        This is the matrix $A$ in the expression $y=Ax+b$.
         """
         return self._coefficients
 
@@ -173,7 +174,7 @@ class MDOLinearFunction(MDOFunction):
     def value_at_zero(self) -> NumberArray:
         """The value of the function at zero.
 
-        This is the vector :math:`b` in the expression :math:`y=Ax+b`.
+        This is the vector $b$ in the expression $y=Ax+b$.
 
         Raises:
             ValueError: If the value at zero is neither a ndarray nor a number.

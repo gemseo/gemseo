@@ -54,8 +54,8 @@ def create_gantt_chart(
 
     Both executions and linearizations times are plotted.
 
-    .. warning::
-        ``ExecutionStatistics.is_time_stamps_enabled = True`` must be done first.
+    Warning:
+        `ExecutionStatistics.is_time_stamps_enabled = True` must be done first.
 
     Args:
         file_path: The path to save the figure.

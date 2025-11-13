@@ -69,7 +69,7 @@ class ArrayBasedFunctionDiscipline(Discipline):
                 computing the derivatives of the function of interest;
                 both its unique argument and its output (i.e. a Jacobian matrix)
                 are NumPy arrays.
-                If ``None``, the derivatives will have to be approximated if required.
+                If `None`, the derivatives will have to be approximated if required.
         """  # noqa: D205, D212
         super().__init__()
         self.__function = function

@@ -69,7 +69,7 @@ class DistributionFactory(BaseFactory):
             distributions: The marginal distributions.
             copula: A copula distribution
                 defining the dependency structure between random variables;
-                if ``None``, consider an independent copula.
+                if `None`, consider an independent copula.
 
         Returns:
             The joint probability distribution.

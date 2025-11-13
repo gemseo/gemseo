@@ -43,7 +43,8 @@ if TYPE_CHECKING:
 class OTOptimalLHS(BaseOTDOE):
     """The optimal LHS algorithm.
 
-    .. note:: This class is a singleton.
+    Note:
+        This class is a singleton.
     """
 
     class TemperatureProfile(StrEnum):
@@ -83,15 +84,15 @@ class OTOptimalLHS(BaseOTDOE):
         """
         Args:
             annealing: Whether to use simulated annealing to optimize the LHS.
-                If ``False``, the crude Monte Carlo method is used.
-                Ignored if ``settings`` is not `None`.
+                If `False`, the crude Monte Carlo method is used.
+                Ignored if `settings` is not `None`.
             criterion: The space-filling criterion.
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
             n_replicates: The number of Monte Carlo replicates to optimize LHS.
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
             temperature: The temperature profile for simulated annealing.
                 Either "Geometric" or "Linear".
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
         """  # noqa: D205, D212
         if settings is not None:
             n_samples = settings.n_samples

@@ -60,31 +60,29 @@ class _OTDistribution_Settings_Mixin:  # noqa: N801
     transformation: str = Field(
         default=_TRANSFORMATION,
         description=r"""A transformation applied
-to the random variable, e.g. :math:`\sin(x)`. If empty, no transformation.""",
+to the random variable, e.g. $\sin(x)$. If empty, no transformation.""",
     )
 
     lower_bound: float | None = Field(
         default=_LOWER_BOUND,
         description="""A lower bound to truncate the probability distribution.
 
-If ``None``, no lower truncation.""",
+If `None`, no lower truncation.""",
     )
 
     upper_bound: float | None = Field(
         default=_UPPER_BOUND,
         description="""An upper bound to truncate the probability distribution.
 
-If ``None``, no upper truncation.""",
+If `None`, no upper truncation.""",
     )
 
     threshold: float = Field(
         default=_THRESHOLD,
         ge=0.0,
         le=1.0,
-        description=r"""A truncation threshold in :math:`[0,1]`
-(`see OpenTURNS documentation
-<http://openturns.github.io/openturns/latest/user_manual/
-_generated/openturns.TruncatedDistribution.html>`_).""",
+        description=r"""A truncation threshold in $[0,1]$
+([see OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/_generated/openturns.TruncatedDistribution.html)).""",
     )
 
     @model_validator(mode="after")

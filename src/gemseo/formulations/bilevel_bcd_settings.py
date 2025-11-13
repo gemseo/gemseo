@@ -35,7 +35,7 @@ copy_field_opt = partial(copy_field, model=BaseMDASettings)
 
 
 class BiLevel_BCD_Settings(BiLevel_Settings):  # noqa: N801
-    """Settings of the :class:`.BiLevel` formulation."""
+    """Settings of the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""
 
     _TARGET_CLASS_NAME = "BiLevelBCD"
 

@@ -33,13 +33,13 @@ if TYPE_CHECKING:
 
 
 class IDF_Settings(BaseFormulationSettings):  # noqa: N801
-    """Settings of the :class:`.IDF` formulation."""
+    """Settings of the [IDF][gemseo.formulations.idf.IDF] formulation."""
 
     _TARGET_CLASS_NAME = "IDF"
 
     include_weak_coupling_targets: bool = Field(
         default=True,
-        description="""If ``True``,
+        description="""If `True`,
 all disciplines are executed in parallel,
 and all couplings (weak and strong) are set as target variables in the design space.
 This maximizes the exploitation of the parallelism
@@ -62,16 +62,16 @@ Otherwise, IDF will consider only the strong coupling targets.""",
     mda_chain_settings_for_start_at_equilibrium: StrKeyMapping | MDAChain_Settings = (
         Field(
             default_factory=dict,
-            description="""The settings for the MDA when ``start_at_equilibrium=True``.
+            description="""The settings for the MDA when `start_at_equilibrium=True`.
 
-See detailed settings in :class:`.MDAChain`.""",
+See detailed settings in [MDAChain][gemseo.mda.mda_chain.MDAChain].""",
         )
     )
 
     n_processes: PositiveInt = Field(
         default=1,
         description="""The maximum simultaneous number of threads
-if ``use_threading`` is ``True``, or processes otherwise,
+if `use_threading` is `True`, or processes otherwise,
 used to parallelize the execution.""",
     )
 
@@ -90,7 +90,7 @@ used to parallelize the execution.""",
     use_threading: bool = Field(
         default=True,
         description="""Whether to use threads instead of processes
-to parallelize the execution when ``include_weak_coupling_targets`` is ``True``;
+to parallelize the execution when `include_weak_coupling_targets` is `True`;
 multiprocessing will copy (serialize) all the disciplines,
 while threading will share all the memory.
 This is important to note

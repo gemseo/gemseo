@@ -39,31 +39,28 @@ class OATDOE(BaseDOELibrary[OATDOE_Settings]):
 
     The purpose of the OAT is to quantify the elementary effect
 
-    .. math::
-
+    $$
        df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
               -
               f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
+    $$
 
-    associated with a small variation :math:`dX_i` of :math:`X_i` with
+    associated with a small variation $dX_i$ of $X_i$ with
 
-    .. math::
+    $$df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)$$
 
-       df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)
-
-    The elementary effects :math:`df_1,\ldots,df_d` are computed sequentially
+    The elementary effects $df_1,\ldots,df_d$ are computed sequentially
     from an initial point
 
-    .. math::
-
-       X=(X_1,\ldots,X_d)
+    $$X=(X_1,\ldots,X_d)$$
 
     From these elementary effects, we can compare their absolute values
-    :math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
+    $|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
 
     Note that
-    |g| does not implement this sensitivity analysis
-    but this DOE is used by the :class:`.MorrisAnalysis`,
+    GEMSEO does not implement this sensitivity analysis
+    but this DOE is used by
+    the [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis],
     which repeats this sensitivity analysis
     and computes statistics from the repetitions.
     """

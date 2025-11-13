@@ -20,10 +20,14 @@
 #        :author: Gabriel Max DE MENDONÇA ABRANTES
 r"""Viennet multi-objective problem.
 
-See :cite:`viennet1996multicriteria`.
+!!! quote "References"
 
-.. math::
+    R Viennet, Christian Fonteix, and Ivan Marc.
+    Multicriteria optimization
+    using a genetic algorithm for determining a pareto set.
+    International Journal of Systems Science, 27(2):255--260, 1996.
 
+$$
    \begin{aligned}
    \text{minimize the objective function}
    & f_1(x, y) = (x^2 + y^2) / 2 + sin(x^2 + y^2) \\
@@ -34,6 +38,7 @@ See :cite:`viennet1996multicriteria`.
    & -3.0 \leq x \leq 3.0\\
    & -3.0 \leq y \leq 3.0
    \end{aligned}
+$$
 """
 
 from __future__ import annotations

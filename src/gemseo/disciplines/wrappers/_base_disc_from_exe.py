@@ -67,7 +67,7 @@ class _BaseDiscFromExe(Discipline):
         """Parse the output files.
 
         Returns:
-            The output data for updating the discipline's ``data``.
+            The output data for updating the discipline's `data`.
         """
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

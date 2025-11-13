@@ -41,6 +41,6 @@ If 0, set from the settings.""",
         default=(),
         description="""The levels.
 
-One must either specify ``n_samples`` or ``levels``.  The levels are
+One must either specify `n_samples` or `levels`.  The levels are
 inferred from the number of samples if the former is specified.""",
     )

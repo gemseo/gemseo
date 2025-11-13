@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
 
 class _AlgoFactoryMeta(ABCMeta):
-    """A metaclass to add an internal factory class derived from :class:`.Factory`."""
+    """A metaclass to add an internal factory class derived from [BaseFactory][gemseo.core.base_factory.BaseFactory]."""  # noqa: E501
 
     _CLASS: ClassVar[type]
     """The base class that the factory can build."""
@@ -74,7 +74,10 @@ class _AlgoFactoryMeta(ABCMeta):
 
 
 class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
-    """A base class for creating factories for objects of kind :class:`AlgoLib`.
+    """A base class for creating factories of algorithm libraries.
+
+    See
+    [BaseAlgorithmLibrary][gemseo.algos.base_algorithm_library.BaseAlgorithmLibrary].
 
     This factory can create objects from a base class
     or any of its subclasses that can be imported from the given module sources.
@@ -82,7 +85,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
     factory class,
     for instance:
 
-    .. code:: python
+    ```python
 
        class AFactory(BaseAlgoFactory):
            _CLASS = ABaseClass
@@ -90,10 +93,11 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
                "first.module.fully.qualified.name",
                "second.module.fully.qualified.name",
            )
+    ```
 
     A factory instance can use a cache for the objects it creates, this cache is only
     used by one factory instance and is not shared with another instance.
-    The cache is activated by passing ``use_cache = True`` to the constructor.
+    The cache is activated by passing `use_cache = True` to the constructor.
     When the cache is activated, a factory will return an object already created when
     possible and will create a new object otherwise.
     """
@@ -201,9 +205,9 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Args:
             problem: The problem to execute.
             settings_model: The algorithm settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The algorithm settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                These arguments are ignored when `settings_model` is not `None`.
 
         Returns:
             The result.

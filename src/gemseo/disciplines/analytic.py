@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 class AnalyticDiscipline(Discipline):
     """A discipline based on analytic expressions.
 
-    Use `SymPy <https://www.sympy.org/>`_, a symbolic calculation engine.
+    Use [SymPy](https://www.sympy.org/), a symbolic calculation engine.
 
     Compute the Jacobian matrices by automatically differentiating the expressions.
 
@@ -63,7 +63,7 @@ class AnalyticDiscipline(Discipline):
     output_names_to_symbols: dict[str, list[str]]
     """The names of the inputs associated to the outputs.
 
-    E.g. ``{"out": ["in_1", "in_2"]}``.
+    E.g. `{"out": ["in_1", "in_2"]}`.
     """
 
     input_names: list[str]
@@ -143,7 +143,7 @@ class AnalyticDiscipline(Discipline):
             expression: The SymPy expression.
 
         Returns:
-            The symbols used by ``expression`` with real type.
+            The symbols used by `expression` with real type.
         """
         return {
             symbol.name: symbols(symbol.name, real=True)

@@ -52,14 +52,14 @@ class BaseMDASettings(BaseAlgorithmSettings):
         default=None,
         description="""The coupling structure to be used by the MDA.
 
-If ``None``, the coupling structure is created from the disciplines.""",
+If `None`, the coupling structure is created from the disciplines.""",
     )
 
     linear_solver: LinearSolver = Field(
         default=LinearSolver.DEFAULT,
         description="""The name of the linear solver.
 
-This field is ignored when ``linear_solver_settings`` is a Pydantic model.""",
+This field is ignored when `linear_solver_settings` is a Pydantic model.""",
     )
 
     linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(
@@ -105,7 +105,8 @@ If empty, use the name of the class.""",
         description="""The tolerance for the MDA algorithm residual.
 
 The available normalization strategies for the residual
-are described in :attr:`.BaseMDA.ResidualScaling`.""",
+are described in
+[BaseMDA.ResidualScaling][gemseo.mda.base_mda.BaseMDA.ResidualScaling].""",
     )
 
     use_lu_fact: bool = Field(

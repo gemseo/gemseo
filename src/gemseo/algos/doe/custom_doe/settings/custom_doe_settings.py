@@ -39,7 +39,7 @@ SamplesType = (
 
 
 class CustomDOE_Settings(BaseDOESettings):  # noqa: N801
-    """The settings for the ``CustomDOE``."""
+    """The settings for the `CustomDOE`."""
 
     _TARGET_CLASS_NAME = "CustomDOE"
 
@@ -47,7 +47,7 @@ class CustomDOE_Settings(BaseDOESettings):  # noqa: N801
         default="",
         description="""The path to the file containing the input samples.
 
-If empty, use ``samples``.""",
+If empty, use `samples`.""",
     )
 
     samples: SamplesType = Field(
@@ -55,7 +55,7 @@ If empty, use ``samples``.""",
         description="""The input samples.
 
 They must be at least a 2D-array, a dictionary of 2D-arrays
-or a list of dictionaries of 1D-arrays. If empty, use ``doe_file``.""",
+or a list of dictionaries of 1D-arrays. If empty, use `doe_file`.""",
     )
 
     delimiter: str = Field(
@@ -77,11 +77,11 @@ No comments if empty.""",
 
     @model_validator(mode="after")
     def __check_file_or_samples(self) -> Self:
-        """Check the consistency of the ``doe_file`` and ``samples`` settings.
+        """Check the consistency of the `doe_file` and `samples` settings.
 
         Raises:
-            ValueError: If both ``samples`` and ``doe_file`` are ``None``. If both
-                ``samples`` and ``doe_file`` were provided.
+            ValueError: If both `samples` and `doe_file` are `None`. If both
+                `samples` and `doe_file` were provided.
         """
         samples = self.samples
         doe_file = self.doe_file

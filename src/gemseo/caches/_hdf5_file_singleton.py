@@ -78,7 +78,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     """The version of the file format."""
 
     __keep_open: bool
-    """Whether to keep the file open when leaving :meth:`.__open` context manager."""
+    """Whether to keep the file open when leaving `_open()` context manager."""
 
     __file: File | None
     """The hdf5 file handle."""
@@ -125,7 +125,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             group: The group.
             index: The index of the entry in the cache.
             hdf_node_path: The name of the HDF group to store the entries,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
         """
         with self.__open(mode="a"):
             assert self.__file is not None
@@ -201,7 +201,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             index:  The index of the entry.
             group: The group.
             hdf_node_path: The name of the HDF group where the entries are stored,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
 
         Returns:
             The group data and the input data hash.
@@ -257,7 +257,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             index: The index of the entry.
             group: The group.
             hdf_node_path: The name of the HDF group where the entries are stored,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
 
         Returns:
             Whether a group exists.
@@ -280,7 +280,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             index: The index of the entry.
             group: The group.
             hdf_node_path: The name of the HDF group where the entries are stored,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
 
         Returns:
             Whether the entry has data for this group.
@@ -298,7 +298,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         Args:
             hashes_to_indices: The indices associated to the hashes.
             hdf_node_path: The name of the HDF group where the entries are stored,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
 
         Returns:
             The maximum index.
@@ -338,7 +338,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
         Args:
             hdf_node_path: The name of the HDF group to clear,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
         """
         with self.__open(mode="a"):
             assert self.__file is not None
@@ -381,7 +381,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         cls,
         h5_file: h5py.File,
     ) -> None:
-        """Change the version of an HDF5 file to :attr:`.FILE_FORMAT_VERSION`.
+        """Change the version of an HDF5 file to `FILE_FORMAT_VERSION`.
 
         Args:
             h5_file: A HDF5 file object.
@@ -395,11 +395,11 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     ) -> None:
         """Update the format of a HDF5 file.
 
-        |g| 3.2.0 added a :attr:`.HDF5FileSingleton.FILE_FORMAT_VERSION`
+        GEMSEO 3.2.0 added a `HDF5FileSingleton.FILE_FORMAT_VERSION`
         to the HDF5 files,
         to allow handling its maintenance and evolutions.
         In particular,
-        |g| 3.2.0 fixed the hashing of the data dictionaries.
+        GEMSEO 3.2.0 fixed the hashing of the data dictionaries.
 
         Args:
             hdf_file_path: A HDF5 file path.
@@ -418,10 +418,10 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def __open(self, mode: str = "r") -> Iterator[None]:
         """Open a hdf5 file.
 
-        The file handle is used via :attr:`.__file`.
+        The file handle is used via `__file`.
 
         Args:
-            mode: The opening mode, see :meth:`h5py.File`.
+            mode: The opening mode, see `h5py.File`.
         """
         if self.__keep_open and self.__file is not None:
             yield

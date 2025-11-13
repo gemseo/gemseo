@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import ndarray
@@ -30,6 +31,9 @@ from numpy import ndarray
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.algos.optimization_result import Value
 
 
 @dataclass
@@ -68,7 +72,7 @@ class MultiObjectiveOptimizationResult(OptimizationResult):
             return f"{parent_string}\n{msg}"
         return parent_string
 
-    def to_dict(self):  # noqa: D102
+    def to_dict(self) -> dict[str, Value]:  # noqa: D102
         dict_ = super().to_dict()
         pareto_front = dict_.pop(self.__PARETO_FRONT)
         if pareto_front is not None:
@@ -79,7 +83,7 @@ class MultiObjectiveOptimizationResult(OptimizationResult):
         return dict_
 
     @classmethod
-    def _get_additional_fields(cls, problem):
+    def _get_additional_fields(cls, problem) -> dict[str, None]:
         return {
             f"{cls.__PARETO_FRONT}": ParetoFront.from_optimization_problem(problem)
             if problem.optimum[2]

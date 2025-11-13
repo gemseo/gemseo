@@ -50,14 +50,14 @@ class SPLogNormalDistribution(SPDistribution):
         """
         Args:
             mu: Either the mean of the log-normal random variable
-                or that of its logarithm when ``set_log`` is ``True``.
+                or that of its logarithm when `set_log` is `True`.
             sigma: Either the standard deviation of the log-normal random variable
-                or that of its logarithm when ``set_log`` is ``True``.
+                or that of its logarithm when `set_log` is `True`.
             location: The location of the log-normal random variable.
-            set_log: Whether ``mu`` and ``sigma`` apply
+            set_log: Whether `mu` and `sigma` apply
                 to the logarithm of the log-normal random variable.
                 Otherwise,
-                ``mu`` and ``sigma`` apply to the log-normal random variable directly.
+                `mu` and `sigma` apply to the log-normal random variable directly.
         """  # noqa: D205,D212,D415
         if settings is None:
             settings = SPLogNormalDistribution_Settings(

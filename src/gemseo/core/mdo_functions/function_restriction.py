@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class FunctionRestriction(MDOFunction):
-    """Take an :class:`.MDOFunction` and apply a given restriction to its inputs."""
+    """Take an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] and apply a given restriction to its inputs."""  # noqa: E501
 
     def __init__(
         self,

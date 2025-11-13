@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw the boxplots of some variables from a :class:`.Dataset`.
+"""Draw the boxplots of some variables from a dataset.
 
 A boxplot represents the median and the first and third quartiles of numerical data. The
 variability outside the inter quartile domain can be represented with lines, called
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 
 class Boxplot(DatasetPlot):
-    """Draw the boxplots of some variables from a :class:`.Dataset`."""
+    """Draw the boxplots of some variables from a dataset."""
 
     def __init__(
         self,

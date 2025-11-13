@@ -60,13 +60,13 @@ class Parser(StrEnum):
     TEMPLATE = "TEMPLATE"
     """The output is expected as a JSON file with the following format:
 
-    .. code::
-
+    ```python
        {
           "a": GEMSEO_OUTPUT{a::1.0},
           "b": GEMSEO_OUTPUT{b::2.0},
           "c": GEMSEO_OUTPUT{c::3.0}
        }
+    ```
     """
 
 
@@ -90,35 +90,37 @@ InputWriter = Callable[
 class DiscFromExe(_BaseDiscFromExe):
     """Specific wrapper for executables.
 
-    This :class:`.Discipline` uses template files
+    This [Discipline][gemseo.core.discipline.discipline.Discipline] uses template files
     describing the input and output variables.
 
-    The templates can be generated with a graphical user interface (GUI).
-    by executing the module :mod:`~gemseo.wrappers.template_grammar_editor`.
+    The templates can be generated with a graphical user interface (GUI)
+    provided by the
+    [gemseo-template-editor-gui](https://gitlab.com/gemseo/dev/gemseo-template-editor-gui)
+    plugin.
 
     An input template file is a JSON file formatted as
 
-    .. code::
-
+    ```python
        {
           "a": GEMSEO_INPUT{a::1.0},
           "b": GEMSEO_INPUT{b::2.0},
           "c": GEMSEO_INPUT{c::3.0}
        }
+    ```
 
-    where ``"a"`` is the name of an input, and ``1.0`` is its default value.
+    where `"a"` is the name of an input, and `1.0` is its default value.
     Similarly,
     an output template file is a JSON file formatted as
 
-    .. code::
-
+    ```python
        {
           "a": GEMSEO_OUTPUT{a::1.0},
           "b": GEMSEO_OUTPUT{b::2.0},
           "c": GEMSEO_OUTPUT{c::3.0}
        }
+    ```
 
-    where ``"a"`` is the name of an output, and ``1.0`` is its default value.
+    where `"a"` is the name of an output, and `1.0` is its default value.
 
     The current limitations are
 
@@ -130,9 +132,10 @@ class DiscFromExe(_BaseDiscFromExe):
     - The only limitation in the current file format is that
       it must be a plain text file and not a binary file.
       In this case, the way of interfacing it is
-      to provide a specific parser to the :class:`.DiscFromExe`,
-      with the :func:`.write_input_file_method`
-      and :func:`.parse_outfile_method` arguments of the constructor.
+      to provide a specific parser to the
+      [DiscFromExe][gemseo.disciplines.wrappers.disc_from_exe.DiscFromExe],
+      with the `write_input_file_method` and `parse_outfile_method` arguments
+      of the constructor.
     - For security reasons,
       the executable is executed via the Python subprocess library with no shell.
       If a shell is needed, you may override this in a derived class.
@@ -175,32 +178,36 @@ class DiscFromExe(_BaseDiscFromExe):
         Args:
             input_template: The path to the input template file.
                 The input locations in the file are marked
-                by ``GEMSEO_INPUT{input_name::1.0}``,
-                where ``input_name`` is the name of the input variable,
-                and ``1.0`` is its default value.
+                by `GEMSEO_INPUT{input_name::1.0}`,
+                where `input_name` is the name of the input variable,
+                and `1.0` is its default value.
             output_template: The path to the output template file.
                 The output locations in the file are marked
-                by ``GEMSEO_OUTPUT{output_name::1.0}``,
-                where ``output_name`` is the name of the output variable,
-                and ``1.0`` is its default value.
+                by `GEMSEO_OUTPUT{output_name::1.0}`,
+                where `output_name` is the name of the output variable,
+                and `1.0` is its default value.
             command_line: The command line to run the executable.
-                E.g. ``python my_script.py -i input.txt -o output.txt``
+                E.g. `python my_script.py -i input.txt -o output.txt`
             input_filename: The name of the input file
                 to be generated in the output folder.
-                E.g. ``"input.txt"``.
+                E.g. `"input.txt"`.
             output_filename: The name of the output file
                 to be generated in the output folder.
-                E.g. ``"output.txt"``.
+                E.g. `"output.txt"`.
             directory_naming_method: The method to create the execution directories.
             parse_outfile_method: The optional method that can be provided
                 by the user to parse the output template file.
-                If the :attr:`~.Parser.KEY_VALUE` is used as
+                If the
+                [KEY_VALUE][gemseo.disciplines.wrappers.disc_from_exe.Parser.KEY_VALUE]
+                is used as
                 output parser, the user may specify the separator key.
             write_input_file_method: The method to write the input data file.
-                If ``None``,
-                use :func:`~.write_input_file`.
+                If `None`,
+                use
+                [write_input_file()][gemseo.disciplines.wrappers.disc_from_exe.write_input_file]
             parse_out_separator: The separator used for the
-                :attr:`~.Parser.KEY_VALUE` output parser.
+                [KEY_VALUE][gemseo.disciplines.wrappers.disc_from_exe.Parser.KEY_VALUE]
+                output parser.
             root_directory: The base path of the execution directories.
         """  # noqa:D205 D212 D415
         self._executable_runner = _BaseExecutableRunner(
@@ -353,11 +360,11 @@ def write_input_file(
         input_file_path: The absolute path to the file to be written.
         data: The local data of the discipline.
         input_positions: The positions of the input variables,
-            formatted as ``{"name": (start, end, line_number)}``,
-            where ``"name"`` is the name of the input variable,
-            ``start`` is the index of the starting point in the file,
-            ``end`` is the index of the end character in the file,
-            and ``line_number`` is the index of the line in the file.
+            formatted as `{"name": (start, end, line_number)}`,
+            where `"name"` is the name of the input variable,
+            `start` is the index of the starting point in the file,
+            `end` is the index of the end character in the file,
+            and `line_number` is the index of the line in the file.
             An index is a line index, i.e. a character number on the line.
         input_lines: The lines of the file.
         float_format: The format of the input data in the file.
@@ -418,11 +425,11 @@ def parse_outfile(
 
     Args:
         output_positions: The output position for each output variable,
-            specified as ``{"name": (start, end, line_number)}``,
-            where ``"name"`` is the name of the output variable,
-            ``start`` is the index of the starting point in the file,
-            ``end`` is the index of the end character in the file,
-            and ``line_number`` is the index of the line in the file.
+            specified as `{"name": (start, end, line_number)}`,
+            where `"name"` is the name of the output variable,
+            `start` is the index of the starting point in the file,
+            `end` is the index of the end character in the file,
+            and `line_number` is the index of the line in the file.
             An index is a line index, i.e. a character number on the line.
         out_lines: The lines of the file.
 

@@ -127,33 +127,33 @@ class ODEDiscipline(Discipline):
                 to compute the state trajectories.
             time_name: The name of the time variable.
             state_names: Either the names of the state variables,
-                passed as ``(state_name, ...)``,
+                passed as `(state_name, ...)`,
                 or the names of the state variables
-                bound to the associated ``rhs_discipline`` outputs,
-                passed as ``{state_name: output_name, ...}``.
-                If empty, use all the ``rhs_discipline`` inputs.
+                bound to the associated `rhs_discipline` outputs,
+                passed as `{state_name: output_name, ...}`.
+                If empty, use all the `rhs_discipline` inputs.
             initial_state_names: The names of the state variables
                 bound to the names of the variables denoting the initial conditions.
                 If empty,
-                use ``"state_initial"`` for a state variable named ``"state"``.
+                use `"state_initial"` for a state variable named `"state"`.
             initial_time_name: The name of the variable for the initial time.
-                If empty, use ``f"initial_{time_name}"``.
+                If empty, use `f"initial_{time_name}"`.
             final_state_names: The names of the state variables
                 bound to their names at final time.
                 If empty,
-                use ``"state_final"`` for a state variable named ``"state"``.
+                use `"state_final"` for a state variable named `"state"`.
             final_time_name: The name of the variable for the final time.
-                If empty, use ``f"final_{time_name}"``.
+                If empty, use `f"final_{time_name}"`.
             state_trajectory_names: The names of the state variables
                 bound to the names of their trajectories.
                 If empty,
-                use ``"state"`` for a state variable named ``"state"``.
+                use `"state"` for a state variable named `"state"`.
             return_trajectories: Whether to output
                 both the trajectories of the state variables
                 and their values at final time.
                 Otherwise, output only their values at final time.
             termination_event_disciplines: The disciplines encoding termination events.
-                Each discipline must have the same inputs as ``rhs_discipline``
+                Each discipline must have the same inputs as `rhs_discipline`
                 and only one output defined as an arrays of size 1
                 indicating the value of an event function.
                 The resolution of the ODE problem stops
@@ -165,7 +165,7 @@ class ODEDiscipline(Discipline):
 
         Raises:
             ValueError: If an expected state variable does not appear in
-                ``rhs_discipline``.
+                `rhs_discipline`.
         """  # noqa: D205, D212, D415
         self._rhs_discipline = rhs_discipline
         self._output_trajectory = (

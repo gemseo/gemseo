@@ -32,7 +32,7 @@ class Sobol_Settings(BaseSciPyDOESettings):  # noqa: N801
         default=None,
         description="""The name of an optimization scheme to improve the DOE's quality.
 
-If ``None``, use the DOE as is. New in SciPy 1.10.0.""",
+If `None`, use the DOE as is. New in SciPy 1.10.0.""",
     )
 
     scramble: bool = Field(

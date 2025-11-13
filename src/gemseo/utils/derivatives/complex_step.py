@@ -50,9 +50,7 @@ class ComplexStep(BaseGradientApproximator):
     typically 1e-30,
     since there is no cancellation error due to a difference calculation.
 
-    .. math::
-
-        \frac{df(x)}{dx} \approx \text{Im}\left( \frac{f(x+j*\delta x)}{\delta x} \right)
+    $$\frac{df(x)}{dx} \approx \text{Im}\left( \frac{f(x+j*\delta x)}{\delta x} \right)$$
 
     See
     Martins, Joaquim RRA, Peter Sturdza, and Juan J. Alonso.

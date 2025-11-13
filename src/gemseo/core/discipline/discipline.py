@@ -54,10 +54,10 @@ if TYPE_CHECKING:
 
 
 def _default_dict_factory() -> dict:
-    """Instantiate a ``defaultdict(None)`` object.
+    """Instantiate a `defaultdict(None)` object.
 
     Returns:
-        A ``defaultdict(None)`` object.
+        A `defaultdict(None)` object.
     """
     return defaultdict(None)
 
@@ -65,16 +65,20 @@ def _default_dict_factory() -> dict:
 class Discipline(BaseDiscipline, metaclass=ClassInjector):
     """The base class for disciplines.
 
-    The :meth:`.execute` method is used to do compute output data from input data.
-    The :meth:`.linearize` method can be used
-    to compute the Jacobian of the differentiable outputs
+    The [execute()][gemseo.core.discipline.discipline.Discipline.execute]
+    method is used to do compute output data from input data.
+    The [linearize()][gemseo.core.discipline.discipline.Discipline.linearize]
+    method can be used to compute the Jacobian of the differentiable outputs
     with respect to differentiated inputs.
-    The :attr:`.jac` stores this Jacobian.
+    The [jac][gemseo.core.discipline.discipline.Discipline.jac] attribute
+    stores this Jacobian.
     This method can evaluate the true derivatives (default)
-    if the :meth:`_compute_jacobian` method is implemented
+    if the `_compute_jacobian()` method is implemented
     or approximated the derivatives,
-    depending on the :attr:`.linearization_mode`
-    (one of :attr:`.LinearizationMode`).
+    depending on the
+    [linearization_mode][gemseo.core.discipline.discipline.Discipline.linearization_mode]
+    (one of
+    [LinearizationMode][gemseo.core.discipline.discipline.Discipline.LinearizationMode]).
     """
 
     class InitJacobianType(StrEnum):
@@ -92,6 +96,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     ApproximationMode: EnumType = merge_enums(
         "ApproximationMode", StrEnum, ApproximationMode, HybridApproximationMode
     )
+    """Enumeration of approximation modes."""
 
     LinearizationMode: EnumType = merge_enums(
         "LinearizationMode",
@@ -99,6 +104,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         DerivationMode,
         ApproximationMode,
     )
+    """Enumeration of linearization modes."""
 
     _linearize_on_last_state: ClassVar[bool] = False
     """Whether to update the local data from the input data before linearizing."""
@@ -106,7 +112,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     jac: JacobianData
     """The Jacobian matrices of the outputs.
 
-    The structure is ``{output_name: {input_name: jacobian_matrix}}``.
+    The structure is `{output_name: {input_name: jacobian_matrix}}`.
     """
 
     _differentiated_input_names: list[str]
@@ -176,25 +182,29 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Args:
             input_data: The input data.
-                If empty, use the :attr:`.`default_input_data`.
+                If empty, use the
+                [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
             compute_all_jacobians: Whether to compute the Jacobians of
                 all the outputs with respect to all the inputs.
                 Otherwise,
                 set the output variables to differentiate
-                with :meth:`.add_differentiated_outputs`
+                with
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs]
                 and the input variables with respect to which to differentiate them
-                with :meth:`.add_differentiated_inputs`.
+                with
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
             execute: Whether to start by executing the discipline
                 to ensure that the discipline was executed
                 with the right input data;
                 it can be almost free if the corresponding output data
-                have been stored in the :attr:`.cache`.
+                have been stored in the
+                [cache][gemseo.core.discipline.discipline.Discipline.cache].
 
         Returns:
             The Jacobian matrices
-            in the dictionary form ``{output_name: {input_name: jacobian_matrix}}``
-            where ``jacobian_matrix[i, j]`` is
-            the partial derivative of ``output_name[i]`` wrt ``input_name[j]``.
+            in the dictionary form `{output_name: {input_name: jacobian_matrix}}`
+            where `jacobian_matrix[i, j]` is
+            the partial derivative of `output_name[i]` wrt `input_name[j]`.
 
         Raises:
             ValueError: When either the inputs
@@ -288,14 +298,15 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Sets the linearization mode to approx_method,
         sets the parameters of the approximation for further use
-        when calling :meth:`.Discipline.linearize`.
+        when calling
+        [linearize()][gemseo.core.discipline.discipline.Discipline.linearize].
 
         Args:
             jac_approx_type: The approximation method,
                 either "complex_step" or "finite_differences".
             jax_approx_step: The differentiation step.
             jac_approx_n_processes: The maximum simultaneous number of threads,
-                if ``jac_approx_use_threading`` is True, or processes otherwise,
+                if `jac_approx_use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
             jac_approx_use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
@@ -343,12 +354,10 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         (round-off when doing f(x+step)-f(x))
         are approximately equal.
 
-        .. warning::
-
+        Warning:
            This calls the discipline execution twice per input variables.
 
-        .. seealso::
-
+        See Also:
            https://en.wikipedia.org/wiki/Numerical_differentiation
            and
            "Numerical Algorithms and Digital Representation", Knut Morken ,
@@ -357,18 +366,20 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         Args:
             input_names: The inputs with respect to which the outputs are linearized.
                 If empty, use the differentiated inputs defined by
-                :meth:`.add_differentiated_inputs`.
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
             output_names: The outputs to be linearized.
                 If empty, use the outputs defined by
-                :meth:`.add_differentiated_outputs`.
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
                 set the input variables
                 with respect to which to differentiate the output ones
-                with :meth:`.add_differentiated_inputs`
+                with
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs]
                 and set these output variables to differentiate
-                with :meth:`.add_differentiated_outputs`.
+                with
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
             print_errors: Whether to display the estimated errors.
             numerical_error: The numerical error associated to the calculation of f.
                 By default, this is the machine epsilon (appx 1e-16),
@@ -484,7 +495,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         init_type: InitJacobianType = InitJacobianType.DENSE,
         fill_missing_keys: bool = False,
     ) -> tuple[list[str], list[str]]:
-        """Initialize the Jacobian dictionary :attr:`.jac`.
+        """Initialize the Jacobian dictionary `jac`.
 
         Args:
             input_names: The inputs with respect to which to differentiate the outputs.
@@ -600,7 +611,8 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         Args:
             input_data: The input data needed to execute the discipline
                 according to the discipline input grammar.
-                If ``None``, use the :attr:`.Discipline.io.input_grammar.defaults`.
+                If `None`, use the
+                [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
@@ -612,7 +624,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             step: The differentiation step.
             parallel: Whether to differentiate the discipline in parallel.
             n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
+                if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
@@ -627,7 +639,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 for a forward first order finite differences gradient approximation.
             plot_result: Whether to plot the result of the validation
                 (computed vs approximated Jacobians).
-            file_path: The path to the output file if ``plot_result`` is ``True``.
+            file_path: The path to the output file if `plot_result` is `True`.
             show: Whether to open the figure.
             fig_size_x: The x-size of the figure in inches.
             fig_size_y: The y-size of the figure in inches.
@@ -635,16 +647,16 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             save_reference_jacobian: Whether to save the reference Jacobian.
             indices: The indices of the inputs and outputs
                 for the different sub-Jacobian matrices,
-                formatted as ``{variable_name: variable_components}``
-                where ``variable_components`` can be either
+                formatted as `{variable_name: variable_components}`
+                where `variable_components` can be either
                 an integer, e.g. `2`
                 a sequence of integers, e.g. `[0, 3]`,
                 a slice, e.g. `slice(0,3)`,
                 the ellipsis symbol (`...`)
                 or `None`, which is the same as ellipsis.
                 If a variable name is missing, consider all its components.
-                If ``None``,
-                consider all the components of all the ``inputs`` and ``outputs``.
+                If `None`,
+                consider all the components of all the `inputs` and `outputs`.
 
         Returns:
             Whether the analytical Jacobian is correct
@@ -703,9 +715,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 Otherwise,
                 set the input variables
                 with respect to which to differentiate the output ones
-                with :meth:`.add_differentiated_inputs`
+                with
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs]
                 and set these output variables to differentiate
-                with :meth:`.add_differentiated_outputs`.
+                with
+                [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
         """
         if compute_all_jacobians:
             return (
@@ -809,8 +823,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     ) -> None:
         """Compute one Jacobian matrix per input-output pair.
 
-        Store the result in :attr:`.jac`
-        as a dictionary ``{output_name: {input_name: jacobian_matrix}}``.
+        Store the result in
+        [jac][gemseo.core.discipline.discipline.Discipline.jac]
+        as a dictionary `{output_name: {input_name: jacobian_matrix}}`.
 
         Args:
             input_names: The names of the inputs
@@ -831,7 +846,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         inputs-outputs have been defined by using approximation methods.
 
         Args:
-            input_names: The names of the input wrt the ``output_names`` are
+            input_names: The names of the input wrt the `output_names` are
                 linearized.
             output_names: The names  of the output to be linearized.
         """

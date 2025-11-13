@@ -19,24 +19,22 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The silhouette score to assess the quality of a clusterer.
 
-The `silhouette coefficient <https://en.wikipedia.org/wiki/Silhouette_(clustering)>`__
-:math:`s_i` is a measure of
-how similar a point :math:`x_i` is to its own cluster :math:`C_{k_i}` (cohesion)
+The [silhouette coefficient](https://en.wikipedia.org/wiki/Silhouette_(clustering))
+$s_i$ is a measure of
+how similar a point $x_i$ is to its own cluster $C_{k_i}$ (cohesion)
 compared to other clusters (separation):
 
-.. math::
+$$s_i = \frac{b_i-a_i}{\max(a_i,b_i)}$$
 
-   s_i = \frac{b_i-a_i}{\max(a_i,b_i)}
-
-with :math:`a_i=\frac{1}{|C_{k_i}|-1} \sum_{j\in C_{k_i}\setminus\{i\} } \|x_i-x_j\|`
-and :math:`b_i = \underset{\ell=1,\cdots,K\atop{\ell\neq k_i}}{\min}
-\frac{1}{|C_\ell|} \sum_{j\in C_\ell} \|x_i-x_j\|`
+with $a_i=\frac{1}{|C_{k_i}|-1} \sum_{j\in C_{k_i}\setminus\{i\} } \|x_i-x_j\|$
+and $b_i = \underset{\ell=1,\cdots,K\atop{\ell\neq k_i}}{\min}
+\frac{1}{|C_\ell|} \sum_{j\in C_\ell} \|x_i-x_j\|$
 
 where
 
-- :math:`K` is the number of clusters,
-- :math:`C_k` are the indices of the points belonging to the cluster :math:`k`,
-- :math:`|C_k|` is the size of :math:`C_k`.
+- $K$ is the number of clusters,
+- $C_k$ are the indices of the points belonging to the cluster $k$,
+- $|C_k|$ is the size of $C_k$.
 """
 
 from __future__ import annotations

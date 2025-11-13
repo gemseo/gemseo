@@ -106,7 +106,9 @@ class MDOScenarioAdapter(ProcessDiscipline):
     LOWER_BND_SUFFIX: ClassVar[str] = "_lower_bnd"
     UPPER_BND_SUFFIX: ClassVar[str] = "_upper_bnd"
     MULTIPLIER_SUFFIX: ClassVar[str] = "_multiplier"
+
     DEFAULT_DATABASE_FILE_PREFIX: ClassVar[str] = "database"
+    """The default file prefix for the databases to be exported."""
 
     _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
         "_MDOScenarioAdapter__name_generator"
@@ -121,7 +123,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
     __scenario_log_level: int | None
     """The level of the root logger during the scenario execution.
 
-    If ``None``, do not change the level of the root logger.
+    If `None`, do not change the level of the root logger.
     """
 
     def __init__(
@@ -161,32 +163,33 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 and add them to the outputs.
             name: The name of the scenario adapter.
                 If empty,
-                use the name of the scenario adapter suffixed by ``"_adapter"``.
+                use the name of the scenario adapter suffixed by `"_adapter"`.
             keep_opt_history: Whether to keep database copies after each execution.
                 Depending on the size of the databases
                 and the number of consecutive executions,
                 this can be very memory consuming. If the adapter will be executed in
                 parallel, the databases will not be saved to the main process by the
-                sub-processes, so this argument should be set to ``False`` to avoid
+                sub-processes, so this argument should be set to `False` to avoid
                 unnecessary memory use in the sub-processes.
             save_opt_history: Whether to save the optimization history
                 to an HDF5 file after each execution.
             opt_history_file_prefix: The base name for the databases to be exported.
                 The full names of the databases are built from
-                the provided base name suffixed by ``"_identifier.h5"``
-                where ``identifier`` is replaced by an identifier according to the
-                ``naming_method``.
-                If empty, use :attr:`.DEFAULT_DATABASE_FILE_PREFIX`.
+                the provided base name suffixed by `"_identifier.h5"`
+                where `identifier` is replaced by an identifier according to the
+                `naming_method`.
+                If empty, use
+                [DEFAULT_DATABASE_FILE_PREFIX][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX].
             scenario_log_level: The level of the root logger
                 during the scenario execution.
-                If ``None``, do not change the level of the root logger.
+                If `None`, do not change the level of the root logger.
             naming: The way of naming the database files.
                 When the adapter will be executed in parallel, this method shall be set
-                to ``UUID`` because this method is multiprocess-safe.
+                to `UUID` because this method is multiprocess-safe.
 
         Raises:
-            ValueError: If both ``reset_x0_before_opt`` and ``set_x0_before_opt``
-                are ``True``.
+            ValueError: If both `reset_x0_before_opt` and `set_x0_before_opt`
+                are `True`.
         """  # noqa: D205, D212, D415
         if reset_x0_before_opt and set_x0_before_opt:
             msg = (
@@ -357,7 +360,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
         Args:
             variable_name: The name of the variable.
-            is_upper: If ``True``, return name of the upper bound-constraint multiplier.
+            is_upper: If `True`, return name of the upper bound-constraint multiplier.
                 Otherwise, return the name of the lower bound-constraint multiplier.
 
         Returns:

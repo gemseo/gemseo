@@ -19,7 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A pipeline to chain transformers.
 
-The :class:`.Pipeline` class chains a sequence of tranformers, and provides global
+The
+[Pipeline][gemseo.mlearning.transformers.pipeline.Pipeline]
+class chains a sequence of tranformers, and provides global
 fit(), transform(), fit_transform() and inverse_transform() methods.
 """
 
@@ -127,7 +129,7 @@ class Pipeline(BaseTransformer):
         self,
         data: ndarray,
     ) -> ndarray:
-        """Compute the Jacobian of the ``pipeline.transform()``.
+        """Compute the Jacobian of the `pipeline.transform()`.
 
         Args:
             data: The data where the Jacobian is to be computed.
@@ -145,7 +147,7 @@ class Pipeline(BaseTransformer):
         self,
         data: ndarray,
     ) -> ndarray:
-        """Compute the Jacobian of the ``pipeline.inverse_transform()``.
+        """Compute the Jacobian of the `pipeline.inverse_transform()`.
 
         Args:
             data: The data where the Jacobian is to be computed.

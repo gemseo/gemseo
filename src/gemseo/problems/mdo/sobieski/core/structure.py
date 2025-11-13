@@ -141,10 +141,11 @@ class SobieskiStructure(SobieskiDiscipline):
             lift: The lift coefficient.
             linearize: Whether to derive the polynomial approximation.
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
-            If ``linearize`` is ``True``,
+            If `linearize` is `True`,
             the wing weight, the wing weight coefficient
             and the value of the polynomial function.
             Otherwise, the wing weight only.
@@ -361,26 +362,29 @@ class SobieskiStructure(SobieskiDiscipline):
 
         Args:
             x_shared: The values of the shared design variables,
-                where ``x_shared[0]`` is the thickness-to-chord ratio,
-                ``x_shared[1]`` is the altitude,
-                ``x_shared[2]`` is the Mach number,
-                ``x_shared[3]`` is the aspect ratio,
-                ``x_shared[4]`` is the wing sweep and
-                ``x_shared[5]`` is the wing surface area.
+                where `x_shared[0]` is the thickness-to-chord ratio,
+                `x_shared[1]` is the altitude,
+                `x_shared[2]` is the Mach number,
+                `x_shared[3]` is the aspect ratio,
+                `x_shared[4]` is the wing sweep and
+                `x_shared[5]` is the wing surface area.
             y_21: The lift coefficient.
             y_31: The engine weight.
-            x_1: The wing taper ratio ``x_1[0]``
-                and the wingbox x-sectional area ``x_1[1]``.
-            true_cstr: If ``True``,
+            x_1: The wing taper ratio `x_1[0]`
+                and the wingbox x-sectional area `x_1[1]`.
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_0: The minimum fuel weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The structural outputs and the structural constraints.
@@ -426,16 +430,19 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area: The wingbox x-sectional area.
             lift: The lift coefficient.
             engine_mass: The mass of the engine.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_0: The minimum fuel weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The structural outputs and the structural constraints.
@@ -535,26 +542,29 @@ class SobieskiStructure(SobieskiDiscipline):
 
         Args:
             x_shared: The values of the shared design variables,
-                where ``x_shared[0]`` is the thickness-to-chord ratio,
-                ``x_shared[1]`` is the altitude,
-                ``x_shared[2]`` is the Mach number,
-                ``x_shared[3]`` is the aspect ratio,
-                ``x_shared[4]`` is the wing sweep and
-                ``x_shared[5]`` is the wing surface area.
+                where `x_shared[0]` is the thickness-to-chord ratio,
+                `x_shared[1]` is the altitude,
+                `x_shared[2]` is the Mach number,
+                `x_shared[3]` is the aspect ratio,
+                `x_shared[4]` is the wing sweep and
+                `x_shared[5]` is the wing surface area.
             y_21: The lift coefficient.
             y_31: The engine weight.
-            x_1: The wing taper ratio ``x_1[0]``
-                and the wingbox x-sectional area ``x_1[1]``.
-            true_cstr: If ``True``,
+            x_1: The wing taper ratio `x_1[0]`
+                and the wingbox x-sectional area `x_1[1]`.
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_0: The minimum fuel weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The derivatives of the structural outputs and the structural constraints.
@@ -600,16 +610,19 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area: The wingbox x-sectional area.
             lift: The lift coefficient.
             engine_mass: The mass of the engine.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_0: The minimum fuel weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The derivatives of the structural outputs and the structural constraints.
@@ -751,7 +764,8 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area: The wingbox x-sectional area.
             lift: The lift coefficient.
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The updated Jacobian of the discipline.
@@ -926,7 +940,7 @@ class SobieskiStructure(SobieskiDiscipline):
             taper_ratio: The wing taper ratio.
             wingbox_area: The wingbox x-sectional area.
             lift: The lift coefficient.
-            true_cstr: If ``True``,
+            true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
@@ -1002,11 +1016,14 @@ class SobieskiStructure(SobieskiDiscipline):
             lift: The lift coefficient.
             engine_mass: The mass of the engine.
             c_0: The minimum fuel weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If ``None``, use :meth:`.SobieskiBase.constants`.
+                If `None`, use
+                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The vector of the total aircraft mass, fuel mass and wing twist,

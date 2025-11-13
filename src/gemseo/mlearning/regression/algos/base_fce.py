@@ -51,19 +51,19 @@ class BaseFCERegressor(BaseRegressor):
     _mean_jacobian_wrt_special_variables: RealArray | None
     """The gradient of the mean with respect to the special variables.
 
-    Shaped as ``(output_dimension, special_variable_dimension)``.
+    Shaped as `(output_dimension, special_variable_dimension)`.
     """
 
     _standard_deviation_jacobian_wrt_special_variables: RealArray | None
     """The gradient of the standard deviation with respect the special variables.
 
-    Shaped as ``(output_dimension, special_variable_dimension)``.
+    Shaped as `(output_dimension, special_variable_dimension)`.
     """
 
     _variance_jacobian_wrt_special_variables: RealArray | None
     """The gradient of the variance with respect the special variables.
 
-    Shaped as ``(output_dimension, special_variable_dimension)``.
+    Shaped as `(output_dimension, special_variable_dimension)`.
     """
 
     _mean: RealArray
@@ -87,14 +87,14 @@ class BaseFCERegressor(BaseRegressor):
     _jac_coefficients: RealArray | None
     """The coefficients to differentiate with respect to the special variables.
 
-    Shaped as ``(output_dimension, special_variable_dimension, n_basis_functions)``.
+    Shaped as `(output_dimension, special_variable_dimension, n_basis_functions)`.
     """
 
     _basis_functions: Sequence[Callable[[RealArray], ArrayLike]]
     """The basis functions."""
 
     _isoprobabilistic_transformation: Callable[[RealArray], RealArray]
-    """The isoprobabilistic transformation after training, ``None`` before."""
+    """The isoprobabilistic transformation after training, `None` before."""
 
     def __init__(
         self,
@@ -105,13 +105,14 @@ class BaseFCERegressor(BaseRegressor):
         """
         Args:
             data: The training dataset
-                whose input space ``data.misc["input_space"]``
-                is expected to be a :class:`.ParameterSpace`
+                whose input space `data.misc["input_space"]`
+                is expected to be a
+                [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
                 defining the random input variables.
 
         Raises:
-            ValueError: When ``learn_jacobian_data`` or ``use_special_jacobian_data``
-                is ``True`` but the training dataset does not contain Jacobian data.
+            ValueError: When `learn_jacobian_data` or `use_special_jacobian_data`
+                is `True` but the training dataset does not contain Jacobian data.
         """  # noqa: D205 D212
         settings_ = create_model(
             self.Settings, settings_model=settings_model, **settings
@@ -168,7 +169,7 @@ class BaseFCERegressor(BaseRegressor):
             output_data: The output data.
 
         Returns:
-            Objects to be used in the :meth:`._fit` method, if any.
+            Objects to be used in the `_fit()` method, if any.
         """
 
     @abstractmethod
@@ -234,20 +235,20 @@ class BaseFCERegressor(BaseRegressor):
     def _evaluate_basis_functions(
         self, input_data: RealArray
     ) -> tuple[RealArray, RealArray | None]:
-        r"""Evaluate the :math:`p` basis functions and their partial derivatives.
+        r"""Evaluate the $p$ basis functions and their partial derivatives.
 
         Args:
-            input_data: The input data, shaped as :math:`(n, d)`,
-                where :math:`n` is the number of samples
-                and :math:`d` is the input dimension.
+            input_data: The input data, shaped as $(n, d)$,
+                where $n$ is the number of samples
+                and $d$ is the input dimension.
 
         Returns:
-            The evaluations of the basis functions, shaped as :math:`(n, p)`,
-            and the evaluations of their partial derivatives, shaped as :math:`(nd, p)`,
-            if these derivative functions are implemented (otherwise ``None``).
+            The evaluations of the basis functions, shaped as $(n, p)$,
+            and the evaluations of their partial derivatives, shaped as $(nd, p)$,
+            if these derivative functions are implemented (otherwise `None`).
             In the evaluations of their partial derivatives,
-            the :math:`d` first rows correspond to the first sample,
-            the following :math:`d` rows correspond to the second sample,
+            the $d$ first rows correspond to the first sample,
+            the following $d$ rows correspond to the second sample,
             and so on.
         """
 
@@ -276,7 +277,8 @@ class BaseFCERegressor(BaseRegressor):
     def mean_jacobian_wrt_special_variables(self) -> RealArray:
         """The gradient of the mean with respect to the special variables.
 
-        See :meth:`.predict_jacobian_wrt_special_variables`
+        See
+        [predict_jacobian_wrt_special_variables()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict_jacobian_wrt_special_variables]
         for more information about the notion of special variables.
 
         Raises:
@@ -290,7 +292,8 @@ class BaseFCERegressor(BaseRegressor):
     def standard_deviation_jacobian_wrt_special_variables(self) -> RealArray:
         """The gradient of the standard deviation with respect to the special variables.
 
-        See :meth:`.predict_jacobian_wrt_special_variables`
+        See
+        [predict_jacobian_wrt_special_variables()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict_jacobian_wrt_special_variables]
         for more information about the notion of special variables.
 
         Raises:
@@ -306,7 +309,8 @@ class BaseFCERegressor(BaseRegressor):
     def variance_jacobian_wrt_special_variables(self) -> RealArray:
         """The gradient of the variance with respect to the special variables.
 
-        See :meth:`.predict_jacobian_wrt_special_variables`
+        See
+        [predict_jacobian_wrt_special_variables()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict_jacobian_wrt_special_variables]
         for more information about the notion of special variables.
 
         Raises:
@@ -320,10 +324,11 @@ class BaseFCERegressor(BaseRegressor):
     def mean(self) -> RealArray:
         """The mean vector of the model output.
 
-        .. warning::
-
+        Warning:
            This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
+           You can sample the
+           [predict()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict]
+           method
            to estimate it in relation to the original output space
            if it is different from the transformed output space.
         """
@@ -334,10 +339,11 @@ class BaseFCERegressor(BaseRegressor):
     def variance(self) -> RealArray:
         """The variance vector of the model output.
 
-        .. warning::
-
+        Warning:
            This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
+           You can sample the
+           [predict()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict]
+           method
            to estimate it in relation to the original output space
            if it is different from the transformed output space.
         """
@@ -348,10 +354,11 @@ class BaseFCERegressor(BaseRegressor):
     def standard_deviation(self) -> RealArray:
         """The standard deviation vector of the model output.
 
-        .. warning::
-
+        Warning:
            This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
+           You can sample the
+           [predict()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict]
+           method
            to estimate it in relation to the original output space
            if it is different from the transformed output space.
         """
@@ -362,10 +369,10 @@ class BaseFCERegressor(BaseRegressor):
     def first_sobol_indices(self) -> list[dict[str, RealArray]]:
         """The first-order Sobol' indices for the different output components.
 
-        .. warning::
-
+        Warning:
            These statistics are expressed in relation to the transformed output space.
-           You can use a :class:`.SobolAnalysis`
+           You can use a
+           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
            to estimate them in relation to the original output space
            if it is different from the transformed output space.
         """
@@ -376,10 +383,10 @@ class BaseFCERegressor(BaseRegressor):
     def total_sobol_indices(self) -> list[dict[str, RealArray]]:
         """The total Sobol' indices for the different output components.
 
-        .. warning::
-
+        Warning:
            These statistics are expressed in relation to the transformed output space.
-           You can use a :class:`.SobolAnalysis`
+           You can use a
+           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
            to estimate them in relation to the original output space
            if it is different from the transformed output space.
         """

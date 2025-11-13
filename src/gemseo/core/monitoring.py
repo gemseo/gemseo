@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Remi Lafage
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Monitoring mechanism to track |g| execution (update events)."""
+"""Monitoring mechanism to track GEMSEO execution (update events)."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 class Monitoring(metaclass=SingleInstancePerAttributeId):
     """This class implements the observer pattern.
 
-    It is a singleton, it is called by |g| core classes like MDODicipline whenever an
+    It is a singleton, it is called by GEMSEO core classes like MDODicipline whenever an
     event of interest like a status change occurs. Client objects register with
     add_observer and are notified whenever a discipline status change occurs.
     """

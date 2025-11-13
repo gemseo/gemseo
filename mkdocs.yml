@@ -1,0 +1,298 @@
+# Project information
+site_name: GEMSEO
+site_description: GEMSEO is an open-source Python software to automate multidisciplinary processes.
+
+site_url: https://gemseo.org
+repo_url: https://gitlab.com/gemseo/dev/gemseo
+repo_name: gemseo
+
+strict: true
+
+theme:
+  name: material
+  favicon: images/favicon.ico
+  logo: _static/logo/gemseo_white_monogram.png
+  features:
+    - navigation.tabs
+    - navigation.instant
+  palette:
+    - scheme: default
+      primary: teal
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/gitlab
+
+plugins:
+- search
+- markdown-exec
+- macros
+- autorefs
+- gen-files:
+    scripts:
+    - docs/gen_ref_nav.py
+    - docs/_scripts/algos/script.py
+    - docs/_scripts/authors/script.py
+    - docs/_scripts/credits.py
+- literate-nav:
+    nav_file: SUMMARY.md
+- section-index
+- mkdocstrings:
+    handlers:
+      python:
+        paths: [src]
+        inventories:
+        - https://docs.python.org/3/objects.inv
+        - https://matplotlib.org/stable/objects.inv
+        - https://numpy.org/doc/stable/objects.inv
+        - https://docs.scipy.org/doc/scipy/objects.inv
+        - https://openturns.github.io/openturns/latest/objects.inv
+        - https://scikit-learn.org/stable/objects.inv
+        - https://pandas.pydata.org/docs/objects.inv
+        - https://docs.pydantic.dev/latest/objects.inv
+        - https://matplotlib.org/stable/objects.inv
+        - https://ptable.readthedocs.io/en/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-matlab/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-calibration/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-mma/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-umdo/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-bilevel-outer-approximation/latest/objects.inv
+        - https://gemseo.gitlab.io/dev/gemseo-mlearning/latest/objects.inv
+        options:
+          extensions:
+          - griffe_inherited_docstrings
+          - docstring_inheritance.griffe
+          - griffe_fieldz: {include_inherited: true}
+          filters:
+          - "!^_"
+          docstring_options:
+#            ignore_init_summary: true
+            returns_multiple_items: False
+          docstring_section_style: list
+          # heading_level: 1
+          inherited_members: true
+#          preload_modules:
+#          - gemseo
+          merge_init_into_class: true
+          separate_signature: true
+          show_root_heading: true
+          show_root_full_path: false
+          show_signature_annotations: true
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
+          show_category_heading: true
+          signature_crossrefs: true
+- gallery:
+    conf_script: docs/gallery_conf.py
+    default_thumb_file: docs/images/monogram.png
+- include-markdown
+- bibtex:
+    bib_file: "docs/references.bib"
+    enable_inline_citations: false
+- mike:
+    canonical_version: latest
+    # Gitlab pages expects the docs in this directory.
+    deploy_prefix: public
+
+nav:
+- Home:
+  - Welcome to GEMSEO: index.md
+  - Overview: overview.md
+  - Installation: software/installation.md
+  - GEMSEO in 10 minutes: generated/examples/mdo/plot_gemseo_in_10_minutes.md
+  - Changelog: changelog.md
+  - Plugins: plugins.md
+  - About us: aboutus.md
+  - Contributing: contributing.md
+  - Credits: credits.md
+  - Roadmap: roadmap.md
+  - FAQ: faq.md
+  - RSS: rss.md
+- User guide:
+  - GEMSEO Easier:
+    - Global configuration: configuration.md
+    - Interface a software:
+      - Excel: interface/xls_discipline.md
+      - Automatic wrapper for executables with Graphical User Interface: interface/exe_discipline.md
+      - Interfacing simulation software: interface/software_connection.md
+    - Define an MDO problem: interface/study_analysis.md
+    - Define settings models:
+      - Formulation settings: settings/formulation_settings.md
+      - Algorithm settings: settings/algorithm_settings.md
+      - MDA settings: settings/mda_settings.md
+      - Post-processor settings: settings/post_processing_settings.md
+    - Extending: extending.md
+  - Main concepts:
+    - Design space: design_space/design_space.md
+    - Discipline:
+      - The discipline, a key concept: disciplines/index.md
+      - How to build an analytic discipline?: disciplines/analytic_discipline.md
+      - How to create a discipline from scratch?: disciplines/discipline_from_scratch.md
+      - Automatic wrapper for executables with Graphical User Interface: interface/exe_discipline.md
+      - Interface with HPC job schedulers (SLURM, LSF, PBS, etc): interface/job_schedulers.md
+      - How to manually create a discipline interfacing an external executable?: disciplines/discipline_interfacing_executable.md
+      - Build discipline from a MATLAB function: disciplines/discipline_matlab.md
+      - Coupled derivatives and gradients computation: disciplines/jacobian_assembly.md
+      - Namespaces: disciplines/namespaces.md
+    - Scenario:
+      - How to deal with scenarios: scenario/scenario.md
+      - Monitoring the execution of a scenario: scenario/monitoring.md
+    - Data persistence:
+      - Data persistence: data_persistence/index.md
+      - Cache: data_persistence/cache.md
+  - Optimization and DOE:
+    - The GEMSEO concepts: optimization/concepts.md
+    - Optimization and DOE framework: mdo/optimization.md
+    - Optimization algorithms: algorithms/opt_algos.md
+    - Design of Experiment algorithms: algorithms/doe_algos.md
+  - Design of experiments: doe.md
+  - Multidisciplinary design optimization:
+    - Coupling visualization: mdo/coupling.md
+    - MDO formulations: mdo/mdo_formulations.md
+    - Multi Disciplinary Analyses: mdo/mda.md
+    - How to deal with post-processing: postprocessing/postprocessing.md
+  - Machine learning: machine_learning/machine_learning_overview.md
+  - Surrogate models: surrogate.md
+  - Uncertainty quantification:
+    - Introduction: uncertainty/introduction.md
+    - Sensitivity analysis: uncertainty/sensitivity.md
+  - Ordinary differential equations:
+    - Introduction: ode/introduction.md
+    - Discipline: ode/ode_discipline.md
+    - Problem: ode/ode_problem.md
+  - Scalable models:
+    - Scalable models: scalable_models/index.md
+    - The scalable problem: scalable_models/original_paper.md
+  - Benchmark problems: problems/index.md
+  - Comprehensive list of tools and their settings:
+    - Disciplines: algorithms/discipline_algos.md
+    - DOE (design of experiments): algorithms/doe_algos.md
+    - Linear solvers: algorithms/linear_solver_algos.md
+    - Machine learning:
+      - All: algorithms/mlearning_algos.md
+      - Classification: algorithms/classification_algos.md
+      - Clustering: algorithms/clustering_algos.md
+      - Regression: algorithms/regression_algos.md
+      - Quality: algorithms/ml_quality_algos.md
+    - MDA (multidisciplinary analysis): algorithms/mda_algos.md
+    - MDO formulations: algorithms/formulation_algos.md
+    - ODE (ordinary differential equation) solvers: algorithms/ode_algos.md
+    - Optimizers: algorithms/opt_algos.md
+    - Post-processors: algorithms/post_algos.md
+    - Surrogate disciplines: algorithms/surrogate_algos.md
+    - Uncertainty:
+      - All: algorithms/uncertainty_algos.md
+      - Sensitivity analysis: algorithms/sensitivity_algos.md
+      - Probability distributions: algorithms/distribution_algos.md
+- Examples:
+  - High-level functions: generated/examples/api
+  - Cache: generated/examples/cache
+  - Constraint aggregation: generated/examples/constraint_aggregation
+  - Coupling: generated/examples/coupling
+  - Dataset: generated/examples/dataset
+  - Design of experiments (DOE): generated/examples/doe
+  - Design space: generated/examples/design_space
+  - Disciplines: generated/examples/disciplines
+  - Exterior penalty: generated/examples/exterior_penalty
+  - MDO formulation: generated/examples/formulations
+  - Multi-disciplinary analysis (MDA): generated/examples/mda
+  - MDO problems: generated/examples/mdo
+  - Machine learning: generated/examples/mlearning
+  - Multi-objective optimization: generated/examples/multi_objective
+  - Namespaces: generated/examples/namespaces
+  - Ordinary differential equations (ODE): generated/examples/ode
+  - Optimization: generated/examples/optimization_problem
+  - Optimizers: generated/examples/optimizers
+  - Post-process an optimization problem: generated/examples/post_process
+  - Scalable model: generated/examples/scalable
+  - Scenario: generated/examples/scenario
+  - Study analysis: generated/examples/study_analysis
+  - Surrogate discipline: generated/examples/surrogate
+  - Topology optimization: generated/examples/topology_optimization
+  - Uncertainty: generated/examples/uncertainty
+- API Documentation: reference/gemseo/
+- Cheat Sheets:
+  - Available: cheat_sheets/availables.md
+  - Cache: cheat_sheets/cache.md
+  - Coupling: cheat_sheets/coupling.md
+  - Design space: cheat_sheets/design_space.md
+  - Discipline: cheat_sheets/discipline.md
+  - New discipline: cheat_sheets/new_discipline.md
+  - Post: cheat_sheets/post.md
+  - Scenario: cheat_sheets/scenario.md
+  - Surrogate: cheat_sheets/surrogate.md
+- Developer guide:
+  - Changelog: changelog.md
+  - Dependencies: software/dependencies.md
+  - Developer information: software/developing.md
+  - Example Google Style Docstrings: software/example_google_docstring.md
+  - Installation: software/installation.md
+  - Licenses: software/licenses.md
+  - Maintainers information: software/maintenance.md
+  - Security information: software/security.md
+  - Architecture principles: software/system_architecture.md
+  - Upgrading: software/upgrading.md
+
+markdown_extensions:
+- admonition
+- attr_list
+- md_in_html
+- pymdownx.details
+- pymdownx.arithmatex:
+    generic: true
+- pymdownx.superfences:
+    custom_fences:
+      - name: mermaid
+        class: mermaid
+- footnotes
+- toc:
+    permalink: true
+- pymdownx.snippets
+- pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra_css:
+- css/style.css
+- css/fontello.css
+- css/xdsmjs.css
+
+extra_javascript:
+- javascripts/mathjax.js
+- javascripts/xdsmjs.js
+- https://polyfill.io/v3/polyfill.min.js?features=es6
+- https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+watch:
+  - src/gemseo
+  - README.md
+  - CHANGELOG.md
+
+extra:
+  version:
+    provider: mike
+  gemseo_plugins:
+    gemseo-benchmark: A GEMSEO-based package to benchmark optimization algorithm.
+    gemseo-bilevel-outer-approximation: GEMSEO plugin for the bi-level outer approximation (shortened as bi-level OA) algorithm.
+    gemseo-calibration: Capability to calibrate GEMSEO disciplines from data.
+    gemseo-fmu: GEMSEO plugin for FMU dynamic models.
+    gemseo-hexaly: GEMSEO interface to Hexaly solver.
+    gemseo-jax: GEMSEO plugin for JAX.
+    gemseo-matlab: GEMSEO plugin for MATLAB.
+    gemseo-mlearning: Miscellaneous machine learning capabilities.
+    gemseo-mma: GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.
+    gemseo-pdfo: GEMSEO plugin for the PDFO library.
+    gemseo-petsc: PETSc wrapper for linear solvers and MDA.
+    gemseo-pseven: GEMSEO plugin for the pSeven library.
+    gemseo-pymoo: Pymoo wrapper for optimization algorithms.
+    gemseo-pyoptsparse: ("GEMSEO interface to pyoptsparse algorithms.
+    gemseo-ssh: SSH plugin for GEMSEO.
+    gemseo-scilab: Interfacing Scilab functions.
+    gemseo-template-editor-gui: A GUI to create input and output file templates for DiscFromExe.
+    gemseo-umdo: Capability for MDO under uncertainty.

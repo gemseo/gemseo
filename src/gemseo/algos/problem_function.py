@@ -77,7 +77,8 @@ class ProblemFunction(MDOFunction, Serializable):
     """The execution sequence to compute a Jacobian from an input value."""
 
     _n_calls: Value
-    """The number of calls to :meth:`evaluate`."""
+    """The number of calls to
+    [evaluate()][gemseo.algos.problem_function.ProblemFunction.evaluate]."""
 
     _normalize_grad: Callable[[RealOrComplexArrayT], RealOrComplexArrayT]
     """The function to normalize an unnormalized gradient."""
@@ -118,13 +119,13 @@ class ProblemFunction(MDOFunction, Serializable):
             with_normalized_inputs: Whether the function expects normalized inputs.
             use_database: Whether to use the database to store and retrieve values.
             database: The database to store and retrieve the evaluations;
-                if ``None``, do not use database.
+                if `None`, do not use database.
             counter: The counter of evaluations.
-            stop_if_nan: Whether the evaluation stops when a function returns ``NaN``.
+            stop_if_nan: Whether the evaluation stops when a function returns `NaN`.
             design_space: The design space on which to evaluate the function.
             store_jacobian: Whether to store the Jacobian matrices in the database.
             differentiation_method: The differentiation method to compute the Jacobian.
-                If ``None``, use the original derivatives.
+                If `None`, use the original derivatives.
             vectorize: Whether to vectorize the functions evaluations.
             **differentiation_method_options: The options of the differentiation method.
 
@@ -420,9 +421,9 @@ class ProblemFunction(MDOFunction, Serializable):
             stop_if_nan: Whether to stop if `value` contains a NaN.
             function_name: The name of the function.
                 If empty,
-                the arguments ``function_name`` and ``xu_vect`` are ignored.
+                the arguments `function_name` and `xu_vect` are ignored.
             xu_vect: The point at which the function is evaluated.
-                ``None`` if and only if ``function_name`` is empty.
+                `None` if and only if `function_name` is empty.
 
         Raises:
             DesvarIsNan: If the value is a function input containing a NaN.
@@ -446,7 +447,8 @@ class ProblemFunction(MDOFunction, Serializable):
         """The number of times the function has been evaluated.
 
         This count is both multiprocess- and multithread-safe, thanks to the locking
-        process used by :meth:`.MDOFunction.evaluate`.
+        process used by
+        [MDOFunction.evaluate()][gemseo.core.mdo_functions.mdo_function.MDOFunction.evaluate].
         """
         if self.enable_statistics:
             return self._n_calls.value

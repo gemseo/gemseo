@@ -281,8 +281,8 @@ def xdsm_data_to_pdf(
     """Convert a dictionary representation of a XDSM to a PDF file.
 
     This method generates
-    a TikZ file ``"{file_name}.tikz"`` containing the definition of the XDSM
-    and a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+    a TikZ file `"{file_name}.tikz"` containing the definition of the XDSM
+    and a LaTeX file `"{file_name}.tex"` including this TikZ file.
     The LaTeX file can be compiled to a PDF file.
 
     Args:

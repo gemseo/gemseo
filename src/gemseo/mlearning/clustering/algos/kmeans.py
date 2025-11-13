@@ -20,8 +20,8 @@
 r"""The k-means algorithm for clustering.
 
 The k-means algorithm groups the data into clusters,
-where the number of clusters :math:`k` is fixed.
-This is done by initializing :math:`k` centroids in the design space.
+where the number of clusters $k$ is fixed.
+This is done by initializing $k$ centroids in the design space.
 The points are grouped into clusters according to their nearest centroid.
 
 When fitting the algorithm,
@@ -32,41 +32,42 @@ This process is repeated until convergence.
 
 Cluster values of new points may be predicted
 by returning the value of the closest centroid.
-Denoting :math:`(c_1, \cdots, c_k) \in \mathbb{R}^{n \times k}` the centroids,
+Denoting $(c_1, \cdots, c_k) \in \mathbb{R}^{n \times k}$ the centroids,
 and assuming no overlap between the centroids,
 we may compute the prediction
 
-.. math::
-
+$$
         \operatorname{cluster}(x) =
             \underset{i=1,\cdots,k}{\operatorname{argmin}} \|x-c_i\|.
+$$
 
 A probability measure may also be provided,
 using the distances from the point to each of the centroids:
 
-.. math::
-
+$$
     \mathbb{P}(x \in C_i) = \begin{cases}
         1 & \operatorname{if} x = c_i\\
         0 & \operatorname{if} x = c_j,\ j \neq i\\
         \frac{\frac{1}{\|x-c_i\|}}{\sum_{j=1}^k \frac{1}{\|x-c_j\|}}
             & \operatorname{if} x \neq c_j\, \forall j=1,\cdots,k
     \end{cases},
+$$
 
-where :math:`C_i = \{x\, | \, \operatorname{cluster}(x) = i \}`.
+where $C_i = \{x\, | \, \operatorname{cluster}(x) = i \}$.
 Here,
-:math:`\mathbb{P}(x \in C_i)` represents the probability of cluster :math:`i`
-given the point :math:`x`.
+$\mathbb{P}(x \in C_i)$ represents the probability of cluster $i$
+given the point $x$.
 
 
-This concept is implemented through the :class:`.KMeans` class
-which inherits from the :class:`.BaseClusterer` class.
+This concept is implemented through the
+[KMeans][gemseo.mlearning.clustering.algos.kmeans.KMeans]
+class deriving from
+[BaseClusterer][gemseo.mlearning.clustering.algos.base_clusterer.BaseClusterer].
 
-Dependence
-----------
+## Dependence
+
 This clustering algorithm relies on the KMeans class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.cluster.KMeans.html>`_.
+of the [scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html).
 """
 
 from __future__ import annotations

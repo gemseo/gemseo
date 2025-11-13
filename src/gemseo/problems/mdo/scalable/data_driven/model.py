@@ -26,9 +26,10 @@ and generalizing its behavior to a new user-defined problem dimension,
 that is to say new user-defined input and output dimensions.
 
 The concept of scalable model is implemented
-through :class:`.ScalableModel`, an abstract class which is instantiated from:
+through [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel],
+an abstract class which is instantiated from:
 
-- data provided as a :class:`.Dataset`
+- data provided as a [Dataset][gemseo.datasets.dataset.Dataset]
 - variables sizes provided as a dictionary
   whose keys are the names of inputs and outputs
   and values are their new sizes.
@@ -37,9 +38,11 @@ through :class:`.ScalableModel`, an abstract class which is instantiated from:
 Scalable model parameters can also be filled in.
 Otherwise, the model uses default values.
 
-.. seealso::
-
-   The :class:`.ScalableDiagonalModel` class overloads :class:`.ScalableModel`.
+See Also:
+   The
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+   class overloads
+   [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel].
 """
 
 from __future__ import annotations
@@ -59,6 +62,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.typing import RealArray
 
 
 class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
@@ -101,22 +105,26 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
         """
         return {name: full(self.sizes[name], 0.5) for name in self.input_names}
 
-    def scalable_function(self, input_value=None) -> None:
+    def scalable_function(
+        self, input_value: Mapping[str, RealArray] | None = None
+    ) -> dict[str, RealArray]:
         """Evaluate the scalable function.
 
         Args:
-            input_value: The input values. If ``None``, use the default inputs.
+            input_value: The input values. If `None`, use the default inputs.
 
         Returns:
             The evaluations of the scalable function.
         """
         raise NotImplementedError
 
-    def scalable_derivatives(self, input_value=None) -> None:
+    def scalable_derivatives(
+        self, input_value: Mapping[str, RealArray] | None = None
+    ) -> dict[str, RealArray]:
         """Evaluate the scalable derivatives.
 
         Args:
-            input_value: The input values. If ``None``, use the default inputs.
+            input_value: The input values. If `None`, use the default inputs.
 
         Returns:
             The evaluations of the scalable derivatives.

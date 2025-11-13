@@ -21,15 +21,15 @@ r"""The F1 score to assess the quality of a classifier.
 
 The F1 score is defined by
 
-.. math::
-
+$$
     F_1 = 2\frac{\mathit{precision}\times\mathit{recall}}
         {\mathit{precision}+\mathit{recall}}
+$$
 
 where
-:math:`\mathit{precision}` is the number of correctly predicted positives
+$\mathit{precision}$ is the number of correctly predicted positives
 divided by the total number of *predicted* positives
-and :math:`\mathit{recall}` is the number of correctly predicted positives
+and $\mathit{recall}$ is the number of correctly predicted positives
 divided by the total number of *true* positives.
 """
 

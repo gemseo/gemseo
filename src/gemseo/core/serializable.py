@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Gilberto Ruiz
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The baseclass for serializable |g| objects."""
+"""The baseclass for serializable GEMSEO objects."""
 
 from __future__ import annotations
 
@@ -37,22 +37,22 @@ if TYPE_CHECKING:
 
 
 class Serializable(metaclass=GoogleDocstringInheritanceMeta):
-    """Base class to handle serialization of |g| objects.
+    """Base class to handle serialization of GEMSEO objects.
 
-    The methods ``__setstate__`` and ``__getstate__`` used by pickle to serialize and
-    de-serialize objects are overloaded to handle ``Synchronized`` attributes. It is
+    The methods `__setstate__` and `__getstate__` used by pickle to serialize and
+    de-serialize objects are overloaded to handle `Synchronized` attributes. It is
     also possible to define the attributes that shall be ignored at serialization.
 
     For the attributes that are ignored at serialization, it is necessary to handle the
-    way they are retrieved and recreated by overloading ``__setstate__`` and/or
-    ``__getstate__`` from the subclasses.
+    way they are retrieved and recreated by overloading `__setstate__` and/or
+    `__getstate__` from the subclasses.
     """
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = set()
     """The attributes that shall be skipped at serialization.
 
     Private attributes shall be written following name mangling conventions:
-    ``_ClassName__attribute_name``. Subclasses must expand this class attribute if
+    `_ClassName__attribute_name`. Subclasses must expand this class attribute if
     needed.
     """
 
@@ -96,13 +96,13 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
     def _init_shared_memory_attrs_before(self) -> None:
         """Initialize the shared memory attributes before deserialization.
 
-        Subclasses shall overload this method to initialize all their ``Synchronized``
+        Subclasses shall overload this method to initialize all their `Synchronized`
         attributes. This is run before any attribute is recovered from deserialization.
         """
 
     def _init_shared_memory_attrs_after(self) -> None:
         """Initialize the shared memory attributes after deserialization.
 
-        Subclasses shall overload this method to initialize all their ``Synchronized``
+        Subclasses shall overload this method to initialize all their `Synchronized`
         attributes. This is run before any attribute is recovered from deserialization.
         """

@@ -70,8 +70,10 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
 
     The residual norm of MDA1 and MDA2 can be captured into scenario
-    observables thanks to different namespaces :attr:`.BiLevel.MDA1_RESIDUAL_NAMESPACE`
-    and :attr:`.BiLevel.MDA2_RESIDUAL_NAMESPACE`.
+    observables thanks to different namespaces
+    [MDA1_RESIDUAL_NAMESPACE][gemseo.formulations.bilevel.BiLevel.MDA1_RESIDUAL_NAMESPACE]
+    and
+    [MDA2_RESIDUAL_NAMESPACE][gemseo.formulations.bilevel.BiLevel.MDA2_RESIDUAL_NAMESPACE].
     """
 
     DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = BiLevelScenarioResult.__name__
@@ -110,7 +112,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     _mda1: BaseMDA | None
     """The first MDA that solves the couplings before sub-scenarios.
 
-    The MDA1 is not built (``None``) if disciplines are not strongly coupled.
+    The MDA1 is not built (`None`) if disciplines are not strongly coupled.
     """
 
     _mda2: BaseMDA
@@ -464,7 +466,8 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
         Args:
             levels: The levels at which the constraint is to be added
-                (sublist of :attr:`.LEVELS`).
+                (sublist of
+                [LEVELS][gemseo.formulations.bilevel.BiLevel.LEVELS]).
                 By default, the policy set at the initialization
                 of the formulation is enforced.
 

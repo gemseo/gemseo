@@ -52,9 +52,9 @@ class BaseRandomProcessRegressor(BaseRegressor):
         """Predict the standard deviation from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary of NumPy arrays,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         If the NumPy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -67,10 +67,11 @@ class BaseRandomProcessRegressor(BaseRegressor):
         Returns:
             The standard deviation at the query points.
 
-        .. warning::
-
+        Warning:
            This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
+           You can sample the
+           [predict()][gemseo.mlearning.regression.algos.base_random_process_regressor.BaseRandomProcessRegressor.predict]
+           method
            to estimate it in relation to the original output space
            if it is different from the transformed output space.
         """
@@ -82,15 +83,15 @@ class BaseRandomProcessRegressor(BaseRegressor):
         """Sample a random vector from the conditioned Gaussian process.
 
         Args:
-            input_data: The :math:`N` input points of dimension :math:`d`
+            input_data: The $N$ input points of dimension $d$
                 at which to observe the conditioned Gaussian process;
-                shaped as :math:`(N, d)`.
-            n_samples: The number of samples :math:`M`.
+                shaped as $(N, d)$.
+            n_samples: The number of samples $M$.
             seed: The seed for reproducible results.
 
         Returns:
-            The output samples shaped as :math:`(M, N, p)`
-            where :math:`p` is the output dimension.
+            The output samples shaped as $(M, N, p)$
+            where $p$ is the output dimension.
         """
 
     @abstractmethod
@@ -101,29 +102,30 @@ class BaseRandomProcessRegressor(BaseRegressor):
         r"""Predict the covariance matrix from input data.
 
         Args:
-            input_data: The :math:`N` input points of dimension :math:`d`
+            input_data: The $N$ input points of dimension $d$
                 at which to observe the conditioned Gaussian process;
-                shaped as :math:`(N, d)`.
+                shaped as $(N, d)$.
 
         Returns:
             The posterior covariance matrix at the input points
-            of shape :math:`(Np, Np)`
-            with :math:`p` the output dimension.
+            of shape $(Np, Np)$
+            with $p$ the output dimension.
             The covariance between
-            the :math:`k`-th output
-            at the :math:`i`-th input point
-            and the :math:`l`-th output
-            at the :math:`j`-th input point
+            the $k$-th output
+            at the $i$-th input point
+            and the $l$-th output
+            at the $j$-th input point
             is located at
-            the :math:`m`-th line and :math:`n`-th column
-            with :math:`m=ip+k`, :math:`n=jp+l`,
-            :math:`i,j\in\{0,\ldots,N-1\}`
-            and :math:`k,l\in\{0,\ldots,p-1\}`.
+            the $m$-th line and $n$-th column
+            with $m=ip+k$, $n=jp+l$,
+            $i,j\in\{0,\ldots,N-1\}$
+            and $k,l\in\{0,\ldots,p-1\}$.
 
-        .. warning::
-
+        Warning:
            This statistic is expressed in relation to the transformed output space.
-           You can sample the :meth:`.predict` method
+           You can sample the
+           [predict()][gemseo.mlearning.regression.algos.base_fce.BaseFCERegressor.predict]
+           method
            to estimate it in relation to the original output space
            if it is different from the transformed output space.
 

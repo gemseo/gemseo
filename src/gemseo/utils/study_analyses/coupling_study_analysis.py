@@ -46,7 +46,7 @@ class CouplingStudyAnalysis:
 
     - the name of the sheet shall have the discipline name,
     - the sheet shall define the input names of the discipline
-      as a vertical succession of cells starting with ``Inputs``:
+      as a vertical succession of cells starting with `Inputs`:
 
         .. table:: Inputs
 
@@ -61,7 +61,7 @@ class CouplingStudyAnalysis:
             +--------------+
 
     - the sheet shall define the output names of the discipline
-      as a vertical succession of cells starting with ``Outputs``:
+      as a vertical succession of cells starting with `Outputs`:
 
     .. table:: Outputs
 
@@ -75,7 +75,7 @@ class CouplingStudyAnalysis:
             | output_name_N |
             +---------------+
 
-    - the empty lines of the series ``Inputs`` and ``Outputs`` are ignored,
+    - the empty lines of the series `Inputs` and `Outputs` are ignored,
     - the sheet may contain other data, but these will not be taken into account.
     """  # noqa: E501
 

@@ -33,14 +33,14 @@ class LSODA_Settings(BaseScipyODESolverJacSettings):  # noqa: N801
         default=None,
         description="""The lower boundary of the bandwidth of the Jacobian.
 
-The SciPy documentation does not mention what happens if ``None``.""",
+The SciPy documentation does not mention what happens if `None`.""",
     )
 
     uband: int | None = Field(
         default=None,
         description="""The upper boundary of the bandwidth of the Jacobian.
 
-The SciPy documentation does not mention what happens if ``None``.""",
+The SciPy documentation does not mention what happens if `None`.""",
     )
 
     min_step: NonNegativeInt = Field(

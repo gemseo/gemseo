@@ -48,7 +48,8 @@ class BiLevelBCD(BiLevel):
 
     1. a first MDA to compute the coupling variables,
     2. a loop on several disciplinary optimizations on the
-       local design variables using an :class:`.MDAGaussSeidel`,
+       local design variables using an
+       [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel],
     3. an MDA to compute precisely the system optimization criteria.
     """
 

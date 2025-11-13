@@ -31,24 +31,24 @@ if TYPE_CHECKING:
 class QuadraticProgrammingProblem(NamedTuple):
     r"""A quadratic programming (QP) problem.
 
-    Minimize :math:`0.5x^TQx + c^Tx + d` with respect to :math:`x` under the linear
-    constraints :math:`Ax-b <= 0`.
+    Minimize $0.5x^TQx + c^Tx + d$ with respect to $x$ under the linear
+    constraints $Ax-b <= 0$.
     """
 
     Q: RealArray
-    r"""The matrix :math:`Q` of the objective function :math:`0.5x^TQx + c^Tx + d`.
+    r"""The matrix $Q$ of the objective function $0.5x^TQx + c^Tx + d$.
 
     This matrix must be symmetric.
     """
 
     c: RealArray
-    r"""The matrix :math:`c` of the objective function :math:`0.5x^TQx + c^Tx + d`."""
+    r"""The matrix $c$ of the objective function $0.5x^TQx + c^Tx + d$."""
 
     d: RealArray
-    r"""The matrix :math:`d` of the objective function :math:`0.5x^TQx + c^Tx + d`."""
+    r"""The matrix $d$ of the objective function $0.5x^TQx + c^Tx + d$."""
 
     A: RealArray
-    r"""The matrix :math:`A` of the constraint function :math:`Ax-b`."""
+    r"""The matrix $A$ of the constraint function $Ax-b$."""
 
     b: RealArray
-    r"""The matrix :math:`b` of the constraint function :math:`Ax-b`."""
+    r"""The matrix $b$ of the constraint function $Ax-b$."""

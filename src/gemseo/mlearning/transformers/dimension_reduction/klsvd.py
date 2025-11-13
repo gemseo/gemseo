@@ -19,9 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Karhunen-Loève SVD algorithm to reduce the dimension of a variable.
 
-The :class:`.KLSVD` class wraps the ``KarhunenLoeveSVDAlgorithm``
-`from OpenTURNS <https://openturns.github.io/openturns/latest/user_manual/
-_generated/openturns.KarhunenLoeveSVDAlgorithm.html>`_.
+The
+[KLSVD][gemseo.mlearning.transformers.dimension_reduction.klsvd.KLSVD]
+class wraps the `KarhunenLoeveSVDAlgorithm`
+[from OpenTURNS](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.KarhunenLoeveSVDAlgorithm.html).
 """
 
 from __future__ import annotations
@@ -82,8 +83,8 @@ class KLSVD(BaseDimensionReduction):
                 if so,
                 the number of singular values has to be fixed a priori.
             n_singular_values: The number of singular values to compute
-                when ``use_random_svd`` is ``True``;
-                if ``None``, use the default value implemented by OpenTURNS.
+                when `use_random_svd` is `True`;
+                if `None`, use the default value implemented by OpenTURNS.
             use_halko2010: Whether to use the *Halko2010* algorithm
                 or the *Halko2011* one.
         """  # noqa: D205 D212
@@ -159,7 +160,7 @@ class KLSVD(BaseDimensionReduction):
         return array(self.algo.getEigenvalues())
 
     def _get_process_sample(self, data: RealArray) -> openturns.ProcessSample:
-        """Convert a ``RealArray`` data to an ``openturns.ProcessSample``.
+        """Convert a `RealArray` data to an `openturns.ProcessSample`.
 
         Args:
             data: The data to be fitted.

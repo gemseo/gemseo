@@ -19,13 +19,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Principal Component Analysis (PCA) to reduce the dimension of a variable.
 
-The :class:`.PCA` class wraps the PCA from Scikit-learn.
+The [PCA][gemseo.mlearning.transformers.dimension_reduction.pca] class
+wraps the PCA from Scikit-learn.
 
-Dependence
-----------
+## Dependence
+
 This dimension reduction algorithm relies on the PCA class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.decomposition.PCA.html>`_.
+of the [scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html).
 """
 
 from __future__ import annotations
@@ -62,9 +62,9 @@ class PCA(BaseDimensionReduction):
         Args:
             n_components: Either the number of components (a positive integer),
                 the minimum amount of variance to be explained by the components
-                (a float in :math:`]0,1[`),
-                the constant ``"mle"`` to guess this number
-                or ``None`` to define it as ``min(n_samples, n_features)``.
+                (a float in $]0,1[$),
+                the constant `"mle"` to guess this number
+                or `None` to define it as `min(n_samples, n_features)`.
             scale: Whether to scale the data before applying the PCA.
             **parameters: The optional parameters for sklearn PCA constructor.
         """  # noqa: D205 D212

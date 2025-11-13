@@ -40,20 +40,23 @@ class ExecutionStatus(Serializable):
     The status aims at monitoring a process and give the user a simplified view on
     the state of the processes.
 
-    The possible statuses are defined in :attr:`.Status`.
+    The possible statuses are defined in
+    [Status][gemseo.core.execution_status.ExecutionStatus.Status].
     The status rules are:
 
-    - the initial status is ``DONE``,
-    - the status ``RUNNING`` or ``LINEARIZING`` can only be set
-      when the current one is ``DONE``,
-    - the status ``DONE`` can only be set when the current one is ``RUNNING``.
+    - the initial status is `DONE`,
+    - the status `RUNNING` or `LINEARIZING` can only be set
+      when the current one is `DONE`,
+    - the status `DONE` can only be set when the current one is `RUNNING`.
 
     Helper methods should be used to handle the statuses
     when executing a monitored process,
-    e.g., a :class:`.Discipline` or an :class:`.MDOScenario`,
-    using the method :meth:`execute`,
-    or linearizing a :class:`.Discipline`
-    using the method :meth:`~.Discipline.linearize`.
+    e.g., a [Discipline][gemseo.core.discipline.discipline.Discipline]
+    or a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario],
+    using the `execute()` method,
+    or linearizing a [Discipline][gemseo.core.discipline.discipline.Discipline]
+    using the method
+    [linearize()][gemseo.core.discipline.discipline.Discipline.linearize].
 
     Observers can be attached and are notified when the value of the status is changed.
     The observers are not restored after pickling.
@@ -68,7 +71,7 @@ class ExecutionStatus(Serializable):
         DONE = "DONE"
 
     is_enabled: ClassVar[bool] = _ENABLE_DISCIPLINE_STATUS
-    """Whether to handle statuses when calling :meth:`.handle`."""
+    """Whether to handle statuses when calling [handle()][gemseo.core.execution_status.ExecutionStatus.handle]."""  # noqa: E501
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"__observers"}
 
@@ -91,24 +94,24 @@ class ExecutionStatus(Serializable):
         self._init_shared_memory_attrs_before()
 
     def __check_can_be_running(self, status: Status) -> bool:
-        """Return whether the status can be set to ``RUNNING``.
+        """Return whether the status can be set to `RUNNING`.
 
         Args:
             status: A status.
 
         Returns:
-            Whether the status can be set to ``RUNNING``.
+            Whether the status can be set to `RUNNING`.
         """
         return status == self.Status.RUNNING and self.value != self.Status.DONE
 
     def __check_can_be_linearizing(self, status: Status) -> bool:
-        """Return whether the status can be set to ``LINEARIZING``.
+        """Return whether the status can be set to `LINEARIZING`.
 
         Args:
             status: A status.
 
         Returns:
-            Whether the status can be set to ``LINEARIZING``.
+            Whether the status can be set to `LINEARIZING`.
         """
         return status == self.Status.LINEARIZING and self.value != self.Status.DONE
 
@@ -141,7 +144,7 @@ class ExecutionStatus(Serializable):
     ) -> None:
         """Handle a status while executing a function.
 
-        On exception, the status is set to ``FAILED``, otherwise is set to ``DONE``.
+        On exception, the status is set to `FAILED`, otherwise is set to `DONE`.
 
         Args:
             status: The status to be set before execution.

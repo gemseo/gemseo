@@ -75,7 +75,7 @@ class ScalableDesignSpace:
         Args:
             scalable_discipline_settings: The configurations of the scalable
                 disciplines.
-            d_0: The size of the shared design variable :math:`x_0`.
+            d_0: The size of the shared design variable $x_0$.
             names_to_default_values: The default values of the variables.
         """  # noqa: D205 D212
         self.variables = []

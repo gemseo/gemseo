@@ -24,6 +24,7 @@ import json
 import logging
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
+from typing import Any
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
@@ -89,7 +90,7 @@ def create_mlearning_model(
     name: str,
     data: Dataset,
     transformer: TransformerType = READ_ONLY_EMPTY_DICT,
-    **parameters,
+    **parameters: Any,
 ) -> BaseMLAlgo:
     """Create a machine learning algorithm from a training dataset.
 
@@ -97,9 +98,12 @@ def create_mlearning_model(
         name: The name of the machine learning algorithm.
         data: The training dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.BaseTransformer`
+            Values are instances of
+            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
-            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
+            If
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            do not transform the variables.
         parameters: The parameters of the machine learning algorithm.
 
     Returns:
@@ -118,7 +122,7 @@ def create_regression_model(
     name: str,
     data: IODataset,
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,  # noqa: E501
-    **parameters,
+    **parameters: Any,
 ) -> BaseRegressor:
     """Create a regression model from a training dataset.
 
@@ -126,9 +130,12 @@ def create_regression_model(
         name: The name of the regression algorithm.
         data: The training dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.BaseTransformer`
+            Values are instances of
+            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
-            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
+            If
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            do not transform the variables.
         parameters: The parameters of the regression model.
 
     Returns:
@@ -155,7 +162,7 @@ def create_classification_model(
     name: str,
     data: IODataset,
     transformer: TransformerType = BaseMLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
-    **parameters,
+    **parameters: Any,
 ) -> BaseClassifier:
     """Create a classification model from a training dataset.
 
@@ -163,9 +170,12 @@ def create_classification_model(
         name: The name of the classification algorithm.
         data: The training dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.BaseTransformer`
+            Values are instances of
+            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
-            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
+            If
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            do not transform the variables.
         parameters: The parameters of the classification model.
 
     Returns:
@@ -182,7 +192,7 @@ def create_clustering_model(
     name: str,
     data: Dataset,
     transformer: TransformerType = BaseClusterer.DEFAULT_TRANSFORMER,
-    **parameters,
+    **parameters: Any,
 ) -> BaseClusterer:
     """Create a clustering model from a training dataset.
 
@@ -190,9 +200,12 @@ def create_clustering_model(
         name: The name of the clustering algorithm.
         data: The training dataset.
         transformer: The strategies to transform the variables.
-            Values are instances of :class:`.BaseTransformer`
+            Values are instances of
+            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
-            If :attr:`~.BaseMLAlgo.IDENTITY`, do not transform the variables.
+            If
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            do not transform the variables.
         parameters: The parameters of the clustering model.
 
     Returns:

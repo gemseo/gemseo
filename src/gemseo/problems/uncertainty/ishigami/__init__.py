@@ -15,12 +15,17 @@
 r"""The Ishigami use case to benchmark and illustrate UQ algorithms.
 
 The Isighami function
-:math:`f(x_1,_2,x_3) = \sin(x_1)+ 7\sin(x_2)^2 + 0.1x_3^4\sin(X_1)`
-is commonly studied through the random variable :math:`Y=f(X_1,X_2,X_3)`
-where :math:`X_1`, :math:`X_2` and :math:`X_3` are independent random variables
-uniformly distributed over :math:`[-\pi,\pi]`.
+$f(x_1,_2,x_3) = \sin(x_1)+ 7\sin(x_2)^2 + 0.1x_3^4\sin(X_1)$
+is commonly studied through the random variable $Y=f(X_1,X_2,X_3)$
+where $X_1$, $X_2$ and $X_3$ are independent random variables
+uniformly distributed over $[-\pi,\pi]$.
 
-See :cite:`ishigami1990`.
+!!! quote "References"
+
+    T. Ishigami and T. Homma.
+    An importance quantification technique
+    in uncertainty analysis for computer models.
+    In First International Symposium on Uncertainty Modeling and Analysis, 1990.
 """
 
 from __future__ import annotations

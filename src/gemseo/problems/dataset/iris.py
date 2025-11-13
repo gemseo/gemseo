@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Iris dataset.
 
-This is one of the best known :class:`.Dataset`
+This is one of the best known [Dataset][gemseo.datasets.dataset.Dataset]
 to be found in the machine learning literature.
 
 It was introduced by the statistician Ronald Fisher
@@ -39,11 +39,10 @@ Each instance is characterized by:
 - its petal length in cm,
 - its petal width in cm.
 
-This :class:`.Dataset` can be used for either clustering purposes
-or classification ones.
+This [Dataset][gemseo.datasets.dataset.Dataset]
+can be used for either clustering purposes or classification ones.
 
-`More information about the Iris dataset
-<https://en.wikipedia.org/wiki/Iris_flower_data_set>`_
+[More information about the Iris dataset](https://en.wikipedia.org/wiki/Iris_flower_data_set)
 """
 
 from __future__ import annotations

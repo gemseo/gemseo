@@ -21,13 +21,11 @@ r"""The root mean squared error to assess the quality of a regressor.
 
 The root mean squared error (RMSE) is defined by
 
-.. math::
-
-    \operatorname{RMSE}(\hat{y})=\sqrt{\frac{1}{n}\sum_{i=1}^n(\hat{y}_i-y_i)^2},
+$$\operatorname{RMSE}(\hat{y})=\sqrt{\frac{1}{n}\sum_{i=1}^n(\hat{y}_i-y_i)^2},$$
 
 where
-:math:`\hat{y}` are the predictions and
-:math:`y` are the data points.
+$\hat{y}$ are the predictions and
+$y$ are the data points.
 """
 
 from __future__ import annotations

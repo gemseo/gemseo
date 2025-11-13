@@ -185,7 +185,7 @@ class CallableParallelExecution(
                 Or, when using multithreading or different workers, pass one worker
                 per input data.
             n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
+                if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution.
@@ -197,11 +197,11 @@ class CallableParallelExecution(
             wait_time_between_fork: The time to wait between two forks of the
                 process/thread.
             exceptions_to_re_raise: The exceptions that should be raised again
-                when caught inside a worker. If ``None``, all exceptions coming from
+                when caught inside a worker. If `None`, all exceptions coming from
                 workers are caught and the execution is allowed to continue.
 
         Raises:
-            ValueError: If there are duplicated workers in ``workers`` when
+            ValueError: If there are duplicated workers in `workers` when
                 using multithreading.
         """  # noqa: D205, D212, D415
         self.workers = workers
@@ -243,7 +243,7 @@ class CallableParallelExecution(
                 in inputs of the input used to compute the outputs.
                 If empty, no function is called.
             task_submitted_callback: A callback function called when all the
-                tasks are submitted, but not done yet. If ``None``, no function
+                tasks are submitted, but not done yet. If `None`, no function
                 is called.
             preprocessors: The functions called before the execution,
                 whose unique argument is the task index.
@@ -251,9 +251,9 @@ class CallableParallelExecution(
         Returns:
             The computed outputs.
 
-        Warnings:
+        Warning:
             This class relies on multiprocessing features, it is therefore
-            necessary to protect its execution with an ``if __name__ == '__main__':``
+            necessary to protect its execution with an `if __name__ == '__main__':`
             statement when working on Windows.
         """
         if callable(exec_callback):
@@ -346,7 +346,7 @@ class CallableParallelExecution(
         """Check the multiprocessing start method with respect to the platform.
 
         Raises:
-            ValueError: If the start method is different from ``spawn`` on
+            ValueError: If the start method is different from `spawn` on
                 Windows platform.
         """
         if (

@@ -45,8 +45,8 @@ class MNBI_Settings(BaseOptimizerSettings):  # noqa: N801
 
 The mNBI algorithm does not allow to normalize the design space at the top
 level, only the sub-optimizations accept design space normalization. To do
-this, pass the setting ``normalize_design_space`` to
-``sub_optim_algo_settings``.""",
+this, pass the setting `normalize_design_space` to
+`sub_optim_algo_settings`.""",
     )
 
     sub_optim_algo: str = Field(
@@ -59,7 +59,7 @@ this, pass the setting ``normalize_design_space`` to
         default=1,
         description="""The number of sub-optimizations points.
 
-mNBI generates ``n_sub_optim`` points on the Pareto front between the
+mNBI generates `n_sub_optim` points on the Pareto front between the
 `n-objective` individual minima. This value must be strictly greater than
 the number of objectives of the problem.""",
     )
@@ -73,7 +73,7 @@ the number of objectives of the problem.""",
         default=0,
         description="""The maximum number of iterations of the sub-optimization algorithms.
 
-If 0, the ``max_iter`` value is used.""",  # noqa: E501
+If 0, the `max_iter` value is used.""",  # noqa: E501
     )
 
     doe_algo: str = Field(
@@ -81,7 +81,7 @@ If 0, the ``max_iter`` value is used.""",  # noqa: E501
         description="""
             The design of experiments algo for the target points on the Pareto front.
 
-A ``fullfactorial`` DOE is used default as these tend to be low dimensions,
+A `fullfactorial` DOE is used default as these tend to be low dimensions,
 usually not more than 3 objectives for a given problem.
 This setting is relevant only for problems with more than 2 objectives.""",  # noqa: E501
     )
@@ -125,7 +125,7 @@ can be incorrectly resolved.""",
     custom_phi_betas: Sequence[NDArrayPydantic] = Field(
         default=(),
         description=(
-            r"The custom values of :math:`\Phi \beta` to be used in the optimization."
+            r"The custom values of $\Phi \beta$ to be used in the optimization."
         ),
     )
 
@@ -145,7 +145,7 @@ can be incorrectly resolved.""",
                 "The mNBI algo does not allow to normalize the design space at "
                 "the top level, only the sub-optimizations accept design space "
                 "normalization. To do this, pass the setting "
-                "``normalize_design_space`` to ``sub_optim_algo_settings``."
+                "`normalize_design_space` to `sub_optim_algo_settings`."
             )
             raise ValueError(message)
         return normalize_design_space

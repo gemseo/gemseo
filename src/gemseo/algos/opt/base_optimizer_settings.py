@@ -49,7 +49,7 @@ class BaseOptimizerSettings(BaseDriverSettings):
         default=None,
         description="""The threshold on the reference function value that triggers scaling.
 
-If ``None``, do not scale the functions.""",  # noqa: E501
+If `None`, do not scale the functions.""",  # noqa: E501
     )
 
     stop_crit_n_x: int = Field(

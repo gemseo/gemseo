@@ -69,11 +69,11 @@ class BaseFullFactorialDOE(BaseDOE):
                 The number of samples which is finally applied
                 is the product of the numbers of levels.
                 If 0, the algorithm uses the number of levels per input dimension
-                provided by the argument ``levels``.
+                provided by the argument `levels`.
             levels: The number of levels per input direction.
-                If ``levels`` is given as a scalar value, the same number of
+                If `levels` is given as a scalar value, the same number of
                 levels is used for all the inputs.
-                If empty, the number of samples provided in argument ``n_samples``
+                If empty, the number of samples provided in argument `n_samples`
                 is used in order to deduce the levels.
             **settings: The settings of the DOE algorithm.
 
@@ -82,8 +82,8 @@ class BaseFullFactorialDOE(BaseDOE):
 
         Raises:
             ValueError:
-                * If neither ``n_samples`` nor ``levels`` are provided.
-                * If both ``n_samples`` and ``levels`` are provided.
+                * If neither `n_samples` nor `levels` are provided.
+                * If both `n_samples` and `levels` are provided.
         """
         levels = settings.levels
 

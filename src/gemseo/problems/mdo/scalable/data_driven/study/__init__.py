@@ -19,18 +19,26 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Benchmark MDO formulations based on scalable disciplines.
 
-The :mod:`~gemseo.problems.mdo.scalable.study` package implements several classes
+The
+[gemseo.problems.mdo.scalable.data_driven.study][gemseo.problems.mdo.scalable.data_driven.study]
+package implements several classes
 to benchmark MDO formulations based on scalable disciplines.
 
-The :class:`.ScalabilityStudy` class implements
+The
+[ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+class implements
 the concept of scalability study:
 
-1. By instantiating a :class:`.ScalabilityStudy`, the user defines
-   the MDO problem in terms of design parameters, objective function and
-   constraints.
+1. By instantiating a
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel],
+   the user defines the MDO problem in terms of design parameters,
+   objective function and constraints.
 2. For each discipline, the user adds a dataset stored
-   in a :class:`.BaseFullCache` and select a type of
-   :class:`.ScalableModel` to build the :class:`.DataDrivenScalableDiscipline`
+   in a [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache]
+   and select a type of
+   [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel]
+   to build the
+   [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]
    associated with this discipline.
 3. The user adds different optimization strategies, defined in terms
    of both optimization algorithms and MDO formulation.
@@ -38,16 +46,20 @@ the concept of scalability study:
    design parameters, coupling variables and equality and inequality
    constraints. The user can also define a scaling strategies according to
    particular parameters rather than groups of parameters.
-5. Lastly, the user executes the :class:`.ScalabilityStudy` and the results
-   are written in several files and stored into directories
+5. Lastly, the user executes the
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+   and the results are written in several files and stored into directories
    in a hierarchical way, where names depend on both MDO formulation,
    scaling strategy and replications when it is necessary. Different kinds
    of files are stored: optimization graphs, dependency matrix plots and
    of course, scalability results by means of a dedicated class:
-   :class:`.ScalabilityResult`.
+   [ScalabilityResult][gemseo.problems.mdo.scalable.data_driven.study.result.ScalabilityResult].
 
-The :class:`.PostScalabilityStudy` class implements the way as the set of
-:class:`.ScalabilityResult`-based result files
+The
+[PostScalabilityStudy][gemseo.problems.mdo.scalable.data_driven.study.post.PostScalabilityStudy]
+class implements the way as the set of
+[ScalabilityResult][gemseo.problems.mdo.scalable.data_driven.study.result.ScalabilityResult]
+-based result files
 contained in the study directory are graphically post-processed. This class
 provides several methods to easily change graphical properties, notably
 the plot labels. It also makes it possible to define a cost function per
@@ -56,11 +68,11 @@ of the different disciplines required by an MDO process in an estimation
 of the computational cost associated with what would be a scaled version
 of the true problem.
 
-.. warning::
-
+Warning:
    Comparing MDO formulations in terms of estimated true computational time
-   rather than CPU time of the :class:`.ScalabilityStudy` is highly
-   recommended.
+   rather than CPU time of the
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+   is highly recommended.
    Indeed, time is often an obviousness criterion to distinguish between
    MDO formulations having the same performance in terms of distance to the
    optimum: look at our calculation budget and choose the best formulation

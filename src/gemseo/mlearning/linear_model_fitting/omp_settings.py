@@ -37,8 +37,8 @@ class OrthogonalMatchingPursuit_Settings(BaseLinearModelFitter_Settings):  # noq
     n_nonzero_coefs: PositiveInt | None = Field(
         default=None,
         description="""The desired number of non-zero coefficients.
-Ignored if :attr:`.tol` is set.
-When ``None`` and :attr:`.tol` is also ``None``,
+Ignored if `tol` is set.
+When `None` and `tol` is also `None`,
 this value is either set to 10% of the input dimension or 1, whichever is greater.""",
     )
 

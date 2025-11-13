@@ -99,19 +99,21 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             compute_missing_gradients: Whether to compute the gradients at the
                 selected iteration if they were not computed by the algorithm.
 
-                .. warning::
+        Warning:
                    Activating this option may add considerable computation time
                    depending on the cost of the gradient evaluation.
                    This option will not compute the gradients if the
-                   :class:`.OptimizationProblem` instance was imported from an HDF5
-                   file. This option requires an :class:`.OptimizationProblem` with a
-                   gradient-based algorithm.
+                   [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+                   instance was imported from an HDF5 file.
+                   This option requires an
+                   [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+                   with a gradient-based algorithm.
 
         Returns:
             The gradients of the outputs
             indexed by the names of the output,
-            e.g. ``"output_name"`` for a mono-dimensional output,
-            or ``"output_name_i"`` for the i-th component of a multidimensional output.
+            e.g. `"output_name"` for a mono-dimensional output,
+            or `"output_name_i"` for the i-th component of a multidimensional output.
         """
         gradient_values = {}
         if compute_missing_gradients:

@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 class DataProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class for pre- and post-processing data.
 
-    This is useful to cast the data types, since the |g| kernel only handles numpy
+    This is useful to cast the data types, since the GEMSEO kernel only handles numpy
     arrays, and interfaces to disciplinary tools, workflow engines or environment can
     require different types.
     """
@@ -114,19 +114,19 @@ class NameMapping(DataProcessor):
     """A data preprocessor to map process level names to local discipline names."""
 
     mapping: Mapping[str, str]
-    """The mapping structure of the form ``{global_name: local_name}``."""
+    """The mapping structure of the form `{global_name: local_name}`."""
 
     reverse_mapping: Mapping[str, str]
-    """The reverse mapping structure of the form ``{local_name: global_name}``."""
+    """The reverse mapping structure of the form `{local_name: global_name}`."""
 
     def __init__(self, mapping: Mapping[str, str]) -> None:
         """
         Args:
-            mapping: A mapping structure of the form ``{global_name: local_name}``
-                where ``global_name`` must be consistent
+            mapping: A mapping structure of the form `{global_name: local_name}`
+                where `global_name` must be consistent
                 with the grammar of the discipline.
                 The local name is the data provided
-                to the :meth:`.Discipline._run` method.
+                to the `.Discipline._run()` method.
                 When missing,
                 the global name is the local name.
         """  # noqa: D205, D212, D415

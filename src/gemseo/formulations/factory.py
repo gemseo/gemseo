@@ -35,4 +35,4 @@ class MDOFormulationFactory(BaseFormulationFactory):
 
 
 MDO_FORMULATION_FACTORY: Final[MDOFormulationFactory] = MDOFormulationFactory()
-"""The factory for ``BaseMDOFormulation`` objects."""
+"""The factory for `BaseMDOFormulation` objects."""

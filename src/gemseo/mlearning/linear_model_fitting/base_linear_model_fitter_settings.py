@@ -27,10 +27,10 @@ class BaseLinearModelFitter_Settings(BaseSettings):  # noqa: N801
 
     fit_intercept: bool = Field(
         default=True,
-        description="""Whether to calculate the intercept :math:`b`
-in the linear model :math:`y=Ax+b`.
+        description="""Whether to calculate the intercept $b$
+in the linear model $y=Ax+b$.
 Otherwise, it is assumed to be zero.
 
 This option is ignored in presence of extra data, e.g., Jacobian observations;
-the intercept :math:`b` is assumed to be zero.""",
+the intercept $b$ is assumed to be zero.""",
     )

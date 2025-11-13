@@ -46,17 +46,17 @@ if TYPE_CHECKING:
 class MainDiscipline(BaseDiscipline):
     r"""The main discipline of the scalable problem.
 
-    It computes the objective :math:`x_0^Tx_0 + \sum_{i=1}^N y_i^Ty_i`. and the left-
-    hand side of the constraints :math:`t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0`.
+    It computes the objective $x_0^Tx_0 + \sum_{i=1}^N y_i^Ty_i$. and the left-
+    hand side of the constraints $t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0$.
     """
 
     _CORE_DISCIPLINE_CLASS = _MainDiscipline
 
     __n_scalable_disciplines: int
-    r"""The number of scalable disciplines :math:`N`."""
+    r"""The number of scalable disciplines $N$."""
 
     __y_i_names: list[str]
-    r"""The names of the coupling variables :math:`y_1,\ldots,y_N`."""
+    r"""The names of the coupling variables $y_1,\ldots,y_N$."""
 
     def __init__(
         self,
@@ -65,7 +65,7 @@ class MainDiscipline(BaseDiscipline):
     ) -> None:
         r"""
         Args:
-            *t_i: The threshold vectors :math:`t_1,\ldots,t_N`.
+            *t_i: The threshold vectors $t_1,\ldots,t_N$.
             **default_input_values: The default values of the input variables.
         """  # noqa: D205 D212
         self.__n_scalable_disciplines = len(t_i)

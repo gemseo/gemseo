@@ -76,13 +76,10 @@ class OTDistribution(
 ):
     """An OpenTURNS-based probability distribution.
 
-    .. warning::
-
+    Warning:
         The probability distribution parameters must be provided
         according to the signature of the OpenTURNS classes.
-        `Access the OpenTURNS documentation
-        <http://openturns.github.io/openturns/latest/user_manual/
-        probabilistic_modelling.html>`_.
+        [Access the OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html).
 
     Examples:
         >>> from gemseo.uncertainty.distributions.openturns.distribution import (
@@ -119,31 +116,29 @@ class OTDistribution(
         Args:
             standard_parameters: The parameters of the probability distribution
                 used for string representation only
-                (use ``parameters`` for computation).
-                If empty, use ``parameters`` instead.
+                (use `parameters` for computation).
+                If empty, use `parameters` instead.
                 For instance,
-                let us consider the interfaced OpenTURNS distribution ``"Dirac"``.
+                let us consider the interfaced OpenTURNS distribution `"Dirac"`.
                 Then,
                 the string representation of
-                ``OTDistribution("x", "Dirac", (1,), 1, {"loc": 1})``
-                is ``"Dirac(loc=1)"``
+                `OTDistribution("x", "Dirac", (1,), 1, {"loc": 1})`
+                is `"Dirac(loc=1)"`
                 while the string representation of
-                ``OTDistribution("x", "Dirac", (1,))``
-                is ``"Dirac(1)"``.
+                `OTDistribution("x", "Dirac", (1,))`
+                is `"Dirac(1)"`.
             transformation: A transformation applied
                 to the random variable,
-                e.g. :math:`\sin(x)`. If empty, no transformation.
+                e.g. $\sin(x)$. If empty, no transformation.
             lower_bound: A lower bound to truncate the probability distribution.
-                If ``None``, no lower truncation.
+                If `None`, no lower truncation.
             upper_bound: An upper bound to truncate the probability distribution.
-                If ``None``, no upper truncation.
+                If `None`, no upper truncation.
             threshold: A threshold in [0,1]
-                (`see OpenTURNS documentation
-                <http://openturns.github.io/openturns/latest/user_manual/
-                _generated/openturns.TruncatedDistribution.html>`_).
+                ([see OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/_generated/openturns.TruncatedDistribution.html)).
             settings: The settings of the distributions.
                 If set, the other arguments are ignored.
-                If ``None``, the other arguments are used instead.
+                If `None`, the other arguments are used instead.
         """  # noqa: D205,D212,D415
         if settings is None:
             settings = OTDistribution_Settings(
@@ -178,11 +173,11 @@ class OTDistribution(
         Args:
             transformation: A transformation applied
                 to the random variable,
-                e.g. :math:`\sin(x)`. If ``None``, no transformation.
+                e.g. $\sin(x)$. If `None`, no transformation.
             lower_bound: A lower bound to truncate the probability distribution.
-                If ``None``, no lower truncation.
+                If `None`, no lower truncation.
             upper_bound: An upper bound to truncate the probability distribution.
-                If ``None``, no upper truncation.
+                If `None`, no upper truncation.
             threshold: A threshold in [0,1].
         """  # noqa: D205, D212
         distribution = self._create_distribution_from_module(
@@ -237,7 +232,7 @@ class OTDistribution(
         Args:
             distribution: The original distribution.
             transformation: A transformation applied to the random variable,
-                e.g. 'sin(x)'. If ``None``, no transformation.
+                e.g. 'sin(x)'. If `None`, no transformation.
 
         Returns:
             The transformed distribution.
@@ -263,9 +258,9 @@ class OTDistribution(
         Args:
             distribution: The original distribution.
             lower_bound: A lower bound to truncate the probability distributions.
-                If ``None``, no lower truncation.
+                If `None`, no lower truncation.
             upper_bound: An upper bound to truncate the probability distributions.
-                If ``None``, no upper truncation.
+                If `None`, no upper truncation.
             threshold: A threshold in [0,1].
 
         Returns:

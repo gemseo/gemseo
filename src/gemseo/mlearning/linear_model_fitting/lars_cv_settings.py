@@ -38,7 +38,7 @@ class LARSCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
 
     copy_X: bool = Field(  # noqa: N815
         default=True,
-        description="""If ``True``, input data will be copied;
+        description="""If `True`, input data will be copied;
 else, it may be overwritten""",
     )
 
@@ -49,7 +49,7 @@ else, it may be overwritten""",
     cv: int | None = Field(
         default=None,
         description="""The number of folds.
-If ``None``, use the efficient Leave-One-Out cross-validation.""",
+If `None`, use the efficient Leave-One-Out cross-validation.""",
     )
 
     eps: NonNegativeFloat = Field(
@@ -57,7 +57,7 @@ If ``None``, use the efficient Leave-One-Out cross-validation.""",
         description="""The machine-precision regularization
 in the computation of the Cholesky diagonal factors.
 Increase this for very ill-conditioned systems.
-Unlike the ``tol`` parameter in some iterative optimization-based algorithms,
+Unlike the `tol` parameter in some iterative optimization-based algorithms,
 this parameter does not control the tolerance of the optimization.""",
     )
 

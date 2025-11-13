@@ -26,9 +26,9 @@ from docstring_inheritance import GoogleDocstringInheritanceMeta
 class BaseMultiton(GoogleDocstringInheritanceMeta):
     """A metaclass implementing the multiton design pattern.
 
-    See `Multiton <https://en.wikipedia.org/wiki/Multiton_pattern>`__.
+    See [Multiton](https://en.wikipedia.org/wiki/Multiton_pattern).
 
-    As opposed to the ``functools.lru_cache``,
+    As opposed to the `functools.lru_cache`,
     the objects built from this metaclass can be pickled.
 
     This metaclass has a cache

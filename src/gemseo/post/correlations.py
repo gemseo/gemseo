@@ -64,7 +64,7 @@ class Correlations(BasePost[Correlations_Settings]):
     def _plot(self, settings: Correlations_Settings) -> None:
         """
         Raises:
-            ValueError: If an element of ``func_names`` is unknown.
+            ValueError: If an element of `func_names` is unknown.
         """  # noqa: D205, D212, D415
         func_names = settings.func_names
         coeff_limit = settings.coeff_limit

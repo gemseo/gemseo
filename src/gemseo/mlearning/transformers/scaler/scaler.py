@@ -19,27 +19,28 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Scaling a variable with a linear transformation.
 
-The :class:`.Scaler` class implements the default scaling method
-applying to some parameter :math:`z`:
+The
+[Scaler][gemseo.mlearning.transformers.scaler.scaler.Scaler]
+class implements the default scaling method
+applying to some parameter $z$:
 
-.. math::
-
+$$
     \bar{z} := \text{offset} + \text{coefficient}\times z
+$$
 
-where :math:`\bar{z}` is the scaled version of :math:`z`.
+where $\bar{z}$ is the scaled version of $z$.
 This scaling method is a linear transformation
 parameterized by an offset and a coefficient.
 
 In this default scaling method,
 the offset is equal to 0 and the coefficient is equal to 1.
 Consequently,
-the scaling operation is the identity: :math:`\bar{z}=z`.
+the scaling operation is the identity: $\bar{z}=z$.
 This method has to be overloaded.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.transformers.scaler.min_max_scaler`
-   :mod:`~gemseo.mlearning.transformers.scaler.standard_scaler`
+See Also:
+   [gemseo.mlearning.transformers.scaler.min_max_scaler][gemseo.mlearning.transformers.scaler.min_max_scaler]
+   [gemseo.mlearning.transformers.scaler.standard_scaler][gemseo.mlearning.transformers.scaler.standard_scaler]
 """
 
 from __future__ import annotations

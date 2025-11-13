@@ -36,7 +36,7 @@ class DirectoryCreator(NameGenerator):
     """The method to create the directory names."""
 
     __last_directory: Path | None
-    """The last created directory or ``None`` if none has been created."""
+    """The last created directory or `None` if none has been created."""
 
     def __init__(
         self,
@@ -57,7 +57,7 @@ class DirectoryCreator(NameGenerator):
 
     @property
     def last_directory(self) -> Path | None:
-        """The last created directory or ``None`` if none has been created."""
+        """The last created directory or `None` if none has been created."""
         return self.__last_directory
 
     def create(self) -> Path:
@@ -73,7 +73,7 @@ class DirectoryCreator(NameGenerator):
     def _get_initial_counter(self) -> int:
         """Return the initial value of the counter for creating directories.
 
-        This accounts for the already existing directories in :attr:`.__root_directory`.
+        This accounts for the already existing directories in `__root_directory`.
 
         Returns:
              The initial value of the counter.

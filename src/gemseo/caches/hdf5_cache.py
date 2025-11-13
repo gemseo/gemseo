@@ -72,25 +72,25 @@ class HDF5Cache(BaseFullCache):
         """
         Args:
             name: A name for the cache.
-                If empty, use :attr:`hdf_node_path``.
+                If empty, use `hdf_node_path`.
             hdf_file_path: The path of the HDF file.
                 Initialize a singleton to access the HDF file.
                 This singleton is used for multithreading/multiprocessing access
                 with a lock.
             hdf_node_path: The name to the HDF node,
-                possibly passed as a path ``root_name/.../group_name/.../node_name``.
+                possibly passed as a path `root_name/.../group_name/.../node_name`.
             input_data_converter: The data converter to convert the input data.
             output_data_converter: The data converter to convert the output data.
 
-        Warnings:
+        Warning:
             This class relies on some multiprocessing features, it is therefore
-            necessary to protect its execution with an ``if __name__ == '__main__':``
+            necessary to protect its execution with an `if __name__ == '__main__':`
             statement when working on Windows.
             Currently, the use of an HDF5Cache is not supported in parallel on Windows
             platforms. This is due to the way subprocesses are forked in this
             architecture. The method
-            :meth:`.DOEScenario.set_optimization_history_backup` is recommended as
-            an alternative.
+            [BaseScenario.set_optimization_history_backup()][gemseo.scenarios.base_scenario.BaseScenario.set_optimization_history_backup]
+            is recommended as an alternative.
         """  # noqa: D205, D212, D415
         self.__input_data_converter = input_data_converter
         self.__output_data_converter = output_data_converter
@@ -237,7 +237,8 @@ class HDF5Cache(BaseFullCache):
     ) -> None:
         """Update the format of a HDF5 file.
 
-        .. seealso:: :meth:`.HDF5FileSingleton.update_file_format`.
+        See Also:
+            `gemseo.caches._hdf5_file_singleton.HDF5FileSingleton.update_file_format()`.
 
         Args:
             hdf_file_path: A HDF5 file path.

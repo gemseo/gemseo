@@ -21,14 +21,18 @@
 r"""An object returning a Discipline for a chain of masses connected by springs.
 
 The coupling between the dynamics of the different masses can be done at the level of
-the RHS of the ODE (by the method :func:`.create_discipline_with_coupled_dynamics`),
-or by coupling directly as many instances of :class:`.ODEDiscipline` as there are masses
-(by the method :func:`.create_coupled_ode_disciplines`).
+the RHS of the ODE (by the method
+[create_discipline_with_coupled_dynamics()][gemseo.problems.ode.springs.coupled_springs_generator.CoupledSpringsGenerator.create_discipline_with_coupled_dynamics]
+or by coupling directly as many instances of
+[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] as there are masses
+(by the method
+[create_coupled_ode_disciplines()][gemseo.problems.ode.springs.coupled_springs_generator.CoupledSpringsGenerator.create_coupled_ode_disciplines]).
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import asarray
 from numpy import linspace
@@ -110,7 +114,7 @@ class CoupledSpringsGenerator:
         self._rightmost_position = rightmost_position
 
     @property
-    def state_names(self):
+    def state_names(self) -> tuple[str]:
         """The names of the state variables.
 
         Returns:
@@ -119,7 +123,7 @@ class CoupledSpringsGenerator:
         return tuple(name for names in self._state_names for name in names)
 
     @property
-    def state_dot_names(self):
+    def state_dot_names(self) -> tuple[str]:
         """The names of the time derivatives of the state variables.
 
         Returns:
@@ -129,7 +133,7 @@ class CoupledSpringsGenerator:
         return tuple(name for names in self._state_dot_names for name in names)
 
     @property
-    def position_names(self):
+    def position_names(self) -> tuple[str]:
         """The names of the inputs defining the position of a mass.
 
         Returns:
@@ -138,7 +142,7 @@ class CoupledSpringsGenerator:
         return tuple(names[0] for names in self._state_names)
 
     @property
-    def initial_position_names(self):
+    def initial_position_names(self) -> tuple[str]:
         """The names of the inputs defining the initial position.
 
         Returns:
@@ -147,7 +151,7 @@ class CoupledSpringsGenerator:
         return tuple(f"initial_{names[0]}" for names in self._state_names)
 
     @property
-    def times(self):
+    def times(self) -> RealArray:
         """The times at which the solution os evaluated.
 
         Returns:
@@ -156,8 +160,8 @@ class CoupledSpringsGenerator:
         return self._times
 
     def create_coupled_ode_disciplines(
-        self, **ode_solver_options
-    ) -> Sequence[ODEDiscipline]:
+        self, **ode_solver_options: Any
+    ) -> list[ODEDiscipline]:
         """Create coupled ODE disciplines describing masses connected by springs.
 
         Args:
@@ -199,7 +203,7 @@ class CoupledSpringsGenerator:
         return disciplines
 
     def create_discipline_with_coupled_dynamics(
-        self, **ode_solver_options
+        self, **ode_solver_options: Any
     ) -> ODEDiscipline:
         """Create an ODE discipline describing masses connected by springs.
 

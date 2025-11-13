@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class OptimizationMetadata:
-    """The optimization metadata to be passed to the :class:`.OptimizationDataset`."""
+    """The optimization metadata to be passed to the [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]."""  # noqa: E501
 
     objective_name: str
     """The name of the objective."""
@@ -44,9 +44,13 @@ class OptimizationMetadata:
     """Whether to use standardized objective for logging and post-processing.
 
     The standardized objective corresponds to the original one expressed as a cost
-    function to minimize. A :class:`.BaseDriverLibrary` works with this standardized
-    objective and the :class:`.Database` stores its values. However, for convenience, it
-    may be more relevant to log the expression and the values of the original objective.
+    function to minimize.
+    A [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary]
+    works with this standardized
+    objective and the [Database][gemseo.algos.database.Database] stores its values.
+    However, for convenience,
+    it may be more relevant to log the expression
+    and the values of the original objective.
     """
 
     tolerances: ConstraintTolerances

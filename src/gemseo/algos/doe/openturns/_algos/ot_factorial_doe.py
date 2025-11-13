@@ -30,7 +30,8 @@ LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 class OTFactorialDOE(BaseOTStratifiedDOE):
     """The factorial DOE algorithm.
 
-    .. note:: This class is a singleton.
+    Note:
+        This class is a singleton.
     """
 
     _ALGO_CLASS: ClassVar[type[Factorial]] = Factorial

@@ -49,10 +49,10 @@ class BaseParallelMDASolver(BaseMDASolver):
     """The settings of the MDA"""
 
     __parallel_execution: DiscParallelExecution | None
-    """Either a parallel executor for disciplines or ``None`` in serial mode."""
+    """Either a parallel executor for disciplines or `None` in serial mode."""
 
     __parallel_linearization: DiscParallelLinearization | None
-    """Either a parallel linearizator for disciplines or ``None`` in serial mode."""
+    """Either a parallel linearizator for disciplines or `None` in serial mode."""
 
     def __init__(  # noqa: D107
         self,

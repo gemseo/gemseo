@@ -51,12 +51,20 @@ def compute_lower_bound_ks_agg(
     The lower bound Kreisselmeier-Steinhauser function tends to the maximum operator
     when the aggregation parameter tends to infinity.
 
-    See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The aggregation parameter.
         scale: The scaling factor for multiplying the constraints.
 
@@ -79,12 +87,20 @@ def compute_upper_bound_ks_agg(
     The upper bound Kreisselmeier-Steinhauser function tends to the maximum operator
     when the aggregation parameter tends to infinity.
 
-    See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The aggregation parameter.
         scale: The scaling factor for multiplying the constraints.
 
@@ -109,13 +125,21 @@ def compute_total_ks_agg_jac(
 ) -> ndarray:
     """Compute the Jacobian of KS function with respect to constraint function inputs.
 
-    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
         orig_jac: The original constraint jacobian.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The multiplicative parameter in the exponential.
         scale: The scaling factor for multiplying the constraints.
 
@@ -143,12 +167,20 @@ def compute_partial_ks_agg_jac(
 ) -> ndarray:
     """Compute the Jacobian of KS function with respect to constraint functions.
 
-    See :cite:`kennedy2015improved` and  :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The multiplicative parameter in the exponential.
         scale: The scaling factor for multiplying the constraints.
 
@@ -179,12 +211,15 @@ def compute_iks_agg(
     The induces exponential function (IKS) tends to the maximum operator
     when the aggregation parameter tends to infinity.
 
-    See :cite:`kennedy2015improved`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
 
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The multiplicative parameter in the exponential.
         scale: The scaling factor for multiplying the constraints.
 
@@ -212,13 +247,16 @@ def compute_total_iks_agg_jac(
 ) -> ndarray:
     """Compute the Jacobian of IKS function with respect to constraints inputs.
 
-    See :cite:`kennedy2015improved`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
 
     Args:
         orig_val: The original constraint values.
         orig_jac: The original constraint jacobian.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The multiplicative parameter in the exponential.
         scale: The scaling factor for multiplying the constraints.
 
@@ -262,13 +300,15 @@ def compute_partial_iks_agg_jac(
 ) -> ndarray:
     """Compute the Jacobian of IKS function with respect to constraints functions.
 
-    See :cite:`kennedy2015improved`.
+    !!! quote "References"
 
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
 
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         rho: The multiplicative parameter in the exponential.
         scale: The scaling factor for multiplying the constraints.
 
@@ -331,7 +371,7 @@ def compute_sum_square_agg(
     Args:
         orig_val: The input vector.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, scale all the constraint values.
+            If `None`, scale all the constraint values.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -354,7 +394,7 @@ def compute_total_sum_square_agg_jac(
         orig_val: The original constraint values.
         orig_jac: The original constraint jacobian.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -378,7 +418,7 @@ def compute_partial_sum_square_agg_jac(
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -405,7 +445,7 @@ def compute_max_agg(
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -429,7 +469,7 @@ def compute_max_agg_jac(
         orig_val: The original constraint values.
         orig_jac: The original constraint jacobian.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -458,7 +498,7 @@ def compute_sum_positive_square_agg(
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, scale all the constraint values.
+            If `None`, scale all the constraint values.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -481,7 +521,7 @@ def compute_total_sum_square_positive_agg_jac(
         orig_val: The original constraint values.
         orig_jac: The original constraint jacobian.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:
@@ -507,7 +547,7 @@ def compute_partial_sum_positive_square_agg_jac(
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
-            If ``None``, aggregate all the outputs.
+            If `None`, aggregate all the outputs.
         scale: The scaling factor for multiplying the constraints.
 
     Returns:

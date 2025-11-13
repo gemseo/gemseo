@@ -66,28 +66,28 @@ class HDFDatabase:
 
     In the HDF file, three groups are created:
 
-        - design space group: with the name ``"design_space"``, it stores the names,
+        - design space group: with the name `"design_space"`, it stores the names,
           bounds, sizes, types, etc. of the design space of the problem.
-        - design variables group: with the name ``"x"``, it stores the values of the
+        - design variables group: with the name `"x"`, it stores the values of the
           design vector.
-        - keys group = with the name ``"k"``, it stores the names of the keys used to
+        - keys group = with the name `"k"`, it stores the names of the keys used to
           identify each output stored in the database.
-        - values group = with the name ``"v"``, it stores all the outputs of the
+        - values group = with the name `"v"`, it stores all the outputs of the
           functions stored in the database.
 
-    As a reminder, the values group ``"v"`` includes all the outputs of the
+    As a reminder, the values group `"v"` includes all the outputs of the
     functions stored in the database. String outputs are treated in a special way
     because we need to store them as bytes, and we need to know if they were
-    originally an ``array(str)`` or just a single string in order to be able to
+    originally an `array(str)` or just a single string in order to be able to
     reconstruct the database from a file.
 
     Whenever a new string variable is added, the index of the dataset is used to
-    create a subgroup named ``"str_{index_dataset}"``. In which the value will be
-    stored as a dataset. The subgroup includes an attribute ``"str_type"`` that
+    create a subgroup named `"str_{index_dataset}"`. In which the value will be
+    stored as a dataset. The subgroup includes an attribute `"str_type"` that
     indicates if the original data was a single string or an array of strings.
 
     Numerical vectors are stored in a similar way, with a subgroupo named
-    ``"arr_{index_dataset}"``. Scalars are appended directly in the values group with no
+    `"arr_{index_dataset}"`. Scalars are appended directly in the values group with no
     subgroup.
 
     The example below shows the structure of the data for a case with two entries
@@ -138,7 +138,7 @@ class HDFDatabase:
     """A buffer of input values.
 
     To temporary save the last input values that have been stored before calling
-    :meth:`.to_file`.
+    `to_file()`.
     It is used to append the exported HDF file.
     The keys are the arrays hashes, they are used to check whether an array is already
     stored. This is way much faster than using a list of arrays when checking
@@ -174,7 +174,7 @@ class HDFDatabase:
             design_vars_values: The values of the design variables.
 
         Raises:
-            ValueError: If the dataset name ``index_dataset`` already exists
+            ValueError: If the dataset name `index_dataset` already exists
                 in the group of design variables.
         """
         str_index_dataset = str(index_dataset)
@@ -203,9 +203,9 @@ class HDFDatabase:
             keys_group: The HDF group of the output names.
             values_group: The HDF group of the output values.
             output_values: The output values.
-            output_name_to_idx: The indices of the output names in ``output_values``.
-                If ``None``, these indices are automatically built using the
-                order of the names in ``output_values``.
+            output_name_to_idx: The indices of the output names in `output_values`.
+                If `None`, these indices are automatically built using the
+                order of the names in `output_values`.
                 These indices are used to build the dataset of output vectors.
         """
         output_keys_sorted = sorted(output_values.keys())
@@ -217,7 +217,7 @@ class HDFDatabase:
             )
 
         # We separate scalar data from vector data in the hdf file.
-        # Scalar data are first stored into a list (``values``),
+        # Scalar data are first stored into a list (`values`),
         # then added to the hdf file.
         # Vector data are directly added to the hdf file.
         values = []
@@ -251,8 +251,8 @@ class HDFDatabase:
     ) -> ReturnedHdfMissingOutputType:
         """Return the missing values in the HDF group of the output names.
 
-        Compare the keys of ``output_values`` with the existing names
-        in the group of the output names ``keys_group`` in order to know which
+        Compare the keys of `output_values` with the existing names
+        in the group of the output names `keys_group` in order to know which
         outputs are missing.
 
         Args:
@@ -444,7 +444,7 @@ class HDFDatabase:
     ) -> None:
         """Append the existing HDF datasets of the outputs with new values.
 
-        Find the values among ``output_values`` that do not
+        Find the values among `output_values` that do not
         exist in the HDF datasets and append them to the datasets.
 
         Args:
@@ -636,8 +636,8 @@ class HDFDatabase:
         """Read the numerical or string values from the HDF group.
 
         The HDF groups in the database use a naming convention when they are stored,
-        array groups have the name ``"arr_{index}"``, and string groups have the name
-        ``"str_{index}"``.
+        array groups have the name `"arr_{index}"`, and string groups have the name
+        `"str_{index}"`.
 
         Args:
             index: The index in which the values are stored.

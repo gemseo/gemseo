@@ -47,7 +47,7 @@ class _WorkerData(NamedTuple):
 class _Functor:
     """A functor to call a discipline linearization.
 
-    When called, the :attr:`.Discipline.io.data` and :attr:`.Discipline.jac`
+    When called, the `Discipline.io.data` and `Discipline.jac`
     are returned.
     """
 
@@ -60,7 +60,8 @@ class _Functor:
                 this allows to ensure that the discipline was executed
                 with the right input data;
                 it can be almost free if the corresponding output data
-                have been stored in the :attr:`.cache`.
+                have been stored in the
+                [cache][gemseo.core.parallel_execution.disc_parallel_linearization.DiscParallelLinearization.cache].
         """  # noqa:D205 D212 D415
         self.__disc = discipline
         self.__execute = execute
@@ -71,7 +72,7 @@ class _Functor:
             inputs: The inputs of the discipline.
 
         Returns:
-            The discipline :attr:`.Discipline.io.data` and its jacobian.
+            The discipline input, output and Jacobian data.
         """  # noqa:D205 D212 D415
         jacobian = self.__disc.linearize(inputs, execute=self.__execute)
         return _WorkerData(self.__disc.io.data, jacobian)
@@ -100,7 +101,8 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
                 this allows to ensure that the discipline was executed
                 with the right input data;
                 it can be almost free if the corresponding output data
-                have been stored in the :attr:`.cache`.
+                have been stored in the
+                [cache][gemseo.core.discipline.discipline.Discipline.cache].
         """  # noqa:D205 D212 D415
         super().__init__(
             workers=[_Functor(d, execute=execute) for d in disciplines],

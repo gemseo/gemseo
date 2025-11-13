@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 
 class Sellar2(BaseSellar):
-    """The discipline to compute the coupling variable :math:`y_2`."""
+    """The discipline to compute the coupling variable $y_2$."""
 
     _INPUT_NAMES: ClassVar[tuple[str]] = (X_2, X_SHARED, Y_1)
 

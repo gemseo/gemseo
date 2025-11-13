@@ -22,13 +22,12 @@ r"""Polynomial regression model.
 Polynomial regression is a particular case of the linear regression,
 where the input data is transformed before the regression is applied.
 This transform consists of creating a matrix of monomials
-by raising the input data to different powers up to a certain degree :math:`D`.
+by raising the input data to different powers up to a certain degree $D$.
 In the case where there is only one input variable,
-the input data :math:`(x_i)_{i=1, \dots, n}\in\mathbb{R}^n` is transformed
+the input data $(x_i)_{i=1, \dots, n}\in\mathbb{R}^n$ is transformed
 into the Vandermonde matrix:
 
-.. math::
-
+$$
     \begin{pmatrix}
         x_1^1  & x_1^2  & \cdots & x_1^D\\
         x_2^1  & x_2^2  & \cdots & x_2^D\\
@@ -36,43 +35,41 @@ into the Vandermonde matrix:
         x_n^1  & x_n^2  & \cdots & x_n^D\\
     \end{pmatrix}
     = (x_i^d)_{i=1, \dots, n;\ d=1, \dots, D}.
+$$
 
 The output variable is expressed as a weighted sum of monomials:
 
-.. math::
+$$y = w_0 + w_1 x^1 + w_2 x^2 + ... + w_D x^D,$$
 
-     y = w_0 + w_1 x^1 + w_2 x^2 + ... + w_D x^D,
-
-where the coefficients :math:`w_1, w_2, ..., w_d` and the intercept :math:`w_0`
+where the coefficients $w_1, w_2, ..., w_d$ and the intercept $w_0$
 are estimated by least square regression.
 
 In the case of a multidimensional input,
-i.e. :math:`X = (x_{ij})_{i=1,\dots,n; j=1,\dots,m}`,
-where :math:`n` is the number of samples and :math:`m` is the number of input variables,
+i.e. $X = (x_{ij})_{i=1,\dots,n; j=1,\dots,m}$,
+where $n$ is the number of samples and $m$ is the number of input variables,
 the Vandermonde matrix is expressed
-through different combinations of monomials of degree :math:`d, (1 \leq d \leq D)`;
-e.g. for three variables :math:`(x, y, z)` and degree :math:`D=3`,
+through different combinations of monomials of degree $d, (1 \leq d \leq D)$;
+e.g. for three variables $(x, y, z)$ and degree $D=3$,
 the different terms are
-:math:`x`, :math:`y`, :math:`z`, :math:`x^2`, :math:`xy`, :math:`xz`,
-:math:`y^2`, :math:`yz`, :math:`z^2`, :math:`x^3`, :math:`x^2y` etc.
+$x$, $y$, $z$, $x^2$, $xy$, $xz$,
+$y^2$, $yz$, $z^2$, $x^3$, $x^2y$ etc.
 More generally,
-for :math:`m` input variables,
-the total number of monomials of degree :math:`1 \leq d \leq D` is given
-by :math:`P = \binom{m+D}{m} = \frac{(m+D)!}{m!D!}`.
+for $m$ input variables,
+the total number of monomials of degree $1 \leq d \leq D$ is given
+by $P = \binom{m+D}{m} = \frac{(m+D)!}{m!D!}$.
 In the case of 3 input variables given above,
 the total number of monomial combinations of degree lesser than or equal to three
-is thus :math:`P = \binom{6}{3} = 20`.
-The linear regression has to identify the coefficients :math:`w_1, \dots, w_P`,
-in addition to the intercept :math:`w_0`.
+is thus $P = \binom{6}{3} = 20$.
+The linear regression has to identify the coefficients $w_1, \dots, w_P$,
+in addition to the intercept $w_0$.
 
-Dependence
-----------
+## Dependence
+
 The polynomial regression model relies
-on the `LinearRegression <https://scikit-learn.org/stable/modules/
-linear_model.html>`_ and  `PolynomialFeatures <https://scikit-learn.org/stable/
-modules/generated/sklearn.preprocessing.PolynomialFeatures.html>`_ classes of
-the `scikit-learn library <https://scikit-learn.org/stable/modules/
-linear_model.html>`_.
+on the [LinearRegression](https://scikit-learn.org/stable/modules/linear_model.html) and
+[PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html)
+classes of
+the [scikit-learn library](https://scikit-learn.org/stable/modules/linear_model.html).
 """
 
 from __future__ import annotations
@@ -193,7 +190,7 @@ class PolynomialRegressor(LinearRegressor):
         """Return the regression coefficients of the linear model.
 
         Args:
-            as_dict: If ``True``,
+            as_dict: If `True`,
                 return the coefficients as a dictionary of Numpy arrays
                 indexed by the names of the coefficients.
                 Otherwise, return the coefficients as a Numpy array.

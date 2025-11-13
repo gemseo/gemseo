@@ -35,7 +35,7 @@ class SubOptimConstraint:
     r"""The constraint of the sub-problem.
 
     This is used to compute
-    :math:`f(x) - \phi^T\beta - t * n`
+    $f(x) - \phi^T\beta - t * n$
     without using a closure.
     """
 
@@ -46,7 +46,7 @@ class SubOptimConstraint:
     """The quasi-normal vector to the phi simplex."""
 
     __phi_beta: NumberArray
-    r"""The scalar product of :math:`\phi` and :math:`beta`."""
+    r"""The scalar product of $\phi$ and $beta$."""
 
     def __init__(self, phi_beta: NumberArray, n: NumberArray, f: MDOFunction) -> None:
         """
@@ -60,24 +60,24 @@ class SubOptimConstraint:
         self.__f = f
 
     def compute_output(self, x_t: NumberArray) -> NumberArray:
-        """Compute the constraint function output at :math:`x`.
+        """Compute the constraint function output at $x$.
 
         Args:
-            x_t: A vector :math:`x` followed by a scalar :math:`t`.
+            x_t: A vector $x$ followed by a scalar $t$.
 
         Returns:
-            The constraint function output at :math:`x`.
+            The constraint function output at $x$.
         """
         return self.__f.evaluate(x_t[:-1]) - self.__phi_beta - x_t[-1] * self.__n
 
     def compute_jacobian(self, x_t: NumberArray) -> NumberArray:
-        """Compute the constraint function Jacobian at :math:`x`.
+        """Compute the constraint function Jacobian at $x$.
 
         Args:
-            x_t: A vector :math:`x` followed by a scalar :math:`t`.
+            x_t: A vector $x$ followed by a scalar $t$.
 
         Returns:
-            The constraint function Jacobian at :math:`x`.
+            The constraint function Jacobian at $x$.
         """
         jac_f = atleast_2d(self.__f.jac(x_t[:-1]))
         jac = zeros((jac_f.shape[0], jac_f.shape[1] + 1))

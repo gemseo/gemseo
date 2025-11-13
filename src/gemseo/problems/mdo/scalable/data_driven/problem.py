@@ -20,7 +20,8 @@
 """Scalable MDO problem.
 
 This module implements the concept of scalable problem by means of the
-:class:`.ScalableProblem` class.
+[ScalableProblem][gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem]
+class.
 
 Given
 
@@ -39,8 +40,10 @@ We can repeat this tasks for different sizes of variables
 and compare the scalability, which is the dependence of the scenario results
 on the problem dimension.
 
-.. seealso:: :class:`.Discipline`, :class:`.ScalableDiscipline`
-   and :class:`.Scenario`
+See Also:
+    [Discipline][gemseo.core.discipline.discipline.Discipline],
+   [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]
+   and [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
 """
 
 from __future__ import annotations
@@ -109,7 +112,7 @@ class ScalableProblem:
             ineq_constraints: The names of the inequality constraints, if any.
             maximize_objective: Whether to maximize the objective.
             sizes: The sizes of the inputs and outputs.
-                If ``None``, use the original sizes.
+                If `None`, use the original sizes.
             **parameters: The optional parameters of the scalable model.
         """  # noqa: D205, D212, D415
         self.disciplines = [dataset.name for dataset in datasets]
@@ -189,7 +192,7 @@ class ScalableProblem:
             show: Whether to display the figure.
             step: The step to evaluate the 1d interpolation function.
             varnames: The names of the variable to plot.
-                If ``None``, all the variables are plotted.
+                If `None`, all the variables are plotted.
             directory: The directory path.
             png: Whether to use PNG file format instead of PDF.
         """
@@ -262,11 +265,11 @@ class ScalableProblem:
         feasibility_level: float = 0.5,
         **formulation_settings: Any,
     ) -> BaseScenario:
-        """Create a :class:`.Scenario` from the scalable disciplines.
+        """Create a scenario from the scalable disciplines.
 
         Args:
             formulation_name: The MDO formulation to use for the scenario.
-            scenario_type: The type of scenario, either ``MDO`` or ``DOE``.
+            scenario_type: The type of scenario, either `MDO` or `DOE`.
             start_at_equilibrium: Whether to start at equilibrium using a preliminary
                 MDA.
             active_probability: The probability to set the inequality constraints as
@@ -276,7 +279,8 @@ class ScalableProblem:
             **formulation_settings: The formulation settings.
 
         Returns:
-            The :class:`.Scenario` from the scalable disciplines.
+            The [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+            from the scalable disciplines.
         """
         equilibrium = {}
         if start_at_equilibrium:

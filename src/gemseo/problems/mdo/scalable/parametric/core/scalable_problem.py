@@ -83,7 +83,7 @@ class ScalableProblem:
     discipline computing the objective function and the constraints.
 
     These disciplines are defined on a unit design space, i.e. design variables belongs
-    to :math:`[0, 1]`.
+    to $[0, 1]$.
     """
 
     _MAIN_DISCIPLINE_CLASS: ClassVar[type] = MainDiscipline
@@ -108,10 +108,10 @@ class ScalableProblem:
     """The number of samples to estimate the quantile-based constraint threshold."""
 
     __alpha: RealArray
-    r"""The matrix :math:`\alpha` to compute :math:`y=\alpha+\beta x."""
+    r"""The matrix $\alpha$ to compute $y=\alpha+\beta x."""
 
     __beta: RealArray
-    r"""The matrix :math:`\beta` to compute :math:`y=\alpha+\beta x."""
+    r"""The matrix :math:$\beta` to compute $y=\alpha+\beta x."""
 
     def __init__(
         self,
@@ -127,9 +127,9 @@ class ScalableProblem:
         Args:
             discipline_settings: The configurations
                 of the different scalable disciplines.
-            d_0: The size of the shared design variable :math:`x_0`.
-            add_random_variables: Whether to add a centered random variable :math:`u_i`
-                on the output of the :math:`i`-th scalable discipline.
+            d_0: The size of the shared design variable :math:$x_0`.
+            add_random_variables: Whether to add a centered random variable $u_i$
+                on the output of the $i$-th scalable discipline.
             alpha: The proportion of feasible design points.
             seed: The seed for reproducibility.
         """  # noqa: D205 D212
@@ -273,28 +273,28 @@ class ScalableProblem:
         self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
 
     def differentiate_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
-        r"""Compute the derivatives of the coupling output :math:`y`.
+        r"""Compute the derivatives of the coupling output $y$.
 
         Args:
-            x: The design point at which to compute :math:`y`.
-            u: The uncertain point at which to compute :math:`y`, if any.
+            x: The design point at which to compute $y$.
+            u: The uncertain point at which to compute $y$, if any.
 
         Returns:
-            The derivatives of the coupling output :math:`y`
-            at the design point :math:`x` and the uncertain point :math:`u`.
+            The derivatives of the coupling output $y$
+            at the design point $x$ and the uncertain point $u$.
         """
         return self.__beta if u is None else hstack((self.__beta, self._inv_C))
 
     def compute_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
-        r"""Compute the coupling vector :math:`y`.
+        r"""Compute the coupling vector $y$.
 
         Args:
-            x: The design point at which to compute :math:`y`.
-            u: The uncertain point at which to compute :math:`y`, if any.
+            x: The design point at which to compute $y$.
+            u: The uncertain point at which to compute $y$, if any.
 
         Returns:
-            The coupling vector :math:`y`
-            at the design point :math:`x` and the uncertain point :math:`u`.
+            The coupling vector $y$
+            at the design point $x$ and the uncertain point $u$.
         """
         y = self.__alpha + self.__beta @ x
         if u is not None:

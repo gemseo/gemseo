@@ -154,7 +154,9 @@ def import_or_skip_xlwings() -> Any:
 
 
 @pytest.fixture(scope="module")
-def is_xlwings_usable(import_or_skip_xlwings, disable_fault_handler) -> bool:
+def is_xlwings_usable(
+    import_or_skip_xlwings: Any, disable_fault_handler: Generator[None, None, None]
+) -> bool:
     """Check if xlwings is usable.
 
     Args:

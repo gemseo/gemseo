@@ -71,34 +71,35 @@ WrappedJacobianType = Callable[[NumberArray], NumberArray]
 class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     """The standard definition of an array-based function with algebraic operations.
 
-    :class:`.MDOFunction` is the key class
+    [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] is the key class
     to define the objective function, the constraints and the observables
-    of an :class:`.OptimizationProblem`.
+    of an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem].
 
-    an :class:`.MDOFunction` is initialized from an optional callable and a name,
-    e.g. ``func = MDOFunction(lambda x: 2*x, "my_function")``.
+    an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] is initialized
+    from an optional callable and a name,
+    e.g. `func = MDOFunction(lambda x: 2*x, "my_function")`.
 
-    .. note::
-
-       The callable can be set to ``None``
+    Note:
+       The callable can be set to `None`
        when the user does not want to use a callable
        but a database to browse for the output vector corresponding to an input vector
-       (see :meth:`.MDOFunction.set_pt_from_database`).
+       (see
+       [set_pt_from_database()][gemseo.core.mdo_functions.mdo_function.MDOFunction.set_pt_from_database]).
 
     The following information can also be provided at initialization:
 
     - the type of the function,
-      e.g. ``f_type="obj"`` if the function will be used as an objective
-      (see :attr:`.MDOFunction.FunctionType`),
+      e.g. `f_type="obj"` if the function will be used as an objective
+      (see
+      [FunctionType][gemseo.core.mdo_functions.mdo_function.MDOFunction.FunctionType]),
     - the function computing the Jacobian matrix,
-      e.g. ``jac=lambda x: array([2.])``,
+      e.g. `jac=lambda x: array([2.])`,
     - the literal expression to be used for the string representation of the object,
-      e.g. ``expr="2*x"``,
+      e.g. `expr="2*x"`,
     - the names of the inputs and outputs of the function,
-      e.g. ``input_names=["x"]`` and ``output_names=["y"]``.
+      e.g. `input_names=["x"]` and `output_names=["y"]`.
 
-    .. warning::
-
+    Warning:
        For the literal expression,
        do not use `"f(x) = 2*x"` nor `"f = 2*x"` but `"2*x"`.
        The other elements will be added automatically
@@ -107,32 +108,44 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
 
     After the initialization,
     all of these arguments can be overloaded with setters,
-    e.g. :attr:`.MDOFunction.input_names`.
+    e.g.
+    [input_names][gemseo.core.mdo_functions.mdo_function.MDOFunction.input_names].
 
     The original function and Jacobian function
-    can be accessed with the properties :attr:`.MDOFunction.func`
-    and :attr:`.MDOFunction.jac`.
+    can be accessed with the properties
+    [func][gemseo.core.mdo_functions.mdo_function.MDOFunction.func]
+    and
+    [jac][gemseo.core.mdo_functions.mdo_function.MDOFunction.jac].
 
-    an :class:`.MDOFunction` is callable:
-    ``output = func(array([3.])) # expected: array([6.])``.
+    an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] is callable:
+    `output = func(array([3.])) # expected: array([6.])`.
 
-    Elementary operations can be performed with :class:`.MDOFunction` instances:
-    addition (``func = func1 + func2`` or ``func = func1 + offset``),
-    subtraction (``func = func1 - func2`` or ``func = func1 - offset``),
-    multiplication (``func = func1 * func2`` or ``func = func1 * factor``)
-    and opposite  (``func = -func1``).
-    It is also possible to build an :class:`.MDOFunction`
-    as a concatenation of :class:`.MDOFunction` objects:
-    ``func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"``).
+    Elementary operations can be performed
+    with [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] instances:
+    addition (`func = func1 + func2` or `func = func1 + offset`),
+    subtraction (`func = func1 - func2` or `func = func1 - offset`),
+    multiplication (`func = func1 * func2` or `func = func1 * factor`)
+    and opposite  (`func = -func1`).
+    It is also possible
+    to build an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+    as a concatenation of
+    [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] objects:
+    `func = MDOFunction.concatenate([func1, func2, func3], "my_func_123"`).
 
-    Moreover, an :class:`.MDOFunction` can be approximated
+    Moreover,
+    an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+    can be approximated
     with either a first-order or second-order Taylor polynomial at a given input vector,
-    using respectively :meth:`.MDOFunction.linear_approximation`
-    and :meth:`quadratic_approx`;
-    such an approximation is also an :class:`.MDOFunction`.
+    using respectively the function
+    [compute_linear_approximation()][gemseo.core.mdo_functions.taylor_polynomials.compute_linear_approximation]
+    and
+    [compute_quadratic_approximation()][gemseo.core.mdo_functions.taylor_polynomials.compute_quadratic_approximation];
+    such an approximation is also
+    an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction].
 
     Lastly, the user can check the Jacobian function by means of approximation methods
-    (see :meth:`.MDOFunction.check_grad`).
+    (see
+    [check_grad()][gemseo.core.mdo_functions.mdo_function.MDOFunction.check_grad]).
     """
 
     class ConstraintType(StrEnum):
@@ -157,6 +170,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
         """The type of function is not set."""
 
     FunctionType = merge_enums("FunctionType", StrEnum, _FunctionType, ConstraintType)
+    """Enumeration of function types."""
 
     ApproximationMode = ApproximationMode
 
@@ -200,12 +214,12 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     """The name of the function."""
 
     original: MDOFunction
-    """The function before preprocessing by the :class:`.OptimizationProblem."""
+    """The function before preprocessing by the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]."""  # noqa: E501
 
     special_repr: str
     """The string representation of the function overloading its default string ones."""
 
-    _dim: int
+    dim: int
     """The dimension of the output space of the function."""
 
     _func: WrappedFunctionType
@@ -223,13 +237,13 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     __original_name: str
     """The original name of the function.
 
-    By default, it is the same as :attr:`.name`.
-    When the value of :attr:`.name` changes,
-    :attr:`.original_name` stores its former value.
+    By default, it is the same as `name`.
+    When the value of `name` changes,
+    `original_name` stores its former value.
     """
 
     __INPUT_NAME_PATTERN: Final[str] = "x"
-    """The pattern to define a variable name, as ``"x[1]"``."""
+    """The pattern to define a variable name, as `"x[1]"`."""
 
     def __init__(
         self,
@@ -249,11 +263,11 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
         """
         Args:
             func: The original function to be actually called.
-                If ``None``, the function will not have an original function.
+                If `None`, the function will not have an original function.
             name: The name of the function.
             f_type: The type of the function.
             jac: The original Jacobian function to be actually called.
-                If ``None``, the function will not have an original Jacobian function.
+                If `None`, the function will not have an original Jacobian function.
             expr: The expression of the function, e.g. `"2*x"`, if any.
             input_names: The names of the inputs of the function.
                 If empty, the inputs of the function will have no names.
@@ -264,9 +278,10 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, the outputs of the function will have no names.
             force_real: Whether to cast the output values to real.
             special_repr: The string representation of the function.
-                If empty, use :meth:`.default_repr`.
+                If empty, use
+                [default_repr][gemseo.core.mdo_functions.mdo_function.MDOFunction.default_repr].
             original_name: The original name of the function.
-                If empty, use the same name than the ``name`` input.
+                If empty, use the same name than the `name` input.
             with_normalized_inputs: Whether the function expects normalized inputs.
         """  # noqa: D205, D212, D415
         self.__original_name = original_name or name
@@ -304,7 +319,8 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     def evaluate(self, x_vect: NumberArray) -> OutputType:
         """Evaluate the function.
 
-        When the output dimension :attr:`.dim` is not defined,
+        When the output dimension
+        [dim][gemseo.core.mdo_functions.mdo_function.MDOFunction.dim] is not defined,
         it is inferred on the first evaluation.
 
         Args:
@@ -312,7 +328,9 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             Either the raw output value
-            or its real part when :attr:`.force_real` is `True`.
+            or its real part when
+            [force_real][gemseo.core.mdo_functions.mdo_function.MDOFunction.force_real]
+            is `True`.
         """
         output_value = self._func(x_vect)
 
@@ -360,7 +378,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     def is_constraint(self) -> bool:
         """Check if the function is a constraint.
 
-        The constraint type is either ``"eq"`` or "``ineq"``.
+        The constraint type is either `"eq"` or "`ineq"`.
 
         Returns:
             Whether the function is a constraint.
@@ -651,7 +669,8 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             Some attributes of the function indexed by their names.
-            See :attr:`.MDOFunction.DICT_REPR_ATTR`.
+            See
+            [DICT_REPR_ATTR][gemseo.core.mdo_functions.mdo_function.MDOFunction.DICT_REPR_ATTR].
         """
         repr_dict = {}
         for attr_name in self.DICT_REPR_ATTR:
@@ -668,14 +687,15 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             **attributes: The values of the serializable attributes
-                listed in :attr:`.MDOFunction.DICT_REPR_ATTR`.
+                listed in
+                [DICT_REPR_ATTR][gemseo.core.mdo_functions.mdo_function.MDOFunction.DICT_REPR_ATTR].
 
         Returns:
             A function initialized from the provided data.
 
         Raises:
             ValueError: If the name of an argument is not in
-                :attr:`.MDOFunction.DICT_REPR_ATTR`.
+                [DICT_REPR_ATTR][gemseo.core.mdo_functions.mdo_function.MDOFunction.DICT_REPR_ATTR].
         """
         serializable_attributes = MDOFunction.DICT_REPR_ATTR
         args = attributes.pop("args", None)
@@ -701,18 +721,18 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
         """Set the original function and Jacobian function from a database.
 
         For a given input vector,
-        the method :meth:`.MDOFunction.func` will return
-        either the output vector stored in the database
-        if the input vector is present
-        or ``None``.
-        The same for the method :meth:`.MDOFunction.jac`.
+        the method [func()][gemseo.core.mdo_functions.mdo_function.MDOFunction.func]
+        will return either the output vector stored in the database
+        if the input vector is present or `None`.
+        The same for the method
+        [jac][gemseo.core.mdo_functions.mdo_function.MDOFunction.jac].
 
         Args:
             database: The database to read.
             design_space: The design space used for normalization.
-            normalize: If ``True``,
+            normalize: If `True`,
                 the values of the inputs are unnormalized before call.
-            jac: If ``True``, a Jacobian pointer is also generated.
+            jac: If `True`, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """
         SetPtFromDatabase(database, design_space, self, normalize, jac, x_tolerance)
@@ -730,14 +750,14 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
                 use these names as is.
                 Otherwise,
                 if there is only one name,
-                e.g. ``["var"]``,
+                e.g. `["var"]`,
                 and if the dimension of the input space is equal to 3,
                 use this name as a base name
                 and generate the names of the inputs,
-                e.g. ``["var[0]", "var[1]", "var[2]"]``.
+                e.g. `["var[0]", "var[1]", "var[2]"]`.
                 If empty,
-                use ``"x"`` as a base name and generate the names of the inputs,
-                i.e. ``["x[0]", "x[1]", "x[2]"]``.
+                use `"x"` as a base name and generate the names of the inputs,
+                i.e. `["x[0]", "x[1]", "x[2]"]`.
 
         Returns:
             The names of the inputs of the function.

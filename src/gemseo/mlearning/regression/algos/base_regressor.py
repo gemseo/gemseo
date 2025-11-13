@@ -97,9 +97,9 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         r"""Predict the Jacobian with respect to the input variables.
 
         The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         If the NumPy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -128,9 +128,9 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         r"""Predict the Hessian with respect to the input variables.
 
         The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         If the NumPy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;
@@ -155,34 +155,36 @@ class BaseRegressor(BaseMLSupervisedAlgo):
     ) -> RealArray:
         r"""Predict the Jacobian with respect to special variables.
 
-        The method :meth:`.predict_jacobian` predicts the standard Jacobian,
+        The
+        [predict_jacobian()][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.predict_jacobian]
+        method predicts the standard Jacobian,
         which is the matrix of partial derivatives with respect to the input variables.
 
         In some cases,
-        the regressor :math:`\hat{f}(x)` is used
-        to approximate a model :math:`f(x,p)` at point :math:`p`
+        the regressor $\hat{f}(x)$ is used
+        to approximate a model $f(x,p)$ at point $p$
         given a training dataset
-        :math:`\left(x_i,f(x_i,p),\partial_p f(x_i,p)\right)_{1\leq i \leq N}`
+        $\left(x_i,f(x_i,p),\partial_p f(x_i,p)\right)_{1\leq i \leq N}$
         including not only the input and output samples
-        :math:`\left(x_i,f(x_i,p)\right)_{1\leq i \leq N}`
+        $\left(x_i,f(x_i,p)\right)_{1\leq i \leq N}$
         but also the samples of the partial derivatives of the outputs
-        with respect to a special variable :math:`p`
+        with respect to a special variable $p$
         that is not an input variable of the regressor.
         Then,
-        as the regressor :math:`\hat{f}(x)` is a function of
-        :math:`\left(f(x_i,p)\right)_{1\leq i \leq N}`,
-        it is also a function of :math:`p`.
+        as the regressor $\hat{f}(x)$ is a function of
+        $\left(f(x_i,p)\right)_{1\leq i \leq N}$,
+        it is also a function of $p$.
         Consequently,
-        it can be differentiated with respect to :math:`p`
+        it can be differentiated with respect to $p$
         using the chain rule principle if the regressor implements this mechanism.
 
         Args:
             input_data: The input data
-                with shape ``(n_samples, special_variable_dimension)``.
+                with shape `(n_samples, special_variable_dimension)`.
 
         Returns:
             The predicted Jacobian data
-            with shape ``(n_samples, n_outputs, special_variable_dimension)``.
+            with shape `(n_samples, n_outputs, special_variable_dimension)`.
 
         Raises:
             ValueError: When the training dataset does not include gradient information.
@@ -214,11 +216,11 @@ class BaseRegressor(BaseMLSupervisedAlgo):
 
         Args:
             input_data: The input data
-                with shape ``(n_samples, special_variable_dimension)``.
+                with shape `(n_samples, special_variable_dimension)`.
 
         Returns:
             The predicted Jacobian data
-            with shape ``(n_samples, n_outputs, special_variable_dimension)``.
+            with shape `(n_samples, n_outputs, special_variable_dimension)`.
 
         Raises:
             NotImplementedError: When the derivatives are not available.
@@ -239,10 +241,10 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         with respect to the differentiated inputs.
 
         Args:
-            input_data: The input data with shape ``(n_samples, n_inputs)``.
+            input_data: The input data with shape `(n_samples, n_inputs)`.
 
         Returns:
-            The predicted Jacobian data with shape ``(n_samples, n_outputs, n_inputs)``.
+            The predicted Jacobian data with shape `(n_samples, n_outputs, n_inputs)`.
 
         Raises:
             NotImplementedError: When the Jacobian function is not implemented.
@@ -260,11 +262,11 @@ class BaseRegressor(BaseMLSupervisedAlgo):
         with respect to the differentiated inputs.
 
         Args:
-            input_data: The input data with shape ``(n_samples, n_inputs)``.
+            input_data: The input data with shape `(n_samples, n_inputs)`.
 
         Returns:
             The predicted Hessian data with shape
-             ``(n_samples, n_outputs, n_inputs, n_inputs)``.
+             `(n_samples, n_outputs, n_inputs, n_inputs)`.
 
         Raises:
             NotImplementedError: When the Hessian function is not implemented.

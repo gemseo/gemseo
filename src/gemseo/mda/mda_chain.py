@@ -83,7 +83,8 @@ class _ProcessFlow(_BaseMDAProcessFlow):
 class MDAChain(BaseMDA):
     """A chain of MDAs.
 
-    The execution sequence is provided by the :class:`.DependencyGraph`.
+    The execution sequence is provided
+    by the [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
     """
 
     Settings: ClassVar[type[MDAChain_Settings]] = MDAChain_Settings
@@ -167,11 +168,16 @@ class MDAChain(BaseMDA):
     ) -> Discipline:
         """Create a process from disciplines.
 
-        This method creates a process that will be appended to the main inner
-        :class:`.MDOChain` of the :class:`.MDAChain`. Depending on the number and type
-        of disciplines, as well as the options provided by the user, the process may be
-        a sole discipline, a :class:`.BaseMDA`, a :class:`MDOChain`, or a
-        :class:`MDOParallelChain`.
+        This method creates a process that will be appended
+        to the main inner [MDOChain][gemseo.core.chains.chain.MDOChain]
+        of the [MDAChain][gemseo.mda.mda_chain.MDAChain].
+        Depending on the number and type of disciplines,
+        as well as the options provided by the user,
+        the process may be a sole discipline,
+        a [BaseMDA][gemseo.mda.base_mda.BaseMDA],
+        an [MDOChain][gemseo.core.chains.chain.MDOChain],
+        or an
+        [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain].
 
         Args:
             parallel_tasks: The parallel tasks to be processed.
@@ -200,8 +206,8 @@ class MDAChain(BaseMDA):
         This method computes the parallel disciplines,
         if any.
         If there is any coupled disciplines in a parallel task,
-        a :class:`.BaseMDA` is created,
-        based on the :class:`.BaseMDA` options provided.
+        a [BaseMDA][gemseo.mda.base_mda.BaseMDA] is created,
+        based on the [BaseMDA][gemseo.mda.base_mda.BaseMDA] options provided.
 
         Args:
             parallel_tasks: The parallel tasks.

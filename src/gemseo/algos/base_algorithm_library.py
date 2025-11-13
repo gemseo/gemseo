@@ -17,7 +17,7 @@
 #       :author: Damien Guenot - 26 avr. 2016
 #       :author: Francois Gallard, refactoring
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base class for algorithm libraries to handle a :class:`.BaseProblem`."""
+"""Base class for algorithm libraries to handle a problem."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     """The description of an algorithm."""
 
     algorithm_name: str
-    """The name of the algorithm in |g|."""
+    """The name of the algorithm in GEMSEO."""
 
     internal_algorithm_name: str
     """The name of the algorithm in the wrapped library."""
@@ -80,7 +80,9 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
 
 
 class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
-    """Base class for algorithm libraries to handle a :class:`.BaseProblem`.
+    """Base class for algorithm libraries to handle a problem.
+
+    See [BaseProblem][gemseo.algos.base_problem.BaseProblem].
 
     An algorithm library solves a numerical problem (optim, doe, linear problem) using a
     particular algorithm from a particular family of numerical methods.
@@ -187,9 +189,9 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
         Args:
             problem: The problem to be solved.
             settings_model: The algorithm settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The algorithm settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                These arguments are ignored when `settings_model` is not `None`.
 
         Returns:
             The solution found by the algorithm.

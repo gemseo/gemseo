@@ -90,7 +90,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     """The mapping from figure names or nameless figure counters to figures."""
 
     _USE_JACOBIAN_DATA: ClassVar[bool] = False
-    """Whether to export the jacobian data to the dataset if an ``OptimizationProblem``
+    """Whether to export the jacobian data to the dataset if an `OptimizationProblem`
     is passed as an input."""
 
     def __init__(
@@ -177,16 +177,16 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             settings_model: The post-processor settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The post-processor settings.
-                This argument is ignored when ``settings_model`` is not ``None``.
+                This argument is ignored when `settings_model` is not `None`.
 
         Returns:
             The figures, to be customized;
-            in the case of a matplotlib ``Figure``, it must not be closed.
+            in the case of a matplotlib `Figure`, it must not be closed.
 
         Raises:
-            ValueError: If the ``dataset`` is empty.
+            ValueError: If the `dataset` is empty.
         """
         if self._dataset.empty:
             msg = (
@@ -266,12 +266,12 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         variables: Iterable[str] = (),
         simplify: bool = False,
     ) -> list[str]:
-        """Create the names of the components of design variables as ``"name[i]"``.
+        """Create the names of the components of design variables as `"name[i]"`.
 
         Args:
             variables: The design variables of interest.
                 If empty, use all the design variables.
-            simplify: Whether to use ``"[i]"`` when ``i>0`` instead of ``"name[i]"``.
+            simplify: Whether to use `"[i]"` when `i>0` instead of `"name[i]"`.
 
         Returns:
             The names of the components of the design variables.

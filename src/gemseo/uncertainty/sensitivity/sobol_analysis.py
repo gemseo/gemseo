@@ -19,85 +19,97 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Class for the estimation of Sobol' indices.
 
-Let us consider the model :math:`Y=f(X_1,\ldots,X_d)`
+Let us consider the model $Y=f(X_1,\ldots,X_d)$
 where:
 
-- :math:`X_1,\ldots,X_d` are independent random variables,
-- :math:`E\left[f(X_1,\ldots,X_d)^2\right]<\infty`.
+- $X_1,\ldots,X_d$ are independent random variables,
+- $E\left[f(X_1,\ldots,X_d)^2\right]<\infty$.
 
 Then, the following decomposition is unique:
 
-.. math::
+$$
 
    Y=f_0 + \sum_{i=1}^df_i(X_i) + \sum_{i,j=1\atop i\neq j}^d f_{i,j}(X_i,X_j)
    + \sum_{i,j,k=1\atop i\neq j\neq k}^d f_{i,j,k}(X_i,X_j,X_k) + \ldots +
    f_{1,\ldots,d}(X_1,\ldots,X_d)
+$$
 
 where:
 
-- :math:`f_0=E[Y]`,
-- :math:`f_i(X_i)=E[Y|X_i]-f_0`,
-- :math:`f_{i,j}(X_i,X_j)=E[Y|X_i,X_j]-f_i(X_i)-f_j(X_j)-f_0`
+- $f_0=E[Y]$,
+- $f_i(X_i)=E[Y|X_i]-f_0$,
+- $f_{i,j}(X_i,X_j)=E[Y|X_i,X_j]-f_i(X_i)-f_j(X_j)-f_0$
 - and so on.
 
 Then, the shift to variance leads to:
 
-.. math::
-
+$$
    V[Y]=\sum_{i=1}^dV\left[f_i(X_i)\right] +
    \sum_{i,j=1\atop j\neq i}^d V\left[f_{i,j}(X_i,X_j)\right] + \ldots +
    V\left[f_{1,\ldots,d}(X_1,\ldots,X_d)\right]
+$$
 
 and the Sobol' indices are obtained by dividing by the variance and sum up to 1:
 
-.. math::
-
+$$
    1=\sum_{i=1}^dS_i + \sum_{i,j=1\atop j\neq i}^d S_{i,j} +
    \sum_{i,j,k=1\atop i\neq j\neq k}^d S_{i,j,k} + \ldots + S_{1,\ldots,d}
+$$
 
 A Sobol' index represents the share of output variance explained
-by an input variable or a group of input variables. For the input variable :math:`X_i`,
+by an input variable or a group of input variables. For the input variable $X_i$,
 
-- :math:`S_i` is the first-order Sobol' index
-  measuring the individual effect of :math:`X_i`,
-- :math:`S_{i,j}` is the second-order Sobol' index
-  measuring the joint effect between :math:`X_i` and :math:`X_j`,
-- :math:`S_{i,j,k}` is the third-order Sobol' index
-  measuring the joint effect between :math:`X_i`, :math:`X_j` and :math:`X_k`,
+- $S_i$ is the first-order Sobol' index
+  measuring the individual effect of $X_i$,
+- $S_{i,j}$ is the second-order Sobol' index
+  measuring the joint effect between $X_i$ and $X_j$,
+- $S_{i,j,k}$ is the third-order Sobol' index
+  measuring the joint effect between $X_i$, $X_j$ and $X_k$,
 - and so on.
 
 In practice, we only consider the first-order Sobol' index:
 
-.. math::
-
-   S_i=\frac{V[E[Y|X_i]]}{V[Y]}
+$$S_i=\frac{V[E[Y|X_i]]}{V[Y]}$$
 
 and the total-order Sobol' index:
 
-.. math::
+$$S_i^T=\sum_{u\subset\{1,\ldots,d\}\atop u \ni i}S_u$$
 
-   S_i^T=\sum_{u\subset\{1,\ldots,d\}\atop u \ni i}S_u
+The latter represents the sum of the individual effect of $X_i$ and
+the joint effects between $X_i$ and any input variable or group of input variable.
 
-The latter represents the sum of the individual effect of :math:`X_i` and
-the joint effects between :math:`X_i` and any input variable or group of input variable.
-
-This methodology relies on the :class:`.SobolAnalysis` class. Precisely,
-:attr:`.SobolAnalysis.indices` contains
-both :attr:`.SobolAnalysis.indices.first` and
-:attr:`.SobolAnalysis.indices.total`
-while :attr:`.SobolAnalysis.main_indices` represents first-order Sobol'
-indices.
-Lastly, the :meth:`.SobolAnalysis.plot` method represents
+This methodology relies on the
+[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis] class.
+Precisely,
+[indices][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.indices] contains
+both
+[first][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.SensitivityIndices.first]
+and
+[total][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.SensitivityIndices.total]
+while
+[main_indices][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.main_indices]
+represents first-order Sobol' indices.
+Lastly, the
+[plot()][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.plot]
+method represents
 the estimations of both first-order and total-order Sobol' indices along with
 their confidence intervals whose default level is 95%.
 
 The user can select the algorithm to estimate the Sobol' indices.
 The computation relies on
-`OpenTURNS capabilities <https://openturns.github.io/www/>`_.
+[OpenTURNS capabilities](https://openturns.github.io/www/).
 
 Control variates can be given to compute indices. In this case, the algorithm selection
 is disregarded and the estimation is based on the Monte Carlo estimator proposed by
-Saltelli in :cite:`saltelli2010`.
+Saltelli.
+
+!!! quote "References"
+
+    Andrea Saltelli, Paola Annoni, Ivano Azzini, Francesca Campolongo, Marco Ratto,
+    and Stefano Tarantola.
+    Variance based sensitivity analysis of model output design and estimator
+    for the total sensitivity index.
+    Computer physics communications, 181(2):259--270, 2010.
 """
 
 from __future__ import annotations
@@ -191,7 +203,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         >>> analysis.compute_samples([discipline], parameter_space, n_samples=10000)
         >>> indices = analysis.compute_indices()
 
-    .. note:: The second-order Sobol' indices cannot be estimated with control variates.
+    Note:
+        The second-order Sobol' indices cannot be estimated with control variates.
     """
 
     @dataclass(frozen=True)
@@ -236,15 +249,15 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     class ControlVariate:
         """A control variate based on a cheap discipline.
 
-        If either ``indices`` or ``variance`` is missing,
-        both are estimated from ``n_samples`` evaluations of ``discipline``.
+        If either `indices` or `variance` is missing,
+        both are estimated from `n_samples` evaluations of `discipline`.
         """
 
         discipline: Discipline
         """A cheap discipline, e.g. a surrogate discipline.
 
         It must have as inputs the input variables and the output variables
-        used by ``SobolAnalysis``.
+        used by `SobolAnalysis`.
         """
 
         indices: Mapping[SobolAnalysis.Method, FirstOrderIndicesType] = field(
@@ -252,7 +265,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         )
         """The mapping between method names and first-order Sobol' indices.
 
-        If empty, ``SobolAnalysis`` will compute it.
+        If empty, `SobolAnalysis` will compute it.
         """
 
         n_samples: int = 0
@@ -264,7 +277,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         variance: Mapping[str, RealArray] = field(default_factory=dict)
         """The mapping between output names and output variances.
 
-        If empty, ``SobolAnalysis`` will compute it.
+        If empty, `SobolAnalysis` will compute it.
         """
 
     __SECOND: Final[str] = "second"
@@ -314,17 +327,17 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         Notes:
              The estimators of Sobol' indices rely on the same DOE algorithm.
              This algorithm starts with two independent input datasets
-             composed of :math:`N` independent samples
-             and this number :math:`N` is the usual sampling size for Sobol' analysis.
-             When ``compute_second_order=False``
-             or when the input dimension :math:`d` is equal to 2,
-             :math:`N=\frac{n_\text{samples}}{2+d}`.
-             Otherwise, :math:`N=\frac{n_\text{samples}}{2+2d}`.
-             The larger :math:`N`,
+             composed of $N$ independent samples
+             and this number $N$ is the usual sampling size for Sobol' analysis.
+             When `compute_second_order=False`
+             or when the input dimension $d$ is equal to 2,
+             $N=\frac{n_\text{samples}}{2+d}$.
+             Otherwise, $N=\frac{n_\text{samples}}{2+2d}$.
+             The larger $N$,
              the more accurate the estimators of Sobol' indices are.
              Therefore,
-             for a small budget ``n_samples``,
-             the user can choose to set ``compute_second_order`` to ``False``
+             for a small budget `n_samples`,
+             the user can choose to set `compute_second_order` to `False`
              to ensure a better estimation of the first- and second-order indices.
         """  # noqa: D205, D212, D415
         algo_settings = algo_settings or {}
@@ -520,7 +533,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 the confidence intervals.
             seed: The seed to initialize the random generator used for the bootstrapping
                 method.
-                If ``None``,
+                If `None`,
                 then fresh, unpredictable entropy will be pulled from the OS.
 
         Returns:
@@ -625,7 +638,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 the confidence intervals.
             seed: The seed to initialize the random generator used for the bootstrapping
                 method when the indices are estimated using control variates.
-                If ``None``,
+                If `None`,
                 then fresh, unpredictable entropy will be pulled from the OS.
         """  # noqa:D205,D212,D415
         output_names = self._get_output_names(output_names)
@@ -778,11 +791,12 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     ) -> FirstOrderIndicesType:
         """Get the confidence intervals for the Sobol' indices.
 
-        Warnings:
-            You must first call :meth:`.compute_indices`.
+        Warning:
+            You must first call
+            [compute_indices()][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.compute_indices].
 
         Args:
-            first_order: If ``True``, compute the intervals for the first-order indices.
+            first_order: If `True`, compute the intervals for the first-order indices.
                 Otherwise, for the total-order indices.
 
         Returns:
@@ -790,8 +804,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
             With the following structure:
 
-            .. code-block:: python
-
+            ```python
                 {
                     "output_name": [
                         {
@@ -799,6 +812,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                         }
                     ]
                 }
+            ```
         """
         use_cv = self.dataset.misc["use_control_variates"]
         names_to_sizes = self.dataset.variable_names_to_n_components
@@ -849,9 +863,9 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     ) -> Figure:
         r"""Plot the first- and total-order Sobol' indices.
 
-        For the :math:`i`-th input variable,
-        plot its first-order Sobol' index :math:`S_i^{1}`
-        and its total-order Sobol' index :math:`S_i^{T}` with dots
+        For the $i$-th input variable,
+        plot its first-order Sobol' index $S_i^{1}$
+        and its total-order Sobol' index $S_i^{T}$ with dots
         and their confidence intervals with vertical lines.
 
         The subtitle displays the standard deviation (StD) and the variance (Var)
@@ -864,7 +878,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 If empty, use a default one.
             sort: Whether to sort the input variables by decreasing order.
             sort_by_total: Whether to sort according to the total-order Sobol' indices
-                when ``sort`` is ``True``.
+                when `sort` is `True`.
                 Otherwise, use the first-order Sobol' indices.
         """  # noqa: D415 D417
         if not isinstance(output, tuple):

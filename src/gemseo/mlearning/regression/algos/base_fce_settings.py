@@ -43,7 +43,7 @@ class BaseFCERegressor_Settings(BaseRegressorSettings):  # noqa: N801
 
 The training dataset cannot contain both Jacobian data and special Jacobian data.
 
-The options ``learn_jacobian_data`` and ``use_special_jacobian_data``
+The options `learn_jacobian_data` and `use_special_jacobian_data`
  are not compatible.""",
     )
 
@@ -56,7 +56,7 @@ with respect to variables that are not inputs of the FCE.
 
 The training dataset cannot contain both Jacobian data and special Jacobian data.
 
-The options ``use_special_jacobian_data`` and ``learn_jacobian_data``
+The options `use_special_jacobian_data` and `learn_jacobian_data`
  are not compatible.""",
     )
 

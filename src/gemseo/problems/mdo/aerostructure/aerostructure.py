@@ -19,11 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The aerostructure MDO problem.
 
-The **aerostructure** module implements all :class:`.Discipline`
+The **aerostructure** module implements
+all [Disciplines][gemseo.core.discipline.discipline.Discipline]
 included in the Aerostructure problem:
 
-.. math::
-
+$$
    \text{OVERALL AIRCRAFT DESIGN} = \left\{
    \begin{aligned}
    &\text{minimize }range(thick\_airfoils,
@@ -35,11 +35,11 @@ included in the Aerostructure problem:
    & rf-0.5 = 0\\
    & lift-0.5 \leq 0
    \end{aligned}\right.
+$$
 
 where
 
-.. math::
-
+$$
        \text{AERODYNAMICS} = \left\{
            \begin{aligned}
         &drag=0.1\times((sweep/360)^2 + 200 +
@@ -54,7 +54,7 @@ where
 
 and
 
-.. math::
+$$
 
        \text{STRUCTURE} = \left\{
            \begin{aligned}
@@ -66,6 +66,7 @@ and
         2\times forces
            \end{aligned}
            \right.
+$$
 """
 
 from __future__ import annotations
@@ -82,10 +83,12 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.typing import ComplexArray
+    from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
 
-def get_inputs(*names: str):
+def get_inputs(*names: str) -> dict[str, ComplexArray]:
     """Generate initial solution.
 
     Args:
@@ -147,8 +150,8 @@ class Mission(Discipline):
         return {"range": obj, "c_lift": c_lift, "c_rf": c_rf}
 
     @staticmethod
-    def compute_range(lift, mass, drag) -> float:
-        """Compute the objective function: :math:`range=8.10^{11}*lift/(mass*drag)`.
+    def compute_range(lift: RealArray, mass: RealArray, drag: RealArray) -> float:
+        """Compute the objective function: $range=8.10^{11}*lift/(mass*drag)$.
 
         Args:
             lift: The lift.
@@ -161,8 +164,8 @@ class Mission(Discipline):
         return 8e11 * lift[0] / (mass[0] * drag[0])
 
     @staticmethod
-    def c_lift(lift, lift_val: float = 0.5):
-        """Compute the lift constraint: :math:`lift-0.5`.
+    def c_lift(lift: RealArray, lift_val: float = 0.5) -> float:
+        """Compute the lift constraint: $lift-0.5$.
 
         Args:
             lift: The lift.
@@ -174,8 +177,8 @@ class Mission(Discipline):
         return lift[0] - lift_val
 
     @staticmethod
-    def c_rf(reserve_fact, rf_val: float = 0.5):
-        """Compute the reserve factor constraint: :math:`rf-0.5`.
+    def c_rf(reserve_fact: RealArray, rf_val: float = 0.5) -> float:
+        """Compute the reserve factor constraint: $rf-0.5$.
 
         Args:
             reserve_fact: The reserve factor.
@@ -211,7 +214,7 @@ class Mission(Discipline):
 class Aerodynamics(Discipline):
     """The aerodynamics discipline of the aerostructure use case.
 
-    Evaluate: ``[drag, forces, lift] = f(sweep, thick_airfoils, displ)``.
+    Evaluate: `[drag, forces, lift] = f(sweep, thick_airfoils, displ)`.
     """
 
     auto_detect_grammar_files = True
@@ -234,11 +237,13 @@ class Aerodynamics(Discipline):
         }
 
     @staticmethod
-    def compute_drag(sweep, thick_airfoils, displ) -> float:
+    def compute_drag(
+        sweep: RealArray, thick_airfoils: RealArray, displ: RealArray
+    ) -> float:
         r"""Compute the coupling.
 
-        :math:`drag=0.1*((sweep/360)^2 + 200 + thick\_airfoils^2
-        - thick\_airfoils - 4*displ)`
+        $drag=0.1*((sweep/360)^2 + 200 + thick\_airfoils^2
+        - thick\_airfoils - 4*displ)$
 
         Args:
             sweep: The sweep.
@@ -257,10 +262,12 @@ class Aerodynamics(Discipline):
         )
 
     @staticmethod
-    def compute_forces(sweep, thick_airfoils, displ):
+    def compute_forces(
+        sweep: RealArray, thick_airfoils: RealArray, displ: RealArray
+    ) -> float:
         r"""Compute the coupling forces.
 
-        :math:`forces=10*sweep + 0.2*thick\_airfoils-0.2*displ`
+        $forces=10*sweep + 0.2*thick\_airfoils-0.2*displ$
 
         Args:
             sweep: The sweep.
@@ -273,10 +280,12 @@ class Aerodynamics(Discipline):
         return 10 * sweep[0] + 0.2 * thick_airfoils[0] - 0.2 * displ[0]
 
     @staticmethod
-    def compute_lift(sweep, thick_airfoils, displ):
+    def compute_lift(
+        sweep: RealArray, thick_airfoils: RealArray, displ: RealArray
+    ) -> float:
         r"""Compute the lift.
 
-        :math:`lift=(sweep + 0.2*thick\_airfoils-2.*displ)/3000.`.
+        $lift=(sweep + 0.2*thick\_airfoils-2.*displ)/3000.$.
 
         Args:
             sweep: The sweep.
@@ -314,7 +323,7 @@ class Aerodynamics(Discipline):
 class Structure(Discipline):
     """The structure discipline of the aerostructure use case.
 
-    Evaluate: ``[mass, rf, displ] = f(sweep, thick_panels, forces)``.
+    Evaluate: `[mass, rf, displ] = f(sweep, thick_panels, forces)`.
     """
 
     auto_detect_grammar_files = True
@@ -337,10 +346,12 @@ class Structure(Discipline):
         }
 
     @staticmethod
-    def compute_mass(sweep, thick_panels, forces):
+    def compute_mass(
+        sweep: RealArray, thick_panels: RealArray, forces: RealArray
+    ) -> float:
         r"""Compute the mass.
 
-        :math:`mass=4000*(sweep/360)^3 + 200000 + 100*thick\_panels + 200.0*forces`.
+        $mass=4000*(sweep/360)^3 + 200000 + 100*thick\_panels + 200.0*forces$.
 
         Args:
              sweep: The sweep.
@@ -358,10 +369,12 @@ class Structure(Discipline):
         )
 
     @staticmethod
-    def compute_rf(sweep, thick_panels, forces):
+    def compute_rf(
+        sweep: RealArray, thick_panels: RealArray, forces: RealArray
+    ) -> float:
         r"""Compute the coupling.
 
-        :math:`rf=-3*sweep - 6*thick\_panels + 0.1*forces + 55`
+        $rf=-3*sweep - 6*thick\_panels + 0.1*forces + 55$
 
         Args:
              sweep: The sweep.
@@ -374,10 +387,12 @@ class Structure(Discipline):
         return -3 * sweep[0] - 6 * thick_panels[0] + 0.1 * forces[0] + 55
 
     @staticmethod
-    def compute_displ(sweep, thick_panels, forces):
+    def compute_displ(
+        sweep: RealArray, thick_panels: RealArray, forces: RealArray
+    ) -> float:
         r"""Compute the coupling.
 
-        :math:`displ=2*sweep + 3*thick\_panels - 2.*forces`
+        $displ=2*sweep + 3*thick\_panels - 2.*forces$
 
         Args:
             sweep: The sweep.

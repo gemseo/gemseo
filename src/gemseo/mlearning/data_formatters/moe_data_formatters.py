@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.regression.moe import MOERegressor
+    from gemseo.mlearning.regression.algos.moe import MOERegressor
     from gemseo.typing import RealArray
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -64,14 +64,14 @@ class MOEDataFormatters(RegressionDataFormatters):
             *args: Any,
             **kwargs: Any,
         ) -> DataType:
-            """Evaluate ``func`` with either array or dictionary-based input data.
+            """Evaluate `func` with either array or dictionary-based input data.
 
             Firstly,
             the pre-processing stage converts the input data to a NumPy data array,
             if these data are expressed as a dictionary of NumPy data arrays.
 
             Then,
-            the processing evaluates the function ``func``
+            the processing evaluates the function `func`
             from this NumPy input data array.
 
             Lastly,
@@ -82,8 +82,8 @@ class MOEDataFormatters(RegressionDataFormatters):
             Args:
                 algo: The mixture of experts.
                 input_data: The input data.
-                *args: The positional arguments of the function ``func``.
-                **kwargs: The keyword arguments of the function ``func``.
+                *args: The positional arguments of the function `func`.
+                **kwargs: The keyword arguments of the function `func`.
 
             Returns:
                 The output data with the same type as the input one.

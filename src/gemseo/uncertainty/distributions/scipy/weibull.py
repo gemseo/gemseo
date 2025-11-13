@@ -48,9 +48,9 @@ class SPWeibullDistribution(SPDistribution):
             shape: The shape parameter of the Weibull distribution.
             use_weibull_min: Whether to use
                 the Weibull minimum extreme value distribution
-                (the support of the random variable is :math:`[\gamma,+\infty[`)
+                (the support of the random variable is $[\gamma,+\infty[$)
                 or the Weibull maximum extreme value distribution
-                (the support of the random variable is :math:`]-\infty[,\gamma]`).
+                (the support of the random variable is $]-\infty[,\gamma]$).
         """  # noqa: D205,D212,D415
         if settings is None:
             settings = SPWeibullDistribution_Settings(

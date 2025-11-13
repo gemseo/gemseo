@@ -57,10 +57,10 @@ class ODEProblem(BaseProblem):
 
     A first-order ODE is written as
 
-    .. math:: \frac{ds(t)}{dt} = f(t, s(t)).
+    $$\frac{ds(t)}{dt} = f(t, s(t))$$
 
-    where :math:`f` is called the right-hand side (RHS) of the ODE
-    and :math:`s(t)` is the state vector at time :math:`t`.
+    where $f$ is called the right-hand side (RHS) of the ODE
+    and $s(t)$ is the state vector at time $t$.
     """
 
     event_functions: Iterable[RHSFuncType]
@@ -70,17 +70,17 @@ class ODEProblem(BaseProblem):
     """The state at the initial time."""
 
     jac_function_wrt_state: RHSFuncType
-    """The function to compute the Jacobian of :math:`f` with respect to the state."""
+    """The function to compute the Jacobian of $f$ with respect to the state."""
 
     jac_function_wrt_desvar: RHSFuncType
-    """The function to compute the Jacobian of :math:`f` with respect to the design
+    """The function to compute the Jacobian of $f$ with respect to the design
     variables."""
 
     result: ODEResult
     """The result of the ODE problem."""
 
     rhs_function: RHSFuncType
-    """The RHS function :math:`f`, function of the time and state."""
+    """The RHS function $f$, function of the time and state."""
 
     solve_at_algorithm_times: bool
     """Whether to solve the ODE only at the times of interest."""
@@ -94,7 +94,7 @@ class ODEProblem(BaseProblem):
     __evaluation_times: RealArray | None
     """The times of interest where the state is computed.
 
-    If ``None``, the ODE is integrated in the interval [0, 1].
+    If `None`, the ODE is integrated in the interval [0, 1].
     """
 
     def __init__(
@@ -111,26 +111,27 @@ class ODEProblem(BaseProblem):
     ) -> None:
         """
         Args:
-            func: The RHS function :math:`f`.
+            func: The RHS function $f$.
             initial_state: The initial state.
             times: The time interval of integration and  the times of interest where
                 the state must be stored.
-            jac_function_wrt_state: The Jacobian of :math:`f` with respect to state.
+            jac_function_wrt_state: The Jacobian of $f$ with respect to state.
                 Either a constant matrix
                 or a function to compute it
                 at a given time and state.
-                If ``None``,
+                If `None`,
                 it will be approximated.
-            jac_function_wrt_desvar:  The Jacobian of :math:`f`
+            jac_function_wrt_desvar:  The Jacobian of $f$
                 with respect to the design variables.
                 Either a constant matrix
                 or a function to compute it
                 at a given time and state.
-                If ``None``,
+                If `None`,
                 it will be approximated.
                 Since the design variables are supposed fixed
                 during the integration of the ODE,
-                this Jacobian cannot be checked by the method :meth:`.check_jacobian`.
+                this Jacobian cannot be checked by the method
+                [check_jacobian()][gemseo.algos.ode.ode_problem.ODEProblem.check_jacobian].
             adjoint_wrt_state: The adjoint relative to the state
                 when using an adjoint-based ODE solver.
             adjoint_wrt_desvar: The adjoint relative to the design variables
@@ -203,7 +204,8 @@ class ODEProblem(BaseProblem):
         Args:
             state: The state.
             time: The time of evaluation of the function.
-                If ``None``, use :attr:`.self.__time_interval.initial`.
+                If `None`, use
+                [time_interval.initial][gemseo.algos.ode.ode_problem.ODEProblem.time_interval].
             approximation_mode: The approximation mode.
             step: The step for the approximation of the gradients.
             error_max: The maximum value of the error.
@@ -230,7 +232,7 @@ class ODEProblem(BaseProblem):
     def evaluation_times(self) -> RealArray | None:
         """The times of interest where the state is computed.
 
-        If ``None``, the ODE is integrated in the interval [0, 1] by default.
+        If `None`, the ODE is integrated in the interval [0, 1] by default.
         """
         return self.__evaluation_times
 
@@ -238,7 +240,7 @@ class ODEProblem(BaseProblem):
     def time_interval(self) -> RealArray | None:
         """The time interval in which the ODE is solved.
 
-        If ``None``, the ODE is integrated in the interval [0, 1] by default.
+        If `None`, the ODE is integrated in the interval [0, 1] by default.
         """
         return self.__time_interval
 

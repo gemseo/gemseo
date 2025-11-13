@@ -88,8 +88,7 @@ class MDAGaussSeidel(BaseMDASolver):
     This algorithm is a fixed point iteration method to solve systems of non-linear
     equations of the form,
 
-    .. math::
-
+    $$
         \left\{
             \begin{matrix}
                 F_1(x_1, x_2, \dots, x_n) = 0 \\
@@ -98,28 +97,29 @@ class MDAGaussSeidel(BaseMDASolver):
                 F_n(x_1, x_2, \dots, x_n) = 0
             \end{matrix}
         \right.
+    $$
 
-    Beginning with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained by
-    performing **sequentially** the following :math:`n` steps.
+    Beginning with $x_1^{(0)}, \dots, x_n^{(0)}$, the iterates are obtained by
+    performing **sequentially** the following $n$ steps.
 
-    **Step 1:** knowing :math:`x_2^{(i)}, \dots, x_n^{(i)}`, compute :math:`x_1^{(i+1)}`
+    **Step 1:** knowing $x_2^{(i)}, \dots, x_n^{(i)}$, compute $x_1^{(i+1)}$
     by solving,
 
-    .. math::
-
+    $$
         r_1\left( x_1^{(i+1)} \right) =
             F_1(x_1^{(i+1)}, x_2^{(i)}, \dots, x_n^{(i)}) = 0.
+    $$
 
-    **Step** :math:`k \leq n`: knowing :math:`x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}` on
-    one hand, and :math:`x_{k+1}^{(i)}, \dots, x_n^{(i)}` on the other hand, compute
-    :math:`x_1^{(i+1)}` by solving,
+    **Step** $k \leq n$: knowing $x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)}$ on
+    one hand, and $x_{k+1}^{(i)}, \dots, x_n^{(i)}$ on the other hand, compute
+    $x_1^{(i+1)}$ by solving,
 
-    .. math::
-
+    $$
         r_k\left( x_k^{(i+1)} \right) = F_1(x_1^{(i+1)}, \dots, x_{k-1}^{(i+1)},
         x_k^{(i+1)}, x_{k+1}^{(i)}, \dots, x_n^{(i)}) = 0.
+    $$
 
-    These :math:`n` steps account for one iteration of the Gauss-Seidel method.
+    These $n$ steps account for one iteration of the Gauss-Seidel method.
     """
 
     Settings: ClassVar[type[MDAGaussSeidel_Settings]] = MDAGaussSeidel_Settings

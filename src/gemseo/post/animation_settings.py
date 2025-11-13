@@ -48,7 +48,7 @@ class Animation_Settings(BasePostSettings):  # noqa: D101, N801
     n_repetitions: NonNegativeInt = Field(
         default=0,
         description="The number of times the animation is played. "
-        "If ``0``, play infinitely.",
+        "If `0`, play infinitely.",
     )
     temporary_database_path: str | Path = Field(
         default="",

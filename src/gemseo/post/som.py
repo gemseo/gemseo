@@ -219,7 +219,7 @@ class SOM(BasePost[SOM_Settings]):
             fig_indx: The axe index in the figure.
             grid_size_x: The number of SOMs in the grid on the x axis.
             grid_size_y: The number of SOMs in the grid on the y axis.
-            annotate: If ``True``, add label with average value of neural.
+            annotate: If `True`, add label with average value of neural.
         """
         f_hist = array(f_hist_scalar).T.real
         unique_ind = unique(f_hist[2, :])

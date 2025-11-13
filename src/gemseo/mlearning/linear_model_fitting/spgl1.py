@@ -50,29 +50,23 @@ class SPGL1(BaseLinearModelFitter[_SGPL1FittingFunction, SPGL1_Settings]):
     r"""SPGL1 (Spectral Projected Gradient for L1 minimization) algorithm.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm solves a penalized least squares problem of the form:
 
-    1. Basis pursuit denoise (BPDN) when ``sigma`` is a positive number:
+    1. Basis pursuit denoise (BPDN) when `sigma` is a positive number:
 
-    .. math::
+    $$\min_w \|w\|_1 \quad \text{s.t.} \quad \|Xw-y\|_2 \leq \sigma , \qquad \sigma > 0$$
 
-       \min_w \|w\|_1 \quad \text{s.t.} \quad \|Xw-y\|_2 \leq \sigma , \qquad \sigma > 0
+    2. Basis pursuit (BP) when `tau` and `sigma` are `0`:
 
-    2. Basis pursuit (BP) when ``tau`` and ``sigma`` are ``0``:
+    $$\min_w \|w\|_1 \quad \text{s.t.} \quad Xw=y$$
 
-    .. math::
+    3. Lasso when `tau` is a positive number:
 
-       \min_w \|w\|_1 \quad \text{s.t.} \quad Xw=y
+    $$\min_w \|Xw-y\|_2 \quad \text{s.t.} \quad \|w\|_1 \leq \tau , \qquad \tau > 0$$
 
-    3. Lasso when ``tau`` is a positive number:
-
-    .. math::
-
-       \min_w \|Xw-y\|_2 \quad \text{s.t.} \quad \|w\|_1 \leq \tau , \qquad \tau > 0
-
-    where :math:`\|w\|_1` is the :math:`\ell_1`-norm of the coefficients :math:`w`
-    and :math:`\|Xw-y\|_2` is the :math:`\ell_2`-norm of the residual :math:`Xw-y`.
+    where $\|w\|_1$ is the $\ell_1$-norm of the coefficients $w$
+    and $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
     """  # noqa: E501
 
     Settings = SPGL1_Settings

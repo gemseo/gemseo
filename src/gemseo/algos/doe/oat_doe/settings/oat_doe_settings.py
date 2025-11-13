@@ -36,7 +36,7 @@ class OATDOE_Settings(BaseDOESettings):  # noqa: N801
         default=0.05,
         description="""The relative step of the OAT DOE.
 
-The step in the ``x`` direction is
-step*(max_x-min_x)`` if ``x+step*(max_x-min_x)<=max_x`` and
-``-step*(max_x- min_x)`` otherwise.""",
+The step in the `x` direction is
+step*(max_x-min_x)` if `x+step*(max_x-min_x)<=max_x` and
+`-step*(max_x- min_x)` otherwise.""",
     )

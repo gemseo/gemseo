@@ -27,7 +27,7 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def copy_field(name: str, model: type[BaseModel], **kwargs: Any) -> FieldInfo:
-    """Copy a Pydantic model ``Field``, eventually overriden.
+    """Copy a Pydantic model `Field`, eventually overriden.
 
     Args:
         name: The name of the field.
@@ -45,13 +45,13 @@ def update_field(
     field_name: str,
     **kwargs: Any,
 ) -> None:
-    """Update a :class:`.Field` of a Pydantic model.
+    """Update a [Field][pydantic.Field] of a Pydantic model.
 
     Args:
         model: The model.
         field_name: The name of the field.
         **kwargs: The arguments of the field to be overridden.
-            See :func:`.Field` for the description of the arguments.
+            See `pydantic.Field` for the description of the arguments.
     """
     model.model_fields[field_name] = FieldInfo.merge_field_infos(
         model.model_fields[field_name], **kwargs
@@ -69,15 +69,15 @@ def create_model(
     Args:
         Model: The class of the Pydantic model.
         settings_model: The settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The settings.
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
         A Pydantic model
 
     Raises:
-        ValueError: When the class of the ``"settings"`` argument is not ``Model``.
+        ValueError: When the class of the `"settings"` argument is not `Model`.
     """
     if settings_model is None:
         return Model(**settings)
@@ -101,11 +101,11 @@ def get_class_name(
 
     Args:
         settings_model: The class settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         settings: The settings,
-            including the class name (use the keyword ``class_name_arg``).
-            The function will remove the ``class_name_arg`` entry.
-            These settings are ignored when ``settings_model`` is not ``None``.
+            including the class name (use the keyword `class_name_arg`).
+            The function will remove the `class_name_arg` entry.
+            These settings are ignored when `settings_model` is not `None`.
         class_name_arg: The name of the argument to set the class name.
 
     Returns:

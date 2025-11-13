@@ -65,7 +65,7 @@ def concatenate_dict_of_arrays_to_array(
         names: The keys of the dictionary for which to concatenate the values.
 
     Returns:
-        The concatenated array if ``names`` is not empty, otherwise an empty array.
+        The concatenated array if `names` is not empty, otherwise an empty array.
     """
     if not names:
         return array([])
@@ -104,18 +104,18 @@ def split_array_to_dict_of_arrays(
         names_to_sizes: The sizes of the values related to names.
         *names: The names related to the NumPy array dimensions,
             starting from the last one;
-            in the second example (see ``result_2``),
-            the last dimension of ``array`` represents the variables ``["y1", "y2"]``
-            while the penultimate one represents the variables ``["x1", "x2"]``.
-        check_consistency: Whether to check the consistency of the sizes of ``*names``
-            with the ``array`` shape.
+            in the second example (see `result_2`),
+            the last dimension of `array` represents the variables `["y1", "y2"]`
+            while the penultimate one represents the variables `["x1", "x2"]`.
+        check_consistency: Whether to check the consistency of the sizes of `*names`
+            with the `array` shape.
 
     Returns:
-        A dictionary of NumPy arrays related to ``*names``.
+        A dictionary of NumPy arrays related to `*names`.
 
     Raises:
-        ValueError: When ``check_consistency`` is ``True`` and
-            the sizes of the ``*names`` is inconsistent with the ``array`` shape.
+        ValueError: When `check_consistency` is `True` and
+            the sizes of the `*names` is inconsistent with the `array` shape.
     """
     dimension = -len(names)
     if check_consistency:
@@ -157,7 +157,7 @@ def deepcopy_dict_of_arrays(
     """Perform a deep copy of a dictionary of NumPy arrays.
 
     This treats the NumPy arrays specially
-    using ``array.copy()`` instead of ``deepcopy``.
+    using `array.copy()` instead of `deepcopy`.
 
     Examples:
         >>> result = deepcopy_dict_of_arrays(
@@ -203,7 +203,7 @@ def nest_flat_bilevel_dict(
 
     Args:
         flat_dict: The dictionary to be nested.
-        separator: The keys separator, to be used as ``{parent_key}{sep}{child_key}``.
+        separator: The keys separator, to be used as `{parent_key}{sep}{child_key}`.
 
     Returns:
         A nested dictionary.
@@ -237,7 +237,7 @@ def nest_flat_dict(
         flat_dict: The dictionary to be nested.
         prefix: The prefix to be removed from the keys.
         separator: The keys separator,
-            to be used as ``{parent_key}{separator}{child_key}``.
+            to be used as `{parent_key}{separator}{child_key}`.
 
     Returns:
         A nested dictionary.
@@ -263,7 +263,7 @@ def __nest_flat_mapping(
         key: The current key.
         value: The current value.
         separator: The keys separator,
-            to be used as ``{parent_key}{separator}{child_key}``.
+            to be used as `{parent_key}{separator}{child_key}`.
     """
     keys = key.split(separator)
     top_key = keys[0]
@@ -288,7 +288,7 @@ def flatten_nested_bilevel_dict(
     Args:
         nested_dict: The dictionary to be flattened.
         separator: The keys separator,
-            to be used as ``{parent_key}{separator}{child_key}``.
+            to be used as `{parent_key}{separator}{child_key}`.
 
     Returns:
         A flat dictionary.
@@ -318,7 +318,7 @@ def flatten_nested_dict(
         nested_dict: The dictionary to be flattened.
         prefix: The prefix to be prepended to the keys.
         separator: The keys separator,
-            to be used as ``{parent_key}{separator}{child_key}``.
+            to be used as `{parent_key}{separator}{child_key}`.
 
     Returns:
         A flat dictionary.
@@ -335,9 +335,9 @@ def __flatten_nested_mapping(
 
     Args:
         nested_mapping: The mapping to be flattened.
-        parent_key: The key for which ``mapping`` is the value.
+        parent_key: The key for which `mapping` is the value.
         separator: The keys separator,
-            to be used as ``{parent_key}{separator}{child_key}``.
+            to be used as `{parent_key}{separator}{child_key}`.
 
     Yields:
         The new keys and values of the mapping.

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 class UpdaterFactory:
-    """A factory of :class:`.TrustUpdater`."""
+    """A factory of [TrustUpdater][gemseo.algos.opt.core.trust_updater.TrustUpdater]."""
 
     RADIUS = "radius"
     PENALTY = "penalty"
@@ -52,7 +52,7 @@ class UpdaterFactory:
         multipliers: tuple[float, float],
         bound: float,
     ) -> TrustUpdater:
-        """Create a :class:`.TrustUpdater`.
+        """Create a [TrustUpdater][gemseo.algos.opt.core.trust_updater.TrustUpdater].
 
         Args:
             name: The name of the updater.

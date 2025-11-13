@@ -30,7 +30,8 @@ LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
 class OTCompositeDOE(BaseOTStratifiedDOE):
     """The composite DOE algorithm.
 
-    .. note:: This class is a singleton.
+    Note:
+        This class is a singleton.
     """
 
     _ALGO_CLASS: ClassVar[type[Composite]] = Composite

@@ -53,14 +53,14 @@ class FunctionFromDiscipline(MDOFunction):
     __all_input_names: Iterable[str]
     """The names of the discipline inputs for the function.
 
-    Use all the design variables of ``formulation.design_space`` if empty.
+    Use all the design variables of `formulation.design_space` if empty.
     """
 
     __all_differentiated_input_names: Iterable[str]
     """The names of the inputs to differentiate the function.
 
-    If ``formulation.differentiated_input_names_substitute`` is empty,
-    use ``__all_input_names``.
+    If `formulation.differentiated_input_names_substitute` is empty,
+    use `__all_input_names`.
     """
 
     __input_names: Sequence[str]
@@ -69,8 +69,8 @@ class FunctionFromDiscipline(MDOFunction):
     __differentiated_input_names: Sequence[str]
     """The names of the inputs to differentiate the discipline adapter.
 
-    If ``formulation.differentiated_input_names_substitute`` is empty,
-    use ``__input_names``.
+    If `formulation.differentiated_input_names_substitute` is empty,
+    use `__input_names`.
     """
 
     __input_mask: BooleanArray | None
@@ -94,7 +94,7 @@ class FunctionFromDiscipline(MDOFunction):
     generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
         DisciplineAdapterGenerator
     )
-    """The class used to generator the :class:`DisciplineAdapter`."""
+    """The class used to generate the discipline adapter."""
 
     def __init__(
         self,
@@ -112,7 +112,7 @@ class FunctionFromDiscipline(MDOFunction):
                 defining the function output vector.
             formulation: The MDO formulation to which the function will be attached.
             discipline: The discipline computing these outputs.
-                If ``None``,
+                If `None`,
                 the discipline is detected from the inner disciplines.
             top_level_disc: Whether the inner disciplines
                 are the top level disciplines of the formulation;
@@ -221,7 +221,7 @@ class FunctionFromDiscipline(MDOFunction):
             formulation: The formulation to which the function will be attached.
             output_names: The discipline outputs defining the function output vector.
             discipline: The discipline computing these outputs.
-                If ``None``,
+                If `None`,
                 the discipline is detected from the inner disciplines.
             use_top_level_disciplines: Whether the inner disciplines
                 are the top level disciplines of the formulation;

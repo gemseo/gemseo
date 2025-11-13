@@ -31,11 +31,11 @@ def compute_output(x: RealArray) -> float | RealArray:
 
     Args:
         x: The input value(s),
-           shaped as ``(input_dimension,)`` or ``(n_values, input_dimension)``.
+            shaped as `(input_dimension,)` or `(n_values, input_dimension)`.
 
     Returns:
         The output value(s),
-        either a float or an array shaped as ``(n_values,)``.
+        either a float or an array shaped as `(n_values,)`.
     """
     return sin(x[..., 0]) * (1 + 0.1 * x[..., 2] ** 4) + 7 * sin(x[..., 1]) ** 2
 
@@ -45,11 +45,11 @@ def compute_gradient(x: RealArray) -> RealArray:
 
     Args:
         x: The input value(s),
-           shaped as ``(input_dimension,)`` or ``(n_values, input_dimension)``.
+            shaped as `(input_dimension,)` or `(n_values, input_dimension)`.
 
     Returns:
         The value(s) of the gradient of the Ishigami function,
-        shaped as ``(input_dimension,)`` or ``(n_values, input_dimension)``.
+        shaped as `(input_dimension,)` or `(n_values, input_dimension)`.
     """
     result = atleast_1d([
         cos(x[..., 0]) * (1 + 0.1 * x[..., 2] ** 4),

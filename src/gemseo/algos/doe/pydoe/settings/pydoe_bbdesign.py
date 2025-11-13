@@ -31,5 +31,5 @@ class PYDOE_BBDESIGN_Settings(BasePyDOESettings):  # noqa: N801
         default=None,
         description="""The number of center points for the Box-Behnken design.
 
-If ``None``, use a pre-determined number of points.""",
+If `None`, use a pre-determined number of points.""",
     )

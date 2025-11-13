@@ -73,17 +73,15 @@ class NullSpace(BaseLinearModelFitter[_NullSpaceFittingFunction, NullSpace_Setti
     r"""The null space method.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm uses the null space method
     to solve a penalized least squares problem of the form:
 
-    .. math::
+    $$min_w \|\tilde{Y} - \tilde{X}w\|_2 \quad s.t. \quad Y=Xw$$
 
-       min_w \|\tilde{Y} - \tilde{X}w\|_2 \quad s.t. \quad Y=Xw
-
-    where :math:`\tilde{X}` and :math:`\tilde{Y}` contained additional data
-    such that :math:`\text{rank}\left(\begin{matrix}X\\\tilde{X}\end{matrix}\right)`
-    equals the number of features :math:`d`.
+    where $\tilde{X}$ and $\tilde{Y}$ contained additional data
+    such that $\text{rank}\left(\begin{matrix}X\\\tilde{X}\end{matrix}\right)$
+    equals the number of features $d$.
 
     This method was applied by Ghisu *et al* (2021)
     to fit a polynomial chaos expansion from input, output and Jacobian data.

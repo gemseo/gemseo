@@ -24,44 +24,44 @@ orbiting a fixed mass
 in an elliptic trajectory with a given eccentricity.
 This problem is treated here as a classical central force problem.
 
-Consider the frame defined by one particle. The position :math:`(x, y)` and the
-velocity :math:`(v_x, v_y)` of the other particle as a function of time can be described
+Consider the frame defined by one particle. The position $(x, y)$ and the
+velocity $(v_x, v_y)$ of the other particle as a function of time can be described
 by the following set of equations:
 
-.. math:
-
+$$
     \left\{ \begin{align}
         \dot{x(t)}   &= v_x(t) \\
         \dot{y(t)}   &= v_y(t) \\
         \dot{v_x(t)} &= - \frac{x(t)}{r^3} \\
         \dot{v_y(t)} &= - \frac{y(t)}{r^3} \\
     \end{align}\right,
+$$
 
-with :math:`r = \sqrt{x(t)^2 + y(t)^2}`.
+with $r = \sqrt{x(t)^2 + y(t)^2}$.
 
 We use the initial conditions:
 
-.. math:
-
+$$
     \left\{ \begin{align}
         x(0)   &= 1 - e \\
         y(0)   &= 0 \\
         v_x(0) &= 0 \\
         v_y(0) &= \sqrt{\frac{1+e}{1-e}} \\
     \end{align}\right,
+$$
 
-where :math:`e` is the eccentricity of the particle trajectory.
+where $e$ is the eccentricity of the particle trajectory.
 
 The Jacobian of the right-hand side of this ODE is:
 
-.. math:
-
+$$
     \begin{pmatrix}
         0 & 0 & 1 & 0 \\
         0 & 0 & 0 & 1 \\
         \frac{2x^2 - y^2}{(x^2 + y^2)^{5/2}} & \frac{3xy}{(x^2 + y^2)^{5/2}} & 0 & 0 \\
         \frac{3xy}{(x^2 + y^2)^{5/2}} & \frac{-x^2 + 2y^2}{(x^2 + y^2)^{5/2}} & 0 & 0
     \end{pmatrix}.
+$$
 """
 
 from __future__ import annotations
@@ -100,16 +100,16 @@ def _compute_rhs(
 
     Args:
         time: The time.
-        position_x: The horizontal coordinate of the mass at ``time``.
-        position_y: The vertical coordinate of the mass at ``time``.
-        velocity_x: The horizontal component of the velocity at ``time``.
-        velocity_y: The vertical component of the velocity at ``time``.
+        position_x: The horizontal coordinate of the mass at `time`.
+        position_y: The vertical coordinate of the mass at `time`.
+        velocity_x: The horizontal component of the velocity at `time`.
+        velocity_y: The vertical component of the velocity at `time`.
 
     Returns:
-        The horizontal velocity of the mass at ``time``,
-        the vertical velocity of the mass at ``time``,
-        the horizontal acceleration of the mass at ``time``
-        and the vertical acceleration of the mass at ``time``.
+        The horizontal velocity of the mass at `time`,
+        the vertical velocity of the mass at `time`,
+        the horizontal acceleration of the mass at `time`
+        and the vertical acceleration of the mass at `time`.
     """
     den = sqrt(position_x**2 + position_y**2) ** 3
     position_x_dot = velocity_x
@@ -130,15 +130,15 @@ def _compute_rhs_jacobian(
 
     Args:
         time: The time.
-        position_x: The horizontal coordinate of the mass at ``time``.
-        position_y: The vertical coordinate of the mass at ``time``.
-        velocity_x: The horizontal component of the velocity at ``time``.
-        velocity_y: The vertical component of the velocity at ``time``.
+        position_x: The horizontal coordinate of the mass at `time`.
+        position_y: The vertical coordinate of the mass at `time`.
+        velocity_x: The horizontal component of the velocity at `time`.
+        velocity_y: The vertical component of the velocity at `time`.
 
     Returns:
         The Jacobian of the function describing the dynamic of the system
         with respect to the state variables,
-        evaluated at ``time``.
+        evaluated at `time`.
     """
     den = sqrt(position_x**2 + position_y**2) ** 5
     jac = zeros((4, 4))
@@ -217,22 +217,22 @@ class OrbitalDynamics(ODEProblem):
     the velocity of the massive particle is orthogonal
     to the line of the apsides,
     and its magnitude is equal to
-    :math:`sqrt{frac{1 + eccentricity}{1 - eccentricity}}`.
+    $sqrt{frac{1 + eccentricity}{1 - eccentricity}}$.
     We suppose that the orbit follows a counter-clockwise path.
 
     The state of the ODE consists in four variables:
 
-    - :math:`x`, the horizontal coordinate,
-    - :math:`y`, the vertical coordinate,
-    - :math:`v_x`, the horizontal component of the velocity,
-    - :math:`v_y`, the vertical component of the velocity.
+    - $x$, the horizontal coordinate,
+    - $y$, the vertical coordinate,
+    - $v_x$, the horizontal component of the velocity,
+    - $v_y$, the vertical component of the velocity.
 
     The system follows the dynamic below:
 
-    - :math:`\frac{dx}{dt} = v_x`,
-    - :math:`\frac{dy}{dt} = v_y`,
-    - :math:`\frac{dv_x}{dt} = - x / (\sqrt(x^2 + y^2))^3`,
-    - :math:`\frac{dv_y}{dt} = - y / (\sqrt(x^2 + y^2))^3`.
+    - $\frac{dx}{dt} = v_x$,
+    - $\frac{dy}{dt} = v_y$,
+    - $\frac{dv_x}{dt} = - x / (\sqrt(x^2 + y^2))^3$,
+    - $\frac{dv_y}{dt} = - y / (\sqrt(x^2 + y^2))^3$.
     """
 
     __eccentricity: float
@@ -273,7 +273,7 @@ class OrbitalDynamics(ODEProblem):
         x, y, vx, vy = state.T
         return array(_compute_rhs_jacobian(time, x, y, vx, vy))
 
-    def compute_analytic_solution(self, times: RealArray):
+    def compute_analytic_solution(self, times: RealArray) -> tuple:
         """Compute the analytic solution of the Kepler problem for an elliptic orbit.
 
         Args:

@@ -33,17 +33,17 @@ class ElasticNetCV(
     r"""Scikit-learn elastic net algorithm with built-in cross-validation.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm solves a penalized least squares problem of the form:
 
-    .. math::
+    $$
+    \min_w \frac{1}{2n}\|Xw-y\|_2^2 + \alpha\left(\rho \|w\|_1 + \frac{1-\rho}{2} \|w\|_2^2\right), \qquad \alpha \geq 0, \qquad \rho\in[0,1],
+    $$
 
-       \min_w \frac{1}{2n}\|Xw-y\|_2^2 + \alpha\left(\rho \|w\|_1 + \frac{1-\rho}{2} \|w\|_2^2\right), \qquad \alpha \geq 0, \qquad \rho\in[0,1],
-
-    where :math:`\|w\|_1` and :math:`\|w\|_2` are respectively
-    the :math:`\ell_1`- and :math:`\ell_2`-norms of the coefficients :math:`w`,
-    :math:`\|Xw-y\|_2` is the :math:`\ell_2`-norm of the residual :math:`Xw-y`.
-    :math:`\alpha` and :math:`\rho` are estimated by cross-validation.
+    where $\|w\|_1$ and $\|w\|_2$ are respectively
+    the $\ell_1$- and $\ell_2$-norms of the coefficients $w$,
+    $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
+    $\alpha$ and $\rho$ are estimated by cross-validation.
     """  # noqa: E501
 
     Settings = ElasticNetCV_Settings

@@ -47,13 +47,13 @@ class BaseClusterer(BaseMLUnsupervisedAlgo):
     labels: ndarray
     """The labels of the clusters for the different samples.
 
-    This attribute is set when calling :meth:`.learn`.
+    This attribute is set during the learning phase.
     """
 
     n_clusters: int
     """The number of clusters.
 
-    This attribute is set when calling :meth:`.learn`.
+    This attribute is set during the learning phase.
     """
 
     Settings: ClassVar[type[BaseClustererSettings]] = BaseClustererSettings

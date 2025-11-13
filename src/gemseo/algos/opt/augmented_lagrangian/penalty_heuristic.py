@@ -33,10 +33,15 @@ T = TypeVar("T", bound=PenaltyHeuristicSettings)
 
 
 class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian[T]):
-    """This class implements the penalty update scheme of :cite:`birgin2014practical`.
+    """This class implements the penalty update scheme of Birgin and Martinez.
 
-    This class must be inherited in order to implement the function
-    :func:`_update_lagrange_multipliers`.
+    This class must be inherited
+    in order to implement the function `_update_lagrange_multipliers()`.
+
+    !!! quote "References"
+
+        Ernesto G Birgin and José Mario Martínez.
+        Practical augmented Lagrangian methods for constrained optimization. SIAM, 2014.
     """
 
     def _update_penalty(

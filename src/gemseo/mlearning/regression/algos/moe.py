@@ -24,34 +24,30 @@ as the weighted sum of the outputs of local regression models,
 whose weights depend on the input data.
 
 During the learning stage,
-the input space is divided into :math:`K` clusters by a clustering model,
+the input space is divided into $K$ clusters by a clustering model,
 then a classification model is built to map the input space to the cluster space,
-and finally a regression model :math:`f_k` is built for the :math:`k`-th cluster.
+and finally a regression model $f_k$ is built for the $k$-th cluster.
 
 The classification may be either hard,
 in which case only one of the weights is equal to one,
 and the rest equal to zero:
 
-.. math::
-
-    y = \sum_{k=1}^K I_{C_k}(x) f_k(x),
+$$y = \sum_{k=1}^K I_{C_k}(x) f_k(x),$$
 
 or soft,
 in which case the weights express the probabilities of belonging to each cluster:
 
-.. math::
-
-    y = \sum_{k=1}^K \mathbb{P}(x \in C_k) f_k(x),
+$$y = \sum_{k=1}^K \mathbb{P}(x \in C_k) f_k(x),$$
 
 where
-:math:`x` is the input data,
-:math:`y` is the output data,
-:math:`K` is the number of clusters,
-:math:`(C_k)_{k=1,\cdots,K}` are the input spaces associated to the clusters,
-:math:`I_{C_k}(x)` is the indicator of class :math:`k`,
-:math:`\mathbb{P}(x \in C_k)` is the probability
-that :math:`x` belongs to cluster :math:`k` and
-:math:`f_k(x)` is the local regression model on cluster :math:`k`.
+$x$ is the input data,
+$y$ is the output data,
+$K$ is the number of clusters,
+$(C_k)_{k=1,\cdots,K}$ are the input spaces associated to the clusters,
+$I_{C_k}(x)$ is the indicator of class $k$,
+$\mathbb{P}(x \in C_k)$ is the probability
+that $x$ belongs to cluster $k$ and
+$f_k(x)$ is the local regression model on cluster $k$.
 """
 
 from __future__ import annotations
@@ -300,7 +296,7 @@ class MOERegressor(BaseRegressor):
                 defining the calibration variables.
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If ``None``, do not perform calibration.
+                If `None`, do not perform calibration.
             **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
@@ -330,7 +326,7 @@ class MOERegressor(BaseRegressor):
                 defining the calibration variables.
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If ``None``, do not perform calibration.
+                If `None`, do not perform calibration.
             **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
@@ -360,7 +356,7 @@ class MOERegressor(BaseRegressor):
                 defining the calibration variables.
             calib_algo: The name and options of the DOE or optimization
                 algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If ``None``, do not perform calibration.
+                If `None`, do not perform calibration.
             **option_lists: Parameters for the clustering algorithm candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values to try out for the given
@@ -385,9 +381,9 @@ class MOERegressor(BaseRegressor):
         """Predict classes from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         The output data type will be consistent with the input data type.
 
@@ -408,9 +404,9 @@ class MOERegressor(BaseRegressor):
         """Predict output data from input data.
 
         The user can specify these input data either as a NumPy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         The output data type will be consistent with the input data type.
 

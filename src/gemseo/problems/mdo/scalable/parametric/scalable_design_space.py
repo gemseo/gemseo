@@ -65,21 +65,22 @@ class ScalableDesignSpace(ParameterSpace):
     ) -> None:
         r"""Args:
             discipline_settings: The configurations of the different disciplines.
-                If ``None``,
+                If `None`,
                 use a single discipline
-                with default :class:`.ScalableDisciplineSettings`.
-            d_0: The size of the shared design variable :math:`x_0`.
+                with default
+                [ScalableDisciplineSettings][gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings.ScalableDisciplineSettings].
+            d_0: The size of the shared design variable $x_0$.
             names_to_default_values: The default values of the variables.
             add_uncertain_variables: Whether to add the uncertain variables
                 impacting the coupling variables
-                as :math:`y_{i,j}:=y_{i,j}+\epsilon_{i,j}`
-                where :math:`\epsilon_{i,j}` are independent and identically distributed
+                as $y_{i,j}:=y_{i,j}+\epsilon_{i,j}$
+                where $\epsilon_{i,j}$ are independent and identically distributed
                 standard Gaussian variables.
 
         Notes:
-            The lengths of ``n_local`` and ``n_coupling`` must be equal
+            The lengths of `n_local` and `n_coupling` must be equal
             and correspond to the number of scalable disciplines.
-            ``n_local[i]`` (resp. ``n_coupling[i]``)
+            `n_local[i]` (resp. `n_coupling[i]`)
             is the number of local design variables (resp. coupling variables)
             of the *i*-th scalable discipline.
         """  # noqa: D205 D212

@@ -69,8 +69,7 @@ class MDAJacobi(BaseParallelMDASolver):
     This algorithm is a fixed point iteration method to solve systems of non-linear
     equations of the form,
 
-    .. math::
-
+    $$
         \left\{
             \begin{matrix}
                 F_1(x_1, x_2, \dots, x_n) = 0 \\
@@ -79,12 +78,12 @@ class MDAJacobi(BaseParallelMDASolver):
                 F_n(x_1, x_2, \dots, x_n) = 0
             \end{matrix}
         \right.
+    $$
 
-    Beginning with :math:`x_1^{(0)}, \dots, x_n^{(0)}`, the iterates are obtained as the
-    solution of the following :math:`n` **independent** non-linear equations:
+    Beginning with $x_1^{(0)}, \dots, x_n^{(0)}$, the iterates are obtained as the
+    solution of the following $n$ **independent** non-linear equations:
 
-    .. math::
-
+    $$
         \left\{
             \begin{matrix}
                 r_1\left( x_1^{(i+1)} \right) =
@@ -96,6 +95,7 @@ class MDAJacobi(BaseParallelMDASolver):
                 F_n(x_1^{(i)}, x_2^{(i)}, \dots, x_n^{(i+1)}) = 0
             \end{matrix}
         \right.
+    $$
     """
 
     Settings: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings

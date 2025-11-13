@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 
 class LinearProblem(BaseProblem):
-    r"""Representation of the linear equations' system :math:`Ax = b`.
+    r"""Representation of the linear equations' system $Ax = b$.
 
     It also contains the solution, and some properties of the system such as the
     symmetry or positive definiteness.
@@ -51,7 +51,7 @@ class LinearProblem(BaseProblem):
     lhs: LinearOperator | SparseOrDenseRealArray
     """The left-hand side of the equation.
 
-    If ``None``, the problem can't be solved and the user has to set it after init.
+    If `None`, the problem can't be solved and the user has to set it after init.
     """
 
     solution: NumberArray | None
@@ -60,7 +60,7 @@ class LinearProblem(BaseProblem):
     is_converged: bool | None
     """Whether the solution satisfies the specified tolerance.
 
-    If ``None``, no run was performed.
+    If `None`, no run was performed.
     """
 
     convergence_info: int | str
@@ -98,8 +98,8 @@ class LinearProblem(BaseProblem):
             is_symmetric: Whether the left-hand side is symmetric.
             is_positive_def: Whether the left-hand side is positive definite.
             is_converged: Whether the solution is converged to the specified tolerance.
-                If ``False``, the algorithm stopped before convergence.
-                If ``None``, no run was performed.
+                If `False`, the algorithm stopped before convergence.
+                If `None`, no run was performed.
         """  # noqa: D205, D212, D415
         self.rhs = rhs
         self.lhs = lhs
@@ -124,18 +124,22 @@ class LinearProblem(BaseProblem):
         r"""Compute the Euclidean norm of the residual.
 
         Args:
-            relative_residuals: If ``True``, one computes
-                :math:` \|A x_k - b\|_2 /  \|b\|_2`, else :math:` \|A x_k - b\|_2`.
+            relative_residuals: If `True`, one computes
+                $ \|A x_k - b\|_2 /  \|b\|_2$, else $ \|A x_k - b\|_2$.
             store: Whether to store the residual norm in the history.
             current_x: Compute the residuals associated with current_x,
-                If ``None``, compute then from the solution attribute.
+                If `None`, compute then from the solution attribute.
 
         Returns:
             The residual norm.
 
         Raises:
-            ValueError: If :attr:`.rhd` is ``None``.
-            ValueError: If :attr:`.solution` is ``None`` and ``current_x`` is ``None``.
+            ValueError: If
+                [rhs][gemseo.algos.linear_solvers.linear_problem.LinearProblem.rhs]
+                is `None`.
+            ValueError: If
+                [solution][gemseo.algos.linear_solvers.linear_problem.LinearProblem.solution]
+                is `None` and `current_x` is `None`.
         """
         if self.rhs is None:
             msg = "No right-hand side available to compute residual."

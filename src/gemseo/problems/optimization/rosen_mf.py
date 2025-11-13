@@ -39,8 +39,8 @@ if TYPE_CHECKING:
 class RosenMF(Discipline):
     r"""A multi-fidelity Rosenbrock discipline.
 
-    Its expression is :math:`\mathrm{fidelity} * \mathrm{Rosenbrock}(x)`
-    where both :math:`\mathrm{fidelity}` and :math:`x` are provided as input data.
+    Its expression is $\mathrm{fidelity} * \mathrm{Rosenbrock}(x)$
+    where both $\mathrm{fidelity}$ and $x$ are provided as input data.
     """
 
     auto_detect_grammar_files = True

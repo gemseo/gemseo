@@ -36,13 +36,12 @@ if TYPE_CHECKING:
 class MDOQuadraticFunction(MDOFunction):
     r"""Scalar-valued quadratic multivariate function defined by.
 
-    * a *square* matrix :math:`A` of second-order coefficients
-      :math:`(a_{ij})_{\substack{i = 1, \dots n \\ j = 1, \dots n}}`
-    * a vector :math:`b` of first-order coefficients :math:`(b_i)_{i = 1, \dots n}`
-    * and a scalar zero-order coefficient :math:`c`
+    * a *square* matrix $A$ of second-order coefficients
+      $(a_{ij})_{\substack{i = 1, \dots n \\ j = 1, \dots n}}$
+    * a vector $b$ of first-order coefficients $(b_i)_{i = 1, \dots n}$
+    * and a scalar zero-order coefficient $c$
 
-    .. math::
-
+    $$
         f(x)
         =
         c
@@ -50,6 +49,7 @@ class MDOQuadraticFunction(MDOFunction):
         \sum_{i = 1}^n b_i \, x_i
         +
         \sum_{i = 1}^n \sum_{j = 1}^n a_{ij} \, x_i \, x_j.
+    $$
     """
 
     def __init__(
@@ -65,7 +65,7 @@ class MDOQuadraticFunction(MDOFunction):
         Args:
             quad_coeffs: The second-order coefficients.
             linear_coeffs: The first-order coefficients.
-                If ``None``, the first-order coefficients will be zero.
+                If `None`, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
         """  # noqa: D205, D212, D415
         self._input_dim = 0
@@ -129,7 +129,7 @@ class MDOQuadraticFunction(MDOFunction):
 
         Raises:
             ValueError: If the coefficients are not passed
-                as a 2-dimensional square ``ndarray``.
+                as a 2-dimensional square `ndarray`.
         """
         return self._quad_coeffs
 
@@ -183,7 +183,7 @@ class MDOQuadraticFunction(MDOFunction):
             quad_coeffs: The second-order coefficients.
             input_names: The names of the inputs of the function.
             linear_coeffs: The first-order coefficients.
-                If ``None``, the first-order coefficients will be zero.
+                If `None`, the first-order coefficients will be zero.
             value_at_zero: The zero-order coefficient.
 
         Returns:

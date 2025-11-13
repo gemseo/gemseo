@@ -38,7 +38,7 @@ def compute_truncature_error(
     Defined for a first order finite differences scheme.
 
     Args:
-        hess: The second-order derivative :math:`d^2f/dx^2`.
+        hess: The second-order derivative $d^2f/dx^2$.
         step: The differentiation step.
 
     Returns:
@@ -50,14 +50,14 @@ def compute_truncature_error(
 def compute_cancellation_error(
     f_x: ndarray,
     step: float,
-    epsilon_mach=EPSILON,
+    epsilon_mach: float = EPSILON,
 ) -> ndarray:
     r"""Compute the cancellation error.
 
-    This is the round-off when doing :math:`f(x+\delta_x)-f(x)`.
+    This is the round-off when doing $f(x+\delta_x)-f(x)$.
 
     Args:
-        f_x: The value of the function at the current step :math:`x`.
+        f_x: The value of the function at the current step $x$.
         step: The step used for the calculations of the perturbed functions values.
         epsilon_mach: The machine epsilon.
 
@@ -73,17 +73,17 @@ def compute_hessian_approximation(
     f_m: ndarray,
     step: float,
 ) -> ndarray:
-    r"""Compute the second-order approximation of the Hessian matrix :math:`d^2f/dx^2`.
+    r"""Compute the second-order approximation of the Hessian matrix $d^2f/dx^2$.
 
     Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\delta_x`.
-        f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step
-            :math:`x-\delta_x`.
-        step: The differentiation step :math:`\delta_x`.
+        f_p: The value of the function $f$ at the next step $x+\delta_x$.
+        f_x: The value of the function $f$ at the current step $x$.
+        f_m: The value of the function $f$ at the previous step
+            $x-\delta_x$.
+        step: The differentiation step $\delta_x$.
 
     Returns:
-        The approximation of the Hessian matrix at the current step :math:`x`.
+        The approximation of the Hessian matrix at the current step $x$.
     """
     return (f_p - 2 * f_x + f_m) / step**2
 
@@ -104,7 +104,7 @@ def compute_best_step(
     The optimal step is reached when the truncation error
     (cut in the Taylor development),
     and the numerical cancellation errors
-    (round-off when doing :math:`f(x+\delta_x)-f(x))` are equal.
+    (round-off when doing $f(x+\delta_x)-f(x))$ are equal.
 
     See Also:
         https://en.wikipedia.org/wiki/Numerical_differentiation
@@ -112,11 +112,11 @@ def compute_best_step(
         Knut Morken, Chapter 11, "Numerical Differenciation"
 
     Args:
-        f_p: The value of the function :math:`f` at the next step :math:`x+\delta_x`.
-        f_x: The value of the function :math:`f` at the current step :math:`x`.
-        f_m: The value of the function :math:`f` at the previous step
-            :math:`x-\delta_x`.
-        step: The differentiation step :math:`\delta_x`.
+        f_p: The value of the function $f$ at the next step $x+\delta_x$.
+        f_x: The value of the function $f$ at the current step $x$.
+        f_m: The value of the function $f$ at the previous step
+            $x-\delta_x$.
+        step: The differentiation step $\delta_x$.
         epsilon_mach: The machine epsilon.
 
     Returns:

@@ -32,10 +32,13 @@ the scalable model extrapolates this mono dimensional behavior
 to the different input directions.
 
 The concept of scalable diagonal model is implemented through
-the :class:`.ScalableDiagonalModel` class
-which is composed of a :class:`.ScalableDiagonalApproximation`.
-With regard to the diagonal DOE, |g| proposes the
-:class:`.DiagonalDOE` class.
+the
+[ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+class
+which is composed of a
+[ScalableDiagonalApproximation][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalApproximation].
+With regard to the diagonal DOE, GEMSEO proposes the
+[DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] class.
 """
 
 from __future__ import annotations
@@ -107,10 +110,10 @@ class ScalableDiagonalModel(ScalableModel):
             fill_factor: The degree of sparsity of the dependency matrix.
             comp_dep: The matrix defining the selection
                 of a single original component for each scalable component.
-                If ``None``,
+                If `None`,
                 generate a random matrix.
             inpt_dep: The input-output dependency matrix.
-                If ``None``,
+                If `None`,
                 generate a random matrix.
             force_input_dependency: Whether to force the dependency of each output
                 with at least one input.
@@ -318,7 +321,7 @@ class ScalableDiagonalModel(ScalableModel):
         A basis function is a mono dimensional function
         interpolating the samples of a given output component
         over the input sampling line
-        :math:`t\in[0,1]\mapsto \underline{x}+t(\overline{x}-\underline{x})`.
+        $t\in[0,1]\mapsto \underline{x}+t(\overline{x}-\underline{x})$.
 
         There are as many basis functions
         as there are output components from the discipline.
@@ -331,10 +334,10 @@ class ScalableDiagonalModel(ScalableModel):
         there are 15 basis functions. And so on.
         This method allows to plot the basis functions associated
         with all outputs or only part of them,
-        either on screen (``show=True``), in a file (``save=True``)
+        either on screen (`show=True`), in a file (`save=True`)
         or both.
-        We can also specify the discretization ``step``
-        whose default value is ``0.01``.
+        We can also specify the discretization `step`
+        whose default value is `0.01`.
 
         Args:
             save: Whether to save the figure.
@@ -496,7 +499,7 @@ class ScalableDiagonalModel(ScalableModel):
             dataname: The name of the variable whose component must be check.
             index: The index of the component of the variable.
             io_dep: The dependency between the inputs and the outputs.
-                If ``None``,
+                If `None`,
                 all output components can depend on all input components.
         """
         is_input = dataname in self.input_names
@@ -538,8 +541,8 @@ class ScalableDiagonalApproximation:
     def __init__(
         self,
         sizes: Mapping[str, int],
-        output_dependency,
-        io_dependency,
+        output_dependency: Mapping[str, Mapping[str, NDArray[float]]],
+        io_dependency: Mapping[str, NDArray[float]],
     ) -> None:
         """
         Args:
