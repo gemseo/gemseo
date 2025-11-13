@@ -52,7 +52,8 @@ class FCERegressor_Settings(BaseFCERegressor_Settings):  # noqa: N801
     linear_model_fitter_settings: BaseLinearModelFitter_Settings | None = Field(
         default=None,
         description="""The settings of the linear solver.
-If ``None``, use the default :class:`.OrthogonalMatchingPursuit_Settings`.""",
+If `None`, use the default
+[OrthogonalMatchingPursuit_Settings][gemseo.mlearning.linear_model_fitting.omp_settings.OrthogonalMatchingPursuit_Settings].""",
     )
 
     basis: OrthonormalFunctionBasis = Field(

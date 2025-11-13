@@ -105,6 +105,7 @@ class BaseMDA(ProcessDiscipline):
     """A base class for multidisciplinary analysis (MDA)."""
 
     NORMALIZED_RESIDUAL_NORM: Final[str] = "MDA residuals norm"
+    """The variable name for the MDA residual norm."""
 
     default_cache_type: ClassVar[_CacheType] = ProcessDiscipline.CacheType.SIMPLE
 
@@ -164,9 +165,7 @@ class BaseMDA(ProcessDiscipline):
         r"""The residual vector is not scaled. The MDA is considered converged when its
         Euclidean norm satisfies,
 
-        .. math::
-
-            \|R_k\|_2 \leq \text{tol}.
+        $$\|R_k\|_2 \leq \text{tol}.$$
         """
 
         INITIAL_RESIDUAL_NORM = auto()
@@ -174,9 +173,7 @@ class BaseMDA(ProcessDiscipline):
         initial residual (if not null, else it is not scaled). The MDA is considered
         converged when its Euclidean norm satisfies,
 
-        .. math::
-
-            \frac{ \|R_k\|_2 }{ \|R_0\|_2 } \leq \text{tol}.
+        $$\frac{ \|R_k\|_2 }{ \|R_0\|_2 } \leq \text{tol}.$$
         """
 
         INITIAL_SUBRESIDUAL_NORM = auto()
@@ -185,17 +182,14 @@ class BaseMDA(ProcessDiscipline):
         sub-residual (if not null, else it is not scaled). The MDA is considered
         converged when the Euclidean norm of each sub-residual satisfies,
 
-        .. math::
-
-            \max_i \left| \frac{\|r^i_k\|_2}{\|r^i_0\|_2} \right| \leq \text{tol}.
+        $$\max_i \left| \frac{\|r^i_k\|_2}{\|r^i_0\|_2} \right| \leq \text{tol}.$$
         """
 
         N_COUPLING_VARIABLES = auto()
         r"""The :math:k`-th residual vector is scaled using the number of coupling
         variables. The MDA is considered converged when its Euclidean norm satisfies,
-        .. math::
 
-            \frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.
+        $$\frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.$$
         """
 
         INITIAL_RESIDUAL_COMPONENT = auto()
@@ -203,20 +197,16 @@ class BaseMDA(ProcessDiscipline):
         by the corresponding component of the initial residual (if not null, else it is
         not scaled). The MDA is considered converged when each component satisfies,
 
-        .. math::
-
-            \max_i \left| \frac{(R_k)_i}{(R_0)_i} \right| \leq \text{tol}.
+        $$\max_i \left| \frac{(R_k)_i}{(R_0)_i} \right| \leq \text{tol}.$$
         """
 
         SCALED_INITIAL_RESIDUAL_COMPONENT = auto()
         r"""The :math:k`-th residual vector is scaled component-wise and by the number
-        coupling variables. If :math:`\div` denotes the component-wise division between
+        coupling variables. If $\div$ denotes the component-wise division between
         two vectors, then the MDA is considered converged when the residual vector
         satisfies,
 
-        .. math::
-
-            \frac{1}{\sqrt{n_\text{coupl.}}} \| R_k \div R_0 \|_2 \leq \text{tol}.
+        $$\frac{1}{\sqrt{n_\text{coupl.}}} \| R_k \div R_0 \|_2 \leq \text{tol}.$$
         """
 
     def __init__(
@@ -229,9 +219,9 @@ class BaseMDA(ProcessDiscipline):
         Args:
             disciplines: The disciplines from which to compute the MDA.
             settings_model: The MDA settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The MDA settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                These arguments are ignored when `settings_model` is not `None`.
         """  # noqa:D205 D212 D415
         self.settings = create_model(
             self.Settings,
@@ -505,7 +495,7 @@ class BaseMDA(ProcessDiscipline):
             show: Whether to display the plot on screen.
             save: Whether to save the plot as a PDF file.
             n_iterations: The number of iterations on the *x* axis.
-                If ``None``, use all the iterations.
+                If `None`, use all the iterations.
             logscale: The limits of the *y* axis.
                 If empty, do not change the limits of the *y* axis.
             filename: The name of the file to save the figure.

@@ -60,12 +60,14 @@ class AutoPyDiscipline(Discipline):
     from a Python function that:
 
     - returns variables,
-      e.g. ``return x`` or ``return x, y``,
-      but no expression like ``return a+b`` or ``return a+b, y``,
+      e.g. `return x` or `return x, y`,
+      but no expression like `return a+b` or `return a+b, y`,
     - must have a default value per argument
-      if the :class:`.AutoPyDiscipline` is used by an ``MDA``
-      (deriving from :class:`.BaseMDA`),
-      as in the case of :class:`.MDF` and :class:`.BiLevel` formulations,
+      if the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+      is used by an `MDA`
+      (deriving from [BaseMDA][gemseo.mda.base_mda.BaseMDA]),
+      as in the case of [MDF][gemseo.formulations.mdf.MDF]
+      and [BiLevel][gemseo.formulations.bilevel.BiLevel] formulations,
       in the presence of strong couplings.
 
     The input names of the discipline are the names of the Python function arguments
@@ -75,7 +77,7 @@ class AutoPyDiscipline(Discipline):
     the arguments and returned variables are assumed to be
     either scalars
     or NumPy arrays of length greater than 1.
-    When ``use_arrays`` is ``True``,
+    When `use_arrays` is `True`,
     the scalar arguments are assumed to be NumPy arrays of length equal to 1.
     When *all* the arguments and returned variables have type hints,
     these types are used by the input and output grammars.
@@ -83,7 +85,7 @@ class AutoPyDiscipline(Discipline):
     The default input values are the default values of the Python function arguments,
     if any.
 
-    :ref:`This example <sphx_glr_examples_disciplines_types_plot_auto_py_discipline.py>`
+    [This example][create-a-discipline-from-a-python-function]
     from the documentation
     illustrates this feature.
     """
@@ -133,7 +135,7 @@ class AutoPyDiscipline(Discipline):
                 with rows corresponding to the outputs and columns to the inputs.
             name: The name of the discipline.
                 If empty, use the name of the Python function.
-            use_arrays: Whether the function ``py_func`` is expected
+            use_arrays: Whether the function `py_func` is expected
                 to take arrays as inputs and give outputs as arrays.
 
         Raises:
@@ -191,10 +193,10 @@ class AutoPyDiscipline(Discipline):
 
         Args:
             tp: A type,
-                e.g. ``str`` (unsubscripted) or ``NDArray[str]`` (subscripted).
+                e.g. `str` (unsubscripted) or `NDArray[str]` (subscripted).
 
         Returns:
-            The unsubscripted version of ``tp``.
+            The unsubscripted version of `tp`.
         """
         origin = get_origin(tp)
         return tp if origin is None else origin
@@ -362,7 +364,7 @@ class AutoPyDiscipline(Discipline):
     ) -> None:
         """
         Raises:
-            RuntimeError: When the analytic Jacobian :attr:`.py_jac` is ``None``.
+            RuntimeError: When the analytic Jacobian `.py_jac` is `None`.
             ValueError: When the Jacobian shape is inconsistent.
         """  # noqa: D205 D212 D415
         if self.__py_jac is None:
@@ -423,16 +425,17 @@ class AutoPyDiscipline(Discipline):
 class AutoDiscDataProcessor(DataProcessor):
     """A data processor forcing input data to float and output data to arrays.
 
-    Convert all |g| scalar input data to floats, and convert all discipline output data
-    to NumPy arrays.
+    Convert all GEMSEO scalar input data to floats,
+    and convert all discipline output data to NumPy arrays.
     """
 
     def pre_process_data(self, data: dict[str, DataType]) -> dict[str, DataType]:
         """Pre-process the input data.
 
         Execute a pre-processing of input data
-        after they are checked by :meth:`~Discipline.validate_input_data`,
-        and before the :meth:`~Discipline._run` method of the discipline is called.
+        after they are checked by
+        [validate_input_data()][gemseo.core.discipline.discipline.Discipline.validate_input_data],
+        and before the `Discipline._run()` method of the discipline is called.
 
         Args:
             data: The data to be processed.
@@ -452,8 +455,9 @@ class AutoDiscDataProcessor(DataProcessor):
         """Post-process the output data.
 
         Execute a post-processing of the output data
-        after the :meth:`~Discipline._run` method of the discipline is called,
-        and before they are checked by :meth:`~Discipline.validate_output_data`.
+        after the `Discipline._run()` method of the discipline is called,
+        and before they are checked by
+        [validate_output_data()][gemseo.core.discipline.discipline.Discipline.validate_output_data].
 
         Args:
             data: The data to be processed.

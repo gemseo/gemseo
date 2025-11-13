@@ -49,16 +49,16 @@ class ScalableDiscipline(BaseDiscipline):
     r"""A scalable discipline.
 
     It computes the output
-    :math:`y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j`.
+    $y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j$.
     """
 
     _CORE_DISCIPLINE_CLASS = _ScalableDiscipline
 
     __x_i_name: str
-    r"""The name of the local design variable :math:`x_i`."""
+    r"""The name of the local design variable $x_i$."""
 
     __u_i_name: str
-    r"""The name of the local uncertain variable :math:`u_i`."""
+    r"""The name of the local uncertain variable $u_i$."""
 
     def __init__(
         self,
@@ -71,16 +71,16 @@ class ScalableDiscipline(BaseDiscipline):
     ) -> None:
         r"""
         Args:
-            index: The index :math:`i` of the scalable discipline.
-            a_i: The offset vector :math:`a_i`.
-            D_i0: The coefficient matrix :math:`D_{i,0}`
-                to multiply the shared design variable :math:`x_0`.
-            D_ii: The coefficient matrix :math:`D_{i,i}`
-                to multiply the local design variable :math:`x_i`.
+            index: The index $i$ of the scalable discipline.
+            a_i: The offset vector $a_i$.
+            D_i0: The coefficient matrix $D_{i,0}$
+                to multiply the shared design variable $x_0$.
+            D_ii: The coefficient matrix $D_{i,i}$
+                to multiply the local design variable $x_i$.
             C_ij: The coefficient matrices
-                :math:`\left(C_{i,j}\right)_{j=1\atop j\neq i}^N`
-                where :math:`C_{i,j}` is used
-                to multiply the coupling variable :math:`y_j`.
+                $\left(C_{i,j}\right)_{j=1\atop j\neq i}^N$
+                where $C_{i,j}$ is used
+                to multiply the coupling variable $y_j$.
             **default_input_values: The default values of the input variables.
         """  # noqa: D205 D212
         super().__init__(index, a_i, D_i0, D_ii, C_ij, **default_input_values)

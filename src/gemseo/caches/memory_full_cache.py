@@ -57,18 +57,18 @@ class MemoryFullCache(BaseFullCache):
     ) -> None:
         """
         Args:
-            is_memory_shared : If ``True``,
+            is_memory_shared: If `True`,
                 a shared memory dictionary is used to store the data,
                 which makes the cache compatible with multiprocessing.
 
-        Warnings:
-            If ``is_memory_shared`` is ``False``
+        Warning:
+            If `is_memory_shared` is `False`
             and multiple disciplines point to the same cache
             or the process is multi-processed,
             there may be duplicate computations
             because the cache will not be shared among the processes.
             This class relies on some multiprocessing features, it is therefore
-            necessary to protect its execution with an ``if __name__ == '__main__':``
+            necessary to protect its execution with an `if __name__ == '__main__':`
             statement when working on Windows.
         """  # noqa: D205, D212, D415
         super().__init__(tolerance, name)

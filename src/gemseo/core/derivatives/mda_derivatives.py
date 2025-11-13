@@ -99,7 +99,9 @@ def traverse_add_diff_io_mda(
 
     Uses a two-ways (from inputs to outputs and then from outputs to inputs)
     breadth first search graph traversal algorithm.
-    The graph is constructed by :class:`.DependencyGraph`, which represents the data
+    The graph is constructed by
+    [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph],
+    which represents the data
     connexions (edges) between the disciplines (nodes).
 
     Args:

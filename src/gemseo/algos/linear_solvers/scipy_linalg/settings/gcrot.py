@@ -42,14 +42,14 @@ class GCROT_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
         default=30,
         description="""Number of vectors to carry between inner FGMRES iterations.
 
-If ``None`` use the same value as ``m``.""",
+If `None` use the same value as `m`.""",
     )
 
     CU: Iterable[tuple[NumberArray, NumberArray]] | None = Field(
         default=None,
         description="""List of tuples `(c, u)` required to form the matrices C and U.
 
-If ``None`` start from empty matrices.""",
+If `None` start from empty matrices.""",
     )
 
     discard_C: bool = Field(  # noqa: N815

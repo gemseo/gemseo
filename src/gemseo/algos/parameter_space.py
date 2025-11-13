@@ -19,17 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Variable space defining both deterministic and uncertain variables.
 
-Overview
---------
+## Overview
 
-The :class:`.ParameterSpace` class describes a set of parameters of interest
+The [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace] class describes
+a set of parameters of interest
 which can be either deterministic or uncertain.
-This class inherits from :class:`.DesignSpace`.
+This class inherits from [DesignSpace][gemseo.algos.design_space.DesignSpace].
 
-Capabilities
-------------
+## Capabilities
 
-The :meth:`.DesignSpace.add_variable` aims to add deterministic variables from:
+The
+[DesignSpace.add_variable()][gemseo.algos.design_space.DesignSpace.add_variable]
+aims to add deterministic variables from:
 
 - a variable name,
 - an optional variable size (default: 1),
@@ -38,31 +39,42 @@ The :meth:`.DesignSpace.add_variable` aims to add deterministic variables from:
 - an optional upper bound (default: + infinity),
 - an optional current value (default: None).
 
-The :meth:`.add_random_variable` aims to add uncertain
+The
+[add_random_variable()][gemseo.algos.parameter_space.ParameterSpace.add_random_variable]
+method
+aims to add uncertain
 variables (a.k.a. random variables) from:
 
 - a variable name,
 - a distribution name
-  (see :func:`.uncertainty.get_available_distributions`),
+  (see [get_available_distributions()][gemseo.uncertainty.get_available_distributions]),
 - an optional variable size,
-- optional distribution parameters (``parameters`` set as
-  a tuple of positional arguments for :class:`.OTDistribution`
-  or a dictionary of keyword arguments for :class:`.SPDistribution`,
+- optional distribution parameters (`parameters` set as
+  a tuple of positional arguments for
+  [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+  or a dictionary of keyword arguments for
+  [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution],
   or keyword arguments for standard probability distribution such
-  as :class:`.OTNormalDistribution` and :class:`.SPNormalDistribution`).
+  as
+  [OTNormalDistribution][gemseo.uncertainty.distributions.openturns.normal.OTNormalDistribution]
+  and
+  [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]).
 
-The :class:`.ParameterSpace` also provides the following methods:
+The [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace] also provides
+the following methods:
 
-- :meth:`.ParameterSpace.compute_samples`: returns several samples
-  of the uncertain variables,
-- :meth:`.evaluate_cdf`: evaluate the cumulative density function
-  for the different variables and their different
-- :meth:`.get_range` returns the numerical range
-  of the different uncertain parameters,
-- :meth:`.get_support`: returns the mathematical support
-  of the different uncertain variables,
-- :meth:`.is_uncertain`: checks if a parameter is uncertain,
-- :meth:`.is_deterministic`: checks if a parameter is deterministic.
+- [compute_samples()][gemseo.algos.parameter_space.ParameterSpace.compute_samples]:
+  returns several samples of the uncertain variables,
+- [evaluate_cdf()][gemseo.algos.parameter_space.ParameterSpace.evaluate_cdf]:
+  evaluate the cumulative density function for the different variables component-wise,
+- [get_range()][gemseo.algos.parameter_space.ParameterSpace.get_range]:
+  returns the numerical range of the different uncertain parameters,
+- [get_support()][gemseo.algos.parameter_space.ParameterSpace.get_support]:
+  returns the mathematical support of the different uncertain variables,
+- [is_uncertain()][gemseo.algos.parameter_space.ParameterSpace.is_uncertain]:
+  checks if a parameter is uncertain,
+- [is_deterministic()][gemseo.algos.parameter_space.ParameterSpace.is_uncertain]:
+  checks if a parameter is deterministic.
 """
 
 from __future__ import annotations
@@ -141,7 +153,7 @@ class ParameterSpace(DesignSpace):
         Args:
             copula: A copula distribution
                 defining the dependency structure between random variables;
-                if ``None``, consider an independent copula.
+                if `None`, consider an independent copula.
         """
         if self.uncertain_variables:
             distributions = [
@@ -194,51 +206,59 @@ class ParameterSpace(DesignSpace):
     ) -> None:
         """Add a *d*-length random vector from a probability distribution.
 
-        Warnings:
+        Warning:
             The probability distributions must have
             the same identifier. For instance,
             one cannot mix a random vector
-            using a :class:`.OTUniformDistribution` with identifier ``"OT"``
+            using a
+            [OTUniformDistribution][gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution]
+            with identifier `"OT"`
             and a random vector
-            using a :class:`.SPNormalDistribution` with identifier ``"SP"``.
+            using a
+            [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
+            with identifier `"SP"`.
 
         Args:
             name: The name of the random vector.
             distribution: Either te name of a class
                 implementing a probability distribution,
-                e.g. ``"OTUniformDistribution"`` or ``"SPUniformDistribution"``,
+                e.g. `"OTUniformDistribution"` or `"SPUniformDistribution"`,
                 an interface to a library of probability distributions,
-                e.g. ``"OTDistribution"`` or ``"SPDistribution"``,
+                e.g. `"OTDistribution"` or `"SPDistribution"`,
                 or a collection of distribution settings.
                 In the case of settings,
-                the argument ``size``, ``interfaced_distribution``,
-                ``interfaced_distribution_parameters`` and ``parameters`` are ignored.
+                the argument `size`, `interfaced_distribution`,
+                `interfaced_distribution_parameters` and `parameters` are ignored.
             size: The length *d* of the random vector.
-                If ``0``, deduce it from the parameters.
+                If `0`, deduce it from the parameters.
             interfaced_distribution: The name of the distribution
                 in the library of probability distributions
-                when ``distribution`` is the name of a class
+                when `distribution` is the name of a class
                 implementing an interface to this library.
             interfaced_distribution_parameters: The parameters of the distribution
                 in the library of probability distributions
-                when ``distribution`` is the name of a class
+                when `distribution` is the name of a class
                 implementing an interface to this library.
                 The values of the data structure (mapping or tuple) must be set
-                either as ``[p_1,...,p_d]``
+                either as `[p_1,...,p_d]`
                 (one value per component of the random vector)
-                or as ``[p]``
+                or as `[p]`
                 (one value for all the components)
                 If empty, use the default ones.
             **parameters: The parameters of the distribution,
-                either as ``[p_1,...,p_d]``
+                either as `[p_1,...,p_d]`
                 (one value per component of the random vector)
-                or as ``[p]``
+                or as `[p]`
                 (one value for all the components);
                 otherwise, use the default ones.
 
         Raises:
             ValueError: When mixing probability distributions from different families,
-                e.g. an :class:`.OTDistribution` and a :class:`.SPDistribution` or
+                e.g. an
+                [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+                and a
+                [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+                or
                 when the lengths of the distribution parameter collections
                 are not consistent.
 
@@ -396,14 +416,14 @@ class ParameterSpace(DesignSpace):
     def __get_random_vector_parameter_value(size: int, value: list[Any]) -> list[Any]:
         """Adapt the parameter value if its size is inconsistent with the random vector.
 
-        When the ``size`` of the random vector greater than one
-        and the length of the parameter ``value`` is 1,
-        the parameter value is repeated ``size`` times.
+        When the `size` of the random vector greater than one
+        and the length of the parameter `value` is 1,
+        the parameter value is repeated `size` times.
 
         Args:
             size: The size of the random vector.
             value: The value of the parameter of the probability distribution,
-                whose length is either ``1`` or ``size``.
+                whose length is either `1` or `size`.
 
         Returns:
             The value of the parameter of the probability distribution
@@ -422,17 +442,17 @@ class ParameterSpace(DesignSpace):
         Args:
             interfaced_distribution_parameters: The parameters of the distribution
                 in the library of probability distributions
-                when ``distribution`` is the name of a class
+                when `distribution` is the name of a class
                 implementing an interface to this library;
                 if empty, use the default ones.
             parameter_values: The parameters of the distribution,
-                either as ``(p_1,...,p_d)``
+                either as `(p_1,...,p_d)`
                 (one value per component of the random vector)
-                or as ``(p)``
+                or as `(p)`
                 (one value for all the components);
                 otherwise, use the default ones.
             size: The length *d* of the random vector.
-                If ``0``, deduce it from the parameters.
+                If `0`, deduce it from the parameters.
 
         Returns:
             The size of the random vector.
@@ -488,36 +508,40 @@ class ParameterSpace(DesignSpace):
             distribution: Either
                 the name of a class
                 implementing a probability distribution,
-                e.g. ``"OTUniformDistribution"`` or ``"SPUniformDistribution"``,
+                e.g. `"OTUniformDistribution"` or `"SPUniformDistribution"`,
                 the name of a class implementing
                 an interface to a library of probability distributions,
-                e.g. ``"OTDistribution"`` or ``"SPDistribution"``,
+                e.g. `"OTDistribution"` or `"SPDistribution"`,
                 or the settings of the distribution.
                 In the case of settings,
-                the argument ``interfaced_distribution``,
-                ``interfaced_distribution_parameters`` and ``parameters`` are ignored.
+                the argument `interfaced_distribution`,
+                `interfaced_distribution_parameters` and `parameters` are ignored.
             size: The dimension of the random variable.
                 The parameters of the distribution are shared
                 by all the components of the random variable.
             interfaced_distribution: The name of the distribution
                 in the library of probability distributions
-                when ``distribution`` is the name of a class
+                when `distribution` is the name of a class
                 implementing an interface to this library.
             interfaced_distribution_parameters: The parameters of the distribution
                 in the library of probability distributions
-                when ``distribution`` is the name of a class
+                when `distribution` is the name of a class
                 implementing an interface to this library;
                 if empty, use the default ones.
             **parameters: The parameters of the distribution;
                 otherwise, use the default ones.
 
-        Warnings:
+        Warning:
             The probability distributions must have
             the same identifier. For instance,
             one cannot mix a random variable
-            distributed as an :class:`.OTUniformDistribution` with identifier ``"OT"``
+            distributed as an
+            [OTUniformDistribution][gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution]
+            with identifier `"OT"`
             and a random variable
-            distributed as a :class:`.SPNormalDistribution` with identifier ``"SP"``.
+            distributed as a
+            [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
+            with identifier `"SP"`.
 
         Examples:
             >>> from gemseo.algos.parameter_space import ParameterSpace
@@ -622,7 +646,7 @@ class ParameterSpace(DesignSpace):
         Args:
             n_samples: A number of samples.
             as_dict: The type of the returned object.
-                If ``True``, return a dictionary.
+                If `True`, return a dictionary.
                 Otherwise, return an array.
 
         Returns:
@@ -652,7 +676,7 @@ class ParameterSpace(DesignSpace):
             value: The values of the uncertain variables
                 passed as a dictionary whose keys are the names of the variables.
             inverse: The type of function to evaluate.
-                If ``True``, compute the cumulative density function.
+                If `True`, compute the cumulative density function.
                 Otherwise, compute the inverse cumulative density function.
 
         Returns:
@@ -843,25 +867,27 @@ class ParameterSpace(DesignSpace):
     ) -> ndarray:
         """Unnormalize a normalized vector of the parameter space.
 
-        If ``use_dist`` is True,
+        If `use_dist` is True,
         use the inverse cumulative probability distributions of the random variables
         to unscale the components of the random variables.
         Otherwise,
-        use the approach defined in :meth:`.DesignSpace.unnormalize_vect`
+        use the approach defined in
+        [DesignSpace.unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]
         with `minus_lb` and `no_check`.
 
         For the components of the deterministic variables,
-        use the approach defined in :meth:`.DesignSpace.unnormalize_vect`
+        use the approach defined in
+        [DesignSpace.unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]
         with `minus_lb` and `no_check`.
 
         Args:
             x_vect: The values of the design variables.
             minus_lb: Whether to remove the lower bounds at normalization.
-            no_check: Whether to check if the components are in :math:`[0,1]`.
+            no_check: Whether to check if the components are in $[0,1]$.
             use_dist: Whether to unnormalize the components of the random variables
                 with their inverse cumulative probability distributions.
             out: The array to store the unnormalized vector.
-                If ``None``, create a new array.
+                If `None`, create a new array.
 
         Returns:
             The unnormalized vector.
@@ -917,20 +943,22 @@ class ParameterSpace(DesignSpace):
         use the cumulative probability distributions of the random variables
         to scale the components of the random variables between 0 and 1.
         Otherwise,
-        use the approach defined in :meth:`.DesignSpace.normalize_vect`
+        use the approach defined in
+        [DesignSpace.normalize_vect()][gemseo.algos.design_space.DesignSpace.normalize_vect]
         with `minus_lb`.
 
         For the components of the deterministic variables,
-        use the approach defined in :meth:`.DesignSpace.normalize_vect`
+        use the approach defined in
+        [DesignSpace.normalize_vect()][gemseo.algos.design_space.DesignSpace.normalize_vect]
         with `minus_lb`.
 
         Args:
             x_vect: The values of the design variables.
-            minus_lb: If ``True``, remove the lower bounds at normalization.
-            use_dist: If ``True``, normalize the components of the random variables
+            minus_lb: If `True`, remove the lower bounds at normalization.
+            use_dist: If `True`, normalize the components of the random variables
                 with their cumulative probability distributions.
             out: The array to store the normalized vector.
-                If ``None``, create a new array.
+                If `None`, create a new array.
 
         Returns:
             The normalized vector.
@@ -968,14 +996,14 @@ class ParameterSpace(DesignSpace):
         self,
         as_design_space: bool = False,
     ) -> DesignSpace | ParameterSpace:
-        """Define a new :class:`.DesignSpace` from the uncertain variables only.
+        """Define a new parameter space from the uncertain variables only.
 
         Args:
-            as_design_space: If ``False``,
-                return a :class:`.ParameterSpace`
+            as_design_space: If `False`,
+                return a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
                 containing the original uncertain variables as is;
                 otherwise,
-                return a :class:`.DesignSpace`
+                return a [DesignSpace][gemseo.algos.design_space.DesignSpace]
                 where the original uncertain variables are made deterministic.
                 In that case,
                 the bounds of a deterministic variable correspond
@@ -983,7 +1011,7 @@ class ParameterSpace(DesignSpace):
                 and the current value correspond to its mean.
 
         Return:
-            A :class:`.ParameterSpace` defined by the uncertain variables only.
+            A parameter space defined by the uncertain variables only.
         """
         uncertain_space = self.filter(self.uncertain_variables, copy=True)
         if as_design_space:
@@ -992,10 +1020,10 @@ class ParameterSpace(DesignSpace):
         return uncertain_space
 
     def extract_deterministic_space(self) -> DesignSpace:
-        """Define a new :class:`.DesignSpace` from the deterministic variables only.
+        """Define a design space from the deterministic variables only.
 
         Return:
-            A :class:`.DesignSpace` defined by the deterministic variables only.
+            A design space defined by the deterministic variables only.
         """
         deterministic_space = DesignSpace()
         for name in self.deterministic_variables:
@@ -1055,7 +1083,7 @@ class ParameterSpace(DesignSpace):
         return parameter_space
 
     def to_design_space(self) -> DesignSpace:
-        """Convert the parameter space into a :class:`.DesignSpace`.
+        """Convert the parameter space into a design space.
 
         The original deterministic variables are kept as is
         while the original uncertain variables are made deterministic.
@@ -1065,7 +1093,7 @@ class ParameterSpace(DesignSpace):
         and the current value correspond to its mean.
 
         Return:
-            A :class:`.DesignSpace` where all original variables are made deterministic.
+            A design space where all original variables are made deterministic.
         """
         design_space = self.extract_deterministic_space()
         for name in self.uncertain_variables:

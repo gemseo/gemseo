@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class BaseFormulationFactory(BaseFactory[BaseFormulation]):
-    """A factory of :class:`~gemseo.formulations.base_formulation.BaseFormulation`."""
+    """A factory of [BaseFormulation][gemseo.formulations.base_formulation.BaseFormulation]."""  # noqa: E501
 
     def get_sub_options_grammar(
         self,

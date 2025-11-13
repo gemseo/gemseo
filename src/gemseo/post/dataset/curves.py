@@ -17,12 +17,13 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw curves from a :class:`.Dataset`.
+"""Draw curves from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-A :class:`.Curves` plot represents samples of a functional variable
-:math:`y(x)` discretized over a 1D mesh. Both evaluations of :math:`y`
-and mesh are stored in a :class:`.Dataset`, :math:`y` as a parameter
-and the mesh as a misc.
+A [Curves][gemseo.post.dataset.curves.Curves] plot represents
+samples of a functional variable $y(x)$ discretized over a 1D mesh.
+Both evaluations of $y$ and mesh are stored
+in a [Dataset][gemseo.datasets.dataset.Dataset],
+$y$ as a parameter and the mesh as a misc.
 """
 
 from __future__ import annotations

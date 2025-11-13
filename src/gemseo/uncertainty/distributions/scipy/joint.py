@@ -19,15 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The SciPy-based joint probability distribution.
 
-:class:`.SPJointDistribution` is a :class:`.BaseJointDistribution`
-based on the `SciPy <https://docs.scipy.org/doc/scipy/tutorial/stats.html>`_ library.
+[SPJointDistribution][gemseo.uncertainty.distributions.scipy.joint.SPJointDistribution]
+is a
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+based on the [SciPy](https://docs.scipy.org/doc/scipy/tutorial/stats.html) library.
 
-.. warning::
-
+Warning:
    For the moment,
-   there is no copula that can be used with :class:`.SPJointDistribution`;
+   there is no copula that can be used with
+   [SPJointDistribution][gemseo.uncertainty.distributions.scipy.joint.SPJointDistribution];
    if you want to introduce dependency between random variables,
-   please consider :class:`.OTJointDistribution`.
+   please consider
+   [OTJointDistribution][gemseo.uncertainty.distributions.openturns.joint.OTJointDistribution].
 """
 
 from __future__ import annotations
@@ -58,7 +61,7 @@ class SPJointDistribution(BaseJointDistribution):
     ) -> None:
         """
         Raises:
-            NotImplementedError: When the copula is not ``None``.
+            NotImplementedError: When the copula is not `None`.
         """  # noqa: D205 D212 D415
         if copula is not None:
             msg = "There is not copula distribution yet for SciPy-based distributions."

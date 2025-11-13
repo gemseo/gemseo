@@ -49,7 +49,8 @@ def _initialize_add_diff_io(
     because they have an input/output in the list of data to be differentiated.
 
     Args:
-        graph: The data graph of the process, built from :class:`.DependencyGraph`.
+        graph: The data graph of the process,
+        built from [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
         input_names: The inputs with respect to which the chain is differentiated.
         output_names: The chain outputs to be differentiated.
 
@@ -99,7 +100,7 @@ def _bfs_one_way_diff_io(
 
     Args:
         graph: The data graph of the process, built from
-            :class:`.DependencyGraph`.
+            [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
         source_disciplines: The disciplines that have inputs with respect
             to which the differentiation is performed.
         reverse: Whether to reverse the graph direction and traverse it in reverse.
@@ -272,12 +273,14 @@ def traverse_add_diff_io(
 
     Uses a two ways (from inputs to outputs and then from outputs to inputs)
     breadth first search graph traversal algorithm.
-    The graph is constructed by :class:`.DependencyGraph`, which represents the data
+    The graph is constructed
+    by [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph],
+    which represents the data
     connexions (edges) between the disciplines (nodes).
 
     Args:
         graph: The data graph of the process, built from
-            :class:`.DependencyGraph`.
+            [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
         input_names: The inputs with respect to which the chain is differentiated.
         output_names: The chain outputs to be differentiated.
         add_differentiated_ios: Whether to add the differentiated inputs and outputs

@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A :class:`.Dataset` to store optimization histories."""
+"""A [Dataset][gemseo.datasets.dataset.Dataset] to store optimization histories."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class OptimizationDataset(Dataset):
-    """A :class:`.Dataset` to store optimization histories."""
+    """A [Dataset][gemseo.datasets.dataset.Dataset] to store optimization histories."""
 
     DESIGN_GROUP: Final[str] = "designs"
     """The group name for the design variables."""
@@ -46,10 +46,11 @@ class OptimizationDataset(Dataset):
     """The group name for the functions.
 
     This group name is deprecated in favour of
-    :attr:`.EQUALITY_CONSTRAINT_GROUP`,
-    :attr:`.INEQUALITY_CONSTRAINT_GROUP`,
-    :attr:`.OBJECTIVE_GROUP` and
-    :attr:`.OBSERVABLE_GROUP`.
+    [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP],
+    [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP],
+    [OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP]
+    and
+    [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP].
     """
 
     OBJECTIVE_GROUP: Final[str] = "objectives"
@@ -60,8 +61,9 @@ class OptimizationDataset(Dataset):
     """The group name for the constraints.
 
     This group name is deprecated in favour of
-    :attr:`.EQUALITY_CONSTRAINT_GROUP` and
-    :attr:`.INEQUALITY_CONSTRAINT_GROUP`.
+    [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
+    and
+    [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP].
     """
 
     INEQUALITY_CONSTRAINT_GROUP: Final[str] = "inequality_constraints"
@@ -91,8 +93,8 @@ class OptimizationDataset(Dataset):
     def design_variable_names(self) -> list[str]:
         """The names of the design variables.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return self.get_variable_names(self.DESIGN_GROUP)
 
@@ -100,8 +102,8 @@ class OptimizationDataset(Dataset):
     def constraint_names(self) -> list[str]:
         """The names of the constraints.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return self.get_variable_names(self.CONSTRAINT_GROUP)
 
@@ -109,8 +111,8 @@ class OptimizationDataset(Dataset):
     def equality_constraint_names(self) -> list[str]:
         """The names of the equality constraints.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return self.get_variable_names(self.EQUALITY_CONSTRAINT_GROUP)
 
@@ -118,8 +120,8 @@ class OptimizationDataset(Dataset):
     def inequality_constraint_names(self) -> list[str]:
         """The names of the inequality constraints.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return self.get_variable_names(self.INEQUALITY_CONSTRAINT_GROUP)
 
@@ -127,8 +129,8 @@ class OptimizationDataset(Dataset):
     def objective_names(self) -> list[str]:
         """The names of the objectives.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return self.get_variable_names(self.OBJECTIVE_GROUP)
 
@@ -136,8 +138,8 @@ class OptimizationDataset(Dataset):
     def observable_names(self) -> list[str]:
         """The names of the observables.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return self.get_variable_names(self.OBSERVABLE_GROUP)
 
@@ -182,13 +184,13 @@ class OptimizationDataset(Dataset):
         Args:
             variable_name: The name of the variable.
             data: The data,
-                either an array shaped as ``(n_entries, n_features)``,
-                an array shaped as ``(n_entries,)``
-                that will be reshaped as ``(n_entries, 1)``
+                either an array shaped as `(n_entries, n_features)`,
+                an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`
                 or a scalar that will be converted into an array
-                shaped as ``(n_entries, 1)``.
+                shaped as `(n_entries, 1)`.
             components: The components considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
         """
         self.add_variable(
             variable_name,
@@ -208,13 +210,13 @@ class OptimizationDataset(Dataset):
         Args:
             variable_name: The name of the variable.
             data: The data,
-                either an array shaped as ``(n_entries, n_features)``,
-                an array shaped as ``(n_entries,)``
-                that will be reshaped as ``(n_entries, 1)``
+                either an array shaped as `(n_entries, n_features)`,
+                an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`
                 or a scalar that will be converted into an array
-                shaped as ``(n_entries, 1)``.
+                shaped as `(n_entries, 1)`.
             components: The components considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
         """
         self.add_variable(
             variable_name,
@@ -234,13 +236,13 @@ class OptimizationDataset(Dataset):
         Args:
             variable_name: The name of the variable.
             data: The data,
-                either an array shaped as ``(n_entries, n_features)``,
-                an array shaped as ``(n_entries,)``
-                that will be reshaped as ``(n_entries, 1)``
+                either an array shaped as `(n_entries, n_features)`,
+                an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`
                 or a scalar that will be converted into an array
-                shaped as ``(n_entries, 1)``.
+                shaped as `(n_entries, 1)`.
             components: The components considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
         """
         self.add_variable(
             variable_name,
@@ -260,13 +262,13 @@ class OptimizationDataset(Dataset):
         Args:
             variable_name: The name of the variable.
             data: The data,
-                either an array shaped as ``(n_entries, n_features)``,
-                an array shaped as ``(n_entries,)``
-                that will be reshaped as ``(n_entries, 1)``
+                either an array shaped as `(n_entries, n_features)`,
+                an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`
                 or a scalar that will be converted into an array
-                shaped as ``(n_entries, 1)``.
+                shaped as `(n_entries, 1)`.
             components: The components considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
         """
         self.add_variable(
             variable_name,
@@ -286,13 +288,13 @@ class OptimizationDataset(Dataset):
         Args:
             variable_name: The name of the variable.
             data: The data,
-                either an array shaped as ``(n_entries, n_features)``,
-                an array shaped as ``(n_entries,)``
-                that will be reshaped as ``(n_entries, 1)``
+                either an array shaped as `(n_entries, n_features)`,
+                an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`
                 or a scalar that will be converted into an array
-                shaped as ``(n_entries, 1)``.
+                shaped as `(n_entries, 1)`.
             components: The components considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
         """
         self.add_variable(
             variable_name,
@@ -312,13 +314,13 @@ class OptimizationDataset(Dataset):
         Args:
             variable_name: The name of the variable.
             data: The data,
-                either an array shaped as ``(n_entries, n_features)``,
-                an array shaped as ``(n_entries,)``
-                that will be reshaped as ``(n_entries, 1)``
+                either an array shaped as `(n_entries, n_features)`,
+                an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`
                 or a scalar that will be converted into an array
-                shaped as ``(n_entries, 1)``.
+                shaped as `(n_entries, 1)`.
             components: The components considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
         """
         self.add_variable(
             variable_name,
@@ -338,11 +340,12 @@ class OptimizationDataset(Dataset):
         Args:
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
         """
         self.add_group(
@@ -363,11 +366,12 @@ class OptimizationDataset(Dataset):
         Args:
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
         """
         self.add_group(
@@ -388,11 +392,12 @@ class OptimizationDataset(Dataset):
         Args:
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
         """
         self.add_group(
@@ -413,11 +418,12 @@ class OptimizationDataset(Dataset):
         Args:
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
         """
         self.add_group(
@@ -438,11 +444,12 @@ class OptimizationDataset(Dataset):
         Args:
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
         """
         self.add_group(
@@ -463,11 +470,12 @@ class OptimizationDataset(Dataset):
         Args:
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
         """
         self.add_group(

@@ -41,7 +41,7 @@ class RadarChart(BasePost[RadarChart_Settings]):
         Raises:
             ValueError: When a requested name is not a constraint
                 or when the requested iteration is neither a dataset index
-                nor the tag ``"opt"``.
+                nor the tag `"opt"`.
         """  # noqa: D205, D212, D415
         constraint_names = settings.constraint_names
         constraint_names = (

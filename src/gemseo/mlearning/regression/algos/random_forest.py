@@ -21,11 +21,11 @@
 
 Use an ensemble of decision trees.
 
-Dependence
-----------
-The regression model relies on the ``RandomForestRegressor`` class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.ensemble.RandomForestRegressor.html>`_.
+## Dependence
+
+The regression model relies on the `RandomForestRegressor` class
+of the
+[scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html).
 """
 
 from __future__ import annotations

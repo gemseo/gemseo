@@ -92,17 +92,17 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     The design space variable types stored as dtype metadata.
 
     To access those in the unit hypercube,
-    use :attr:`.unit_samples`.
+    use [unit_samples][gemseo.algos.doe.base_doe_library.BaseDOELibrary.unit_samples].
     """
 
     unit_samples: RealArray
     """The design vector samples projected in the unit hypercube.
 
-    In the case of a design space of dimension :math:`d`,
-    the unit hypercube is :math:`[0,1]^d`.
+    In the case of a design space of dimension $d$,
+    the unit hypercube is $[0,1]^d$.
 
     To access those in the design space,
-    use :attr:`.samples`.
+    use [samples][gemseo.algos.doe.base_doe_library.BaseDOELibrary.samples].
     """
 
     _lock: RLock
@@ -340,7 +340,8 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     def _worker(self, input_value: RealArray) -> EvaluationType:
         """Evaluate the functions at a given input point.
 
-        To be used by :class:`.CallableParallelExecution`.
+        To be used by
+        [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution].
 
         Args:
             input_value: The input point.
@@ -434,13 +435,13 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         Args:
             variables_space: Either the variables space to be sampled or its dimension.
             unit_sampling: Whether to sample in the unit hypercube.
-                If the value provided in ``variables_space`` is the dimension,
+                If the value provided in `variables_space` is the dimension,
                 the samples will be generated in the unit hypercube
-                whatever the value of ``unit_sampling``.
+                whatever the value of `unit_sampling`.
             settings_model: The DOE settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The DOE settings.
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                These arguments are ignored when `settings_model` is not `None`.
 
         Returns:
             The design of experiments
@@ -506,7 +507,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
 
         Returns:
             A design space
-            containing a single variable called ``"x"``
+            containing a single variable called `"x"`
             whose size is the dimension passed as argument
             and lower and upper bounds are 0 and 1 respectively.
         """

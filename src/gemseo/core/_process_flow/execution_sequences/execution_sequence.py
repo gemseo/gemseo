@@ -40,7 +40,7 @@ class ExecutionSequence(BaseExecutionSequence):
     _observer: BaseExecutionStatusObserver | None
     """An observer following the observer design pattern.
 
-    Defined by :meth:`.set_observer`.
+    Defined by `set_observer()`.
     """
 
     def __init__(self, process: BaseMonitoredProcess) -> None:

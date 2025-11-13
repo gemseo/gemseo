@@ -39,12 +39,10 @@ if TYPE_CHECKING:
 class Rosenbrock(OptimizationProblem):
     r"""The Rosenbrock optimization problem.
 
-    .. math::
+    $$f(x) = \sum_{i=2}^{n_x} 100(x_{i} - x_{i-1}^2)^2 + (1 - x_{i-1})^2$$
 
-       f(x) = \sum_{i=2}^{n_x} 100(x_{i} - x_{i-1}^2)^2 + (1 - x_{i-1})^2
-
-    with the default :class:`.DesignSpace`
-    :math:`[-0.2,0.2]^{n_x}`.
+    with the default [DesignSpace][gemseo.algos.design_space.DesignSpace]
+    $[-0.2,0.2]^{n_x}$.
     """
 
     def __init__(
@@ -60,10 +58,10 @@ class Rosenbrock(OptimizationProblem):
             n_x: The dimension of the design space.
             l_b: The lower bound (common value to all variables).
             u_b: The upper bound (common value to all variables).
-            scalar_var: If ``True``,
+            scalar_var: If `True`,
                 the design space will contain only scalar variables
                 (as many as the problem dimension);
-                if ``False``,
+                if `False`,
                 the design space will contain a single multidimensional variable
                 (whose size equals the problem dimension).
             initial_guess: The initial guess for optimal solution.

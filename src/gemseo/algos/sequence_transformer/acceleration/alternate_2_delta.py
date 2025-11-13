@@ -42,7 +42,7 @@ class Alternate2Delta(SequenceTransformer):
     Mathematics with Applications, (2015) eq. (50).
 
     The least squares problem that must be solved to perform the transformation may be
-    degenerated when the vectors :math:`x_{n+1} - x_n` and :math:`x_n - x_{n-1}` are
+    degenerated when the vectors $x_{n+1} - x_n$ and $x_n - x_{n-1}$ are
     collinear.
     """
 

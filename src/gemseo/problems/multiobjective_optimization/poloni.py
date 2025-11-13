@@ -20,10 +20,15 @@
 #        :author:  François Gallard - minor improvements for integration
 r"""Poloni's bi-objective optimization problem.
 
-See :cite:`POLONI2000403`.
+!!! quote "References"
 
-.. math::
+    Carlo Poloni, Andrea Giurgevich, Luka Onesti, and Valentino Pediroda.
+    Hybridization of a multi-objective genetic algorithm,
+    a neural network and a classical optimizer
+    for a complex design problem in fluid dynamics.
+    Computer Methods in Applied Mechanics and Engineering, 186(2):403--420, 2000.
 
+$$
     \begin{aligned}
     &a1 = 0.5 * sin(1) - 2 * cos(1) + sin(2) - 1.5 * cos(2)\\
     &a2 = 1.5 * sin(1) - cos(1) + 2 * sin(2) - 0.5 * cos(2)\\
@@ -38,6 +43,7 @@ See :cite:`POLONI2000403`.
     & -\pi \leq x \leq \pi\\
     & -\pi \leq y \leq \pi
     \end{aligned}
+$$
 """
 
 from __future__ import annotations

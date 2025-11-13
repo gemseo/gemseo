@@ -51,8 +51,8 @@ def compare_dict_of_arrays(
     """Check if two dictionaries of NumPy and/or SciPy sparse arrays are equal.
 
     The dictionaries can be nested, in which case they are flattened. If the tolerance
-    is set, then arrays are considered equal if ``norm(dict_of_arrays[name] -
-    other_dict_of_arrays[name]) /(1 + norm(other_dict_of_arrays[name])) <= tolerance``.
+    is set, then arrays are considered equal if `norm(dict_of_arrays[name] -
+    other_dict_of_arrays[name]) /(1 + norm(other_dict_of_arrays[name])) <= tolerance`.
 
     Args:
         dict_of_arrays: A dictionary of NumPy arrays and/or SciPy sparse matrices.

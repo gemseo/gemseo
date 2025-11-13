@@ -24,7 +24,7 @@ from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
 
 
 class SobieskiMDAJacobi(MDAJacobi):
-    """An :class:`.MDAJacobi` for the Sobieski's SSBJ use case."""
+    """An [MDAJacobi][gemseo.mda.jacobi.MDAJacobi] for the Sobieski's SSBJ use case."""
 
     def __init__(
         self,

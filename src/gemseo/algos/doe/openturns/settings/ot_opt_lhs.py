@@ -52,7 +52,7 @@ Either "Geometric" or "Linear".""",
         default=True,
         description="""Whether to use simulated annealing to optimize the LHS.
 
-If ``False``, the crude Monte Carlo method is used.""",
+If `False`, the crude Monte Carlo method is used.""",
     )
 
     n_replicates: PositiveInt = Field(

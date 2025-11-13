@@ -32,25 +32,25 @@ OBJECTIVE_NAME: Final[str] = "f"
 LOCAL_DESIGN_VARIABLE_BASE_NAME: Final[str] = "x"
 """The base name of a design variable.
 
-To be suffixed by the index of the corresponding scalable discipline, e.g. ``"x_3"``.
+To be suffixed by the index of the corresponding scalable discipline, e.g. `"x_3"`.
 """
 
 UNCERTAIN_VARIABLE_BASE_NAME: Final[str] = "u"
 """The base name of an uncertain variable.
 
-To be suffixed by the index of the corresponding scalable discipline, e.g. ``"u_3"``.
+To be suffixed by the index of the corresponding scalable discipline, e.g. `"u_3"`.
 """
 
 CONSTRAINT_VARIABLE_BASE_NAME: Final[str] = "c"
 """The base name of a constraint.
 
-To be suffixed by the index of the corresponding scalable discipline, e.g. ``"c_3"``.
+To be suffixed by the index of the corresponding scalable discipline, e.g. `"c_3"`.
 """
 
 COUPLING_VARIABLE_BASE_NAME: Final[str] = "y"
 """The base name of a coupling variable.
 
-To be suffixed by the index of the corresponding scalable discipline, e.g. ``"y_3"``.
+To be suffixed by the index of the corresponding scalable discipline, e.g. `"y_3"`.
 """
 
 

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a bar plot from a :class:`.Dataset`."""
+r"""Draw a bar plot from a [Dataset][gemseo.datasets.dataset.Dataset]."""
 
 from __future__ import annotations
 

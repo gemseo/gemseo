@@ -21,8 +21,12 @@ a classifier is used to predict
 either the class associated with this input data
 or the probability of belonging to each class.
 
-Use the :class:`.ClassifierFactory` to access all the available classifiers
-or derive the :class:`.BaseClassifier` class to add a new one.
+Use the
+[ClassifierFactory][gemseo.mlearning.classification.algos.factory.ClassifierFactory]
+to access all the available classifiers
+or derive the
+[BaseClassifier][gemseo.mlearning.classification.algos.base_classifier.BaseClassifier]
+class to add a new one.
 """
 
 from __future__ import annotations

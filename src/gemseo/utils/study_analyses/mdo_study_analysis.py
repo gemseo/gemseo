@@ -64,7 +64,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     - the name of the sheet shall have the discipline name,
     - the sheet shall define the input names of the discipline
-      as a vertical succession of cells starting with ``"Inputs"``:
+      as a vertical succession of cells starting with `"Inputs"`:
 
       .. table:: Inputs
 
@@ -79,7 +79,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
          +--------------+
 
     - the sheet shall define the output names of the discipline
-      as a vertical succession of cells starting with ``"Outputs"``:
+      as a vertical succession of cells starting with `"Outputs"`:
 
     .. table:: Outputs
 
@@ -93,11 +93,11 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
        | output_name_N |
        +---------------+
 
-    - the empty lines of the series ``Inputs`` and ``Outputs`` are ignored,
+    - the empty lines of the series `Inputs` and `Outputs` are ignored,
     - the sheet may contain other data, but these will not be taken into account.
 
     The scenarios (at least one, or multiple for distributed formulations)
-    must appear in a Excel sheet with a name starting by ``Scenario``.
+    must appear in a Excel sheet with a name starting by `Scenario`.
 
     The sheet shall have the following columns:
 
@@ -123,10 +123,10 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
     - all the design variables must be inputs of a discipline,
       not necessarily the one of the current sheet.
 
-    The columns ``Options`` and ``Options values`` are used
+    The columns `Options` and `Options values` are used
     to pass the formulation options.
-    Note that for string type ``Option values``,
-    the value can be written with or without the ``""`` characters.
+    Note that for string type `Option values`,
+    the value can be written with or without the `""` characters.
 
     To use multi-level MDO formulations,
     create multiple scenarios,
@@ -268,7 +268,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         save_pdf: bool = False,
         show_html: bool = False,
     ) -> XDSM:
-        """Create an XDSM diagram of the :attr:`.main_scenario`.
+        """Create an XDSM diagram of the main scenario.
 
         Args:
             directory_path: The path of the directory to save the files.
@@ -276,7 +276,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             show_html: Whether to open the web browser and display the XDSM.
 
         Returns:
-            The XDSM diagram of the :attr:`.main_scenario`.
+            The XDSM diagram of the main scenario.
         """
         LOGGER.info("Generated the following Scenario:")
         LOGGER.info("%s", self.main_scenario)

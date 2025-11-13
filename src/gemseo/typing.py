@@ -67,7 +67,7 @@ SparseOrDenseRealArray = RealArray | SparseArrayType
 JacobianData = MutableMapping[
     str, MutableMapping[str, Union[SparseOrDenseRealArray, "JacobianOperator"]]
 ]
-"""A Jacobian data structure of the form ``{output_name: {input_name: jacobian}}."""
+"""A Jacobian data structure of the form `{output_name: {input_name: jacobian}}`."""
 
 StrKeyMapping = Mapping[str, Any]
 """A read-only mapping from strings to anything."""

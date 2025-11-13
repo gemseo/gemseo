@@ -85,15 +85,22 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     how the model's uncertain input variables impact its output variables
     from input-output samples relying on a specific design of experiments (DOE).
 
-    A :class:`.BaseSensitivityAnalysis` can be created from such samples
-    (passed as an :class:`.IODataset`)
-    or use its :meth:`.compute_samples` method to generate them,
-    using a :class:`.Discipline` representing the model,
-    a :class:`.ParameterSpace` describing the uncertain input variables
+    A
+    [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis]
+    can be created from such samples
+    (passed as an [IODataset][gemseo.datasets.io_dataset.IODataset])
+    or use its
+    [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples]
+    method to generate them,
+    using a [Discipline][gemseo.core.discipline.discipline.Discipline]
+    representing the model,
+    a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+    describing the uncertain input variables
     and a set of options.
     In the second case,
-    the samples returned by :meth:`.compute_samples` can be saved on the disk
-    for future use.
+    the samples returned by
+    [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples]
+    can be saved on the disk for future use.
     """
 
     dataset: IODataset | None
@@ -101,7 +108,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     The samples must be
     either passed at instantiation
-    or generated with :meth:`.compute_samples`.
+    or generated with
+    [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples].
     """
 
     class Method(StrEnum):
@@ -109,10 +117,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         NONE = "none"
 
-    _INTERACTION_METHODS: ClassVar[tuple[str]] = ()
+    _INTERACTION_METHODS: ClassVar[tuple[str, ...]] = ()
     """The names of the sensitivity methods considering interaction effects."""
 
     DEFAULT_DRIVER: ClassVar[str] = ""
+    """The default DOE algorithm to sample the disciplines."""
 
     _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.NONE
     """The name of the default main sensitivity analysis method."""
@@ -124,7 +133,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The disciplines' outputs to be considered for the analysis."""
 
     _algo_name: str
-    """The name of the DOE algorithm to sample the discipline."""
+    """The name of the DOE algorithm to sample the disciplines."""
 
     _file_path_manager: FilePathManager
     """The file path manager for the figures."""
@@ -138,22 +147,24 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Given a sensitivity method, an input variable and an output variable,
         the sensitivity index is a NumPy array that can be accessed through
-        ``indices.method_name[output_name][output_component][input_name]``.
+        `indices.method_name[output_name][output_component][input_name]`.
 
         For constant output components,
-        ``indices.method_name[output_name][output_component]`` is ``None``.
+        `indices.method_name[output_name][output_component]` is `None`.
         """
 
     _indices: SensitivityIndices
-    """The sensitivity indices computed by the :meth:`.compute_indices` method."""
+    """The sensitivity indices computed by the `compute_indices()` method."""
 
     def __init__(self, samples: IODataset | str | Path = "") -> None:
         """
         Args:
             samples: The samples for the estimation of the sensitivity indices,
-                either as an :class:`.IODataset`
-                or as a pickle file path generated from the :func:`.to_pickle` function.
-                If empty, use :meth:`.compute_samples`.
+                either as an [IODataset][gemseo.datasets.io_dataset.IODataset]
+                or as a pickle file path generated
+                from the [to_pickle()][gemseo.utils.pickle.to_pickle] function.
+                If empty, use
+                [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples].
         """  # noqa: D202, D205, D212
         if isinstance(samples, IODataset):
             self.dataset = samples
@@ -203,17 +214,20 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.
             n_samples: A number of samples.
-                If ``0``, the number of samples is computed by the algorithm.
+                If `0`, the number of samples is computed by the algorithm.
             output_names: The disciplines' outputs to be considered for the analysis.
                 If empty, use all the outputs.
             algo: The name of the DOE algorithm.
-                If empty, use the :attr:`.BaseSensitivityAnalysis.DEFAULT_DRIVER`.
+                If empty, use the
+                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.DEFAULT_DRIVER].
             algo_settings: The settings of the DOE algorithm.
             backup_settings: The settings of the backup file to store the evaluations
                 if any.
-            formulation_name: The name of the :class:`.BaseMDOFormulation`
+            formulation_name: The name of the
+                [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation]
                 to sample the disciplines.
-            **formulation_settings: The settings of the :class:`.BaseMDOFormulation`.
+            **formulation_settings: The settings of the
+                [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation].
 
         Returns:
             The samples for the estimation of the sensitivity indices.
@@ -265,10 +279,10 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
             Given a sensitivity method, an input variable and an output variable,
             the sensitivity index is a NumPy array that can be accessed through
-            ``indices.method_name[output_name][output_component][input_name]``.
+            `indices.method_name[output_name][output_component][input_name]`.
 
             For constant output components,
-            ``indices.method_name[output_name][output_component]`` is ``None``.
+            `indices.method_name[output_name][output_component]` is `None`.
         """
 
     @property
@@ -277,10 +291,10 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Given a sensitivity method, an input variable and an output variable,
         the sensitivity index is a NumPy array that can be accessed through
-        ``indices.method_name[output_name][output_component][input_name]``.
+        `indices.method_name[output_name][output_component][input_name]`.
 
         For constant output components,
-        ``indices.method_name[output_name][output_component]`` is ``None``.
+        `indices.method_name[output_name][output_component]` is `None`.
         """
         return self._indices
 
@@ -290,10 +304,10 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Given an input variable and an output variable,
         the sensitivity index is a NumPy array that can be accessed through
-        ``indices.method_name[output_name][output_component][input_name]``.
+        `indices.method_name[output_name][output_component][input_name]`.
 
         For constant output components,
-        ``indices.method_name[output_name][output_component]`` is ``None``.
+        `indices.method_name[output_name][output_component]` is `None`.
         """
         return getattr(self.indices, str(self.main_method).lower().replace("-", "_"))
 
@@ -301,7 +315,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Return the input variables sorted in descending order.
 
         Args:
-            output: Either a tuple as ``(output_name, output_component)``
+            output: Either a tuple as `(output_name, output_component)`
                 or an output name; in the second case, use the first output component.
 
         Returns:
@@ -340,14 +354,14 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 for which to display the sensitivity indices.
                 If empty, display all the input variables.
             title: The title of the plot, if any.
-            save: If ``True``, save the figure.
-            show: If ``True``, show the figure.
+            save: If `True`, save the figure.
+            show: If `True`, show the figure.
             file_path: A file path.
                 Either a complete file path, a directory name or a file name.
                 If empty, use a default file name and a default directory.
                 The file extension is inferred from filepath extension, if any.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
-                Used when ``file_path`` does not have any extension.
+                Used when `file_path` does not have any extension.
                 If empty, use a default file extension.
 
         Returns:
@@ -383,26 +397,27 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If it is a name, its first component is considered.
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
-                or a (p, 2) array for a 2D one. If ``None``,
+                or a (p, 2) array for a 2D one. If `None`,
                 assume a 1D functional output.
             input_names: The input variables
                 for which to display the sensitivity indices.
                 If empty, display all the input variables.
-            standardize: Whether to scale the indices to :math:`[0,1]`.
+            standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
-            save: If ``True``, save the figure.
-            show: If ``True``, show the figure.
+            save: If `True`, save the figure.
+            show: If `True`, show the figure.
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
-                from ``directory_path``, ``file_name`` and ``file_extension``.
+                from `directory_path`, `file_name` and `file_extension`.
             directory_path: The path of the directory to save the figures.
                 If empty, use the current working directory.
             file_name: The name of the file to save the figures.
                 If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If empty, use a default file extension.
-            properties: The general properties of a :class:`.DatasetPlot`.
+            properties: The general properties
+                of a [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
 
         Returns:
             A bar plot representing the sensitivity indices.
@@ -484,15 +499,15 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             input_names: The input variables
                 for which to display the sensitivity indices.
                 If empty, display all the input variables.
-            standardize: Whether to scale the indices to :math:`[0,1]`.
+            standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
-            save: If ``True``, save the figure.
-            show: If ``True``, show the figure.
+            save: If `True`, save the figure.
+            show: If `True`, show the figure.
             file_path: The path of the file to save the figures.
-                If the extension is missing, use ``file_extension``.
+                If the extension is missing, use `file_extension`.
                 If empty,
                 create a file path
-                from ``directory_path``, ``file_name`` and ``file_extension``.
+                from `directory_path`, `file_name` and `file_extension`.
             directory_path: The path of the directory to save the figures.
                 If empty, use the current working directory.
             file_name: The name of the file to save the figures.
@@ -504,7 +519,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 associated with the sorting output variable.
             sorting_output: The sorting output variable
                 If empty, use the first one.
-            **settings: The settings to instantiate the :class:`.BarPlot`.
+            **settings: The settings to instantiate the
+                [BarPlot][gemseo.post.dataset.bars.BarPlot].
 
         Returns:
             A bar chart representing the sensitivity indices.
@@ -554,7 +570,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 a list of such tuples or
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
-            standardize: Whether to scale the indices to :math:`[0,1]`.
+            standardize: Whether to scale the indices to $[0,1]$.
             sort: Whether to sort the input variables
                 by decreasing order of the sensitivity indices
                 associated with the sorting output variable.
@@ -651,29 +667,30 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             input_names: The input variables
                 for which to display the sensitivity indices.
                 If empty, display all the input variables.
-            standardize: Whether to scale the indices to :math:`[0,1]`.
+            standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
-            save: If ``True``, save the figure.
-            show: If ``True``, show the figure.
+            save: If `True`, save the figure.
+            show: If `True`, show the figure.
             file_path: The path of the file to save the figures.
-                If the extension is missing, use ``file_extension``.
+                If the extension is missing, use `file_extension`.
                 If empty,
                 create a file path
-                from ``directory_path``, ``file_name`` and ``file_extension``.
+                from `directory_path`, `file_name` and `file_extension`.
             directory_path: The path of the directory to save the figures.
                 If empty, use the current working directory.
             file_name: The name of the file to save the figures.
                 If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If empty, use a default file extension.
-            min_radius: The minimal radial value. If ``None``, from data.
-            max_radius: The maximal radial value. If ``None``, from data.
+            min_radius: The minimal radial value. If `None`, from data.
+            max_radius: The maximal radial value. If `None`, from data.
             sort: Whether to sort the input variables
                 by decreasing order of the sensitivity indices
                 associated with the sorting output variable.
             sorting_output: The sorting output variable
                 If empty, use the first one.
-            **settings: The settings to instantiate the :class:`.RadarChart`.
+            **settings: The settings to instantiate the
+                [RadarChart][gemseo.post.dataset.radar_chart.RadarChart].
 
         Returns:
             A radar chart representing the sensitivity indices.
@@ -708,7 +725,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             output: An output for which to display the sensitivity indices.
-            inputs_to_keep: The inputs to keep. If ``None``, keep all.
+            inputs_to_keep: The inputs to keep. If `None`, keep all.
 
         Returns:
             The filtered input names sorted in descending order of influence.
@@ -745,20 +762,21 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If empty, display all the input variables.
             title: The title of the plot, if any.
             use_bar_plot: The type of graph.
-                If ``True``, use a bar plot. Otherwise, use a radar chart.
-            save: If ``True``, save the figure.
-            show: If ``True``, show the figure.
+                If `True`, use a bar plot. Otherwise, use a radar chart.
+            save: If `True`, save the figure.
+            show: If `True`, show the figure.
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
-                from ``directory_path``, ``file_name`` and ``file_format``.
+                from `directory_path`, `file_name` and `file_format`.
             directory_path: The path of the directory to save the figures.
                 If empty, use the current working directory.
             file_name: The name of the file to save the figures.
                 If empty, use a default one generated by the post-processing.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 If empty, use a default file extension.
-            **settings: The settings passed to the underlying :class:`.DatasetPlot`.
+            **settings: The settings passed to the underlying
+                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
 
         Returns:
             A graph comparing sensitivity indices.
@@ -795,10 +813,10 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         return plot
 
     def to_dataset(self) -> Dataset:
-        """Convert :attr:`.BaseSensitivityAnalysis.indices` into a :class:`.Dataset`.
+        """Convert the sensitivity indices into a dataset.
 
         Returns:
-            The sensitivity indices.
+            The sensitivity indices as a dataset.
         """
         sizes = self.dataset.variable_names_to_n_components
 
@@ -845,7 +863,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Standardize the sensitivity indices for each output component.
 
         Each index is replaced by its absolute value divided by the largest index.
-        Thus, the standardized indices belong to the interval :math:`[0,1]`.
+        Thus, the standardized indices belong to the interval $[0,1]$.
 
         Args:
             indices: The indices to be standardized.

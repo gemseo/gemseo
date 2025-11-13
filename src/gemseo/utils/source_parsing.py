@@ -91,7 +91,7 @@ RE_PATTERN_ARGS = re.compile(
 RE_PATTERN_RETURN = re.compile(r"Returns:\s*(.*)", re.DOTALL)
 
 
-def get_return_description(f: Callable[[Any], Any]):
+def get_return_description(f: Callable[[Any], Any]) -> str | list[str]:
     """Return the description of the returned object in the Returns block.
 
     Args:

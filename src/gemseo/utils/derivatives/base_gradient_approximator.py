@@ -63,15 +63,15 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             f_pointer: The pointer to the function to derive.
             step: The default differentiation step.
-                If ``0.0``,
+                If `0.0`,
                 use a default value specific to the gradient approximation method.
             design_space: The design space
                 containing the upper bounds of the input variables.
-                If ``None``, consider that the input variables are unbounded.
+                If `None`, consider that the input variables are unbounded.
             normalize: Whether to normalize the function.
             parallel: Whether to differentiate the function in parallel.
             **parallel_args: The parallel execution options,
-                see :mod:`gemseo.core.parallel_execution`.
+                see [gemseo.core.parallel_execution][gemseo.core.parallel_execution].
         """  # noqa:D205 D212 D415
         self.f_pointer = f_pointer
         self._parallel_args = parallel_args
@@ -110,7 +110,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             x_vect: The input vector.
             step: The differentiation step.
-                If ``None``, use the default differentiation step.
+                If `None`, use the default differentiation step.
             x_indices: The components of the input vector
                 to be used for the differentiation.
                 If empty, use all the components.
@@ -188,7 +188,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
                 to be used for the differentiation.
                 If empty, use all the components.
             step: The differentiation step.
-                If ``None``, use the default differentiation step.
+                If `None`, use the default differentiation step.
 
         Returns:
             * The input perturbations.

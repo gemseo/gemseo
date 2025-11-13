@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a radar chart from a :class:`.Dataset`."""
+r"""Draw a radar chart from a [Dataset][gemseo.datasets.dataset.Dataset]."""
 
 from __future__ import annotations
 

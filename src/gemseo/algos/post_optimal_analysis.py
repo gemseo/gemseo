@@ -49,10 +49,10 @@ class PostOptimalAnalysis:
     r"""Post-optimal analysis of a parameterized optimization problem.
 
     Consider the parameterized optimization problem below, whose objective and
-    constraint functions depend on both the optimization variable :math:`x` and
-    a parameter :math:`p`.
+    constraint functions depend on both the optimization variable $x$ and
+    a parameter $p$.
 
-    .. math::
+    $$
 
         \begin{aligned}
             & \text{Minimize}    & & f(x,p) \\
@@ -64,29 +64,31 @@ class PostOptimalAnalysis:
                                      \end{aligned}\right.
         \end{aligned}
 
-    Denote :math:`x^\ast(p)` a solution of the problem, which depends on
-    :math:`p`.
+    $$
+
+    Denote $x^\ast(p)$ a solution of the problem, which depends on
+    $p$.
     The post-optimal analysis consists in computing the following total
     derivative:
 
-    .. math::
-
+    $$
         \newcommand{\total}{\mathrm{d}}
         \frac{\total f(x^\ast(p),p)}{\total p}(p)
         =\frac{\partial f}{\partial p}(x^\ast(p),p)
          +\lambda_g^\top\frac{\partial g}{\partial p}(x^\ast(p),p)
          +\lambda_h^\top\frac{\partial h}{\partial p}(x^\ast(p),p),
+    $$
 
-    where :math:`\lambda_g` and :math:`\lambda_h` are the Lagrange multipliers
-    of :math:`x^\ast(p)`.
+    where $\lambda_g$ and $\lambda_h$ are the Lagrange multipliers
+    of $x^\ast(p)$.
     N.B. the equality above relies on the assumption that
 
-    .. math::
-
+    $$
         \newcommand{\total}{\mathrm{d}}
         \lambda_g^\top\frac{\total g(x^\ast(p),p)}{\total p}(p)=0
         \text{ and }
         \lambda_h^\top\frac{\total h(x^\ast(p),p)}{\total p}(p)=0.
+    $$
     """
 
     # Dictionary key for term "Lagrange multipliers dot constraints Jacobian"
@@ -99,7 +101,7 @@ class PostOptimalAnalysis:
         Args:
             opt_problem: The solved optimization problem to be analyzed.
             ineq_tol: The tolerance to determine active inequality constraints.
-                If ``None``, its value is fetched in the optimization problem.
+                If `None`, its value is fetched in the optimization problem.
 
         Raises:
             ValueError: If the optimization problem is not solved.

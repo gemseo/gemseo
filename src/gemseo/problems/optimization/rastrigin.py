@@ -24,6 +24,7 @@ from __future__ import annotations
 from cmath import cos
 from cmath import pi
 from cmath import sin
+from typing import TYPE_CHECKING
 
 from numpy import array
 from numpy import full
@@ -33,12 +34,15 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
+if TYPE_CHECKING:
+    from gemseo.typing import RealArray
+
 
 class Rastrigin(OptimizationProblem):
     r"""The Rastrigin optimization problem.
 
     It uses the Rastrigin objective function
-    with the :class:`.DesignSpace` :math:`[-0.1,0.1]^2`
+    with the [DesignSpace][gemseo.algos.design_space.DesignSpace] $[-0.1,0.1]^2$
 
     From http://en.wikipedia.org/wiki/Rastrigin_function:
     the Rastrigin function is a non-convex function used as a
@@ -49,12 +53,10 @@ class Rastrigin(OptimizationProblem):
     Finding the minimum of this function is a fairly difficult
     problem due to its large search space and its large
     number of local minima.
-    It has a global minimum at :math:`x=0` where :math:`f(x)=0`.
-    It can be extended to :math:`n>2` dimensions:
+    It has a global minimum at $x=0$ where $f(x)=0$.
+    It can be extended to $n>2$ dimensions:
 
-    .. math::
-
-       f(x) = 10n + \sum_{i=1}^n [x_i^2 - 10\cos(2\pi x_i)]
+    $$f(x) = 10n + \sum_{i=1}^n [x_i^2 - 10\cos(2\pi x_i)]$$
 
     [Rastrigin] Rastrigin, L. A. "Systems of extremal control."
     Mir, Moscow (1974).
@@ -79,7 +81,7 @@ class Rastrigin(OptimizationProblem):
         )
 
     @staticmethod
-    def rastrigin(x_dv) -> float:
+    def rastrigin(x_dv: RealArray) -> float:
         """Evaluate the 2nd order Rastrigin function.
 
         Args:
@@ -89,14 +91,14 @@ class Rastrigin(OptimizationProblem):
             The Rastrigin function output.
         """
         a_c = 10.0
-        return (
+        return float(
             a_c * 2.0
             + (x_dv[0] ** 2 - a_c * cos(2 * pi * x_dv[0]))
             + (x_dv[1] ** 2 - a_c * cos(2 * pi * x_dv[1]))
         )
 
     @staticmethod
-    def get_solution():
+    def get_solution() -> tuple[RealArray, float]:
         """Return theoretical optimal value of Rastrigin function.
 
         Returns:
@@ -105,7 +107,7 @@ class Rastrigin(OptimizationProblem):
         return zeros(2), 0.0
 
     @staticmethod
-    def rastrigin_jac(x_dv):
+    def rastrigin_jac(x_dv: RealArray) -> RealArray:
         """Compute the analytical gradient of 2nd order Rastrigin function.
 
         Args:

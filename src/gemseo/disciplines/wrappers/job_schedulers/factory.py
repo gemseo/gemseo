@@ -57,9 +57,10 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
         the discipline and its inputs, execute it and serialize the outputs.
         Finally, the deserialized outputs are returned by the wrapper.
 
-        All process classes :class:`.MDOScenario`,
-        or :class:`.BaseMDA`, inherit from
-        :class:`.Discipline` so can be sent to HPCs this way.
+        All process classes [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
+        or [BaseMDA][gemseo.mda.base_mda.BaseMDA], inherit from
+        [Discipline][gemseo.core.discipline.discipline.Discipline]
+        so can be sent to HPCs this way.
 
         The job scheduler template script can be provided directly or the predefined
         templates file names in gemseo.wrappers.job_schedulers.template can be used.
@@ -79,10 +80,11 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
         Raises:
             OSError: If the job template does not exist.
 
-        Warnings:
-        This method serializes the passed discipline so it has to be serializable.
-        All disciplines provided in |g| are serializable but it is possible that custom
-        ones are not and this will make the submission process fail.
+        Warning:
+            This method serializes the passed discipline so it has to be serializable.
+            All disciplines provided in GEMSEO are serializable
+            but it is possible that custom ones are not
+            and this will make the submission process fail.
         """  # noqa:D205 D212 D415
         return self.create(
             scheduler_name,

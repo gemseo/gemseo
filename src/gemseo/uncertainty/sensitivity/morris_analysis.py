@@ -19,53 +19,44 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Class for the estimation of Morris indices.
 
-OAT technique
--------------
+## OAT technique
 
 The purpose of the One-At-a-Time (OAT) methodology is to quantify the elementary effect
 
-.. math::
-
+$$
    df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
           -
           f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
+$$
 
-associated with a small variation :math:`dX_i` of :math:`X_i` with
+associated with a small variation $dX_i$ of $X_i$ with
 
-.. math::
+$$df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)$$
 
-   df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)
-
-The elementary effects :math:`df_1,\ldots,df_d` are computed sequentially
+The elementary effects $df_1,\ldots,df_d$ are computed sequentially
 from an initial point
 
-.. math::
-
-   X=(X_1,\ldots,X_d)
+$$X=(X_1,\ldots,X_d)$$
 
 From these elementary effects, we can compare their absolute values
-:math:`|df_1|,\ldots,|df_d|` and sort :math:`X_1,\ldots,X_d` accordingly.
+$|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
 
-Morris technique
-----------------
+## Morris technique
 
 Then, the purpose of the Morris' methodology is to repeat the OAT method
-from different initial points :math:`X^{(1)},\ldots,X^{(r)}`
+from different initial points $X^{(1)},\ldots,X^{(r)}$
 and compare the input variables in terms of mean
 
-.. math::
-
-   \mu_i^* = \frac{1}{r}\sum_{j=1}^r|df_i^{(j)}|
+$$\mu_i^* = \frac{1}{r}\sum_{j=1}^r|df_i^{(j)}|$$
 
 and standard deviation
 
-.. math::
+$$\sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}$$
 
-   \sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}
+where $\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}$.
 
-where :math:`\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}`.
-
-This methodology relies on the :class:`.MorrisAnalysis` class.
+This methodology relies on the
+[MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis] class.
 """
 
 from __future__ import annotations
@@ -115,14 +106,18 @@ if TYPE_CHECKING:
 class MorrisAnalysis(BaseSensitivityAnalysis):
     r"""Sensitivity analysis based on the Morris' indices.
 
-    :attr:`.MorrisAnalysis.indices` contains both :math:`\mu^*`, :math:`\mu`
-    and :math:`\sigma` while :attr:`.MorrisAnalysis.main_indices`
-    represents :math:`\mu^*`. Lastly, the :meth:`.MorrisAnalysis.plot`
+    [indices][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.indices]
+    contains both $\mu^*$, $\mu$ and $\sigma$
+    while
+    [main_indices][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.main_indices]
+    represents $\mu^*$.
+    Lastly, the
+    [plot()][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.plot]
     method represents the input variables as a scatter plot
-    where :math:`X_i` has as coordinates :math:`(\mu_i^*,\sigma_i)`.
-    The bigger :math:`\mu_i^*` is, the more significant :math:`X_i` is.
-    Concerning :math:`\sigma_i`, it highlights non-linear effects
-    along :math:`X_i` or cross-effects between :math:`X_i` and other parameter(s).
+    where $X_i$ has as coordinates $(\mu_i^*,\sigma_i)$.
+    The bigger $\mu_i^*$ is, the more significant $X_i$ is.
+    Concerning $\sigma_i$, it highlights non-linear effects
+    along $X_i$ or cross-effects between $X_i$ and other parameter(s).
 
     The user can specify the DOE algorithm name to select the initial points, as
     well as the number of replicates and the relative step for the input variations.
@@ -191,10 +186,10 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         r"""
         Args:
             n_replicates: The number of times
-                the OAT method is repeated. Used only if ``n_samples`` is ``0``.
-                Otherwise, this number is the greater integer :math:`r`
-                such that :math:`r(d+1)\leq` ``n_samples``
-                and :math:`r(d+1)` is the number of samples actually carried out.
+                the OAT method is repeated. Used only if `n_samples` is `0`.
+                Otherwise, this number is the greater integer $r$
+                such that $r(d+1)\leq$ `n_samples`
+                and $r(d+1)$ is the number of samples actually carried out.
             step: The finite difference step of the OAT method.
 
         Raises:
@@ -354,18 +349,18 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
     ) -> Figure:
         r"""Plot the Morris indices for each input variable.
 
-        For :math:`i\in\{1,\ldots,d\}`,
-        plot :math:`\mu_i^*` in function of :math:`\sigma_i`.
+        For $i\in\{1,\ldots,d\}$,
+        plot $\mu_i^*$ in function of $\sigma_i$.
 
         Args:
             directory_path: The path to the directory where to save the plots.
             file_name: The name of the file.
             offset: The offset to display the inputs names,
                 expressed as a percentage applied to both x-range and y-range.
-            lower_mu: The lower bound for :math:`\mu`.
-                If ``None``, use a default value.
-            lower_sigma: The lower bound for :math:`\sigma`.
-                If ``None``, use a default value.
+            lower_mu: The lower bound for $\mu$.
+                If `None`, use a default value.
+            lower_sigma: The lower bound for $\sigma$.
+                If `None`, use a default value.
         """  # noqa: D415 D417
         output_name, output_component = get_name_and_component(output)
         names = filter_names(self._input_names, input_names)

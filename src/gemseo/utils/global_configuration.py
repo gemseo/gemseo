@@ -60,7 +60,8 @@ class GlobalConfiguration(
     check_desvars_bounds: bool = Field(
         default=_CHECK_DESVARS_BOUNDS,
         description="""Whether to check the membership of design variables in the bounds
-when evaluating the functions in :class:`.OptimizationProblem`.""",
+when evaluating the functions
+in [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem].""",
     )
 
     enable_discipline_cache: bool = Field(
@@ -88,7 +89,7 @@ in charge of counting their number of evaluations.""",
 
     enable_parallel_execution: bool = Field(
         default=_ENABLE_PARALLEL_EXECUTION,
-        description="""Whether to let |g| use parallelism
+        description="""Whether to let GEMSEO use parallelism
     (multi-processing or multi-threading) by default.""",
     )
 
@@ -105,13 +106,13 @@ iteration, execution time and objective value.""",
 
     This global configuration disables the following options:
 
-    - ``check_desvars_bounds``,
-    - ``enable_discipline_cache``,
-    - ``enable_discipline_statistics``,
-    - ``enable_discipline_status``,
-    - ``enable_parallel_execution``,
-    - ``validate_input_data``,
-    - ``validate_output_data``.
+    - `check_desvars_bounds`,
+    - `enable_discipline_cache`,
+    - `enable_discipline_statistics`,
+    - `enable_discipline_status`,
+    - `enable_parallel_execution`,
+    - `validate_input_data`,
+    - `validate_output_data`.
     """,
     )
 
@@ -229,7 +230,8 @@ after execution.""",
 
 
 _configuration = GlobalConfiguration()
-"""The global |g| configuration.
+"""The global GEMSEO configuration.
 
-The feature is described on page :ref:`global_configuration` of the user guide.
+The feature is described
+on the page [Global configuration][global-configuration] of the user guide.
 """

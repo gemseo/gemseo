@@ -50,10 +50,10 @@ class PostFactory(BaseFactory[BasePost[Any]]):
         Args:
             opt_problem: The optimization problem to be post-processed.
             settings_model: The post-processor settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The post-processor settings,
-                including the algorithm name (use the keyword ``"post_name"``).
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                including the algorithm name (use the keyword `"post_name"`).
+                These arguments are ignored when `settings_model` is not `None`.
 
         Returns:
             The post-processor.

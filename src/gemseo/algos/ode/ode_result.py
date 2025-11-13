@@ -34,27 +34,27 @@ class ODEResult:
     r"""The result of the resolution of an ODE problem.
 
     In the ODE
-    :math:`\frac{d\mathbf{s}(t)}{dt}=f(t,\mathbf{s}(t))`,
-    the right-hand side (RHS) function is noted :math:`f`
-    and the state variable at time :math:`t` is noted
-    :math:`\mathbf{s}(t)\in\mathbb{R}^d`.
+    $\frac{d\mathbf{s}(t)}{dt}=f(t,\mathbf{s}(t))$,
+    the right-hand side (RHS) function is noted $f$
+    and the state variable at time $t$ is noted
+    $\mathbf{s}(t)\in\mathbb{R}^d$.
     """
 
     times: RealArray
-    r"""The times_eval :math:`t_1,\ldots,t_N`."""
+    r"""The times_eval $t_1,\ldots,t_N$."""
 
     state_trajectories: RealArray
-    r"""The states at times_eval :math:`t_1,\ldots,t_N`.
+    r"""The states at times_eval $t_1,\ldots,t_N$.
 
-    Shaped as ``(d,N)``
-    where ``d`` is the state dimension.
+    Shaped as `(d,N)`
+    where `d` is the state dimension.
     """
 
     n_func_evaluations: int
-    """The number of evaluations of the RHS function :math:`f`."""
+    """The number of evaluations of the RHS function $f$."""
 
     n_jac_evaluations: int
-    """The number of differentiations of the RHS function :math:`f`."""
+    """The number of differentiations of the RHS function $f$."""
 
     algorithm_has_converged: bool
     """Whether the algorithm has converged."""
@@ -78,7 +78,7 @@ class ODEResult:
     """The index of the event function responsible for the termination of the
     integration.
 
-    If ``None``,
+    If `None`,
     the integration has been performed on the entire time interval without interruption.
     """
 

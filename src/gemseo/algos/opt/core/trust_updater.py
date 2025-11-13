@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING
+from typing import Any
 
 from numpy import divide
 from numpy import maximum
@@ -43,7 +44,7 @@ class TrustUpdater(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         thresholds: tuple[float, float],
         multipliers: tuple[float, float],
-        bound=None,
+        bound: Any = None,
     ) -> None:
         """
         Args:

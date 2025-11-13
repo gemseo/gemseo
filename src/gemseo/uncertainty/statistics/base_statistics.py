@@ -18,67 +18,72 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Abstract class for the estimation of statistics from a dataset.
 
-Overview
---------
+## Overview
 
-The abstract :class:`.BaseStatistics` class implements t
-he concept of statistics library.
-It is enriched by the :class:`.EmpiricalStatistics` and :class:`.ParametricStatistics`.
+The abstract
+[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics]
+class implements the concept of statistics library.
+It is enriched by the
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+and
+[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics].
 
-Construction
-------------
+## Construction
 
-A :class:`.BaseStatistics` object is built from a :class:`.Dataset`
+A [BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics] object
+is built from a [Dataset][gemseo.datasets.dataset.Dataset]
 and optionally variables names.
 In this case,
 statistics are only computed for these variables.
 Otherwise,
 statistics are computed for all the variable available in the dataset.
 Lastly,
-the user can give a name to its :class:`.BaseStatistics` object.
+the user can give a name to its
+[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics] object.
 By default,
 this name is the concatenation of the name
-of the class overloading :class:`.BaseStatistics`
-and the name of the :class:`.Dataset`.
+of the class overloading
+[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics]
+and the name of the [Dataset][gemseo.datasets.dataset.Dataset].
 
-Capabilities
-------------
+## Capabilities
 
-A :class:`.BaseStatistics` returns standard descriptive and statistical measures
+A [BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics] object
+returns standard descriptive and statistical measures
 for the different variables:
 
-- :meth:`.BaseStatistics.compute_minimum`: the minimum value,
-- :meth:`.BaseStatistics.compute_maximum`: the maximum value,
-- :meth:`.BaseStatistics.compute_range`: the difference
+- [compute_minimum()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_minimum]: the minimum value,
+- [compute_maximum()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_maximum]: the maximum value,
+- [compute_range()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_range]: the difference
   between minimum and maximum values,
-- :meth:`.BaseStatistics.compute_mean`: the expectation (a.k.a. mean value),
-- :meth:`.BaseStatistics.compute_moment`: a central moment,
+- [compute_mean()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_mean]: the expectation (a.k.a. mean value),
+- [compute_moment()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_moment]: a central moment,
   which is the expected value
   of a specified integer power
   of the deviation from the mean,
-- :meth:`.BaseStatistics.compute_variance`: the variance,
+- [compute_variance()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_variance]: the variance,
   which is the mean squared variation around the mean value,
-- :meth:`.BaseStatistics.compute_standard_deviation`: the standard deviation,
+- [compute_standard_deviation()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_standard_deviation]: the standard deviation,
   which is the square root of the variance,
-- :meth:`.BaseStatistics.compute_variation_coefficient`: the coefficient of variation,
+- [compute_variation_coefficient()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_variation_coefficient]`: the coefficient of variation,
   which is the standard deviation normalized by the mean,
-- :meth:`.BaseStatistics.compute_quantile`: the quantile associated with a probability,
+- [compute_quantile()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_quantile]: the quantile associated with a probability,
   which is the cut point diving the range into a first continuous interval
   with this given probability and a second continuous interval
   with the complementary probability; common *q*-quantiles dividing
   the range into *q* continuous interval with equal probabilities are also implemented:
 
-    - :meth:`.BaseStatistics.compute_median`
+    - [compute_median()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_median]
       which implements the 2-quantile (50%).
-    - :meth:`.BaseStatistics.compute_quartile`
+    - [compute_quartile()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_quartile]
       whose order (1, 2 or 3) implements the 4-quantiles (25%, 50% and 75%),
-    - :meth:`.BaseStatistics.compute_percentile`
+    - [compute_percentile()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_percentile]
       whose order (1, 2, ..., 99) implements the 100-quantiles (1%, 2%, ..., 99%),
 
-- :meth:`.BaseStatistics.compute_probability`:
+- [compute_probability()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_probability]:
   the probability that the random variable is larger or smaller
   than a certain threshold,
-- :meth:`.BaseStatistics.compute_tolerance_interval`:
+- [compute_tolerance_interval()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_tolerance_interval]:
   the left-sided, right-sided or both-sided tolerance interval
   associated with a given coverage level and a given confidence level,
   which is a statistical interval within which,
@@ -86,13 +91,13 @@ for the different variables:
   a specified proportion of the random variable realizations falls
   (this proportion is the coverage level)
 
-    - :meth:`.BaseStatistics.compute_a_value`:
+    - [compute_a_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_a_value]:
       the A-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 99% and a confidence level equal to 95%,
-    - :meth:`.BaseStatistics.compute_b_value`:
+    - [compute_b_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_b_value]:
       the B-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
-"""
+"""  # noqa: E501
 
 from __future__ import annotations
 
@@ -127,8 +132,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         *variable-wise* and *component-wise*,
         i.e. variable-by-variable and component-by-component.
         So, for the sake of readability,
-        the methods named as :meth:`compute_statistic`
-        return ``dict[str, RealArray]`` objects
+        the methods named as `compute_statistic()`
+        return `dict[str, RealArray]` objects
         whose values are the names of the variables
         and the values are the statistic estimated for the different component.
     """
@@ -196,43 +201,43 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         confidence: float = 0.95,
         side: BaseToleranceInterval.ToleranceIntervalSide = BaseToleranceInterval.ToleranceIntervalSide.BOTH,  # noqa:E501
     ) -> dict[str, list[BaseToleranceInterval.Bounds]]:  # noqa: D102
-        r"""Compute a :math:`(p,1-\alpha)` tolerance interval :math:`\text{TI}[X]`.
+        r"""Compute a $(p,1-\alpha)$ tolerance interval $\text{TI}[X]$.
 
-        The tolerance interval :math:`\text{TI}[X]` is defined
-        to contain at least a proportion :math:`p` of the values of :math:`X`
-        with a level of confidence :math:`1-\alpha`.
-        :math:`p` is also called the *coverage level* of the TI.
+        The tolerance interval $\text{TI}[X]$ is defined
+        to contain at least a proportion $p$ of the values of $X$
+        with a level of confidence $1-\alpha$.
+        $p$ is also called the *coverage level* of the TI.
 
-        Typically, :math:`\alpha=0.05` or equivalently :math:`1-\alpha=0.95`.
+        Typically, $\alpha=0.05$ or equivalently $1-\alpha=0.95$.
 
         The tolerance interval can be either
 
-        - lower-sided (``side="LOWER"``: :math:`[L, +\infty[`),
-        - upper-sided  (``side="UPPER"``: :math:`]-\infty, U]`) or
-        - both-sided (``side="BOTH"``: :math:`[L, U]`).
+        - lower-sided (`side="LOWER"`: $[L, +\infty[$),
+        - upper-sided  (`side="UPPER"`: $]-\infty, U]$) or
+        - both-sided (`side="BOTH"`: $[L, U]$).
 
         Args:
-            coverage: A minimum proportion :math:`p\in[0,1]` of belonging to the TI.
-            confidence: A level of confidence :math:`1-\alpha\in[0,1]`.
+            coverage: A minimum proportion $p\in[0,1]$ of belonging to the TI.
+            confidence: A level of confidence $1-\alpha\in[0,1]$.
             side: The type of the tolerance interval.
 
         Returns:
             The component-wise tolerance intervals of the different variables,
             expressed as
-            ``{variable_name: [(lower_bound, upper_bound), ...], ... }``
-            where ``[(lower_bound, upper_bound), ...]``
+            `{variable_name: [(lower_bound, upper_bound), ...], ... }`
+            where `[(lower_bound, upper_bound), ...]`
             are the lower and upper bounds of the tolerance interval
-            of the different components of ``variable_name``.
+            of the different components of `variable_name`.
 
         See Also:
-            :meth:`.compute_a_value`
-            :meth:`.compute_b_value`
+            [compute_a_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_a_value]
+            [compute_b_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_b_value]
         """
 
     SYMBOLS["tolerance_interval"] = "TI"
 
     def compute_a_value(self) -> dict[str, RealArray]:
-        r"""Compute the A-value :math:`\text{Aval}[X]`.
+        r"""Compute the A-value $\text{Aval}[X]$.
 
         The A-value is the lower bound of the left-sided tolerance interval
         associated with a coverage level equal to 99%
@@ -242,8 +247,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise A-value of the different variables.
 
         See Also:
-            :meth:`.compute_tolerance_interval`
-            :meth:`.compute_b_value`
+            [compute_tolerance_interval()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_tolerance_interval]
+            [compute_b_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_b_value]
         """
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
@@ -255,7 +260,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["a_value"] = "Aval"
 
     def compute_b_value(self) -> dict[str, RealArray]:
-        r"""Compute the B-value :math:`\text{Bval}[X]`.
+        r"""Compute the B-value $\text{Bval}[X]$.
 
         The B-value is the lower bound of the left-sided tolerance interval
         associated with a coverage level equal to 90%
@@ -265,8 +270,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise B-value of the different variables.
 
         See Also:
-            :meth:`.compute_tolerance_interval`
-            :meth:`.compute_a_value`
+            [compute_tolerance_interval()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_tolerance_interval]
+            [compute_a_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_a_value]
         """
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
@@ -279,7 +284,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_maximum(self) -> dict[str, RealArray]:
-        r"""Compute the maximum :math:`\text{Max}[X]`.
+        r"""Compute the maximum $\text{Max}[X]$.
 
         Returns:
             The component-wise maximum of the different variables.
@@ -289,7 +294,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_mean(self) -> dict[str, RealArray]:
-        r"""Compute the mean :math:`\mathbb{E}[X]`.
+        r"""Compute the mean $\mathbb{E}[X]$.
 
         Returns:
             The component-wise mean of the different variables.
@@ -298,10 +303,10 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["mean"] = "E"
 
     def compute_margin(self, std_factor: float) -> dict[str, RealArray]:
-        r"""Compute a margin :math:`\text{Margin}[X]=\mathbb{E}[X]+\kappa\mathbb{S}[X]`.
+        r"""Compute a margin $\text{Margin}[X]=\mathbb{E}[X]+\kappa\mathbb{S}[X]$.
 
         Args:
-            std_factor: The weight :math:`\kappa` of the standard deviation.
+            std_factor: The weight $\kappa$ of the standard deviation.
 
         Returns:
             The component-wise margin for the different variables.
@@ -319,7 +324,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_minimum(self) -> dict[str, RealArray]:
-        r"""Compute the :math:`\text{Min}[X]`.
+        r"""Compute the $\text{Min}[X]$.
 
         Returns:
             The component-wise minimum of the different variables.
@@ -328,7 +333,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["minimum"] = "Min"
 
     def compute_median(self) -> dict[str, RealArray]:
-        r"""Compute the median :math:`\text{Med}[X]`.
+        r"""Compute the median $\text{Med}[X]$.
 
         Returns:
             The component-wise median of the different variables.
@@ -338,16 +343,16 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["median"] = "Med"
 
     def compute_percentile(self, order: int) -> dict[str, RealArray]:
-        r"""Compute the n-th percentile :math:`\text{p}[X; n]`.
+        r"""Compute the n-th percentile $\text{p}[X; n]$.
 
         Args:
-            order: The order :math:`n\in\{0,1,2,...100\}` of the percentile.
+            order: The order $n\in\{0,1,2,...100\}$ of the percentile.
 
         Returns:
             The component-wise percentile of the different variables.
 
         Raises:
-            ValueError: When :math:`n\notin\{0,1,2,...100\}`.
+            ValueError: When $n\notin\{0,1,2,...100\}$.
         """
         if not isinstance(order, int) or order > 100 or order < 0:
             msg = "Percentile order must be in {0, 1, 2, ..., 100}."
@@ -362,12 +367,12 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     ) -> dict[str, RealArray]:
         r"""Compute the probability related to a threshold.
 
-        Either :math:`\mathbb{P}[X \geq x]` or :math:`\mathbb{P}[X \leq x]`.
+        Either $\mathbb{P}[X \geq x]$ or $\mathbb{P}[X \leq x]$.
 
         Args:
-            thresh: A threshold :math:`x` per variable.
+            thresh: A threshold $x$ per variable.
             greater: The type of probability.
-                If ``True``,
+                If `True`,
                 compute the probability of exceeding the threshold.
                 Otherwise,
                 compute the opposite.
@@ -382,12 +387,12 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     ) -> dict[str, float]:
         r"""Compute the joint probability related to a threshold.
 
-        Either :math:`\mathbb{P}[X \geq x]` or :math:`\mathbb{P}[X \leq x]`.
+        Either $\mathbb{P}[X \geq x]$ or $\mathbb{P}[X \leq x]$.
 
         Args:
-            thresh: A threshold :math:`x` per variable.
+            thresh: A threshold $x$ per variable.
             greater: The type of probability.
-                If ``True``,
+                If `True`,
                 compute the probability of exceeding the threshold.
                 Otherwise,
                 compute the opposite.
@@ -402,10 +407,10 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_quantile(self, prob: float) -> dict[str, RealArray]:
-        r"""Compute the quantile :math:`\mathbb{Q}[X; \alpha]` related to a probability.
+        r"""Compute the quantile $\mathbb{Q}[X; \alpha]$ related to a probability.
 
         Args:
-            prob: A probability :math:`\alpha` between 0 and 1.
+            prob: A probability $\alpha$ between 0 and 1.
 
         Returns:
             The component-wise quantile of the different variables.
@@ -414,16 +419,16 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["quantile"] = "Q"
 
     def compute_quartile(self, order: int) -> dict[str, RealArray]:
-        r"""Compute the n-th quartile :math:`q[X; n]`.
+        r"""Compute the n-th quartile $q[X; n]$.
 
         Args:
-            order: The order :math:`n\in\{1,2,3\}` of the quartile.
+            order: The order $n\in\{1,2,3\}$ of the quartile.
 
         Returns:
             The component-wise quartile of the different variables.
 
         Raises:
-            ValueError: When :math:`n\notin\{1,2,3\}`.
+            ValueError: When $n\notin\{1,2,3\}$.
         """
         if order not in self.__QUARTILE_ORDERS:
             msg = "Quartile order must be in {1, 2, 3}."
@@ -435,7 +440,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_range(self) -> dict[str, RealArray]:
-        r"""Compute the range :math:`R[X]`.
+        r"""Compute the range $R[X]$.
 
         Returns:
             The component-wise range of the different variables.
@@ -445,7 +450,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_standard_deviation(self) -> dict[str, RealArray]:
-        r"""Compute the standard deviation :math:`\mathbb{S}[X]`.
+        r"""Compute the standard deviation $\mathbb{S}[X]$.
 
         Returns:
             The component-wise standard deviation of the different variables.
@@ -454,10 +459,10 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     SYMBOLS["standard_deviation"] = "StD"
 
     def compute_variation_coefficient(self) -> dict[str, RealArray]:
-        r"""Compute the coefficient of variation :math:`CoV[X]`.
+        r"""Compute the coefficient of variation $CoV[X]$.
 
         This is the standard deviation normalized by the expectation:
-        :math:`CoV[X]=\mathbb{E}[S]/\mathbb{E}[X]`.
+        $CoV[X]=\mathbb{E}[S]/\mathbb{E}[X]$.
 
         Returns:
             The component-wise coefficient of variation of the different variables.
@@ -470,7 +475,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_variance(self) -> dict[str, RealArray]:
-        r"""Compute the variance :math:`\mathbb{V}[X]`.
+        r"""Compute the variance $\mathbb{V}[X]$.
 
         Returns:
             The component-wise variance of the different variables.
@@ -480,10 +485,10 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @abstractmethod
     def compute_moment(self, order: int) -> dict[str, RealArray]:
-        r"""Compute the n-th moment :math:`M[X; n]`.
+        r"""Compute the n-th moment $M[X; n]$.
 
         Args:
-            order: The order :math:`n` of the moment.
+            order: The order $n$ of the moment.
 
         Returns:
             The component-wise moment of the different variables.
@@ -504,12 +509,12 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         E.g. "P[X >= 1.0]" for the probability that X exceeds 1.0.
 
         Args:
-            variable_name: The name of the variable, e.g. ``"X"``.
-            statistic_name: The name of the statistic, e.g. ``"probability"``.
-            show_name: If ``True``, show option names.
+            variable_name: The name of the variable, e.g. `"X"`.
+            statistic_name: The name of the statistic, e.g. `"probability"`.
+            show_name: If `True`, show option names.
                 Otherwise, only show option values.
             **options: The options passed to the statistical function,
-                e.g. ``{"greater": True, "thresh": 1.0}``.
+                e.g. `{"greater": True, "thresh": 1.0}`.
 
         Returns:
             The expression of the statistical function applied to the variable.

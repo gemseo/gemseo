@@ -91,7 +91,7 @@ class HashableNdarray:
         """Return the array ndarray.
 
         Returns:
-            The array ndarray, or a copy if the wrapper is ``copy``.
+            The array ndarray, or a copy if the wrapper is `copy`.
         """
         if self.__copy:
             return np_array(self.__array)

@@ -56,7 +56,7 @@ class _Meta(GoogleDocstringInheritanceMeta):
 class ExecutionStatistics(Serializable, metaclass=_Meta):
     """Record execution statistics of objects.
 
-    This should be applied to objects such as :class:`.BaseMonitoredProcess`,
+    This should be applied to objects such as `BaseMonitoredProcess`,
     hereafter referred to as the _measured object_.
 
     A measured object often has an execution method
@@ -64,25 +64,27 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     Some have also a linearization method whose number of calls is counted too.
 
     The recording of the statistics can be enabled all at once
-    by setting :attr:`is_enabled` to ``True``.
-    By default, it is set to ``False``.
+    by setting
+    [is_enabled][gemseo.core.execution_statistics.ExecutionStatistics.is_enabled]
+    to `True`.
+    By default, it is set to `False`.
     When enabled,
     the recording of time stamps can be enabled
-    by setting :attr:`is_time_stamps_enabled` to ``True``.
-    By default, it is set to ``False``.
+    by setting
+    [is_time_stamps_enabled][gemseo.core.execution_statistics.ExecutionStatistics.is_time_stamps_enabled]
+    to `True`.
+    By default, it is set to `False`.
     These switches are global and shall be modified from the class.
 
     If any of those switches are disabled, the recordings, if any, are not removed.
 
-    The helper method :meth:`record` is a context manager that should be used to record
-    statistics.
-
     The results of the recordings can be accessed with
-    :attr:`.n_executions`,
-    :attr:`.n_linearizations`,
-    :attr:`.duration`,
-    :attr:`.time_stamps`.
-    The time stamps should be processed with :func:`.create_gantt_chart`.
+    [n_executions][gemseo.core.execution_statistics.ExecutionStatistics.n_executions],
+    [n_linearizations][gemseo.core.execution_statistics.ExecutionStatistics.n_linearizations],
+    [duration][gemseo.core.execution_statistics.ExecutionStatistics.duration] and
+    [time_stamps][gemseo.core.execution_statistics.ExecutionStatistics.time_stamps].
+    The time stamps should be processed
+    with [create_gantt_chart()][gemseo.post.core.gantt_chart.create_gantt_chart].
 
     The recorded statistics are not restored after pickling.
     """
@@ -92,12 +94,11 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     ] = None
     """The mapping from the measured object names to their execution time stamps.
 
-    It is ``None`` when time stamps recording is disabled.
+    It is `None` when time stamps recording is disabled.
 
     The structure is
 
-    .. code-block::
-
+    ```python
        {
        "measure object name": [
            (start time, end time, whether it is for linearization),
@@ -107,6 +108,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
            ...
            ],
        }
+    ```
 
     """
 

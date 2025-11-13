@@ -31,8 +31,8 @@ class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
         default=None,
         description="The iteration to plot the sensitivities. "
         "Can use either positive or negative indexing, "
-        "e.g. ``5`` for the 5-th iteration or ``-2`` for the penultimate one. "
-        "If ``None``, use the iteration of the optimum.",
+        "e.g. `5` for the 5-th iteration or `-2` for the penultimate one. "
+        "If `None`, use the iteration of the optimum.",
     )
     scale_gradients: bool = Field(
         default=False,
@@ -42,13 +42,15 @@ class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
         default=False,
         description="Whether to compute the gradients at the selected iteration "
         "if they were not computed by the algorithm."
-        "\\n\\n.. warning::\\n"
+        "\\n\\nWarning:\\n"
         "Activating this option may add considerable computation time depending "
         "on the cost of the gradient evaluation. "
         "This option will not compute the gradients if the "
-        ":class:`.OptimizationProblem` instance was imported from an HDF5 "
-        "file. This option requires an :class:`.OptimizationProblem` with a "
-        "gradient-based algorithm.",
+        "[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] "
+        "instance was imported from an HDF5 "
+        "file. This option requires an "
+        "[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] "
+        "with a gradient-based algorithm.",
     )
 
 

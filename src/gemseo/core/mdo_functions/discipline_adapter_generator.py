@@ -17,7 +17,7 @@
 #                        documentation
 #        :author: Francois Gallard, Charlie Vanaret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A class to create :class:`.MDOFunction` objects from an :class:`.Discipline`."""
+"""A class to create function from a discipline."""
 
 from __future__ import annotations
 
@@ -42,7 +42,9 @@ class DisciplineAdapterGenerator:
     """A generator of discipline adapter.
 
     Given a discipline,
-    an :class:`.DisciplineAdapter` computes specific outputs from specific inputs.
+    a
+    [DisciplineAdapter][gemseo.core.mdo_functions.discipline_adapter.DisciplineAdapter]
+    computes specific outputs from specific inputs.
     """
 
     discipline: Discipline
@@ -94,8 +96,8 @@ class DisciplineAdapterGenerator:
             differentiated_input_names_substitute: The names of the inputs
                 with respect to which to differentiate the functions.
                 If empty,
-                use ``input_names``.
-                This argument is not used when ``is_differentiable`` is ``False``.
+                use `input_names`.
+                This argument is not used when `is_differentiable` is `False`.
 
         Returns:
             The function.

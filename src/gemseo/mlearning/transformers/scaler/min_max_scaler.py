@@ -19,26 +19,26 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Scaling a variable with a geometrical linear transformation.
 
-The :class:`.MinMaxScaler` class implements the MinMax scaling method
-applying to some parameter :math:`z`:
+The [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]
+class implements the MinMax scaling method applying to some parameter $z$:
 
-.. math::
-
+$$
     \bar{z} := \text{offset} + \text{coefficient}\times z
     = \frac{z-\text{min}(z)}{(\text{max}(z)-\text{min}(z))},
+$$
 
-where :math:`\text{offset}=-\text{min}(z)/(\text{max}(z)-\text{min}(z))`
-and :math:`\text{coefficient}=1/(\text{max}(z)-\text{min}(z))`.
+where $\text{offset}=-\text{min}(z)/(\text{max}(z)-\text{min}(z))$
+and $\text{coefficient}=1/(\text{max}(z)-\text{min}(z))$.
 
 In the MinMax scaling method,
-the scaling operation linearly transforms the original variable :math:`z`
+the scaling operation linearly transforms the original variable $z$
 such that the minimum of the original data corresponds to 0 and the maximum to 1.
 
-Warnings:
-    When :math:`\text{min}(z)=\text{max}(z)\neq 0`,
-    we use :math:`\bar{z}=\frac{z}{\text{min}(z)}-0.5`.
-    When :math:`\text{min}(z)=\text{max}(z)=0`,
-    we use :math:`\bar{z}=z+0.5`.
+Warning:
+    When $\text{min}(z)=\text{max}(z)\neq 0$,
+    we use $\bar{z}=\frac{z}{\text{min}(z)}-0.5$.
+    When $\text{min}(z)=\text{max}(z)=0$,
+    we use $\bar{z}=z+0.5$.
 """
 
 from __future__ import annotations

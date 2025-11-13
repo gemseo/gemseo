@@ -15,45 +15,53 @@
 """Scipy-based capabilities for probability distributions.
 
 This package interfaces capabilities
-from the `SciPy <https://scipy.org/>`_ library.
+from the [SciPy](https://scipy.org/) library.
 
-Interfaced distributions
-------------------------
+## Interfaced distributions
 
-This package implements the abstract classes :class:`.BaseDistribution`
-and :class:`.BaseJointDistribution`.
+This package implements the abstract classes
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+and
+[BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution].
 
-Classical distributions
------------------------
+## Classical distributions
 
 This module also implements a deliberately limited selection
 of classical probability distributions
-in a user-friendly way: :class:`.SPExponentialDistribution`,
-:class:`.SPNormalDistribution`, :class:`.SPTriangularDistribution`,
-and :class:`.SPUniformDistribution`. More precisely,
+in a user-friendly way:
+[SPExponentialDistribution][gemseo.uncertainty.distributions.scipy.exponential.SPExponentialDistribution],
+[SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution],
+[SPTriangularDistribution][gemseo.uncertainty.distributions.scipy.triangular.SPTriangularDistribution],
+and
+[SPUniformDistribution][gemseo.uncertainty.distributions.scipy.uniform.SPUniformDistribution].
+More precisely,
 the argument whose nature is a dictionary of keyword parameters
 is replaced with several user-defined keyword arguments.
-In this way, the use writes ``SPUniformDistribution('x', -1., 3.)``
-or ``SPUniformDistribution('x', minimum=-1., maximum=3.)``
-instead of  ``SPDistribution('x', 'Uniform', {"loc": -1, "scale": 4})``.
-Furthermore, these classes inheriting from :class:`.SPDistribution`
+In this way, the use writes `SPUniformDistribution('x', -1., 3.)`
+or `SPUniformDistribution('x', minimum=-1., maximum=3.)`
+instead of  `SPDistribution('x', 'Uniform', {"loc": -1, "scale": 4})`.
+Furthermore,
+these classes inheriting from
+[SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
 are documented in such a way that a newbie could easily apprehend them.
 
-Joint probability distribution
-------------------------------
+## Joint probability distribution
 
-A ``SPDistribution`` has a :attr:`.SPDistribution.JOINT_DISTRIBUTION_CLASS`
-attribute referencing :class:`.SPJointDistribution`
+An
+[SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+has a
+[JOINT_DISTRIBUTION_CLASS][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution.JOINT_DISTRIBUTION_CLASS]
 which is a class to build a joint probability distribution
-related to given random variables from a list of :class:`.SPDistribution` objects
+related to given random variables from a list of
+[SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+objects
 implementing the probability distributions of these variables
 based on the SciPy library and from a copula name.
 
-.. note::
-
+Note:
    A copula is a mathematical function used to define the dependence
    between random variables from their cumulative density functions.
-   `See more <https://en.wikipedia.org/wiki/Copula_(probability_theory)>`__.
+   [See more](https://en.wikipedia.org/wiki/Copula_(probability_theory)).
 """
 
 from __future__ import annotations

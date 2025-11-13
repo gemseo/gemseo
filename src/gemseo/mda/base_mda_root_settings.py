@@ -30,5 +30,6 @@ class BaseMDARootSettings(BaseParallelMDASettings):
 
 This ensures that the discipline are executed and linearized with the same input data.
 It can be almost free
-if the corresponding output data have been stored in the :attr:`.BaseMDA.cache`.""",
+if the corresponding output data have been stored in the
+[BaseMDA.cache][gemseo.mda.base_mda.BaseMDA.cache].""",
     )

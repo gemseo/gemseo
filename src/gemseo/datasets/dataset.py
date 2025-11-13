@@ -17,22 +17,30 @@
 The concept of dataset is a key element for machine learning, post-processing, data
 analysis, ...
 
-A :class:`.Dataset` is a pandas
-`MultiIndex DataFrame <https://pandas.pydata.org/docs/user_guide/advanced.html>`_
+A [Dataset][gemseo.datasets.dataset.Dataset] is a pandas
+[MultiIndex DataFrame](https://pandas.pydata.org/docs/user_guide/advanced.html)
 storing series of data
 representing the values of multidimensional features
 belonging to different groups of features.
 
-A :class:`.Dataset` can be set
-either from a file (:meth:`~.Dataset.from_csv` and :meth:`~.Dataset.from_txt`)
-or from a NumPy array (:meth:`~.Dataset.from_array`),
-and can be enriched from a group of variables (:meth:`~.Dataset.add_group`)
-or from a single variable (:meth:`~.Dataset.add_variable`).
+A [Dataset][gemseo.datasets.dataset.Dataset] can be set
+either from a file (
+[from_csv()][gemseo.datasets.dataset.Dataset.from_csv]
+and [from_txt()][gemseo.datasets.dataset.Dataset.from_txt]
+or from a NumPy array (
+[from_array()][gemseo.datasets.dataset.Dataset.from_array]),
+and can be enriched from a group of variables (
+[add_group()][gemseo.datasets.dataset.Dataset.add_group])
+or from a single variable (
+[add_variable()][gemseo.datasets.dataset.Dataset.add_variable]).
 
-An :class:`.BaseFullCache` or an :class:`.OptimizationProblem`
-can also be exported to a :class:`.Dataset`
-using the methods :meth:`.BaseFullCache.to_dataset`
-and :meth:`.OptimizationProblem.to_dataset`.
+A [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache]
+or an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+can also be exported to a [Dataset][gemseo.datasets.dataset.Dataset]
+using the methods
+[BaseFullCache.to_dataset()][gemseo.caches.base_full_cache.BaseFullCache.to_dataset]
+and
+[OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset].
 """
 
 from __future__ import annotations
@@ -82,48 +90,51 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     A variable is defined by a name and a number of components.
     For instance,
-    the variable ``"x"`` can have ``2`` components:
-    ``0`` and ``1``.
-    Or the variable ``y`` can have ``4`` components:
-    ``"a"``, ``"b"``, ``"c"`` and ``"d"``.
+    the variable `"x"` can have `2` components:
+    `0` and `1`.
+    Or the variable `y` can have `4` components:
+    `"a"`, `"b"`, `"c"` and `"d"`.
 
-    A variable belongs to a group of variables (default: :attr:`.DEFAULT_GROUP`).
+    A variable belongs to a group of variables (default:
+    [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]).
     Two variables can have the same name;
-    only the tuple ``(group_name, variable_name)`` is unique
+    only the tuple `(group_name, variable_name)` is unique
     and is therefore called a *variable identifier*.
 
     Based on a set of variable identifiers,
-    :class:`.Dataset` is a collection of entries
+    [Dataset][gemseo.datasets.dataset.Dataset] is a collection of entries
     corresponding to a set of variable identifiers.
-    An entry corresponds to an index of the :class:`.Dataset`.
+    An entry corresponds to an index of the [Dataset][gemseo.datasets.dataset.Dataset].
 
-    A :class:`.Dataset` is a special pandas DataFrame
-    with the multi-index ``(group_name, variable_name, component)``.
+    A [Dataset][gemseo.datasets.dataset.Dataset] is a special pandas DataFrame
+    with the multi-index `(group_name, variable_name, component)`.
     It must be built from the methods
-    :meth:`.add_variable`, :meth:`.add_group`,
-    :meth:`.from_array`,
-    :meth:`.from_txt`,
-    :meth:`.from_csv`
-    and :meth:`.from_dataframe`.
+    [add_variable()][gemseo.datasets.dataset.Dataset.add_variable],
+    [add_group()][gemseo.datasets.dataset.Dataset.add_group],
+    [from_array()][gemseo.datasets.dataset.Dataset.from_array],
+    [from_txt()][gemseo.datasets.dataset.Dataset.from_txt],
+    [from_csv()][gemseo.datasets.dataset.Dataset.from_csv],
+    and [from_dataframe()][gemseo.datasets.dataset.Dataset.from_dataframe].
 
     Miscellaneous information that is not specific to an entry of the dataset
-    can be stored in the dictionary :attr:`.misc`,
-    as ``dataset.misc["year"] = 2023``.
+    can be stored in the dictionary [misc][gemseo.datasets.dataset.Dataset.misc],
+    as `dataset.misc["year"] = 2023`.
 
     Notes:
         The columns of a data structure
-        (NumPy array, ``DataFrame``, :class:`.Dataset`, ...)
+        (NumPy array, `DataFrame`, [Dataset][gemseo.datasets.dataset.Dataset], ...)
         are called *features*.
-        The features of a :class:`.Dataset` include
+        The features of a [Dataset][gemseo.datasets.dataset.Dataset] include
         all the components of all the variables of all the groups.
 
-    Warnings:
-        A :class:`.Dataset` behaves like any multi-index DataFrame
-        but its instantiation using the constructor ``dataset = Dataset(data, ...)``
+    Warning:
+        A [Dataset][gemseo.datasets.dataset.Dataset] behaves
+        like any multi-index DataFrame
+        but its instantiation using the constructor `dataset = Dataset(data, ...)`
         can lead to some inconsistencies
         (multi-index levels, index values, dtypes, ...).
         Hence, the construction from the dedicated methods is recommended,
-        e.g. ``dataset = Dataset(); dataset.add_variable("x", data)``.
+        e.g. `dataset = Dataset(); dataset.add_variable("x", data)`.
 
     See Also:
         https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html
@@ -161,7 +172,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     """The default group name for the variables."""
 
     DEFAULT_VARIABLE_NAME: ClassVar[str] = "x"
-    """The default name for the variable set with :meth:`add_group`."""
+    """The default name for the variable set with [add_group()][gemseo.datasets.dataset.Dataset.add_group]."""  # noqa: E501
 
     # DataFrame._metadata lists the normal properties
     # which will be passed to manipulation results,
@@ -181,11 +192,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
-            data: See :class:`.DataFrame`.
-            index: See :class:`.DataFrame`.
-            columns:See :class:`.DataFrame`.
-            dtype: See :class:`.DataFrame`.
-            copy: See :class:`.DataFrame`.
+            data: See [DataFrame][pandas.DataFrame].
+            index: See [DataFrame][pandas.DataFrame].
+            columns:See [DataFrame][pandas.DataFrame].
+            dtype: See [DataFrame][pandas.DataFrame].
+            copy: See [DataFrame][pandas.DataFrame].
             dataset_name: The name of the dataset.
         """  # noqa: D205, D212, D415
         if data is None and index is None and columns is None:
@@ -209,8 +220,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def group_names(self) -> list[str]:
         """The names of the groups of variables in alphabetical order.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return sorted(self.columns.levels[self.__GROUP_LEVEL].unique())
 
@@ -218,8 +229,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def variable_names(self) -> list[str]:
         """The names of the variables in alphabetical order.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return sorted(self.columns.levels[self.__VARIABLE_LEVEL].unique())
 
@@ -227,15 +238,15 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def variable_identifiers(self) -> list[tuple[str, str]]:
         """The variable identifiers.
 
-        A variable identifier is the tuple ``(group_name, variable_name)``.
+        A variable identifier is the tuple `(group_name, variable_name)`.
 
         Notes:
             A variable name can belong to more than one group
             while a variable identifier is unique
             as a group name is unique.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         return sorted(self.columns.droplevel(self.__COMPONENT_LEVEL).unique())
 
@@ -264,8 +275,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The names of the groups that contain the variable.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
@@ -290,8 +301,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The names of the variables contained in the group.
 
-        Warnings:
-            The names are sorted with the Python function ``sorted``.
+        Warning:
+            The names are sorted with the Python function `sorted`.
         """
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
@@ -343,7 +354,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             excluded_group_names: The names of the groups not to be normalized.
                 If empty, normalize all the groups.
             use_min_max: Whether to use the geometric normalization
-                :math:`(x-\min(x))/(\max(x)-\min(x))`.
+                $(x-\min(x))/(\max(x)-\min(x))$.
             center: Whether to center the variables so that they have a zero mean.
             scale: Whether to scale the variables so that they have a unit variance.
 
@@ -382,7 +393,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         components: ComponentType = (),
         indices: IndexType = (),
     ) -> None:
-        """Replace some existing indices and columns by a deepcopy of ``data``.
+        """Replace some existing indices and columns by a deepcopy of `data`.
 
         Args:
             data: The new data to be inserted in the dataset.
@@ -433,31 +444,31 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             data: The data.
             group_name: The name of the group related to this variable.
             components: The component(s) considered.
-               If empty, use ``[0, ..., n_features]``.
+                If empty, use `[0, ..., n_features]`.
 
-        Warnings:
-            The shape of ``data`` must be consistent
+        Warning:
+            The shape of `data` must be consistent
             with the number of entries of the dataset.
             If the dataset is empty,
-            the number of entries will be deducted from ``data``.
+            the number of entries will be deducted from `data`.
 
         Notes:
             The data can be passed as:
 
-            - an array shaped as ``(n_entries, n_features)``,
-            - an array shaped as ``(1, n_features)``
-              that will be reshaped as ``(n_entries, n_features)``
-              by replicating the original array ``n_entries`` times,
-            - an array shaped as ``(n_entries,)``
-              that will be reshaped as ``(n_entries, 1)``,
+            - an array shaped as `(n_entries, n_features)`,
+            - an array shaped as `(1, n_features)`
+                that will be reshaped as `(n_entries, n_features)`
+                by replicating the original array `n_entries` times,
+            - an array shaped as `(n_entries,)`
+                that will be reshaped as `(n_entries, 1)`,
             - a scalar that will be converted into an array
-              shaped as ``(n_entries, 1)`` if ``components`` is empty
-              or ``(n_entries, n_features)``
-              where ``n_features`` will be deducted from ``components``.
+                shaped as `(n_entries, 1)` if `components` is empty
+                or `(n_entries, n_features)`
+                where `n_features` will be deducted from `components`.
 
         Raises:
             ValueError: If the group already has the added components
-                of the variable named ``variable_name``.
+                of the variable named `variable_name`.
         """
         n_components = 1 if isinstance(components, int) else len(components)
         data = self.__force_to_2d_array(data, n_components)
@@ -503,13 +514,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """Force data to be a 2D NumPy array.
 
         Args:
-            data: A scalar, or an array shaped as ``(n,)`` or ``(n, n_components)``.
-            n_components: Only used when ``data`` is a scalar.
+            data: A scalar, or an array shaped as `(n,)` or `(n, n_components)`.
+            n_components: Only used when `data` is a scalar.
                 In that case,
-                the returned array is constant and shaped as ``(1, n_components)``.
+                the returned array is constant and shaped as `(1, n_components)`.
 
         Returns:
-            A 2D NumPy array of shape ``(n, n_components)``.
+            A 2D NumPy array of shape `(n, n_components)`.
         """
         if isinstance(data, Number) and n_components:
             return array([[data] * n_components])
@@ -533,11 +544,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             group_name: The name of the group.
             data: The data.
             variable_names: The names of the variables.
-                If empty, use :attr:`.DEFAULT_VARIABLE_NAME`.
+                If empty, use
+                [DEFAULT_VARIABLE_NAME][gemseo.datasets.dataset.Dataset.DEFAULT_VARIABLE_NAME].
             variable_names_to_n_components: The number of components of the variables.
-                If ``variable_names`` is empty,
+                If `variable_names` is empty,
                 this argument is not considered.
-                If ``None``,
+                If `None`,
                 assume that all the variables have a single component.
 
         Raises:
@@ -617,7 +629,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Notes:
             The order asked by the user is preserved for the returned Dataset.
-            See also :meth:`.loc`.
+            You can also use the `loc` attribute inherited from `pandas.DataFrame`.
 
         Returns:
             The specific group of rows and columns of the dataset.
@@ -641,13 +653,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _to_slice_or_list(obj: Any) -> slice | list[Any]:
-        """Convert an object to a ``slice`` or a ``list``.
+        """Convert an object to a `slice` or a `list`.
 
         Args:
             obj: The object.
 
         Returns:
-            The object as a ``slice`` or a ``list``.
+            The object as a `slice` or a `list`.
         """
         if isinstance(obj, slice):
             return obj
@@ -679,7 +691,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             new_variable_name: The new name of the variable.
             group_name: The group of the variable.
                 If empty,
-                change the name of all the variables matching ``variable_name``.
+                change the name of all the variables matching `variable_name`.
         """
         if group_name:
             components = self.get_variable_components(group_name, variable_name)
@@ -715,24 +727,28 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     @classmethod
     def from_dataframe(cls, dataframe: DataFrame) -> Dataset:
-        """Create a :class:`.Dataset` from a pandas :class:`~pandas.DataFrame`.
+        """Create a dataset from a pandas DataFrame.
 
         Args:
-            dataframe: The pandas :class:`~pandas.DataFrame`.
-                whose ``columns`` attribute is either a 3-depth ``~pandas.MultiIndex``
+            dataframe: The pandas DataFrame.
+                whose `columns` attribute is either a 3-depth `pandas.MultiIndex`
                 or a sequence of 3-length tuples and strings.
-                The items of the 3-length tuples and 3-depth ``~pandas.MultiIndex``
-                correspond to :attr:`~.Dataset.COLUMN_LEVEL_NAMES` in this order.
+                The items of the 3-length tuples and 3-depth `pandas.MultiIndex`
+                correspond to
+                [COLUMN_LEVEL_NAMES][gemseo.datasets.dataset.Dataset.COLUMN_LEVEL_NAMES]
+                in this order.
                 In the case of a string,
                 it corresponds to the variable name
-                and the :attr:`~.Dataset.DEFAULT_GROUP` is used.
+                and the
+                [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]
+                is used.
 
         Returns:
-            The dataset built from the pandas :class:`~pandas.DataFrame`.
+            The dataset built from the pandas DataFrame.
 
         Raises:
-            ValueError: If the ``columns`` attribute is
-                neither a 3-depth ``~pandas.MultiIndex``,
+            ValueError: If the `columns` attribute is
+                neither a 3-depth `~pandas.MultiIndex`,
                 nor a sequence of 3-length tuples and strings.
         """
         dataset_multi_index_depth = len(cls.COLUMN_LEVEL_NAMES)
@@ -782,11 +798,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names_to_n_components: The number of components of the variables.
                 If empty,
                 assume that all the variables have a single component.
-                Ignored if ``variable_names`` is empty.
+                Ignored if `variable_names` is empty.
             variable_names_to_group_names: The groups of the variables.
                 If empty,
-                use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
-                Ignored if ``variable_names`` is empty.
+                use
+                [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]
+                for all the variables.
+                Ignored if `variable_names` is empty.
 
         Returns:
             A dataset built from the NumPy array.
@@ -833,31 +851,32 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         See Also:
             If the file contains multi-index information
             and not just an array,
-            the :meth:`.from_csv` method is better suited.
+            the [from_csv()][gemseo.datasets.dataset.Dataset.from_csv] method
+            is better suited.
 
         Args:
             file_path: The path to the file containing the data.
             variable_names: The names of the variables.
-                If empty and ``header`` is ``True``,
+                If empty and `header` is `True`,
                 read the names from the first line of the file.
 
-                If empty and ``header`` is ``False``,
-                use default names
-                based on the patterns the :attr:`.DEFAULT_NAMES`
-                associated with the different groups.
+                If empty and `header` is `False`,
+                use default names depending on the different groups.
             variable_names_to_n_components: The number of components of the variables.
                 If empty,
                 assume that all the variables have a single component.
             variable_names_to_group_names: The groups of the variables.
                 If empty,
-                use :attr:`.DEFAULT_GROUP` for all the variables.
+                use
+                [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]
+                for all the variables.
             delimiter: The field delimiter.
             header: Whether to read the names of the variables
                 on the first line of the file.
 
         Note:
-            When the ``variable_names`` are not provided,
-            and the ``header`` is ``True``, the file is accessed twice:
+            When the `variable_names` are not provided,
+            and the `header` is `True`, the file is accessed twice:
             During the first access,
             only the first line is read to retrieve the variable names.
             In the second access,
@@ -898,12 +917,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """Set the dataset from a CSV file.
 
         The first three rows contain the values of the multi-index
-        ``(column_name, variable_name, component)``.
+        `(column_name, variable_name, component)`.
 
         See Also:
             If the file does not contain multi-index information
             and not just an array,
-            the method :meth:`.from_txt` is better suited.
+            the method [from_txt()][gemseo.datasets.dataset.Dataset.from_txt]
+            is better suited.
 
         Args:
             file_path: The path to the file containing the data.
@@ -955,9 +975,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The columns,
-            either as a variable identifier ``(group_name, variable_name, component)``
-            or as a variable component name ``"variable_name[component]"``
-            (or ``"variable_name"`` if the dimension of the variable is 1).
+            either as a variable identifier `(group_name, variable_name, component)`
+            or as a variable component name `"variable_name[component]"`
+            (or `"variable_name"` if the dimension of the variable is 1).
         """
         columns = self.get_view(variable_names=variable_names).columns.to_list()
         if as_tuple:
@@ -988,7 +1008,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             transformation: The function transforming the variable,
-                e.g. ``"lambda x: 2*x"``.
+                e.g. `"lambda x: 2*x"`.
             group_names: The name(s) of the group(s) corresponding to these data.
                 If empty, consider all the groups.
             variable_names: The name(s) of the variables(s) corresponding to these data.
@@ -1023,22 +1043,22 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             by_group: Whether the data are returned as
-                ``{group_name: {variable_name: variable_values}}``.
+                `{group_name: {variable_name: variable_values}}`.
                 Otherwise,
-                the data are returned either as ``{variable_name: variable_values}``
-                if only one group contains the variable ``variable_name``
-                or as ``{f"{group_name}:{variable_name}": variable_values}``
-                if at least two groups contain the variable ``variable_name``.
+                the data are returned either as `{variable_name: variable_values}`
+                if only one group contains the variable `variable_name`
+                or as `{f"{group_name}:{variable_name}": variable_values}`
+                if at least two groups contain the variable `variable_name`.
             by_entry: Whether the data are returned as
-                ``[{group_name: {variable_name: variable_value_1}}, ...]``,
-                ``[{variable_name: variable_value_1}, ...]``
-                or ``[{f"{group_name}:{variable_name}": variable_value_1}, ...]``
-                according to ``by_group``.
+                `[{group_name: {variable_name: variable_value_1}}, ...]`,
+                `[{variable_name: variable_value_1}, ...]`
+                or `[{f"{group_name}:{variable_name}": variable_value_1}, ...]`
+                according to `by_group`.
                 Otherwise,
                 the data are returned as
-                ``{group_name: {variable_name: variable_value_1}}``,
-                ``{variable_name: variable_value_1}``
-                or ``{f"{group_name}:{variable_name}": variable_value_1}``.
+                `{group_name: {variable_name: variable_value_1}}`,
+                `{variable_name: variable_value_1}`
+                or `{f"{group_name}:{variable_name}": variable_value_1}`.
 
         Returns:
             The dataset expressed as a dictionary of NumPy arrays.

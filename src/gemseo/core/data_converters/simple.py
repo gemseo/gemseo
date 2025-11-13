@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Data values to NumPy arrays and vice versa from a :class:`.SimpleGrammar`."""
+"""Data values to NumPy arrays and vice versa from a [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar]."""  # noqa: E501
 
 from __future__ import annotations
 
@@ -25,11 +25,11 @@ if TYPE_CHECKING:
 
 
 class SimpleGrammarDataConverter(BaseDataConverter["SimpleGrammar"]):
-    """Data values to NumPy arrays and vice versa from a :class:`.SimpleGrammar`.
+    """Data values to NumPy arrays and vice versa from a simple grammar.
 
-    .. warning::
-
-        Since :class:`.SimpleGrammar` cannot make a distinction between the types of
+    Warning:
+        Since [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar]
+        cannot make a distinction between the types of
         data in a NumPy array, it is assumed that those types are numeric and can
         differentiate. You may use another type of grammar if the distinction is needed.
     """

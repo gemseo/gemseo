@@ -106,8 +106,10 @@ class OptimizationHistory:
         """The feasible points within a given tolerance.
 
         This tolerance is defined by
-        :attr:`.OptimizationProblem.tolerances.equality` for equality constraints and
-        :attr:`.OptimizationProblem.tolerances.inequality` for inequality ones.
+        [tolerances.equality][gemseo.algos.optimization_problem.OptimizationProblem.tolerances]
+        for equality constraints and
+        [tolerances.inequality][gemseo.algos.optimization_problem.OptimizationProblem.tolerances]
+        for inequality ones.
 
         Raises:
             ValueError: When the database is empty.
@@ -129,25 +131,25 @@ class OptimizationHistory:
     ) -> tuple[bool, float]:
         r"""Check if a design point is feasible and measure its constraint violation.
 
-        The constraint violation measure at a design point :math:`x` is
+        The constraint violation measure at a design point $x$ is
 
-        .. math::
-
+        $$
            \lVert\max(g(x)-\varepsilon_{\text{ineq}},0)\rVert_2^2
            +\lVert|\max(|h(x)|-\varepsilon_{\text{eq}},0)\rVert_2^2
+        $$
 
-        where :math:`\|.\|_2` is the Euclidean norm,
-        :math:`g(x)` is the inequality constraint vector,
-        :math:`h(x)` is the equality constraint vector,
-        :math:`\varepsilon_{\text{ineq}}` is the tolerance
+        where $\|.\|_2$ is the Euclidean norm,
+        $g(x)$ is the inequality constraint vector,
+        $h(x)$ is the equality constraint vector,
+        $\varepsilon_{\text{ineq}}$ is the tolerance
         for the inequality constraints
         and
-        :math:`\varepsilon_{\text{eq}}` is the tolerance for the equality constraints.
+        $\varepsilon_{\text{eq}}$ is the tolerance for the equality constraints.
 
         If the design point is feasible, the constraint violation measure is 0.
 
         Args:
-            x_vect: The design point :math:`x`.
+            x_vect: The design point $x$.
 
         Returns:
             Whether the design point is feasible,
@@ -282,8 +284,8 @@ class OptimizationHistory:
 
         Args:
             names: The names of the variables.
-            as_dict: If ``True``, return values as dictionary.
-            filter_non_feasible: If ``True``, remove the non-feasible points from
+            as_dict: If `True`, return values as dictionary.
+            filter_non_feasible: If `True`, remove the non-feasible points from
                 the data.
 
         Returns:

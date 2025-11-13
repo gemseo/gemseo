@@ -65,13 +65,13 @@ class FiniteElementAnalysis(Discipline):
             n_x: The number of elements in the x-direction.
             n_y: The number of elements in the y-direction.
             f_node: The indices of the nodes where the forces are applied.
-            f_direction: The force direction for each ``f_node``,
+            f_direction: The force direction for each `f_node`,
                 either 0 for x or 1 for y.
-            f_amplitude: The force amplitude for each pair ``(f_node, f_direction)``.
+            f_amplitude: The force amplitude for each pair `(f_node, f_direction)`.
             fixed_nodes: The indices of the nodes where the structure is clamped.
-                If ``None``, a default value is used.
+                If `None`, a default value is used.
             fixed_dir: The clamped direction for each node, encode 0 for x and 1 for y.
-                If ``None``, a default value is used.
+                If `None`, a default value is used.
         """  # noqa: D205 D212
         super().__init__(name=name)
         if fixed_nodes is None:

@@ -17,12 +17,13 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw surfaces from a :class:`.Dataset`.
+"""Draw surfaces from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-A :class:`.Surfaces` plot represents samples
-of a functional variable :math:`z(x,y)` discretized over a 2D mesh.
-Both evaluations of :math:`z` and mesh are stored in a :class:`.Dataset`,
-:math:`z` as a parameter and the mesh as a metadata.
+A [Surfaces][gemseo.post.dataset.surfaces.Surfaces] plot represents samples
+of a functional variable $z(x,y)$ discretized over a 2D mesh.
+Both evaluations of $z$ and mesh are stored
+in a [Dataset][gemseo.datasets.dataset.Dataset],
+$z$ as a parameter and the mesh as a metadata.
 """
 
 from __future__ import annotations
@@ -55,7 +56,7 @@ class Surfaces(DatasetPlot):
             mesh: The name of the dataset metadata corresponding to the mesh.
             variable: The name of the variable for the x-axis.
             samples: The indices of the samples to plot. If empty, plot all samples.
-            add_points: If ``True`` then display the samples over the surface plot.
+            add_points: If `True` then display the samples over the surface plot.
             fill: Whether to generate a filled contour plot.
             levels: Either the number of contour lines
                 or the values of the contour lines in increasing order.

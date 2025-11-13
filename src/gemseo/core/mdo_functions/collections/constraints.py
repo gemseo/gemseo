@@ -114,15 +114,15 @@ class Constraints(Functions):
         """Aggregate a constraint to generate a reduced dimension constraint.
 
         Args:
-            constraint_index: The index of the constraint in :attr:`.constraints`.
-            method: The aggregation method, e.g. ``"max"``, ``"lower_bound_KS"``,
-                ``"upper_bound_KS"``or ``"IKS"``.
+            constraint_index: The index of the constraint in the collection.
+            method: The aggregation method, e.g. `"max"`, `"lower_bound_KS"`,
+                `"upper_bound_KS"`or `"IKS"`.
             groups: The groups of components of the constraint to aggregate
                 to produce one aggregation constraint per group of components;
                 if empty, a single aggregation constraint is produced. If more than one
                 group is given, the aggregated constraints include a suffix of the form
-                ``_group_i``, where i is an integer starting at 1 for the first group of
-                constraints and ending at ``n`` groups.
+                `_group_i`, where i is an integer starting at 1 for the first group of
+                constraints and ending at `n` groups.
             **options: The options of the aggregation method.
 
         Raises:
@@ -180,18 +180,18 @@ class Constraints(Functions):
     ) -> MDOFunction:
         r"""Format a constraint.
 
-        An equality constraint is written as :math:`c(x)=a`,
-        a positive inequality constraint is written as :math:`c(x)\geq a`
-        and a negative inequality constraint is written as :math:`c(x)\leq a`.
+        An equality constraint is written as $c(x)=a$,
+        a positive inequality constraint is written as $c(x)\geq a$
+        and a negative inequality constraint is written as $c(x)\leq a$.
 
         Args:
-            function: The function :math:`c`.
-            value: The value :math:`a`.
+            function: The function $c$.
+            value: The value $a$.
             constraint_type: The type of the constraint.
-                If ``None``,
-                ``function.f_type`` must be either
-                ``MDOFunction.ConstraintType.INEQ``
-                or ``MDOFunction.ConstraintType.EQ``.
+                If `None`,
+                `function.f_type` must be either
+                `MDOFunction.ConstraintType.INEQ`
+                or `MDOFunction.ConstraintType.EQ`.
             positive: Whether the inequality constraint is positive.
 
         Returns:
@@ -199,7 +199,8 @@ class Constraints(Functions):
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
-                is not an :class:`.MDOLinearFunction`.
+                is not an
+                [MDOLinearFunction][gemseo.core.mdo_functions.mdo_linear_function.MDOLinearFunction].
             ValueError: When the type of the constraint is missing.
         """
         func_name = function.name
@@ -244,8 +245,8 @@ class Constraints(Functions):
             function: The constraint function.
             constraint_type: The type of the constraint.
             value: The value for which the constraint is active.
-                If ``None``, this value is 0.
-            positive: If ``True``, then the inequality constraint is positive.
+                If `None`, this value is 0.
+            positive: If `True`, then the inequality constraint is positive.
 
         Returns:
             A string representation of the constraint.

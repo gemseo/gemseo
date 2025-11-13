@@ -35,11 +35,11 @@ class ConstraintFunctionWrapper:
     """Wrapper of the constraint function for the beta sub-optimization.
 
     In the main optimization,
-    the constraint :math:`g` requires the vector :math:`x`,
+    the constraint $g$ requires the vector $x$,
     but in the beta sub-optimization,
-    they are executed with input :math:`[x, t]` where :math:`t` is a scalar.
-    This wrapper removes the :math:`t` component
-    and calls :math:`g` with only the :math:`x` input.
+    they are executed with input $[x, t]$ where $t$ is a scalar.
+    This wrapper removes the $t$ component
+    and calls $g$ with only the $x$ input.
     """
 
     __g: MDOFunction
@@ -48,29 +48,29 @@ class ConstraintFunctionWrapper:
     def __init__(self, g: MDOFunction) -> None:
         """
         Args:
-            g: The constraint function :math:`g` to be wrapped.
+            g: The constraint function $g$ to be wrapped.
         """  # noqa: D205, D212, D415
         self.__g = g
 
     def compute_output(self, x_t: NumberArray) -> NumberArray:
-        """Compute the constraint function output at :math:`x`.
+        """Compute the constraint function output at $x$.
 
         Args:
-            x_t: A vector :math:`x` followed by a scalar :math:`t`.
+            x_t: A vector $x$ followed by a scalar $t$.
 
         Returns:
-            The constraint function output at :math:`x`.
+            The constraint function output at $x$.
         """
         return self.__g.evaluate(x_t[:-1])
 
     def compute_jacobian(self, x_t: NumberArray) -> NumberArray:
-        """Compute the constraint function Jacobian at :math:`x`.
+        """Compute the constraint function Jacobian at $x$.
 
         Args:
-            x_t: A vector :math:`x` followed by a scalar :math:`t`.
+            x_t: A vector $x$ followed by a scalar $t$.
 
         Returns:
-            The constraint function Jacobian at :math:`x`.
+            The constraint function Jacobian at $x$.
         """
         jac_g = atleast_2d(self.__g.jac(x_t[:-1]))
         jac = zeros((jac_g.shape[0], jac_g.shape[1] + 1))

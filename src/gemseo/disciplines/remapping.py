@@ -40,15 +40,15 @@ class RemappingDiscipline(Discipline):
     """A discipline whose inputs and outputs map to those of another.
 
     An input or output name mapping looks like
-    ``{"new_x": "x", "new_y": ("y", components)}``
-    where the variable ``"new_x"`` corresponds to the original variable ``"x"``
-    and the variable ``"new_y"`` corresponds to some ``components``
-    of the original variable ``"y"``.
-    ``components`` can be an integer ``i`` (the ``i``-th component of ``y``),
-    a sequence of integers ``[i, j, k]``
-    (the ``i``-th, ``j``-th and ``k``-th components of ``y``)
-    or an iterable of integers ``range(i, j+1)``
-    (from the ``i``-th to the ``j``-th components of ``y``).
+    `{"new_x": "x", "new_y": ("y", components)}`
+    where the variable `"new_x"` corresponds to the original variable `"x"`
+    and the variable `"new_y"` corresponds to some `components`
+    of the original variable `"y"`.
+    `components` can be an integer `i` (the `i`-th component of `y`),
+    a sequence of integers `[i, j, k]`
+    (the `i`-th, `j`-th and `k`-th components of `y`)
+    or an iterable of integers `range(i, j+1)`
+    (from the `i`-th to the `j`-th components of `y`).
     """
 
     default_grammar_type = Discipline.GrammarType.SIMPLER
@@ -149,7 +149,7 @@ class RemappingDiscipline(Discipline):
     def __format_mapping(
         cls, mapping: NameMapping, grammar: BaseGrammar
     ) -> dict[str, tuple[str, slice | Iterable[int]]]:
-        """Format a mapping as ``{"current_name": ("original_name", components)}``.
+        """Format a mapping as `{"current_name": ("original_name", components)}`.
 
         Args:
             mapping: The user mapping.

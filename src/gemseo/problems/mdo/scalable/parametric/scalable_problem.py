@@ -64,7 +64,7 @@ class ScalableProblem(_ScalableProblem):
     discipline computing the objective function and the constraints.
 
     These disciplines are defined on a unit design space, i.e. design variables belongs
-    to :math:`[0, 1]`.
+    to $[0, 1]$.
     """
 
     _MAIN_DISCIPLINE_CLASS = MainDiscipline
@@ -114,9 +114,9 @@ class ScalableProblem(_ScalableProblem):
         r"""Create the quadratic programming (QP) version of the MDO problem.
 
         This is an optimization problem
-        to minimize :math:`0.5x^TQx + c^Tx + d` with respect to :math:`x`
-        under the linear constraints :math:`Ax-b\leq 0`,
-        where the matrix :math:`Q` is symmetric.
+        to minimize $0.5x^TQx + c^Tx + d$ with respect to $x$
+        under the linear constraints $Ax-b\leq 0$,
+        where the matrix $Q$ is symmetric.
 
         In the presence of uncertainties,
         offsets are added to the objective and constraint expressions.
@@ -125,14 +125,14 @@ class ScalableProblem(_ScalableProblem):
             add_coupling: Whether to add the coupling variables as an observable.
             use_margin: Whether the statistics used for the constraints
                 are margins or probabilities;
-                if ``False``, the random vectors are assumed to be Gaussian.
+                if `False`, the random vectors are assumed to be Gaussian.
             covariance_matrices: The covariance matrices
-                :math:`\Sigma_1,\ldots,\Sigma_N`
-                of the random variables :math:`U_1,\ldots,U_N`.
+                $\Sigma_1,\ldots,\Sigma_N$
+                of the random variables $U_1,\ldots,U_N$.
                 If empty, do not consider uncertainties.
-            margin_factor: The factor :math:`\kappa`
+            margin_factor: The factor $\kappa$
                 used in the expression of the margins.
-            tolerance: The tolerance level :math:`\varepsilon`
+            tolerance: The tolerance level $\varepsilon$
                 for the violation probability.
 
         Returns:

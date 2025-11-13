@@ -28,8 +28,6 @@ import sys
 from ast import literal_eval
 from collections.abc import Callable
 from collections.abc import Mapping
-from contextlib import contextmanager
-from contextlib import nullcontext
 from copy import deepcopy
 from itertools import chain
 from itertools import islice
@@ -48,16 +46,7 @@ from numpy import integer
 from numpy import issubdtype
 from numpy import nan
 from numpy import ndarray
-
-try:
-    from numpy._core import printoptions
-except ImportError:
-
-    @contextmanager
-    def printoptions(*args, **kwargs):  # noqa: D103
-        yield nullcontext()
-
-
+from numpy import printoptions
 from numpy.linalg import norm
 from pandas import MultiIndex
 
@@ -82,70 +71,77 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 DatabaseKeyType = ndarray | HashableNdarray
-"""The type of a :class:`.Database` key."""
+"""The type of a [Database][gemseo.algos.database.Database] key."""
 
 FunctionOutputValueType = float | ndarray | list[int]
-"""The type of a function output value stored in a :class:`.Database`."""
+"""The type of a function output value stored in a [Database][gemseo.algos.database.Database]."""  # noqa: E501
 
 DatabaseValueType = Mapping[str, FunctionOutputValueType]
-"""The type of a :class:`.Database` value."""
+"""The type of a [Database][gemseo.algos.database.Database] value."""
 
 ListenerType = Callable[[DatabaseKeyType], None]
-"""The type of a listener attached to an :class:`.Database`."""
+"""The type of a listener attached to an [Database][gemseo.algos.database.Database]."""
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Database(Mapping):
-    """Storage of :class:`.MDOFunction` evaluations.
+    """Storage of function evaluations.
 
-    A :class:`.Database` is typically attached to an :class:`.OptimizationProblem`
+    A [Database][gemseo.algos.database.Database] is typically attached
+    o an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
     to store the evaluations of its objective, constraints and observables.
 
     Then,
-    a :class:`.Database` can be an optimization history
+    a [Database][gemseo.algos.database.Database] can be an optimization history
     or a collection of samples in the case of a DOE.
 
     It is useful when simulations are costly
     because it avoids re-evaluating functions
     at points where they have already been evaluated.
 
-    .. seealso:: :class:`.NormDBFunction`
-
-    It can also be post-processed by an :class:`.BasePost`
+    It can also be post-processed by an [BasePost][gemseo.post.base_post.BasePost]
     to visualize its content,
-    e.g. :class:`.OptHistoryView` generating a series of graphs
+    e.g. [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView] generating
+    a series of graphs
     to visualize the histories of the objective, constraints and design variables.
 
-    A :class:`.Database` can be saved to an HDF file
+    A [Database][gemseo.algos.database.Database] can be saved to an HDF file
     for portability and cold post-processing
-    with its method :meth:`.to_hdf`.
+    with its method [to_hdf()][gemseo.algos.database.Database.to_hdf].
     A database can also be initialized from an HDF file
-    as ``database = Database.from_hdf(file_path)``.
+    as `database = Database.from_hdf(file_path)`.
 
-    .. note::
-        Saving an :class:`.OptimizationProblem` to an HDF file
-        using its method :class:`~.OptimizationProblem.to_hdf`
-        also saves its :class:`.Database`.
+    Note:
+        Saving
+        an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+        to an HDF file
+        using its method
+        [to_hdf][gemseo.algos.optimization_problem.OptimizationProblem.to_hdf]
+        also saves its [Database][gemseo.algos.database.Database].
 
     The database is based on a two-level dictionary-like mapping such as
-    ``{x: {output_name: output_value, ...}, ...}`` with:
+    `{x: {output_name: output_value, ...}, ...}` with:
 
-        * ``x``: the input value as an :class:`.HashableNdarray`
-          wrapping a NumPy array that can be accessed as ``x.array``;
+        * `x`: the input value
+          as an [HashableNdarray][gemseo.algos.hashable_ndarray.HashableNdarray]
+          wrapping a NumPy array that can be accessed as `x.array`;
           if the types of the input variables are different,
           then they are promoted to the unique type that can represent all them,
           for instance integer would be promoted to float;
           if the user does not provide any input space at instantiation,
-          after the first call to the :meth:`.store` method,
-          the :attr:`.input_space` will include a single variable
-          called :attr:`.DEFAULT_INPUT_NAME`, with the right dimension;
-        * ``output_name``: either the name of the function
-          that has been evaluated at ``x_vect``,
+          after the first call to
+          the [store()][gemseo.algos.database.Database.store] method,
+          the [input_space][gemseo.algos.database.Database.input_space]
+          will include a single variable called
+          [DEFAULT_INPUT_NAME][gemseo.algos.database.Database.DEFAULT_INPUT_NAME],
+          with the right dimension;
+        * `output_name`: either the name of the function
+          that has been evaluated at `x_vect`,
           the name of its gradient
-          (the gradient of a function called ``"f"`` is typically denoted as ``"@f"``)
+          (the gradient of a function called `"f"` is typically denoted as `"@f"`)
           and any additional information related to the methods which use the database;
-        * ``outputs``: the output value,
+        * `outputs`: the output value,
           typically a float or a 1D-array for a function output,
           a 1D- or 2D-array for a gradient
           or a list for the iteration.
@@ -163,7 +159,7 @@ class Database(Mapping):
     GRAD_TAG: ClassVar[str] = "@"
     """The tag prefixing a function name to make it a gradient name.
 
-    E.g. ``"@f"`` is the name of the gradient of ``"f"`` when ``GRAD_TAG == "@"``.
+    E.g. `"@f"` is the name of the gradient of `"f"` when `GRAD_TAG == "@"`.
     """
 
     __data: dict[HashableNdarray, DatabaseValueType]
@@ -190,8 +186,8 @@ class Database(Mapping):
             name: The name to be given to the database.
                 If empty, use the class name.
             input_space: The input space associated with this database.
-                If ``None``,
-                create a default ``DesignSpace``.
+                If `None`,
+                create a default `DesignSpace`.
         """  # noqa: D205, D212, D415
         self.name = name or self.__class__.__name__
         self.__data = {}
@@ -243,7 +239,8 @@ class Database(Mapping):
 
         Raises:
             KeyError: If the original array is
-                neither an array nor a :class:`.HashableNdarray`.
+                neither an array
+                nor a [HashableNdarray][gemseo.algos.hashable_ndarray.HashableNdarray].
         """
         if isinstance(original_array, ndarray):
             return HashableNdarray(original_array, copy=copy)
@@ -314,16 +311,16 @@ class Database(Mapping):
                 del output_names_to_values[function_name]
 
     def get_last_n_x_vect(self, n: int) -> list[ndarray]:
-        """Return the last ``n`` input values.
+        """Return the last `n` input values.
 
         Args:
             n: The number of last iterations to be considered.
 
         Returns:
-            The last ``n`` input value.
+            The last `n` input value.
 
         Raises:
-            ValueError: If the number ``n`` is higher than the number of iterations.
+            ValueError: If the number `n` is higher than the number of iterations.
         """
         n_iterations = len(self)
         if n > n_iterations:
@@ -472,14 +469,14 @@ class Database(Mapping):
                 or an iteration between 1 and the number of iterations;
                 it can also be a negative integer if counting from the last iteration
                 (e.g. -2 for the penultimate iteration).
-            tolerance: The relative tolerance :math:`\epsilon`
-                such that the input value :math:`x` is considered as equal
-                to the input value :math:`x_{\text{database}}` stored in the database
+            tolerance: The relative tolerance $\epsilon$
+                such that the input value $x$ is considered as equal
+                to the input value $x_{\text{database}}$ stored in the database
                 if
-                :math:`\|x-x_{\text{database}}\|/\|x_{\text{database}}\|\leq\epsilon`.
+                $\|x-x_{\text{database}}\|/\|x_{\text{database}}\|\leq\epsilon$.
 
         Returns:
-            The output value at the given input value if any, otherwise ``None``.
+            The output value at the given input value if any, otherwise `None`.
         """
         if isinstance(x_vect_or_iteration, int):
             return self.__get_output(self.get_x_vect(x_vect_or_iteration))
@@ -513,15 +510,15 @@ class Database(Mapping):
                 or an iteration between 1 and the number of iterations;
                 it can also be a negative integer if counting from the last iteration
                 (e.g. -2 for the penultimate iteration).
-            tolerance: The relative tolerance :math:`\epsilon`
-                such that the input value :math:`x` is considered as equal
-                to the input value :math:`x_{\text{database}}` stored in the database
+            tolerance: The relative tolerance $\epsilon$
+                such that the input value $x$ is considered as equal
+                to the input value $x_{\text{database}}$ stored in the database
                 if
-                :math:`\|x-x_{\text{database}}\|/\|x_{\text{database}}\|\leq\epsilon`.
+                $\|x-x_{\text{database}}\|/\|x_{\text{database}}\|\leq\epsilon$.
 
         Returns:
             The output value of the function at the given input value if any,
-            otherwise ``None``.
+            otherwise `None`.
         """
         outputs = self.__get_output(x_vect_or_iteration, tolerance)
         if outputs:
@@ -629,11 +626,11 @@ class Database(Mapping):
             new_iter_listeners: The functions to be removed
                 that were notified of a new iteration.
                 If empty, remove all such functions.
-                If ``None``, keep all these functions.
+                If `None`, keep all these functions.
             store_listeners: The functions to be removed
                 that were notified of a new entry in the database.
                 If empty, remove all such functions.
-                If ``None``, keep all these functions.
+                If `None`, keep all these functions.
 
         Returns:
             The listeners that were notified of a new iteration
@@ -665,7 +662,7 @@ class Database(Mapping):
 
         Args:
             x_vect: The input value.
-                If ``None``, use the input value of the last iteration.
+                If `None`, use the input value of the last iteration.
         """
         self.__notify_listeners(self.__store_listeners, x_vect)
 
@@ -674,7 +671,7 @@ class Database(Mapping):
 
         Args:
             x_vect: The input value.
-                If ``None``, use the input value of the last iteration.
+                If `None`, use the input value of the last iteration.
         """
         self.__notify_listeners(self.__new_iter_listeners, x_vect)
 
@@ -688,7 +685,7 @@ class Database(Mapping):
         Args:
             listeners: The listeners.
             x_vect: The input value.
-                If ``None``, use the input value of the last iteration.
+                If `None`, use the input value of the last iteration.
         """
         if not listeners:
             return
@@ -731,7 +728,7 @@ class Database(Mapping):
 
         Args:
             function_names: The names of functions.
-            add_missing_tag: Whether to add the tag ``missing_tag``
+            add_missing_tag: Whether to add the tag `missing_tag`
                 to the iterations where data are missing.
             missing_tag: The tag to represent missing data.
 
@@ -861,7 +858,7 @@ class Database(Mapping):
         input_names: str | Iterable[str] = (),
         with_x_vect: bool = True,
     ) -> tuple[NumberArray, list[str], Iterable[str]]:
-        """Return the database as a 2D array shaped as ``(n_iterations, n_features)``.
+        """Return the database as a 2D array shaped as `(n_iterations, n_features)`.
 
         The features are the outputs of interest and possibly the input variables.
 
@@ -870,16 +867,16 @@ class Database(Mapping):
                 whose output values must be returned.
                 If empty, use all the functions.
             input_names: The names of the input variables to name the columns of the
-                ``x_vect`` when ``with_x_vect`` is ``True``. These names must match the
+                `x_vect` when `with_x_vect` is `True`. These names must match the
                 dimension of the design vector.
-                If empty, the i-th column is named ``"x_i"``.
-            add_missing_tag: If ``True``,
-                add the tag specified in ``missing_tag``
+                If empty, the i-th column is named `"x_i"`.
+            add_missing_tag: If `True`,
+                add the tag specified in `missing_tag`
                 for data that are not available.
             missing_tag: The tag that is added for data that are not available.
-            with_x_vect: If ``True``,
+            with_x_vect: If `True`,
                 the input variables are returned in the history
-                as ``np.hstack((get_output_history, x_vect_history))``.
+                as `np.hstack((get_output_history, x_vect_history))`.
 
         Raises:
             ValueError: If the number of names does not match the dimension of the
@@ -968,7 +965,7 @@ class Database(Mapping):
                 If empty, use all the functions.
             file_path: The path to the XML file.
             input_names: The names of the input variables.
-                If empty, use :attr:`.input_names`.
+                If empty, use `"x_1"`, `"x_2"`, ...
         """
         values_array, variable_names, function_names = self.get_history_array(
             function_names=function_names, add_missing_tag=True, input_names=input_names
@@ -1056,7 +1053,7 @@ class Database(Mapping):
         optimization_metadata: OptimizationMetadata | None = None,
         groups_to_variables: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
-        """Export the database to a :class:`.Dataset`.
+        """Export the database to a [Dataset][gemseo.datasets.dataset.Dataset].
 
         Args:
             name: The name to be given to the dataset.
@@ -1069,7 +1066,7 @@ class Database(Mapping):
             dataset_class: The dataset class.
             input_group: The name of the group to store the input values.
             output_group: The name of the group to store the output values.
-                This argument is ignored when ``groups_to_variables`` is defined.
+                This argument is ignored when `groups_to_variables` is defined.
             gradient_group: The name of the group to store the gradient values.
             groups_to_variables: The variable names
                 mapped to their corresponding group to be stored in.
@@ -1201,7 +1198,7 @@ class Database(Mapping):
                 function_name=function_name, with_x_vect=True
             )
             # The history data type may change if data is incomplete.
-            # In that case, we insert NaNs and convert ``history`` into float.
+            # In that case, we insert NaNs and convert `history` into float.
             # Thus, the initial data type is kept for future data type conversion.
             history_dtype = atleast_1d(history).real.dtype
             history = (

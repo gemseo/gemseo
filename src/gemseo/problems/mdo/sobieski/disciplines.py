@@ -97,9 +97,9 @@ class SobieskiMission(SobieskiDiscipline):
 
     # TODO: API: move enable_delay to a derived class.
     enable_delay: bool | float
-    """If ``True``, wait one second before computation.
+    """If `True`, wait one second before computation.
 
-    If a positive number, wait the corresponding number of seconds. If ``False``,
+    If a positive number, wait the corresponding number of seconds. If `False`,
     compute directly.
     """
 
@@ -110,9 +110,9 @@ class SobieskiMission(SobieskiDiscipline):
     ) -> None:
         """
         Args:
-            enable_delay: If ``True``, wait one second before computation.
+            enable_delay: If `True`, wait one second before computation.
                 If a positive number, wait the corresponding number of seconds.
-                If ``False``, compute directly.
+                If `False`, compute directly.
         """  # noqa: D205 D212
         super().__init__(dtype=dtype)
         self.enable_delay = enable_delay
@@ -159,9 +159,9 @@ class SobieskiMission(SobieskiDiscipline):
     ) -> RemappingDiscipline:
         """
         Args:
-            enable_delay: If ``True``, wait one second before computation.
+            enable_delay: If `True`, wait one second before computation.
                 If a positive number, wait the corresponding number of seconds.
-                If ``False``, compute directly.
+                If `False`, compute directly.
         """  # noqa: D205 D212
         return RemappingDiscipline(
             cls(dtype=dtype, enable_delay=enable_delay),

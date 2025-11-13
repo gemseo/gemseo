@@ -98,7 +98,7 @@ class _MergeStrategy(Object):  # type: ignore[misc]
 
 
 class _SchemaNode(SchemaNode):  # type: ignore[misc]
-    """Overload :meth:`.add_schema` and :meth:`.add_object` to allow updating.
+    """Overload `add_schema()` and `add_object()` to allow updating.
 
     By default, genson merges nodes, the update is triggered via a class attribute.
     """
@@ -127,8 +127,8 @@ class _SchemaNode(SchemaNode):  # type: ignore[misc]
 class _MultipleMeta(ABCMeta, _MetaSchemaBuilder):  # type: ignore[misc]
     """Required metaclass for inheriting from multiple classes with metaclasses.
 
-    Also fix the ``NODE_CLASS`` overloading because it does not use the ``NODE_CLASS``
-    passed to a class derived from ``SchemaBuilder``.
+    Also fix the `NODE_CLASS` overloading because it does not use the `NODE_CLASS`
+    passed to a class derived from `SchemaBuilder`.
     """
 
     def __init__(cls, name: str, bases: tuple[type], attrs: dict[str, Any]) -> None:
@@ -151,7 +151,7 @@ class MutableMappingSchemaBuilder(
 ):
     """A mutable genson SchemaBuilder with a dictionary-like interface.
 
-    The :class:`SchemaBuilder` does not provide a way to mutate directly the properties
+    The `SchemaBuilder` does not provide a way to mutate directly the properties
     of a schema (these are stored deeply). For ease of usage, this class brings the
     properties closer to the surface, and the mutability is only provided by the ability
     to delete a property.

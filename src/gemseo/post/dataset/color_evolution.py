@@ -34,10 +34,11 @@ if TYPE_CHECKING:
 class ColorEvolution(DatasetPlot):
     """Evolution of the variables by means of a color scale.
 
-    Based on the matplotlib function :meth:`imshow`.
+    Based on the matplotlib function `imshow`.
 
     Tip:
-        Use :attr:`.colormap` to set a matplotlib colormap, e.g. ``"seismic"``.
+        Use [colormap][gemseo.post.dataset.dataset_plot.DatasetPlot.colormap]
+        to set a matplotlib colormap, e.g. `"seismic"`.
     """
 
     def __init__(
@@ -54,7 +55,7 @@ class ColorEvolution(DatasetPlot):
                 If empty, use all the variables.
             use_log: Whether to use a symmetric logarithmic scale.
             opacity: The level of opacity (0 = transparent; 1 = opaque).
-            **options: The options for the matplotlib function :meth:`imshow`.
+            **options: The options for the matplotlib function `imshow()`.
         """  # noqa: D205, D212, D415
         options_: dict[str, bool | float | str | None] = {
             "interpolation": "nearest",

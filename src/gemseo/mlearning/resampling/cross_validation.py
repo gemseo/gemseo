@@ -78,11 +78,11 @@ class CrossValidation(BaseResampler):
         """
         Args:
             stack_predictions: Whether the sub-predictions are stacked
-                in the order of the ``sample_indices`` passed at instantiation
-                (first the prediction at index ``sample_indices[0]``,
-                then the prediction at index ``sample_indices[1]``,
+                in the order of the `sample_indices` passed at instantiation
+                (first the prediction at index `sample_indices[0]`,
+                then the prediction at index `sample_indices[1]`,
                 etc.).
-                This argument is ignored when ``input_data`` is ``None``.
+                This argument is ignored when `input_data` is `None`.
         """  # noqa: D205, D212, D415
         return super().execute(
             model,

@@ -19,17 +19,16 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A power transform, either Yeo-Johnson or Box-Cox.
 
-Dependence
-----------
-This transformation algorithm relies on the ``PowerTransformer`` class
-of `scikit-learn <https://scikit-learn.org/
-stable/modules/generated/
-sklearn.preprocessing.PowerTransformer.html>`_.
+## Dependence
+
+This transformation algorithm relies on the `PowerTransformer` class of
+[scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html).
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
 from sklearn.preprocessing import PowerTransformer
@@ -53,7 +52,7 @@ class Power(BaseTransformer):
     def __init__(self, name: str = "", standardize: bool = True) -> None:
         """
         Args:
-            name: A name for this transformer. If ``None``, use the class name.
+            name: A name for this transformer. If `None`, use the class name.
             standardize: Whether to apply zero-mean, unit-variance
                 normalization to the transformed output.
         """  # noqa: D205 D212
@@ -68,9 +67,11 @@ class Power(BaseTransformer):
         self.lambdas_ = self.__power_transformer.lambdas_
 
     @BaseTransformer._use_2d_array
-    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
+    def transform(self, data: RealArray, *args: Any, **kwargs: Any) -> RealArray:  # noqa: D102
         return self.__power_transformer.transform(data)
 
     @BaseTransformer._use_2d_array
-    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
+    def inverse_transform(  # noqa: D102
+        self, data: RealArray, *args: Any, **kwargs: Any
+    ) -> RealArray:
         return self.__power_transformer.inverse_transform(data)

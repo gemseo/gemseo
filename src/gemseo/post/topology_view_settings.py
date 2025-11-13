@@ -38,7 +38,7 @@ class TopologyView_Settings(BasePostSettings):  # noqa: D101, N801
     observable: str = Field(
         default="",
         description="The name of the observable to be plotted. It should be of size "
-        "``n_x*n_y``.",
+        "`n_x*n_y`.",
     )
     iterations: int | Sequence[int] = Field(
         default=(),

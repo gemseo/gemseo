@@ -77,14 +77,14 @@ class RegressorChain(BaseRegressor):
             name: The name of the regression algorithm.
             transformer: The strategies to transform the variables.
                 The values are instances of
-                [Transformer][gemseo.mlearning.transformers.transformer.Transformer]
+                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
                 while the keys are the names of
                 either the variables
                 or the groups of variables,
                 e.g. "inputs" or "outputs" in the case of the regression algorithms.
                 If a group is specified,
                 the
-                [Transformer][gemseo.mlearning.transformers.transformer.Transformer]
+                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
                 will be applied
                 to all the variables of this group.
                 If empty, do not transform the variables.

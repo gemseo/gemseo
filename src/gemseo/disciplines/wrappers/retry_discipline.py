@@ -43,27 +43,28 @@ LOGGER = getLogger(__name__)
 class RetryDiscipline(Discipline):
     """A discipline to be executed with retry and timeout options.
 
-    This :class:`.Discipline` wraps another discipline so it can be executed multiple
-    times (up to a specified number of trials) if the previous attempts fail to
-    produce any result.
+    This [Discipline][gemseo.core.discipline.discipline.Discipline] wraps
+    another discipline so it can be executed multiple times
+    (up to a specified number of trials)
+    if the previous attempts fail to produce any result.
 
     A timeout in seconds can be specified to prevent executions from becoming stuck.
     The timeout can be handled either via a thread or a subprocess. By default, it is
-    handled by a thread, this can be changed by setting the ``timeout_with_process``
-    argument to ``True``.
+    handled by a thread, this can be changed by setting the `timeout_with_process`
+    argument to `True`.
     Use a thread when the discipline does not create other processes, otherwise those
     processes will keep running after the timeout duration.
     Beware that using a process is slower, especially under Windows.
 
-    Users can also provide a tuple of :class:`.Exception` that, if one of them is
+    Users can also provide a tuple of `Exception` that, if one of them is
     raised, it does not retry the execution.
 
-    Please note that the ``TimeoutError`` exception is also caught if the wrapped
-    discipline raises such an exception (i.e. aside from ``RetryDiscipline`` itself).
+    Please note that the `TimeoutError` exception is also caught if the wrapped
+    discipline raises such an exception (i.e. aside from `RetryDiscipline` itself).
     So it could lead to 2 surprising cases, but in fact normal cases:
-    - a ``TimeoutError`` exception even though the user didn't provide any timeout
+    - a `TimeoutError` exception even though the user didn't provide any timeout
     value.
-    - a ``TimeoutError`` raised sooner than the ``timeout`` value set by the user.
+    - a `TimeoutError` raised sooner than the `timeout` value set by the user.
     """
 
     __n_executions: int
@@ -98,7 +99,7 @@ class RetryDiscipline(Discipline):
             wait_time: The time to wait between 2 trials (in seconds).
             timeout: The maximum duration, in seconds, that the discipline is
                 allowed to run. If this time limit is exceeded, the
-                execution is terminated. If ``math.inf``, the
+                execution is terminated. If `math.inf`, the
                 discipline is executed without timeout limit.
             fatal_exceptions: The exceptions for which the code raises an
                 exception and exit immediately without retrying a run.

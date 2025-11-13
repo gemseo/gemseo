@@ -19,21 +19,19 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""A Yeo-Johnson power transformation.
 
-Transform :math:`x` as:
+Transform $x$ as:
 
-.. math::
-
+$$
    y   = & ((x + 1)^\lambda - 1) / \lambda, \text{ for } x \geq 0, \lambda \neq 0 \\
    & \log(x + 1), \text{ for }x \geq 0, \lambda = 0 \\
    & -\frac{(1-x)^{2 - \lambda} - 1}{2-\lambda}, \text{ for } x < 0, \lambda \neq 2\\
    & -log(1-x), \text{ for } x < 0, \lambda = 2
+$$
 
-Dependence
-----------
-This transformation algorithm relies on the ``PowerTransformer`` class
-of `scikit-learn <https://scikit-learn.org/
-stable/modules/generated/
-sklearn.preprocessing.PowerTransformer.html>`_.
+## Dependence
+
+This transformation algorithm relies on the `PowerTransformer` class
+of [scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html).
 """
 
 from __future__ import annotations

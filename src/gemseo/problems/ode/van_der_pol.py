@@ -25,37 +25,32 @@ Nature 120, 363-364 (1927).
 
 The Van der Pol problem is written as follows:
 
-.. math::
+$$\frac{d^2 x(t)}{dt^2} - \mu (1-x(t)^2) \frac{dx(t)}{dt} + x = 0
 
-    \frac{d^2 x(t)}{dt^2} -
-    \mu (1-x(t)^2) \frac{dx(t)}{dt} + x = 0
-
-where :math:`x(t)` is the position coordinate as a function of time, and
-:math:`\mu` is a scalar parameter indicating the stiffness.
+where $x(t)$ is the position coordinate as a function of time, and
+$\mu$ is a scalar parameter indicating the stiffness.
 
 This problem can be rewritten in a 2-dimensional form with only first-order
-derivatives. Let :math:`y = \frac{dx}{dt}` and
-:math:`s = \begin{pmatrix}x\\y\end{pmatrix}`. Then the Van der Pol problem is:
+derivatives. Let $y = \frac{dx}{dt}$ and
+$s = \begin{pmatrix}x\\y\end{pmatrix}$. Then the Van der Pol problem is:
 
-.. math::
-
-    \frac{ds}{dt} = f(s, t)
+$$\frac{ds}{dt} = f(s, t)$$
 
 with
 
-.. math::
-
+$$
     f : s = \begin{pmatrix} x \\ y \end{pmatrix} \mapsto
     \begin{pmatrix} y \\ \mu (1-x^2) y - x \end{pmatrix}
+$$
 
 The jacobian of this function can be expressed analytically:
 
-.. math::
-
+$$
     \mathrm{Jac}\, f = \begin{pmatrix}
         0 & 1 \\
         -2\mu xy - 1 & \mu (1 - x^2)
     \end{pmatrix}
+$$
 
 There is no exact solution to the Van der Pol oscillator problem in terms of
 known tabulated functions (see Panayotounakos *et al.*, On the Lack of Analytic
@@ -83,7 +78,7 @@ class VanDerPol(ODEProblem):
     __mu: float
     r"""The stiffness parameter.
 
-    Van der Pol is stiffer with larger values of :math:`\mu`.
+    Van der Pol is stiffer with larger values of $\mu$.
     """
 
     def __init__(
@@ -97,7 +92,7 @@ class VanDerPol(ODEProblem):
         Args:
             mu: The stiffness parameter.
             use_jacobian: Whether to use the analytical expression of the Jacobian.
-                If ``False``, use finite differences to estimate the Jacobian.
+                If `False`, use finite differences to estimate the Jacobian.
             state: The state vector of the system.
             times: The initial and final times_eval.
         """  # noqa: D205 D212

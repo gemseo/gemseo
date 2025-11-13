@@ -32,7 +32,7 @@ class QuadApprox_Settings(BasePostSettings):  # noqa: D101, N801
     func_index: NonNegativeInt | None = Field(
         default=None,
         description="The index of the output of interest to be defined if the "
-        "function has a multidimensional output. If ``None`` and if the "
+        "function has a multidimensional output. If `None` and if the "
         "output is multidimensional, an error is raised.",
     )
 

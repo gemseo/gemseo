@@ -38,7 +38,7 @@ LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algori
 
 
 class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
-    """The settings for :class:`.MDANewtonRaphson`."""
+    """The settings for [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson]."""  # noqa: E501
 
     _TARGET_CLASS_NAME = "MDANewtonRaphson"
 
@@ -52,7 +52,7 @@ class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
         default=LinearSolver.DEFAULT,
         description="""The name of the linear solver for the Newton method.
 
-This field is ignored when ``newton_linear_solver_settings`` is a Pydantic model.""",
+This field is ignored when `newton_linear_solver_settings` is a Pydantic model.""",
     )
 
     newton_linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(

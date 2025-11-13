@@ -33,7 +33,8 @@ if TYPE_CHECKING:
 class OTSobolDOE(BaseOTDOE):
     """The DOE algorithm to compute the Sobol' indices.
 
-    .. note:: This class is a singleton.
+    Note:
+        This class is a singleton.
     """
 
     def generate_samples(  # noqa: D102
@@ -47,9 +48,9 @@ class OTSobolDOE(BaseOTDOE):
         Args:
             eval_second_order: Whether to build a DOE
                 to evaluate also the second-order indices.
-                If ``False``,
+                If `False`,
                 the DOE is designed for first and total-order indices only.
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
 
         """  # noqa: D205, D212
         # If eval_second_order is set to False, the input design is of size N(2+n_X).

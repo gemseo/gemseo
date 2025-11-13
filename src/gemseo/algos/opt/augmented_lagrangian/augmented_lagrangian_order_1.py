@@ -40,7 +40,8 @@ class AugmentedLagrangianOrder1(
     """An augmented Lagrangian algorithm of order 1.
 
     The Lagrange multipliers are updated using gradient information
-    computed using the :class:`.LagrangeMultipliers` class.
+    computed using the
+    [LagrangeMultipliers][gemseo.algos.lagrange_multipliers.LagrangeMultipliers] class.
     """
 
     __lagrange_multiplier_calculator: LagrangeMultipliers | None

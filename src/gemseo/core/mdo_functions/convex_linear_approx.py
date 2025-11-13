@@ -49,7 +49,7 @@ class ConvexLinearApprox(MDOFunction):
             mdo_function: The function to approximate.
             approx_indexes: A boolean mask
                 specifying w.r.t. which inputs the function should be approximated.
-                If ``None``, consider all the inputs.
+                If `None`, consider all the inputs.
             sign_threshold: The threshold for the sign of the derivatives.
 
         Raises:

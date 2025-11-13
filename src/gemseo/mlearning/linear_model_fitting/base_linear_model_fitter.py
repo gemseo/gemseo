@@ -72,7 +72,8 @@ class BaseLinearModelFitter(
         """
         Args:
             settings: The settings of the linear model fitting algorithm.
-                If ``None``, use a default instance of :attr:`.Settings`.
+                If `None`, use a default instance of
+                [Settings][gemseo.mlearning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter.Settings].
         """  # noqa: D205, D212
         if settings is None:
             settings = self.Settings()
@@ -96,19 +97,19 @@ class BaseLinearModelFitter(
 
         Args:
             input_data: The features matrix,
-                shaped as ``(n_samples, n_features)``.
+                shaped as `(n_samples, n_features)`.
             output_data: The observations matrix,
-                shaped as ``(n_samples, n_targets)``.
+                shaped as `(n_samples, n_targets)`.
             *extra_data: Additional pairs "(features matrix, observations matrix)".
-                where a features matrix has ``n_features`` columns,
-                an observations matrix as ``n_targets`` columns
+                where a features matrix has `n_features` columns,
+                an observations matrix as `n_targets` columns
                 and the matrices of a pair have the same number of rows.
                 E.g., Jacobian observations.
                 This argument cannot be used
-                when the option ``fit_intercept`` is ``True``.
+                when the option `fit_intercept` is `True`.
 
         Returns:
-            The coefficients of the linear model, shaped as ``(n_targets, n_features)``.
+            The coefficients of the linear model, shaped as `(n_targets, n_features)`.
         """
         if self._settings.fit_intercept and not extra_data:
             input_data = hstack((ones((len(input_data), 1)), input_data))
@@ -126,16 +127,16 @@ class BaseLinearModelFitter(
 
         Args:
             input_data: The features matrix,
-                shaped as ``(n_samples, n_features)``.
+                shaped as `(n_samples, n_features)`.
             output_data: The observations matrix,
-                shaped as ``(n_samples, n_targets)``.
+                shaped as `(n_samples, n_targets)`.
             *extra_data: Additional pairs "(features matrix, observations matrix)".
-                where a features matrix has ``n_features`` columns,
-                an observations matrix as ``n_targets`` columns
+                where a features matrix has `n_features` columns,
+                an observations matrix as `n_targets` columns
                 and the matrices of a pair have the same number of rows.
 
         Returns:
-            The coefficients of the linear model, shaped as ``(n_targets, n_features)``.
+            The coefficients of the linear model, shaped as `(n_targets, n_features)`.
         """
 
     @staticmethod
@@ -148,12 +149,12 @@ class BaseLinearModelFitter(
 
         Args:
             features: The features matrix,
-                shaped as ``(n_samples, n_features)``.
+                shaped as `(n_samples, n_features)`.
             observations: The observations matrix,
-                shaped as ``(n_samples, n_targets)``.
+                shaped as `(n_samples, n_targets)`.
             extra_data: Additional pairs "(features matrix, observations matrix)".
-                where a features matrix has ``n_features`` columns,
-                an observations matrix as ``n_targets`` columns
+                where a features matrix has `n_features` columns,
+                an observations matrix as `n_targets` columns
                 and the matrices of a pair have the same number of rows.
 
         Returns:
@@ -192,14 +193,14 @@ class _WrappedFittingFunction(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             input_data: The features matrix,
-                shaped as ``(n_samples, n_features)``.
+                shaped as `(n_samples, n_features)`.
             output_data: The observations matrix,
-                shaped as ``(n_samples, n_targets)``.
+                shaped as `(n_samples, n_targets)`.
             *extra_data: Additional pairs "(features matrix, observations matrix)".
-                where a features matrix has ``n_features`` columns,
-                an observations matrix as ``n_targets`` columns
+                where a features matrix has `n_features` columns,
+                an observations matrix as `n_targets` columns
                 and the matrices of a pair have the same number of rows.
 
         Returns:
-            The coefficients of the linear model, shaped as ``(n_targets, n_features)``.
+            The coefficients of the linear model, shaped as `(n_targets, n_features)`.
         """

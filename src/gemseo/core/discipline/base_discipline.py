@@ -76,32 +76,50 @@ class BaseDiscipline(BaseMonitoredProcess):
     """The base class defining the concept of discipline.
 
     A discipline computes output data from input data
-    using its :meth:`.execute` method.
+    using its
+    [execute()][gemseo.core.discipline.base_discipline.BaseDiscipline.execute].
     These data are in dictionary form,
-    i.e. ``{variable_name: variable_value, ...}``.
+    i.e. `{variable_name: variable_value, ...}`.
     The input-output data resulting from an execution
-    can be accessed via :attr:`.local_data`
-    or separately via :meth:`.get_input_data` and :meth:`.get_output_data`.
+    can be accessed via
+    [local_data][gemseo.core.discipline.base_discipline.BaseDiscipline.local_data]
+    or separately via
+    [get_input_data()][gemseo.core.discipline.base_discipline.BaseDiscipline.get_input_data]
+    and
+    [get_output_data()][gemseo.core.discipline.base_discipline.BaseDiscipline.get_output_data].
 
     For both input and output variables,
     default values can be provided
-    using the mappings :attr:`.default_input_data` and :attr:`.default_output_data`.
+    using the mappings
+    [default_input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_input_data]
+    and
+    [default_output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_output_data].
     In this case,
     the discipline will use these default input values at execution
     when an input value is not provided
-    and these default output values in the case of :attr:`.virtual_execution`.
+    and these default output values in the case of
+    [virtual_execution][gemseo.core.discipline.base_discipline.BaseDiscipline.virtual_execution].
 
     In other aspects,
-    the :attr:`.cache` can store zero, one or more discipline evaluations
-    depending on the :attr:`.CacheType`.
+    the
+    [cache][gemseo.core.discipline.base_discipline.BaseDiscipline.cache]
+    can store zero, one or more discipline evaluations
+    depending on the
+    [CacheType][gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType].
     This cache is set at instantiation
-    and can be changed with the :meth:`.set_cache` method.
+    and can be changed with the
+    [set_cache()][gemseo.core.discipline.base_discipline.BaseDiscipline.set_cache]
+    method.
 
     Lastly,
-    a discipline is equipped with
-    an :attr:`.input_grammar` to check the input data
-    and an :attr:`.output_grammar` to check the output data.
-    This validation depends on the :class:`.GrammarType`,
+    a discipline is equipped with an
+    [input_grammar][gemseo.core.discipline.base_discipline.BaseDiscipline.input_grammar]
+    to check the input data
+    and an
+    [output_grammar][gemseo.core.discipline.base_discipline.BaseDiscipline.output_grammar]
+    to check the output data.
+    This validation depends
+    on the [GrammarType][gemseo.core.grammars.factory.GrammarType],
     e.g. name verification, data type verification, etc.
     """
 
@@ -124,10 +142,10 @@ class BaseDiscipline(BaseMonitoredProcess):
     """Whether to validate the output data."""
 
     virtual_execution: ClassVar[bool] = False
-    """Whether :meth:`.execute` returns the :attr:`.default_output_data`.
+    """Whether the execution method return the default output data.
 
-    A virtual execution mocks the input-output process without performing the true
-    execution.
+    A virtual execution mocks the input-output process
+    without performing the true execution.
     """
 
     CacheType: ClassVar[type[CacheType]] = CacheType
@@ -145,7 +163,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     """The class used to create the process flow."""
 
     _has_jacobian: bool
-    """Whether the Jacobian has been set either by :meth:`_run` or from the cache."""
+    """Whether the Jacobian has been set either by `_run()` or from the cache."""
 
     def __init__(
         self,
@@ -265,21 +283,24 @@ class BaseDiscipline(BaseMonitoredProcess):
         according to the distance between the corresponding input data
         and the input data already cached for which output data are also cached.
 
-        The cache can be either a :class:`.SimpleCache` recording the last execution
+        The cache can be either a [SimpleCache][gemseo.caches.simple_cache.SimpleCache]
+        recording the last execution
         or a cache storing all executions,
-        e.g. :class:`.MemoryFullCache` and :class:`.HDF5Cache`.
+        e.g. [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache]
+        and [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache].
         Caching data can be either in-memory,
-        e.g. :class:`.SimpleCache` and :class:`.MemoryFullCache`,
+        e.g. [SimpleCache][gemseo.caches.simple_cache.SimpleCache]
+        and [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache],
         or on the disk,
-        e.g. :class:`.HDF5Cache`.
+        e.g. [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache].
 
         Args:
             cache_type: The type of cache.
             tolerance: The cache tolerance.
-            **kwargs: The other arguments passed to :meth:`.CacheFactory.create`
+            **kwargs: The other arguments passed to
+                [CacheFactory.create][gemseo.caches.factory.CacheFactory.create].
 
-        .. warning:
-
+        Warning:
            If is_memory_shared is set to False,
            and multiple disciplines point
            to the same cache or the process is multiprocessed,
@@ -324,16 +345,20 @@ class BaseDiscipline(BaseMonitoredProcess):
     ) -> DisciplineData:
         """Execute the discipline, i.e. compute output data from input data.
 
-        If :attr:`.virtual_execution` is ``True``,
-        this method returns the :attr:`.default_output_data`.
+        If
+        [virtual_execution][gemseo.core.discipline.base_discipline.BaseDiscipline.virtual_execution]
+        is `True`,
+        this method returns the
+        [default_output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_output_data].
         Otherwise,
-        it calls the :meth:`._run` method performing the true execution
+        it calls the `_run()` method performing the true execution
         and returns the corresponding output data.
-        This :meth:`._run` method must be implemented in subclasses.
+        This `_run()` method must be implemented in subclasses.
 
         Args:
             input_data: The input data.
-                Complete this dictionary with the :attr:`.default_input_data`.
+                Complete this dictionary with the
+                [default_input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_input_data].
 
         Returns:
             The input and output data.
@@ -396,19 +421,19 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         This method shall be implemented in derived classes.
 
-        The ``input_data`` are the discipline inputs completed with the default inputs.
+        The `input_data` are the discipline inputs completed with the default inputs.
         This method may return the output data.
 
         These input and output data are dictionaries
-        of the form ``{variable_name_without_namespace: variable_value, ...}``.
+        of the form `{variable_name_without_namespace: variable_value, ...}`.
 
-        Using the provided ``input_data`` and also returning the output data
+        Using the provided `input_data` and also returning the output data
         will ensure that the discipline can be used with namespaces.
-        This approach, which appeared in the version 6 of |g|, is preferable.
+        This approach, which appeared in the version 6 of GEMSEO, is preferable.
 
-        As in the |g| versions prior to 6,
-        you can also avoid using ``input_data`` and return output data,
-        and thus leave the body ``_run`` unchanged.
+        As in the GEMSEO versions prior to 6,
+        you can also avoid using `input_data` and return output data,
+        and thus leave the body `_run` unchanged.
         But in that case
         the discipline does not automatically support the use of namespaces.
         For this reason,
@@ -445,9 +470,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         """Rename an input name with a namespace prefix.
 
         The updated input name will be
-        ``namespace``
+        `namespace`
         + :data:`~gemseo.core.namespaces.namespaces_separator`
-        + ``input_name``.
+        + `input_name`.
 
         Args:
             input_name: The input name to rename.
@@ -478,7 +503,7 @@ class BaseDiscipline(BaseMonitoredProcess):
 
     @property
     def default_output_data(self) -> GrammarProperties:
-        """The default output data used when :attr:`.virtual_execution` is ``True``."""
+        """The default output data used when [virtual_execution][gemseo.core.discipline.base_discipline.BaseDiscipline.virtual_execution]. is `True`."""  # noqa: E501
         return self.io.output_grammar.defaults
 
     @default_output_data.setter
@@ -489,9 +514,9 @@ class BaseDiscipline(BaseMonitoredProcess):
         """Rename an output name with a namespace prefix.
 
         The updated output name will be
-        ``namespace``
+        `namespace`
         + :data:`~gemseo.core.namespaces.namespaces_separator`
-        + ``output_name``.
+        + `output_name`.
 
         Args:
             output_name: The output name to rename.

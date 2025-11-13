@@ -88,7 +88,7 @@ def default_dict_factory() -> dict[Any, None]:
 
 # TODO: API: extract to a specific module
 class AssembledJacobianOperator(LinearOperator):  # type: ignore[misc] # because missing types
-    """Representation of the assembled Jacobian as a SciPy ``LinearOperator``."""
+    """Representation of the assembled Jacobian as a SciPy `LinearOperator`."""
 
     __functions: Iterable[str]
     """The names of functions to differentiate."""
@@ -211,7 +211,7 @@ class JacobianAssembly:
         """The available types for the Jacobian matrix."""
 
         LINEAR_OPERATOR = "linear_operator"
-        """Jacobian as a SciPy ``LinearOperator`` implementing the appropriate method to
+        """Jacobian as a SciPy `LinearOperator` implementing the appropriate method to
         perform matrix-vector products."""
 
         MATRIX = "matrix"
@@ -542,7 +542,7 @@ class JacobianAssembly:
         is_residual: bool = False,
         jacobian_type: JacobianType = JacobianType.MATRIX,
     ) -> csr_matrix | AssembledJacobianOperator:
-        """Form the Jacobian as a SciPy ``LinearOperator``.
+        """Form the Jacobian as a SciPy `LinearOperator`.
 
         Args:
             functions: The functions to differentiate.
@@ -650,13 +650,14 @@ class JacobianAssembly:
                 unsupported for linear operator mode.
             exec_cache_tol: The discipline cache tolerance to
                 when calling the linearize method.
-                If ``None``, no tolerance is set (equivalent to tol=0.0).
+                If `None`, no tolerance is set (equivalent to tol=0.0).
             execute: Whether to start by executing the discipline
                 with the input data for which to compute the Jacobian;
                 this allows to ensure that the discipline was executed
                 with the right input data;
                 it can be almost free if the corresponding output data
-                have been stored in the :attr:`.Discipline.cache`.
+                have been stored in the
+                [Discipline.cache][gemseo.core.discipline.discipline.Discipline.cache].
             residual_variables: a mapping of residuals of disciplines to
                 their respective state variables.
             **linear_solver_settings: The options passed to the linear solver factory.
@@ -807,8 +808,9 @@ class JacobianAssembly:
     ) -> None:
         """Set the differentiated inputs and outputs for the Newton algorithm.
 
-        Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
-        the coupling sizes needed for Newton.
+        Also ensures that
+        [sizes][gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.sizes]
+        contains the sizes of all the coupling sizes needed for Newton.
 
         Args:
             couplings: The coupling variables.
@@ -843,7 +845,9 @@ class JacobianAssembly:
             linear_solver: The name of the linear solver.
             matrix_type: The representation of the matrix ∂R/∂y (sparse or
                 linear operator).
-            residuals: The residuals vector, if ``None`` use :attr:`.residuals`.
+            residuals: The residuals vector.
+                If `None`, use
+                [residuals][gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.residuals].
             resolved_residual_names: The names of residual variables.
             **linear_solver_settings: The options passed to the linear solver factory.
 
@@ -925,8 +929,8 @@ class JacobianAssembly:
             show: Whether the plot is displayed.
             save: Whether the plot is saved in a PDF file.
             filepath: The file name to save to.
-                If empty, ``coupled_jacobian.pdf`` is used, otherwise
-                ``coupled_jacobian_ + filepath + .pdf``.
+                If empty, `coupled_jacobian.pdf` is used, otherwise
+                `coupled_jacobian_ + filepath + .pdf`.
             markersize: The size of the markers.
 
         Returns:

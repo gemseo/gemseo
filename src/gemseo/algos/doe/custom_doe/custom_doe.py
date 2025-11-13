@@ -92,8 +92,8 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
             delimiter: The character used to separate values.
             comments:  The characters or list of characters
                 used to indicate the start of a comment.
-                ``None`` implies no comments.
-            skiprows: Skip the first ``skiprows`` lines.
+                `None` implies no comments.
+            skiprows: Skip the first `skiprows` lines.
 
         Returns:
             The samples.
@@ -115,7 +115,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         """
         Raises:
-            ValueError: If the dimension of ``samples`` is different from the
+            ValueError: If the dimension of `samples` is different from the
                 one of the problem.
         """  # noqa: D205, D212, D415
         samples = self._settings.samples

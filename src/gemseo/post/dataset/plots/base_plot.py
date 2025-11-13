@@ -36,9 +36,10 @@ if TYPE_CHECKING:
 class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base plot class.
 
-    A :class:`.DatasetPlot` defines a graphical concept
-    (e.g. radar chart, lines, etc.)
-    while a :class:`.BasePlot` with the same class name implements this concept
+    A [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot]
+    defines a graphical concept (e.g. radar chart, lines, etc.)
+    while a [BasePlot][gemseo.post.dataset.plots.base_plot.BasePlot]
+    with the same class name implements this concept
     from a visualization library.
 
     The graphical concept uses both common settings
@@ -48,7 +49,7 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """
 
     _common_dataset: Dataset
-    """The dataset passed to the :class:`.DatasetPlot`."""
+    """The dataset passed to the [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot]."""  # noqa: E501
 
     _common_settings: PlotSettings
     """The settings common to many plot classes."""
@@ -69,13 +70,14 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
-            dataset: The dataset passed to the :class:`.DatasetPlot`.
-                To be used when an information item is missing in ``*specific_data``.
+            dataset: The dataset passed to the
+                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                To be used when an information item is missing in `*specific_data`.
             common_settings: The settings common to many plot classes.
             specific_settings: The settings specific to this plot class.
             *specific_data: The data specific to this plot class.
             **engine_parameters: The parameters specific to the plot engine.
-        """  # noqa:  D205 D212 D415
+        """  # noqa: D205 D212
         self._common_dataset = dataset
         self._common_settings = common_settings
         self._specific_settings = specific_settings
@@ -107,7 +109,7 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
-                from ``directory_path``, ``file_name`` and ``file_format``.
+                from `directory_path`, `file_name` and `file_format`.
             directory_path: The path of the directory to save the figures.
                 If empty, use the current working directory.
             file_name: The name of the file to save the figures.
@@ -165,7 +167,7 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Return the names of the variables from the columns of a pandas DataFrame.
 
         Args:
-            dataset_columns: The columns of a :class:`.Dataset`.
+            dataset_columns: The [Dataset][gemseo.datasets.dataset.Dataset] columns.
 
         Returns:
             The names of the variables.

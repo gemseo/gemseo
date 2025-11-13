@@ -51,7 +51,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         True: "raw_values",
         False: "uniform_average",
     }
-    """Map from the argument "multioutput" of |g| to that of sklearn."""
+    """Map from the argument "multioutput" of GEMSEO to that of sklearn."""
 
     algo: BaseMLSupervisedAlgo
 
@@ -75,11 +75,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from ``algo.output names`` to quality measures.
+                as a mapping from `algo.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of ``algo.output_names``.
+                according to the order of `algo.output_names`.
         """  # noqa: D205 D212
         self._pre_process(samples)
         return self._post_process_measure(
@@ -102,11 +102,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from ``algo.output names`` to quality measures.
+                as a mapping from `algo.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of ``algo.output_names``.
+                according to the order of `algo.output_names`.
         """  # noqa: D205 D212
         self._pre_process(samples)
         return self._post_process_measure(
@@ -137,11 +137,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from ``algo.output names`` to quality measures.
+                as a mapping from `algo.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of ``algo.output_names``.
+                according to the order of `algo.output_names`.
         """  # noqa: D205 D212
         return self.compute_cross_validation_measure(
             samples=samples,
@@ -165,11 +165,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from ``algo.output names`` to quality measures.
+                as a mapping from `algo.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of ``algo.output_names``.
+                according to the order of `algo.output_names`.
         """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, randomize)
         cross_validation = CrossValidation(samples, n_folds, randomize, seed)
@@ -198,11 +198,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from ``algo.output names`` to quality measures.
+                as a mapping from `algo.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of ``algo.output_names``.
+                according to the order of `algo.output_names`.
         """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, True)
         bootstrap = Bootstrap(samples, n_replicates, seed)
@@ -253,11 +253,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
                 for each component of the outputs.
                 Otherwise, the average quality measure.
             as_dict: Whether the full quality measure is returned
-                as a mapping from ``algo.output names`` to quality measures.
+                as a mapping from `algo.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of ``algo.output_names``.
+                according to the order of `algo.output_names`.
 
         Returns:
             The post-processed measure.

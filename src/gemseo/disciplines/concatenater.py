@@ -94,10 +94,10 @@ class Concatenater(Discipline):
 
         Args:
             input_names: The linearization should be performed with respect
-                to inputs list. If ``None``, linearization should
+                to inputs list. If `None`, linearization should
                 be performed wrt all inputs (Default value = None)
             output_names: The linearization should be performed on outputs list.
-                If ``None``, linearization should be performed
+                If `None`, linearization should be performed
                 on all outputs (Default value = None)
         """
         self._init_jacobian(

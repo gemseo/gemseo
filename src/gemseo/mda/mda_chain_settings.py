@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
-    """The settings for :class:`.MDAChain`."""
+    """The settings for [MDAChain][gemseo.mda.mda_chain.MDAChain]."""
 
     _TARGET_CLASS_NAME = "MDAChain"
 
@@ -54,7 +54,7 @@ while in direct mode, linearizing the chain may be cheaper.""",
         default="MDAJacobi",
         description="""The class name of the inner-MDA.
 
-This field is ignored when ``inner_mda_settings`` is a Pydantic model.""",
+This field is ignored when `inner_mda_settings` is a Pydantic model.""",
     )
 
     inner_mda_settings: StrKeyMapping | BaseMDASettings = Field(
@@ -63,9 +63,11 @@ This field is ignored when ``inner_mda_settings`` is a Pydantic model.""",
 
     initialize_defaults: bool = Field(
         default=False,
-        description="""Whether to create a :class:`.MDOInitializationChain`
-to compute the eventually missing :attr:`.default_inputs` at the first
-execution.""",
+        description="""Whether to create a
+[MDOInitializationChain][gemseo.core.chains.initialization_chain.MDOInitializationChain]
+to compute the eventually missing
+[default_input_data][gemseo.mda.mda_chain.MDAChain.default_input_data]
+at the first execution.""",
     )
 
     mdachain_parallel_settings: StrKeyMapping = Field(
@@ -82,7 +84,7 @@ execution.""",
         default=(),
         description="""The coupling structures to be used by the inner MDAs.
 
-If empty, they are created from ``disciplines``.""",
+If empty, they are created from `disciplines`.""",
     )
 
     _settings_names_to_be_cascaded: ClassVar[Sequence[str]] = [

@@ -33,7 +33,7 @@ def synchronized(wrapped: Callable[..., Any]) -> Callable[..., Any]:
     """A synchronization decorator to avoid concurrent access of critical sections.
 
     The wrapped function must be a method of an object
-    with a :attr:`_lock` attribute
+    with a `_lock` attribute
 
     Args:
         wrapped: The function to be protected.

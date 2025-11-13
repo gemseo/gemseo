@@ -45,8 +45,8 @@ _DEFAULT_POWER: Final[int] = 50
 class DOEMeasures(NamedTuple):
     r"""The quality measures of a DOE.
 
-    Namely :math:`\phi^p`, minimum-distance and discrepancy measures,
-    accessible with the attributes ``discrepancy``, ``mindist`` and ``phip``.
+    Namely $\phi^p$, minimum-distance and discrepancy measures,
+    accessible with the attributes `discrepancy`, `mindist` and `phip`.
 
     The smaller the quality measures, the better,
     except for the minimum-distance criterion for which the larger it is the better.
@@ -83,10 +83,10 @@ class DOEQuality:
         r"""
         Args:
             samples: The input samples of the DOE.
-            power: The power :math:`p` of the :math:`\phi^p` criterion.
+            power: The power $p$ of the $\phi^p$ criterion.
             discrepancy_type_name: The type of discrepancy.
             **discrepancy_options: The options
-                passed to ``scipy.stats.qmc.discrepancy``.
+                passed to `scipy.stats.qmc.discrepancy`.
         """  # noqa: D205, D212, D415
         self.measures = DOEMeasures(
             compute_discrepancy(
@@ -170,7 +170,7 @@ def compute_discrepancy(
     Args:
         samples: The data samples.
         type_name: The type of discrepancy.
-        **options: The options passed to :func:`scipy.stats.qmc.discrepancy`.
+        **options: The options passed to `scipy.stats.qmc.discrepancy()`.
 
     Returns:
         The discrepancy.
@@ -179,13 +179,17 @@ def compute_discrepancy(
 
 
 def compute_phip_criterion(samples: RealArray, power: float = _DEFAULT_POWER) -> float:
-    r"""Compute the math:`\phi^p` criterion of a sample set (the smaller, the better).
+    r"""Compute the $\phi^p$ criterion of a sample set (the smaller, the better).
 
-    See :cite:`morris1995`.
+    !!! quote "References"
+
+        Max D. Morris and Toby J. Mitchell.
+        Exploratory designs for computational experiments.
+        Journal of Statistical Planning and Inference, 1995.
 
     Args:
         samples: The data samples.
-        power: The power :math:`p` of the :math:`\phi^p` criterion.
+        power: The power $p$ of the $\phi^p$ criterion.
 
     Returns:
         The math:`\phi^p` criterion.

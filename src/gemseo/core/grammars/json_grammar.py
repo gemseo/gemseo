@@ -63,14 +63,15 @@ LOGGER = logging.getLogger(__name__)
 class JSONGrammar(BaseGrammar):
     """A grammar based on a JSON schema.
 
-    For the dictionary-like methods similar to ``update``,
+    For the dictionary-like methods similar to `update`,
     when a key exists in both grammars,
     the values can be merged instead of being
-    updated by passing ``merge = True``.
+    updated by passing `merge = True`.
     In that case, the resulting grammar will allow any of the values.
 
-    When using :meth:`.update_from_types`,
-    it is assumed that a grammar element of type ``ndarray`` is a number.
+    When using
+    [update_from_types()][gemseo.core.grammars.json_grammar.JSONGrammar.update_from_types],
+    it is assumed that a grammar element of type `ndarray` is a number.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "JSONGrammarDataConverter"
@@ -86,7 +87,7 @@ class JSONGrammar(BaseGrammar):
 
     This object has its own handling of the required names,
     but it is almost not used since this handling is done in the base class
-    :class:`.BaseGrammar`.
+    [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar].
     Nevertheless, we use the required names that this object can read from
     external sources (json schema from a dict or a file).
     We also need to populate the required names of this object when it is
@@ -127,8 +128,8 @@ class JSONGrammar(BaseGrammar):
         Args:
             file_path: The path to a JSON schema file.
                 If empty, do not initialize the grammar from a JSON schema file.
-            descriptions: The descriptions of the elements read from ``file_path``,
-                in the form: ``{element_name: element_meaning}``.
+            descriptions: The descriptions of the elements read from `file_path`,
+                in the form: `{element_name: element_meaning}`.
                 If empty, use the descriptions available in the JSON schema if any.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
@@ -172,7 +173,8 @@ class JSONGrammar(BaseGrammar):
             merge: Whether to merge or update the grammar.
 
         Raises:
-            TypeError: If the grammar is not a :class:`JSONGrammar`.
+            TypeError: If the grammar is not
+                a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar].
         """  # noqa:D417
         if not isinstance(grammar, JSONGrammar):
             msg = (
@@ -209,7 +211,7 @@ class JSONGrammar(BaseGrammar):
     ) -> None:
         """
         Notes:
-            The types of the values of the ``data`` will be converted
+            The types of the values of the `data` will be converted
             to JSON Schema types and define the elements of the JSON Schema.
         """  # noqa: D205, D212, D415
         self.__schema_builder.add_object(self.__cast_data_mapping(data), not merge)
@@ -354,8 +356,8 @@ class JSONGrammar(BaseGrammar):
         """Return the JSON representation of the grammar schema.
 
         Args:
-            *args: The positional arguments passed to :func:`json.dumps`.
-            **kwargs: The keyword arguments passed to :func:`json.dumps`.
+            *args: The positional arguments passed to `json.dumps()`.
+            **kwargs: The keyword arguments passed to `json.dumps()`.
 
         Returns:
             The JSON representation of the schema.

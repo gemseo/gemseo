@@ -24,6 +24,7 @@ from gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_se
 )
 
 
+# TODO: API: rename to PenaltyHeuristic_Settings
 class PenaltyHeuristicSettings(BaseAugmentedLagragianSettings):
     """The augmented Lagrangian with penalty update settings."""
 

@@ -86,9 +86,9 @@ class OTGaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
         default=None,
         description="""Whether to use the HMAT or LAPACK as linear algebra method.
 
-If ``None``,
+If `None`,
 use HMAT when the learning size is greater than
-:attr:`~.OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK`.""",
+[OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK][gemseo.mlearning.regression.algos.ot_gpr.OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK].""",
     )
 
     trend: Trend = Field(default=Trend.CONSTANT, description="The name of the trend.")
@@ -103,7 +103,7 @@ use HMAT when the learning size is greater than
         description="""The covariance model parameter space.
 
 The size of a variable must take into account the size of the output space.
-If ``None``,
+If `None`,
 the algorithm will use a design space with bounds defined by OpenTURNS.""",
     )
 

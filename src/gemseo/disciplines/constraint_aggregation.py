@@ -60,7 +60,15 @@ class ConstraintAggregation(Discipline):
     adjoint calculation can be performed for the aggregated constraint instead of one
     adjoint per original constraint dimension.
 
-    See :cite:`kennedy2015improved` and :cite:`kreisselmeier1983application`.
+    !!! quote "References"
+
+        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
+
+        Gerhard Kreisselmeier and Reinhold Steinhauser.
+        Application of vector performance optimization
+        to a robust control loop design for a fighter aircraft.
+        International Journal of Control, 37(2):251--284, 1983.
     """
 
     class EvaluationFunction(StrEnum):

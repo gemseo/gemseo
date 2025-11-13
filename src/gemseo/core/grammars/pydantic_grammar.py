@@ -58,7 +58,8 @@ class PydanticGrammar(BaseGrammar):
 
     The Pydantic model passed to the grammar is used to initialize the grammar defaults.
     Currently, changing the defaults will not update the model.
-    Changing the descriptions will update the model when accessing :attr:`.schema`.
+    Changing the descriptions will update the model when accessing
+    [schema][gemseo.core.grammars.pydantic_grammar.PydanticGrammar.schema].
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
@@ -95,7 +96,7 @@ class PydanticGrammar(BaseGrammar):
         """
         Args:
             model: A Pydantic model.
-                If ``None``, the model will be empty.
+                If `None`, the model will be empty.
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
@@ -177,8 +178,8 @@ class PydanticGrammar(BaseGrammar):
     ) -> None:
         """Update the grammar from names bound to types.
 
-        For convenience, when a type is exactly ``ndarray``,
-        it is automatically converted to ``NDArrayPydantic``.
+        For convenience, when a type is exactly `ndarray`,
+        it is automatically converted to `NDArrayPydantic`.
         """
         names_to_annotations = dict(names_to_types)
         for name, annotation in names_to_types.items():
@@ -249,7 +250,7 @@ class PydanticGrammar(BaseGrammar):
         """
         Notes:
             For the elements for which types definitions cannot be expressed as a unique
-            Python type, the type is set to ``None``.
+            Python type, the type is set to `None`.
         """  # noqa: D205, D212, D415
         names_to_types = {}
         for name, field in self.__model.__pydantic_fields__.items():

@@ -18,11 +18,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Binh and Korn multi-objective problem.
 
-This module implements the Binh and Korn multi-objective problem as defined in
-:cite:`binh1997mobes`:
+This module implements the Binh and Korn multi-objective problem:
 
-.. math::
-
+$$
    \begin{aligned}
    \text{minimize the objective function } & f_1(x, y) = 4x^2 + 4y^2 \\
    & f_2(x, y) = (x-5)^2 + (y-5)^2 \\
@@ -34,6 +32,13 @@ This module implements the Binh and Korn multi-objective problem as defined in
    & 0 \leq x \leq 5.0\\
    & 0 \leq y \leq 3.0
    \end{aligned}
+$$
+
+!!! quote "References"
+
+    To Thanh Binh and Ulrich Korn.
+    Mobes: a multiobjective evolution strategy for constrained optimization problems.
+    In The third international conference on genetic algorithms (Mendel 97), 1997.
 """
 
 from __future__ import annotations
@@ -56,8 +61,11 @@ if TYPE_CHECKING:
 class BinhKorn(OptimizationProblem):
     """Binh and Korn optimization problem.
 
-    The constructor initializes the BinhKorn :class:`.OptimizationProblem` by defining
-    the :class:`.DesignSpace`, the objective function and the constraints.
+    The constructor initializes the BinhKorn
+    [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+    by defining
+    the [DesignSpace][gemseo.algos.design_space.DesignSpace],
+    the objective function and the constraints.
     """
 
     def __init__(self, initial_values: FigSizeType = (1.0, 1.0)) -> None:

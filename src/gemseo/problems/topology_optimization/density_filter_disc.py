@@ -41,9 +41,9 @@ class DensityFilter(Discipline):
     """Apply density filter to the design variables of a topology optimization problem.
 
     This helps to avoid checkerboard patterns in density based topology optimization.
-    A filter matrix :math:`H` is assembled at instantiation.
-    The discipline computes the physical density :math:`xPhys` from the design variables
-    :math:`x` with the formula :math:`xPhys=Hx`.
+    A filter matrix $H$ is assembled at instantiation.
+    The discipline computes the physical density $xPhys$ from the design variables
+    $x$ with the formula $xPhys=Hx$.
     This physical density is an approximation of a convolution integral.
     """
 

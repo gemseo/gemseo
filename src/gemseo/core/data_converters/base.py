@@ -50,31 +50,29 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
 
     Typically,
     data are dictionary-like object that map names to values,
-    such as :class:`.DisciplineData`.
+    such as [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData].
 
     By default,
     a data converter can handle the conversion of a data value
-    that is a standard number (``int``, ``float`` and ``complex``) or a 1D NumPy array.
+    that is a standard number (`int`, `float` and `complex`) or a 1D NumPy array.
     Other types could be handled in derived classes.
 
     A data converter can also be used
-    to convert a data structure ``{data_name: data_value, ...}`` to a NumPy array
+    to convert a data structure `{data_name: data_value, ...}` to a NumPy array
     and vice versa.
     In this class,
-    a data structure is noted ``data``.
+    a data structure is noted `data`.
 
     For performance reasons,
     no checking or error handling is done when calling the methods of this class
     or of its derivatives.
 
-    .. note::
-
+    Note:
         The data converter uses a grammar,
         and in particular its mapping from data names to data types,
         to convert a NumPy array from/to a data value.
 
-    .. warning::
-
+    Warning:
         Throughout this class, *NumPy array* is equivalent to *1D numeric NumPy array*.
     """
 
@@ -168,7 +166,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     def get_value_size(cls, name: str, value: ValueType) -> int:
         """Return the size of a data value.
 
-        The size is typically what is returned by ``ndarray.size`` or ``len(list)``.
+        The size is typically what is returned by `ndarray.size` or `len(list)`.
         The size of a number is 1.
 
         Args:
@@ -200,7 +198,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
             data: The data structure.
             names: The data names.
             names_to_sizes: The mapping from the data names to the data sizes.
-               If empty, it will be computed.
+                If empty, it will be computed.
 
         Returns:
             The mapping from the data names to the data slices
@@ -227,7 +225,8 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     ) -> dict[str, int]:
         """Compute a mapping from data names to data value sizes.
 
-        .. seealso:: :meth:`.get_value_size`.
+        See Also:
+            [get_value_size()][gemseo.core.data_converters.base.BaseDataConverter.get_value_size].
 
         Args:
             names: The data names.
@@ -246,7 +245,8 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     ) -> dict[str, ValueType]:
         """Convert a NumPy array to a data structure.
 
-        .. seealso:: :meth:`.convert_array_to_value`
+        See Also:
+            [convert_array_to_value()][gemseo.core.data_converters.base.BaseDataConverter.convert_array_to_value].
 
         Args:
             array: The NumPy array to slice.
@@ -268,7 +268,8 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     ) -> NumberArray:
         """Convert a part of a data structure to a NumPy array.
 
-        .. seealso:: :meth:`.convert_value_to_array`
+        See Also:
+            [convert_value_to_array()][gemseo.core.data_converters.base.BaseDataConverter.convert_value_to_array].
 
         Args:
             data: The data structure.

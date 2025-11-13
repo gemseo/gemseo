@@ -86,7 +86,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
     file_path: str
     """The path to the file where the problem is saved when it is not converged.
 
-    This will be set only if the option ``save_when_fail`` is set to ``True``.
+    This will be set only if the option `save_when_fail` is set to `True`.
     """
 
     __BASE_INFO_MSG: ClassVar[str] = "SciPy linear solver algorithm stop info"

@@ -120,7 +120,7 @@ class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):
             show: Whether to display the graph
                 with the default application associated to the file extension.
             file_path: The file path with extension to save the graph.
-                If ``""``, use the class name with PNG format.
+                If `""`, use the class name with PNG format.
             clean_up: Whether to remove the source files.
         """
         file_path = Path(

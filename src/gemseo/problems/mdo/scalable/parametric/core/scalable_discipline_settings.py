@@ -34,10 +34,10 @@ class ScalableDisciplineSettings(NamedTuple):
     """The configuration of a scalable discipline."""
 
     d_i: int = DEFAULT_D_I
-    r"""The size of local design variable :math:`x_i` specific to this discipline."""
+    r"""The size of local design variable $x_i$ specific to this discipline."""
 
     p_i: int = DEFAULT_P_I
-    r"""The size of the coupling variable :math:`y_i` outputted by this discipline."""
+    r"""The size of the coupling variable $y_i$ outputted by this discipline."""
 
 
 DEFAULT_SCALABLE_DISCIPLINE_SETTINGS = tuple(

@@ -60,7 +60,8 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         """
         Args:
-            cls: The type of :class:`.MDOFunction`.
+            cls: The type of
+                [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction].
             first_operand: The other function or number.
             second_operand: The operator as a function pointer.
             operator: The operator.
@@ -68,7 +69,9 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
 
         Raises:
             TypeError: When the second operand is
-                neither an :class:`.MDOFunction` nor a ``Number``.
+                neither an
+                [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+                nor a `Number`.
             RuntimeError: When one operand expects normalized inputs
                 while the other does not.
         """  # noqa: D205, D212, D415
@@ -191,8 +194,8 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
     def _compute_name(self) -> str:
         """Compute the name of the function.
 
-        Given two functions named ``"f"`` and ``"g"``,
-        the name of the function summing them will be ``"[f+g]"``.
+        Given two functions named `"f"` and `"g"`,
+        the name of the function summing them will be `"[f+g]"`.
 
         Returns:
             The name of the function.

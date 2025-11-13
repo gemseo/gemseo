@@ -34,13 +34,13 @@ class TaylorDiscipline(Discipline):
     r"""The first-order Taylor polynomial of a discipline.
 
     The first-order Taylor polynomial
-    of a function :math:`f`
-    at an expansion point :math:`a`
-    is :math:`f(a)+\sum_{i=1}^d\frac{\partial f(a)}{\partial x_i}(x_i-a_i)`.
+    of a function $f$
+    at an expansion point $a$
+    is $f(a)+\sum_{i=1}^d\frac{\partial f(a)}{\partial x_i}(x_i-a_i)$.
 
     The default output values of this discipline correspond
-    to the first term :math:`f(a)` of this polynomial
-    and can be accessed using ``taylor_discipline.io.output_grammar.defaults``.
+    to the first term $f(a)$ of this polynomial
+    and can be accessed using `taylor_discipline.io.output_grammar.defaults`.
     """
 
     __offset: Mapping[str, NDArray[float]]
@@ -58,15 +58,15 @@ class TaylorDiscipline(Discipline):
         Args:
             discipline: The discipline to be approximated by a Taylor polynomial.
             input_data: The point of expansion.
-                If empty, use the default inputs of ``discipline``.
+                If empty, use the default inputs of `discipline`.
             input_names: The names of the input variables of interest.
-                If empty, use all the input variables of ``discipline``.
+                If empty, use all the input variables of `discipline`.
             output_names: The names of the output variables of interest.
-                If empty, use all the output variables of ``discipline``.
+                If empty, use all the output variables of `discipline`.
 
         Raises:
-            ValueError: If neither ``input_data`` nor
-            ``discipline.io.input_grammar.defaults`` is specified.
+            ValueError: If neither `input_data`
+                nor `discipline.io.input_grammar.defaults` is specified.
         """  # noqa: D205 D212
         all_input_names = set(discipline.io.input_grammar)
         input_names = sorted(input_names or all_input_names)

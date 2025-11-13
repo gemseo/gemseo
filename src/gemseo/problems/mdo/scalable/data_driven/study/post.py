@@ -19,8 +19,11 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Post-processing for scalability study.
 
-The :class:`.PostScalabilityStudy` class implements the way as the set of
-:class:`.ScalabilityResult`-based result files
+The
+[PostScalabilityStudy][gemseo.problems.mdo.scalable.data_driven.study.post.PostScalabilityStudy]
+class implements the way as the set of
+[ScalabilityResult][gemseo.problems.mdo.scalable.data_driven.study.result.ScalabilityResult]
+-based result files
 contained in the study directory are graphically post-processed. This class
 provides several methods to easily change graphical properties, notably
 the plot labels. It also makes it possible to define a cost function per
@@ -29,10 +32,11 @@ of the different disciplines required by an MDO process in an estimation
 of the computational cost associated with what would be a scaled version
 of the true problem.
 
-.. warning::
-
+Warning:
    Comparing MDO formulations in terms of estimated true computational time
-   rather than CPU time of the :class:`.ScalabilityStudy` is highly
+   rather than CPU time of the
+   [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+   is highly
    recommended.
    Indeed, time is often an obviousness criterion to distinguish between
    MDO formulations having the same performance in terms of distance to the
@@ -84,7 +88,7 @@ class PostScalabilityStudy:
         "original_exec_time": "Pseudo-original execution time",
         "n_executions": "Number of discipline evaluations",
         "n_linearizations": "Number of gradient evaluations",
-        "status": "Optimizatin status",
+        "status": "Optimization status",
         "is_feasible": "Feasibility of the solution (0 or 1)",
         "scaling_strategy": "Scaling strategy index",
         "total_calls": "Total number of evaluations",

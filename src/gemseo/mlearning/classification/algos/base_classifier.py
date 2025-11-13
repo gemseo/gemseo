@@ -50,7 +50,7 @@ class BaseClassifier(BaseMLSupervisedAlgo):
     """The base class for classification algorithms."""
 
     n_classes: int
-    """The number of classes computed when calling :meth:`.learn`."""
+    """The number of classes."""
 
     Settings = BaseClassifierSettings
 
@@ -79,9 +79,9 @@ class BaseClassifier(BaseMLSupervisedAlgo):
         """Predict the probability of belonging to each cluster from input data.
 
         The user can specify these input data either as a numpy array,
-        e.g. ``array([1., 2., 3.])``
+        e.g. `array([1., 2., 3.])`
         or as a dictionary,
-        e.g.  ``{'a': array([1.]), 'b': array([2., 3.])}``.
+        e.g.  `{'a': array([1.]), 'b': array([2., 3.])}`.
 
         If the numpy arrays are of dimension 2,
         their i-th rows represent the input data of the i-th sample;

@@ -106,7 +106,7 @@ class MDOChain(ProcessDiscipline):
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
-                If ``None``, use the class name.
+                If `None`, use the class name.
         """  # noqa: D205, D212, D415
         super().__init__(disciplines, name=name)
         self._coupling_structure = None
@@ -277,7 +277,7 @@ class MDOChain(ProcessDiscipline):
 
         Args:
             jacobian: The Jacobian dictionary,
-                which is a nested dictionary as ``{'out': {'in': derivatives}}``.
+                which is a nested dictionary as `{'out': {'in': derivatives}}`.
 
         Returns:
             The deepcopy of the Jacobian dictionary.

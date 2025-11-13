@@ -38,7 +38,7 @@ class QuasiNewtonMethod(StrEnum):
 
 
 class MDAQuasiNewton_Settings(BaseParallelMDASettings):  # noqa: N801
-    """The settings for :class:`.MDAQuasiNewton`."""
+    """The settings for [MDAQuasiNewton][gemseo.mda.quasi_newton.MDAQuasiNewton]."""
 
     _TARGET_CLASS_NAME = "MDAQuasiNewton"
 

@@ -19,30 +19,26 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Burgers dataset.
 
-This :class:`.Dataset` contains solutions to the Burgers' equation with
-periodic boundary conditions on the interval :math:`[0, 2\pi]` for different
+This [Dataset][gemseo.datasets.dataset.Dataset]
+contains solutions to the Burgers' equation with
+periodic boundary conditions on the interval $[0, 2\pi]$ for different
 time steps:
 
-.. math::
-
-   u_t + u u_x = \nu u_{xx},
+$$u_t + u u_x = \nu u_{xx},$$
 
 An analytical expression can be obtained for the solution, using the Cole-Hopf
 transform:
 
-.. math::
+$$u(t, x) = - 2 \nu \frac{\phi'}{\phi},$$
 
-   u(t, x) = - 2 \nu \frac{\phi'}{\phi},
+where $\phi$ is solution to the heat equation
+$\phi_t = \nu \phi_{xx}$.
 
-where :math:`\phi` is solution to the heat equation
-:math:`\phi_t = \nu \phi_{xx}`.
+This [Dataset][gemseo.datasets.dataset.Dataset] is based on a full-factorial
+design of experiments. Each sample corresponds to a given time step $t$,
+while each feature corresponds to a given spatial point $x$.
 
-This :class:`.Dataset` is based on a full-factorial
-design of experiments. Each sample corresponds to a given time step :math:`t`,
-while each feature corresponds to a given spatial point :math:`x`.
-
-`More information about Burgers' equation
-<https://en.wikipedia.org/wiki/Burgers%27_equation>`_
+[More information about Burgers' equation](https://en.wikipedia.org/wiki/Burgers%27_equation)
 """
 
 from __future__ import annotations

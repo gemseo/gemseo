@@ -38,9 +38,9 @@ class Seeder:
 
         Args:
             seed: The seed to be returned.
-                If ``None``,
-                return ``initial_seed + i`` on the i-th call to this method,
-                where ``initial_seed`` is the seed passed at instantiation.
+                If `None`,
+                return `initial_seed + i` on the i-th call to this method,
+                where `initial_seed` is the seed passed at instantiation.
 
         Returns:
             A seed.

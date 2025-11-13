@@ -62,7 +62,7 @@ class LinearDiscipline(Discipline):
         DOK = auto()
 
     _compute_jac_at_run: bool
-    """Whether to compute the Jacobian in the :meth:`._run` method."""
+    """Whether to compute the Jacobian in the `_run()` method."""
 
     def __init__(
         self,
@@ -90,10 +90,10 @@ class LinearDiscipline(Discipline):
                 sparse.
             matrix_free_jacobian: Whether the Jacobians are casted as linear operators.
             compute_jac_at_run: Whether to compute the Jacobian in the
-                :meth:`._run` method.
+                `_run()` method.
 
         Raises:
-            ValueError: if ``input_names`` or ``output_names`` are empty.
+            ValueError: if `input_names` or `output_names` are empty.
         """  # noqa: D205, D212, D415
         if not input_names:
             msg = "input_names must not be empty."

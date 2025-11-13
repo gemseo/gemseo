@@ -39,18 +39,20 @@ class LinearCombination(Discipline):
 
     E.g.,
     a discipline
-    computing the output :math:`y`
-    from :math:`d` inputs :math:`x_1,\ldots,x_d`
+    computing the output $y$
+    from $d$ inputs $x_1,\ldots,x_d$
     with the function
-    :math:`f(x_1,\ldots,x_d)=a_0+\sum_{i=1}^d a_i x_i`.
+    $f(x_1,\ldots,x_d)=a_0+\sum_{i=1}^d a_i x_i$.
 
-    When the offset :math:`a_0` is equal to 0
-    and the coefficients :math:`a_1,\ldots,a_d` are equal to 1,
+    When the offset $a_0$ is equal to 0
+    and the coefficients $a_1,\ldots,a_d$ are equal to 1,
     the discipline simply sums the inputs.
 
     Notes:
         By default,
-        the :class:`.LinearCombination` simply sums the inputs.
+        the
+        [LinearCombination][gemseo.disciplines.linear_combination.LinearCombination]
+        simply sums the inputs.
 
     Examples:
         >>> discipline = LinearCombination(["alpha", "beta", "gamma"], "delta",
@@ -62,10 +64,10 @@ class LinearCombination(Discipline):
     """
 
     __offset: float
-    r"""The offset :math:`a_0` in :math:`a_0+\sum_{i=1}^d a_i x_i`."""
+    r"""The offset $a_0$ in $a_0+\sum_{i=1}^d a_i x_i$."""
 
     __coefficients: dict[str, float]
-    r"""The coefficients :math:`a_1,\ldots,a_d` in :math:`a_0+\sum_{i=1}^d a_i x_i`."""
+    r"""The coefficients $a_1,\ldots,a_d$ in $a_0+\sum_{i=1}^d a_i x_i$."""
 
     __output_name: str
     """The name of the output."""
@@ -85,13 +87,13 @@ class LinearCombination(Discipline):
             output_name: The name of the output variable.
             input_coefficients: The coefficients related to the input variables.
                 If empty,
-                use 1 for all the :math:`d` input variables
-                when ``average`` is ``False``.
-                or :math:`1/d` when ``average`` is ``True``.
+                use 1 for all the $d$ input variables
+                when `average` is `False`.
+                or $1/d$ when `average` is `True`.
             offset: The output value when all the input variables are equal to zero.
             input_size: The size of the inputs.
             average: Whether to average the inputs
-                when ``input_coefficients`` is empty,
+                when `input_coefficients` is empty,
         """  # noqa: D205, D212, D415
         super().__init__()
         input_grammar = self.io.input_grammar

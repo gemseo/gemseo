@@ -17,12 +17,12 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a variable versus two others from a :class:`.Dataset`.
+r"""Draw a variable versus two others from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-A :class:`.ZvsXY` plot represents the variable :math:`z` with respect to
-:math:`x` and :math:`y` as a surface plot, based on a set of points
-:points :math:`\{x_i,y_i,z_i\}_{1\leq i \leq n}`. This interpolation
-relies on the Delaunay triangulation of :math:`\{x_i,y_i\}_{1\leq i \leq n}`
+A [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY]ZvsXY` plot represents the variable $z$
+with respect to $x$ and $y$ as a surface plot, based on a set of points
+:points $\{x_i,y_i,z_i\}_{1\leq i \leq n}$. This interpolation
+relies on the Delaunay triangulation of $\{x_i,y_i\}_{1\leq i \leq n}$
 """
 
 from __future__ import annotations
@@ -58,14 +58,14 @@ class ZvsXY(DatasetPlot):
         """
         Args:
             x: The name of the variable on the x-axis,
-                with its optional component if not ``0``,
-                e.g. ``("foo", 3)`` for the fourth component of the variable ``"foo"``.
+                with its optional component if not `0`,
+                e.g. `("foo", 3)` for the fourth component of the variable `"foo"`.
             y: The name of the variable on the y-axis,
-                with its optional component if not ``0``,
-                e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
+                with its optional component if not `0`,
+                e.g. `("bar", 3)` for the fourth component of the variable `"bar"`.
             z: The name of the variable on the z-axis,
-                with its optional component if not ``0``,
-                e.g. ``("baz", 3)`` for the fourth component of the variable ``"baz"``.
+                with its optional component if not `0`,
+                e.g. `("baz", 3)` for the fourth component of the variable `"baz"`.
             add_points: Whether to display the entries of the dataset as points
                 above the surface.
             fill: Whether to generate a filled contour plot.

@@ -19,44 +19,59 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The base class for probability distributions.
 
-The base class :class:`.BaseDistribution` implements the concept of
-`probability distribution <https://en.wikipedia.org/wiki/Probability_distribution>`_,
+The base class
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+implements the concept of
+[probability distribution](https://en.wikipedia.org/wiki/Probability_distribution),
 which is a mathematical function giving the probabilities of occurrence
 of different possible outcomes of a random variable for an experiment.
-The `normal distribution <https://en.wikipedia.org/wiki/Normal_distribution>`_
+The [normal distribution](https://en.wikipedia.org/wiki/Normal_distribution)
 with its famous *bell curve* is a well-known example of probability distribution.
 
-.. seealso::
-
+See Also:
     This base class is enriched by concrete ones,
-    such as :class:`.OTDistribution` interfacing the OpenTURNS probability distributions
-    and :class:`.SPDistribution` interfacing the SciPy probability distributions.
+    such as
+    [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+    interfacing the OpenTURNS probability distributions
+    and
+    [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+    interfacing the SciPy probability distributions.
 
-The :class:`.BaseDistribution` of a given uncertain variable is built
-from a distribution name (e.g. ``'Normal'`` for OpenTURNS or ``'norm'`` for SciPy),
+The
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+of a given uncertain variable is built
+from a distribution name (e.g. `'Normal'` for OpenTURNS or `'norm'` for SciPy),
 a set of parameters
 and optionally a standard representation of these parameters.
 
-From a :class:`.BaseDistribution`,
-we can easily get statistics, such as :attr:`.mean` and :attr:`.standard_deviation`.
-We can also get the numerical :attr:`.range` and the mathematical :attr:`.support`.
+From a
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution],
+we can easily get statistics, such as
+[mean][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.mean]
+and
+[standard_deviation][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.standard_deviation]
+We can also get the numerical
+[range][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.range]
+and the mathematical
+[support][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.support].
 
-.. note::
-
+Note:
     We call mathematical *support* the set of values that the random variable
-    can take in theory, e.g. :math:`]-\infty,+\infty[` for a Gaussian variable,
+    can take in theory, e.g. $]-\infty,+\infty[$ for a Gaussian variable,
     and numerical *range* the set of values that it can take in practice,
     taking into account the values rounded to zero double precision.
     Both support and range are described in terms of lower and upper bounds
 
 We can also evaluate the cumulative distribution function
-(:meth:`.BaseDistribution.compute_cdf`)
+([compute_cdf()][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.compute_cdf])
 for the different marginals of the random variable,
-as well as the inverse cumulative density function (:meth:`.compute_inverse_cdf`).
-We can also plot them (:meth:`.plot`).
+as well as the inverse cumulative density function
+([compute_inverse_cdf()][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.compute_inverse_cdf]).
 
 Lastly, we can compute realizations of the random variable
-using the :meth:`.compute_samples` method.
+using the
+[compute_samples()][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.compute_samples])
+method.
 """
 
 from __future__ import annotations
@@ -102,7 +117,10 @@ class BaseDistribution(
     By default,
     this base class models the probability distribution of a scalar random variable.
     Child classes need to be adapted to model other types of random variables,
-    e.g. random vectors (see :class:`.BaseJointDistribution`).
+    e.g. random vectors
+    (see
+    [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
+    ).
     """
 
     # TODO: API: rename to settings_class.
@@ -125,9 +143,9 @@ class BaseDistribution(
     """The numerical upper bound of the random variable."""
 
     transformation: str
-    """The transformation applied to the random variable noted ``"x"``.
+    """The transformation applied to the random variable noted `"x"`.
 
-    E.g. ``"sin(x)"``.
+    E.g. `"sin(x)"`.
     """
 
     _ALPHA: Final[str] = "alpha"
@@ -166,26 +184,28 @@ class BaseDistribution(
         Args:
             interfaced_distribution: The name of the probability distribution,
                 typically the name of a class wrapped from an external library,
-                such as ``"Normal"`` for OpenTURNS or ``"norm"`` for SciPy.
+                such as `"Normal"` for OpenTURNS or `"norm"` for SciPy.
             parameters: The parameters of the probability distribution.
             standard_parameters: The parameters of the probability distribution
                 used for string representation only
-                (use ``parameters`` for computation).
-                If empty, use ``parameters`` instead.
+                (use `parameters` for computation).
+                If empty, use `parameters` instead.
                 For instance,
                 let us consider an interfaced distribution
-                named ``"Dirac"``
+                named `"Dirac"`
                 with positional parameters
-                (this is the case of :class:`.OTDistribution`).
+                (this is the case of
+                [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]).
                 Then,
                 the string representation of
-                ``BaseDistribution("x", "Dirac", (1,), 1, {"loc": 1})``
-                is ``"Dirac(loc=1)"``
+                `BaseDistribution("x", "Dirac", (1,), 1, {"loc": 1})`
+                is `"Dirac(loc=1)"`
                 while the string representation of
-                ``BaseDistribution("x", "Dirac", (1,))``
-                is ``"Dirac(1)"``.
+                `BaseDistribution("x", "Dirac", (1,))`
+                is `"Dirac(1)"`.
                 The same mechanism works for keyword parameters
-                (this is the case of :class:`.SPDistribution`).
+                (this is the case of
+                [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]).
             **options: The options of the probability distribution.
         """  # noqa: D205,D212,D415
         self.transformation = self.DEFAULT_VARIABLE_NAME

@@ -24,7 +24,7 @@ from gemseo.mda.composed_mda_settings import ComposedMDASettings
 
 
 class MDASequential_Settings(BaseMDASettings, ComposedMDASettings):  # noqa: N801
-    """The settings for :class:`.MDASequential`."""
+    """The settings for [MDASequental][gemseo.mda.sequential_mda.MDASequential]."""
 
     _TARGET_CLASS_NAME = "MDASequential"
 

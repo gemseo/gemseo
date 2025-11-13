@@ -22,11 +22,10 @@
 The random forest classification model uses averaging methods on an ensemble
 of decision trees.
 
-Dependence
-----------
-The classifier relies on the RandomForestClassifier class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.ensemble.RandomForestClassifier.html>`_.
+## Dependence
+
+The classifier relies on the RandomForestClassifier class of the
+[scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html).
 """
 
 from __future__ import annotations

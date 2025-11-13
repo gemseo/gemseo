@@ -68,7 +68,7 @@ class XDSM:
 
     @property
     def json_schema(self) -> dict[str, Any]:
-        """The JSON schema for `XDSMjs <https://github.com/OneraHub/XDSMjs>`__."""
+        """The JSON schema for [XDSMjs](https://github.com/OneraHub/XDSMjs)."""
         return self.__json_schema
 
     def visualize(self) -> None:

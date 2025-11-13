@@ -63,11 +63,9 @@ class SPDistribution(
 ):
     """A SciPy-based probability distribution.
 
-    .. warning::
-
+    Warning:
        The distribution parameters must be provided according to the signature
-       of the scipy classes. `Access the scipy documentation
-       <https://docs.scipy.org/doc/scipy/reference/stats.html>`_.
+       of the scipy classes. [Access the scipy documentation](https://docs.scipy.org/doc/scipy/reference/stats.html).
 
     Examples:
         >>> from gemseo.uncertainty.distributions.scipy.distribution import (
@@ -97,21 +95,21 @@ class SPDistribution(
         Args:
             standard_parameters: The parameters of the probability distribution
                 used for string representation only
-                (use ``parameters`` for computation).
-                If empty, use ``parameters`` instead.
+                (use `parameters` for computation).
+                If empty, use `parameters` instead.
                 For instance,
-                let us consider the interfaced SciPy distribution ``"uniform"``.
+                let us consider the interfaced SciPy distribution `"uniform"`.
                 Then,
                 the string representation of
-                ``SPDistribution("uniform", parameters, 1, {"min": 1, "max": 3})``
-                with ``parameters={"loc": 1, "scale": 2}``
-                is ``"uniform(max=3, min=1)"``
+                `SPDistribution("uniform", parameters, 1, {"min": 1, "max": 3})`
+                with `parameters={"loc": 1, "scale": 2}`
+                is `"uniform(max=3, min=1)"`
                 while the string representation of
-                ``SPDistribution("uniform", parameters)``
-                is ``"uniform(loc=1, scale=2)"``.
+                `SPDistribution("uniform", parameters)`
+                is `"uniform(loc=1, scale=2)"`.
             settings: The settings of the distributions.
                 If set, the other arguments are ignored.
-                If ``None``, the other arguments are used instead.
+                If `None`, the other arguments are used instead.
         """  # noqa: D205 D212 D415
         if settings is None:
             settings = SPDistribution_Settings(

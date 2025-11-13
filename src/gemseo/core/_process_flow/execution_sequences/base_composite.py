@@ -23,6 +23,7 @@ from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequ
 
 if TYPE_CHECKING:
     from gemseo.core._process_flow.execution_sequences.execution_sequence import Visitor
+    from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
     from gemseo.core.discipline import Discipline
     from gemseo.core.execution_status import ExecutionStatus
 
@@ -53,14 +54,14 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
             sequence.accept(visitor)
 
     @abstractmethod
-    def _accept(self, visitor) -> None:
+    def _accept(self, visitor: Visitor) -> None:
         """Accept a visitor object.
 
         Args:
-            visitor: An object implementing the :meth:`visit_serial` method.
+            visitor: An object implementing the `visit_serial()` method.
         """
 
-    def set_observer(self, obs) -> None:
+    def set_observer(self, obs: BaseExecutionStatusObserver) -> None:
         for sequence in self.sequences:
             sequence.set_observer(obs)
 
@@ -80,7 +81,7 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
             uuids_to_statuses.update(sequence.get_statuses())
         return uuids_to_statuses
 
-    def update_child_status(self, child) -> None:
+    def update_child_status(self, child: BaseExecutionSequence) -> None:
         """Manage status change of child execution sequences.
 
         Propagates status change
@@ -96,7 +97,7 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
             self._parent.update_child_status(self)
 
     @abstractmethod
-    def _update_child_status(self, child):
+    def _update_child_status(self, child: BaseExecutionSequence):
         """Handle child execution change.
 
         Args:

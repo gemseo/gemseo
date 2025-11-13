@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Comment
@@ -34,7 +35,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
 
-def prettify(elem):
+def prettify(elem: Any):
     """Return a pretty-printed XML string for the Element.
 
     Args:

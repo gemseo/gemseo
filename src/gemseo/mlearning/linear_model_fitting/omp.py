@@ -37,22 +37,18 @@ class OrthogonalMatchingPursuit(
     r"""Scikit-learn Orthogonal Matching Pursuit (OMP) algorithm.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm solves a penalized least squares problem of the form:
 
-    .. math::
+    $$\min_w \|Xw-y\|_2^2 \quad \text{s.t.} \quad \|w\|_0\leq \eta$$
 
-       \min_w \|Xw-y\|_2^2 \quad \text{s.t.} \quad \|w\|_0\leq \eta
-
-    where :math:`\eta` is a specific number of non-zero components of :math:`w`.
+    where $\eta$ is a specific number of non-zero components of $w$.
 
     Alternatively:
 
-    .. math::
+    $$\min_w \|w\|_0 \quad \text{s.t.} \quad \|Xw-y\|_2^2\leq \tau$$
 
-       \min_w \|w\|_0 \quad \text{s.t.} \quad \|Xw-y\|_2^2\leq \tau
-
-    where :math:`\tau` is a specific model error.
+    where $\tau$ is a specific model error.
     """
 
     Settings = OrthogonalMatchingPursuit_Settings

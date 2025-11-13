@@ -32,7 +32,7 @@ class BaseScipyODESolverSettings(BaseODESolverSettings):
         default=None,
         description="""The initial step size.
 
-If ``None``, let the algorithm choose.""",
+If `None`, let the algorithm choose.""",
     )
 
     max_step: PositiveFloat = Field(

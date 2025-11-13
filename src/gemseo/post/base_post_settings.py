@@ -43,9 +43,9 @@ class BasePostSettings(BaseSettings):
     file_path: Path | str = Field(
         default="",
         description="The path of the file to save the figures. If the extension is "
-        "missing, use ``file_extension``. "
-        "If empty, create a file path from ``directory_path``, ``file_name`` and "
-        "``file_extension``.",
+        "missing, use `file_extension`. "
+        "If empty, create a file path from `directory_path`, `file_name` and "
+        "`file_extension`.",
     )
     directory_path: Path | str = Field(
         default="",

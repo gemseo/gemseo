@@ -39,24 +39,24 @@ def compute_linear_approximation(
 ) -> MDOLinearFunction:
     r"""Compute a first-order Taylor polynomial of a function.
 
-    :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}`
+    $\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}$
     The first-order Taylor polynomial of a (possibly vector-valued) function
-    :math:`f` at a point :math:`\xref` is defined as
+    $f$ at a point $\xref$ is defined as
 
-    .. math::
-
+    $$
         \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
         f(x)
         \approx
         f(\xref) + \sum_{i = 1}^{\dim} \partialder \, (x_i - \xref_i).
+    $$
 
     Args:
         function: The function to be linearized.
         x_vect: The input vector at which to build the Taylor polynomial.
         name: The name of the linear approximation function.
-            If ``None``, create a name from the name of the function.
+            If `None`, create a name from the name of the function.
         f_type: The type of the linear approximation function.
-            If ``None``, the function will have no type.
+            If `None`, the function will have no type.
         input_names: The names of the inputs of the linear approximation function,
             or a name base.
             If empty, use the names of the inputs of the function.
@@ -96,14 +96,13 @@ def compute_quadratic_approximation(
 
     The function must be scalar-valued.
 
-    :math:`\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}\newcommand{
-    \hessapprox}{\hat{H}}`
-    For a given approximation :math:`\hessapprox` of the Hessian matrix of a
-    function :math:`f` at a point :math:`\xref`, the quadratic approximation of
-    :math:`f` is defined as
+    $\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}\newcommand{
+    \hessapprox}{\hat{H}}$
+    For a given approximation $\hessapprox$ of the Hessian matrix of a
+    function $f$ at a point $\xref$, the quadratic approximation of
+    $f$ is defined as
 
-    .. math::
-
+    $$
         \newcommand{\partialder}{\frac{\partial f}{\partial x_i}(\xref)}
         f(x)
         \approx
@@ -111,6 +110,7 @@ def compute_quadratic_approximation(
         + \sum_{i = 1}^{\dim} \partialder \, (x_i - \xref_i)
         + \frac{1}{2} \sum_{i = 1}^{\dim} \sum_{j = 1}^{\dim}
         \hessapprox_{ij} (x_i - \xref_i) (x_j - \xref_j).
+    $$
 
     Args:
         function: The function to be approximated.

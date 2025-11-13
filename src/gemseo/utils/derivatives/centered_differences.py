@@ -47,9 +47,7 @@ if TYPE_CHECKING:
 class CenteredDifferences(BaseGradientApproximator):
     r"""Centered differences approximator.
 
-    .. math::
-
-        \frac{df(x)}{dx}\approx\frac{f(x+\delta x)-f(x-\delta x)}{2\delta x}
+    $$\frac{df(x)}{dx}\approx\frac{f(x+\delta x)-f(x-\delta x)}{2\delta x}$$
     """
 
     _APPROXIMATION_MODE = ApproximationMode.CENTERED_DIFFERENCES
@@ -118,17 +116,17 @@ class CenteredDifferences(BaseGradientApproximator):
         In this case, take the worst case.
 
         Args:
-            f_p: The value of the function :math:`f`
-                 at the next step :math:`x+\delta_x`.
-            f_0: The value of the function :math:`f`
-                 at the current step :math:`x`.
-            f_m: The value of the function :math:`f`
-                 at the previous step :math:`x-\delta_x`.
+            f_p: The value of the function $f$
+                 at the next step $x+\delta_x$.
+            f_0: The value of the function $f$
+                 at the current step $x$.
+            f_m: The value of the function $f$
+                 at the previous step $x-\delta_x$.
             numerical_error: The numerical error
-                associated to the calculation of :math:`f`.
+                associated to the calculation of $f$.
                 By default, Machine epsilon (appx 1e-16),
                 but can be higher.
-                when the calculation of :math:`f` requires a numerical resolution.
+                when the calculation of $f$ requires a numerical resolution.
 
         Returns:
             The errors.
@@ -163,10 +161,10 @@ class CenteredDifferences(BaseGradientApproximator):
         Args:
             x_vect: The input vector.
             numerical_error: The numerical error
-                associated to the calculation of :math:`f`.
+                associated to the calculation of $f$.
                 By default, machine epsilon (appx 1e-16),
                 but can be higher.
-                when the calculation of :math:`f` requires a numerical resolution.
+                when the calculation of $f$ requires a numerical resolution.
             **kwargs: The additional arguments passed to the function.
 
         Returns:

@@ -50,7 +50,7 @@ def store_h5data(
         group: The group pointer.
         data_array: The data to be stored.
         dataset_name: The name of the dataset to store the array.
-        dtype: Numpy dtype or string. If ``None``, dtype('f') will be used.
+        dtype: Numpy dtype or string. If `None`, dtype('f') will be used.
     """
     if data_array is None or (isinstance(data_array, Iterable) and not len(data_array)):
         return

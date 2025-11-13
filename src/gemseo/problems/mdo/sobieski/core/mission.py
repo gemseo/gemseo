@@ -52,7 +52,7 @@ class SobieskiMission(SobieskiDiscipline):
             w_f: The fuel weight.
 
         Returns:
-            The weight ratio ``w_t/(w_t-w_f)``.
+            The weight ratio `w_t/(w_t-w_f)`.
         """
         return w_t / (w_t - w_f)
 
@@ -68,7 +68,7 @@ class SobieskiMission(SobieskiDiscipline):
             w_f: The fuel weight.
 
         Returns:
-            The derivative of the weight ratio ``w_t/(w_t-w_f)``
+            The derivative of the weight ratio `w_t/(w_t-w_f)`
             with respect to the total weight.
         """
         return -w_f / ((w_t - w_f) * (w_t - w_f))
@@ -85,7 +85,7 @@ class SobieskiMission(SobieskiDiscipline):
             w_f: The fuel weight.
 
         Returns:
-            The derivative of the weight ratio ``w_t/(w_t-w_f)``
+            The derivative of the weight ratio `w_t/(w_t-w_f)`
             with respect to the fuel weight.
         """
         return w_t / ((w_t - w_f) * (w_t - w_f))
@@ -102,7 +102,7 @@ class SobieskiMission(SobieskiDiscipline):
             w_f: The fuel weight.
 
         Returns:
-            The derivative of the logarithm of the weight ratio ``w_t/(w_t-w_f)``
+            The derivative of the logarithm of the weight ratio `w_t/(w_t-w_f)`
             with respect to the total weight.
         """
         return self.__compute_dweightratio_dwt(w_t, w_f) / self.__compute_weight_ratio(
@@ -121,7 +121,7 @@ class SobieskiMission(SobieskiDiscipline):
             w_f: The fuel weight.
 
         Returns:
-            The derivative of the logarithm of the weight ratio ``w_t/(w_t-w_f)``
+            The derivative of the logarithm of the weight ratio `w_t/(w_t-w_f)`
             with respect to the fuel weight.
         """
         return self.__compute_dweightratio_dwf(w_t, w_f) / self.__compute_weight_ratio(
@@ -255,7 +255,7 @@ class SobieskiMission(SobieskiDiscipline):
 
         Args:
             x_shared: The shared design variables.
-            y_14: The total aircraft weight ``y_14[0]`` and the fuel weight ``y_14[1]``.
+            y_14: The total aircraft weight `y_14[0]` and the fuel weight `y_14[1]`.
             y_24: The lift-over-drag ratio.
             y_34: The specific fuel consumption.
 
@@ -317,7 +317,7 @@ class SobieskiMission(SobieskiDiscipline):
 
         Args:
             x_shared: The shared design variables.
-            y_14: The total aircraft weight ``y_14[0]`` and the fuel weight ``y_14[1]``.
+            y_14: The total aircraft weight `y_14[0]` and the fuel weight `y_14[1]`.
             y_24: The lift-over-drag ratio.
             y_34: The specific fuel consumption.
 

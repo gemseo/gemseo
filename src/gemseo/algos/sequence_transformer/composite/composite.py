@@ -66,11 +66,11 @@ class CompositeSequenceTransformer(SequenceTransformer):
         """Compute the next transformed iterate.
 
         Args:
-            iterate: The iterate :math:`G(x_n)`.
-            residual: The associated residual :math:`G(x_n) - x_n`.
+            iterate: The iterate $G(x_n)$.
+            residual: The associated residual $G(x_n) - x_n$.
 
         Returns:
-            The next transformed iterate :math:`x_{n+1}`.
+            The next transformed iterate $x_{n+1}$.
         """
         current_iterate = (iterate - residual).copy()
         next_iterate = iterate.copy()

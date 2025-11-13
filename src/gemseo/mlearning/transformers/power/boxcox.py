@@ -19,19 +19,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""A Box-Cox power transformation.
 
-Transform a variable :math:`x` as:
+Transform a variable $x$ as:
 
-.. math::
-
+$$
    y    & = (x^\lambda - 1) / \lambda,  \text{for } \lambda \neq  0 \\
         & = \log(x), \text{for } \lambda = 0
+$$
 
-Dependence
-----------
-This transformation algorithm relies on the ``PowerTransformer`` class
-of `scikit-learn <https://scikit-learn.org/
-stable/modules/generated/
-sklearn.preprocessing.PowerTransformer.html>`_.
+## Dependence
+
+This transformation algorithm relies on the `PowerTransformer` class
+of
+[scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html).
 """
 
 from __future__ import annotations

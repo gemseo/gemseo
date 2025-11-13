@@ -110,10 +110,10 @@ class BaseBasis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Evaluate the basis functions at different input points.
 
         Args:
-            input_data: The input points, shaped as ``(n_samples, input_dimension)``.
+            input_data: The input points, shaped as `(n_samples, input_dimension)`.
 
         Returns:
-            The output data, shaped as ``(n_samples, n_basis_functions)``.
+            The output data, shaped as `(n_samples, n_basis_functions)`.
         """
         transformed_input_data = self._evaluate_transformation(input_data)
         return hstack([
@@ -125,11 +125,11 @@ class BaseBasis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Evaluate the derivatives of the basis functions at different input points.
 
         Args:
-            input_data: The input points, shaped as ``(n_samples, input_dimension)``.
+            input_data: The input points, shaped as `(n_samples, input_dimension)`.
 
         Returns:
             The Jacobian data,
-            shaped as ``(n_samples, input_dimension, n_basis_functions)``.
+            shaped as `(n_samples, input_dimension, n_basis_functions)`.
         """
         transformed_input_data = self._evaluate_transformation(input_data)
         transformed_input_data_jac = self._differentiate_transformation(input_data)

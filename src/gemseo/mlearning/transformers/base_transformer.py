@@ -19,22 +19,27 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """A transformer to apply operations on NumPy arrays.
 
-The abstract :class:`.BaseTransformer` class implements
+The abstract
+[BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
+class implements
 the concept of a data transformer.
-Inheriting classes shall implement the :meth:`.BaseTransformer.fit`,
-:meth:`.BaseTransformer.transform`
-and possibly :meth:`.BaseTransformer.inverse_transform` methods.
+Inheriting classes shall implement the
+[fit()][gemseo.mlearning.transformers.base_transformer.BaseTransformer.fit],
+[transform()][gemseo.mlearning.transformers.base_transformer.BaseTransformer.transform],
+and possibly
+[inverse_transform()][gemseo.mlearning.transformers.base_transformer.BaseTransformer.inverse_transform],
+methods.
 
-.. seealso::
-
-   :mod:`~gemseo.mlearning.transformers.scaler.scaler`
-   :mod:`~gemseo.mlearning.transformers.dimension_reduction.dimension_reduction`
+See Also:
+   [gemseo.mlearning.transformers.scaler.scaler][gemseo.mlearning.transformers.scaler.scaler]
+   [gemseo.mlearning.transformers.dimension_reduction][gemseo.mlearning.transformers.dimension_reduction]
 """
 
 from __future__ import annotations
 
 from abc import abstractmethod
 from copy import deepcopy
+from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -65,7 +70,7 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The name of the transformer."""
 
     CROSSED: ClassVar[bool] = False
-    """Whether the :meth:`.fit` method requires two data arrays."""
+    """Whether the [fit()][gemseo.mlearning.transformers.base_transformer.BaseTransformer.fit] method requires two data arrays."""  # noqa: E501
 
     def __init__(self, name: str = "", **parameters: ParameterType) -> None:
         """
@@ -100,7 +105,8 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             data: The data to be fitted,
-                shaped as ``(n_observations, n_features)`` or ``(n_observations, )``.
+                shaped as `(n_observations, n_features)` or `(n_observations, )`.
+            *args: The options for the transformer.
         """
         if data.ndim == 1:
             data = data[:, newaxis]
@@ -113,7 +119,7 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Fit the transformer to the data.
 
         Args:
-            data: The data to be fitted, shaped as ``(n_observations, n_features)``.
+            data: The data to be fitted, shaped as `(n_observations, n_features)`.
             *args: The options for the transformer.
         """
 
@@ -123,10 +129,10 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             data: The data to be transformed,
-                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
+                shaped as `(n_observations, n_features)` or `(n_features, )`.
 
         Returns:
-            The transformed data, shaped as ``data``.
+            The transformed data, shaped as `data`.
         """
 
     def inverse_transform(self, data: ndarray) -> NoReturn:
@@ -134,10 +140,10 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             data: The data to be inverse transformed,
-                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
+                shaped as `(n_observations, n_features)` or `(n_features, )`.
 
         Returns:
-            The inverse transformed data, shaped as ``data``.
+            The inverse transformed data, shaped as `data`.
         """
         raise NotImplementedError
 
@@ -146,10 +152,11 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             data: The data to be transformed,
-                shaped as ``(n_observations, n_features)`` or ``(n_observations, )``.
+                shaped as `(n_observations, n_features)` or `(n_observations, )`.
+            *args: The options for the transformer.
 
         Returns:
-            The transformed data, shaped as ``data``.
+            The transformed data, shaped as `data`.
         """
         if data.ndim == 1:
             data = data[:, newaxis]
@@ -158,26 +165,26 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self.transform(data)
 
     def compute_jacobian(self, data: RealArray) -> NoReturn:
-        """Compute the Jacobian of :meth:`.transform`.
+        """Compute the Jacobian of the transformation.
 
         Args:
             data: The data where the Jacobian is to be computed,
-                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
+                shaped as `(n_observations, n_features)` or `(n_features, )`.
 
         Returns:
-            The Jacobian matrix, shaped according to ``data``.
+            The Jacobian matrix, shaped according to `data`.
         """
         raise NotImplementedError
 
     def compute_jacobian_inverse(self, data: RealArray) -> NoReturn:
-        """Compute the Jacobian of the :meth:`.inverse_transform`.
+        """Compute the Jacobian of the inverse transformation.
 
         Args:
             data: The data where the Jacobian is to be computed,
-                shaped as ``(n_observations, n_features)`` or ``(n_features, )``.
+                shaped as `(n_observations, n_features)` or `(n_features, )`.
 
         Returns:
-            The Jacobian matrix, shaped according to ``data``..
+            The Jacobian matrix, shaped according to `data`.
         """
         raise NotImplementedError
 
@@ -186,27 +193,34 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _use_2d_array(
-        f: Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any],
-    ) -> Callable[[ndarray, ParamSpecArgs, ParamSpecKwargs], Any]:
+        f: Callable[[BaseTransformer, ndarray, ParamSpecArgs, ParamSpecKwargs], Any],
+    ) -> Callable[[BaseTransformer, ndarray, ParamSpecArgs, ParamSpecKwargs], Any]:
         """Force the NumPy array passed to a function as 1st argument to be at least 2D.
 
         Args:
             f: The function.
+
+        Returns:
+            The function `f` using at least 2D NumPy arrays.
         """
 
-        def g(self, data: ndarray, *args: Any, **kwargs: Any) -> Any:
-            """Force a NumPy array to be at least 2D and evaluate the function ``f``.
+        @wraps(f)
+        def g(
+            transformer: BaseTransformer, data: ndarray, *args: Any, **kwargs: Any
+        ) -> Any:
+            """Force a NumPy array to be at least 2D and evaluate the function `f`.
 
-            ``f`` expects a 2D array shaped as ``(n_points, input_dimension)``
-            and returns a nD arrays shaped as ``(..., n_points, output_dimension)``
-            or ``(..., n_points, output_dimension, input_dimension)``.
+            `f` expects a 2D array shaped as `(n_points, input_dimension)`
+            and returns a nD arrays shaped as `(..., n_points, output_dimension)`
+            or `(..., n_points, output_dimension, input_dimension)`.
 
-            If the original ``data`` is a 1D array shaped as ``(input_dimension,)``,
+            If the original `data` is a 1D array shaped as `(input_dimension,)`,
             then
-            this wrapper returns a (n-1)D array shaped as ``(..., output_dimension)``
-            or ``(..., output_dimension, intput_dimension)``.
+            this wrapper returns a (n-1)D array shaped as `(..., output_dimension)`
+            or `(..., output_dimension, intput_dimension)`.
 
             Args:
+                transformer: The transformer whose method is decorated.
                 data: A NumPy array.
                 *args: The positional arguments.
                 **kwargs: The optional arguments.
@@ -214,14 +228,14 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
             Returns:
                 Any kind of output;
                 if a NumPy array,
-                its dimension is made consistent with the shape of ``data``.
+                its dimension is made consistent with the shape of `data`.
             """
             if data.ndim >= 2:
                 # data has already at least 2 dimensions.
-                return f(self, data, *args, **kwargs)
+                return f(transformer, data, *args, **kwargs)
 
             # Force data to have at least 2 dimensions.
-            out = f(self, atleast_2d(data), *args, **kwargs)
+            out = f(transformer, atleast_2d(data), *args, **kwargs)
             if not isinstance(out, ndarray):
                 return out
 

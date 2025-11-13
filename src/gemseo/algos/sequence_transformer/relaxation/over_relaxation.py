@@ -43,7 +43,7 @@ class OverRelaxation(SequenceTransformer):
             factor: The relaxation factor lying within ]0, 2].
 
         Raises:
-            ValueError if the provided relaxation factor lies outside ]0, 2].
+            ValueError: If the provided relaxation factor lies outside ]0, 2].
         """  # noqa:D205 D212 D415
         super().__init__()
 

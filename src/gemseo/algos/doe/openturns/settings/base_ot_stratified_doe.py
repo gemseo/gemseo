@@ -42,9 +42,9 @@ If 0, set from the options.""",
 
 In the case of axial, composite and factorial DOEs, the positions of the levels
 relative to the center; the levels will be equispaced and symmetrical relative
-to the center; e.g. ``[0.2, 0.8]`` in dimension 1 will generate the samples
-``[0.15, 0.6, 0.75, 0.8, 0.95, 1]`` for an axial DOE; the values must be in
-:math:`]0,1]`.
+to the center; e.g. `[0.2, 0.8]` in dimension 1 will generate the samples
+`[0.15, 0.6, 0.75, 0.8, 0.95, 1]` for an axial DOE; the values must be in
+$]0,1]$.
 
 In the case of a full-factorial DOE, the number of levels per input direction;
 if scalar, this value is applied to each input direction.
@@ -57,6 +57,6 @@ if scalar, this value is applied to each input direction.
 
 This option is available for the axial, composite and factorial DOE
 algorithm. If scalar, this value is applied to each direction of the
-hypercube; the values must be in :math:`]0,1[`.
+hypercube; the values must be in $]0,1[$.
 """,
     )

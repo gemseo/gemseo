@@ -122,28 +122,28 @@ class SpringODEDiscipline(ODEDiscipline):
         mass: float,
         times: RealArray,
     ) -> RealArray:
-        r"""Compute the analytic position of the mass :math:`m`.
+        r"""Compute the analytic position of the mass $m$.
 
         The equation describing the motion of the mass is
 
-        .. math::
-
+        $$
            \left\{ \begin{cases}
                \dot{x} &= y \\
                \dot{y} &= \frac{k_1 + k_2}{m} x
            \end{cases} \right.
+        $$
 
-        where :math:`k_1` and :math:`k_2` are the stiffnesses of the springs.
+        where $k_1$ and $k_2$ are the stiffnesses of the springs.
 
-        If :math:`x(t=0) = x_0` and :math:`y(t=0) = y_0`, then the general expression
-        for the position :math:`x(t)` at time :math:`t` is
+        If $x(t=0) = x_0$ and $y(t=0) = y_0$, then the general expression
+        for the position $x(t)$ at time $t$ is
 
-        .. math::
-
+        $$
             x(t) = \frac{1}{2}\big( x + \frac{y_0}{\omega} \big) \exp^{i\omega t}
                 + \frac{1}{2}\big( x - \frac{y_0}{\omega} \big) \exp^{-i\omega t}
+        $$
 
-        with :math:`\omega = \frac{-k_1+k_2}{m}`.
+        with $\omega = \frac{-k_1+k_2}{m}$.
 
         Args:
             initial_position: The initial position.

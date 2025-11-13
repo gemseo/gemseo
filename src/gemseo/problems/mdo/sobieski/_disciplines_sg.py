@@ -68,7 +68,7 @@ class SobieskiDisciplineWithSimpleGrammar(Discipline):
         self.dtype = dtype
 
     def _set_default_inputs(self) -> None:
-        """Set the default inputs from the grammars and the :class:`SobieskiProblem`."""
+        """Set the default inputs from the grammars and the `SobieskiProblem`."""
         self.io.input_grammar.defaults = self.sobieski_problem.get_default_inputs(
             self.io.input_grammar
         )
@@ -81,9 +81,9 @@ class SobieskiMissionSG(SobieskiDisciplineWithSimpleGrammar):
     """
 
     enable_delay: bool | float
-    """If ``True``, wait one second before computation.
+    """If `True`, wait one second before computation.
 
-    If a positive number, wait the corresponding number of seconds. If ``False``,
+    If a positive number, wait the corresponding number of seconds. If `False`,
     compute directly.
     """
 

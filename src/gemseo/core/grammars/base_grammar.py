@@ -67,16 +67,19 @@ class BaseGrammar(
     can validate a data from these elements.
 
     The names can include any character
-    except the special character :attr:`.namespaces_separator` (default: ``":"``)
+    except the special character
+    [namespaces_separator][gemseo.core.namespaces.namespaces_separator]
+    (default: `":"`).
 
     Notes:
-        Contrary to the standard dictionary, the :meth:``.copy`` method creates
-        a deep copy.
+        Contrary to the standard dictionary,
+        the `copy()` function creates a deep copy.
 
-    Warnings:
+    Warning:
         A name can be prefixed by a namespace.
         Never add a namespace by any other means
-        than the method :meth:`.add_namespace`.
+        than the method
+        [add_namespace()][gemseo.core.grammars.base_grammar.BaseGrammar.add_namespace].
     """
 
     name: str
@@ -294,7 +297,7 @@ class BaseGrammar(
     ) -> None:
         """Update the grammar from another grammar.
 
-        If ``grammar`` has namespaces, they will be added to the current grammar.
+        If `grammar` has namespaces, they will be added to the current grammar.
 
         Args:
             grammar: The grammar to update from.
@@ -376,7 +379,7 @@ class BaseGrammar(
 
         Args:
             data: The data from which to get the names and types,
-                typically ``{element_name: element_value}``.
+                typically `{element_name: element_value}`.
             merge: Whether to merge or update the grammar.
         """
         if not data:
@@ -395,7 +398,7 @@ class BaseGrammar(
 
         Args:
             data: The data from which to get the names and types,
-                typically ``{element_name: element_value}``.
+                typically `{element_name: element_value}`.
             merge: Whether to merge or update the grammar.
         """
         self._update_from_types(
@@ -442,12 +445,12 @@ class BaseGrammar(
 
         Args:
             data: The data to be checked,
-                with a dictionary-like format: ``{element_name: element_value}``.
+                with a dictionary-like format: `{element_name: element_value}`.
             raise_exception: Whether to raise an exception when the validation fails.
 
         Raises:
-            InvalidDataError: If the validation fails and ``raise_exception`` is
-                ``True``.
+            InvalidDataError: If the validation fails and `raise_exception` is
+                `True`.
         """
         error_message = MultiLineString()
         error_message.add(f"Grammar {self.name}: validation failed.")
@@ -486,15 +489,15 @@ class BaseGrammar(
         return self._data_converter
 
     def to_simple_grammar(self) -> SimpleGrammar:
-        """Convert the grammar to a :class:`.SimpleGrammar`.
+        """Convert the grammar to a simple grammar.
 
-        .. warning::
+        Warning:
             Types in simple grammars are not as precise as for other grammars.
-            Thus data that are invalid with a given grammar may be valid
+            Thus, data that are invalid with a given grammar may be valid
             with a simple grammar obtained from the current method.
 
         Returns:
-            A :class:`.SimpleGrammar` version of the current grammar.
+            A simple grammar version of the current grammar.
         """
         from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
@@ -512,7 +515,7 @@ class BaseGrammar(
         """Create the mapping from element names to elements types.
 
         The elements for which types definitions cannot be expressed as a unique Python
-        type, the type is set to ``None``.
+        type, the type is set to `None`.
 
         Returns:
             The mapping from element names to elements types.
@@ -602,10 +605,11 @@ class BaseGrammar(
         """Add a namespace prefix to an existing grammar element.
 
         For example,
-        the grammar element named ``"foo"`` will be renamed to ``"ns:foo"
-        when using the namespace named ``"ns"``.
-        ``":"`` is the default value
-        of the special character :attr:`.namespaces_separator`.
+        the grammar element named `"foo"` will be renamed to `"ns:foo"
+        when using the namespace named `"ns"`.
+        `":"` is the default value
+        of the special character
+        [namespaces_separator][gemseo.core.namespaces.namespaces_separator].
 
         Args:
             name: The element name to rename.
@@ -614,17 +618,18 @@ class BaseGrammar(
         Raises:
             ValueError: If the element already has a namespace prefix.
 
-        Warnings:
+        Warning:
            Never add a namespace by any other means
-           than the method :meth:`.add_namespace`,
+           than the method
+           [add_namespace()][gemseo.core.grammars.base_grammar.BaseGrammar.add_namespace],
            e.g. do not write
-           ``my_discipline.io.input_grammar.update_from_names(["ns:foo"])``,
+           `my_discipline.io.input_grammar.update_from_names(["ns:foo"])`,
            but write instead:
 
-            .. code-block:: python
-
+           ```python
                my_discipline.io.input_grammar.update_from_names(["foo"])
-               my_discipline.io.input_grammar.add_namespace("foo", "ns")``.
+               my_discipline.io.input_grammar.add_namespace("foo", "ns").
+           ```
         """
         self._check_name(name)
 

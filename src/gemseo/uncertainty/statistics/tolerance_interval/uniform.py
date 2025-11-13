@@ -76,7 +76,7 @@ class UniformToleranceInterval(BaseToleranceInterval):
 
         Args:
             coverage: A minimum percentage of belonging to the TI.
-            alpha: ``1-alpha`` is the level of confidence in [0,1].
+            alpha: `1-alpha` is the level of confidence in [0,1].
             size: The number of samples.
 
         Returns:

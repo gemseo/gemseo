@@ -55,8 +55,8 @@ T = TypeVar("T", bound=BaseAugmentedLagragianSettings)
 class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
     """This is an abstract base class for augmented lagrangian optimization algorithms.
 
-    The abstract methods :func:`_update_penalty` and
-    :func:`_update_lagrange_multipliers` need to be implemented by derived classes.
+    The abstract methods `_update_penalty()` and
+    `_update_lagrange_multipliers()` need to be implemented by derived classes.
     """
 
     __n_obj_func_calls: int

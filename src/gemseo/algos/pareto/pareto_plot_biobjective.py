@@ -45,7 +45,7 @@ class ParetoPlotBiObjective:
     ) -> None:
         """
         Args:
-            ax: The :class:`~matplotlib.axes.Axes` on which to plot.
+            ax: The [Axes][matplotlib.axes.Axes] on which to plot.
             obj_values: The objective function array, of size (n_samples, n_objs).
             pareto_optimal_loc: A vector of booleans of size n_samples,
                 True if the point is Pareto optimal.

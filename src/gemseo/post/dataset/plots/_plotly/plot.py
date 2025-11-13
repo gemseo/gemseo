@@ -57,7 +57,7 @@ class PlotlyPlot(BasePlot):
         """
         Args:
             fig: A Plotly figure.
-                If ``None``, create a new one.
+                If `None`, create a new one.
         """  # noqa: D205 D212 D415
         super().__init__(dataset, common_settings, specific_settings, fig=fig)
         self.__figure = self._create_figure(fig or Figure(), *specific_data)

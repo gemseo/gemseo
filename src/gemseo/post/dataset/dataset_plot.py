@@ -17,14 +17,17 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An abstract class to plot data from a :class:`.Dataset`.
+"""An abstract class to plot data from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-The :mod:`~gemseo.post.dataset.dataset_plot` module implements the abstract
-:class:`.DatasetPlot` class whose purpose is to build a graphical representation of a
-:class:`.Dataset` and to display it on screen or save it to a file.
+The [gemseo.post.dataset.dataset_plot][gemseo.post.dataset.dataset_plot] module
+implements the abstract
+[DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot] class
+whose purpose is to build a graphical representation of a
+[Dataset][gemseo.datasets.dataset.Dataset]
+and to display it on screen or save it to a file.
 
 This abstract class has to be overloaded by concrete ones implementing at least method
-:meth:`!DatasetPlot._run`.
+`DatasetPlot._run()`.
 """
 
 from __future__ import annotations
@@ -79,7 +82,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """The variable names bound to the variable labels."""
 
     __specific_data: tuple[Any, ...]
-    """The data pre-processed specifically for this :class:`.DatasetPlot`."""
+    """The data pre-processed specifically for this `DatasetPlot`."""
 
     class PlotEngine(StrEnum):
         """An engine of plots."""
@@ -95,9 +98,12 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     }
     """The file formats bound to the engines of plots.
 
-    The method :meth:`.execute` uses this dictionary
-    to select the engine of plots associated with its ``file_format`` argument.
-    If missing, the method uses the :attr:`.DEFAULT_PLOT_ENGINE`.
+    The method
+    [execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute]
+    uses this dictionary
+    to select the engine of plots associated with its `file_format` argument.
+    If missing, the method uses the
+    [DEFAULT_PLOT_ENGINE][gemseo.post.dataset.dataset_plot.DatasetPlot.DEFAULT_PLOT_ENGINE].
     """
 
     def __init__(
@@ -138,7 +144,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     def color(self) -> str | list[str]:
         """The color.
 
-        Either a global one or one per item if ``n_items`` is non-zero.
+        Either a global one or one per item if `n_items` is non-zero.
         If empty, use a default one.
         """
         return self._common_settings.color
@@ -178,7 +184,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     def linestyle(self) -> str | Sequence[str]:
         """The line style.
 
-        Either a global one or one per item if ``n_items`` is non-zero.
+        Either a global one or one per item if `n_items` is non-zero.
         If empty, use a default one.
         """
         return self._common_settings.linestyle
@@ -191,7 +197,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     def marker(self) -> str | Sequence[str]:
         """The marker.
 
-        Either a global one or one per item if ``n_items`` is non-zero.
+        Either a global one or one per item if `n_items` is non-zero.
         If empty, use a default one.
         """
         return self._common_settings.marker
@@ -220,7 +226,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def rmin(self) -> float | None:
-        """The minimum value on the r-axis; if ``None``, compute it from data."""
+        """The minimum value on the r-axis; if `None`, compute it from data."""
         return self._common_settings.rmin
 
     @rmin.setter
@@ -229,7 +235,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def rmax(self) -> float | None:
-        """The maximum value on the r-axis; if ``None``, compute it from data."""
+        """The maximum value on the r-axis; if `None`, compute it from data."""
         return self._common_settings.rmax
 
     @rmax.setter
@@ -238,7 +244,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def xmin(self) -> float | None:
-        """The minimum value on the x-axis; if ``None``, compute it from data."""
+        """The minimum value on the x-axis; if `None`, compute it from data."""
         return self._common_settings.xmin
 
     @xmin.setter
@@ -247,7 +253,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def xmax(self) -> float | None:
-        """The maximum value on the x-axis; if ``None``, compute it from data."""
+        """The maximum value on the x-axis; if `None`, compute it from data."""
         return self._common_settings.xmax
 
     @xmax.setter
@@ -256,7 +262,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def ymin(self) -> float | None:
-        """The minimum value on the y-axis; if ``None``, compute it from data."""
+        """The minimum value on the y-axis; if `None`, compute it from data."""
         return self._common_settings.ymin
 
     @ymin.setter
@@ -265,7 +271,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def ymax(self) -> float | None:
-        """The maximum value on the y-axis; if ``None``, compute it from data."""
+        """The maximum value on the y-axis; if `None`, compute it from data."""
         return self._common_settings.ymax
 
     @ymax.setter
@@ -274,7 +280,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def zmin(self) -> float | None:
-        """The minimum value on the z-axis; if ``None``, compute it from data."""
+        """The minimum value on the z-axis; if `None`, compute it from data."""
         return self._common_settings.zmin
 
     @zmin.setter
@@ -283,7 +289,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def zmax(self) -> float | None:
-        """The maximum value on the z-axis; if ``None``, compute it from data."""
+        """The maximum value on the z-axis; if `None`, compute it from data."""
         return self._common_settings.zmax
 
     @zmax.setter
@@ -382,7 +388,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
-                from ``directory_path``, ``file_name`` and ``file_format``.
+                from `directory_path`, `file_name` and `file_format`.
             directory_path: The path of the directory to save the figures.
                 If empty, use the current working directory.
             file_name: The name of the file to save the figures.
@@ -421,7 +427,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         return self.__figures
 
     def _create_specific_data_from_dataset(self) -> tuple[Any, ...]:
-        """Pre-process the dataset specifically for this type of :class:`.DatasetPlot`.
+        """Pre-process the dataset specifically for this type of `DatasetPlot`.
 
         Returns:
             The data resulting from the pre-processing of the dataset.
@@ -476,7 +482,7 @@ class DatasetPlot(metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             variable: The name of a variable,
                 either a string (e.g. "x")
-                or a tuple formatted as ``(group_name, variable_name, component)``.
+                or a tuple formatted as `(group_name, variable_name, component)`.
 
         Returns:
             The label related to a variable, e.g. "x[0]",

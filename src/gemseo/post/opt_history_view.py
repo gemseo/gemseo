@@ -277,10 +277,10 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             obj_history: The history of the objective function.
             n_iter: The number of iterations.
             obj_max: The maximum value for the objective in the plot.
-                If ``None``, use the maximum value of the objective history.
+                If `None`, use the maximum value of the objective history.
             obj_min: The minimum value for the objective in the plot.
-                If ``None``, use the minimum value of the objective history.
-            obj_relative: If ``True``, plot the objective value difference
+                If `None`, use the minimum value of the objective history.
+            obj_relative: If `True`, plot the objective value difference
                 with the initial value.
             x_xstar: The distance between the designs and the optimum design.
         """

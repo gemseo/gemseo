@@ -19,8 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Utility functions and classes to handle namespaces.
 
-The namespaces implementation itself is mainly in :mod:`~gemseo.core.grammars` and
-:mod:`~gemseo.core.discipline`
+The namespaces implementation itself is mainly in
+[gemseo.core.grammars][gemseo.core.grammars] and
+[gemseo.core.discipline][gemseo.core.discipline].
 """
 
 from __future__ import annotations
@@ -37,15 +38,16 @@ MutableNamespacesMapping = MutableMapping[str, str | list[str]]
 NamespacesMapping = Mapping[str, str | list[str]]
 
 namespaces_separator = ":"
+"""The special character for separating namespace and variable name."""
 
 
 def split_namespace(name: str) -> list[str]:
     """Return the (namespace, name) pair from a data name.
 
-    For instance if data_name = ``my:namespace:a`` and the separator is ``:``,
-    returns (``my:namespace``,``a``).
+    For instance if data_name = `my:namespace:a` and the separator is `:`,
+    returns (`my:namespace`,`a`).
 
-    If there is no namespace prefix in ``data_name``, returns ``data_name``.
+    If there is no namespace prefix in `data_name`, returns `data_name`.
 
     In case data_name contains the namespace separator but empty name,
     or empty namespace,

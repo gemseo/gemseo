@@ -39,34 +39,33 @@ if TYPE_CHECKING:
 class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     r"""A vector sequence transformer for fixed-point iteration method.
 
-    For any function :math:`G : \mathbb{R}^n \rightarrow \mathbb{R}^n`, the fixed point
-    iteration method computes the sequence :math:`x_{n+1} = G(x_n)`, whih is exepcted to
-    converge towards a fixed point of :math:`G`.
+    For any function $G : \mathbb{R}^n \rightarrow \mathbb{R}^n$, the fixed point
+    iteration method computes the sequence $x_{n+1} = G(x_n)$, whih is exepcted to
+    converge towards a fixed point of $G$.
 
-    A sequence transformer is a function :math:`f : \mathbb{R}^n \rightarrow
-    \mathbb{R}^n` so that the new iterate is instead computed as
-    .. math::
+    A sequence transformer is a function $f : \mathbb{R}^n \rightarrow
+    \mathbb{R}^n$ so that the new iterate is instead computed as
 
-        x_{n+1}' = f(G, x_n, \dots, x_{n-k}, G(x_n)),
+    $$x_{n+1}' = f(G, x_n, \dots, x_{n-k}, G(x_n)),$$
 
-    for a given :math:`k \geq 0`.
+    for a given $k \geq 0$.
 
     The transformed sequence is expected to exhibit faster convergence and/or better
     numerical stability.
     """
 
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int]
-    """The minimum number of :math:`G(x_i)` required to compute the transformation."""
+    """The minimum number of $G(x_i)$ required to compute the transformation."""
 
     _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int]
-    """The minimum number of residuals :math:`G(x_i) - x_i` required to compute the
+    """The minimum number of residuals $G(x_i) - x_i$ required to compute the
     transformation."""
 
     _iterates: deque
-    """The previously computed iterates :math:`G(x_i)`."""
+    """The previously computed iterates $G(x_i)$."""
 
     _residuals: deque
-    """The previously computed residuals :math:`G(x_i) - x_i`."""
+    """The previously computed residuals $G(x_i) - x_i$."""
 
     lower_bound: RealArray | None
     """The lower bound for the transformed iterates."""
@@ -95,11 +94,11 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Compute the next transformed iterate.
 
         Args:
-            iterate: The iterate :math:`G(x_n)`.
-            residual: The associated residual :math:`G(x_n) - x_n`.
+            iterate: The iterate $G(x_n)$.
+            residual: The associated residual $G(x_n) - x_n$.
 
         Returns:
-            The next transformed iterate :math:`x_{n+1}`.
+            The next transformed iterate $x_{n+1}$.
         """
         # Store iterates and residuals
         self._iterates.append(iterate.copy())

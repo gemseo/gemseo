@@ -1,5 +1,5 @@
 include:
-  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/4/main.yml"
+  - remote: "https://gitlab.com/gemseo/dev/ci-includes/-/raw/5/main.yml"
 
 .test-min-tags:
   - saas-linux-medium-amd64

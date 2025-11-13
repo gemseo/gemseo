@@ -35,7 +35,7 @@ class NLOPT_COBYLA_Settings(BaseGradientFreeNLoptSettings):  # noqa: N801
         description=(
             """The seed for the pseudo-randomization of simplex steps.
 
-If ``None``, the seed is generated from the system time.
+If `None`, the seed is generated from the system time.
 """
         ),
     )

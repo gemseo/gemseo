@@ -54,13 +54,13 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
     (white) or violated (red).
 
     A horizontal black line indicates the value for which an inequality constraint is
-    active or an equality constraint is satisfied, namely :math:`0`. A horizontal black
+    active or an equality constraint is satisfied, namely $0$. A horizontal black
     dashed line indicates the value below which an inequality constraint is satisfied
-    *with a tolerance level*, namely :math:`\varepsilon`.
+    *with a tolerance level*, namely $\varepsilon$.
 
     For an equality constraint, the horizontal dashed black lines indicate the values
     between which the constraint is satisfied *with a tolerance level*, namely
-    :math:`-\varepsilon` and :math:`\varepsilon`.
+    $-\varepsilon$ and $\varepsilon$.
 
     A vertical black line indicates the last iteration (or pseudo-iteration) where the
     constraint is (or should be) active.
@@ -71,7 +71,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
     def _plot(self, settings: ConstraintsHistory_Settings) -> None:
         """
         Raises:
-            ValueError: When an item of ``constraint_names`` is not a constraint name.
+            ValueError: When an item of `constraint_names` is not a constraint name.
         """  # noqa: D205, D212, D415
         constraint_names = settings.constraint_names
         line_style = settings.line_style

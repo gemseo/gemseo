@@ -170,8 +170,8 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         The keys are the names of the optimization result fields,
         except for the constraint values and gradients.
-        The key ``"constr:y"`` maps to ``result.constraint_values["y"]``
-        while ``"constr_grad:y"`` maps to ``result.constraints_grad["y"]``.
+        The key `"constr:y"` maps to `result.constraint_values["y"]`
+        while `"constr_grad:y"` maps to `result.constraints_grad["y"]`.
 
         Returns:
             A dictionary representation of the optimization result.
@@ -197,10 +197,10 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
             dict_: The dictionary representation of the optimization result.
                 The keys are the names of the optimization result fields,
                 except for the constraint values and gradients.
-                The value associated with the key ``"constr:y"``
-                will be stored in ``result.constraint_values["y"]``
-                while the value associated with the key ``"constr_grad:y"``
-                will be stored in ``result.constraints_grad["y"]``.
+                The value associated with the key `"constr:y"`
+                will be stored in `result.constraint_values["y"]`
+                while the value associated with the key `"constr_grad:y"`
+                will be stored in `result.constraints_grad["y"]`.
 
         Returns:
             An optimization result.
@@ -225,15 +225,16 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @classmethod
     def from_optimization_problem(
-        cls, problem: OptimizationProblem, **fields_
+        cls, problem: OptimizationProblem, **fields_: Any
     ) -> OptimizationResult:
         """Create an optimization result from an optimization problem.
 
         Args:
             problem: The optimization problem.
-            **fields_: The fields of the :class:`.OptimizationResult`
+            **fields_: The fields of the
+                [OptimizationResult][gemseo.algos.optimization_result.OptimizationResult]
                 that cannot be deduced from the optimization problem;
-                e.g. ``"optimizer_name"``.
+                e.g. `"optimizer_name"`.
 
         Returns:
             The optimization result associated with the optimization problem.

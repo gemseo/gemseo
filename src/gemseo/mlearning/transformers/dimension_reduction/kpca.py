@@ -19,13 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Kernel Principal Component Analysis (KPCA) to reduce the dimension of a variable.
 
-The :class:`.KPCA` class implements the KCPA wraps the KPCA from Scikit-learn.
+The
+[KPCA][gemseo.mlearning.transformers.dimension_reduction.kpca.KPCA]
+class implements the KCPA wraps the KPCA from Scikit-learn.
 
-Dependence
-----------
+## Dependence
+
 This dimension reduction algorithm relies on the PCA class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.decomposition.PCA.html>`_.
+of the [scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html).
 """
 
 from __future__ import annotations
@@ -56,7 +57,7 @@ class KPCA(BaseDimensionReduction):
     ) -> None:
         """
         Args:
-            fit_inverse_transform: If ``True``, learn the inverse transform
+            fit_inverse_transform: If `True`, learn the inverse transform
                 for non-precomputed kernels.
             kernel: The name of the kernel,
                 either 'linear', 'poly', 'rbf', 'sigmoid', 'cosine' or 'precomputed'.

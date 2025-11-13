@@ -19,15 +19,22 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Base class for libraries of drivers.
 
-A driver is an algorithm evaluating the functions of an :class:`.EvaluationProblem`
+A driver is an algorithm evaluating the functions
+of an [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem]
 at different points of the design space,
-using the :meth:`~.BaseDriverLibrary.execute` method.
-In the case of an :class:`.OptimizationProblem`,
-this method also returns an :class:`.OptimizationResult`.
+using the
+[execute()][gemseo.algos.base_driver_library.BaseDriverLibrary.execute]
+method.
+In the case
+of an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
+this method also returns
+an [OptimizationResult][gemseo.algos.optimization_result.OptimizationResult].
 
 There are two main families of drivers:
-the optimizers with the base class :class:`.BaseOptimizationLibrary`
-and the design of experiments (DOE) with the base class :class:`.BaseDOELibrary`.
+the optimizers with the base class
+[BaseOptimizationLibrary][gemseo.algos.opt.base_optimization_library.BaseOptimizationLibrary]
+and the design of experiments (DOE) with the base class
+[BaseDOELibrary][gemseo.algos.doe.base_doe_library.BaseDOELibrary].
 """
 
 from __future__ import annotations
@@ -162,8 +169,9 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             problem: The evaluation problem.
             max_iter: The maximum number of iterations.
             message: The message to display at the beginning of the progress bar status.
-            progress_bar_data_name: The name
-                of a :class:`.BaseProgressBarData` class
+            progress_bar_data_name: The name of a
+                [BaseProgressBarData][gemseo.algos.progress_bar_data.base.BaseProgressBarData]
+                class
                 to define the data of an optimization problem
                 to be displayed in the progress bar.
         """

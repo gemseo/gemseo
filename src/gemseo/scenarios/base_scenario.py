@@ -111,30 +111,48 @@ class _ScenarioProcessFlow(BaseProcessFlow):
 class BaseScenario(BaseMonitoredProcess):
     """Base class for the scenarios.
 
-    The instantiation of a :class:`.Scenario` creates an :class:`.OptimizationProblem`,
-    by linking :class:`.Discipline` objects with an :class:`.BaseMDOFormulation` and
-    defining both the objective to minimize or maximize and the :class:`.DesignSpace` on
+    The instantiation of a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+    creates an
+    [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
+    by linking [Discipline][gemseo.core.discipline.discipline.Discipline] objects with
+    an [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation]
+    and defining both the objective to minimize or maximize
+    and the [DesignSpace][gemseo.algos.design_space.DesignSpace] on
     which to solve the problem. Constraints can also be added to the
-    :class:`.OptimizationProblem` with the :meth:`.Scenario.add_constraint` method, as
-    well as observables with the :meth:`.Scenario.add_observable` method.
+    [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+    with the
+    [BaseScenario.add_constraint()][gemseo.scenarios.base_scenario.BaseScenario.add_constraint]
+    method,
+    as well as observables with the
+    [BaseScenario.add_observable()][gemseo.scenarios.base_scenario.BaseScenario.add_observable]
+    method.
 
-    Then, the :meth:`.Scenario.execute` method takes a driver (see
-    :class:`.BaseDriverLibrary`) with options as input data and uses it to solve the
-    optimization problem. This driver is in charge of executing the multidisciplinary
-    process.
+    Then,
+    the [BaseScenario.execute()][gemseo.scenarios.base_scenario.BaseScenario.execute]
+    method takes a driver
+    (see
+    [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary]
+    )
+    with options as input data
+    and uses it to solve the optimization problem.
+    This driver is in charge of executing the multidisciplinary process.
 
-    To view the results, use the :meth:`.Scenario.post_process` method after execution
-    with one of the available post-processors that can be listed by
-    :attr:`.Scenario.posts`.
+    To view the results,
+    use the
+    [BaseScenario.post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process]
+    method after execution
+    with one of the available post-processors
+    that can be listed by
+    [BaseScenario.posts][gemseo.scenarios.base_scenario.BaseScenario.posts].
     """
 
     class _BaseSettings(BaseModel):
-        """Scenario base settings passed to :meth:`.execute`.
+        """Scenario base settings passed to `execute()`.
 
         This class can be derived in Scenario's derived classes to add fields.
         At import time, this class is derived a final time to override the `algo` field
-        which possible values depends on the :class:`._ALGO_FACTORY`.
-        The final class is assigned to :attr:`.Settings`.
+        which possible values depends on the `_ALGO_FACTORY_CLASS`.
+        The final class is assigned to `Settings`.
         """
 
         algo_name: str = Field(..., description="The name of the algorithm.")
@@ -161,10 +179,10 @@ class BaseScenario(BaseMonitoredProcess):
 
     # TODO: API: rename to settings_class.
     Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
-    """The class used to validate the arguments of :meth:`.execute`."""
+    """The class used to validate the arguments of [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute]."""  # noqa: E501
 
     _settings: Settings | None
-    """The algorithm name and settings (``None`` before execution)."""
+    """The algorithm name and settings (`None` before execution)."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ScenarioProcessFlow
 
@@ -175,7 +193,7 @@ class BaseScenario(BaseMonitoredProcess):
     """The MDO formulation."""
 
     optimization_result: OptimizationResult | None
-    """The optimization result if the scenario has been executed; otherwise ``None``."""
+    """The optimization result if the scenario has been executed; otherwise `None`."""
 
     DifferentiationMethod = OptimizationProblem.DifferentiationMethod
 
@@ -205,15 +223,15 @@ class BaseScenario(BaseMonitoredProcess):
                 If multiple names are passed, the objective will be a vector.
             design_space: The search space including at least the design variables
                 (some formulations requires additional variables,
-                e.g. :class:`.IDF` with the coupling variables).
+                e.g. [IDF][gemseo.formulations.idf.IDF] with the coupling variables).
             name: The name to be given to this scenario.
                 If empty, use the name of the class.
             maximize_objective: Whether to maximize the objective.
             formulation_settings_model: The formulation settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **formulation_settings: The formulation settings,
-                including the formulation name (use the keyword ``"formulation_name"``).
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                including the formulation name (use the keyword `"formulation_name"`).
+                These arguments are ignored when `settings_model` is not `None`.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
@@ -248,10 +266,10 @@ class BaseScenario(BaseMonitoredProcess):
 
         Args:
             algo_settings_model: The algorithm settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **algo_settings: The algorithm settings,
-                including the algorithm name (use the keyword ``"algo_name"``).
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                including the algorithm name (use the keyword `"algo_name"`).
+                These arguments are ignored when `settings_model` is not `None`.
         """
         if algo_settings_model is None:
             algo_name = algo_settings.pop("algo_name", None)
@@ -271,9 +289,9 @@ class BaseScenario(BaseMonitoredProcess):
 
     @classmethod
     def __init_subclass__(cls) -> None:
-        """Initialize the attributes :attr:`_algo_enum` and :attr:`.Settings`.
+        """Initialize the attributes `_algo_enum` and `Settings`.
 
-        This method is necessary for pickling  :attr:`.Settings` because the
+        This method is necessary for pickling  `Settings` because the
         classes used for unpickling shall be accessible with a qualified name in a
         module, which is not the case of a method's body.
         Thus, the classes created at runtime (import time actually) are modified to
@@ -297,10 +315,7 @@ class BaseScenario(BaseMonitoredProcess):
 
     @property
     def use_standardized_objective(self) -> bool:
-        """Whether to use the standardized objective for logging and post-processing.
-
-        The objective is :attr:`.OptimizationProblem.objective`.
-        """
+        """Whether to use the standardized objective for logging and post-processing."""
         return self.formulation.optimization_problem.use_standardized_objective
 
     @use_standardized_objective.setter
@@ -320,18 +335,19 @@ class BaseScenario(BaseMonitoredProcess):
     ) -> None:
         """Set the differentiation method for the process.
 
-        When the selected method to differentiate the process is ``complex_step`` the
-        :class:`.DesignSpace` current value will be cast to ``complex128``;
-        additionally, if the option ``cast_default_inputs_to_complex`` is ``True``,
+        When the selected method to differentiate the process is `complex_step` the
+        [DesignSpace][gemseo.algos.design_space.DesignSpace] current value
+        will be cast to `complex128`;
+        additionally, if the option `cast_default_inputs_to_complex` is `True`,
         the default inputs of the scenario's disciplines will be cast as well provided
-        that they are ``ndarray`` with ``dtype`` ``float64``.
+        that they are `ndarray` with `dtype` `float64`.
 
         Args:
             method: The method to use to differentiate the process.
             step: The finite difference step.
             cast_default_inputs_to_complex: Whether to cast all float default inputs
                 of the scenario's disciplines if the selected method is
-                ``"complex_step"``.
+                `"complex_step"`.
         """
         if method == self.DifferentiationMethod.COMPLEX_STEP:
             self.formulation.design_space.to_complex()
@@ -363,9 +379,9 @@ class BaseScenario(BaseMonitoredProcess):
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
 
-        An equality constraint is written as :math:`c(x)=a`,
-        a positive inequality constraint is written as :math:`c(x)\geq a`
-        and a negative inequality constraint is written as :math:`c(x)\leq a`.
+        An equality constraint is written as $c(x)=a$,
+        a positive inequality constraint is written as $c(x)\geq a$
+        and a negative inequality constraint is written as $c(x)\leq a$.
 
         This constraint is in addition to those created by the formulation,
         e.g. consistency constraints in IDF.
@@ -373,15 +389,15 @@ class BaseScenario(BaseMonitoredProcess):
         The strategy of repartition of the constraints is defined by the formulation.
 
         Args:
-            output_name: The name(s) of the outputs computed by :math:`c(x)`.
+            output_name: The name(s) of the outputs computed by $c(x)$.
                 If several names are given,
                 a single discipline must provide all outputs.
             constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored.
                 If empty,
                 the name of the constraint is generated
-                from ``output_name``, ``constraint_type``, ``value`` and ``positive``.
-            value: The value :math:`a`.
+                from `output_name`, `constraint_type`, `value` and `positive`.
+            value: The value $a$.
             positive: Whether the inequality constraint is positive.
             **kwargs: Additional arguments specific to the MDO formulation.
         """
@@ -411,7 +427,7 @@ class BaseScenario(BaseMonitoredProcess):
             observable_name: The name to be given to the observable.
                 If empty, the output name is used by default.
             discipline: The discipline used to build the observable function.
-                If ``None``, detect the discipline from the inner disciplines.
+                If `None`, detect the discipline from the inner disciplines.
         """
         self.formulation.add_observable(output_names, observable_name, discipline)
 
@@ -440,7 +456,7 @@ class BaseScenario(BaseMonitoredProcess):
         Args:
             file_path: The path of the file to save the history.
             file_format: The format of the file.
-            append: If ``True``, the history is appended to the file if not empty.
+            append: If `True`, the history is appended to the file if not empty.
         """
         optimization_problem = self.formulation.optimization_problem
         if file_format == optimization_problem.HistoryFileFormat.HDF5:
@@ -472,7 +488,7 @@ class BaseScenario(BaseMonitoredProcess):
                 The plots will be generated only after the first two iterations.
 
         Raises:
-            ValueError: If both ``erase`` and ``load`` are ``True``.
+            ValueError: If both `erase` and `pre_load` are `True`.
         """
         opt_pb = self.formulation.optimization_problem
         self.__history_backup_is_set = True
@@ -539,10 +555,10 @@ class BaseScenario(BaseMonitoredProcess):
 
         Args:
             settings_model: The post-processor settings as a Pydantic model.
-                If ``None``, use ``**settings``.
+                If `None`, use `**settings`.
             **settings: The post-processor settings,
-                including the algorithm name (use the keyword ``"post_name"``).
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                including the algorithm name (use the keyword `"post_name"`).
+                These arguments are ignored when `settings_model` is not `None`.
 
         Returns:
             The post-processor.
@@ -562,12 +578,13 @@ class BaseScenario(BaseMonitoredProcess):
 
         Args:
             algo_settings_model: The algorithm settings as a Pydantic model.
-                If ``None``, use ``**settings`` if any.
-                If ``None`` and no settings,
-                the method will use the settings defined by :meth:`.set_algorithm`.
+                If `None`, use `**settings` if any.
+                If `None` and no settings,
+                the method will use the settings defined by
+                [set_algorithm()][gemseo.scenarios.base_scenario.BaseScenario.set_algorithm].
             **algo_settings: The algorithm settings,
-                including the algorithm name (use the keyword ``"algo_name"``).
-                These arguments are ignored when ``settings_model`` is not ``None``.
+                including the algorithm name (use the keyword `"algo_name"`).
+                These arguments are ignored when `settings_model` is not `None`.
         """
         LOGGER.info("*** Start %s execution ***", self.name)
         LOGGER.info("%r", self)
@@ -691,16 +708,16 @@ class BaseScenario(BaseMonitoredProcess):
             save_html: Whether to save the XDSM as a HTML file.
             save_json: Whether to save the XDSM as a JSON file.
             save_pdf: Whether to save the XDSM as
-                a TikZ file ``"{file_name}.tikz"`` containing its definition and
-                a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+                a TikZ file `"{file_name}.tikz"` containing its definition and
+                a LaTeX file `"{file_name}.tex"` including this TikZ file.
                 The LaTeX file can be compiled to a PDF file.
-            pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+            pdf_build: Whether to compile the LaTeX file `"{file_name}.tex"`
                 to a PDF file using pdflatex.
             pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
             pdf_batchmode: Whether to suppress compilation logs.
 
         Returns:
-            A view of the XDSM if ``monitor`` is ``False``.
+            A view of the XDSM if `monitor` is `False`.
         """
         from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
@@ -732,26 +749,34 @@ class BaseScenario(BaseMonitoredProcess):
         opt_naming: bool = True,
         export_gradients: bool = False,
     ) -> Dataset:
-        """Export the database of the optimization problem to a :class:`.Dataset`.
+        """Export the database to a [Dataset][gemseo.datasets.dataset.Dataset].
 
         The variables can be classified into groups:
-        :attr:`.Dataset.DESIGN_GROUP` or :attr:`.Dataset.INPUT_GROUP`
+        [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
+        or [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
         for the design variables
-        and :attr:`.Dataset.FUNCTION_GROUP` or :attr:`.Dataset.OUTPUT_GROUP`
+        and
+        [FUNCTION_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.FUNCTION_GROUP]
+        or [OUTPUT_GROUP][gemseo.datasets.io_dataset.IODataset.OUTPUT_GROUP]
         for the functions
         (objective, constraints and observables).
 
         Args:
             name: The name to be given to the dataset.
-                If empty, use the name of the :attr:`.OptimizationProblem.database`.
+                If empty, use the name of the database.
             categorize: Whether to distinguish
                 between the different groups of variables.
-                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+                Otherwise, group all the variables in
+                [PARAMETER_GROUP][gemseo.datasets.dataset.Dataset.PARAMETER_GROUP].
             opt_naming: Whether to use
-                :attr:`.Dataset.DESIGN_GROUP` and :attr:`.Dataset.FUNCTION_GROUP`
+                [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
+                and
+                [FUNCTION_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.FUNCTION_GROUP]
                 as groups.
                 Otherwise,
-                use :attr:`.Dataset.INPUT_GROUP` and :attr:`.Dataset.OUTPUT_GROUP`.
+                [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
+                and
+                [OUTPUT_GROUP][gemseo.datasets.io_dataset.IODataset.OUTPUT_GROUP]
             export_gradients: Whether to export the gradients of the functions
                 (objective function, constraints and observables)
                 if the latter are available in the database of the optimization problem.
@@ -770,9 +795,12 @@ class BaseScenario(BaseMonitoredProcess):
         """Return the result of the scenario execution.
 
         Args:
-            name: The class name of the :class:`.ScenarioResult`.
-                If empty, use a default one (see :func:`create_scenario_result`).
-            **options: The options of the :class:`.ScenarioResult`.
+            name: The class name of the
+                [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
+                If empty, use a default one
+                (see [create_scenario_result()][gemseo.create_scenario_result]).
+            **options: The options of the
+                [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
 
         Returns:
             The result of the scenario execution.

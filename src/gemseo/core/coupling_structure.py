@@ -159,11 +159,11 @@ class CouplingStructure:
         Args:
             add_self_coupled: Whether to add the disciplines that are self-coupled
                 to the list of strongly coupled disciplines.
-            by_group: If ``True``,
+            by_group: If `True`,
                 returns a list of lists of strongly coupled disciplines
                 where the sublist contains the groups of disciplines that
                 are strongly coupled together.
-                If ``False``, returns a single list.
+                If `False`, returns a single list.
 
         Returns:
             The coupled disciplines.
@@ -305,7 +305,7 @@ class CouplingStructure:
 
         Args:
             discipline: The discipline.
-            strong: If ``True``,
+            strong: If `True`,
                 consider the strong couplings. Otherwise, the weak ones.
 
         Returns:
@@ -426,8 +426,8 @@ class CouplingStructure:
         """Generate a dynamic N2 chart for the disciplines, and possibly a static one.
 
         A static N2 chart is a figure generated with the matplotlib library
-        that can be saved to ``file_path``, displayed on screen or both;
-        the extension of ``file_path`` must be recognized by matplotlib.
+        that can be saved to `file_path`, displayed on screen or both;
+        the extension of `file_path` must be recognized by matplotlib.
 
         A dynamic N2 chart is an HTML file with interactive features such as
         reordering the disciplines,
@@ -514,13 +514,13 @@ class CouplingStructure:
 
         Args:
             couplings: The discipline couplings.
-            show_data_names: If ``True``, show the names of the coupling data ;
+            show_data_names: If `True`, show the names of the coupling data ;
                 otherwise,
                 circles are drawn,
                 whose size depends on the number of coupling names.
             n_disciplines: The number of disciplines being considered.
             fig: The figure on which to plot.
-            ax: The :class:`~matplotlib.axes.Axes` object associated with ``fig``
+            ax: The [Axes][matplotlib.axes.Axes`] object associated with `fig`
                 on which to plot.
         """
         max_coupling_size = max(len(variables) for _, _, variables in couplings)

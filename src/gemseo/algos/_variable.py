@@ -77,8 +77,8 @@ class Variable(BaseModel, validate_assignment=True):
     a data type
     and the bounds of its components.
 
-    When ``size > 1``, a bound could be defined with a scalar, in that case the bound
-     ill be converted to a numpy array of the expected ``size``.
+    When `size > 1`, a bound could be defined with a scalar, in that case the bound
+     ill be converted to a numpy array of the expected `size`.
     """
 
     size: PositiveInt = 1

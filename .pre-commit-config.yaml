@@ -1,80 +1,90 @@
-exclude: ^(src/gemseo/third_party|tests/.*\.tikz)
+exclude: ^(tests/.*\.tikz)
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: LICENSES/headers
+      - id: check-yaml
+        # !reference is specific to gitlab
+        # !! prefix is specific to mkdocs
+        exclude: \.gitlab-ci.yml|mkdocs.yml|mkdocs_fast.yml
+      - id: check-added-large-files
+      - id: check-json
+      - id: pretty-format-json
+        args: [--autofix, --no-sort-keys]
+        exclude: \.ipynb
+      - id: check-toml
+      - id: destroyed-symlinks
+      - id: check-symlinks
 
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v6.0.0
-  hooks:
-    - id: trailing-whitespace
-    - id: end-of-file-fixer
-      exclude: LICENSES/headers
-    - id: check-yaml
-      # !reference is specific to gitlab
-      exclude: \.gitlab-ci.yml
-    - id: check-added-large-files
-    - id: check-json
-    - id: pretty-format-json
-      args: [
-        --autofix,
-        --no-sort-keys,
-      ]
-    - id: check-toml
-    - id: destroyed-symlinks
-    - id: check-symlinks
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: rst-backticks
+      - id: rst-directive-colons
+      - id: rst-inline-touching-normal
 
-- repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.10.0
-  hooks:
-    - id: rst-backticks
-    - id: rst-directive-colons
-    - id: rst-inline-touching-normal
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.4
+    hooks:
+      - id: ruff-check
+        types_or: [python, pyi, jupyter]
+        args: [--exit-non-zero-on-fix]
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
 
-# - repo: https://github.com/myint/docformatter
-#   rev: v1.7.5
-#   hooks:
-#     - id: docformatter
-#       args: [
-#         --in-place,
-#         --black,
-#       ]
+  # - repo: https://github.com/myint/docformatter
+  #   rev: v1.7.5
+  #   hooks:
+  #     - id: docformatter
+  #       args: [
+  #         --in-place,
+  #         --black,
+  #       ]
 
-- repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.5
-  hooks:
-    - id: insert-license
-      name: insert LGPL license
-      exclude: ^doc_src
-      files: \.py$
-      args:
-        - --license-filepath
-        - LICENSES/headers/LGPL-3.0.txt
-    - id: insert-license
-      name: insert BSD license
-      files: ^doc_src/(_examples|tutorials).*\.py$
-      args:
-        - --license-filepath
-        - LICENSES/headers/BSD-0-Clause.txt
-    - id: insert-license
-      name: insert CC BY-SA license
-      files: (\.rst|\.rst\.txt)$
-      exclude: ^changelog/fragments
-      args:
-        - --license-filepath
-        - LICENSES/headers/CC-BY-SA-4.0.txt
-        - --comment-style
-        - ..|   |
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.9.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
 
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.4
-  hooks:
-    - id: ruff-check
-      args: [
-        --exit-non-zero-on-fix,
-      ]
-    - id: ruff-format
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint
+        args: [--fix]
+        exclude: ^.gitlab
 
-- repo: https://github.com/commitizen-tools/commitizen
-  rev: v4.10.0
-  hooks:
-    - id: commitizen
-      stages: [commit-msg]
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        name: insert LGPL license
+        exclude: ^docs
+        files: \.py$
+        args:
+          - --license-filepath
+          - LICENSES/headers/LGPL-3.0.txt
+      - id: insert-license
+        name: insert BSD license
+        files: ^docs/(examples|tutorials).*\.py$
+        args:
+          - --license-filepath
+          - LICENSES/headers/BSD-0-Clause.txt
+      - id: insert-license
+        name: insert CC BY-SA license for md files
+        files: \.md$
+        exclude: ^.gitlab
+        args:
+          - --license-filepath
+          - LICENSES/headers/CC-BY-SA-4.0.txt
+          - --comment-style
+          - <!--||-->
+          # Some files use metadata that must be first,
+          # then the license is after the metadat,
+          # offsetting the license header shall be done manually.
+          - --detect-license-in-X-top-lines
+          - "10"

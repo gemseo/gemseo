@@ -29,16 +29,14 @@ class LassoCV(BaseSKLearnLinearModelFitter[SKLearnLassoCV, LassoCV_Settings]):
     r"""Scikit-learn lasso algorithm with built-in cross-validation.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm solves a penalized least squares problem of the form:
 
-    .. math::
+    $$\min_w \frac{1}{2n}\|Xw-y\|_2^2 + \alpha \|w\|_1$$
 
-       \min_w \frac{1}{2n}\|Xw-y\|_2^2 + \alpha \|w\|_1
-
-    where :math:`\|w\|_1` is the :math:`\ell_1`-norm of the coefficients :math:`w`
-    :math:`\|Xw-y\|_2` is the :math:`\ell_2`-norm of the residual :math:`Xw-y`,
-    and :math:`\alpha>0` is estimated by cross-validation.
+    where $\|w\|_1$ is the $\ell_1$-norm of the coefficients $w$
+    $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$,
+    and $\alpha>0$ is estimated by cross-validation.
     """
 
     Settings = LassoCV_Settings

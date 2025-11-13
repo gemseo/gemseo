@@ -66,7 +66,7 @@ It attempts to detect infeasibility, unboundedness or problem simplifications.""
         default=None,
         description="""The method to remove redundancy, either 'SVD', 'pivot' or 'ID'.
 
-If ``None``, use “SVD” if the matrix is nearly full rank. If not, uses
+If `None`, use “SVD” if the matrix is nearly full rank. If not, uses
 “pivot”. The behavior of this default is subject to change without prior notice.""",
     )
 
@@ -78,11 +78,11 @@ to zero to be considered exactly zero.""",
 
     @model_validator(mode="after")
     def __check_scaling(self) -> Self:
-        """Use ``autoscale`` when ``scaling_threshold`` is set.
+        """Use `autoscale` when `scaling_threshold` is set.
 
-        The scaling of outputs by GEMSEO has no effect on ``ScipyLinprog`` because
+        The scaling of outputs by GEMSEO has no effect on `ScipyLinprog` because
         it does not scale the coefficients of linear functions. This validation ensures
-        the ``autoscale`` setting is used instead.
+        the `autoscale` setting is used instead.
         """
         if self.scaling_threshold is not None:
             self.autoscale = True

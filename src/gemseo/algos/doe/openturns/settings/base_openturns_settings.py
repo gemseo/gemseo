@@ -24,14 +24,15 @@ from gemseo.algos.doe.base_n_samples_based_doe_settings import (
 
 
 class BaseOpenTURNSSettings(BaseNSamplesBasedDOESettings):
-    """The settings for the ``OpenTURNS`` DOE library."""
+    """The settings for the `OpenTURNS` DOE library."""
 
     seed: int | None = Field(
         default=None,
         description=(
             """The seed used for reproducibility reasons.
 
-If ``None``, use :class:`~.BaseDOELibrary.seed`.
+If `None`, use
+[BaseDOELibrary.seed][gemseo.algos.doe.base_doe_library.BaseDOELibrary.seed].
 """
         ),
     )

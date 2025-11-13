@@ -43,7 +43,7 @@ class MDOAdditiveChain(MDOParallelChain):
             disciplines: The disciplines.
             outputs_to_sum: The names of the outputs to sum.
             name: The name of the discipline.
-                If ``None``, use the class name.
+                If `None`, use the class name.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution;
                 multiprocessing will copy (serialize) all the disciplines,
@@ -52,14 +52,14 @@ class MDOAdditiveChain(MDOParallelChain):
                 if you want to execute the same discipline multiple times,
                 you shall use multiprocessing.
             n_processes: The maximum simultaneous number of threads,
-                if ``use_threading`` is True, or processes otherwise,
+                if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
-                If ``None``, uses the number of disciplines.
+                If `None`, uses the number of disciplines.
 
         Notes:
-            The actual number of processes could be lower than ``n_processes``
-            if there are less than ``n_processes`` disciplines.
-            ``n_processes`` can be lower than the total number of CPUs on the machine.
+            The actual number of processes could be lower than `n_processes`
+            if there are less than `n_processes` disciplines.
+            `n_processes` can be lower than the total number of CPUs on the machine.
             Each discipline may itself run on several CPUs.
         """  # noqa: D205, D212, D415
         super().__init__(disciplines, name, use_threading, n_processes)

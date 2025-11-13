@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A factory to instantiate a derived class of :class:`.BaseGrammar`."""
+"""A factory to instantiate grammar classes."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class GrammarFactory(BaseFactory[BaseGrammar]):
-    """A factory of :class:`.BaseGrammar`."""
+    """A factory of [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar]."""
 
     _CLASS = BaseGrammar
     _PACKAGE_NAMES = ("gemseo.core.grammars",)
@@ -54,19 +54,20 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
         """Create a grammar.
 
         Args:
-            class_name: The name of a class deriving from :class:`.BaseGrammar`.
+            class_name: The name of a class deriving
+                from [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar].
             name: The name to be given to the grammar.
             search_file: Whether to search for a JSON grammar file.
-                This argument is considered to be ``False`` when the option
-                ``file_path`` is given.
+                This argument is considered to be `False` when the option
+                `file_path` is given.
             discipline_class: The class of the discipline used for searching the grammar
                 in the parent classes.
-                This argument is used when ``search_file`` is ``True``.
+                This argument is used when `search_file` is `True`.
             directory_path: The path to the directory where to search for JSON grammar
                 files.
-                This argument is used when ``search_file`` is ``True``.
+                This argument is used when `search_file` is `True`.
             file_name_suffix: The suffix of the JSON grammar file.
-                This argument is used when ``search_file`` is ``True``.
+                This argument is used when `search_file` is `True`.
             **options: The options to be passed to the initialization.
         """
         if class_name == "JSONGrammar" and search_file and not options.get("file_path"):
@@ -89,15 +90,15 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
     ) -> Path:
         """Use a naming convention to associate a grammar file to the discipline.
 
-        Search in the directory ``directory_path`` for
-        either an input grammar file named ``name + "_input.json"``
-        or an output grammar file named ``name + "_output.json"``.
+        Search in the directory `directory_path` for
+        either an input grammar file named `name + "_input.json"`
+        or an output grammar file named `name + "_output.json"`.
 
         Args:
             file_name_suffix: The suffix of the file name (xxx_suffix.json)
             directory_path: The directory in which to search the grammar file.
-                If ``None``,
-                use the :attr:`.GRAMMAR_DIRECTORY` if any,
+                If `None`,
+                use the `BaseDiscipline.GRAMMAR_DIRECTORY` if any,
                 or the directory of the discipline class module.
 
         Returns:

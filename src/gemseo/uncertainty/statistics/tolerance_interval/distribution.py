@@ -50,8 +50,7 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
       'upper' for upper-sided TI
       or 'both' for both-sided TI.
 
-    .. note::
-
+    Note:
        Lower-sided tolerance intervals are used to analyse the strength of materials.
        They are also known as *basis tolerance limits*.
        In particular,
@@ -88,7 +87,7 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             coverage: A minimum percentage of belonging to the TI.
-            alpha: ``1-alpha`` is the level of confidence in [0,1].
+            alpha: `1-alpha` is the level of confidence in [0,1].
             size: The number of samples.
 
         Returns:
@@ -106,7 +105,7 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             coverage: A minimum percentage of belonging to the TI.
-            alpha: ``1-alpha`` is the level of confidence in [0,1].
+            alpha: `1-alpha` is the level of confidence in [0,1].
             size: The number of samples.
 
         Returns:
@@ -124,7 +123,7 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             coverage: A minimum percentage of belonging to the TI.
-            alpha: ``1-alpha`` is the level of confidence in [0,1].
+            alpha: `1-alpha` is the level of confidence in [0,1].
             size: The number of samples.
 
         Returns:
@@ -142,13 +141,13 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Args:
             coverage: A minimum percentage of belonging to the TI.
-            alpha: ``1-alpha`` is the level of confidence in [0,1].
+            alpha: `1-alpha` is the level of confidence in [0,1].
             size: The number of samples.
             side: The type of the tolerance interval
                 characterized by its *sides* of interest,
-                either a lower-sided tolerance interval :math:`[a, +\infty[`,
-                an upper-sided tolerance interval :math:`]-\infty, b]`,
-                or a two-sided tolerance interval :math:`[c, d]`.
+                either a lower-sided tolerance interval $[a, +\infty[$,
+                an upper-sided tolerance interval $]-\infty, b]$,
+                or a two-sided tolerance interval $[c, d]$.
 
         Returns:
             The bounds of the tolerance interval.
@@ -182,9 +181,9 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
             confidence: A level of confidence in [0,1].
             side: The type of the tolerance interval
                 characterized by its *sides* of interest,
-                either a lower-sided tolerance interval :math:`[a, +\infty[`,
-                an upper-sided tolerance interval :math:`]-\infty, b]`,
-                or a two-sided tolerance interval :math:`[c, d]`.
+                either a lower-sided tolerance interval $[a, +\infty[$,
+                an upper-sided tolerance interval $]-\infty, b]$,
+                or a two-sided tolerance interval $[c, d]$.
 
         Returns:
             The tolerance bounds.

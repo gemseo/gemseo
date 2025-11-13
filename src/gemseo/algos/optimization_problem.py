@@ -21,41 +21,55 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Optimization problem.
 
-The :class:`.OptimizationProblem` class operates on a :class:`.DesignSpace` defining:
+The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] class
+operates on a [DesignSpace][gemseo.algos.design_space.DesignSpace] defining:
 
-- an initial guess :math:`x_0` for the design variables,
-- the bounds :math:`l_b \leq x \leq u_b` of the design variables.
+- an initial guess $x_0$ for the design variables,
+- the bounds $l_b \leq x \leq u_b$ of the design variables.
 
-A (possible vector) objective function with an :class:`.MDOFunction` type
-is set using the ``objective`` attribute.
+A (possible vector) objective function
+with an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] type
+is set using the `objective` attribute.
 If the optimization problem looks for the maximum of this objective function,
-the :meth:`.OptimizationProblem.minimize_objective` property
+the
+[OptimizationProblem.minimize_objective][gemseo.algos.optimization_problem.OptimizationProblem.minimize_objective]
+property
 changes the objective function sign
 because the optimization drivers seek to minimize this objective function.
 
-Equality and inequality constraints are also :class:`.MDOFunction` instances
-provided to the :class:`.OptimizationProblem`
-by means of its :meth:`.OptimizationProblem.add_constraint` method.
+Equality and inequality constraints are also
+[MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] instances
+provided to the
+[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+by means of its
+[add_constraint()][gemseo.algos.optimization_problem.OptimizationProblem.add_constraint]
+method.
 
-The :class:`.OptimizationProblem` allows to evaluate the different functions
+The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+allows to evaluate the different functions
 for a given design parameters vector
-(see :meth:`.OptimizationProblem.evaluate_functions`).
+(see its method
+[evaluate_functions()][gemseo.algos.optimization_problem.OptimizationProblem.evaluate_functions]
+).
 Note that this evaluation step relies on an automated scaling of function wrt the bounds
 so that optimizers and DOE algorithms work
 with inputs scaled between 0 and 1 for all the variables.
 
-The :class:`.OptimizationProblem`  has also a :class:`.Database`
+The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+has also a [Database][gemseo.algos.database.Database]
 that stores the calls to all the functions
 so that no function is called twice with the same inputs.
 Concerning the derivatives' computation,
-the :class:`.OptimizationProblem` automates
-the generation of the finite differences or complex step wrappers on functions,
+the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+automates the generation of the finite differences or complex step wrappers
+on functions,
 when the analytical gradient is not available.
 
 Lastly,
 various getters and setters are available,
-as well as methods to export the :class:`.Database`
-to an HDF file or to a :class:`.Dataset` for future post-processing.
+as well as methods to export the [Database][gemseo.algos.database.Database]
+to an HDF file or to a [Dataset][gemseo.datasets.dataset.Dataset]
+for future post-processing.
 """
 
 from __future__ import annotations
@@ -139,15 +153,19 @@ class OptimizationProblem(EvaluationProblem):
     """The objective if set."""
 
     solution: OptimizationResult | None
-    """The solution of the optimization problem if solved; otherwise ``None``."""
+    """The solution of the optimization problem if solved; otherwise `None`."""
 
     use_standardized_objective: bool
     """Whether to use standardized objective for logging and post-processing.
 
     The standardized objective corresponds to the original one expressed as a cost
-    function to minimize. A :class:`.BaseDriverLibrary` works with this standardized
-    objective and the :class:`.Database` stores its values. However, for convenience, it
-    may be more relevant to log the expression and the values of the original objective.
+    function to minimize.
+    A [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary] works
+    with this standardized
+    objective and the [Database][gemseo.algos.database.Database] stores its values.
+    However, for convenience,
+    it may be more relevant to log the expression and the values
+    of the original objective.
     """
 
     # Enumerations
@@ -190,7 +208,6 @@ class OptimizationProblem(EvaluationProblem):
     ) -> None:
         """
         Args:
-            pb_type: The type of the optimization problem.
             use_standardized_objective: Whether to use standardized objective
                 for logging and post-processing.
         """  # noqa: D205, D212, D415
@@ -272,19 +289,20 @@ class OptimizationProblem(EvaluationProblem):
     ) -> None:
         r"""Add an equality or inequality constraint to the optimization problem.
 
-        An equality constraint is written as :math:`c(x)=a`,
-        a positive inequality constraint is written as :math:`c(x)\geq a`
-        and a negative inequality constraint is written as :math:`c(x)\leq a`.
+        An equality constraint is written as $c(x)=a$,
+        a positive inequality constraint is written as $c(x)\geq a$
+        and a negative inequality constraint is written as $c(x)\leq a$.
 
         Args:
-            function: The function :math:`c`.
-            value: The value :math:`a`.
+            function: The function $c$.
+            value: The value $a$.
             constraint_type: The type of the constraint.
             positive: Whether the inequality constraint is positive.
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
-                is not an :class:`.MDOLinearFunction`.
+                is not an
+                [MDOLinearFunction][gemseo.core.mdo_functions.mdo_linear_function.MDOLinearFunction].
             ValueError: When the type of the constraint is missing.
         """
         if self.is_linear and not isinstance(function, MDOLinearFunction):
@@ -306,8 +324,7 @@ class OptimizationProblem(EvaluationProblem):
 
         Given the optimization problem with equality and inequality constraints:
 
-        .. math::
-
+        $$
             min_x f(x)
 
             s.t.
@@ -317,23 +334,24 @@ class OptimizationProblem(EvaluationProblem):
             h(x)=0
 
             l_b\leq x\leq u_b
+        $$
 
         The exterior penalty approach consists in building a penalized objective
         function that takes into account constraints violations:
 
-        .. math::
-
+        $$
             min_x \tilde{f}(x) = \frac{f(x)}{o_s} + s[\sum{H(g(x))g(x)^2}+\sum{h(x)^2}]
 
             s.t.
 
             l_b\leq x\leq u_b
+        $$
 
-        Where :math:`H(x)` is the Heaviside function,
-        :math:`o_s` is the ``objective_scale``
-        parameter and :math:`s` is the scale parameter.
+        Where $H(x)$ is the Heaviside function,
+        $o_s$ is the `objective_scale`
+        parameter and $s$ is the scale parameter.
         The solution of the new problem approximate the one of the original problem.
-        Increasing the values of ``objective_scale`` and scale,
+        Increasing the values of `objective_scale` and scale,
         the solutions are closer but
         the optimization problem requires more and more iterations to be solved.
 
@@ -367,7 +385,7 @@ class OptimizationProblem(EvaluationProblem):
 
         Given the original optimization problem,
 
-        .. math::
+        $$
 
             min_x f(x)
 
@@ -379,10 +397,12 @@ class OptimizationProblem(EvaluationProblem):
 
             l_b\leq x\leq u_b
 
+        $$
+
         Slack variables are introduced for all inequality constraints that are
         non-positive. An equality constraint for each slack variable is then defined.
 
-        .. math::
+        $$
 
             min_{x,s} F(x,s) = f(x)
 
@@ -395,6 +415,8 @@ class OptimizationProblem(EvaluationProblem):
             l_b\leq x\leq u_b
 
             s\leq 0
+
+        $$
 
         Returns:
             An optimization problem without inequality constraints.
@@ -476,8 +498,8 @@ class OptimizationProblem(EvaluationProblem):
     def standardized_objective_name(self) -> str:
         """The name of the standardized objective.
 
-        Given an objective named ``"f"``,
-        the name of the standardized objective is ``"f"`` in the case of minimization
+        Given an objective named `"f"`,
+        the name of the standardized objective is `"f"` in the case of minimization
         and "-f" in the case of maximization.
         """
         return self._objective.name
@@ -523,7 +545,7 @@ class OptimizationProblem(EvaluationProblem):
             constraint_names: The names of the constraints to evaluate.
                 If empty,
                 then all the constraints are returned.
-                If ``None``,
+                If `None`,
                 then no constraint is returned.
         """  # noqa: D205, D212
         return super().get_functions(
@@ -559,7 +581,7 @@ class OptimizationProblem(EvaluationProblem):
             constraint_names: The names of the constraints to return.
                 If empty,
                 then all the constraints are returned.
-                If ``None``,
+                If `None`,
                 then no constraint is returned.
         """  # noqa: D205, D212
         if not return_objective:
@@ -852,18 +874,20 @@ class OptimizationProblem(EvaluationProblem):
                 between the different groups of variables.
             opt_naming: Whether to
                 put the design variables
-                in the :attr:`.OptimizationDataset.DESIGN_GROUP`
+                in the
+                [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
                 and the functions and their derivatives in the
-                :attr:`.OptimizationDataset.FUNCTION_GROUP`.
+                [FUNCTION_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.FUNCTION_GROUP].
                 Otherwise,
-                put the design variables in the :attr:`.IODataset.INPUT_GROUP`
+                put the design variables in the
+                [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
                 and the functions and their derivatives in the
-                :attr:`.IODataset.OUTPUT_GROUP`.
+                [OUTPUT_GROUP][gemseo.datasets.io_dataset.IODataset.OUTPUT_GROUP].
             group_functions: Whether to group the functions by category
-                (:attr:`~.OptimizationDataset.OBJECTIVE_GROUP`,
-                :attr:`~.OptimizationDataset.EQ_CONSTRAINT_GROUP`,
-                :attr:`~.OptimizationDataset.INEQ_CONSTRAINT_GROUP`,
-                :attr:`~.OptimizationDataset.OBSERVABLE_GROUP`).
+                ([OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
+                [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
+                [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP]
+                [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
         """  # noqa: D205, D212
         groups_to_variables = {}
         if categorize:
@@ -938,7 +962,7 @@ class OptimizationProblem(EvaluationProblem):
 
         Args:
             names: The names of the functions.
-                If ``None``, then the objective and all the constraints are considered.
+                If `None`, then the objective and all the constraints are considered.
 
         Returns:
             The output dimensions of the functions associated with their names.

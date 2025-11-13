@@ -36,13 +36,13 @@ class OrthogonalMatchingPursuitCV_Settings(BaseLinearModelFitter_Settings):  # n
         default=None,
         description="""The maximum numbers of iterations to perform,
 therefore maximum features to include.
-10% of ``n_features`` but at least 5 if available.""",
+10% of `n_features` but at least 5 if available.""",
     )
 
     cv: int | None = Field(
         default=None,
         description="""The number of folds.
-If ``None``, use the efficient Leave-One-Out cross-validation.""",
+If `None`, use the efficient Leave-One-Out cross-validation.""",
     )
 
     verbose: bool = Field(default=False, description="Sets the verbosity amount.")

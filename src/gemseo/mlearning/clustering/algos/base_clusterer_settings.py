@@ -37,8 +37,8 @@ class BaseClustererSettings(BaseMLUnsupervisedAlgoSettings):
         default=SEED,
         description="""The random state parameter.
 
-If ``None``, use the global random state instance from ``numpy.random``.
+If `None`, use the global random state instance from `numpy.random`.
 Creating the model multiple times will produce different results.
-If ``int``, use a new random number generator seeded by this integer.
+If `int`, use a new random number generator seeded by this integer.
 This will produce the same results.""",
     )

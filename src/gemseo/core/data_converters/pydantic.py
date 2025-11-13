@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Data values to NumPy arrays and vice versa from a :class:`.PydanticGrammar`."""
+"""Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar]."""  # noqa: E501
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
-    """Data values to NumPy arrays and vice versa from a :class:`.PydanticGrammar`."""
+    """Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar]."""  # noqa: E501
 
     @staticmethod
     @cache

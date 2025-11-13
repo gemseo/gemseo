@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 class ScenarioResult:
-    """The result of a :class:`.Scenario`."""
+    """The result of a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]."""
 
     _MAIN_PROBLEM_LABEL: Final[str] = "main"
     """The default label for the main problem."""
@@ -49,7 +49,7 @@ class ScenarioResult:
     """The object to be post-processed."""
 
     POST_FACTORY: ClassVar[PostFactory] = PostFactory()
-    """The factory of :class:`.BasePost`, if created."""
+    """The factory of [BasePost][gemseo.post.base_post.BasePost], if created."""
 
     def __init__(self, scenario: BaseScenario | str | Path) -> None:
         """

@@ -19,7 +19,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Scalable discipline.
 
-The :mod:`~gemseo.problems.mdo.scalable.data_driven.discipline`
+The module
+[gemseo.problems.mdo.scalable.data_driven.discipline][gemseo.problems.mdo.scalable.data_driven.discipline]
 implements the concept of scalable discipline.
 This is a particular discipline
 built from an input-output training dataset associated with a function
@@ -31,21 +32,27 @@ a scalable discipline can be used to compare the efficiency of an algorithm
 applying to disciplines with respect to the problem dimension,
 e.g. optimization algorithm, surrogate model, MDO formulation, MDA, ...
 
-The :class:`.ScalableDiscipline` class implements this concept.
-It inherits from the :class:`.Discipline` class
-in such a way that it can easily be used in a :class:`.Scenario`.
-It is composed of a :class:`.ScalableModel`.
+The
+[DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]
+class implements this concept.
+It inherits from the [Discipline][gemseo.core.discipline.discipline.Discipline] class
+in such a way that it can easily be used
+in a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+It is composed
+of a [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel].
 
 The user only needs to provide:
 
-- the name of a class overloading :class:`.ScalableModel`,
-- a dataset as an :class:`.Dataset`
+- the name of a class overloading
+  [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel],
+- a dataset as a [Dataset][gemseo.datasets.dataset.Dataset]
 - variables sizes as a dictionary
   whose keys are the names of inputs and outputs
   and values are their new sizes.
   If a variable is missing, its original size is considered.
 
-The :class:`.ScalableModel` parameters can also be filled in,
+The [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel]
+parameters can also be filled in,
 otherwise the model uses default values.
 """
 

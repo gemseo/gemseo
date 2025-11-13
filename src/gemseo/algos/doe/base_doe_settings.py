@@ -39,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BaseDOESettings(BaseDriverSettings):
-    """The settings for the ``DOELibrary``."""
+    """The settings for the `DOELibrary`."""
 
     eval_func: bool = Field(
         default=True,
@@ -67,7 +67,7 @@ class BaseDOESettings(BaseDriverSettings):
         default=(),
         description="""The functions called after evaluating the function of interest.
 
-A callback must be called as ``callback(sample_index, (output, Jacobian))``.""",
+A callback must be called as `callback(sample_index, (output, Jacobian))`.""",
     )
 
     preprocessors: Sequence[Annotated[Callable[[int], Any], WithJsonSchema({})]] = (
@@ -76,7 +76,7 @@ A callback must be called as ``callback(sample_index, (output, Jacobian))``.""",
             description="""The functions called
 before evaluating the function of interest.
 
-A preprocessor must be called as ``preprocessor(sample_index)``.
+A preprocessor must be called as `preprocessor(sample_index)`.
 
 This option is not compatible with the vectorization of functions evaluations.
 """,

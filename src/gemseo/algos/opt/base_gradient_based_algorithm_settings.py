@@ -36,14 +36,14 @@ class BaseGradientBasedAlgorithmSettings(BaseSettings):
         default=inf,
         description="""The absolute tolerance on the KKT residual norm.
 
-If ``inf`` this criterion is not activated.""",
+If `inf` this criterion is not activated.""",
     )
 
     kkt_tol_rel: NonNegativeFloat = Field(
         default=inf,
         description="""The relative tolerance on the KKT residual norm.
 
-If ``inf`` this criterion is not activated.""",
+If `inf` this criterion is not activated.""",
     )
 
     @model_validator(mode="after")
@@ -51,7 +51,7 @@ If ``inf`` this criterion is not activated.""",
         """Check the consistency of KKT options with Jacobian storage.
 
         Currently,
-        KKT options can only be used along with ``store_jacobian=True``
+        KKT options can only be used along with `store_jacobian=True`
         option (default option with all gradient-based algorithm).
         """
         if not self.store_jacobian and (

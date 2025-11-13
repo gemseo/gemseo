@@ -41,7 +41,7 @@ class GaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
         default=None,
         description="""The kernel specifying the covariance model.
 
-If ``None``, use a Matérn(2.5).""",
+If `None`, use a Matérn(2.5).""",
     )
 
     bounds: tuple | tuple[float, float] | Mapping[str, tuple[float, float]] = Field(
@@ -50,10 +50,10 @@ If ``None``, use a Matérn(2.5).""",
 
 Either a unique lower-upper pair common to all the inputs
 or lower-upper pairs for some of them.
-When ``bounds`` is empty or when an input has no pair,
+When `bounds` is empty or when an input has no pair,
 the lower bound is 0.01 and the upper bound is 100.
 
-This argument is ignored when ``kernel`` is ``None``.""",
+This argument is ignored when `kernel` is `None`.""",
     )
 
     alpha: float | NDArrayPydantic = Field(
@@ -73,8 +73,8 @@ This argument is ignored when ``kernel`` is ``None``.""",
         default=SEED,
         description="""The random state parameter.
 
-If ``None``, use the global random state instance from ``numpy.random``.
+If `None`, use the global random state instance from `numpy.random`.
 Creating the model multiple times will produce different results.
-If ``int``, use a new random number generator seeded by this integer.
+If `int`, use a new random number generator seeded by this integer.
 This will produce the same results.""",
     )

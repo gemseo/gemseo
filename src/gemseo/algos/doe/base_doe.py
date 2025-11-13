@@ -43,7 +43,7 @@ class BaseDOE(metaclass=BaseABCMultiton):
 
         Args:
             n_samples: The number of samples.
-                Ignored if ``settings`` is not `None`.
+                Ignored if `settings` is not `None`.
             dimension: The dimension of the sampling space.
             settings: The settings of the DOE algorithm.
 

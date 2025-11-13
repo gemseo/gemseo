@@ -69,34 +69,35 @@ LOGGER = logging.getLogger(__name__)
 class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     """A base class for caches with a dictionary-like interface.
 
-    Caches are mainly used to store the :class:`.Discipline` evaluations.
+    Caches are mainly used
+    to store the [Discipline][gemseo.core.discipline.discipline.Discipline] evaluations.
 
     A cache entry is defined by:
 
     - an input data
       in the form of a dictionary of objects associated with input names,
-      i.e. ``{"input_name": object}``,
+      i.e. `{"input_name": object}`,
     - an output data
       in the form of a dictionary of NumPy arrays associated with output names,
-      i.e. ``{"output_name": array}``.
+      i.e. `{"output_name": array}`.
     - an optional Jacobian data,
       in the form of a nested dictionary of NumPy arrays
       associating output and input names,
-      i.e. ``{"output_name": {"input_name": array}}``.
+      i.e. `{"output_name": {"input_name": array}}`.
 
     Examples:
-        The evaluation of the function :math:`y=f(x)=(x^2, 2x^3`)`
-        and its derivative at :math:`x=1` leads to cache the entry defined by:
+        The evaluation of the function $y=f(x)=(x^2, 2x^3$)`
+        and its derivative at $x=1$ leads to cache the entry defined by:
 
-        - the input data: :math:`1.`,
-        - the output data: :math:`(1., 2.)`,
-        - the Jacobian data: :math:`(2., 6.)^T`.
+        - the input data: $1.$,
+        - the output data: $(1., 2.)$,
+        - the Jacobian data: $(2., 6.)^T$.
 
         >>> input_data = {"x": array([1.0])}
         >>> output_data = {"y": array([1.0, 2.0])}
         >>> jacobian_data = {"y": {"x": array([[2.0], [6.0]])}}
 
-        For this ``input_data``,
+        For this `input_data`,
         one can cache the output data:
 
         >>> cache.cache_outputs(input_data, output_data)
@@ -105,31 +106,34 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
         >>> cache.cache_jacobian(input_data, jacobian_data)
 
-    Caches have a :class:`.abc.Mapping` interface
-    making them easy to set (``cache[input_data] = (output_data, jacobian_data)``),
-    access (``cache_entry = cache[input_data]``)
-    and update (``cache.update(other_cache)``).
+    Caches have a [Mapping][collections.abc.Mapping] interface
+    making them easy to set (`cache[input_data] = (output_data, jacobian_data)`),
+    access (`cache_entry = cache[input_data]`)
+    and update (`cache.update(other_cache)`).
 
     Notes:
-        ``cache_entry`` is a :class:`.CacheEntry`
+        `cache_entry` is a [CacheEntry][gemseo.caches.cache_entry.CacheEntry]
         with the ordered fields *input*, *output* and *jacobian*
-        accessible either by index, e.g. ``input_data = cache_entry[0]``,
-        or by name, e.g. ``input_data = cache_entry.inputs``.
+        accessible either by index, e.g. `input_data = cache_entry[0]`,
+        or by name, e.g. `input_data = cache_entry.inputs`.
 
     Notes:
         If an output name is also an input name,
-        the output name is suffixed with ``[out]``.
+        the output name is suffixed with `[out]`.
 
-    One can also get the number of cache entries with ``size = len(cache)``
+    One can also get the number of cache entries with `size = len(cache)`
     and iterate over the cache,
-    e.g. ``for input_data, output_data, _ in cache``
-    ``for index, (input_data, _, jacobian_data) in enumerate(cache)``
-    or ``[entry.outputs for entry in cache]``.
+    e.g. `for input_data, output_data, _ in cache`
+    `for index, (input_data, _, jacobian_data) in enumerate(cache)`
+    or `[entry.outputs for entry in cache]`.
 
     See Also:
-        :class:`.SimpleCache` to store the last discipline evaluation.
-        :class:`.MemoryFullCache` to store all the discipline evaluations in memory.
-        :class:`.HDF5Cache` to store all the discipline evaluations in a HDF5 file.
+        [SimpleCache][gemseo.caches.simple_cache.SimpleCache]
+        to store the last discipline evaluation.
+        [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache]
+        to store all the discipline evaluations in memory.
+        [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache]
+        to store all the discipline evaluations in a HDF5 file.
     """
 
     name: str
@@ -167,12 +171,12 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
         """
         Args:
             tolerance: The tolerance below which two input arrays are considered equal:
-                ``norm(new_array-cached_array)/(1+norm(cached_array)) <= tolerance``.
+                `norm(new_array-cached_array)/(1+norm(cached_array)) <= tolerance`.
                 If this is the case for all the input names,
                 then the cached output data shall be returned
                 rather than re-evaluating the discipline.
                 This tolerance could be useful to optimize CPU time.
-                It could be something like ``2 * numpy.finfo(float).eps``.
+                It could be something like `2 * numpy.finfo(float).eps`.
             name: A name for the cache. If empty, use the class name.
         """  # noqa: D205, D212, D415
         self._tolerance = tolerance
@@ -335,20 +339,21 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> Dataset:
-        """Build a :class:`.Dataset` from the cache.
+        """Build a [Dataset][gemseo.datasets.dataset.Dataset] from the cache.
 
         Args:
             name: A name for the dataset.
                 If empty, use the name of the cache.
             categorize: Whether to distinguish
                 between the different groups of variables.
-                Otherwise, group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+                Otherwise, group all the variables in
+                [PARAMETER_GROUP][gemseo.datasets.dataset.Dataset.PARAMETER_GROUP].
             input_names: The names of the inputs to be exported.
                 If empty, use all the inputs.
             output_names: The names of the outputs to be exported.
                 If empty, use all the outputs.
                 If an output name is also an input name,
-                the output name is suffixed with ``[out]``.
+                the output name is suffixed with `[out]`.
 
         Returns:
             A dataset version of the cache.

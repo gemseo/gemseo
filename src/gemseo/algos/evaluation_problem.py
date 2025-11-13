@@ -68,7 +68,9 @@ class EvaluationProblem(BaseProblem):
     """A problem to evaluate functions over a design space.
 
     This problem can only include observables,
-    i.e. functions with :attr:`~.MDOFunction.FunctionType.OBS` as function type.
+    i.e. functions with
+    [MDOFunction.FunctionType.OBS][gemseo.core.mdo_functions.mdo_function.MDOFunction.FunctionType]
+    as function type.
     """
 
     __new_iter_observables: Observables
@@ -89,17 +91,19 @@ class EvaluationProblem(BaseProblem):
     evaluation_counter: EvaluationCounter
     """The counter of function evaluations.
 
-    Every execution of a :class:`.DriverLibrary` handling this problem
-    increments this counter by 1.
+    Every execution
+    of a [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary]
+    handling this problem increments this counter by 1.
     """
 
     differentiation_step: float
     """The differentiation step."""
 
     _stop_if_nan: bool
-    """Whether the evaluation stops when a function returns ``NaN``."""
+    """Whether the evaluation stops when a function returns `NaN`."""
 
     ApproximationMode = ApproximationMode
+    """Enumeration of approximation modes."""
 
     class _DifferentiationMethod(StrEnum):
         """The additional differentiation methods."""
@@ -131,7 +135,7 @@ class EvaluationProblem(BaseProblem):
         Args:
             design_space: The design space on which the functions are evaluated.
             database: The initial database to store the function evaluations.
-                If ``None``,
+                If `None`,
                 the problem starts from an empty database.
                 If there is no need to store the function evaluations,
                 this argument is ignored.
@@ -139,14 +143,10 @@ class EvaluationProblem(BaseProblem):
                 to evaluate the derivatives.
             differentiation_step: The step used by the differentiation method.
                 This argument is ignored
-                when the differentiation method is not an :attr:`.ApproximationMode`.
+                when the differentiation method is not an
+                [ApproximationMode][gemseo.algos.evaluation_problem.EvaluationProblem.ApproximationMode].
             parallel_differentiation: Whether
                 to approximate the derivatives in parallel.
-            hdf_node_path: The path of the node in the HDF file
-                to store the function evaluations.
-                If empty, the root node is considered.
-                This argument is ignored
-                when ``database`` is a ``Database`` or the empty string.
             **parallel_differentiation_options: The options
                 to approximate the derivatives in parallel.
         """  # noqa: D205, D212, D415
@@ -189,7 +189,7 @@ class EvaluationProblem(BaseProblem):
 
     @property
     def stop_if_nan(self) -> bool:
-        """Whether the evaluation stops when a function returns ``NaN``."""
+        """Whether the evaluation stops when a function returns `NaN`."""
         return self._stop_if_nan
 
     @stop_if_nan.setter
@@ -223,7 +223,8 @@ class EvaluationProblem(BaseProblem):
         """Whether to approximate the derivatives in parallel.
 
         This attribute is ignored
-        when the differentiation method is not an :attr:`.ApproximationMode`.
+        when the differentiation method is not an
+        [ApproximationMode][gemseo.algos.evaluation_problem.EvaluationProblem.ApproximationMode].
         """
         return self.__parallel_differentiation
 
@@ -237,7 +238,8 @@ class EvaluationProblem(BaseProblem):
         """The options to approximate the derivatives in parallel.
 
         This attribute is ignored
-        when the differentiation method is not an :attr:`.ApproximationMode`.
+        when the differentiation method is not an
+        [ApproximationMode][gemseo.algos.evaluation_problem.EvaluationProblem.ApproximationMode].
         """
         return self.__parallel_differentiation_options
 
@@ -273,8 +275,10 @@ class EvaluationProblem(BaseProblem):
     ) -> None:
         """Add an observable function.
 
-        It is an :class:`.MDOFunction`
-        with :attr:`~.MDOFunction.FunctionType.OBS` as function type.
+        It is an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+        with
+        [MDOFunction.FunctionType.OBS][gemseo.core.mdo_functions.mdo_function.MDOFunction.FunctionType]
+        as function type.
 
         Args:
             observable: The observable function.
@@ -292,17 +296,17 @@ class EvaluationProblem(BaseProblem):
 
     @property
     def functions(self) -> list[MDOFunction]:
-        """All the functions except :attr:`.new_iter_observables`."""
+        """All the functions except the "new iter" observables."""
         return list(self.__observables)
 
     @property
     def original_functions(self) -> list[MDOFunction]:
-        """All the original functions except those of :attr:`.new_iter_observables`."""
+        """All the original functions except those of the "new iter" observables."""
         return list(self.__observables.get_originals())
 
     @property
     def function_names(self) -> list[str]:
-        """All the function names except those of :attr:`.new_iter_observables`."""
+        """All the function names except those of the "new iter" observables."""
         return [function.name for function in self.functions]
 
     def _check_function_name(self, function: MDOFunction) -> None:
@@ -340,9 +344,11 @@ class EvaluationProblem(BaseProblem):
                 whose argument is a design vector.
             at_each_iteration: Whether to evaluate the listeners
                 after evaluating all functions
-                for a given point and storing their values in the :attr:`.database`.
+                for a given point and storing their values in the
+                [database][gemseo.algos.evaluation_problem.EvaluationProblem.database].
             at_each_function_call: Whether to evaluate the listeners
-                after storing any new value in the :attr:`.database`.
+                after storing any new value in the
+                [database][gemseo.algos.evaluation_problem.EvaluationProblem.database].
             output_names: The names of the output variables
                 whose values are to be stored in the database by this listener.
         """
@@ -366,14 +372,14 @@ class EvaluationProblem(BaseProblem):
             observable_names: The names of the observables to evaluate.
                 If empty,
                 then all the observables are evaluated.
-                If ``None``,
+                If `None`,
                 then no observable is evaluated.
             jacobian_names: The names of the functions
                 whose Jacobian matrices must be computed.
                 If empty,
                 then compute the Jacobian matrices of the functions
                 that are selected for evaluation using the other arguments.
-                If ``None``,
+                If `None`,
                 then no Jacobian matrices is computed.
             **kwargs: The options to select the functions to be evaluated.
 
@@ -382,7 +388,7 @@ class EvaluationProblem(BaseProblem):
             and the functions computing the Jacobians.
 
         Raises:
-            ValueError: If a name in ``jacobian_names`` is not the name of
+            ValueError: If a name in `jacobian_names` is not the name of
                 a function of the problem.
         """
         output_functions = self._get_functions(
@@ -426,19 +432,19 @@ class EvaluationProblem(BaseProblem):
 
         Args:
             design_vector: The design vector at which to evaluate the functions;
-                if ``None``, use the current value of the design space.
-            design_vector_is_normalized: Whether ``design_vector`` is normalized.
+                if `None`, use the current value of the design space.
+            design_vector_is_normalized: Whether `design_vector` is normalized.
             preprocess_design_vector: Whether to preprocess the design vector.
             output_functions: The functions computing the outputs.
                 If empty, evaluate all the functions computing outputs.
-                If ``None``, do not evaluate functions computing outputs.
+                If `None`, do not evaluate functions computing outputs.
             jacobian_functions: The functions computing the Jacobians.
                 If empty, evaluate all the functions computing Jacobians.
-                If ``None``, do not evaluate functions computing Jacobians.
+                If `None`, do not evaluate functions computing Jacobians.
 
         Returns:
             The output values of the functions,
-            as well as their Jacobian matrices if ``jacobian_functions`` is empty.
+            as well as their Jacobian matrices if `jacobian_functions` is empty.
         """
         if output_functions is None and jacobian_functions is None:
             return {}, {}
@@ -497,14 +503,14 @@ class EvaluationProblem(BaseProblem):
     def _get_options_for_get_functions(
         self, jacobian_names: list[str]
     ) -> dict[str, Any]:
-        """Return the options for :meth:`._get_functions.
+        """Return the options for `_get_functions()`.
 
         Args:
             jacobian_names: The names of the functions
                 whose Jacobian matrices must be computed.
 
         Returns:
-            The options for :meth:`._get_functions.
+            The options for `_get_functions()`.
         """
         return {}
 
@@ -518,7 +524,7 @@ class EvaluationProblem(BaseProblem):
 
         Args:
             input_value: The design variables.
-                If ``None``, use the current value of the design space.
+                If `None`, use the current value of the design space.
             normalized: Whether the design variables are normalized.
             normalization_expected: Whether the functions expect normalized variables.
 
@@ -557,7 +563,7 @@ class EvaluationProblem(BaseProblem):
             observable_names: The names of the observables to return.
                 If empty,
                 then all the observables are returned.
-                If ``None``,
+                If `None`,
                 then no observable is returned.
             no_db_no_norm: Whether to prevent
                 both database backup and design vector normalization.
@@ -608,7 +614,7 @@ class EvaluationProblem(BaseProblem):
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
             support_sparse_jacobian: Whether the driver supports sparse Jacobian.
             store_jacobian: Whether to store the Jacobian matrices in the database.
-                This argument is ignored when ``use_database`` is ``False``.
+                This argument is ignored when `use_database` is `False`.
             vectorize: Whether to vectorize the functions evaluations.
         """
         # Avoids multiple wrappings of functions when multiple executions
@@ -787,21 +793,25 @@ class EvaluationProblem(BaseProblem):
         input_values: Iterable[RealArray] = (),
         **dataset_options: Any,
     ) -> Dataset:
-        """Export the database of the problem to a :class:`.Dataset`.
+        """Export the database of the problem to dataset.
 
         Args:
             name: The name to be given to the dataset.
                 If empty,
-                use the name of the :attr:`~.database`.
+                use the name of the
+                [database][gemseo.algos.evaluation_problem.EvaluationProblem.database].
             categorize: Whether to distinguish
                 between the different groups of variables.
                 If so,
-                use an :class:`.IODataset`
-                with the design variables in the :attr:`.IODataset.INPUT_GROUP`
+                use an [IODataset][gemseo.datasets.io_dataset.IODataset]
+                with the design variables in the
+                [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
                 and the functions and their derivatives
-                in the :attr:`.IODataset.OUTPUT_GROUP`.
+                in the
+                [OUTPUT_GROUP][gemseo.datasets.io_dataset.IODataset.OUTPUT_GROUP].
                 Otherwise,
-                group all the variables in :attr:`.Dataset.PARAMETER_GROUP``.
+                group all the variables in
+                [PARAMETER_GROUP][gemseo.datasets.dataset.Dataset.PARAMETER_GROUP].
             export_gradients: Whether to export the gradients of the functions
                 if the latter are available in the database of the problem.
             input_values: The input values to be considered.
@@ -844,7 +854,7 @@ class EvaluationProblem(BaseProblem):
             current_iter: Whether to reset the counter of evaluations
                 to the initial iteration.
             design_space: Whether to reset the current value of the design space
-                which can be ``None``.
+                which can be `None`.
             function_calls: Whether to reset the number of calls of the functions.
             preprocessing: Whether to turn the pre-processing of functions to False.
         """

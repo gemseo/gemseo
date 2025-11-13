@@ -65,7 +65,9 @@ if TYPE_CHECKING:
 class HSICAnalysis(BaseSensitivityAnalysis):
     """Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC).
 
-    The :meth:`.compute_indices` method proposes three types of sensitivity analysis:
+    The
+    [compute_indices()][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
+    method proposes three types of sensitivity analysis:
 
     - global sensitivity analysis (GSA, default)
       to identify the input variables
@@ -83,7 +85,9 @@ class HSICAnalysis(BaseSensitivityAnalysis):
     only U-statistics is possible.
 
     Given a sensitivity analysis type and a statistics estimation technique,
-    the :meth:`.compute_indices` method returns the standard HSIC indices
+    the
+    [compute_indices()][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
+    method returns the standard HSIC indices
     and the normalized ones, also called R2-HSIC indices.
 
     Examples:
@@ -128,10 +132,10 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             CovarianceModelImplementation
         ] = SquaredExponential,
     ) -> Sequence[CovarianceModelImplementation]:
-        r"""Create :math:`d` covariance models.
+        r"""Create $d$ covariance models.
 
         Args:
-            sample: A sample of a :math:`d`-length vector.
+            sample: A sample of a $d$-length vector.
             covariance_model_class: A name of covariance model class.
 
         Returns:
@@ -181,7 +185,8 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         """Conditional sensitivity analysis.
 
         This sensitivity analysis is incompatible
-        with :attr:`.StatisticEstimator.USTAT`.
+        with
+        [StatisticEstimator.USTAT][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.StatisticEstimator.USTAT].
         """
 
     __ANALYSIS_TO_OT_CLASSES: Final[
@@ -245,16 +250,17 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                 If empty,
                 use the names of the outputs set at instantiation.
                 In the case of target and conditional sensitivity analyses,
-                these output names are the keys of the dictionary ``output_bounds``
-                and the argument ``output_names`` is ignored.
+                these output names are the keys of the dictionary `output_bounds`
+                and the argument `output_names` is ignored.
             output_bounds: The lower and upper bounds of the outputs
-                specified as ``{name: (lower, upper), ...}``.
+                specified as `{name: (lower, upper), ...}`.
                 This argument is ignored in the case of global sensitivity analysis.
                 This argument is mandatory
                 in the case of target and conditional sensitivity analyses.
             statistic_estimator: The name of the statistic estimator type.
                 This argument is ignored
-                when ``analysis_type`` is :attr:`~.AnalysisType.CONDITIONAL`;
+                when `analysis_type` is
+                [CONDITIONAL][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.AnalysisType.CONDITIONAL];
                 in this case,
                 the U-statistics do not exist and V-statistics are considered.
             input_covariance_model: The name of the covariance model class of the

@@ -46,12 +46,12 @@ class PYDOE_LHS_Settings(BasePyDOESettings):  # noqa: N801
         default=None,
         description="""The criterion to use when sampling the points.
 
-If ``None``, randomize the points within the intervals.""",
+If `None`, randomize the points within the intervals.""",
     )
 
     iterations: PositiveInt = Field(
         default=5,
-        description="The number of iterations in the ``correlation``/``maximin`` algorithms.",  # noqa: E501
+        description="The number of iterations in the `correlation`/`maximin` algorithms.",  # noqa: E501
     )
 
     n_samples: PositiveInt = Field(description="""The number of samples.""")
@@ -60,5 +60,6 @@ If ``None``, randomize the points within the intervals.""",
         default=None,
         description="""The seed used for reproducibility reasons.
 
-If ``None``, use :class:`~.BaseDOELibrary.seed`.""",
+If `None`,
+use [BaseDOELibrary.seed][gemseo.algos.doe.base_doe_library.BaseDOELibrary.seed].""",
     )

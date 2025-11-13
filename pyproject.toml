@@ -2,7 +2,7 @@
 name = "gemseo"
 authors = [{ name = "GEMSEO developers", email = "contact@gemseo.org" }]
 description = "Generic Engine for Multi-disciplinary Scenarios, Exploration and Optimization"
-readme = "README.rst"
+readme = "README.md"
 license = "LGPL-3.0"
 license-files = ["LICENSE.txt"]
 classifiers = [
@@ -65,27 +65,29 @@ all = [
 dev = [
   "covdefaults >=2",
   "pandera >=0.20",
-  # Pin lower bound for the
   "pytest >=7,<9",
   "pytest-cov >=5",
   "pytest-xdist >=3",
 ]
 doc = [
-  "autodoc_pydantic",
-  "autodocsumm",
-  "setuptools",
+  "black",
+  "click==8.2.1",
+  "griffe-fieldz",
+  "griffe-inherited-docstrings",
+  "markdown-exec[ansi]",
+  "mike",
+  "mkdocs-bibtex",
+  "mkdocs-gallery",
+  "mkdocs-gen-files",
+  "mkdocs-include-markdown-plugin",
+  "mkdocs-literate-nav",
+  "mkdocs-macros-plugin",
+  "mkdocs-material",
+  "mkdocs-section-index",
+  "mkdocstrings[python]",
+  "mkdocs-autorefs",
   # For supporting DataFrame in pydantic models in an example.
   "pandera",
-  "pillow",
-  "pydata-sphinx-theme",
-  "pyenchant",
-  "sphinx",
-  "sphinx-design",
-  "sphinx_gallery",
-  "sphinxcontrib.apidoc",
-  "sphinxcontrib.bibtex",
-  "sphinxcontrib.plantuml",
-  "sphinxcontrib.spelling",
 ]
 
 [project.urls]
@@ -100,8 +102,8 @@ gemseo-deserialize-run = "gemseo.utils.deserialize_and_run:main"
 
 [build-system]
 requires = [
-    "setuptools",
-    "setuptools_scm[toml]",
+  "setuptools",
+  "setuptools_scm[toml]",
 ]
 build-backend = "setuptools.build_meta"
 

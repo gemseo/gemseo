@@ -50,7 +50,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 it takes a NumPy array in input and returns a NumPy array.
 
         Returns:
-            A function making the function ``func`` work with
+            A function making the function `func` work with
             either a NumPy data array
             or a dictionary of NumPy data arrays indexed by variables names.
             The evaluation will have the same type as the input data.
@@ -63,14 +63,14 @@ class SupervisedDataFormatters(BaseDataFormatters):
             *args: Any,
             **kwargs: Any,
         ) -> DataType:
-            """Evaluate ``func`` with either array or dictionary-based input data.
+            """Evaluate `func` with either array or dictionary-based input data.
 
             Firstly,
             the pre-processing stage converts the input data to a NumPy data array,
             if these data are expressed as a dictionary of NumPy data arrays.
 
             Then,
-            the processing evaluates the function ``func``
+            the processing evaluates the function `func`
             from this NumPy input data array.
 
             Lastly,
@@ -81,8 +81,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
             Args:
                 algo: The supervised learning algorithm.
                 input_data: The input data.
-                *args: The positional arguments of the function ``func``.
-                **kwargs: The keyword arguments of the function ``func``.
+                *args: The positional arguments of the function `func`.
+                **kwargs: The keyword arguments of the function `func`.
 
             Returns:
                 The output data with the same type as the input one.
@@ -138,7 +138,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                     while the second one represents the components of the variables.
 
             Returns:
-                A function making the function ``func`` work with
+                A function making the function `func` work with
                 either a 1D NumPy array or a 2D NumPy array.
                 The evaluation will have the same dimension as the input data.
             """
@@ -150,14 +150,14 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 *args: Any,
                 **kwargs: Any,
             ) -> DataType:
-                """Evaluate ``func`` with either a 1D or 2D NumPy data array.
+                """Evaluate `func` with either a 1D or 2D NumPy data array.
 
                 Firstly,
                 the pre-processing stage converts the input data
                 to a 2D NumPy data array.
 
                 Then,
-                the processing evaluates the function ``func``
+                the processing evaluates the function `func`
                 from this 2D NumPy data array.
 
                 Lastly,
@@ -167,8 +167,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 Args:
                     algo: The supervised learning algorithm.
                     input_data: The input data.
-                    *args: The positional arguments of the function ``func``.
-                    **kwargs: The keyword arguments of the function ``func``.
+                    *args: The positional arguments of the function `func`.
+                    **kwargs: The keyword arguments of the function `func`.
 
                 Returns:
                     The output data with the same dimension as the input one.
@@ -214,7 +214,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 func: The function of interest to be called.
 
             Returns:
-                A function evaluating the function ``func``,
+                A function evaluating the function `func`,
                 after transforming its input data
                 and/or before transforming its output data.
             """
@@ -226,13 +226,13 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 *args: Any,
                 **kwargs: Any,
             ) -> ndarray:
-                """Evaluate ``func`` after or before data transformation.
+                """Evaluate `func` after or before data transformation.
 
                 Firstly,
                 the pre-processing stage transforms the input data if required.
 
                 Then,
-                the processing evaluates the function ``func``.
+                the processing evaluates the function `func`.
 
                 Lastly,
                 the post-processing stage transforms the output data if required.
@@ -244,7 +244,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                     **kwargs: The keyword arguments of the function.
 
                 Returns:
-                    Either the raw output data of ``func``
+                    Either the raw output data of `func`
                     or a transformed version according to the requirements.
                 """
                 if transform_inputs:
@@ -318,7 +318,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 func: The function of interest.
 
             Returns:
-                A function calling the function of interest ``func``,
+                A function calling the function of interest `func`,
                 while guaranteeing consistency in terms of data type and array shape,
                 and applying input and/or output data transformation if required.
             """

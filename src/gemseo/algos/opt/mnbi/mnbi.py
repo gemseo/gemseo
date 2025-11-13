@@ -19,7 +19,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """Modified Normal Boundary Intersection (mNBI) algorithm.
 
-Based on :cite:`shukla2007normal`.
+!!! quote "References"
+
+    Pradyumn Kumar Shukla.
+    On the normal boundary intersection method for generation of efficient front.
+    In Computational Science--ICCS 2007: 7th International Conference,
+    Beijing, China, May 27-30, 2007, Proceedings, Part I 7, 310--317. Springer, 2007.
 """
 
 from __future__ import annotations
@@ -146,49 +151,51 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     by decomposing it into a series of constrained single-objective problems.
     Considering the following problem:
 
-    .. math::
-
+    $$
         \begin{align}
         & \min_{x \in D} f(x),\\
         & g(x) \leq 0,\\
         & h(x) = 0
         \end{align}
+    $$
 
-    the algorithm first finds the individual optima :math:`(x_i^\ast)_{i=1..m}`
-    of the :math:`m` components of the objective function :math:`f`.
-    The corresponding anchor points :math:`(f(x_i^\ast))_{i=1..m}`
-    are stored in a matrix :math:`\Phi`.
+    the algorithm first finds the individual optima $(x_i^\ast)_{i=1..m}$
+    of the $m$ components of the objective function $f$.
+    The corresponding anchor points $(f(x_i^\ast))_{i=1..m}$
+    are stored in a matrix $\Phi$.
 
     The simplex formed by the convex hull of the anchor points
-    can be expressed as :math:`\Phi \beta`,
-    where :math:`\beta = \{ (b_1, ..., b_m)^T | \sum_{i=1}^m b_i =1 \}`.
+    can be expressed as $\Phi \beta$,
+    where $\beta = \{ (b_1, ..., b_m)^T | \sum_{i=1}^m b_i =1 \}$.
 
-    Given a list of vectors :math:`\beta`,
+    Given a list of vectors $\beta$,
     mNBI will solve the following single-objective problems:
 
-    .. math::
+    $$
         \begin{align}
         & \max_{x \in D, t \in \mathbb{R}} t,\\
         & \Phi \beta + t \hat{n} \geq f(x),\\
         & g(x) \leq 0,\\
         & h(x) = 0
         \end{align}
+    $$
 
-    where :math:`\hat{n}` is a quasi-normal vector to the :math:`\Phi \beta` simplex
+    where $\hat{n}$ is a quasi-normal vector to the $\Phi \beta$ simplex
     pointing towards the origin of the objective space.
-    If :math:`(x^{*}, t^{*})` is a solution of this problem,
-    :math:`x^{*}` is proven to be at least weakly Pareto-dominant.
+    If $(x^{*}, t^{*})$ is a solution of this problem,
+    $x^{*}$ is proven to be at least weakly Pareto-dominant.
 
-    Let :math:`w = \Phi \beta + t^{*} \hat{n}`,
-    and :math:`\pi` denote the projection (in the direction of :math:`\hat{n}`)
+    Let $w = \Phi \beta + t^{*} \hat{n}$,
+    and $\pi$ denote the projection (in the direction of $\hat{n}$)
     on the simplex formed by the convex hull of the anchor points.
-    If not all constraints :math:`\Phi \beta + t^{*} \hat{n} \geq f(x^{*})` are active,
-    :math:`x^{*}` will weakly dominate the solution of the sub-problem
-    for all values :math:`\beta_{dom}` that verify:
+    If not all constraints $\Phi \beta + t^{*} \hat{n} \geq f(x^{*})$ are active,
+    $x^{*}$ will weakly dominate the solution of the sub-problem
+    for all values $\beta_{dom}$ that verify:
 
-    .. math::
+    $$
         \Phi \beta_{dom} \in \pi[(f(x^{*}) + \mathbb{R}_m^{+})
         \cap (w - \mathbb{R}_m^{+})]
+    $$
 
     Therefore, the corresponding sub-optimizations are redundant
     and can be skipped to reduce run time.
@@ -207,7 +214,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     """The bounding points of the custom phi simplex to be used in the optimization."""
 
     __custom_phi_betas: Iterable[RealArray]
-    r"""The custom values of :math:`\Phi \beta` to be used in the optimization."""
+    r"""The custom values of $\Phi \beta$ to be used in the optimization."""
 
     __n_obj: int
     """The number of objectives of the optimization problem."""
@@ -219,23 +226,23 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     """The quasi-normal vector to the phi simplex."""
 
     __phi: RealArray
-    r"""The matrix :math:`\Phi=(f(x^{(1),*}) | \ldots | f(x^{(d),*}))`.
+    r"""The matrix $\Phi=(f(x^{(1),*}) | \ldots | f(x^{(d),*}))$.
 
-    Where :math:`f=(f_1,\ldots,f_d)` is the multi-objective function
-    and :math:`x^{(i),*}` the design point minimizing :math:`f_i`.
+    Where $f=(f_1,\ldots,f_d)$ is the multi-objective function
+    and $x^{(i),*}$ the design point minimizing $f_i$.
 
-    It has the shape ``(n_obj, n_obj)``.
+    It has the shape `(n_obj, n_obj)`.
     """
 
     __skippable_domains: list[RealArray]
     """The regions of the phi simplex that can be skipped."""
 
     __utopia: RealArray
-    r"""The utopia :math:`(f_1(x^{(1),*}), \ldots, f_d(x^{(d),*}))`.
+    r"""The utopia $(f_1(x^{(1),*}), \ldots, f_d(x^{(d),*}))$.
 
-    Where :math:`x^{(i),*}` the design point minimizing :math:`f_i`.
+    Where $x^{(i),*}$ the design point minimizing $f_i$.
 
-    It has the shape ``(n_obj, 1)`` and it is the diagonal of :attr:`.__phi`.
+    It has the shape `(n_obj, 1)` and it is the diagonal of `__phi`.
     """
 
     __SUB_OPTIM_CONSTRAINT_NAME: Final[str] = "beta_sub_optim_constraint"
@@ -327,9 +334,9 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
         Args:
             index: The index of the worker used to run the sub-optimization.
-                Provided by |g| but unused here.
+                Provided by GEMSEO but unused here.
             outputs: The outputs of the sub-optimization
-                returned by ``_minimize_objective_component``.
+                returned by `_minimize_objective_component`.
         """
         if self._settings.n_processes > 1:
             # Store the sub-process database in the main database
@@ -353,13 +360,13 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
     @staticmethod
     def _t_extraction_func(x_t: RealArray) -> RealArray:
-        """Return the value of ``t`` from a vector concatenating ``x`` and ``t``.
+        """Return the value of `t` from a vector concatenating `x` and `t`.
 
         Args:
-            x_t: A vector concatenating ``x`` and ``t``.
+            x_t: A vector concatenating `x` and `t`.
 
         Returns:
-            The value of ``t``.
+            The value of `t`.
         """
         return x_t[-1]
 
@@ -368,10 +375,10 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         """Compute the Jacobian of `_t_extraction_func`.
 
         Args:
-            x_t: A vector concatenating ``x`` and ``t``.
+            x_t: A vector concatenating `x` and `t`.
 
         Returns:
-            The Jacobian of ``_t_extraction_func`` at ``x_t``.
+            The Jacobian of `_t_extraction_func` at `x_t`.
         """
         jac = zeros_like(x_t)[newaxis]
         jac[0][-1] = 1
@@ -380,8 +387,8 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     def __create_beta_sub_optim(self) -> None:
         """Create the beta sub-optimization problem.
 
-        The goal is to maximize ``t``
-        w.r.t. the design variables ``x`` and the real variable ``t``.
+        The goal is to maximize `t`
+        w.r.t. the design variables `x` and the real variable `t`.
         """
         design_space = deepcopy(self._problem.design_space)
         design_space.add_variable("t", value=0.0)
@@ -396,7 +403,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     def _run_beta_sub_optim(
         self, phi_beta: RealArray
     ) -> BetaSubOptimOutput | tuple[()]:
-        r"""Run the sub-optimization problem for a given value of :math:`\Phi \beta`.
+        r"""Run the sub-optimization problem for a given value of $\Phi \beta$.
 
         If the main problem has two objectives, the sub-optimization starts from the
         previous sub-problem result to accelerate convergence, since the optima of two
@@ -406,16 +413,16 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         initial point.
 
         Args:
-            phi_beta: The coordinates of the point :math:`\Phi \beta` of the phi simplex
+            phi_beta: The coordinates of the point $\Phi \beta$ of the phi simplex
                 used in the sub-optimization problem.
 
         Returns:
             The coordinates in the objective space of the sub-optimization result.
             The coordinates in the design space of the sub-optimization result.
-            The vector w used to compute the values of :math:`\Phi \beta`
+            The vector w used to compute the values of $\Phi \beta$
                 that can be skipped in the following sub-optimizations.
                 This is computed only if one component
-                of the beta sub-constraint is inactive. Otherwise, returns ``None``.
+                of the beta sub-constraint is inactive. Otherwise, returns `None`.
             The database of the main problem. This is returned so that it can be copied
                 in the database of the main process, to store the evaluations done in
                 each sub-process.
@@ -594,7 +601,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
         Returns:
             The coordinates in the objective space of the projection of y on the phi
-            simplex. ``None`` when the projection on the phi simplex failed.
+            simplex. `None` when the projection on the phi simplex failed.
         """
         m = self.__n_obj
         eye_m = eye(m)

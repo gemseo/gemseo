@@ -17,33 +17,29 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a scatter matrix from a :class:`.Dataset`.
+r"""Draw a scatter matrix from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-The :class:`.ScatterMatrix` class implements the scatter plot matrix,
-which is a way to visualize :math:`n` samples of a
+The [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix] class
+implements the scatter plot matrix,
+which is a way to visualize $n$ samples of a
 multi-dimensional vector
 
-.. math::
-
-   x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d
+$$x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d$$
 
 in several 2D subplots where the (i,j) subplot represents the cloud
 of points
 
-.. math::
-
-   \left(x_i^{(k)},x_j^{(k)}\right)_{1\leq k \leq n}
+$$\left(x_i^{(k)},x_j^{(k)}\right)_{1\leq k \leq n}$$
 
 while the (i,i) subplot represents the empirical distribution of the samples
 
-.. math::
+$$x_i^{(1)},\ldots,x_i^{(n)}$$
 
-   x_i^{(1)},\ldots,x_i^{(n)}
+by means of a histogram or a kernel density estimator.
 
-by means of an histogram or a kernel density estimator.
-
-A variable name can be passed to the :meth:`.DatasetPlot.execute` method
-by means of the ``classifier`` keyword in order to color the curves
+A variable name is required by the
+[DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute] method
+by means of the `classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
 """
@@ -98,7 +94,7 @@ class ScatterMatrix(DatasetPlot):
             classifier: The name of the variable to group data.
                 If empty, do not group data.
             kde: The type of the distribution representation.
-                If ``True``, plot kernel-density estimator on the diagonal.
+                If `True`, plot kernel-density estimator on the diagonal.
                 Otherwise, use histograms.
             size: The size of the points.
             marker: The marker for the points.

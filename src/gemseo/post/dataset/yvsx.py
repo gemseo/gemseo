@@ -17,11 +17,12 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw a variable versus another from a :class:`.Dataset`.
+"""Draw a variable versus another from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-A :class:`.YvsX` plot represents samples of a couple :math:`(x,y)` as a set of points
-whose values are stored in a :class:`.Dataset`. The user can select the style of line or
-markers, as well as the color.
+A [YvsX][gemseo.post.dataset.yvsx.YvsX] plot represents samples
+of a couple $(x,y)$ as a set of points
+whose values are stored in a [Dataset][gemseo.datasets.dataset.Dataset].
+The user can select the style of line or markers, as well as the color.
 """
 
 from __future__ import annotations
@@ -44,11 +45,11 @@ class YvsX(DatasetPlot):
         """
         Args:
             x: The name of the variable on the x-axis,
-                with its optional component if not ``0``,
-                e.g. ``("foo", 3)`` for the fourth component of the variable ``"foo"``.
+                with its optional component if not `0`,
+                e.g. `("foo", 3)` for the fourth component of the variable `"foo"`.
             y: The name of the variable on the y-axis,
-                with its optional component if not ``0``,
-                e.g. ``("bar", 3)`` for the fourth component of the variable ``"bar"``.
+                with its optional component if not `0`,
+                e.g. `("bar", 3)` for the fourth component of the variable `"bar"`.
         """  # noqa: D205, D212, D415
         super().__init__(
             dataset,

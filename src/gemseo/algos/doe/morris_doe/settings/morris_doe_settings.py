@@ -25,7 +25,7 @@ from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 
 class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801
-    """The ``MorrisDOE`` settings."""
+    """The `MorrisDOE` settings."""
 
     _TARGET_CLASS_NAME = "MorrisDOE"
 
@@ -34,7 +34,7 @@ class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801
         description=(
             """The maximum number of samples required by the user.
 
-            If 0, deduce it from the design space dimension and ``n_replicates``.
+            If 0, deduce it from the design space dimension and `n_replicates`.
             """
         ),
     )

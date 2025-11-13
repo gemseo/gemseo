@@ -14,52 +14,56 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Uncertainty quantification and management.
 
-The package :mod:`~gemseo.uncertainty` provides several functionalities
+The package [gemseo.uncertainty][gemseo.uncertainty] provides several functionalities
 to quantify and manage uncertainties.
 Most of them can be used from the high-level functions provided by this module.
 
-The sub-package :mod:`~gemseo.uncertainty.distributions` offers an abstract level
+The sub-package  [gemseo.uncertainty.distributions][gemseo.uncertainty.distributions]
+offers an abstract level
 for probability distributions, as well as interfaces to the OpenTURNS and SciPy ones.
 It is also possible to fit a probability distribution from data
 or select the most likely one from a list of candidates.
-These distributions can be used to define random variables in a :class:`.ParameterSpace`
-before propagating these uncertainties through a system of :class:`.Discipline`,
-by means of a :class:`.DOEScenario`.
+These distributions can be used to define random variables
+in a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+before propagating these uncertainties through
+a system of [Discipline][gemseo.core.discipline.discipline.Discipline],
+by means of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
 
-.. seealso::
+See Also:
+    [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+    [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+    [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.fitting.OTDistributionFitter]
 
-    :class:`.OTDistribution`
-    :class:`.SPDistribution`
-    :class:`.OTDistributionFitter`
-
-The sub-package :mod:`~gemseo.uncertainty.sensitivity` offers an abstract level
+The sub-package [gemseo.uncertainty.sensitivity][gemseo.uncertainty.sensitivity]
+offers an abstract level
 for sensitivity analysis, as well as concrete features.
 These sensitivity analyses compute indices by means of various methods:
 correlation measures, Morris technique and Sobol' variance decomposition.
 This sub-package is based in particular on OpenTURNS.
 
-.. seealso::
+See Also:
+    [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis]
+    [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis]
+    [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
+    [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis]
 
-    :class:`.CorrelationAnalysis`
-    :class:`.MorrisAnalysis`
-    :class:`.SobolAnalysis`
-    :class:`.HSICAnalysis`
-
-The sub-package :mod:`~gemseo.uncertainty.statistics` offers an abstract level
+The sub-package [gemseo.uncertainty.statistics][gemseo.uncertainty.statistics]
+offers an abstract level
 for statistics, as well as parametric and empirical versions.
-Empirical statistics are estimated from a :class:`.Dataset`
-while parametric statistics are analytical properties of a :class:`.BaseDistribution`
-fitted from a :class:`.Dataset`.
+Empirical statistics are estimated from a [Dataset][gemseo.datasets.dataset.Dataset]
+while parametric statistics are analytical properties of a
+[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+fitted from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-.. seealso::
-
-    :class:`.EmpiricalStatistics`
-    :class:`.ParametricStatistics`
+See Also:
+    [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+    [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics]
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
 from gemseo.utils.pickle import from_pickle as from_pickle
 
@@ -82,7 +86,7 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
 
     Args:
         base_class_name: The name of the base class of the probability distributions,
-            e.g. ``"BaseDistribution"``, ``"OTDistribution"`` or ``"SPDistribution"``.
+            e.g. `"BaseDistribution"`, `"OTDistribution"` or `"SPDistribution"`.
 
     Returns:
         The names of the available probability distributions.
@@ -104,7 +108,7 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
 
 def create_distribution(
     distribution_name: str,
-    **options,
+    **options: Any,
 ) -> BaseDistribution:
     """Create a distribution.
 
@@ -165,14 +169,16 @@ def create_statistics(
         fitting_criterion: The name of a goodness-of-fit criterion,
             measuring how a distribution fits the data.
             If empty,
-            use :attr:`.OTDistributionFitter.default_fitting_criterion``
-            or :attr:`.SPDistributionFitter.default_fitting_criterion``
-            according to the type of ``tested_distributions``.
+            use
+            [OTDistributionFitter.default_fitting_criterion][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.default_fitting_criterion]
+            or
+            [SPDistributionFitter.default_fitting_criterion][gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter.default_fitting_criterion]
+            according to the type of `tested_distributions`.
         selection_criterion: The name of a selection criterion
-            to select a distribution from ``tested_distributions``.
-            Either ``"first"``
+            to select a distribution from `tested_distributions`.
+            Either `"first"`
             (select the first distribution satisfying a fitting criterion)
-            or ``"best"``
+            or `"best"`
             (select the distribution that best satisfies a fitting criterion).
         level: A test level,
             i.e. the risk of committing a Type 1 error,
@@ -255,9 +261,11 @@ def create_sensitivity_analysis(
     Args:
         analysis: The name of a sensitivity analysis class.
         samples: The samples for the estimation of the sensitivity indices,
-            either as an :class:`.IODataset`
-            or as a pickle file path generated from the :func:`.to_pickle` function.
-            If empty, use :meth:`.compute_samples`.
+            either as an [IODataset][gemseo.datasets.io_dataset.IODataset]
+            or as a pickle file path generated
+            from the [to_pickle()][gemseo.utils.pickle.to_pickle] function.
+            If empty, use
+            [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples].
 
     Returns:
         The sensitivity analysis.

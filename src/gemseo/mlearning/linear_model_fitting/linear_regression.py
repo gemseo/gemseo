@@ -33,16 +33,14 @@ class LinearRegression(
     r"""Scikit-learn linear regression algorithm.
 
     Given the linear model fitting problem
-    presented in :mod:`this page <.linear_model_fitting>`,
+    presented in [this page][gemseo.mlearning.linear_model_fitting],
     this algorithm solves an ordinary least squares problem of the form:
 
-    .. math::
+    $$\min_w \|Xw-y\|_2^2$$
 
-       \min_w \|Xw-y\|_2^2
+    where $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
 
-    where :math:`\|Xw-y\|_2` is the :math:`\ell_2`-norm of the residual :math:`Xw-y`.
-
-    The solution of this problem is :math:`w^*=(X^\top X)^{-1}X^\top y`.
+    The solution of this problem is $w^*=(X^\top X)^{-1}X^\top y$.
     """
 
     Settings = LinearRegression_Settings

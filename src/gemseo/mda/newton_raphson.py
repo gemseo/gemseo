@@ -18,7 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """The Newton-Raphson algorithm for solving MDAs.
 
-`Newton-Raphson <https://en.wikipedia.org/wiki/Newton%27s_method>`__
+[Newton-Raphson](https://en.wikipedia.org/wiki/Newton%27s_method)
 """
 
 from __future__ import annotations
@@ -52,20 +52,16 @@ class _ProcessFlow(_BaseMDAProcessFlow):
 class MDANewtonRaphson(BaseParallelMDASolver):
     r"""Newton solver for MDA.
 
-    The `Newton-Raphson method <https://en.wikipedia.org/wiki/Newton%27s_method>`__ is
+    The [Newton-Raphson method](https://en.wikipedia.org/wiki/Newton%27s_method) is
     an iterative method to solve general equations of the form,
 
-    .. math::
+    $$F(x) = 0, \quad \text{where} \quad F: \mathbb{R}^n \rightarrow \mathbb{R}^n.$$
 
-        F(x) = 0, \quad \text{where} \quad F: \mathbb{R}^n \rightarrow \mathbb{R}^n.
+    Beginning with $x_0 \in \mathbb{R}^n$ the successive iterates are given by:
 
-    Beginning with :math:`x_0 \in \mathbb{R}^n` the successive iterates are given by:
+    $$x_{k+1} = x_k - J_f(x_k)^{-1} f(x_k),$$
 
-    .. math::
-
-       x_{k+1} = x_k - J_f(x_k)^{-1} f(x_k),
-
-    where :math:`J_f(x_k)` denotes the Jacobian of :math:`f` at :math:`x_k`.
+    where $J_f(x_k)$ denotes the Jacobian of $f$ at $x_k$.
     """
 
     Settings: ClassVar[type[MDANewtonRaphson_Settings]] = MDANewtonRaphson_Settings
@@ -111,7 +107,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
     def _set_differentiated_ios(self) -> None:
         """Set the differentiated inputs and outputs for the Newton algorithm.
 
-        Also ensures that :attr:`.JacobianAssembly.sizes` contains the sizes of all
+        Also ensures that `JacobianAssembly.sizes` contains the sizes of all
         the coupling sizes needed for Newton.
         """
         for discipline in self._disciplines:
@@ -137,7 +133,7 @@ class MDANewtonRaphson(BaseParallelMDASolver):
     def __compute_newton_step(self, input_data: StrKeyMapping) -> NDArray:
         """Compute the full Newton step without relaxation.
 
-        The Newton's step is defined as :math:`-[∂R/∂Y(y)]^{-1} R(y)`, where R(y) is the
+        The Newton's step is defined as $-[∂R/∂Y(y)]^{-1} R(y)$, where R(y) is the
         vector of coupling residuals and Y is the vector of couplings.
 
         Args:

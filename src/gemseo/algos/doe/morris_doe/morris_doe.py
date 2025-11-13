@@ -38,9 +38,10 @@ OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | 
 class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
     """The DOE used by the Morris sensitivity analysis.
 
-    This DOE algorithm applies the :class:`.OATDOE` algorithm at :math:`r` points.
-    The number of samples is equal to :math:`r(1+d)`
-    where :math:`d` is the space dimension.
+    This DOE algorithm applies
+    the [OATDOE][gemseo.algos.doe.oat_doe.oat_doe.OATDOE] algorithm at $r$ points.
+    The number of samples is equal to $r(1+d)$
+    where $d$ is the space dimension.
     """
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {

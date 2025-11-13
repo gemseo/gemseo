@@ -42,14 +42,14 @@ class RealOrComplexDType(StrEnum):
 class SellarDesignSpace(DesignSpace):
     r"""The design space for the customizable Sellar MDO problem.
 
-    - :math:`x_1\in[0., 10.]^n` (initial: 1),
-    - :math:`x_2\in[0., 10.]^n` (initial: 1),
-    - :math:`x_{shared,1}\in[-10., 10.]` (initial: 4),
-    - :math:`x_{shared,2}\in[0., 10.]` (initial: 3),
-    - :math:`y_1\in[-100., 100.]^n` (initial: 1),
-    - :math:`y_2\in[-100., 100.]^n` (initial: 1),
+    - $x_1\in[0., 10.]^n$ (initial: 1),
+    - $x_2\in[0., 10.]^n$ (initial: 1),
+    - $x_{shared,1}\in[-10., 10.]$ (initial: 4),
+    - $x_{shared,2}\in[0., 10.]$ (initial: 3),
+    - $y_1\in[-100., 100.]^n$ (initial: 1),
+    - $y_2\in[-100., 100.]^n$ (initial: 1),
 
-    where :math:`n` is the size of the local design variables and coupling variables.
+    where $n$ is the size of the local design variables and coupling variables.
     """
 
     def __init__(

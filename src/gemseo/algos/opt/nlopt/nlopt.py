@@ -20,19 +20,20 @@
 #         Francois Gallard : refactoring for v1, May 2016
 """The library of NLopt optimization algorithms.
 
-Warnings:
-    If the objective, or a constraint, of the :class:`.OptimizationProblem`
-    returns a value of type ``int``
-    then ``nlopt.opt.optimize`` will terminate with
-    ``ValueError: nlopt invalid argument``.
+Warning:
+    If the objective or a constraint
+    of the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+    returns a value of type `int`
+    then `nlopt.opt.optimize` will terminate with
+    `ValueError: nlopt invalid argument`.
 
     This behavior has been identified as
-    `a bug internal to NLopt 2.7.1 <https://github.com/stevengj/nlopt/issues/530>`_
+    [a bug internal to NLopt 2.7.1](https://github.com/stevengj/nlopt/issues/530)
     and has been fixed in the development version of NLopt.
 
     Until a new version of NLopt including the bugfix is released,
-    the user of |g| shall provide objective and constraint functions
-    that return values of type ``float`` and ``NDArray[float]``.
+    the user of GEMSEO shall provide objective and constraint functions
+    that return values of type `float` and `NDArray[float]`.
 """
 
 from __future__ import annotations
@@ -345,15 +346,15 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         self,
         problem: OptimizationProblem,
     ) -> None:
-        """Set ``"stop_crit_n_x"`` depending on the algorithm.
+        """Set `"stop_crit_n_x"` depending on the algorithm.
 
         The COBYLA and BOBYQA algorithms create sets of interpolation points
-        of sizes ``N+1`` and ``2*N+1`` respectively at initialization,
-        where ``N`` is the dimension of the design space.
+        of sizes `N+1` and `2*N+1` respectively at initialization,
+        where `N` is the dimension of the design space.
         In some cases, a termination criterion can be matched during this phase,
         leading to a premature termination.
 
-        In order to circumvent this, ``"stop_crit_n_x"`` is set accordingly,
+        In order to circumvent this, `"stop_crit_n_x"` is set accordingly,
         depending on the algorithm used.
         It ensures that the termination criterion will not be triggered during this
         preliminary Design of Experiment phase of the algorithm.

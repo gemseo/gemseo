@@ -55,9 +55,9 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
     r"""First order variable influence analysis.
 
     This post-processing computes
-    :math:`\frac{\partial f(x)}{\partial x_i}\left(x_i^* - x_i^{(0)}\right)`
-    where :math:`x_i^{(0)}` is the initial value of the variable
-    and :math:`x_i^*` is the optimal value of the variable.
+    $\frac{\partial f(x)}{\partial x_i}\left(x_i^* - x_i^{(0)}\right)$
+    where $x_i^{(0)}$ is the initial value of the variable
+    and $x_i^*$ is the optimal value of the variable.
 
     Options of the plot method are:
 

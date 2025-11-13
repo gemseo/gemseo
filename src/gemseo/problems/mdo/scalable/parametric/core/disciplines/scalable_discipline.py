@@ -48,28 +48,28 @@ if TYPE_CHECKING:
 class Coefficients(NamedTuple):
     r"""The coefficients of a scalable discipline.
 
-    The output of a scalable discipline indexed by :math:`i` is computed as
-    :math:`y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^NC_{i,j}y_j`.
+    The output of a scalable discipline indexed by $i$ is computed as
+    $y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^NC_{i,j}y_j$.
     """
 
     a_i: RealArray
-    r"""The coefficient vector :math:`a_i`."""
+    r"""The coefficient vector $a_i$."""
 
     D_i0: RealArray
-    r"""The coefficient matrix :math:`D_{i,0}` to multiply :math:`x_0`."""
+    r"""The coefficient matrix $D_{i,0}$ to multiply $x_0$."""
 
     D_ii: RealArray
-    r"""The coefficient matrix :math:`D_{i,i}` to multiply :math:`x_i`."""
+    r"""The coefficient matrix $D_{i,i}$ to multiply $x_i$."""
 
     C_ij: Mapping[str, RealArray]
-    r"""The coefficient matrix :math:`C_{i,j}` to multiply :math:`y_j`."""
+    r"""The coefficient matrix $C_{i,j}$ to multiply $y_j$."""
 
 
 class ScalableDiscipline(BaseDiscipline):
     r"""A scalable discipline.
 
     It computes the output
-    :math:`y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j`.
+    $y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j$.
     """
 
     index: int
@@ -79,16 +79,16 @@ class ScalableDiscipline(BaseDiscipline):
     """The coefficient matrices defining the scalable discipline."""
 
     __x_i_name: str
-    r"""The name of the local design variable :math:`x_i`."""
+    r"""The name of the local design variable $x_i$."""
 
     __u_i_name: str
-    r"""The name of the local uncertain variable :math:`u_i`."""
+    r"""The name of the local uncertain variable $u_i$."""
 
     __y_i_name: str
-    r"""The name of the coupling variable :math:`y_i`."""
+    r"""The name of the coupling variable $y_i$."""
 
     __output_size: int
-    r"""The size of the coupling variable :math:`y_i`."""
+    r"""The size of the coupling variable $y_i$."""
 
     def __init__(
         self,
@@ -101,16 +101,16 @@ class ScalableDiscipline(BaseDiscipline):
     ) -> None:
         r"""
         Args:
-            index: The index :math:`i` of the scalable discipline.
-            a_i: The offset vector :math:`a_i`.
-            D_i0: The coefficient matrix :math:`D_{i,0}`
-                to multiply the shared design variable :math:`x_0`.
-            D_ii: The coefficient matrix :math:`D_{i,i}`
-                to multiply the local design variable :math:`x_i`.
+            index: The index $i$ of the scalable discipline.
+            a_i: The offset vector $a_i$.
+            D_i0: The coefficient matrix $D_{i,0}$
+                to multiply the shared design variable $x_0$.
+            D_ii: The coefficient matrix $D_{i,i}$
+                to multiply the local design variable $x_i$.
             C_ij: The coefficient matrices
-                :math:`\left(C_{i,j}\right)_{j=1\atop j\neq i}^N`
-                where :math:`C_{i,j}` is used
-                to multiply the coupling variable :math:`y_j`.
+                $\left(C_{i,j}\right)_{j=1\atop j\neq i}^N$
+                where $C_{i,j}$ is used
+                to multiply the coupling variable $y_j$.
             **default_input_values: The default values of the input variables.
         """  # noqa: D205 D212
         self.name = f"{self.__class__.__name__}[{index}]"
@@ -137,20 +137,20 @@ class ScalableDiscipline(BaseDiscipline):
         compute_jacobian: bool = False,
         **y_j: RealArray,
     ) -> dict[str, RealArray | dict[str, RealArray]]:
-        r"""Compute the coupling variable :math:`y_i` or its derivatives.
+        r"""Compute the coupling variable $y_i$ or its derivatives.
 
         Args:
-            x_0: The value of the shared design variable :math:`x_0`.
-                If ``None``, use the default one.
-            x_i: The value of the local design variable :math:`x_i`.
-                If ``None``, use the default one.
-            u_i: The constant vector :math:`u_i` added to the output.
-                If ``None``, use the default one.
+            x_0: The value of the shared design variable $x_0$.
+                If `None`, use the default one.
+            x_i: The value of the local design variable $x_i$.
+                If `None`, use the default one.
+            u_i: The constant vector $u_i$ added to the output.
+                If `None`, use the default one.
             compute_jacobian: Whether to compute
-                the value of the coupling variable :math:`y_i`
+                the value of the coupling variable $y_i$
                 or that of its derivatives.
             **y_j: The values of the coupling variables
-                :math:`(y_j)_{1\leq j\neq i\leq N}`.
+                $(y_j)_{1\leq j\neq i\leq N}$.
                 If missing, use the default ones.
 
         Returns:

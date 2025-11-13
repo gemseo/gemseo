@@ -71,13 +71,13 @@ def get_initial_data(names: Iterable[str] = (), n: int = 1) -> dict[str, RealArr
 
 
 def get_y_opt(mda: BaseMDA) -> ndarray:
-    """Return the optimal ``y`` array.
+    """Return the optimal `y` array.
 
     Args:
         mda: The mda.
 
     Returns:
-        The optimal ``y`` array.
+        The optimal `y` array.
     """
     return array([
         mda.io.data[Y_1][0].real,

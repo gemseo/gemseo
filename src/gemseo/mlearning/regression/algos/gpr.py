@@ -19,81 +19,69 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Gaussian process regression model.
 
-Overview
---------
+## Overview
 
 The Gaussian process regression (GPR) model
 expresses the model output as a weighted sum of kernel functions
 centered on the learning input data:
 
-.. math::
-
+$$
     y = \mu
         + w_1\kappa(\|x-x_1\|;\epsilon)
         + w_2\kappa(\|x-x_2\|;\epsilon)
         + ...
         + w_N\kappa(\|x-x_N\|;\epsilon)
+$$
 
-Details
--------
+## Details
 
 The GPR model relies on the assumption
-that the original model :math:`f` to replace
-is an instance of a Gaussian process (GP) with mean :math:`\mu`
-and covariance :math:`\sigma^2\kappa(\|x-x'\|;\epsilon)`.
+that the original model $f$ to replace
+is an instance of a Gaussian process (GP) with mean $\mu$
+and covariance $\sigma^2\kappa(\|x-x'\|;\epsilon)$.
 
 Then, the GP conditioned by the training dataset
-:math:`(x_i,y_i)_{1\leq i \leq N}`
+$(x_i,y_i)_{1\leq i \leq N}$
 is entirely defined by its expectation:
 
-.. math::
-
-    \hat{f}(x) = \hat{\mu} + \hat{w}^T k(x)
+$$\hat{f}(x) = \hat{\mu} + \hat{w}^T k(x)$$
 
 and its covariance:
 
-.. math::
+$$\hat{c}(x,x') = \hat{\sigma}^2 - k(x)^T K^{-1} k(x')$$
 
-    \hat{c}(x,x') = \hat{\sigma}^2 - k(x)^T K^{-1} k(x')
+where $[\hat{\mu};\hat{w}]=([1_N~K]^T[1_N~K])^{-1}[1_N~K]^TY$ with
+$K_{ij}=\kappa(\|x_i-x_j\|;\hat{\epsilon})$,
+$k_i(x)=\kappa(\|x-x_i\|;\hat{\epsilon})$
+and $Y_i=y_i$.
 
-where :math:`[\hat{\mu};\hat{w}]=([1_N~K]^T[1_N~K])^{-1}[1_N~K]^TY` with
-:math:`K_{ij}=\kappa(\|x_i-x_j\|;\hat{\epsilon})`,
-:math:`k_i(x)=\kappa(\|x-x_i\|;\hat{\epsilon})`
-and :math:`Y_i=y_i`.
-
-The correlation length vector :math:`\epsilon`
+The correlation length vector $\epsilon$
 is estimated by numerical non-linear optimization.
 
-Surrogate model
----------------
+## Surrogate model
 
-The expectation :math:`\hat{f}` is the surrogate model of :math:`f`.
+The expectation $\hat{f}$ is the surrogate model of $f$.
 
-Error measure
--------------
+## Error measure
 
-The standard deviation :math:`\hat{s}` is a local error measure
-of :math:`\hat{f}`:
+The standard deviation $\hat{s}$ is a local error measure
+of $\hat{f}$:
 
-.. math::
+$$\hat{s}(x):=\sqrt{\hat{c}(x,x)}$$
 
-    \hat{s}(x):=\sqrt{\hat{c}(x,x)}
-
-Interpolation or regression
----------------------------
+## Interpolation or regression
 
 The GPR model can be regressive or interpolative
-according to the value of the nugget effect :math:`\alpha\geq 0`
+according to the value of the nugget effect $\alpha\geq 0$
 which is a regularization term
-applied to the correlation matrix :math:`K`.
-When :math:`\alpha = 0`,
+applied to the correlation matrix $K$.
+When $\alpha = 0$,
 the surrogate model interpolates the learning data.
 
-Dependence
-----------
+## Dependence
+
 The GPR model relies on the GaussianProcessRegressor class
-of the `scikit-learn library <https://scikit-learn.org/stable/modules/
-generated/sklearn.gaussian_process.GaussianProcessRegressor.html>`_.
+of the [scikit-learn library](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html).
 """
 
 from __future__ import annotations

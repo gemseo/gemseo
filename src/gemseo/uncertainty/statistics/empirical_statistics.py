@@ -22,25 +22,31 @@
 Overview
 --------
 
-The :class:`.EmpiricalStatistics` class inherits
-from the abstract :class:`.BaseStatistics` class
-and aims to estimate statistics from a :class:`.Dataset`,
+The
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+class inherits
+from the abstract
+[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics]
+class
+and aims to estimate statistics from a [Dataset][gemseo.datasets.dataset.Dataset],
 based on empirical estimators.
 
-Construction
-------------
+## Construction
 
-A :class:`.EmpiricalStatistics` is built from a :class:`.Dataset`
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+is built from a [Dataset][gemseo.datasets.dataset.Dataset]
 and optionally variables names.
 In this case,
 statistics are only computed for these variables.
 Otherwise,
 statistics are computed for all the variable available in the dataset.
 Lastly,
-the user can give a name to its :class:`.EmpiricalStatistics` object.
+the user can give a name to its
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+object.
 By default,
 this name is the concatenation of 'EmpiricalStatistics'
-and the name of the :class:`.Dataset`.
+and the name of the [Dataset][gemseo.datasets.dataset.Dataset].
 """
 
 from __future__ import annotations
@@ -219,15 +225,15 @@ class EmpiricalStatistics(BaseStatistics):
         # noqa: D205
         r"""Compute tolerance interval.
 
-        Given a confidence level :math:`1-\alpha`
-        and a coverage level :math:`\beta`,
-        the number of samples :math:`n` must verify the requirement:
+        Given a confidence level $1-\alpha$
+        and a coverage level $\beta$,
+        the number of samples $n$ must verify the requirement:
 
-        - :math:`1-(1-\beta)^n>=1-\alpha`
+        - $1-(1-\beta)^n>=1-\alpha$
           for a lower one-sided tolerance interval,
-        - :math:`1-\beta^n>=1-\alpha`
+        - $1-\beta^n>=1-\alpha$
           for a upper one-sided tolerance interval,
-        - :math:`(n-1)\beta^n-n\beta^{n-1}+1>=1-\alpha`
+        - $(n-1)\beta^n-n\beta^{n-1}+1>=1-\alpha$
 
         See [1] and [2]
         for more information about empirical tolerance intervals.
@@ -297,7 +303,8 @@ class EmpiricalStatistics(BaseStatistics):
             show: Whether to show the figures.
             directory_path: The path to save the figures.
             file_format: The file extension.
-            **options: The options of the :class:`.Boxplot` graphs.
+            **options: The options of
+                the [Boxplot][gemseo.post.dataset.boxplot.Boxplot] graphs.
 
         Returns:
             The boxplot of each variable.
@@ -331,7 +338,8 @@ class EmpiricalStatistics(BaseStatistics):
             show: Whether to show the figures.
             directory_path: The path to save the figures.
             file_format: The file extension.
-            **options: The options of the :class:`.Lines` graphs.
+            **options: The options of
+                the [Lines][gemseo.post.dataset.lines.Lines] graphs.
 
         Returns:
             The graph of the probability density function for each variable.
@@ -381,7 +389,8 @@ class EmpiricalStatistics(BaseStatistics):
             show: Whether to show the figures.
             directory_path: The path to save the figures.
             file_format: The file extension.
-            **options: The options of the :class:`.Lines` graphs.
+            **options: The options of
+                the [Lines][gemseo.post.dataset.lines.Lines] graphs.
 
         Returns:
             The graph of the cumulative probability function for each variable.

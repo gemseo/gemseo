@@ -28,7 +28,8 @@ from gemseo.algos.doe.openturns._algos.base_ot_low_discrepancy_sequence import (
 class OTHaselgroveSequence(BaseOTLowDiscrepancySequence):
     """The Haselgrove sequence algorithm.
 
-    .. note:: This class is a singleton.
+    Note:
+         This class is a singleton.
     """
 
     _ALGO_CLASS: Final[type[HaselgroveSequence]] = HaselgroveSequence

@@ -32,17 +32,19 @@ class BaseParallelMDASettings(BaseMDASolverSettings):
         description="""Whether to start by executing the disciplines before linearizing.
             This ensures that the discipline are executed and linearized with the same
             input data. It can be almost free if the corresponding output data have been
-            stored in the :attr:`.BaseMDA.cache`.""",
+            stored in the [BaseMDA.cache][gemseo.mda.base_mda.BaseMDA.cache].""",
     )
 
     n_processes: NonNegativeInt = Field(
         default=N_CPUS if _ENABLE_PARALLEL_EXECUTION else 1,
         description="""The number of threads/processes.
 
-Threads if ``use_threading``, processes otherwise.
+Threads if `use_threading`, processes otherwise.
 
 The default value can be changed
-using :meth:`.set_default_n_processes` or :func:`.configure`.
+using
+[set_default_n_processes()][gemseo.mda.base_parallel_mda_settings.BaseParallelMDASettings.set_default_n_processes]
+or [configure()][gemseo.configure].
 """,
     )
 

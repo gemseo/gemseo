@@ -27,7 +27,8 @@ from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 class SobieskiDesignSpace(DesignSpace):
     """The design space of the Sobieski's SSBJ problem.
 
-    .. note:: This design space includes both the design and coupling variables.
+    Note:
+        This design space includes both the design and coupling variables.
     """
 
     __design_variable_names: tuple[str, ...]
@@ -48,11 +49,11 @@ class SobieskiDesignSpace(DesignSpace):
                 instead of original notations.
             dtype: The data type for the NumPy arrays, either "float64" or "complex128".
             use_original_design_variables_order: Whether to sort
-                the :attr:`.DesignSpace` as in :cite:`SobieskiBLISS98`.
+                the design space as in the original paper.
                 If so,
                 the order of the design variables will be
-                ``"x_1"``, ``"x_2"``, ``"x_3"`` and ``"x_shared"``.
-                Otherwise, ``"x_shared"``, ``"x_1"``, ``"x_2"`` and ``"x_3"``.
+                `"x_1"`, `"x_2"`, `"x_3"` and `"x_shared"`.
+                Otherwise, `"x_shared"`, `"x_1"`, `"x_2"` and `"x_3"`.
         """  # noqa: D205 D212
         super().__init__()
         part_a = "original_" if use_original_design_variables_order else ""

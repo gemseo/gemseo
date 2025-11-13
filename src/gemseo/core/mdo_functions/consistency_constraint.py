@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 
 class ConsistencyConstraint(MDOFunction):
-    """An :class:`.MDOFunction` object to compute the consistency constraints."""
+    """An [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] object to compute the consistency constraints."""  # noqa: E501
 
     __CONSISTENCY_CONSTRAINT_NAME: Final[str] = "consistency_{}"
     """The name template for consistency constraints."""

@@ -86,7 +86,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
     - fully qualified module names (such as gemseo.problems, ...),
     - the environment variable "GEMSEO_PATH" may contain the list of directories,
-    - |g| plugins, i.e. packages which have declared a setuptools entry point.
+    - GEMSEO plugins, i.e. packages which have declared a setuptools entry point.
 
     A setuptools entry point is declared in a plugin :file:`pyproject.toml` file,
     with a section::
@@ -94,12 +94,12 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         [project.entry-points]
         gemseo_plugins = { a-name = "plugin_package_name" }
 
-    Above ``a-name`` is not used
+    Above `a-name` is not used
     and can be any name,
     but we advise to use the plugin name.
 
     The plugin entry point searched by the factory could be changed
-    with :class:`.Factory.PLUGIN_ENTRY_POINT`.
+    with [BaseFactory][gemseo.core.base_factory.BaseFactory.PLUGIN_ENTRY_POINT].
 
     If a class,
     despite being a subclass of the base class,
@@ -410,7 +410,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         Args:
             name: The name of the class.
-            write_schema: If ``True``, write the JSON schema to a file.
+            write_schema: If `True`, write the JSON schema to a file.
             schema_path: The path to the JSON schema file.
                 If empty, the file is saved in the current directory in a file named
                 after the name of the class.

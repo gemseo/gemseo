@@ -25,16 +25,16 @@ from gemseo.core.base_factory import BaseFactory
 
 
 class ProgressBarDataFactory(BaseFactory):
-    """The factory for ``BaseProgressBarData`` objects."""
+    """The factory for `BaseProgressBarData` objects."""
 
     _CLASS = BaseProgressBarData
     _PACKAGE_NAMES = ("gemseo.algos.progress_bar_data",)
 
 
 PROGRESS_BAR_DATA_FACTORY: Final[ProgressBarDataFactory] = ProgressBarDataFactory()
-"""The factory for ``BaseProgressBarData`` objects."""
+"""The factory for `BaseProgressBarData` objects."""
 
 ProgressBarDataName = StrEnum(
     "ProgressBarDataName", names=PROGRESS_BAR_DATA_FACTORY.class_names
 )
-"""A name of a :class:`.BaseProgressBarData` subclass."""
+"""A name of a [BaseProgressBarData][gemseo.algos.progress_bar_data.base.BaseProgressBarData] subclass."""  # noqa: E501

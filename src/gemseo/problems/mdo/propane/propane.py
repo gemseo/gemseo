@@ -21,8 +21,7 @@
 # Propane combustion, p12
 r"""The propane combustion MDO problem.
 
-The Propane MDO problem can be found in :cite:`Padula1996`
-and :cite:`TedfordMartins2006`. It represents the chemical equilibrium
+The Propane MDO problem represents the chemical equilibrium
 reached during the combustion of propane in air.
 Variables are assigned to represent each of the ten combustion products
 as well as the sum of the products.
@@ -30,8 +29,7 @@ as well as the sum of the products.
 The optimization problem is as follows:
 
 
-.. math::
-
+$$
    \begin{aligned}
    \text{minimize the objective function } &
    f_2 + f_6 + f_7 + f_9 \\
@@ -48,47 +46,56 @@ The optimization problem is as follows:
    & x_{6} \geq 0\\
    & x_{7} \geq 0\\
    \end{aligned}
+$$
 
 where the System Discipline consists of computing the following expressions:
 
-.. math::
-
+$$
    \begin{aligned}
    f_2(x) & = & 2x_1 + x_2 + x_4 + x_7 + x_8 + x_9 + 2x_{10} - R, \\
    f_6(x) & = & K_6x_2^{1/2}x_4^{1/2} - x_1^{1/2}x_6(p/x_{11})^{1/2}, \\
    f_7(x) & = & K_7x_1^{1/2}x_2^{1/2} - x_4^{1/2}x_7(p/x_{11})^{1/2}, \\
    f_9(x) & = & K_9x_1x_3^{1/2} - x_4x_9(p/x_{11})^{1/2}. \\
    \end{aligned}
+$$
 
-
-Discipline 1 computes :math:`(x_{2}, x_{4})`
+Discipline 1 computes $(x_{2}, x_{4})$
 by satisfying the following equations:
 
-.. math::
-
+$$
    \begin{aligned}
    x_1 + x_4 - 3 &=& 0,\\
    K_5x_2x_4 - x_1x_5 &=& 0.\\
    \end{aligned}
+$$
 
-Discipline 2 computes :math:`(x_2, x_4)` such that:
+Discipline 2 computes $(x_2, x_4)$ such that:
 
-.. math::
-
+$$
    \begin{aligned}
    K_8x_1 + x_4x_8(p/x_{11}) &=& 0,\\
    K_{10}x_{1}^{2} - x_4^2x_{10}(p/x_{11}) &=& 0.\\
    \end{aligned}
+$$
 
-and Discipline 3 computes :math:`(x_5, x_9, x_{11})` by solving:
+and Discipline 3 computes $(x_5, x_9, x_{11})$ by solving:
 
-.. math::
-
+$$
    \begin{aligned}
    2x_2 + 2x_5 + x_6 + x_7 - 8&=& 0,\\
    2x_3 + x_9 - 4R &=& 0, \\
    x_{11} - \sum_{j=1}^{10} x_j &=& 0. \\
    \end{aligned}
+$$
+
+!!! quote "References"
+
+    S. Padula, N. Alexandrov, and L. Green.
+    MDO test suite at NASA Langley Research Center. AIAA, 1996.
+
+    Nathan P. Tedford and Joaquim R.R.A. Martins.
+    Benchmarking multidisciplinary design optimization algorithms.
+    Optimization and Engineering, 11(1):159--183, February 2010
 """
 
 from __future__ import annotations
@@ -108,6 +115,7 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from numpy import ndarray
 
+    from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
 
@@ -196,7 +204,7 @@ class PropaneReaction(Discipline):
         )
 
     @classmethod
-    def f_6(cls, x_shared, y_1, y_3) -> complex:
+    def f_6(cls, x_shared: RealArray, y_1: RealArray, y_3: RealArray) -> complex:
         """Compute the second term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -212,7 +220,7 @@ class PropaneReaction(Discipline):
         return sqrt(y_1[0] * y_1[1]) - sqrt(40.0 * x_shared[0] / y_3[2]) * x_shared[2]
 
     @classmethod
-    def f_7(cls, x_shared, y_1, y_3) -> complex:
+    def f_7(cls, x_shared: RealArray, y_1: RealArray, y_3: RealArray) -> complex:
         """Compute the third term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -228,7 +236,7 @@ class PropaneReaction(Discipline):
         return sqrt(x_shared[0] * y_1[0]) - sqrt(40.0 * y_1[1] / y_3[2]) * x_shared[3]
 
     @classmethod
-    def f_9(cls, x_shared, y_1, y_3):
+    def f_9(cls, x_shared: RealArray, y_1: RealArray, y_3: RealArray) -> complex:
         """Compute the fourth term of the objective function.
 
         It is also a non-negative constraint at system level.
@@ -276,7 +284,7 @@ class PropaneComb1(Discipline):
         return -x_shared[0] * (x_shared[2] + x_shared[3] - 8.0) / 6.0
 
     @classmethod
-    def compute_y1(cls, x_shared) -> float:
+    def compute_y1(cls, x_shared: RealArray) -> float:
         """Solve the second coupling equation in functional form.
 
         Args:
@@ -320,7 +328,7 @@ class PropaneComb2(Discipline):
         return (x_shared[0] - 3.0) * (x_shared[2] + x_shared[3] - 8.0) / 6.0
 
     @classmethod
-    def compute_y3(cls, x_shared):
+    def compute_y3(cls, x_shared: RealArray) -> float:
         """Solve the fourth coupling equation in functional form.
 
         Args:
@@ -356,7 +364,7 @@ class PropaneComb3(Discipline):
         return {"y_3": y_3_out}
 
     @classmethod
-    def compute_y4(cls, x_shared) -> float:
+    def compute_y4(cls, x_shared: RealArray) -> float:
         """Solve the fifth coupling equation in functional form.
 
         Args:
@@ -368,7 +376,7 @@ class PropaneComb3(Discipline):
         return 40.0 - 2.0 * x_shared[1]
 
     @classmethod
-    def compute_y5(cls, x_shared):
+    def compute_y5(cls, x_shared: RealArray) -> float:
         """Solve the sixth coupling equation in functional form.
 
         Args:
@@ -383,7 +391,7 @@ class PropaneComb3(Discipline):
         return y_5
 
     @classmethod
-    def compute_y6(cls, x_shared) -> float:
+    def compute_y6(cls, x_shared: RealArray) -> float:
         """Solve the seventh coupling equation in functional form.
 
         Args:

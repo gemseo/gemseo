@@ -23,10 +23,8 @@ import pytest
 
 EXAMPLE_PATHS = [
     path
-    for path in Path(__file__, "..", "..", "doc_src", "_examples")
-    .resolve()
-    .rglob("*.py")
-    if (path.parent / "README.rst").is_file()
+    for path in Path(__file__, "..", "..", "docs", "examples").resolve().rglob("*.py")
+    if (path.parent / "README.md").is_file()
     and not findall(r"(run|post_process_|save_from_)\w*\.py$", path.name)
 ]
 

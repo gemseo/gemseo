@@ -100,13 +100,16 @@ def __get_all_disciplines(
     """Return the non-scenario disciplines or also the disciplines of the scenario ones.
 
     Args:
-        disciplines: The disciplines including potentially :class:`.Scenario` objects.
-        skip_scenarios: If ``True``, skip the :class:`.Scenario` objects.
+        disciplines: The disciplines including potentially
+            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+        skip_scenarios: If `True`,
+            skip the
+            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
             Otherwise, return their disciplines.
 
     Returns:
         The non-scenario disciplines
-        or also the disciplines of the scenario ones if any and ``skip_scenario=False``.
+        or also the disciplines of the scenario ones if any and `skip_scenario=False`.
     """
     from gemseo.scenarios.base_scenario import BaseScenario
 
@@ -129,8 +132,11 @@ def get_all_inputs(
     """Return all the input names of the disciplines.
 
     Args:
-        disciplines: The disciplines including potentially :class:`.Scenario` objects.
-        skip_scenarios: If ``True``, skip the :class:`.Scenario` objects.
+        disciplines: The disciplines including potentially
+            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+        skip_scenarios: If `True`,
+            skip the
+            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
             Otherwise, consider their disciplines.
 
     Returns:
@@ -155,8 +161,11 @@ def get_all_outputs(
     """Return all the output names of the disciplines.
 
     Args:
-        disciplines: The disciplines including potentially :class:`.Scenario` objects.
-        skip_scenarios: If ``True``, skip the :class:`.Scenario` objects.
+        disciplines: The disciplines including potentially
+            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+        skip_scenarios: If `True`,
+            skip the
+            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
             Otherwise, consider their disciplines.
 
     Returns:
@@ -180,15 +189,15 @@ def get_sub_disciplines(
     """Determine the sub-disciplines.
 
     This method lists the sub-disciplines' disciplines. It will list up to one level
-    of disciplines contained inside another one unless the ``recursive`` argument is
-    set to ``True``.
+    of disciplines contained inside another one unless the `recursive` argument is
+    set to `True`.
 
     Args:
         disciplines: The disciplines from which the sub-disciplines will be determined.
-        recursive: If ``True``, the method will look inside any discipline that has
+        recursive: If `True`, the method will look inside any discipline that has
             other disciplines inside until it reaches a discipline without
             sub-disciplines, in this case the return value will not include any
-            discipline that has sub-disciplines. If ``False``, the method will list
+            discipline that has sub-disciplines. If `False`, the method will list
             up to one level of disciplines contained inside another one, in this
             case the return value may include disciplines that contain
             sub-disciplines.
@@ -226,7 +235,7 @@ def _add_to_sub(
 ) -> None:
     """Add the disciplines of the sub-scenarios to the sub-disciplines.
 
-    A sub-discipline is only added if it is not already in ``sub_disciplines``.
+    A sub-discipline is only added if it is not already in `sub_disciplines`.
 
     Args:
         disciplines: The disciplines.
@@ -258,7 +267,7 @@ def check_disciplines_consistency(
 
     Raises:
         ValueError: When two disciplines compute the same output
-            and ``raise_error`` is ``True``.
+            and `raise_error` is `True`.
     """
     output_names_until_now = set()
     for discipline in disciplines:
@@ -333,7 +342,7 @@ class VariableRenamer:
     def translators(self) -> Mapping[str, Mapping[str, str]]:
         """The translators.
 
-        As ``{discipline_name: {variable_name, new_variable_name}}``.
+        As `{discipline_name: {variable_name, new_variable_name}}`.
         """
         return self.__translators
 
@@ -346,8 +355,8 @@ class VariableRenamer:
         Args:
             *translations: The translations
                 of the discipline input and output variables.
-                If ``tuple``,
-                formatted as ``(discipline_name, variable_name, new_variable_name)``.
+                If `tuple`,
+                formatted as `(discipline_name, variable_name, new_variable_name)`.
 
         Returns:
             A renamer.
@@ -366,7 +375,7 @@ class VariableRenamer:
 
         Args:
             translations: The translations of the discipline input and output variables
-                as ``{discipline_name: {variable_name: new_variable_name}}``.
+                as `{discipline_name: {variable_name: new_variable_name}}`.
 
         Returns:
             A renamer.
@@ -443,7 +452,7 @@ class VariableRenamer:
         Args:
             translation: A variable translation.
                 If tuple,
-                formatted as ``(discipline_name, variable_name, new_variable_name)``.
+                formatted as `(discipline_name, variable_name, new_variable_name)`.
 
         Raises:
             ValueError: When a variable has already been renamed.
@@ -549,10 +558,10 @@ def rename_discipline_variables(
     Args:
         disciplines: The disciplines.
         translators: The translators
-            of the form ``{discipline_name: {variable_name: new_variable_name}}``.
+            of the form `{discipline_name: {variable_name: new_variable_name}}`.
 
     Raises:
-        ValueError: when a translator uses a wrong ``variable_name``.
+        ValueError: when a translator uses a wrong `variable_name`.
     """
     for discipline in disciplines:
         translator = translators.get(discipline_name := discipline.name)

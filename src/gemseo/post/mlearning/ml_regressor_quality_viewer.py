@@ -62,7 +62,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         r"""The cross-validation dataset.
 
         This is the training dataset
-        decomposable into :math:`K` learning-validation partitions.
+        decomposable into $K$ learning-validation partitions.
         """
 
     def __init__(self, algo: BaseRegressor) -> None:
@@ -102,17 +102,20 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             input_names: The names of the inputs to plot
                 in addition to the quantity of interest;
                 if empty, consider all the inputs;
-                if ``None``, plot the outputs.
+                if `None`, plot the outputs.
             observations: The validation dataset.
-            use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
-                Otherwise, it outputs a list of :class:`.Scatter`.
+            use_scatter_matrix: Whether the method outputs a
+                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                Otherwise,
+                it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
                 the scatters with the quantity of interest on at least one of the axes.
                 Otherwise, consider all scatters,
                 including input or output in function of another input or output.
             save: Whether to save the plots.
             show: Whether to show the plots.
-            **options: The options of the underlying :class:`.DatasetPlot`.
+            **options: The options of the underlying
+                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
 
         Returns:
             The plot of the model data versus the observations.
@@ -285,7 +288,8 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             file_name: The file name.
             save: Whether to save the plots.
             show: Whether to show the plots.
-            **options: The options of the :class:`.ScatterMatrix`.
+            **options: The options of the
+                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
 
         Returns:
             The scatter matrix plot.
@@ -319,8 +323,8 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
-                If ``None``,
-                the seed of the ``i``-th execution is ``SEED+i``.
+                If `None`,
+                the seed of the `i`-th execution is `SEED+i`.
                 Used only in the case of cross-validation.
 
         Returns:
@@ -355,8 +359,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if the latter is missing,
                 use all the components of the output.
             observations: The validation dataset.
-            use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
-                Otherwise, it outputs a list of :class:`.Scatter`.
+            use_scatter_matrix: Whether the method outputs a
+                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                Otherwise,
+                it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
                 the scatters with the quantity of interest on at least one of the axes.
                 Otherwise, consider all scatters,
@@ -369,10 +375,11 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
-                If ``None``,
-                the seed of the ``i``-th execution is ``SEED+i``.
+                If `None`,
+                the seed of the `i`-th execution is `SEED+i`.
                 Used only in the case of cross-validation.
-            **options: The options of the underlying :class:`.DatasetPlot`.
+            **options: The options of the underlying
+                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
 
         Returns:
             The plots of the residuals of the model versus the observations.
@@ -415,8 +422,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             input_names: The names of the inputs to plot in addition to the model data.
                 If empty, use all the inputs.
             observations: The validation dataset.
-            use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
-                Otherwise, it outputs a list of :class:`.Scatter`.
+            use_scatter_matrix: Whether the method outputs a
+                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                Otherwise,
+                it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
                 the scatters with the quantity of interest on at least one of the axes.
                 Otherwise, consider all scatters,
@@ -429,10 +438,11 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
-                If ``None``,
+                If `None`,
                 the seed of the i-th execution is SEED+i.
                 Used only in the case of cross-validation.
-            **options: The options of the underlying :class:`.DatasetPlot`.
+            **options: The options of the underlying
+                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
 
         Returns:
             The plots of the residuals of the model versus the inputs.
@@ -465,8 +475,8 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use the whole training dataset.
             n_folds: The number of folds.
             seed: The seed of the pseudo-random number generator.
-                If ``None``,
-                use the seed of the ``i``-th execution is ``SEED+i``.
+                If `None`,
+                use the seed of the `i`-th execution is `SEED+i`.
 
         Returns:
             A validation dataset based on cross-validation.
@@ -517,8 +527,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if the latter is missing,
                 use all the components of the output.
             observations: The validation dataset.
-            use_scatter_matrix: Whether the method outputs a :class:`.ScatterMatrix`.
-                Otherwise, it outputs a list of :class:`.Scatter`.
+            use_scatter_matrix: Whether the method outputs a
+                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                Otherwise,
+                it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
                 the scatters with the quantity of interest on at least one of the axes.
                 Otherwise, consider all scatters,
@@ -531,10 +543,11 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use the whole training dataset.
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
-                If ``None``,
+                If `None`,
                 the seed of the i-th execution is SEED+i.
                 Used only in the case of cross-validation.
-            **options: The options of the underlying :class:`.DatasetPlot`.
+            **options: The options of the underlying
+                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
 
         Returns:
             The plots of the predictions versus the observations.

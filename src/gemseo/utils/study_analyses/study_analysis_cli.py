@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""CLI for |g| study."""
+"""CLI for GEMSEO study."""
 
 from __future__ import annotations
 

@@ -12,24 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""|g| main package.
+"""GEMSEO main package.
 
-This module contains the high-level functions to easily use |g|
+This module contains the high-level functions to easily use GEMSEO
 without requiring a deep knowledge of this software.
 
 Besides,
 these functions shall change much less often than the internal classes,
 which is key for backward compatibility,
 which means ensuring that
-your current scripts using |g| will be usable with the future versions of |g|.
+your current scripts using GEMSEO will be usable with the future versions of GEMSEO.
 
-The high-level functions also facilitate the interfacing of |g|
+The high-level functions also facilitate the interfacing of GEMSEO
 with a platform or other software.
 
-To interface a simulation software with |g|,
-please refer to: :ref:`software_connection`.
+To interface a simulation software with GEMSEO,
+please refer to: [Interfacing simulation software][interfacing-simulation-software].
 
-See also :ref:`extending-gemseo`.
+See Also:
+    [Extend GEMSEO features][extend-gemseo-features].
 """
 
 from __future__ import annotations
@@ -202,7 +203,7 @@ def generate_coupling_graph(
 
     Returns:
         Either the graph of the couplings between disciplines
-        or ``None`` when graphviz is not installed.
+        or `None` when graphviz is not installed.
 
     Examples:
         >>> from gemseo import create_discipline, generate_coupling_graph
@@ -842,16 +843,16 @@ def create_scenario(
             If multiple names are passed, the objective will be a vector.
         design_space: The search space including at least the design variables
             (some formulations requires additional variables,
-            e.g. :class:`.IDF` with the coupling variables).
+            e.g. [IDF][gemseo.formulations.idf.IDF] with the coupling variables).
         name: The name to be given to this scenario.
             If empty, use the name of the class.
-        scenario_type: The type of the scenario, e.g. ``"MDO"`` or ``"DOE"``.
+        scenario_type: The type of the scenario, e.g. `"MDO"` or `"DOE"`.
         maximize_objective: Whether to maximize the objective.
         formulation_settings_model: The formulation settings as a Pydantic model,
-            including the formulation name (use the keyword ``"formulation"``).
-            If ``None``, use ``**settings``.
+            including the formulation name (use the keyword `"formulation"`).
+            If `None`, use `**settings`.
         **formulation_settings: The formulation settings.
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            These arguments are ignored when `settings_model` is not `None`.
 
     Examples:
         >>> from gemseo import create_discipline, create_scenario
@@ -901,20 +902,20 @@ def configure_logger(
     filename: str | Path = _LOGGING_FILE_PATH,
     filemode: str = _LOGGING_FILE_MODE,
 ) -> Logger:
-    """Configure |g| logging.
+    """Configure GEMSEO logging.
 
     Args:
         logger_name: The name of the logger to configure.
             If empty, configure the root logger.
         level: The numerical value or name of the logging level,
-            as defined in :py:mod:`logging`.
+            as defined in `logging`.
             Values can either be
-            ``logging.NOTSET`` (``"NOTSET"``),
-            ``logging.DEBUG`` (``"DEBUG"``),
-            ``logging.INFO`` (``"INFO"``),
-            ``logging.WARNING`` (``"WARNING"`` or ``"WARN"``),
-            ``logging.ERROR`` (``"ERROR"``), or
-            ``logging.CRITICAL`` (``"FATAL"`` or ``"CRITICAL"``).
+            `logging.NOTSET` (`"NOTSET"`),
+            `logging.DEBUG` (`"DEBUG"`),
+            `logging.INFO` (`"INFO"`),
+            `logging.WARNING` (`"WARNING"` or `"WARN"`),
+            `logging.ERROR` (`"ERROR"`), or
+            `logging.CRITICAL` (`"FATAL"` or `"CRITICAL"`).
         date_format: The logging date format.
         message_format: The logging message format.
         filename: The path to the log file, if outputs must be written in a file.
@@ -983,6 +984,7 @@ def create_discipline(
     return [factory.create(d_name, *args, **kwargs) for d_name in discipline_name]
 
 
+# TODO: API: remove cls argument.
 def import_discipline(
     file_path: str | Path, cls: type[Discipline] | None = None
 ) -> Discipline:
@@ -990,9 +992,9 @@ def import_discipline(
 
     Args:
         file_path: The path to the file containing the discipline
-            saved with the method :meth:`.Discipline.to_pickle`.
+            saved with the function [to_pickle()][gemseo.utils.pickle.to_pickle].
         cls: A class of discipline.
-            If ``None``, use ``Discipline``.
+            If `None`, use `Discipline`.
 
     Returns:
         The discipline.
@@ -1042,28 +1044,40 @@ def create_surrogate(
         surrogate: Either a regressor class name,
             a regressor instance or regressor settings.
         data: The dataset to train the regression model.
-            If ``None``, the regression model is supposed to be trained.
+            If `None`, the regression model is supposed to be trained.
         transformer: The strategies to transform the variables.
             This argument is ignored
-            when ``surrogate`` is a :class:`.BaseRegressor`;
+            when `surrogate` is a
+            [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor];
             in this case,
             these strategies are defined
-            with the ``transformer`` argument of this :class:`.BaseRegressor`,
-            whose default value is :attr:`.BaseMLAlgo.IDENTITY`,
+            with the `transformer` argument of this
+            [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor],
+            whose default value is
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
             which means no transformation.
             In the other cases,
-            the values of the dictionary are instances of :class:`.BaseTransformer`
+            the values of the dictionary are instances of
+            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while the keys can be variable names,
-            the group name ``"inputs"``
-            or the group name ``"outputs"``.
+            the group name `"inputs"`
+            or the group name `"outputs"`.
             If a group name is specified,
-            the :class:`.BaseTransformer` will be applied
+            the
+            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
+            will be applied
             to all the variables of this group.
-            If :attr:`.BaseMLAlgo.IDENTITY`, do not transform the variables.
-            The :attr:`.BaseRegressor.DEFAULT_TRANSFORMER` uses
-            the :class:`.MinMaxScaler` strategy for both input and output variables.
+            If
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
+            do not transform the variables.
+            The
+            [BaseRegressor.DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
+            uses the
+            [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]
+            strategy for both input and output variables.
             This argument is ignored
-            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
+            when the type of `surrogate` is
+            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings].
         disc_name: The name of the discipline.
             If empty,
             the concatenation of the short name of the surrogate algorithm
@@ -1072,22 +1086,25 @@ def create_surrogate(
             If empty,
             the center of the learning input space is used.
         input_names: The names of the input variables of the discipline.
-            If empty and ``surrogate`` is a regressor instance,
+            If empty and `surrogate` is a regressor instance,
             all input variables of the regressor are used.
-            If empty and ``surrogate`` is not a regressor instance,
+            If empty and `surrogate` is not a regressor instance,
             all input variables mentioned in the training dataset are used.
-            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
-            ``surrogate.input_names`` is ignored and replaced by ``input_names``.
+            If the type of `surrogate` is
+            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings],
+            `surrogate.input_names` is ignored and replaced by `input_names`.
         output_names: The names of the output variables of the discipline.
-            If empty and ``surrogate`` is a regressor instance,
+            If empty and `surrogate` is a regressor instance,
             all output variables of the regressor are used.
-            If empty and ``surrogate`` is not a regressor instance,
+            If empty and `surrogate` is not a regressor instance,
             all output variables mentioned in the training dataset are used.
-            If the type of ``surrogate`` is :class:`.BaseRegressorSettings`,
-            ``surrogate.output_names`` is ignored and replaced by ``output_names``.
+            If the type of `surrogate` is
+            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings],
+            `surrogate.output_names` is ignored and replaced by `output_names`.
         **settings: The settings of the machine learning algorithm.
             These arguments are ignored
-            when the type of ``surrogate`` is :class:`.BaseRegressorSettings`.
+            when the type of `surrogate` is
+            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings].
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
@@ -1115,10 +1132,11 @@ def create_mda(
         mda_name: The name of the MDA.
         disciplines: The disciplines.
         settings_model: The MDA settings as a Pydantic model.
-            If ``None``, use ``**settings``.
-            The MDA settings model can be imported from :mod:`gemseo.settings.mda`.
+            If `None`, use `**settings`.
+            The MDA settings model can be imported from
+            [gemseo.settings.mda][gemseo.settings.mda].
         **settings: The MDA settings as key/value pairs.
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
         The MDA.
@@ -1157,10 +1175,10 @@ def execute_post(
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
         settings_model: The post-processor settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The post-processor settings,
-            including the algorithm name (use the keyword ``"post_name"``).
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            including the algorithm name (use the keyword `"post_name"`).
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
         The post-processor.
@@ -1213,10 +1231,10 @@ def execute_algo(
             either "opt" for optimization
             or "doe" for design of experiments.
         settings_model: The algorithm settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The algorithm settings,
-            including the algorithm name (use the keyword ``"algo_name"``).
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            including the algorithm name (use the keyword `"algo_name"`).
+            These arguments are ignored when `settings_model` is not `None`.
 
     Examples:
         >>> from gemseo import execute_algo
@@ -1247,11 +1265,11 @@ def execute_algo(
 
 def monitor_scenario(
     scenario: BaseScenario,
-    observer,
+    observer: Any,
 ) -> None:
     """Add an observer to a scenario.
 
-    The observer must have an ``update`` method
+    The observer must have an `update` method
     that handles the execution status change of an atom.
     `update(atom)` is called everytime an atom execution changes.
 
@@ -1366,17 +1384,19 @@ def write_design_space(
         fields: The fields to be exported.
             If empty, export all fields.
         delimiter: The string used to separate values for CSV files.
-            This argument is not compatible with ``header_char`` nor
-            ``**table_options``.
+            This argument is not compatible with `header_char` nor
+            `**table_options`.
         header_char: The header character.
         **table_options:
             For HDF files:
-                The ``append`` option may be passed here.
-                See :meth:`.DesignSpace.to_hdf`.
+                The `append` option may be passed here.
+                See
+                [DesignSpace.to_hdf()][gemseo.algos.design_space.DesignSpace.to_hdf].
             For CSV files:
                 The names and values of additional attributes
-                for the :class:`.PrettyTable` view
-                generated by :meth:`.DesignSpace.get_pretty_table`.
+                for the `prettytable.PrettyTable` view
+                generated by
+                [DesignSpace.get_pretty_table()][gemseo.algos.design_space.DesignSpace.get_pretty_table].
                 These options will be removed in GEMSEO 7.
 
 
@@ -1455,7 +1475,7 @@ def create_cache(
     Args:
         cache_type: The type of the cache.
         name: The name to be given to the cache.
-            If empty, use ``cache_type``.
+            If empty, use `cache_type`.
         **options: The options of the cache.
 
     Returns:
@@ -1505,10 +1525,11 @@ def create_dataset(
             If empty,
             assume that all the variables have a single component.
         variable_names_to_group_names: The groups of the variables.
-            If empty,
-            use :attr:`.Dataset.DEFAULT_GROUP` for all the variables.
+            If empty, use
+            [Dataset.DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]
+            for all the variables.
         delimiter: The field delimiter.
-        header: If ``True`` and `data` is a string,
+        header: If `True` and `data` is a string,
             read the variables names on the first line of the file.
         class_name: The name of the dataset class.
 
@@ -1516,7 +1537,7 @@ def create_dataset(
         The dataset generated from the NumPy array or data file.
 
     Raises:
-        ValueError: If ``data`` is neither a file nor an array.
+        ValueError: If `data` is neither a file nor an array.
     """
     from gemseo.datasets.factory import DatasetFactory
 
@@ -1569,7 +1590,8 @@ def create_benchmark_dataset(
 ) -> Dataset:
     """Instantiate a dataset.
 
-    Typically, benchmark datasets can be found in :mod:`gemseo.datasets.dataset`.
+    Typically, benchmark datasets can be found in
+    [gemseo.datasets.dataset][gemseo.datasets.dataset].
 
     Args:
         dataset_type: The type of the dataset.
@@ -1596,9 +1618,10 @@ def import_database(
     """Load a database from an HDF file path.
 
     This file could be generated using
-    :meth:`.Database.to_hdf`,
-    :meth:`.OptimizationProblem.to_hdf`
-    or :meth:`.Scenario.save_optimization_history`.
+    [Database.to_hdf()][gemseo.algos.database.Database.to_hdf],
+    [OptimizationProblem.to_hdf()][gemseo.algos.optimization_problem.OptimizationProblem.to_hdf]
+    or
+    [BaseScenario.save_optimization_history()][gemseo.scenarios.base_scenario.BaseScenario.save_optimization_history].
 
     Args:
         file_path: The path of the HDF file.
@@ -1631,14 +1654,14 @@ def compute_doe(
     Args:
         variables_space: Either the variables space to be sampled or its dimension.
         unit_sampling: Whether to sample in the unit hypercube.
-            If the value provided in ``variables_space`` is the dimension,
+            If the value provided in `variables_space` is the dimension,
             the samples will be generated in the unit hypercube
-            whatever the value of ``unit_sampling``.
+            whatever the value of `unit_sampling`.
         settings_model: The DOE settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **settings: The DOE settings,
-            including the algorithm name (use the keyword ``"algo_name"``).
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            including the algorithm name (use the keyword `"algo_name"`).
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
           The design of experiments
@@ -1720,7 +1743,7 @@ def configure(
     enable_parallel_execution: bool = _ENABLE_PARALLEL_EXECUTION,
     enable_discipline_status: bool = _ENABLE_DISCIPLINE_STATUS,
 ) -> None:
-    """Set the configuration of |g|.
+    """Set the configuration of GEMSEO.
 
     Args:
         enable_discipline_statistics: Whether to record execution statistics of the
@@ -1740,7 +1763,7 @@ def configure(
             after execution.
         check_desvars_bounds: Whether to check the membership of design variables
             in the bounds when evaluating the functions in OptimizationProblem.
-        enable_parallel_execution: Whether to let |g|
+        enable_parallel_execution: Whether to let GEMSEO
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
     """
@@ -1770,9 +1793,9 @@ def wrap_discipline_in_job_scheduler(
     the discipline and its inputs, execute it and serialize the outputs.
     Finally, the deserialized outputs are returned by the wrapper.
 
-    All process classes :class:`.MDOScenario`,
-    or :class:`.BaseMDA`, inherit from
-    :class:`.Discipline` so can be sent to HPCs in this way.
+    All process classes [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
+    or [BaseMDA][gemseo.mda.base_mda.BaseMDA], inherit from
+    [Discipline][gemseo.core.discipline.discipline.Discipline] so can be sent to HPCs in this way.
 
     The job scheduler template script can be provided directly or the predefined
     templates file names in gemseo.wrappers.job_schedulers.template can be used.
@@ -1791,11 +1814,12 @@ def wrap_discipline_in_job_scheduler(
     Raises:
         OSError: if the job template does not exist.
 
-    Warnings:
+    Warning:
         This method serializes the passed discipline so it has to be serializable.
         All disciplines provided in GEMSEO are serializable but it is possible that
         custom ones are not and this will make the submission proess fail.
-        Also, see :ref:`platform-paths` to handle paths for cross-platforms.
+        Also,
+        see [Handling paths for cross-platforms][handling-paths-for-different-oses].
 
     Examples:
         This example execute a DOE of 100 points on an MDA, each MDA is executed on 24
@@ -1862,14 +1886,19 @@ def create_scenario_result(
 
     Args:
         scenario: The scenario to post-process or its path to its HDF5 file.
-        name: The class name of the :class:`.ScenarioResult`.
+        name: The class name of the
+            [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
             If empty,
-            use the :attr:`~.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME`
-            of the :class:`.BaseMDOFormulation` attached to the :class:`.Scenario`.
-        **options: The options of the :class:`.ScenarioResult`.
+            use the
+            [DEFAULT_SCENARIO_RESULT_CLASS_NAME][gemseo.formulations.base_formulation.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME]
+            of the
+            [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation]
+            attached to the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+        **options: The options of the
+            [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
 
     Returns:
-        The result of a scenario execution or ``None`` if not yet executed`.
+        The result of a scenario execution or `None` if not yet executed`.
     """
     # TODO: use Scenario.get_result
     if scenario.optimization_result is None:
@@ -1901,7 +1930,6 @@ def sample_disciplines(
         disciplines: The disciplines to be sampled.
         input_space: The input space on which to sample the discipline.
         output_names: The names of the outputs of interest.
-        n_samples: The number of samples.
         formulation_name: The name of the MDO formulation.
         formulation_settings: The settings of the MDO formulation.
             If empty, use the default ones.
@@ -1910,9 +1938,9 @@ def sample_disciplines(
         backup_settings: The settings of the backup file to store the evaluations
             if any.
         algo_settings_model: The DOE settings as a Pydantic model.
-            If ``None``, use ``**settings``.
+            If `None`, use `**settings`.
         **algo_settings: The DOE settings.
-            These arguments are ignored when ``settings_model`` is not ``None``.
+            These arguments are ignored when `settings_model` is not `None`.
 
     Returns:
         The input-output samples of the disciplines.
@@ -1975,10 +2003,10 @@ def generate_xdsm(
         save_html: Whether to save the XDSM as a HTML file.
         save_json: Whether to save the XDSM as a JSON file.
         save_pdf: Whether to save the XDSM as
-            a TikZ file ``"{file_name}.tikz"`` containing its definition and
-            a LaTeX file ``"{file_name}.tex"`` including this TikZ file.
+            a TikZ file `"{file_name}.tikz"` containing its definition and
+            a LaTeX file `"{file_name}.tex"` including this TikZ file.
             The LaTeX file can be compiled to a PDF file.
-        pdf_build: Whether to compile the LaTeX file ``"{file_name}.tex"``
+        pdf_build: Whether to compile the LaTeX file `"{file_name}.tex"`
             to a PDF file using pdflatex.
         pdf_cleanup: Whether to clean up the pdflatex built files after compilation.
         pdf_batchmode: Whether to suppress compilation logs.
@@ -2008,14 +2036,14 @@ def set_data_converters(
 ) -> None:
     """Set data converters for custom disciplines variable types.
 
-    Natively, |g| supports disciplines that have the following variable types:
-    ``int``, ``float``, ``complex``, ``str`` and 1D NumPy array.
+    Natively, GEMSEO supports disciplines that have the following variable types:
+    `int`, `float`, `complex`, `str` and 1D NumPy array.
     Using custom variable types may require to add converters to transform the value of
     a variable to a 1D NumPy array back and forth, as well as to provide the size of the
     expected 1D NumPy array.
 
     See this
-    :ref:`example <sphx_glr_examples_disciplines_grammars_plot_data_converters.py>`.
+    [example][a-sellar-problem-with-custom-data-converters].
 
     Args:
         to_array: The mapping from disciplines variable names
