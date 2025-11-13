@@ -1,0 +1,249 @@
+# Available: {{long_algo_type}}
+
+!!! warning
+
+    Some capabilities may require the [installation][installation]
+    of GEMSEO with [all its features][dependencies]
+    and some others may depend on [plugins][plugins].
+
+!!! warning
+
+    All the features of the wrapped libraries may not be exposed through GEMSEO.
+
+{% if use_pydantic_model %}
+!!! note
+
+    The algorithm settings can be passed to a function of the form
+
+    ``` python
+    function(..., settings_model: AlgorithmSettings | None = None, **settings: Any)
+    ```
+
+    either one by one:
+
+    ``` python
+    function(..., setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+    ```
+
+    or using the argument name `"settings_model"` and the Pydantic model associated with the algorithm:
+
+    ``` python
+    settings_model = AlgorithmSettings(setting_name_1=setting_name_1, setting_name_2=setting_name_2, ...)
+    function(..., settings_model=settings_model)
+    ```
+{% endif %}
+
+{% if user_guide_anchor %}
+!!! note
+
+    You can find more information about this family of algorithms in [the user guide][design-of-experiments].
+{% endif %}
+
+{% if features is not none %}
+## Overview
+<style>
+th {
+  cursor: pointer;
+}
+
+tr:hover {
+  border: 1pt solid var(--pst-color-secondary);
+}
+
+th, td {
+  text-align: center;
+}
+
+.hidden-row {
+    display: none;
+}
+</style>
+Display <label>all the optimization algorithms <input type="checkbox" id="displayAllAlgorithmsCheckbox" checked></label></li>.
+<br/>
+Otherwise, display the optimization algorithms that
+<ul>
+    <li><label>support equality constraints <input type="checkbox" id="handleEqualityConstraintsCheckbox"></label></li>
+    <li><label>support inequality constraints <input type="checkbox" id="handleInequalityConstraintsCheckbox"></label></li>
+    <li><label>support float variables <input type="checkbox" id="handleFloatVariablesCheckbox" checked></label></li>
+    <li><label>support integer variables <input type="checkbox" id="handleIntegerVariablesCheckbox"></label></li>
+    <li><label>support multiple objective <input type="checkbox" id="handleMultiObjectiveCheckbox"></label></li>
+    <li><label>require gradient evaluations <input type="checkbox" id="requireGradientCheckbox" checked></label></li>
+</ul>
+<table id="myTable">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Algorithm<br/>&#x25B2;&#x25BC;</th>
+            <th onclick="sortTable(1)">Library<br/>&#x25B2;&#x25BC;</th>
+            <th onclick="sortTable(2)">Name in GEMSEO<br/>&#x25B2;&#x25BC;</th>
+            <th onclick="sortTable(3)">Package<br/>&#x25B2;&#x25BC;</th>
+        </tr>
+    </thead>
+    <tbody>
+{% for algo in algos %}
+{% set algo_features = features[algo] %}
+        <tr class="{% if algo_features.handle_equality_constraints %}handleEqualityConstraints {% endif %}{% if algo_features.handle_inequality_constraints %}handleInequalityConstraints {% endif %}{% if algo_features.handle_float_variables %}handleFloatVariables {% endif %}{% if algo_features.handle_integer_variables %}handleIntegerVariables {% endif %}{% if algo_features.handle_multiobjective %}handleMultiObjective {% endif %}{% if algo_features.require_gradient %}requireGradient{% endif %}">
+            <td>{{algo_features.algorithm_name}}</td>
+            <td>{{algo_features.library_name}}</td>
+            <td><a href="#{{ algo|lower }}">{{algo}}</a></td>
+            <td><a href="https://gitlab.com/gemseo/dev/{{ algo_features.root_package_name.replace('_', '-') }}">{{algo_features.root_package_name}}</a></td>
+        </tr>
+{% endfor %}
+    </tbody>
+</table>
+<br/>
+<script>
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("myTable");
+  switching = true;
+  dir = "asc";
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    for (i = 1; i < (rows.length - 1); i++) {
+      shouldSwitch = false;
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          shouldSwitch= true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      switchcount ++;
+    } else {
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+
+const displayAllAlgorithmsCheckbox = document.getElementById('displayAllAlgorithmsCheckbox');
+const handleEqualityConstraintsCheckbox = document.getElementById('handleEqualityConstraintsCheckbox');
+const handleInequalityConstraintsCheckbox = document.getElementById('handleInequalityConstraintsCheckbox');
+const handleFloatVariablesCheckbox = document.getElementById('handleFloatVariablesCheckbox');
+const handleIntegerVariablesCheckbox = document.getElementById('handleIntegerVariablesCheckbox');
+const handleMultiObjectiveCheckbox = document.getElementById('handleMultiObjectiveCheckbox');
+const requireGradientCheckbox = document.getElementById('requireGradientCheckbox');
+const rows = document.querySelectorAll('tbody tr');
+
+function filterRows() {
+    if (displayAllAlgorithmsCheckbox.checked) {
+        rows.forEach(row => {
+            row.classList.remove('hidden-row');
+        });
+    } else {
+        rows.forEach(row => {
+            if (
+                  (handleEqualityConstraintsCheckbox.checked && !row.classList.contains('handleEqualityConstraints'))
+               || (handleInequalityConstraintsCheckbox.checked && !row.classList.contains('handleInequalityConstraints'))
+               || (handleFloatVariablesCheckbox.checked && !row.classList.contains('handleFloatVariables'))
+               || (handleIntegerVariablesCheckbox.checked && !row.classList.contains('handleIntegerVariables'))
+               || (handleMultiObjectiveCheckbox.checked && !row.classList.contains('handleMultiObjective'))
+               || (requireGradientCheckbox.checked && !row.classList.contains('requireGradient'))
+               || (!requireGradientCheckbox.checked && row.classList.contains('requireGradient'))
+            )
+            {
+                row.classList.add('hidden-row');
+            } else {
+                row.classList.remove('hidden-row');
+            }
+        });
+    }
+}
+
+displayAllAlgorithmsCheckbox.addEventListener('change', filterRows);
+handleEqualityConstraintsCheckbox.addEventListener('change', filterRows);
+handleInequalityConstraintsCheckbox.addEventListener('change', filterRows);
+handleFloatVariablesCheckbox.addEventListener('change', filterRows);
+handleIntegerVariablesCheckbox.addEventListener('change', filterRows);
+handleMultiObjectiveCheckbox.addEventListener('change', filterRows);
+requireGradientCheckbox.addEventListener('change', filterRows);
+filterRows();
+</script>
+{% endif %}
+
+{% for algo in algos %}
+
+## {{algo}}
+
+{% if libraries[algo] != "gemseo" %}
+!!! note
+
+    The plugin [{{ libraries[algo] }}](https://gitlab.com/gemseo/dev/{{ libraries[algo].replace('_', '-') }}) is required.
+{% endif %}
+
+Module: [{{modules[algo]}}][{{modules[algo]}}]
+
+{% if descriptions[algo] %}
+{{descriptions[algo]}}
+{% endif %}
+
+{% if pydantic_model_imports[algo] %}
+``` python title="Pydantic model of the settings for {{algo}}"
+
+{{pydantic_model_imports[algo]}}
+```
+{% endif %}
+
+{% if websites[algo] %}
+More details about the algorithm and its settings on [this page]({{websites[algo]}}>).
+{% endif %}
+
+{% set optional_parameters = [] %}
+{% for parameter in options[algo]|dictsort %}
+{% if 'default' in parameter[1] or parameter[0].startswith('**') %}
+{% set tmp = optional_parameters.append(parameter) %}
+{% endif %}
+{% endfor %}
+
+{% if optional_parameters and optional_parameters[0][0].startswith("**") %}
+{% set tmp = optional_parameters.append(optional_parameters[0]) %}
+{% set tmp = optional_parameters.pop(0) %}
+{% endif %}
+
+{% set required_parameters = [] %}
+{% for parameter in options[algo]|dictsort %}
+{% if 'default' not in parameter[1] and not parameter[0].startswith('**') %}
+{% set tmp = required_parameters.append(parameter) %}
+{% endif %}
+{% endfor %}
+
+{% if required_parameters and required_parameters[0][0].startswith("*") %}
+{% set tmp = required_parameters.append(required_parameters[0]) %}
+{% set tmp = required_parameters.pop(0) %}
+{% endif %}
+
+{% if required_parameters %}
+Required settings:
+
+{% for arg in required_parameters %}
+- **{{arg[0]}}**: *{{arg[1]['ptype']}}*<br/>
+  {{arg[1]['description'] | replace('\n', ' ')}}
+{% endfor %}
+{% endif %}
+
+{% if optional_parameters %}
+
+Optional settings:
+
+{% for arg in optional_parameters %}
+- **{{arg[0]}}**: *{{arg[1]['ptype']}}, optional*<br/>
+  {{arg[1]['description'] | replace('\n', ' ')}}
+  {% if not arg[0].startswith('*') %}<br/>By default it is set to {{arg[1]['default']}}.{% endif %}
+{% endfor %}
+
+{% endif %}
+
+{% endfor %}

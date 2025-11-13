@@ -1,5 +1,10 @@
 [
   {
+    "version": "develop",
+    "title": "develop",
+    "aliases": []
+  },
+  {
     "version": "create-mkdocs-documentation",
     "title": "create-mkdocs-documentation",
     "aliases": []
