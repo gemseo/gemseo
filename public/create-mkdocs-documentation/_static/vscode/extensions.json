@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "lochbrunner.vscode-hdf5-viewer",
+    "wholroyd.jinja",
+    "ms-python.python",
+    "ms-toolsai.jupyter",
+    "jebbs.plantuml",
+    "charliermarsh.ruff",
+    "vivaxy.vscode-conventional-commits",
+    "eamodio.gitlens"
+  ]
+}

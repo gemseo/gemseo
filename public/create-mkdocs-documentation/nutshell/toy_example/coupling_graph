@@ -1,0 +1,12 @@
+// Dependency graph
+digraph {
+	0 [label=py_function_1]
+	1 [label=py_function_2]
+	2 [label=py_function_3]
+		0 -> 1 [label=output_1]
+		0 -> 2 [label=output_1]
+		1 -> 0 [label=output_2]
+		1 -> 2 [label=output_2]
+	-1 [label=dummy_output shape=point style=invis]
+		2 -> -1 [label=obj]
+}
