@@ -1,2 +1,0 @@
-- The ``BasePost`` has a ``use_best_iteration_history`` option to plot the best iteration history rather than the iteration history.
-- The ``OptimizationDataset`` has a ``get_best_iteration_history`` method to extract the history of the best iteration.
