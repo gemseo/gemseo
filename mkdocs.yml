@@ -137,7 +137,6 @@ nav:
       - Automatic wrapper for executables with Graphical User Interface: interface/exe_discipline.md
       - Interface with HPC job schedulers (SLURM, LSF, PBS, etc): interface/job_schedulers.md
       - How to manually create a discipline interfacing an external executable?: disciplines/discipline_interfacing_executable.md
-      - Build discipline from a MATLAB function: disciplines/discipline_matlab.md
       - Coupled derivatives and gradients computation: disciplines/jacobian_assembly.md
       - Namespaces: disciplines/namespaces.md
     - Scenario:
