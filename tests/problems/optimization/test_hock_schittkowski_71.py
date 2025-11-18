@@ -25,7 +25,7 @@ from gemseo.problems.optimization.hock_schittkowski_71 import HockSchittkowski71
 
 @pytest.fixture
 def hock_schittkowski_71() -> HockSchittkowski71:
-    """Create a :class:`.HockSchittkowski71` optimization problem.
+    """Create a HockSchittkowski71 optimization problem.
 
     Returns:
         A HockSchittkowski71 instance.

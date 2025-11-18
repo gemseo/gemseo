@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class Constant(OptimizationProblem):
-    """A Toy analytical :class:`.OptimizationProblem`.
+    """A Toy analytical OptimizationProblem.
 
     It is currently used to test the premature termination of some optimization
     algorithms, when the criterion n_stop_crit_x is not properly set (see bug #307).

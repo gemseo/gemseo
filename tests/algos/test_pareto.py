@@ -60,7 +60,7 @@ def problem_2obj() -> OptimizationProblem:
 
 
 def test_pareto(problem_2obj):
-    """Test the :class:`ParetoFront` class.
+    """Test the ParetoFront class.
 
     Args:
         problem_2obj: Fixture returning the multi-objective

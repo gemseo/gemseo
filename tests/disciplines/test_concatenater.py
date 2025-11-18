@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test for the :class:`.Concatenater`"""
+"""Test for the Concatenater."""
 
 from __future__ import annotations
 

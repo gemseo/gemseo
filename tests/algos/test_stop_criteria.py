@@ -72,8 +72,8 @@ def test_is_f_tol_reached() -> None:
 def test_n_stop_crit_x(n_stop_crit_x, enable_function_statistics) -> None:
     """Test that the parameter n_stop_crit_x behave as expected.
 
-    As the :class:`.Constant` problem always returns a constant objective value, The
-    number of iterations should be n_stop_crit_x + 1.
+    As the Constant problem always returns a constant objective value,
+    the number of iterations should be n_stop_crit_x + 1.
     """
     pb = Constant()
     pb.preprocess_functions()

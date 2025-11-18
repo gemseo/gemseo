@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class X2(OptimizationProblem):
-    """A very basic quadratic analytical :class:`.OptimizationProblem`:
+    """A very basic quadratic analytical OptimizationProblem:
 
     It is used to test the premature termination of some optimization algorithms,
     when the criterion ``n_stop_crit_x`` is not properly set (see bug #307).

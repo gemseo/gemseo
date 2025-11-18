@@ -259,11 +259,11 @@ def test_command_line(tmp_wd) -> None:
 
 
 def test_parallel_execution(tmp_wd) -> None:
-    """Check if a :class:`~.DiscFromExe` executed within a multiprocess DOE can generate
-    unique folders in :attr:`~.DirectoryNamingMethod.NUMBERED` mode.
+    """Check if a DiscFromExe executed within a multiprocess DOE can generate
+    unique folders in DirectoryNamingMethod.NUMBERED mode.
 
     The check is focused on this topic since the multiprocess features of
-    :class:`~.DiscFromExe` are used there.
+    DiscFromExe are used there.
     """
     nb_process = 2
     sum_path = join(DIRNAME, "sum_data.py")

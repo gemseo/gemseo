@@ -184,7 +184,7 @@ for test_method in suite_tests.generate_test("Nlopt", get_options):
 
 @pytest.fixture
 def x2_problem() -> X2:
-    """Instantiate a :class:`.X2` test problem.
+    """Instantiate a X2 test problem.
 
     Returns:
          A X_2 problem.
@@ -207,7 +207,7 @@ def test_no_stop_during_doe_phase(
     due to the max iteration stop criterion.
 
     Args:
-        x2_problem: An instantiated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated X_2 optimization problem.
         algo_name: The optimization algorithm used.
     """
     res = execute_algo(x2_problem, algo_name=algo_name, max_iter=10)
@@ -224,7 +224,7 @@ def test_cobyla_stopped_due_to_small_crit_n_x(
     which lead to a premature stop of the algorithm.
 
     Args:
-        x2_problem: An instantiated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated X_2 optimization problem.
     """
     res = execute_algo(
         x2_problem, algo_name="NLOPT_COBYLA", max_iter=100, stop_crit_n_x=3
@@ -241,7 +241,7 @@ def test_bobyqa_stopped_due_to_small_crit_n_x(
     which lead to a premature stop of the algorithm.
 
     Args:
-        x2_problem: An instantiated :class:`.X_2` optimization problem.
+        x2_problem: An instantiated X_2 optimization problem.
     """
     res = execute_algo(
         x2_problem, algo_name="NLOPT_BOBYQA", max_iter=100, stop_crit_n_x=3
