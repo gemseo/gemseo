@@ -45,7 +45,7 @@ def build_and_run_idf_scenario_with_constraints(
     max_iter: int = 50,
     include_weak_coupling_targets: bool = True,
 ) -> tuple[ndarray, bool]:
-    """Build and execute an :class:`.MDOScenario` with an IDF formulation.
+    """Build and execute an MDOScenario with an IDF formulation.
 
     Args:
         algo: The optimization algorithm.
@@ -117,10 +117,10 @@ def build_and_run_idf_scenario_with_constraints(
 
 @pytest.fixture
 def generate_idf_scenario():
-    """Wrap an :class:`.MDOScenario` with an IDF formulation.
+    """Wrap an MDOScenario with an IDF formulation.
 
     Returns:
-        A wrapped :class:`.MDOScenario` for which a series of options can be
+        A wrapped MDOScenario for which a series of options can be
             passed to customize it.
     """
     return partial(build_and_run_idf_scenario_with_constraints)

@@ -289,7 +289,7 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
 
 
 def test_execute_post_with_optimization_dataset(scenario):
-    """Test the method execute_post with a :class:`.OptimizationDataset."""
+    """Test the method execute_post with an OptimizationDataset."""
     dataset = scenario.formulation.optimization_problem.to_dataset(group_functions=True)
     post = execute_post(dataset, post_name="OptHistoryView", save=False, show=False)
     assert isinstance(post, OptHistoryView)

@@ -157,12 +157,12 @@ def test_idf_execution(
     generate_idf_scenario,
     caplog,
 ) -> None:
-    """Test the IDF formulation with an :class:`.MDOScenario`.
+    """Test the IDF formulation with an MDOScenario.
 
     Args:
         options: The options for the generate_idf_scenario fixture.
         expected_feasible: Whether the optimization result is expected to be feasible.
-        generate_idf_scenario: Fixture that returns an :class:`.MDOScenario` with an IDF
+        generate_idf_scenario: Fixture that returns an MDOScenario with an IDF
             formulation with custom arguments.
         caplog: Fixture to access and control log capturing.
     """
@@ -188,7 +188,7 @@ def test_fail_idf_no_coupl(generate_idf_scenario) -> None:
     """Test an exception when the coupling variables are not in the Design Space.
 
     Args:
-        generate_idf_scenario: Fixture that returns an :class:`.MDOScenario` with an IDF
+        generate_idf_scenario: Fixture that returns an MDOScenario with an IDF
             formulation with custom arguments.
     """
     with pytest.raises(

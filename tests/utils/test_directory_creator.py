@@ -83,7 +83,7 @@ def test_uuid_folder(tmp_wd, directories) -> None:
 
 
 def test_run_dir_creator_serialization(tmp_wd) -> None:
-    """Test that a :class:`~.DirectoryCreator` can be serialized and deserialized in
+    """Test that a DirectoryCreator can be serialized and deserialized in
     ``UUID`` mode."""
     unique_dir_generator = DirectoryCreator(
         root_directory=BASE_DIR, directory_naming_method=DirectoryNamingMethod.UUID

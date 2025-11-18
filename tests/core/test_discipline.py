@@ -1043,10 +1043,10 @@ def test_add_differentiated_io_non_numeric(
 ) -> None:
     """Check that non-numeric i/o are ignored in add_differentiated_inputs/outputs.
 
-    If the discipline grammar type is :attr:`.Discipline.GrammarType.JSON` and
+    If the discipline grammar type is Discipline.GrammarType.JSON and
     an input/output is either a non-numeric array or not an array, it will be ignored.
 
-    If the discipline grammar type is :attr:`.Discipline.GrammarType.SIMPLE` and
+    If the discipline grammar type is Discipline.GrammarType.SIMPLE and
     an input/output is not an array, it will be ignored. Keep in mind that in this case
     the array subtype is not checked.
 
