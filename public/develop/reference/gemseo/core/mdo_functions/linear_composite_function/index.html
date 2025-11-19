@@ -1521,8 +1521,6 @@
       
         
       
-        
-      
     
     
     
@@ -1707,41 +1705,6 @@
     
   </span>
   
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../../../disciplines/discipline_matlab/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Build discipline from a MATLAB function
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--deployed"></span>
-  
-
   
 
       </a>
@@ -24179,6 +24142,17 @@
   
     <nav class="md-nav" aria-label="Attributes">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.ApproximationMode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ApproximationMode
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.COEFF_FORMAT_1D" class="md-nav__link">
@@ -47486,6 +47460,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.ApproximationMode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ApproximationMode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.COEFF_FORMAT_1D" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -48105,6 +48090,37 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
 
 
+<h6 id="gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.ApproximationMode" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">ApproximationMode</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.ApproximationMode" class="headerlink" title="Permanent link">&para;</a></h6>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">ApproximationMode</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            ApproximationMode
+
+
+  
+      class-attribute
+      instance-attribute
+   (gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode">ApproximationMode</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Enumeration of approximation derivation modes.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h6 id="gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.COEFF_FORMAT_1D" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">COEFF_FORMAT_1D</span>
 
@@ -48226,7 +48242,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>Enumeration of function types.</p>
+        <p>Enumeration of MDO function types.</p>
 
     </div>
 
@@ -48250,7 +48266,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The default string representation of the function.</p>
+        <p>The default string representation of the MDO function.</p>
 
     </div>
 
@@ -48274,7 +48290,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The dimension of the output space of the function.</p>
+        <p>The dimension of the output space of the MDO function.</p>
 
     </div>
 
@@ -48299,7 +48315,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>Whether the function expects normalized inputs.</p>
+        <p>Whether the MDO function expects normalized inputs.</p>
 
     </div>
 
@@ -48323,7 +48339,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The expression of the function, e.g. <code>"2*x"</code>.</p>
+        <p>The expression of the MDO function, e.g. <code>"2*x"</code>.</p>
 
     </div>
 
@@ -48353,7 +48369,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The type of the function.</p>
+        <p>The type of the MDO function.</p>
 
     </div>
 
@@ -48397,12 +48413,17 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
   </span>
 
 <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.func" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">func</span><span class="p">:</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.WrappedFunctionType">WrappedFunctionType</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">func</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            WrappedFunctionType
+
+
+  
+      module-attribute
+   (gemseo.core.mdo_functions.mdo_function.WrappedFunctionType)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.WrappedFunctionType">WrappedFunctionType</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>The wrapped function.</p>
+        <p>The wrapped output function.</p>
 
     </div>
 
@@ -48450,7 +48471,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>Whether the function has an implemented Jacobian function.</p>
+        <p>Whether the MDO function has an implemented Jacobian function.</p>
 
     </div>
 
@@ -48475,7 +48496,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The names of the inputs of the function.</p>
+        <p>The names of the inputs of the MDO function.</p>
 <p>Use a copy of the original names.</p>
 
     </div>
@@ -48496,12 +48517,17 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
   </span>
 
 <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.jac" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">jac</span><span class="p">:</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.WrappedJacobianType">WrappedJacobianType</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">jac</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            WrappedJacobianType
+
+
+  
+      module-attribute
+   (gemseo.core.mdo_functions.mdo_function.WrappedJacobianType)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.WrappedJacobianType">WrappedJacobianType</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>The Jacobian function to be evaluated from a given input vector.</p>
+        <p>The wrapped Jacobian function.</p>
 
     </div>
 
@@ -48525,7 +48551,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The name of the function.</p>
+        <p>The name of the MDO function.</p>
 
     </div>
 
@@ -48549,7 +48575,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The function before preprocessing by the <a class="autorefs autorefs-internal" title="            OptimizationProblem" href="../../../algos/optimization_problem/#gemseo.algos.optimization_problem.OptimizationProblem">OptimizationProblem</a>.</p>
+        <p>The MDO function before preprocessing by the <a class="autorefs autorefs-internal" title="            OptimizationProblem" href="../../../algos/optimization_problem/#gemseo.algos.optimization_problem.OptimizationProblem">OptimizationProblem</a>.</p>
 
     </div>
 
@@ -48573,7 +48599,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The original name of the function.</p>
+        <p>The original name of the MDO function.</p>
 
     </div>
 
@@ -48598,7 +48624,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The names of the outputs of the function.</p>
+        <p>The names of the outputs of the MDO function.</p>
 <p>Use a copy of the original names.</p>
 
     </div>
@@ -48623,7 +48649,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The string representation of the function overloading its default string ones.</p>
+        <p>The string representation of the MDO function overloading its default string ones.</p>
 
     </div>
 
@@ -48687,7 +48713,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The type of function for equality constraint.</p>
+        <p>The type of MDO function for equality constraint.</p>
 
     </div>
 
@@ -48712,7 +48738,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>The type of function for inequality constraint.</p>
+        <p>The type of MDO function for inequality constraint.</p>
 
     </div>
 
@@ -48745,7 +48771,13 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
   
       module-attribute
    (gemseo.typing.NumberArray)" href="../../../typing/#gemseo.typing.NumberArray">NumberArray</a></span><span class="p">,</span>
-    <span class="n">approximation_mode</span><span class="p">:</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode">ApproximationMode</span></span> <span class="o">=</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode.FINITE_DIFFERENCES">FINITE_DIFFERENCES</span></span><span class="p">,</span>
+    <span class="n">approximation_mode</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            ApproximationMode
+
+
+  
+      class-attribute
+      instance-attribute
+   (gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode">ApproximationMode</a></span> <span class="o">=</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode.FINITE_DIFFERENCES">FINITE_DIFFERENCES</span></span><span class="p">,</span>
     <span class="n">step</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span>
     <span class="n">error_max</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-08</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
@@ -48753,7 +48785,7 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
 
     <div class="doc doc-contents ">
 
-        <p>Check the gradients of the function.</p>
+        <p>Check the gradients of the MDO function.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -48768,12 +48800,18 @@ the linear composite function outputs <span class="arithmatex">\(f(Ax)\)</span>.
    (gemseo.typing.NumberArray)" href="../../../typing/#gemseo.typing.NumberArray">NumberArray</a></code>)
           –
           <div class="doc-md-description">
-            <p>The vector at which the function is checked.</p>
+            <p>The vector at which the MDO function is checked.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
             <b><code>approximation_mode</code></b>
-              (<code><span title="gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode">ApproximationMode</span></code>, default:
+              (<code><a class="autorefs autorefs-internal" title="            ApproximationMode
+
+
+  
+      class-attribute
+      instance-attribute
+   (gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode">ApproximationMode</a></code>, default:
                   <code><span title="gemseo.core.mdo_functions.mdo_function.MDOFunction.ApproximationMode.FINITE_DIFFERENCES">FINITE_DIFFERENCES</span></code>
 )
           –
@@ -48822,16 +48860,7 @@ or if the analytical gradients are wrong.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">584</span>
 <span class="normal">585</span>
 <span class="normal">586</span>
 <span class="normal">587</span>
@@ -48872,17 +48901,26 @@ or if the analytical gradients are wrong.</p>
 <span class="normal">622</span>
 <span class="normal">623</span>
 <span class="normal">624</span>
-<span class="normal">625</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_grad</span><span class="p">(</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_grad</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">x_vect</span><span class="p">:</span> <span class="n">NumberArray</span><span class="p">,</span>
     <span class="n">approximation_mode</span><span class="p">:</span> <span class="n">ApproximationMode</span> <span class="o">=</span> <span class="n">ApproximationMode</span><span class="o">.</span><span class="n">FINITE_DIFFERENCES</span><span class="p">,</span>
     <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
     <span class="n">error_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check the gradients of the function.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check the gradients of the MDO function.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        x_vect: The vector at which the function is checked.</span>
+<span class="sd">        x_vect: The vector at which the MDO function is checked.</span>
 <span class="sd">        approximation_mode: The approximation mode.</span>
 <span class="sd">        step: The step for the approximation of the gradients.</span>
 <span class="sd">        error_max: The maximum value of the error.</span>
@@ -48942,12 +48980,17 @@ or if the analytical gradients are wrong.</p>
 
   
       module-attribute
-   (gemseo.typing.NumberArray)" href="../../../typing/#gemseo.typing.NumberArray">NumberArray</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</span></span>
+   (gemseo.typing.NumberArray)" href="../../../typing/#gemseo.typing.NumberArray">NumberArray</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            OutputType
+
+
+  
+      module-attribute
+   (gemseo.core.mdo_functions.mdo_function.OutputType)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Evaluate the function.</p>
+        <p>Evaluate the MDO function.</p>
 <p>When the output dimension
 <a class="autorefs autorefs-internal" title="            dim
 
@@ -48970,7 +49013,7 @@ it is inferred on the first evaluation.</p>
    (gemseo.typing.NumberArray)" href="../../../typing/#gemseo.typing.NumberArray">NumberArray</a></code>)
           –
           <div class="doc-md-description">
-            <p>The input value of the function.</p>
+            <p>The input value of the MDO function.</p>
           </div>
         </li>
     </ul>
@@ -48979,7 +49022,12 @@ it is inferred on the first evaluation.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-              <code><span title="gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</span></code>
+              <code><a class="autorefs autorefs-internal" title="            OutputType
+
+
+  
+      module-attribute
+   (gemseo.core.mdo_functions.mdo_function.OutputType)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</a></code>
           –
           <div class="doc-md-description">
             <p>Either the raw output value
@@ -48998,14 +49046,7 @@ is <code>True</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
@@ -49022,15 +49063,22 @@ is <code>True</code>.</p>
 <span class="normal">340</span>
 <span class="normal">341</span>
 <span class="normal">342</span>
-<span class="normal">343</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_vect</span><span class="p">:</span> <span class="n">NumberArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputType</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate the function.</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_vect</span><span class="p">:</span> <span class="n">NumberArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OutputType</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate the MDO function.</span>
 
 <span class="sd">    When the output dimension</span>
 <span class="sd">    [dim][gemseo.core.mdo_functions.mdo_function.MDOFunction.dim] is not defined,</span>
 <span class="sd">    it is inferred on the first evaluation.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        x_vect: The input value of the function.</span>
+<span class="sd">        x_vect: The input value of the MDO function.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Either the raw output value</span>
@@ -49135,22 +49183,22 @@ whose non-significant components have been set at zero.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span>
-<span class="normal">653</span>
-<span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">656</span>
 <span class="normal">657</span>
 <span class="normal">658</span>
 <span class="normal">659</span>
 <span class="normal">660</span>
 <span class="normal">661</span>
-<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filt_0</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">NumberArray</span><span class="p">,</span> <span class="n">floor_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NumberArray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the non-significant components of a vector to zero.</span>
 
@@ -49191,7 +49239,7 @@ whose non-significant components have been set at zero.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Generate the names of the inputs of the function.</p>
+        <p>Generate the names of the inputs of the MDO function.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -49201,7 +49249,7 @@ whose non-significant components have been set at zero.</p>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
           –
           <div class="doc-md-description">
-            <p>The dimension of the input space of the function.</p>
+            <p>The dimension of the input space of the MDO function.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -49211,7 +49259,7 @@ whose non-significant components have been set at zero.</p>
 )
           –
           <div class="doc-md-description">
-            <p>The initial names of the inputs of the function.
+            <p>The initial names of the inputs of the MDO function.
 If the number of names matches the dimension of the input space,
 use these names as is.
 Otherwise,
@@ -49235,7 +49283,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
               <code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>
           –
           <div class="doc-md-description">
-            <p>The names of the inputs of the function.</p>
+            <p>The names of the inputs of the MDO function.</p>
           </div>
         </li>
     </ul>
@@ -49243,16 +49291,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
 <span class="normal">752</span>
@@ -49273,15 +49312,24 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
 <span class="normal">767</span>
 <span class="normal">768</span>
 <span class="normal">769</span>
-<span class="normal">770</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_input_names</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">input_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate the names of the inputs of the function.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate the names of the inputs of the MDO function.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        input_dim: The dimension of the input space of the function.</span>
-<span class="sd">        input_names: The initial names of the inputs of the function.</span>
+<span class="sd">        input_dim: The dimension of the input space of the MDO function.</span>
+<span class="sd">        input_names: The initial names of the inputs of the MDO function.</span>
 <span class="sd">            If the number of names matches the dimension of the input space,</span>
 <span class="sd">            use these names as is.</span>
 <span class="sd">            Otherwise,</span>
@@ -49296,7 +49344,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
 <span class="sd">            i.e. `[&quot;x[0]&quot;, &quot;x[1]&quot;, &quot;x[2]&quot;]`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The names of the inputs of the function.</span>
+<span class="sd">        The names of the inputs of the MDO function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_input_names</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_names</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">n_input_names</span> <span class="o">==</span> <span class="n">input_dim</span><span class="p">:</span>
@@ -49323,7 +49371,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Return the name of function component.</p>
+        <p>Return the name of MDO function component.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -49333,7 +49381,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
           –
           <div class="doc-md-description">
-            <p>The index of the function component.</p>
+            <p>The index of the MDO function component.</p>
           </div>
         </li>
     </ul>
@@ -49345,7 +49393,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
               <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>
           –
           <div class="doc-md-description">
-            <p>The name of the function component.</p>
+            <p>The name of the MDO function component.</p>
           </div>
         </li>
     </ul>
@@ -49353,23 +49401,23 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_indexed_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the name of function component.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">790</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span>
+<span class="normal">794</span>
+<span class="normal">795</span>
+<span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_indexed_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the name of MDO function component.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        index: The index of the function component.</span>
+<span class="sd">        index: The index of the MDO function component.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The name of the function component.</span>
+<span class="sd">        The name of the MDO function component.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">repr_variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -49395,7 +49443,7 @@ i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize a new function.</p>
+        <p>Initialize an MDO function.</p>
 <p>This is typically used for deserialization.</p>
 
 
@@ -49427,7 +49475,7 @@ listed in
               <code><a class="autorefs autorefs-internal" title="            MDOFunction (gemseo.core.mdo_functions.mdo_function.MDOFunction)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction">MDOFunction</a></code>
           –
           <div class="doc-md-description">
-            <p>A function initialized from the provided data.</p>
+            <p>An MDO function initialized from the provided data.</p>
           </div>
         </li>
     </ul>
@@ -49453,16 +49501,7 @@ listed in
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">691</span>
 <span class="normal">692</span>
 <span class="normal">693</span>
 <span class="normal">694</span>
@@ -49482,9 +49521,18 @@ listed in
 <span class="normal">708</span>
 <span class="normal">709</span>
 <span class="normal">710</span>
-<span class="normal">711</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_from_dict_repr</span><span class="p">(</span><span class="o">**</span><span class="n">attributes</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MDOFunction</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize a new function.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize an MDO function.</span>
 
 <span class="sd">    This is typically used for deserialization.</span>
 
@@ -49494,7 +49542,7 @@ listed in
 <span class="sd">            [DICT_REPR_ATTR][gemseo.core.mdo_functions.mdo_function.MDOFunction.DICT_REPR_ATTR].</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A function initialized from the provided data.</span>
+<span class="sd">        An MDO function initialized from the provided data.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If the name of an argument is not in</span>
@@ -49531,7 +49579,7 @@ listed in
 
     <div class="doc doc-contents ">
 
-        <p>Check if the function is a constraint.</p>
+        <p>Check if the MDO function is a constraint.</p>
 <p>The constraint type is either <code>"eq"</code> or "<code>ineq"</code>.</p>
 
 
@@ -49541,7 +49589,7 @@ listed in
               <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
           –
           <div class="doc-md-description">
-            <p>Whether the function is a constraint.</p>
+            <p>Whether the MDO function is a constraint.</p>
           </div>
         </li>
     </ul>
@@ -49549,21 +49597,21 @@ listed in
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the function is a constraint.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the MDO function is a constraint.</span>
 
 <span class="sd">    The constraint type is either `&quot;eq&quot;` or &quot;`ineq&quot;`.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Whether the function is a constraint.</span>
+<span class="sd">        Whether the MDO function is a constraint.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_type</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ConstraintType</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -49580,19 +49628,29 @@ listed in
 
 
 <a href="#gemseo.core.mdo_functions.linear_composite_function.LinearCompositeFunction.offset" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">offset</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n"><span title="gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            MDOFunction (gemseo.core.mdo_functions.mdo_function.MDOFunction)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction">MDOFunction</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">offset</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            OutputType
+
+
+  
+      module-attribute
+   (gemseo.core.mdo_functions.mdo_function.OutputType)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            MDOFunction (gemseo.core.mdo_functions.mdo_function.MDOFunction)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction">MDOFunction</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Add an offset value to the function.</p>
+        <p>Add an offset value to the MDO function.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
             <b><code>value</code></b>
-              (<code><span title="gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</span></code>)
+              (<code><a class="autorefs autorefs-internal" title="            OutputType
+
+
+  
+      module-attribute
+   (gemseo.core.mdo_functions.mdo_function.OutputType)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.OutputType">OutputType</a></code>)
           –
           <div class="doc-md-description">
             <p>The offset value.</p>
@@ -49607,7 +49665,7 @@ listed in
               <code><a class="autorefs autorefs-internal" title="            MDOFunction (gemseo.core.mdo_functions.mdo_function.MDOFunction)" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction">MDOFunction</a></code>
           –
           <div class="doc-md-description">
-            <p>The offset function.</p>
+            <p>The offsetted MDO function.</p>
           </div>
         </li>
     </ul>
@@ -49615,16 +49673,7 @@ listed in
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">544</span>
-<span class="normal">545</span>
-<span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
 <span class="normal">556</span>
@@ -49644,14 +49693,23 @@ listed in
 <span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
-<span class="normal">573</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">OutputType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MDOFunction</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add an offset value to the function.</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">OutputType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MDOFunction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add an offset value to the MDO function.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        value: The offset value.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The offset function.</span>
+<span class="sd">        The offsetted MDO function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">operator</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Sized</span><span class="p">):</span>
@@ -49770,16 +49828,7 @@ normalized if required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">636</span>
 <span class="normal">637</span>
 <span class="normal">638</span>
 <span class="normal">639</span>
@@ -49788,7 +49837,16 @@ normalized if required.</p>
 <span class="normal">642</span>
 <span class="normal">643</span>
 <span class="normal">644</span>
-<span class="normal">645</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">rel_err</span><span class="p">(</span><span class="n">a_vect</span><span class="p">:</span> <span class="n">NumberArray</span><span class="p">,</span> <span class="n">b_vect</span><span class="p">:</span> <span class="n">NumberArray</span><span class="p">,</span> <span class="n">error_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the 2-norm of the difference between two vectors.</span>
 
@@ -49832,7 +49890,7 @@ normalized if required.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Set the original function and Jacobian function from a database.</p>
+        <p>Set the output and Jacobian functions from a database.</p>
 <p>For a given input vector,
 the method <a class="autorefs autorefs-internal" title="            func
 
@@ -49907,16 +49965,7 @@ the values of the inputs are unnormalized before call.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">722</span>
 <span class="normal">723</span>
 <span class="normal">724</span>
 <span class="normal">725</span>
@@ -49932,7 +49981,16 @@ the values of the inputs are unnormalized before call.</p>
 <span class="normal">735</span>
 <span class="normal">736</span>
 <span class="normal">737</span>
-<span class="normal">738</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_pt_from_database</span><span class="p">(</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_pt_from_database</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">database</span><span class="p">:</span> <span class="n">Database</span><span class="p">,</span>
     <span class="n">design_space</span><span class="p">:</span> <span class="n">DesignSpace</span><span class="p">,</span>
@@ -49940,7 +49998,7 @@ the values of the inputs are unnormalized before call.</p>
     <span class="n">jac</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">x_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the original function and Jacobian function from a database.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the output and Jacobian functions from a database.</span>
 
 <span class="sd">    For a given input vector,</span>
 <span class="sd">    the method [func()][gemseo.core.mdo_functions.mdo_function.MDOFunction.func]</span>
@@ -49977,9 +50035,9 @@ the values of the inputs are unnormalized before call.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a dictionary representation of the function.</p>
+        <p>Create a dictionary representation of the MDO function.</p>
 <p>This is used for serialization.
-The pointers to the functions are removed.</p>
+The pointers to the output and Jacobian functions are removed.</p>
 
 
 <p><span class="doc-section-title">Returns:</span></p>
@@ -49988,7 +50046,7 @@ The pointers to the functions are removed.</p>
               <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]</code>
           –
           <div class="doc-md-description">
-            <p>Some attributes of the function indexed by their names.
+            <p>Some attributes of the MDO function indexed by their names.
 See
 <a class="autorefs autorefs-internal" title="            DICT_REPR_ATTR
 
@@ -50003,30 +50061,30 @@ See
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/mdo_functions/mdo_function.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
 <span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
 <span class="normal">679</span>
-<span class="normal">680</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a dictionary representation of the function.</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a dictionary representation of the MDO function.</span>
 
 <span class="sd">    This is used for serialization.</span>
-<span class="sd">    The pointers to the functions are removed.</span>
+<span class="sd">    The pointers to the output and Jacobian functions are removed.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Some attributes of the function indexed by their names.</span>
+<span class="sd">        Some attributes of the MDO function indexed by their names.</span>
 <span class="sd">        See</span>
 <span class="sd">        [DICT_REPR_ATTR][gemseo.core.mdo_functions.mdo_function.MDOFunction.DICT_REPR_ATTR].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
