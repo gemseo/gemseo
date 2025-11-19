@@ -24,7 +24,7 @@ To interface a simulation software with GEMSEO, and make a
 - You have an Excel workbooks, use [Excel discipline][excel-wrapper].
 - If your program is a MATLAB function, there is a generic interface
   that allows to connect it to GEMSEO as a [Discipline][gemseo.core.discipline.discipline.Discipline]. See
-  [the generic MATLAB wrapper][build-discipline-from-a-matlab-function],
+  [Gemseo-matlab](https://gemseo.gitlab.io/dev/gemseo-matlab/latest/),
 - For Scilab functions, [a plugin is available](https://gitlab.com/gemseo/dev/gemseo-scilab). With it, you
   can create a [Discipline][gemseo.core.discipline.discipline.Discipline] that runs Scilab code directly from
   GEMSEO.
