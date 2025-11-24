@@ -47257,7 +47257,8 @@
    (gemseo.typing.RealArray)" href="../../../../typing/#gemseo.typing.RealArray">RealArray</a></code>)
           –
           <div class="doc-md-description">
-            <p>The samples from which the tolerance interval is estimated,</p>
+            <p>The samples from which the tolerance interval is estimated,
+shaped as <code>(n_samples,)</code>.</p>
           </div>
         </li>
     </ul>
@@ -47282,7 +47283,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
 <span class="sd">        data: The samples from which the tolerance interval is estimated,</span>
-<span class="sd">        shaped as `(n_samples,)`.</span>
+<span class="sd">            shaped as `(n_samples,)`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: D205 D212 D415</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__sorted_samples</span> <span class="o">=</span> <span class="n">sort</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>

@@ -51181,6 +51181,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -51226,16 +51236,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -51593,13 +51593,13 @@ with respect to the reference one.</p>
 <span class="sd">            [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].</span>
 <span class="sd">        derr_approx: The approximation method,</span>
 <span class="sd">            either &quot;complex_step&quot; or &quot;finite_differences&quot;.</span>
+<span class="sd">        step: The differentiation step.</span>
 <span class="sd">        threshold: The acceptance threshold for the Jacobian error.</span>
 <span class="sd">        linearization_mode: the mode of linearization: direct, adjoint</span>
 <span class="sd">            or automated switch depending on dimensions</span>
 <span class="sd">            of inputs and outputs (Default value = &#39;auto&#39;)</span>
 <span class="sd">        input_names: The names of the inputs wrt which to differentiate the outputs.</span>
 <span class="sd">        output_names: The names of the outputs to be differentiated.</span>
-<span class="sd">        step: The differentiation step.</span>
 <span class="sd">        parallel: Whether to differentiate the discipline in parallel.</span>
 <span class="sd">        n_processes: The maximum simultaneous number of threads,</span>
 <span class="sd">            if `use_threading` is True, or processes otherwise,</span>
@@ -52923,18 +52923,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -52944,6 +52932,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -53118,12 +53118,12 @@ when the calculation of f requires a numerical resolution.</p>
 <span class="sd">       Chapter 11, &quot;Numerical Differentiation&quot;</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        input_names: The inputs with respect to which the outputs are linearized.</span>
-<span class="sd">            If empty, use the differentiated inputs defined by</span>
-<span class="sd">            [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].</span>
 <span class="sd">        output_names: The outputs to be linearized.</span>
 <span class="sd">            If empty, use the outputs defined by</span>
 <span class="sd">            [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].</span>
+<span class="sd">        input_names: The inputs with respect to which the outputs are linearized.</span>
+<span class="sd">            If empty, use the differentiated inputs defined by</span>
+<span class="sd">            [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].</span>
 <span class="sd">        compute_all_jacobians: Whether to compute the Jacobians of all the output</span>
 <span class="sd">            with respect to all the inputs.</span>
 <span class="sd">            Otherwise,</span>
@@ -54616,6 +54616,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -54661,16 +54671,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -55028,13 +55028,13 @@ with respect to the reference one.</p>
 <span class="sd">            [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].</span>
 <span class="sd">        derr_approx: The approximation method,</span>
 <span class="sd">            either &quot;complex_step&quot; or &quot;finite_differences&quot;.</span>
+<span class="sd">        step: The differentiation step.</span>
 <span class="sd">        threshold: The acceptance threshold for the Jacobian error.</span>
 <span class="sd">        linearization_mode: the mode of linearization: direct, adjoint</span>
 <span class="sd">            or automated switch depending on dimensions</span>
 <span class="sd">            of inputs and outputs (Default value = &#39;auto&#39;)</span>
 <span class="sd">        input_names: The names of the inputs wrt which to differentiate the outputs.</span>
 <span class="sd">        output_names: The names of the outputs to be differentiated.</span>
-<span class="sd">        step: The differentiation step.</span>
 <span class="sd">        parallel: Whether to differentiate the discipline in parallel.</span>
 <span class="sd">        n_processes: The maximum simultaneous number of threads,</span>
 <span class="sd">            if `use_threading` is True, or processes otherwise,</span>
@@ -56358,18 +56358,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -56379,6 +56367,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -56553,12 +56553,12 @@ when the calculation of f requires a numerical resolution.</p>
 <span class="sd">       Chapter 11, &quot;Numerical Differentiation&quot;</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        input_names: The inputs with respect to which the outputs are linearized.</span>
-<span class="sd">            If empty, use the differentiated inputs defined by</span>
-<span class="sd">            [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].</span>
 <span class="sd">        output_names: The outputs to be linearized.</span>
 <span class="sd">            If empty, use the outputs defined by</span>
 <span class="sd">            [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].</span>
+<span class="sd">        input_names: The inputs with respect to which the outputs are linearized.</span>
+<span class="sd">            If empty, use the differentiated inputs defined by</span>
+<span class="sd">            [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].</span>
 <span class="sd">        compute_all_jacobians: Whether to compute the Jacobians of all the output</span>
 <span class="sd">            with respect to all the inputs.</span>
 <span class="sd">            Otherwise,</span>
@@ -56813,9 +56813,7 @@ you can use <span class="arithmatex">\(a,b,c\)</span> in <code>design_space</cod
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/gemseo/problems/mdo/opt_as_mdo_scenario.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
 <span class="normal">372</span>
@@ -56864,7 +56862,9 @@ you can use <span class="arithmatex">\(a,b,c\)</span> in <code>design_space</cod
 <span class="normal">415</span>
 <span class="normal">416</span>
 <span class="normal">417</span>
-<span class="normal">418</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">discipline</span><span class="p">:</span> <span class="n">Discipline</span><span class="p">,</span>
     <span class="n">objective_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -58947,16 +58947,6 @@ at each discipline status change.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-            <b><code>log_workflow_status</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
-                  <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Whether to log the evolution of the workflow's status.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>directory_path</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>, default:
                   <code>&#39;.&#39;</code>
@@ -58964,6 +58954,16 @@ at each discipline status change.</p>
           –
           <div class="doc-md-description">
             <p>The path of the directory to save the files.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>log_workflow_status</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to log the evolution of the workflow's status.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -59144,8 +59144,8 @@ to a PDF file using pdflatex.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        monitor: Whether to update the generated file</span>
 <span class="sd">            at each discipline status change.</span>
-<span class="sd">        log_workflow_status: Whether to log the evolution of the workflow&#39;s status.</span>
 <span class="sd">        directory_path: The path of the directory to save the files.</span>
+<span class="sd">        log_workflow_status: Whether to log the evolution of the workflow&#39;s status.</span>
 <span class="sd">        file_name: The file name without the file extension.</span>
 <span class="sd">        show_html: Whether to open the web browser and display the XDSM.</span>
 <span class="sd">        save_html: Whether to save the XDSM as a HTML file.</span>
@@ -59346,9 +59346,7 @@ and the strongly coupled disciplines.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/problems/mdo/opt_as_mdo_scenario.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">423</span>
 <span class="normal">424</span>
 <span class="normal">425</span>
 <span class="normal">426</span>
@@ -59411,7 +59409,9 @@ and the strongly coupled disciplines.</p>
 <span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
-<span class="normal">486</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_disciplines</span><span class="p">(</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_disciplines</span><span class="p">(</span>
     <span class="n">discipline</span><span class="p">:</span> <span class="n">Discipline</span><span class="p">,</span>
     <span class="n">design_space</span><span class="p">:</span> <span class="n">DesignSpace</span><span class="p">,</span>
     <span class="n">coupling_equations</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span>

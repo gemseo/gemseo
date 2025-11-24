@@ -50052,16 +50052,6 @@ at each discipline status change.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-            <b><code>log_workflow_status</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
-                  <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Whether to log the evolution of the workflow's status.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>directory_path</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | <a class="autorefs autorefs-external" title="pathlib.Path" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>, default:
                   <code>&#39;.&#39;</code>
@@ -50069,6 +50059,16 @@ at each discipline status change.</p>
           –
           <div class="doc-md-description">
             <p>The path of the directory to save the files.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>log_workflow_status</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to log the evolution of the workflow's status.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -50249,8 +50249,8 @@ to a PDF file using pdflatex.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        monitor: Whether to update the generated file</span>
 <span class="sd">            at each discipline status change.</span>
-<span class="sd">        log_workflow_status: Whether to log the evolution of the workflow&#39;s status.</span>
 <span class="sd">        directory_path: The path of the directory to save the files.</span>
+<span class="sd">        log_workflow_status: Whether to log the evolution of the workflow&#39;s status.</span>
 <span class="sd">        file_name: The file name without the file extension.</span>
 <span class="sd">        show_html: Whether to open the web browser and display the XDSM.</span>
 <span class="sd">        save_html: Whether to save the XDSM as a HTML file.</span>
