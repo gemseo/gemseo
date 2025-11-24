@@ -27,6 +27,17 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 6.3.1 (2025-11-24)
+**************************
+
+
+
+Fixed
+-----
+
+- The ``compare_dict_of_arrays`` function now works with arrays of string with multiple components.
+  `#1662 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1662>`_
+
 Version 6.3.0 (2025-10-14)
 **************************
 
