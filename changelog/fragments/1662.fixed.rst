@@ -1,1 +1,0 @@
-The ``compare_dict_of_arrays`` function now works with arrays of string with multiple components.
