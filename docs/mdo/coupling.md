@@ -48,7 +48,7 @@ from gemseo import generate_coupling_graph
 generate_coupling_graph(disciplines)
 ```
 
-![Full coupling graph](../_images/coupling/full_coupling_graph.png)
+![Full coupling graph](../assets/images/coupling/full_coupling_graph.png)
 
 ### Condensed graph
 
@@ -56,7 +56,7 @@ generate_coupling_graph(disciplines)
 generate_coupling_graph(disciplines, full=False)
 ```
 
-![Condensed coupling graph](../_images/coupling/condensed_coupling_graph.png)
+![Condensed coupling graph](../assets/images/coupling/condensed_coupling_graph.png)
 
 ## N2 chart visualization
 
@@ -83,7 +83,7 @@ The API function [generate_n2_plot()][gemseo.generate_n2_plot] allows to create 
 
 Whatever the options, an HTML file is create based on the provided file path by using *.html* as file extension (by default, *n2.html*):
 
-![Static N2 chart](../_images/coupling/n2.gif)
+![Static N2 chart](../assets/images/coupling/n2.gif)
 
 This interactive N2 chart can be opened at any time in a browser
 
@@ -98,7 +98,7 @@ from gemseo import generate_n2_plot
 generate_n2_plot(disciplines)
 ```
 
-![N2 chart with coupling names](../_images/coupling/n2.png)
+![N2 chart with coupling names](../assets/images/coupling/n2.png)
 
 ### Without coupling names
 
@@ -108,7 +108,7 @@ from gemseo import generate_n2_plot
 generate_n2_plot(disciplines, show_data_names=False)
 ```
 
-![N2 chart without coupling names](../_images/coupling/n2_without_names.png)
+![N2 chart without coupling names](../assets/images/coupling/n2_without_names.png)
 
 [^1]: Depth-first search and linear graph algorithms, R. Tarjan SIAM Journal of Computing 1(2):146-160, (1972).
 

@@ -8,8 +8,8 @@ repo_name: gemseo
 
 theme:
   name: material
-  favicon: images/favicon.ico
-  logo: _static/logo/gemseo_white_monogram.png
+  favicon: assets/images/gemseo/favicon.ico
+  logo: assets/images/gemseo/gemseo_white_monogram.png
   features:
     - navigation.tabs
     - navigation.instant
@@ -43,7 +43,7 @@ plugins:
 - section-index
 - gallery:
     conf_script: docs/gallery_conf.py
-    default_thumb_file: docs/images/monogram.png
+    default_thumb_file: docs/assets/images/gemseo/monogram.png
 - include-markdown
 - bibtex:
     bib_file: "docs/references.bib"
@@ -212,13 +212,13 @@ markdown_extensions:
     emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 extra_css:
-- css/style.css
-- css/fontello.css
-- css/xdsmjs.css
+- assets/css/style.css
+- assets/css/fontello.css
+- assets/css/xdsmjs.css
 
 extra_javascript:
-- javascripts/mathjax.js
-- javascripts/xdsmjs.js
+- assets/js/mathjax.js
+- assets/js/xdsmjs.js
 - https://polyfill.io/v3/polyfill.min.js?features=es6
 - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 

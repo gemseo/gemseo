@@ -85,7 +85,7 @@ In this example, the sequential MDA will perform 2 iterations of the Jacobi's me
 
 The [MDAChain][gemseo.mda.mda_chain.MDAChain] implements an advanced graph-based algorithm which allows, when possible, to split the solution of the non-linear system of equations into smaller and weakly coupled ones. The next figure illustrates this process on a 16 coupled disciplines toy problem.
 
-![3 resolution phases of a 16 disciplines coupling problem](../_images/mda/mda_auto_procedure.png)
+![3 resolution phases of a 16 disciplines coupling problem](../assets/images/mda/mda_auto_procedure.png)
 *The 3 resolution phases of a 16 disciplines coupling problem.*
 
 The MDA chain inspects the coupling graph and **automatically** detects strongly coupled disciplines. In the example above, the problem is split into 4 sub-systems, for which an inner MDA implementing a non-linear solver is used. As an example, the following code will create an MDA chain, that will solve the sub-systems using Jacobi's method. The solver for the sub-systems is specified via the `inner_mda_name` setting.

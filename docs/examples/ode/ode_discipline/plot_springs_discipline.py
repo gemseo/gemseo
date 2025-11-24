@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 # We hereby study the response of the system to the displacement of
 # one or multiple of the point masses.
 #
-# ![image](../../../../_images/ode/springs.png)
+# ![image](../../../../assets/images/ode/springs.png)
 #
 # The motion of each point mass in this system is described
 # by the following set of ordinary differential equations (ODEs):
@@ -208,7 +208,7 @@ local_data = mda.execute()
 # The coupling structure between the  instances of [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] can be
 # represented by the following picture.
 #
-# ![image](../../../../_images/ode/springs-disciplines.png)
+# ![image](../../../../assets/images/ode/springs-disciplines.png)
 #
 # We can plot the residuals of this MDA.
 # %%
@@ -230,7 +230,7 @@ plt.show()
 # Another possibility to tackle this problem is to define the couplings within a
 # discipline, as illustrated in the next figure.
 #
-# ![image](../../../../_images/ode/time_integration.png)
+# ![image](../../../../assets/images/ode/time_integration.png)
 
 
 def compute_mass_0_rhs(

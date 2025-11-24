@@ -4,7 +4,7 @@ The following people contribute or have contributed to the GEMSEO's development 
     <div class="gallery-author-container">
 {% for (name, surname, file_name) in authors %}
         <div class="gallery-author-item col-1">
-            <img src="../_static/authors/{{ file_name }}"/>
+            <img src="../assets/images/authors/{{ file_name }}"/>
             <div class="gallery-author-caption">{{ name }} {{ surname }}</div>
         </div>
 {% endfor %}

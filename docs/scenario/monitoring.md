@@ -93,16 +93,16 @@ scenario.xdsmize(monitor=True, directory_path="results_path")
 The following images shows the typical outputs of the process statuses
 
 - Initial state of the process before execution: the colors represent the type of discipline (scenario, MDA, simple discipline)
-   ![Initial state of the process before execution](../_images/monitoring/monitoring_1.png)
+   ![Initial state of the process before execution](../assets/images/monitoring/monitoring_1.png)
 
 - The process has started:  the colors represent the status of the disciplines : green for RUNNING, blue for PENDING, red for FAILED
-   ![The process has started](../_images/monitoring/monitoring_2.png)
+   ![The process has started](../assets/images/monitoring/monitoring_2.png)
 
 - The process is running, the MDA iterations are ongoing
-   ![The process is running](../_images/monitoring/monitoring_3.png)
+   ![The process is running](../assets/images/monitoring/monitoring_3.png)
 
 - The process is finished and failed, due to the SobieskiMission discipline failure
-   ![The process is finished and failed](../_images/monitoring/monitoring_4.png)
+   ![The process is finished and failed](../assets/images/monitoring/monitoring_4.png)
 
 ## Monitoring from a external platform using the observer design pattern
 
@@ -177,4 +177,4 @@ each discipline has a dedicated row.
 The blue rectangles correspond to the execution time while the red ones represent
 linearization time.
 
-![Gantt chart](../_images/monitoring/gantt_process.png)
+![Gantt chart](../assets/images/monitoring/gantt_process.png)

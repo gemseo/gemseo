@@ -36,7 +36,7 @@ GEMSEO aims at pushing forward the limits of automation in simulation processes 
 > - the automation of MDO results analysis,
 > - the development of distributed and multi-level [MDO formulations](mdo/mdo_formulations.md).
 
-![XDSM of the bi-level formulation applied to the Sobieski's SSBJ problem](_images/bilevel_ssbj.png)
+![XDSM of the bi-level formulation applied to the Sobieski's SSBJ problem](assets/images/bilevel_ssbj.png)
 *A bi-level MDO formulation on Sobieski's SSBJ problem.*
 
 ## Main features

@@ -161,15 +161,15 @@ study.execute(n_replicates=2)
 #
 # ### Aerodynamics
 #
-# .. image:: /_images/scalable_example/2_1_sdm_Aerodynamics_dependency-1.png
+# .. image:: /assets/images/scalable_example/2_1_sdm_Aerodynamics_dependency-1.png
 #
 # ### Structure
 #
-# .. image:: /_images/scalable_example/2_1_sdm_Structure_dependency-1.png
+# .. image:: /assets/images/scalable_example/2_1_sdm_Structure_dependency-1.png
 #
 # ###Mission
 #
-# .. image:: /_images/scalable_example/2_1_sdm_Mission_dependency-1.png
+# .. image:: /assets/images/scalable_example/2_1_sdm_Mission_dependency-1.png
 
 # %%
 # ## Look at optimization histories
@@ -180,34 +180,34 @@ study.execute(n_replicates=2)
 #
 # ### Objective function
 #
-# .. image:: /_images/scalable_example/MDF_2_1_obj_history-1.png
+# .. image:: /assets/images/scalable_example/MDF_2_1_obj_history-1.png
 #    :width: 45%
 #
-# .. image:: /_images/scalable_example/IDF_2_1_obj_history-1.png
+# .. image:: /assets/images/scalable_example/IDF_2_1_obj_history-1.png
 #    :width: 45%
 #
 # ### Design variables
 #
-# .. image:: /_images/scalable_example/MDF_2_1_variables_history-1.png
+# .. image:: /assets/images/scalable_example/MDF_2_1_variables_history-1.png
 #    :width: 45%
 #
-# .. image:: /_images/scalable_example/IDF_2_1_variables_history-1.png
+# .. image:: /assets/images/scalable_example/IDF_2_1_variables_history-1.png
 #    :width: 45%
 #
 # ### Equality constraints
 #
-# .. image:: /_images/scalable_example/MDF_2_1_eq_constraints_history-1.png
+# .. image:: /assets/images/scalable_example/MDF_2_1_eq_constraints_history-1.png
 #    :width: 45%
 #
-# .. image:: /_images/scalable_example/IDF_2_1_eq_constraints_history-1.png
+# .. image:: /assets/images/scalable_example/IDF_2_1_eq_constraints_history-1.png
 #    :width: 45%
 #
 # ### Inequality constraints
 #
-# .. image:: /_images/scalable_example/MDF_2_1_ineq_constraints_history-1.png
+# .. image:: /assets/images/scalable_example/MDF_2_1_ineq_constraints_history-1.png
 #    :width: 45%
 #
-# .. image:: /_images/scalable_example/IDF_2_1_ineq_constraints_history-1.png
+# .. image:: /assets/images/scalable_example/IDF_2_1_ineq_constraints_history-1.png
 #    :width: 45%
 
 # %%
@@ -228,5 +228,5 @@ post.labelize_scaling_strategy("Number of design parameters per type.")
 post.plot(xmargin=3.0, xticks=[1.0, 20.0], xticks_labels=["1", "20"], widths=1.0)
 
 # %%
-# .. image:: /_images/scalable_example/exec_time-1.png
+# .. image:: /assets/images/scalable_example/exec_time-1.png
 #

@@ -8,7 +8,7 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 <h1 style="display: none;">Home</h1>
 
-<div style="text-align: center;"><img src="_static/logo-small.png" style="width: 50%;" alt="GEMSEO logo"/></div>
+<div style="text-align: center;"><img src="assets/images/gemseo/logo-small.png" style="width: 50%;" alt="GEMSEO logo"/></div>
 
 <p style="text-align: center;">
 <a href="https://app.codecov.io/gl/gemseo:dev/gemseo/branch/develop"><img alt="Codecov branch" src="https://img.shields.io/codecov/c/gitlab/gemseo:dev/gemseo/develop" /></a>
@@ -26,7 +26,7 @@ GEMSEO can be both easily embedded in simulation platforms and used as a standal
 
 Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licences][licenses]).
 
-<div style="text-align: center;"><img src="_static/gemseo_schema.png" alt="GEMSEO illustration"/></div>
+<div style="text-align: center;"><img src="assets/images/gemseo/gemseo_schema.png" alt="GEMSEO illustration"/></div>
 
 ## Main concepts
 

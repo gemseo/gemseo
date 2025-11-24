@@ -29,7 +29,7 @@ GEMSEO must provide generic interfaces, so that it can be integrated within any 
 - Interfaces with external optimization algorithms , and DOE methods, MDA solvers, surrogate model.
 - Interfaces with the MDO platform.
 
-![Formulations engine](../_images/architecture/components_platform.png)
+![Formulations engine](../assets/images/architecture/components_platform.png)
 *The Formulations Engine within its environment*
 
 ## GEMSEO components interactions
@@ -48,7 +48,7 @@ GEMSEO architecture is modular. Many of its packages and classes are independent
 
 The next figure shows the main components of GEMSEO within an MDO platform.
 
-![GEMSEO components](../_images/architecture/components_all.png)
+![GEMSEO components](../assets/images/architecture/components_all.png)
 *GEMSEO components*
 
 ### At process building step
@@ -62,7 +62,7 @@ When the scenario is instantiated by the user, typically in a script or by a pla
 
 The next figure shows the components interaction at this step.
 
-![Process building step](../_images/architecture/components_build_process.png)
+![Process building step](../assets/images/architecture/components_build_process.png)
 *Components interaction at the build step of the process*
 
 ### During process execution
@@ -75,7 +75,7 @@ During the process execution :
 4. These functions point to the generic processes (that aim at solving a coupling problem for an MDA) or MDO sub-scenarios (for bi-level scenarios), in order to find an optimum.
 5. These calls trigger the generic process execution, which themselves execute the disciplines.
 
-![Process execution](../_images/architecture/components_execute_process.png)
+![Process execution](../assets/images/architecture/components_execute_process.png)
 *Components interactions at execution of the process*
 
 The sequence diagram shows the data exchanges during the execution. Here the generic process may be a [Multi Disciplinary Analyses](../mdo/mda.md) in the case of MDF, which calls the disciplines. We represent only the objective function calls, since the constraints are handled in a similar way. The calls to the objective and its gradient are made within a loop, until convergence of the optimization algorithm (the driver). The scenario then retrieves the optimum from the driver.
@@ -122,7 +122,7 @@ The user triggers the plots generation from a post-processing factory, or via th
 3. and a database of all data generated during execution, typically the objective function, constraints, their derivatives, and eventually algorithmic data.
 4. Once the data is available, the factory loads the appropriate plot generation class for the plots required by the user, and calls the plot generation method.
 
-![Results analysis](../_images/architecture/results_analysis.png)
+![Results analysis](../assets/images/architecture/results_analysis.png)
 *Components interactions during results analysis*
 
 ## Main classes
