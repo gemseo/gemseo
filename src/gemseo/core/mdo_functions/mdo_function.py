@@ -87,13 +87,6 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     wraps an output function which takes an array as argument and returns an array,
     e.g. `func = MDOFunction(lambda x: 2*x, "my_function")`.
 
-    Note:
-       The callable can be set to `None` (default)
-       when the user does not want to use a callable
-       but a database to browse for the output vector corresponding to an input vector
-       (see
-       [set_pt_from_database()][gemseo.core.mdo_functions.mdo_function.MDOFunction.set_pt_from_database]).
-
     The following information can also be provided at initialization:
 
     - the type of the MDO function,
@@ -106,13 +99,6 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
       e.g. `expr="2*x"`,
     - the names of the inputs and outputs of the MDO function,
       e.g. `input_names=["x"]` and `output_names=["y"]`.
-
-    Warning:
-       For the literal expression,
-       do not use `"f(x) = 2*x"` nor `"f = 2*x"` but `"2*x"`.
-       The other elements will be added automatically
-       in the string representation of the MDO function
-       based on the name of the MDO function and the names of its inputs.
 
     After the initialization,
     all of these arguments can be overloaded with setters,
@@ -154,6 +140,20 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     Lastly, the user can check the Jacobian function by means of approximation methods
     (see
     [check_grad()][gemseo.core.mdo_functions.mdo_function.MDOFunction.check_grad]).
+
+    Note:
+       The callable can be set to `None` (default)
+       when the user does not want to use a callable
+       but a database to browse for the output vector corresponding to an input vector
+       (see
+       [set_pt_from_database()][gemseo.core.mdo_functions.mdo_function.MDOFunction.set_pt_from_database]).
+
+    Warning:
+       For the literal expression,
+       do not use `"f(x) = 2*x"` nor `"f = 2*x"` but `"2*x"`.
+       The other elements will be added automatically
+       in the string representation of the MDO function
+       based on the name of the MDO function and the names of its inputs.
     """
 
     class ConstraintType(StrEnum):

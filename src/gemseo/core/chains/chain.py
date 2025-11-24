@@ -153,8 +153,8 @@ class MDOChain(ProcessDiscipline):
         D z      d inpt_1   [d z       d inpt_1   d inpt_2     d z    ]
 
         Args:
-            discipline: The new discipline to compose in the chain.
             chain_outputs: The outputs to lineariza.
+            discipline: The new discipline to compose in the chain.
         """
         # TODO : only linearize wrt needed inputs/inputs
         # use coupling_structure graph path for that

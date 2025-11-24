@@ -87,8 +87,8 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         [update_status()][gemseo.core.base_execution_status_observer.BaseExecutionStatusObserver.update_status]
         method each time an underlying discipline changes its status.
 
-        Returns:
-            The disciplines.
+        Args:
+            obs: The observer.
         """
 
     @property
