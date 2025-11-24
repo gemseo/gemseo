@@ -28,7 +28,7 @@ from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAna
 # ## Describe your coupling problem in an Excel file
 #
 #
-# .. image:: /_images/study_analysis_example/coupling_study.png
+# .. image:: /assets/images/study_analysis_example/coupling_study.png
 #
 
 # %%

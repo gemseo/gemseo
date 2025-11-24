@@ -57,7 +57,7 @@ A first approach consists in modeling the different entities of the system by di
 The coupling between the disciplines is done by passing the trajectories computed by each [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] as
 inputs of the other [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] in the form of *design variables*.
 
-![Coupling of the time integrations across times](../_images/ode/coupling.png)
+![Coupling of the time integrations across times](../assets/images/ode/coupling.png)
 
 ### Coupled dynamic inside an ODEDiscipline
 
@@ -68,7 +68,7 @@ variables the collection of all the variables representing each component of the
 The dynamic of such [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] is the result of an [MDA][multi-disciplinary-analyses] on all disciplines describing
 the dynamics of the components of the system.
 
-![Time integration of the coupled system](../_images/ode/time_integration.png)
+![Time integration of the coupled system](../assets/images/ode/time_integration.png)
 
 ### ODE Classes organization
 

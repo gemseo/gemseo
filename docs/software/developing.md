@@ -534,7 +534,7 @@ The Python standard library provides a [profiler](https://docs.python.org/3/libr
 
 Configure [PyCharm](https://www.jetbrains.com/pycharm) to match the code style used by GEMSEO. Download [this file](../_static/pycharm/python-code-style.xml), open the [PyCharm](https://www.jetbrains.com/pycharm) settings, go to `Editor > Code Style > Python` and select `Import Scheme...`:
 
-![image](../_images/pycharm/configure-code-style.png)
+![image](../assets/images/pycharm/configure-code-style.png)
 
 ### Check and format
 

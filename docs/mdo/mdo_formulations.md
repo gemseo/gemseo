@@ -86,7 +86,7 @@ using fixed-point methods (Gauss-Seidel, Jacobi) or root-finding methods
 existence of an equilibrium for any values of the design variables
 $(x, z)$ encountered during the optimization process.
 
-![A process based on the MDF formulation.](../_images/mdo_formulations/MDF_process.png)
+![A process based on the MDF formulation.](../assets/images/mdo_formulations/MDF_process.png)
 
 Gradient-based optimization algorithms require the computation of the
 total derivatives of $\phi(x, z, y(x, z))$, where
@@ -129,7 +129,7 @@ Thus,
 the iterations are less costly than those of MDF, as they do not use an MDA algorithm,
 but IF does not allow early stopping with the guarantee of a multidisciplinary feasible solution, unlike MDF.
 
-![A process based on the IDF formulation.](../_images/mdo_formulations/IDF_process.png)
+![A process based on the IDF formulation.](../assets/images/mdo_formulations/IDF_process.png)
 
 Note that the targets can include either all the couplings or the strong couplings only.
 If all couplings,
@@ -138,7 +138,7 @@ and all couplings (weak and strong) are set as target variables in the design sp
 This maximizes the exploitation of the parallelism but leads to a larger design space,
 so usually more iterations by the optimizer.
 
-![The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering all the coupling targets.](../_images/mdo_formulations/xdsm_sobieski_idf_all.png)
+![The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering all the coupling targets.](../assets/images/mdo_formulations/xdsm_sobieski_idf_all.png)
 
 If the strong couplings only,
 then the coupling graph is analyzed
@@ -151,7 +151,7 @@ the availability of gradients,
 the availability of CPUs versus the number of disciplines,
 so it is very context dependant.
 
-![The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering the strong coupling targets only.](../_images/mdo_formulations/xdsm_sobieski_idf_strong.png)
+![The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering the strong coupling targets only.](../assets/images/mdo_formulations/xdsm_sobieski_idf_strong.png)
 
 ## Bi-level { #the-bi-level-formulation }
 
@@ -176,7 +176,7 @@ This formulation was invented in the MDA-MDO project at
 IRT Saint Exupéry[@gazaix2017towards][@Gazaix2019] and also used in the
 R-EVOL project[@gazaix2024industrialization].
 
-![A process based on a Bi-level formulation.](../_images/mdo_formulations/bilevel_process.png)
+![A process based on a Bi-level formulation.](../assets/images/mdo_formulations/bilevel_process.png)
 
 This block decomposition is motivated by several purposes. First, this separation aligns
 with the industrial needs of work repartition between domains,
@@ -228,7 +228,7 @@ The next figure shows the process corresponding to the Bi-level BCD implemented 
 This formulation was invented in the R-EVOL project at
 IRT Saint Exupéry[@David2024][@david-hal-04758286].
 
-![A process based on a Bi-level BCD formulation.](../_images/mdo_formulations/bcd_process.png)
+![A process based on a Bi-level BCD formulation.](../assets/images/mdo_formulations/bcd_process.png)
 
 Here, it can be seen that the lower problem is solved by a Block Coordinate Descent method (BCD),
 also known as the Block Gauss-Seidel method (BGS),
@@ -272,7 +272,7 @@ can be found in [this page][bi-level-bcd-based-mdo-on-the-sobieski-ssbj-test-cas
 GEMSEO allows to visualize a given MDO scenario/formulation as an XDSM diagram[@Lambe2012] in a web browser.
 The figure below shows an example of such visualization.
 
-![An XDSM visualization generated with GEMSEO.](../_images/bilevel_ssbj.png)
+![An XDSM visualization generated with GEMSEO.](../assets/images/bilevel_ssbj.png)
 
 The rendering is handled by the visualization library [XDSMjs](https://github.com/whatsopt/XDSMjs).
 GEMSEO provides a utility class [XDSMizer][gemseo.utils.xdsm.xdsmizer.XDSMizer]
@@ -288,7 +288,7 @@ XDSM visualization shows:
 
 Those features are illustrated by the animated gif below.
 
-![GEMSEO XDSM visualization of the Sobiesky example solved with MDF formulation.](../_images/xdsmjs_demo.gif)
+![GEMSEO XDSM visualization of the Sobiesky example solved with MDF formulation.](../assets/images/xdsmjs_demo.gif)
 
 ### Usage
 

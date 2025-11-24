@@ -34,7 +34,7 @@ An MDO formulation, or architecture, is a simulation process template, or generi
 GEMS (Generic Engine for MDO Scenarios) was created in 2015 by François Gallard
 within the Multidisciplinary Design Optimization (MDO) Competence Center of [IRT Saint Exupéry](https://www.irt-saintexupery.com/).
 
-![IRT Saint Exupéry](_static/contributors/irt.png){ width=25%, align=right }
+![IRT Saint Exupéry](assets/images/contributors/irt.png){ width=25%, align=right }
 This team,
 under the leadership of Anne Gazaix,
 is dedicated to the development of process automation technologies encompassing a wide range of disciplines,
@@ -43,27 +43,57 @@ and their usage in a range of applications.
 GEMS became GEMSEO in 2021 when [IRT Saint Exupéry](https://www.irt-saintexupery.com/)
 and its partners decided to release it as an open source project
 with the aim to make it widely collaborative.
-![IRT Saint Exupéry](_static/contributors/pia.png){ width=12.5%, align=left }
 GEMSEO is the acronym for Generic Engine for Multi-disciplinary Scenarios, Exploration and Optimization.
 
 GEMSEO is the result of successive projects carried by [IRT Saint Exupéry](https://www.irt-saintexupery.com/),
-funded by both [Investments for the Future Programme](https://www.gouvernement.fr/le-programme-d-investissements-d-avenir) (french acronym: PIA)
-and companies and involving both academic and industrial partners.
+funded by both the French government:
 
 <div class="md-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-<a href="https://www.airbus.com/" target="_blank" width="12.5%"><img src="../_static/contributors/airbus.png" alt="Airbus"/></a>
-<a href="https://www.altran.com/" target="_blank" width="12.5%"><img src="../_static/contributors/altran.png" alt="Altran"/></a>
-<a href="https://www.capgemini.com/" target="_blank" width="12.5%"><img src="../_static/contributors/capgemini.png" alt="Capgemini"/></a>
-<a href="https://www.cenaero.be/" target="_blank" width="12.5%"><img src="../_static/contributors/cenaero.jpg" alt="CENAERO"/></a>
-<a href="https://www.cerfacs.fr/en/" target="_blank" width="12.5%"><img src="../_static/contributors/cerfacs.png" alt="CERFACS"/></a>
-<a href="https://expleogroup.com/" target="_blank" width="12.5%"><img src="../_static/contributors/expleo.png" alt="Expleo"/></a>
-<a href="https://ica.cnrs.fr/home/" target="_blank" width="12.5%"><img src="../_static/contributors/ica.jpg" alt="Institut Clément Ader"/></a>
-<a href="https://www.insa-toulouse.fr/en" target="_blank" width="12.5%"><img src="../_static/contributors/insa.jpg" alt="INSA Toulouse"/></a>
-<a href="https://www.isae-supaero.fr/en" target="_blank" width="12.5%"><img src="../_static/contributors/isae_supaero.png" alt="ISAE-SUPAERO"/></a>
-<a href="https://www.liebherr.com" target="_blank" width="12.5%"><img src="../_static/contributors/liebherr.jpg" alt="Liebherr"/></a>
-<a href="https://www.madeleine-project.eu" target="_blank" width="12.5%"><img src="../_static/contributors/madeleine.png" alt="MADELEINE project"/></a>
-<a href="https://www.stelia-aerospace.com/en" target="_blank" width="12.5%"><img src="../_static/contributors/stelia.jpg" alt="STELIA Aerospace"/></a>
+<a href="https://www.gouvernement.fr/le-programme-d-investissements-d-avenir" target="_blank"><img src="../assets/images/contributors/pia.png" alt="Investments for the Future Programme" width="50%"/></a>
+<a href="https://www.info.gouv.fr/grand-dossier/france-2030" target="_blank"><img src="../assets/images/contributors/france_2030.png" alt="France 2030" width="50%"/></a>
 </div>
+
+and companies:
+
+<div class="md-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+<a href="https://www.airbus.com/" target="_blank"><img src="../assets/images/contributors/airbus.png" alt="Airbus"/></a>
+<a href="https://www.altran.com/" target="_blank"><img src="../assets/images/contributors/altran.png" alt="Altran"/></a>
+<a href="https://www.capgemini.com/" target="_blank"><img src="../assets/images/contributors/capgemini.png" alt="Capgemini"/></a>
+<a href="https://www.cenaero.be/" target="_blank"><img src="../assets/images/contributors/cenaero.jpg" alt="CENAERO"/></a>
+<a href="https://www.cerfacs.fr/en/" target="_blank"><img src="../assets/images/contributors/cerfacs.png" alt="CERFACS"/></a>
+<a href="https://expleogroup.com/" target="_blank"><img src="../assets/images/contributors/expleo.png" alt="Expleo"/></a>
+<a href="https://www.liebherr.com" target="_blank"><img src="../assets/images/contributors/liebherr.jpg" alt="Liebherr"/></a>
+<a href="https://www.stelia-aerospace.com/en" target="_blank"><img src="../assets/images/contributors/stelia.jpg" alt="STELIA Aerospace"/></a>
+</div>
+
+These projects have involved both these industrial partners and the following academic partners:
+
+<div class="md-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+<a href="https://ica.cnrs.fr/home/" target="_blank"><img src="../assets/images/contributors/ica.jpg" alt="Institut Clément Ader"/></a>
+<a href="https://www.insa-toulouse.fr/en" target="_blank"><img src="../assets/images/contributors/insa.jpg" alt="INSA Toulouse"/></a>
+<a href="https://www.isae-supaero.fr/en" target="_blank"><img src="../assets/images/contributors/isae_supaero.png" alt="ISAE-SUPAERO"/></a>
+</div>
+
+GEMSEO has also benefited from the European research projects
+
+<div class="md-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+<a href="https://hecate-project.eu" target="_blank"><img src="../assets/images/contributors/hecate.png" alt="HECATE project"/></a>
+<a href="https://www.madeleine-project.eu" target="_blank"><img src="../assets/images/contributors/madeleine.png" alt="MADELEINE project"/></a>
+<a href="https://www.nextair-project.eu" target="_blank"><img src="../assets/images/contributors/nextair.png" alt="NEXTAIR project"/></a>
+<a href="https://www.ode4hera.eu" target="_blank"><img src="../assets/images/contributors/ode4hera.png" alt="ODE4HERA project"/></a>
+<a href="https://recet4rail.eu" target="_blank"><img src="../assets/images/contributors/recet4rail.png" alt="RECET4RAIL project"/></a>
+<a href="https://cordis.europa.eu/project/id/101101955" target="_blank"><img src="../assets/images/contributors/acap.jpg" alt="SMR ACAP project"/></a>
+<a href="https://cordis.europa.eu/project/id/101101974/reporting/en" target="_blank"><img src="../assets/images/contributors/upwing.jpg" alt="UPWING project"/></a>
+</div>
+
+funded by the European Union in the frame of research programmes:
+
+<div class="md-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+<a href="https://european-union.europa.eu/" target="_blank"><img src="../assets/images/contributors/european_union.png" alt="European Union"/></a>
+<a href="https://www.clean-aviation.eu/" target="_blank"><img src="../assets/images/contributors/clean_aviation.png" alt="Clean Aviation"/></a>
+<a href="https://research-and-innovation.ec.europa.eu/funding/funding-opportunities/funding-programmes-and-open-calls/horizon-europe_en" target="_blank"><img src="../assets/images/contributors/horizon_europe.jpg" alt="Horizon Europe"/></a>
+</div>
+
 *All the logos belong to their owners and cannot be reused without their consent.*
 
 ### Key contributing project
@@ -125,12 +155,12 @@ Here are some references about GEMSEO and its capabilities:
 
 This is the logo of GEMSEO:
 
-![image](_static/logo-small.png){ width=50% }
+![image](assets/images/gemseo/logo-small.png){ width=50% }
 
 High quality PNG and SVG logos are available:
 
-- [PNG format](_static/logo/gemseo_logo_transparent.png)
-- [SVG format](_static/logo/gemseo_logo_transparent.svg)
+- [PNG format](assets/images/gemseo/gemseo_logo_transparent.png)
+- [SVG format](assets/images/gemseo/gemseo_logo_transparent.svg)
 
 ## Authors
 

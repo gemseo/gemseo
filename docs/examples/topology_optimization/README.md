@@ -19,11 +19,11 @@ The examples are the same from MATLAB and Python implementations described in[^2
 
 Given a 2D design space with loads and boundary conditions, let us take the example of an MBB structure:
 
-![image](../../../_images/topology_optimization/TO_design_space_MBB.png)
+![image](../../../assets/images/topology_optimization/TO_design_space_MBB.png)
 
 First, the solid design space is meshed with 2D bi-linear squared finite elements. All the examples proposed here consider rectangular domains. This means that one only needs to define the number of elements in horizontal (x) and vertical (y) direction.
 
-![image](../../../_images/topology_optimization/TO_mesh_MBB.png)
+![image](../../../assets/images/topology_optimization/TO_mesh_MBB.png)
 
 In the above figure it is possible to find the element and degree of freedoms numbering convention adopted for a 4x3 finite element mesh. What gives a very large design freedom to topology optimization is that a design variable $x \in \{0,1\}^N$ is associated with each finite element. These variables are equal to 0 when the finite element is void and equal to 1 when the finite element is filled with solid material. In order to use the convergence rate of the gradient-based optimization solvers, the design variable are relaxed $x \in [0,1]^N$. To enforce a discrete solution at convergence, the intermediate valuess of the design variables are penalized using the SIMP approach that introduces a power low relationship between the local material density and the Young's modulus. In order to avoid numerical difficulties such as mesh-dependent solutions and checkerboard patterns, a density filtering technique is implemented. In these examples, topology optimization is employed to minimize structural compliance subjected to a mass budget or equivalently a volume fraction target:
 

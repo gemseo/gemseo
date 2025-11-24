@@ -213,7 +213,7 @@ renamer.translators
 # the name of the variable,
 # and the new name of the discipline:
 #
-# .. figure:: /_images/renaming_spreadsheet.png
+# .. figure:: /assets/images/renaming_spreadsheet.png
 #
 # we can create this object with the following lines:
 #

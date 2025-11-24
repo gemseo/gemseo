@@ -27,7 +27,7 @@ from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
 # %%
 # ## Describe your MDO problem in an Excel file
 #
-# .. image:: /_images/study_analysis_example/mdo_study.png
+# .. image:: /assets/images/study_analysis_example/mdo_study.png
 #
 
 # %%
@@ -42,7 +42,7 @@ study.generate_n2(save=False, show=True)
 # ### Generate the XDSM
 study.generate_xdsm(".")
 # %%
-# .. image:: /_images/study_analysis_example/xdsm.png
+# .. image:: /assets/images/study_analysis_example/xdsm.png
 
 # %%
 # ## Visualize this study from command line

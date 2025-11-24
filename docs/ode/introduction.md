@@ -58,7 +58,7 @@ The plugin [gemseo-petsc](https://gitlab.com/gemseo/dev/gemseo-petsc) provides a
 to perform a sensitivity analysis on the solution of the ODE
 with respect to its initial values and the design parameters.
 
-![Terminating events](../_images/algorithms/ODEProblem_ODEResult_attributes_description.png)
+![Terminating events](../assets/images/algorithms/ODEProblem_ODEResult_attributes_description.png)
 
 For some problems, it might be interesting not to integrate the dynamic for the entire
 time interval $[t_0, t_f]$, but only up to the realization of a terminating condition.

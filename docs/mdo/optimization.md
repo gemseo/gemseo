@@ -141,7 +141,7 @@ execute_post(problem, post_name="OptHistoryView", save=True, file_path="simple_o
 execute_post("my_optim.hdf5", post_name="OptHistoryView", save=True, file_path="opt_view_from_disk")
 ```
 
-![Objective function history for the simple analytic optimization](../_images/doe/simple_opt.png)
+![Objective function history for the simple analytic optimization](../assets/images/doe/simple_opt.png)
 
 ## DOE algorithms
 
@@ -154,43 +154,43 @@ To list the available DOE algorithms in the current GEMSEO configuration, use
 The set of plots below shows plots using various available algorithms.
 
 - Full factorial DOE from pyDOE
-![Full factorial DOE from pyDOE](../_images/doe/fullfact_pyDOE.png)
+![Full factorial DOE from pyDOE](../assets/images/doe/fullfact_pyDOE.png)
 
 - Box-Behnken DOE from pyDO
-![Box-Behnken DOE from pyDOE](../_images/doe/bbdesign_pyDOE.png)
+![Box-Behnken DOE from pyDOE](../assets/images/doe/bbdesign_pyDOE.png)
 
 - LHS DOE from pyDOE
-![LHS DOE from pyDOE](../_images/doe/lhs_pyDOE.png)
+![LHS DOE from pyDOE](../assets/images/doe/lhs_pyDOE.png)
 
 - Axial DOE from OpenTURNS
-![Axial DOE from OpenTURNS](../_images/doe/axial_openturns.png)
+![Axial DOE from OpenTURNS](../assets/images/doe/axial_openturns.png)
 
 - Composite DOE from OpenTURNS
-![Composite DOE from OpenTURNS](../_images/doe/composite_openturns.png)
+![Composite DOE from OpenTURNS](../assets/images/doe/composite_openturns.png)
 
 - Full Factorial DOE from OpenTURNS
-![Full Factorial DOE from OpenTURNS](../_images/doe/factorial_openturns.png)
+![Full Factorial DOE from OpenTURNS](../assets/images/doe/factorial_openturns.png)
 
 - Faure DOE from OpenTURNS
-![Faure DOE from OpenTURNS](../_images/doe/faure_openturns.png)
+![Faure DOE from OpenTURNS](../assets/images/doe/faure_openturns.png)
 
 - Halton DOE from OpenTURNS
-![Halton DOE from OpenTURNS](../_images/doe/halton_openturns.png)
+![Halton DOE from OpenTURNS](../assets/images/doe/halton_openturns.png)
 
 - Haselgrove DOE from OpenTURNS
-![Haselgrove DOE from OpenTURNS](../_images/doe/haselgrove_openturns.png)
+![Haselgrove DOE from OpenTURNS](../assets/images/doe/haselgrove_openturns.png)
 
 - Sobol DOE from OpenTURNS
-![Sobol DOE from OpenTURNS](../_images/doe/sobol_openturns.png)
+![Sobol DOE from OpenTURNS](../assets/images/doe/sobol_openturns.png)
 
 - Monte-Carlo DOE from OpenTURNS
-![Monte-Carlo DOE from OpenTURNS](../_images/doe/mc_openturns.png)
+![Monte-Carlo DOE from OpenTURNS](../assets/images/doe/mc_openturns.png)
 
 - LHSC DOE from OpenTURNS
-![LHSC DOE from OpenTURNS](../_images/doe/lhsc_openturns.png)
+![LHSC DOE from OpenTURNS](../assets/images/doe/lhsc_openturns.png)
 
 - LHS DOE from OpenTURNS
-![LHS DOE from OpenTURNS](../_images/doe/lhs_openturns.png)
+![LHS DOE from OpenTURNS](../assets/images/doe/lhs_openturns.png)
 
 - Random DOE from OpenTURNS
-![Random DOE from OpenTURNS](../_images/doe/random_openturns.png)
+![Random DOE from OpenTURNS](../assets/images/doe/random_openturns.png)
