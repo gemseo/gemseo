@@ -47,7 +47,7 @@ class EmpiricalToleranceInterval(_BaseToleranceInterval):
         """
         Args:
             data: The samples from which the tolerance interval is estimated,
-            shaped as `(n_samples,)`.
+                shaped as `(n_samples,)`.
         """  # noqa: D205 D212 D415
         self._size = len(data)
         self.__sorted_samples = sort(data)

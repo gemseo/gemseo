@@ -149,7 +149,12 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
         function: Callable[..., None],
         linearization: bool,
     ) -> None:
-        """Record statistics while calling a function."""
+        """Record statistics while calling a function.
+
+        Args:
+            function: The function to record the statistics of.
+            linearization: Whether this is a linearization function.
+        """
         if self.is_enabled:
             with Timer() as timer:
                 function()
@@ -162,11 +167,19 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
             function()
 
     def record_execution(self, function: Callable[..., None]) -> None:
-        """Record execution statistics."""
+        """Record execution statistics.
+
+        Args:
+            function: The function to record the statistics of.
+        """
         self.__record_call(function, False)
 
     def record_linearization(self, function: Callable[..., None]) -> None:
-        """Record linearization statistics."""
+        """Record linearization statistics.
+
+        Args:
+            function: The function to record the statistics of.
+        """
         self.__record_call(function, True)
 
     def __increment_n_executions(self) -> None:

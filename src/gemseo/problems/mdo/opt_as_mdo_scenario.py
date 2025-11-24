@@ -287,7 +287,9 @@ class BaseLinkDiscipline(Discipline):
 
     @abstractmethod
     def _compute_jacobian_from_intermediate_data(
-        self, x: tuple[RealArray, ...], d_expected_y_dx: RealArray
+        self,
+        x: tuple[RealArray, ...],
+        d_expected_y_dx: RealArray,
     ) -> None:
         r"""Compute the Jacobian `jac`.
 

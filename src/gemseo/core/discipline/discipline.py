@@ -364,12 +364,12 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
            Chapter 11, "Numerical Differentiation"
 
         Args:
-            input_names: The inputs with respect to which the outputs are linearized.
-                If empty, use the differentiated inputs defined by
-                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
             output_names: The outputs to be linearized.
                 If empty, use the outputs defined by
                 [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
+            input_names: The inputs with respect to which the outputs are linearized.
+                If empty, use the differentiated inputs defined by
+                [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
             compute_all_jacobians: Whether to compute the Jacobians of all the output
                 with respect to all the inputs.
                 Otherwise,
@@ -615,13 +615,13 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
+            step: The differentiation step.
             threshold: The acceptance threshold for the Jacobian error.
             linearization_mode: the mode of linearization: direct, adjoint
                 or automated switch depending on dimensions
                 of inputs and outputs (Default value = 'auto')
             input_names: The names of the inputs wrt which to differentiate the outputs.
             output_names: The names of the outputs to be differentiated.
-            step: The differentiation step.
             parallel: Whether to differentiate the discipline in parallel.
             n_processes: The maximum simultaneous number of threads,
                 if `use_threading` is True, or processes otherwise,
@@ -846,9 +846,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         inputs-outputs have been defined by using approximation methods.
 
         Args:
+            output_names: The names of the outputs to be linearized.
             input_names: The names of the input wrt the `output_names` are
                 linearized.
-            output_names: The names  of the output to be linearized.
         """
         analytical_jacobian = self.jac
 

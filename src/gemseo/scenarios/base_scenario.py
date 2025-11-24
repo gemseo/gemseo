@@ -701,8 +701,8 @@ class BaseScenario(BaseMonitoredProcess):
         Args:
             monitor: Whether to update the generated file
                 at each discipline status change.
-            log_workflow_status: Whether to log the evolution of the workflow's status.
             directory_path: The path of the directory to save the files.
+            log_workflow_status: Whether to log the evolution of the workflow's status.
             file_name: The file name without the file extension.
             show_html: Whether to open the web browser and display the XDSM.
             save_html: Whether to save the XDSM as a HTML file.
