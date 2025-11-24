@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="icon" href="../../assets/images/gemseo/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
@@ -59,11 +59,11 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../css/style.css">
+      <link rel="stylesheet" href="../../assets/css/style.css">
     
-      <link rel="stylesheet" href="../../css/fontello.css">
+      <link rel="stylesheet" href="../../assets/css/fontello.css">
     
-      <link rel="stylesheet" href="../../css/xdsmjs.css">
+      <link rel="stylesheet" href="../../assets/css/xdsmjs.css">
     
       <link rel="stylesheet" href="../../sg_gallery-binder.css">
     
@@ -118,7 +118,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="GEMSEO" class="md-header__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="GEMSEO" class="md-nav__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     GEMSEO
@@ -47211,7 +47211,7 @@ using fixed-point methods (Gauss-Seidel, Jacobi) or root-finding methods
 (Newton-Raphson, quasi-Newton). A prerequisite for invoking is the
 existence of an equilibrium for any values of the design variables
 <span class="arithmatex">\((x, z)\)</span> encountered during the optimization process.</p>
-<p><img alt="A process based on the MDF formulation." src="../../_images/mdo_formulations/MDF_process.png" /></p>
+<p><img alt="A process based on the MDF formulation." src="../../assets/images/mdo_formulations/MDF_process.png" /></p>
 <p>Gradient-based optimization algorithms require the computation of the
 total derivatives of <span class="arithmatex">\(\phi(x, z, y(x, z))\)</span>, where
 <span class="arithmatex">\(\phi \in \{f, g\}\)</span> and <span class="arithmatex">\(v \in \{x,
@@ -47246,14 +47246,14 @@ while the use of consistency constraints guarantees a multidisciplinary feasible
 Thus,
 the iterations are less costly than those of MDF, as they do not use an MDA algorithm,
 but IF does not allow early stopping with the guarantee of a multidisciplinary feasible solution, unlike MDF.</p>
-<p><img alt="A process based on the IDF formulation." src="../../_images/mdo_formulations/IDF_process.png" /></p>
+<p><img alt="A process based on the IDF formulation." src="../../assets/images/mdo_formulations/IDF_process.png" /></p>
 <p>Note that the targets can include either all the couplings or the strong couplings only.
 If all couplings,
 then all disciplines are executed in parallel,
 and all couplings (weak and strong) are set as target variables in the design space.
 This maximizes the exploitation of the parallelism but leads to a larger design space,
 so usually more iterations by the optimizer.</p>
-<p><img alt="The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering all the coupling targets." src="../../_images/mdo_formulations/xdsm_sobieski_idf_all.png" /></p>
+<p><img alt="The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering all the coupling targets." src="../../assets/images/mdo_formulations/xdsm_sobieski_idf_all.png" /></p>
 <p>If the strong couplings only,
 then the coupling graph is analyzed
 and the disciplines are chained in sequence and in parallel to solve all weak couplings.
@@ -47264,7 +47264,7 @@ The best option depends on the number of strong vs weak couplings,
 the availability of gradients,
 the availability of CPUs versus the number of disciplines,
 so it is very context dependant.</p>
-<p><img alt="The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering the strong coupling targets only." src="../../_images/mdo_formulations/xdsm_sobieski_idf_strong.png" /></p>
+<p><img alt="The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering the strong coupling targets only." src="../../assets/images/mdo_formulations/xdsm_sobieski_idf_strong.png" /></p>
 <h2 id="the-bi-level-formulation">Bi-level<a class="headerlink" href="#the-bi-level-formulation" title="Permanent link">&para;</a></h2>
 <p>Bi-level formulations are a family of MDO formulations that involve multiple optimization problems to
 be solved to obtain the solution of the MDO problem.</p>
@@ -47284,7 +47284,7 @@ It is an MDF-based approach, derived from the BLISS 98 formulation and variants 
 This formulation was invented in the MDA-MDO project at
 IRT Saint Exupéry<sup id="fnref:gazaix2017towards"><a class="footnote-ref" href="#fn:gazaix2017towards">4</a></sup><sup id="fnref:Gazaix2019"><a class="footnote-ref" href="#fn:Gazaix2019">5</a></sup> and also used in the
 R-EVOL project<sup id="fnref:gazaix2024industrialization"><a class="footnote-ref" href="#fn:gazaix2024industrialization">6</a></sup>.</p>
-<p><img alt="A process based on a Bi-level formulation." src="../../_images/mdo_formulations/bilevel_process.png" /></p>
+<p><img alt="A process based on a Bi-level formulation." src="../../assets/images/mdo_formulations/bilevel_process.png" /></p>
 <p>This block decomposition is motivated by several purposes. First, this separation aligns
 with the industrial needs of work repartition between domains,
 which matches the decomposition in terms of disciplines.
@@ -47331,7 +47331,7 @@ and motivated by the same considerations.
 The next figure shows the process corresponding to the Bi-level BCD implemented in GEMSEO.
 This formulation was invented in the R-EVOL project at
 IRT Saint Exupéry<sup id="fnref:David2024"><a class="footnote-ref" href="#fn:David2024">7</a></sup><sup id="fnref:david-hal-04758286"><a class="footnote-ref" href="#fn:david-hal-04758286">8</a></sup>.</p>
-<p><img alt="A process based on a Bi-level BCD formulation." src="../../_images/mdo_formulations/bcd_process.png" /></p>
+<p><img alt="A process based on a Bi-level BCD formulation." src="../../assets/images/mdo_formulations/bcd_process.png" /></p>
 <p>Here, it can be seen that the lower problem is solved by a Block Coordinate Descent method (BCD),
 also known as the Block Gauss-Seidel method (BGS),
 which means that each block,
@@ -47369,7 +47369,7 @@ can be found in <a class="autorefs autorefs-internal" title="Bi-level BCD-based 
 <h2 id="xdsm-visualization">XDSM visualization<a class="headerlink" href="#xdsm-visualization" title="Permanent link">&para;</a></h2>
 <p>GEMSEO allows to visualize a given MDO scenario/formulation as an XDSM diagram<sup id="fnref:Lambe2012"><a class="footnote-ref" href="#fn:Lambe2012">9</a></sup> in a web browser.
 The figure below shows an example of such visualization.</p>
-<p><img alt="An XDSM visualization generated with GEMSEO." src="../../_images/bilevel_ssbj.png" /></p>
+<p><img alt="An XDSM visualization generated with GEMSEO." src="../../assets/images/bilevel_ssbj.png" /></p>
 <p>The rendering is handled by the visualization library <a href="https://github.com/whatsopt/XDSMjs">XDSMjs</a>.
 GEMSEO provides a utility class <a class="autorefs autorefs-internal" title="            XDSMizer" href="../../reference/gemseo/utils/xdsm/xdsmizer/#gemseo.utils.xdsm.xdsmizer.XDSMizer">XDSMizer</a>
 to export the given MDO scenario as a suitable input json file for this visualization library.</p>
@@ -47381,7 +47381,7 @@ to export the given MDO scenario as a suitable input json file for this visualiz
 <li>workflow animation (top-left control buttons trigger either automatic or step-by-step mode)</li>
 </ul>
 <p>Those features are illustrated by the animated gif below.</p>
-<p><img alt="GEMSEO XDSM visualization of the Sobiesky example solved with MDF formulation." src="../../_images/xdsmjs_demo.gif" /></p>
+<p><img alt="GEMSEO XDSM visualization of the Sobiesky example solved with MDF formulation." src="../../assets/images/xdsmjs_demo.gif" /></p>
 <h3 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h3>
 <p>Then within your Python script, given your <code>scenario</code> object, you can generate the XDSM json file
 with the following code:</p>
@@ -47606,9 +47606,9 @@ If <code>save_pdf=True</code> (default <code>False</code>), a LaTex PDF is gener
       
         <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
-        <script src="../../javascripts/mathjax.js"></script>
+        <script src="../../assets/js/mathjax.js"></script>
       
-        <script src="../../javascripts/xdsmjs.js"></script>
+        <script src="../../assets/js/xdsmjs.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

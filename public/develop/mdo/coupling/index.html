@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="icon" href="../../assets/images/gemseo/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
@@ -59,11 +59,11 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../css/style.css">
+      <link rel="stylesheet" href="../../assets/css/style.css">
     
-      <link rel="stylesheet" href="../../css/fontello.css">
+      <link rel="stylesheet" href="../../assets/css/fontello.css">
     
-      <link rel="stylesheet" href="../../css/xdsmjs.css">
+      <link rel="stylesheet" href="../../assets/css/xdsmjs.css">
     
       <link rel="stylesheet" href="../../sg_gallery-binder.css">
     
@@ -118,7 +118,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="GEMSEO" class="md-header__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="GEMSEO" class="md-nav__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     GEMSEO
@@ -47186,11 +47186,11 @@
 
 <span class="n">generate_coupling_graph</span><span class="p">(</span><span class="n">disciplines</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Full coupling graph" src="../../_images/coupling/full_coupling_graph.png" /></p>
+<p><img alt="Full coupling graph" src="../../assets/images/coupling/full_coupling_graph.png" /></p>
 <h3 id="condensed-graph">Condensed graph<a class="headerlink" href="#condensed-graph" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">generate_coupling_graph</span><span class="p">(</span><span class="n">disciplines</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Condensed coupling graph" src="../../_images/coupling/condensed_coupling_graph.png" /></p>
+<p><img alt="Condensed coupling graph" src="../../assets/images/coupling/condensed_coupling_graph.png" /></p>
 <h2 id="n2-chart-visualization">N2 chart visualization<a class="headerlink" href="#n2-chart-visualization" title="Permanent link">&para;</a></h2>
 <p>Both full and condensed graphs can be represented as <a href="https://en.wikipedia.org/wiki/N2_chart">N2 charts</a> also referred to as N2 diagrams, N-squared diagrams or N-squared charts.</p>
 <p>The diagonal elements of an N2 chart are the disciplines while the non-diagonal elements are the coupling variables. A discipline takes its inputs vertically and returns its outputs horizontally. In other words, if the cell <em>(i,j)</em> is not empty, its content is the set of the names of the variables computed by the <em>i</em>-th discipline and passed to the <em>j</em>-th discipline.</p>
@@ -47211,7 +47211,7 @@
 <li>and whether to open the default web browser and display the interactive N2 chart (by default, False).</li>
 </ul>
 <p>Whatever the options, an HTML file is create based on the provided file path by using <em>.html</em> as file extension (by default, <em>n2.html</em>):</p>
-<p><img alt="Static N2 chart" src="../../_images/coupling/n2.gif" /></p>
+<p><img alt="Static N2 chart" src="../../assets/images/coupling/n2.gif" /></p>
 <p>This interactive N2 chart can be opened at any time in a browser</p>
 <div class="admonition info">
 <p class="admonition-title">See Also</p>
@@ -47222,13 +47222,13 @@
 
 <span class="n">generate_n2_plot</span><span class="p">(</span><span class="n">disciplines</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="N2 chart with coupling names" src="../../_images/coupling/n2.png" /></p>
+<p><img alt="N2 chart with coupling names" src="../../assets/images/coupling/n2.png" /></p>
 <h3 id="without-coupling-names">Without coupling names<a class="headerlink" href="#without-coupling-names" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">gemseo</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_n2_plot</span>
 
 <span class="n">generate_n2_plot</span><span class="p">(</span><span class="n">disciplines</span><span class="p">,</span> <span class="n">show_data_names</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="N2 chart without coupling names" src="../../_images/coupling/n2_without_names.png" /></p>
+<p><img alt="N2 chart without coupling names" src="../../assets/images/coupling/n2_without_names.png" /></p>
 <div class="footnote">
 <hr />
 <ol>
@@ -47296,9 +47296,9 @@
       
         <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
-        <script src="../../javascripts/mathjax.js"></script>
+        <script src="../../assets/js/mathjax.js"></script>
       
-        <script src="../../javascripts/xdsmjs.js"></script>
+        <script src="../../assets/js/xdsmjs.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../../images/favicon.ico">
+      <link rel="icon" href="../../../assets/images/gemseo/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
@@ -59,11 +59,11 @@
     
       <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../css/style.css">
+      <link rel="stylesheet" href="../../../assets/css/style.css">
     
-      <link rel="stylesheet" href="../../../css/fontello.css">
+      <link rel="stylesheet" href="../../../assets/css/fontello.css">
     
-      <link rel="stylesheet" href="../../../css/xdsmjs.css">
+      <link rel="stylesheet" href="../../../assets/css/xdsmjs.css">
     
       <link rel="stylesheet" href="../../../sg_gallery-binder.css">
     
@@ -118,7 +118,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../.." title="GEMSEO" class="md-header__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../../.." title="GEMSEO" class="md-nav__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     GEMSEO
@@ -46907,9 +46907,9 @@
 <p>The examples are the same from MATLAB and Python implementations described in<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> and<sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup> .</p>
 <h2 id="problem-formulation">Problem Formulation<a class="headerlink" href="#problem-formulation" title="Permanent link">&para;</a></h2>
 <p>Given a 2D design space with loads and boundary conditions, let us take the example of an MBB structure:</p>
-<p><img alt="image" src="../../../_images/topology_optimization/TO_design_space_MBB.png" /></p>
+<p><img alt="image" src="../../../assets/images/topology_optimization/TO_design_space_MBB.png" /></p>
 <p>First, the solid design space is meshed with 2D bi-linear squared finite elements. All the examples proposed here consider rectangular domains. This means that one only needs to define the number of elements in horizontal (x) and vertical (y) direction.</p>
-<p><img alt="image" src="../../../_images/topology_optimization/TO_mesh_MBB.png" /></p>
+<p><img alt="image" src="../../../assets/images/topology_optimization/TO_mesh_MBB.png" /></p>
 <p>In the above figure it is possible to find the element and degree of freedoms numbering convention adopted for a 4x3 finite element mesh. What gives a very large design freedom to topology optimization is that a design variable <span class="arithmatex">\(x \in \{0,1\}^N\)</span> is associated with each finite element. These variables are equal to 0 when the finite element is void and equal to 1 when the finite element is filled with solid material. In order to use the convergence rate of the gradient-based optimization solvers, the design variable are relaxed <span class="arithmatex">\(x \in [0,1]^N\)</span>. To enforce a discrete solution at convergence, the intermediate valuess of the design variables are penalized using the SIMP approach that introduces a power low relationship between the local material density and the Young's modulus. In order to avoid numerical difficulties such as mesh-dependent solutions and checkerboard patterns, a density filtering technique is implemented. In these examples, topology optimization is employed to minimize structural compliance subjected to a mass budget or equivalently a volume fraction target:</p>
 <div class="arithmatex">\[\min_{x \in [0,1]^N}{F \cdot U(x)}\]</div>
 <div class="arithmatex">\[s.t.\]</div>
@@ -47037,9 +47037,9 @@
       
         <script src="../../../assets/_markdown_exec_pyodide.js"></script>
       
-        <script src="../../../javascripts/mathjax.js"></script>
+        <script src="../../../assets/js/mathjax.js"></script>
       
-        <script src="../../../javascripts/xdsmjs.js"></script>
+        <script src="../../../assets/js/xdsmjs.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

@@ -24,7 +24,7 @@ import jinja2
 ENV = jinja2.Environment(loader=jinja2.FileSystemLoader(Path(__file__).parent))
 template = ENV.get_template("template.txt")
 
-with (Path("docs") / "_static" / "authors" / "authors.csv").open(
+with (Path("docs") / "assets" / "images" / "authors" / "authors.csv").open(
     "r", encoding="UTF-8", newline=""
 ) as f:
     authors = {

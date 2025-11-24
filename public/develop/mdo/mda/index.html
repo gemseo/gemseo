@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="icon" href="../../assets/images/gemseo/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
@@ -59,11 +59,11 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../css/style.css">
+      <link rel="stylesheet" href="../../assets/css/style.css">
     
-      <link rel="stylesheet" href="../../css/fontello.css">
+      <link rel="stylesheet" href="../../assets/css/fontello.css">
     
-      <link rel="stylesheet" href="../../css/xdsmjs.css">
+      <link rel="stylesheet" href="../../assets/css/xdsmjs.css">
     
       <link rel="stylesheet" href="../../sg_gallery-binder.css">
     
@@ -118,7 +118,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="GEMSEO" class="md-header__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="GEMSEO" class="md-nav__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     GEMSEO
@@ -47312,7 +47312,7 @@
 </div>
 <h3 id="the-mda-chain">The MDA chain<a class="headerlink" href="#the-mda-chain" title="Permanent link">&para;</a></h3>
 <p>The <a class="autorefs autorefs-internal" title="            MDAChain" href="../../reference/gemseo/mda/mda_chain/#gemseo.mda.mda_chain.MDAChain">MDAChain</a> implements an advanced graph-based algorithm which allows, when possible, to split the solution of the non-linear system of equations into smaller and weakly coupled ones. The next figure illustrates this process on a 16 coupled disciplines toy problem.</p>
-<p><img alt="3 resolution phases of a 16 disciplines coupling problem" src="../../_images/mda/mda_auto_procedure.png" />
+<p><img alt="3 resolution phases of a 16 disciplines coupling problem" src="../../assets/images/mda/mda_auto_procedure.png" />
 <em>The 3 resolution phases of a 16 disciplines coupling problem.</em></p>
 <p>The MDA chain inspects the coupling graph and <strong>automatically</strong> detects strongly coupled disciplines. In the example above, the problem is split into 4 sub-systems, for which an inner MDA implementing a non-linear solver is used. As an example, the following code will create an MDA chain, that will solve the sub-systems using Jacobi's method. The solver for the sub-systems is specified via the <code>inner_mda_name</code> setting.</p>
 <div class="highlight"><pre><span></span><code><span class="n">mda</span> <span class="o">=</span> <span class="n">create_mda</span><span class="p">(</span><span class="s2">&quot;MDAChain&quot;</span><span class="p">,</span> <span class="n">disciplines</span><span class="p">,</span> <span class="n">inner_mda_name</span><span class="o">=</span><span class="s2">&quot;MDAJacobi&quot;</span><span class="p">)</span>
@@ -47517,9 +47517,9 @@ Formally, it can be viewed as a function <span class="arithmatex">\(\text{MDA}(x
       
         <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
-        <script src="../../javascripts/mathjax.js"></script>
+        <script src="../../assets/js/mathjax.js"></script>
       
-        <script src="../../javascripts/xdsmjs.js"></script>
+        <script src="../../assets/js/xdsmjs.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

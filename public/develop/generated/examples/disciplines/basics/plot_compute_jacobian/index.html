@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../../../../images/favicon.ico">
+      <link rel="icon" href="../../../../../assets/images/gemseo/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
@@ -59,11 +59,11 @@
     
       <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../../../css/style.css">
+      <link rel="stylesheet" href="../../../../../assets/css/style.css">
     
-      <link rel="stylesheet" href="../../../../../css/fontello.css">
+      <link rel="stylesheet" href="../../../../../assets/css/fontello.css">
     
-      <link rel="stylesheet" href="../../../../../css/xdsmjs.css">
+      <link rel="stylesheet" href="../../../../../assets/css/xdsmjs.css">
     
       <link rel="stylesheet" href="../../../../../sg_gallery-binder.css">
     
@@ -118,7 +118,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../../.." title="GEMSEO" class="md-header__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../../../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../../../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../../../../.." title="GEMSEO" class="md-nav__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../../../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../../../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     GEMSEO
@@ -46971,7 +46971,7 @@ we may want to only compute the derivative of <code>"z"</code> with respect to <
 <span class="n">jacobian_data</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>defaultdict<span class="o">(</span>&lt;<span class="k">function</span><span class="w"> </span>_default_dict_factory<span class="w"> </span>at<span class="w"> </span>0x780db9266020&gt;,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;z&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])})})</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>defaultdict<span class="o">(</span>&lt;<span class="k">function</span><span class="w"> </span>_default_dict_factory<span class="w"> </span>at<span class="w"> </span>0x7ac5e0c8a020&gt;,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;z&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])})})</span>
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 73-77 -->
 
@@ -46991,7 +46991,7 @@ We can change them with <code>input_data</code>:</p>
 <span class="n">jacobian_data</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>defaultdict<span class="o">(</span>&lt;<span class="k">function</span><span class="w"> </span>_default_dict_factory<span class="w"> </span>at<span class="w"> </span>0x780db9266020&gt;,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;z&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">3</span>.<span class="o">]])})})</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>defaultdict<span class="o">(</span>&lt;<span class="k">function</span><span class="w"> </span>_default_dict_factory<span class="w"> </span>at<span class="w"> </span>0x7ac5e0c8a020&gt;,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;z&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">3</span>.<span class="o">]])})})</span>
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 81-83 -->
 
@@ -47003,7 +47003,7 @@ the derivatives of all the outputs with respect to all the inputs:</p>
 <span class="n">jacobian_data</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>defaultdict<span class="o">(</span>&lt;<span class="k">function</span><span class="w"> </span>_default_dict_factory<span class="w"> </span>at<span class="w"> </span>0x780db9266020&gt;,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;y&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])</span>,<span class="w"> </span><span class="s1">&#39;b&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">1</span>.<span class="o">]])})</span>,<span class="w"> </span><span class="s1">&#39;z&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])</span>,<span class="w"> </span><span class="s1">&#39;b&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])})})</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>defaultdict<span class="o">(</span>&lt;<span class="k">function</span><span class="w"> </span>_default_dict_factory<span class="w"> </span>at<span class="w"> </span>0x7ac5e0c8a020&gt;,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;y&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])</span>,<span class="w"> </span><span class="s1">&#39;b&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">1</span>.<span class="o">]])})</span>,<span class="w"> </span><span class="s1">&#39;z&#39;</span>:<span class="w"> </span>defaultdict<span class="o">(</span>None,<span class="w"> </span><span class="o">{</span><span class="s1">&#39;a&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])</span>,<span class="w"> </span><span class="s1">&#39;b&#39;</span>:<span class="w"> </span>array<span class="o">([[</span><span class="m">0</span>.<span class="o">]])})})</span>
 </code></pre></div>
 <p><strong>Total running time of the script:</strong> ( 0 minutes  0.015 seconds)</p>
 <div id="download_links"></div>
@@ -47067,9 +47067,9 @@ the derivatives of all the outputs with respect to all the inputs:</p>
       
         <script src="../../../../../assets/_markdown_exec_pyodide.js"></script>
       
-        <script src="../../../../../javascripts/mathjax.js"></script>
+        <script src="../../../../../assets/js/mathjax.js"></script>
       
-        <script src="../../../../../javascripts/xdsmjs.js"></script>
+        <script src="../../../../../assets/js/xdsmjs.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

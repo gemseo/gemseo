@@ -70,11 +70,11 @@ execute_post(
 #       Multidisciplinary design optimization of wing shape for a small jet aircraft using kriging model.
 #       AIAA paper, 932:2006, 2006.
 #
-# ![SOM example on the Sobieski problem.](../../../../_images/postprocessing/MDOScenario_SOM_v500.png)
+# ![SOM example on the Sobieski problem.](../../../../assets/images/postprocessing/MDOScenario_SOM_v500.png)
 #
 # A DOE may also be a good way to produce SOM maps.
 # The following figure shows an example with 10000 points on
 # the same test case. This produces more relevant SOM plots.
 #
-# ![SOM example on the Sobieski problem with a 10 000 samples DOE.](../../../../_images/postprocessing/DOEScenario_SOM_10000_samples.png)
+# ![SOM example on the Sobieski problem with a 10 000 samples DOE.](../../../../assets/images/postprocessing/DOEScenario_SOM_10000_samples.png)
 #

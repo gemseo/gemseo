@@ -22,7 +22,7 @@
         
       
       
-      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="icon" href="../../assets/images/gemseo/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
@@ -59,11 +59,11 @@
     
       <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../css/style.css">
+      <link rel="stylesheet" href="../../assets/css/style.css">
     
-      <link rel="stylesheet" href="../../css/fontello.css">
+      <link rel="stylesheet" href="../../assets/css/fontello.css">
     
-      <link rel="stylesheet" href="../../css/xdsmjs.css">
+      <link rel="stylesheet" href="../../assets/css/xdsmjs.css">
     
       <link rel="stylesheet" href="../../sg_gallery-binder.css">
     
@@ -118,7 +118,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="GEMSEO" class="md-header__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -415,7 +415,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="GEMSEO" class="md-nav__button md-logo" aria-label="GEMSEO" data-md-component="logo">
       
-  <img src="../../_static/logo/gemseo_white_monogram.png" alt="logo">
+  <img src="../../assets/images/gemseo/gemseo_white_monogram.png" alt="logo">
 
     </a>
     GEMSEO
@@ -47114,7 +47114,7 @@ Two scientific papers give details on the subject<sup id="fnref:gallard2018gemse
 <li>Interfaces with external optimization algorithms , and DOE methods, MDA solvers, surrogate model.</li>
 <li>Interfaces with the MDO platform.</li>
 </ul>
-<p><img alt="Formulations engine" src="../../_images/architecture/components_platform.png" />
+<p><img alt="Formulations engine" src="../../assets/images/architecture/components_platform.png" />
 <em>The Formulations Engine within its environment</em></p>
 <h2 id="gemseo-components-interactions">GEMSEO components interactions<a class="headerlink" href="#gemseo-components-interactions" title="Permanent link">&para;</a></h2>
 <p>GEMSEO is split into 3 main component layers:</p>
@@ -47130,7 +47130,7 @@ Two scientific papers give details on the subject<sup id="fnref:gallard2018gemse
 <li>The optimization results plots can be generated from optimization histories stored in HDF5 files, or by using the Python API to read external data. So you may draw the same plots from optimization data generated outside of GEMSEO.</li>
 </ul>
 <p>The next figure shows the main components of GEMSEO within an MDO platform.</p>
-<p><img alt="GEMSEO components" src="../../_images/architecture/components_all.png" />
+<p><img alt="GEMSEO components" src="../../assets/images/architecture/components_all.png" />
 <em>GEMSEO components</em></p>
 <h3 id="at-process-building-step">At process building step<a class="headerlink" href="#at-process-building-step" title="Permanent link">&para;</a></h3>
 <p>When the scenario is instantiated by the user, typically in a script or by a platform, the process is built. Then the user can configure the overall process, before execution, by accessing and changing the objects attributes that define the process.</p>
@@ -47141,7 +47141,7 @@ Two scientific papers give details on the subject<sup id="fnref:gallard2018gemse
 <li>This optimization problem is defined by the objective function and constraints, that eventually points to the generic processes or directly to the disciplines (for IDF for instance).</li>
 </ol>
 <p>The next figure shows the components interaction at this step.</p>
-<p><img alt="Process building step" src="../../_images/architecture/components_build_process.png" />
+<p><img alt="Process building step" src="../../assets/images/architecture/components_build_process.png" />
 <em>Components interaction at the build step of the process</em></p>
 <h3 id="during-process-execution">During process execution<a class="headerlink" href="#during-process-execution" title="Permanent link">&para;</a></h3>
 <p>During the process execution :</p>
@@ -47152,7 +47152,7 @@ Two scientific papers give details on the subject<sup id="fnref:gallard2018gemse
 <li>These functions point to the generic processes (that aim at solving a coupling problem for an MDA) or MDO sub-scenarios (for bi-level scenarios), in order to find an optimum.</li>
 <li>These calls trigger the generic process execution, which themselves execute the disciplines.</li>
 </ol>
-<p><img alt="Process execution" src="../../_images/architecture/components_execute_process.png" />
+<p><img alt="Process execution" src="../../assets/images/architecture/components_execute_process.png" />
 <em>Components interactions at execution of the process</em></p>
 <p>The sequence diagram shows the data exchanges during the execution. Here the generic process may be a <a href="../../mdo/mda/">Multi Disciplinary Analyses</a> in the case of MDF, which calls the disciplines. We represent only the objective function calls, since the constraints are handled in a similar way. The calls to the objective and its gradient are made within a loop, until convergence of the optimization algorithm (the driver). The scenario then retrieves the optimum from the driver.</p>
 <pre class="mermaid"><code>sequenceDiagram
@@ -47192,7 +47192,7 @@ Two scientific papers give details on the subject<sup id="fnref:gallard2018gemse
 <li>and a database of all data generated during execution, typically the objective function, constraints, their derivatives, and eventually algorithmic data.</li>
 <li>Once the data is available, the factory loads the appropriate plot generation class for the plots required by the user, and calls the plot generation method.</li>
 </ol>
-<p><img alt="Results analysis" src="../../_images/architecture/results_analysis.png" />
+<p><img alt="Results analysis" src="../../assets/images/architecture/results_analysis.png" />
 <em>Components interactions during results analysis</em></p>
 <h2 id="main-classes">Main classes<a class="headerlink" href="#main-classes" title="Permanent link">&para;</a></h2>
 <p>The high level classes that are key in the architecture are:</p>
@@ -47311,9 +47311,9 @@ Two scientific papers give details on the subject<sup id="fnref:gallard2018gemse
       
         <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
-        <script src="../../javascripts/mathjax.js"></script>
+        <script src="../../assets/js/mathjax.js"></script>
       
-        <script src="../../javascripts/xdsmjs.js"></script>
+        <script src="../../assets/js/xdsmjs.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
