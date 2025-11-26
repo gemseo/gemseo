@@ -10,3 +10,4 @@ MD046: false
 MD052: false
 #  ignored_labels:
 #    - "gemseo*"
+MD060: false

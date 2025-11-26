@@ -157,28 +157,28 @@ an output of the discipline no. *i* and an input of the discipline no. *j*.
 
 ![The airfoils variables](../problems/sobieski_figures/SupersonicAirfoil.png)
 
-  | Disciplines | Variable                          | Description   |   Bounds                 |    Notation   |
-  | ----------- | --------------------------------- | ------------- | ------------------------ | ------------- |
-  | All         |   $t/c$                           | Thickness to chord ratio  | $0.01\leq t/c\leq 0.09$ |   `"x_shared[0]"`|
-  | All         |   $h$                             |   Altitude ($ft$)  | $30000\leq h \leq 60000$ |  `"x_shared[1]"`|
-  | All         |   $M$                             |   Mach number      | $1.4\leq M\leq 1.8$      |  `"x_shared[2]"`|
-  | All         |   $AR=b^2/S_W$                    |   Aspect ratio   |  $2.5\leq AR\leq 8.5$     |  `"x_shared[3]"`|
-  | All         |   $\Lambda$                       |  Wing sweep ($\deg$)   |   $40\leq\Lambda\leq70$    |  `"x_shared[4]"`|
-  | All         |   $S_W$                           |   Wing surface area ($ft^2$)  |  $500\leq S\leq 1500$     |  `"x_shared[5]"`|
-  | Structure   |   $\lambda = {c_{tip}}/{c_{root}}$ |  Wing taper ratio | $0.1\leq\lambda\leq0.4$  | `"x_1[0]"`|
-  | Structure   |   $x$                             |   Wingbox x-sectional area ($ft^2$)     |    $0.75\leq x \leq 1.25$    | `"x_1[1]"`|
-  | Structure   |   $L$                             |   Lift from by Aerodynamics ($N$)       |                     |  `"y_21[0]"`|
-  | Structure   |   $W_{E}$                         |   Engine mass from Propulsion  ($lb$)   |                     |   `"y_31[0]"`|
-  | Aerodynamics |  $C_f$                           |   Skin friction coefficient |   $0.75\leq C_f\leq 1.25$  |  `"x_2[0]"`|
-  | Aerodynamics |  $W_T$                           |   Total aircraft mass from Structure ($lb$)     |                |       `"y_12[0]"`|
-  | Aerodynamics |  $\Delta\alpha_v$                |   Wing twist from Structure                     |      | `"y_12[1]"`|
-  | Propulsion   |  $ESF$                           |   Engine scale factor (ESF) from Propulsion     |      |                   `"y_32[0]"`|
-  | Propulsion   |  $Th$                            |   Throttle setting (engine mass flow) | $0.1\leq Th\leq 1.25$  |    `"x_3[0]"` |
-  | Propulsion   |  $D$                             |   Drag from Aerodynamics ($N$)                      |          |    `"y_23[0]"`|
-  | Mission      |  $L/D$                           |   Lift-over-drag ratio from Aerodynamics            |          |    `"y_24[0]"`|
-  | Mission      |  $W_T$                           |   Total aircraft mass from Structure ($lb$)         |          |    `"y_14[0]"`|
-  | Mission      |  $W_F$                           |   Fuel mass from Structure ($lb$)                   |          |    `"y_14[1]"`|
-  | Mission      |  $SFC$                           |   Specific fuel consumption (SFC) from Propulsion   |          |    `"y_34[1]"`|
+| Disciplines | Variable                          | Description   |   Bounds                 |    Notation   |
+| ----------- | --------------------------------- | ------------- | ------------------------ | ------------- |
+| All         |  $t/c$                           | Thickness to chord ratio  | $0.01\leq t/c\leq 0.09$ |   `"x_shared[0]"` |
+| All         |  $h$                             |   Altitude ($ft$)  | $30000\leq h \leq 60000$ |  `"x_shared[1]"` |
+| All         |  $M$                             |   Mach number      | $1.4\leq M\leq 1.8$      |  `"x_shared[2]"` |
+| All         |  $AR=b^2/S_W$                    |   Aspect ratio   |  $2.5\leq AR\leq 8.5$     |  `"x_shared[3]"` |
+| All         |  $\Lambda$                       |  Wing sweep ($\deg$)   |   $40\leq\Lambda\leq70$    |  `"x_shared[4]"` |
+| All         |  $S_W$                           |   Wing surface area ($ft^2$)  |  $500\leq S\leq 1500$     |  `"x_shared[5]"` |
+| Structure   |  $\lambda = {c_{tip}}/{c_{root}}$ |  Wing taper ratio | $0.1\leq\lambda\leq0.4$  | `"x_1[0]"` |
+| Structure   |  $x$                             |   Wingbox x-sectional area ($ft^2$)     |    $0.75\leq x \leq 1.25$    | `"x_1[1]"` |
+| Structure   |  $L$                             |   Lift from by Aerodynamics ($N$)       |                     |  `"y_21[0]"` |
+| Structure   |  $W_{E}$                         |   Engine mass from Propulsion  ($lb$)   |                     |   `"y_31[0]"` |
+| Aerodynamics | $C_f$                           |   Skin friction coefficient |   $0.75\leq C_f\leq 1.25$  |  `"x_2[0]"` |
+| Aerodynamics | $W_T$                           |   Total aircraft mass from Structure ($lb$)     |                |       `"y_12[0]"` |
+| Aerodynamics | $\Delta\alpha_v$                |   Wing twist from Structure                     |      | `"y_12[1]"` |
+| Propulsion   | $ESF$                           |   Engine scale factor (ESF) from Propulsion     |      |                   `"y_32[0]"` |
+| Propulsion   | $Th$                            |   Throttle setting (engine mass flow) | $0.1\leq Th\leq 1.25$  |    `"x_3[0]"` |
+| Propulsion   | $D$                             |   Drag from Aerodynamics ($N$)                      |          |    `"y_23[0]"` |
+| Mission      | $L/D$                           |   Lift-over-drag ratio from Aerodynamics            |          |    `"y_24[0]"` |
+| Mission      | $W_T$                           |   Total aircraft mass from Structure ($lb$)         |          |    `"y_14[0]"` |
+| Mission      | $W_F$                           |   Fuel mass from Structure ($lb$)                   |          |    `"y_14[1]"` |
+| Mission      | $SFC$                           |   Specific fuel consumption (SFC) from Propulsion   |          |    `"y_34[1]"` |
 
 ### Output variables
 

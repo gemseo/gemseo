@@ -6,13 +6,13 @@ mypy==1.18.2
     # via -r requirements/check-types.in
 mypy-extensions==1.1.0
     # via mypy
-numpy==2.3.4
+numpy==2.3.5
     # via pandas-stubs
 pandas-stubs==2.3.2.250926
     # via -r requirements/check-types.in
 pathspec==0.12.1
     # via mypy
-types-pytz==2025.2.0.20250809
+types-pytz==2025.2.0.20251108
     # via pandas-stubs
 types-requests==2.32.4.20250913
     # via types-tqdm
