@@ -292,6 +292,7 @@ extra:
     gemseo-pymoo: Pymoo wrapper for optimization algorithms.
     gemseo-pyoptsparse: ("GEMSEO interface to pyoptsparse algorithms.
     gemseo-ssh: SSH plugin for GEMSEO.
+    gemseo-http:  GEMSEO plugin to seamlessly expose GEMSEO disciplines as HTTP RESTful web services.
     gemseo-scilab: Interfacing Scilab functions.
     gemseo-template-editor-gui: A GUI to create input and output file templates for DiscFromExe.
     gemseo-umdo: Capability for MDO under uncertainty.
