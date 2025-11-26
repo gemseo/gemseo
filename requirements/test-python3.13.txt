@@ -86,7 +86,7 @@ packaging==25.0
     #   pytest
 pandas==2.3.2
     # via gemseo (pyproject.toml)
-pandera==0.26.1
+pandera==0.27.0
     # via gemseo (pyproject.toml:dev)
 pillow==11.3.0
     # via

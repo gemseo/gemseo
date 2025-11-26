@@ -14,8 +14,8 @@
 
 GEMSEO source code includes software with compatible licenses that are listed below.
 
-Project |  License
-------- |  -------
-colormap | CC0 1.0
-[Reorder.js](https://github.com/jdfekete/reorder.js) | BSD 3-Clause
-[WhatsOpt-CLI](https://github.com/OneraHub/WhatsOpt-CLI) | Apache v2.0
+| Project | License |
+| ------- | ------- |
+| colormap | CC0 1.0 |
+| [Reorder.js](https://github.com/jdfekete/reorder.js) | BSD 3-Clause |
+| [WhatsOpt-CLI](https://github.com/OneraHub/WhatsOpt-CLI) | Apache v2.0 |

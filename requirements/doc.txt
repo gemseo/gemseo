@@ -137,7 +137,7 @@ mkdocs-bibtex==4.4.0
     # via gemseo (pyproject.toml:doc)
 mkdocs-gallery==0.10.4
     # via gemseo (pyproject.toml:doc)
-mkdocs-gen-files==0.5.0
+mkdocs-gen-files==0.6.0
     # via gemseo (pyproject.toml:doc)
 mkdocs-get-deps==0.2.0
     # via mkdocs
@@ -205,7 +205,7 @@ paginate==0.5.7
     # via mkdocs-material
 pandas==2.3.2
     # via gemseo (pyproject.toml)
-pandera==0.26.1
+pandera==0.27.0
     # via
     #   gemseo (pyproject.toml:dev)
     #   gemseo (pyproject.toml:doc)
