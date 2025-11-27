@@ -28,6 +28,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.core.chains.chain import MDOChain
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.wrappers import job_schedulers
 from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
     JobSchedulerDisciplineWrapper,
@@ -318,3 +319,18 @@ def test_namespaces_jac(request, discipline):
     discipline.execute()
     discipline.linearize()
     assert "ns_in:" + inp in discipline.jac["ns_out:" + out]
+
+
+def test_differentied_io(tmp_wd):
+    """Test the differentiated inputs/outputs."""
+    discipline = AnalyticDiscipline({"z": "2*x + y"})
+    discipline.add_differentiated_inputs(["x"])
+    discipline.add_differentiated_outputs(["z"])
+
+    wrapper = JobSchedulerDisciplineWrapper(
+        discipline=discipline,
+        workdir_path=tmp_wd,
+        job_template_path=Path(job_schedulers.__file__).parent / "templates" / "SLURM",
+    )
+    assert wrapper._differentiated_input_names == ["x"]
+    assert wrapper._differentiated_output_names == ["z"]
