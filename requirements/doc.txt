@@ -252,7 +252,7 @@ pygments==2.19.2
     #   pytest
 pygments-ansi-color==0.3.0
     # via markdown-exec
-pymdown-extensions==10.17.1
+pymdown-extensions==10.17.2
     # via
     #   markdown-exec
     #   mkdocs-material
