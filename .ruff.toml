@@ -131,8 +131,8 @@ required-imports = ["from __future__ import annotations"]
 convention = "google"
 
 [lint.per-file-ignores]
-"tests/*.py" = ["D", "PT009", "PT011", "PT027", "PTH", "B018"]
-"docs/*.py" = [
+"tests/**/*.py" = ["D", "PT009", "PT011", "PT027", "PTH", "B018"]
+"docs/**/*.py" = [
   "T",
   "D",
   "B018",
