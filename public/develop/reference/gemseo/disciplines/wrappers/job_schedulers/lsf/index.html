@@ -48092,7 +48092,7 @@ by the wrapper.</p>
               (<code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code>)
           –
           <div class="doc-md-description">
-            <p>The discipline to wrap in the job scheduler.</p>
+            <p>The description is missing.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -48801,12 +48801,11 @@ submission to the job scheduler command.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.job_schedulers.lsf.LSF.input_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.input_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -48936,12 +48935,11 @@ submission to the job scheduler command.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.job_schedulers.lsf.LSF.output_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.output_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -50710,18 +50708,18 @@ or the outputs to differentiate are missing.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/disciplines/wrappers/job_schedulers/discipline_wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">412</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">linearize</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">linearize</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">input_data</span><span class="p">:</span> <span class="n">StrKeyMapping</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">compute_all_jacobians</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>

@@ -48110,7 +48110,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code></p>
+              Bases: <code><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline">BaseWrapperDiscipline</span></code></p>
 
 
 
@@ -48138,7 +48138,7 @@ by the wrapper.</p>
               (<code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code>)
           –
           <div class="doc-md-description">
-            <p>The discipline to wrap in the job scheduler.</p>
+            <p>The description is missing.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -48234,7 +48234,9 @@ submission to the job scheduler command.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/gemseo/disciplines/wrappers/job_schedulers/discipline_wrapper.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
@@ -48283,15 +48285,7 @@ submission to the job scheduler command.</p>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">discipline</span><span class="p">:</span> <span class="n">Discipline</span><span class="p">,</span>
     <span class="n">workdir_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
@@ -48304,7 +48298,6 @@ submission to the job scheduler command.</p>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
-<span class="sd">        discipline: The discipline to wrap in the job scheduler.</span>
 <span class="sd">        workdir_path: The path to the workdir where the files will be generated.</span>
 <span class="sd">        scheduler_run_command: The command to call the job scheduler and submit</span>
 <span class="sd">            the generated script.</span>
@@ -48318,8 +48311,7 @@ submission to the job scheduler command.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        OSError: If `job_template_path` does not exist.</span>
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa:D205 D212 D415</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discipline</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_discipline</span> <span class="o">=</span> <span class="n">discipline</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span> <span class="n">copy_grammars</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_use_template</span> <span class="o">=</span> <span class="n">use_template</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job_template_path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_job_template_path</span> <span class="o">=</span> <span class="n">job_template_path</span>
@@ -48336,10 +48328,6 @@ submission to the job scheduler command.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">_setup_cmd</span> <span class="o">=</span> <span class="n">setup_cmd</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_options</span> <span class="o">=</span> <span class="n">options</span>
 
-    <span class="c1"># We must copy the grammars otherwise adding namespaces to this discipline</span>
-    <span class="c1"># will affect the wrapped discipline.</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__directory_creator</span> <span class="o">=</span> <span class="n">DirectoryCreator</span><span class="p">(</span>
         <span class="n">workdir_path</span><span class="p">,</span> <span class="n">DirectoryCreator</span><span class="o">.</span><span class="n">Naming</span><span class="o">.</span><span class="n">UUID</span>
     <span class="p">)</span>
@@ -48829,12 +48817,11 @@ submission to the job scheduler command.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.JobSchedulerDisciplineWrapper.input_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.input_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -48964,12 +48951,11 @@ submission to the job scheduler command.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.JobSchedulerDisciplineWrapper.output_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.output_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -50738,18 +50724,18 @@ or the outputs to differentiate are missing.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/disciplines/wrappers/job_schedulers/discipline_wrapper.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">412</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">linearize</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">linearize</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">input_data</span><span class="p">:</span> <span class="n">StrKeyMapping</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">compute_all_jacobians</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>

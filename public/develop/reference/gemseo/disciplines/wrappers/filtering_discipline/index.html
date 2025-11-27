@@ -47995,7 +47995,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code></p>
+              Bases: <code><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline">BaseWrapperDiscipline</span></code></p>
 
 
 
@@ -48011,7 +48011,7 @@
               (<code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code>)
           –
           <div class="doc-md-description">
-            <p>The original discipline.</p>
+            <p>The description is missing.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -48043,8 +48043,7 @@ If empty, use all the outputs.</p>
 )
           –
           <div class="doc-md-description">
-            <p>Whether to keep the inputs of interest.
-Otherwise, remove them.</p>
+            <p>Whether the provided input names must be kept or excluded.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -48054,8 +48053,7 @@ Otherwise, remove them.</p>
 )
           –
           <div class="doc-md-description">
-            <p>Whether to keep the outputs of interest.
-Otherwise, remove them.</p>
+            <p>Whether the provided output names must be kept or excluded.</p>
           </div>
         </li>
     </ul>
@@ -48069,7 +48067,8 @@ Otherwise, remove them.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/gemseo/disciplines/wrappers/filtering_discipline.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
+<span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
@@ -48119,69 +48118,58 @@ Otherwise, remove them.</p>
 <span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">discipline</span><span class="p">:</span> <span class="n">Discipline</span><span class="p">,</span>
     <span class="n">input_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="n">output_names</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-    <span class="n">keep_in</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">keep_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">keep_in</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># TODO: API: naming and keep/exclude mechanism</span>
+    <span class="n">keep_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># TODO: API: naming and keep/exclude mechanism</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
-<span class="sd">        discipline: The original discipline.</span>
 <span class="sd">        input_names: The names of the inputs of interest.</span>
 <span class="sd">            If empty, use all the inputs.</span>
 <span class="sd">        output_names: The names of the outputs of interest.</span>
 <span class="sd">            If empty, use all the outputs.</span>
-<span class="sd">        keep_in: Whether to keep the inputs of interest.</span>
-<span class="sd">            Otherwise, remove them.</span>
-<span class="sd">        keep_out: Whether to keep the outputs of interest.</span>
-<span class="sd">            Otherwise, remove them.</span>
+<span class="sd">        keep_in: Whether the provided input names must be kept or excluded.</span>
+<span class="sd">        keep_out: Whether the provided output names must be kept or excluded.</span>
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa:D205 D212 D415</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">discipline</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">discipline</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="n">original_input_names</span> <span class="o">=</span> <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span>
-    <span class="n">original_output_names</span> <span class="o">=</span> <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">input_names</span><span class="p">:</span>
-        <span class="n">input_names</span> <span class="o">=</span> <span class="n">original_input_names</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">keep_in</span><span class="p">:</span>
-        <span class="n">input_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">original_input_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">input_names</span><span class="p">))</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">output_names</span><span class="p">:</span>
-        <span class="n">output_names</span> <span class="o">=</span> <span class="n">original_output_names</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">keep_out</span><span class="p">:</span>
-        <span class="n">output_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">original_output_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_names</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">input_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keep_in</span><span class="p">:</span>
+            <span class="n">input_names_to_exclude</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">names</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="n">input_names</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">input_names_to_exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">input_names</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">input_names_to_exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">update_from_names</span><span class="p">(</span><span class="n">input_names</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span><span class="o">.</span><span class="n">update_from_names</span><span class="p">(</span><span class="n">output_names</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">descriptions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__filter</span><span class="p">(</span>
-            <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">descriptions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span>
-        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">input_names_to_exclude</span><span class="p">:</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_differentiated_input_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_differentiated_input_names</span><span class="p">)</span> <span class="o">-</span> <span class="n">input_names_to_exclude</span>
     <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span><span class="o">.</span><span class="n">descriptions</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__filter</span><span class="p">(</span>
-            <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span><span class="o">.</span><span class="n">descriptions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span>
-        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">output_names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keep_out</span><span class="p">:</span>
+            <span class="n">output_names_to_exclude</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span><span class="o">.</span><span class="n">names</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_names</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_names_to_exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_names</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">output_names_to_exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">output_names_to_exclude</span><span class="p">:</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_differentiated_output_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_differentiated_output_names</span><span class="p">)</span> <span class="o">-</span> <span class="n">output_names_to_exclude</span>
     <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__filter</span><span class="p">(</span>
-        <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span><span class="o">.</span><span class="n">defaults</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span>
-    <span class="p">)</span>
-    <span class="n">removed_inputs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">original_input_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">input_names</span><span class="p">)</span>
-    <span class="n">diff_inputs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="o">.</span><span class="n">_differentiated_input_names</span><span class="p">)</span> <span class="o">-</span> <span class="n">removed_inputs</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">add_differentiated_inputs</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">diff_inputs</span><span class="p">))</span>
-    <span class="n">removed_outputs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">original_output_names</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_names</span><span class="p">)</span>
-    <span class="n">diff_outputs</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discipline</span><span class="o">.</span><span class="n">_differentiated_output_names</span><span class="p">)</span> <span class="o">-</span> <span class="n">removed_outputs</span>
-    <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">add_differentiated_outputs</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">diff_outputs</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -48566,12 +48554,11 @@ Otherwise, remove them.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.filtering_discipline.FilteringDiscipline.input_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.input_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -48701,12 +48688,11 @@ Otherwise, remove them.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.filtering_discipline.FilteringDiscipline.output_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.output_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">

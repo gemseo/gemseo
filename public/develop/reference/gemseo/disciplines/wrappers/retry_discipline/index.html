@@ -48106,7 +48106,7 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code></p>
+              Bases: <code><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline">BaseWrapperDiscipline</span></code></p>
 
 
 
@@ -48141,7 +48141,7 @@ value.
               (<code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href="../../utils/#gemseo.disciplines.utils.Discipline">Discipline</a></code>)
           –
           <div class="doc-md-description">
-            <p>The discipline to wrap in the retry loop.</p>
+            <p>The description is missing.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -48210,8 +48210,7 @@ timeout feature.</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>src/gemseo/disciplines/wrappers/retry_discipline.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 86</span>
-<span class="normal"> 87</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 87</span>
 <span class="normal"> 88</span>
 <span class="normal"> 89</span>
 <span class="normal"> 90</span>
@@ -48240,9 +48239,7 @@ timeout feature.</p>
 <span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">discipline</span><span class="p">:</span> <span class="n">Discipline</span><span class="p">,</span>
     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
@@ -48253,7 +48250,6 @@ timeout feature.</p>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
-<span class="sd">        discipline: The discipline to wrap in the retry loop.</span>
 <span class="sd">        n_trials: The number of trials of the discipline.</span>
 <span class="sd">        wait_time: The time to wait between 2 trials (in seconds).</span>
 <span class="sd">        timeout: The maximum duration, in seconds, that the discipline is</span>
@@ -48265,11 +48261,9 @@ timeout feature.</p>
 <span class="sd">        timeout_with_process: Whether to use a process or a thread when using the</span>
 <span class="sd">            timeout feature.</span>
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa:D205 D212 D415</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discipline</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_discipline</span> <span class="o">=</span> <span class="n">discipline</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
+
     <span class="bp">self</span><span class="o">.</span><span class="n">__n_executions</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span> <span class="o">=</span> <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">input_grammar</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span> <span class="o">=</span> <span class="n">discipline</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">output_grammar</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_trials</span> <span class="o">=</span> <span class="n">n_trials</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">wait_time</span> <span class="o">=</span> <span class="n">wait_time</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
@@ -48686,12 +48680,11 @@ without retrying a run.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline.input_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.input_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -48869,12 +48862,11 @@ without retrying a run.</p>
 
 
   <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-property"><code>property</code></small>
-      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
 <a href="#gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline.output_grammar" class="headerlink" title="Permanent link">&para;</a></h6>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseGrammar (gemseo.core.grammars.base_grammar.BaseGrammar)" href="../../../core/grammars/base_grammar/#gemseo.core.grammars.base_grammar.BaseGrammar">BaseGrammar</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_grammar</span> <span class="o">=</span> <span class="n"><span title="gemseo.disciplines.wrappers._base_wrapper_discipline.BaseWrapperDiscipline(self)._discipline.output_grammar.copy">copy</span></span><span class="p">()</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
