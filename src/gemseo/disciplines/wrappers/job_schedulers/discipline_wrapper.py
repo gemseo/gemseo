@@ -26,13 +26,14 @@ from typing import Any
 from typing import ClassVar
 
 from gemseo import from_pickle
-from gemseo.core.discipline import Discipline
+from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
 from gemseo.utils.directory_creator import DirectoryCreator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from subprocess import CompletedProcess
 
+    from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import JacobianData
     from gemseo.typing import StrKeyMapping
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
 LOGGER = getLogger(__name__)
 
 
-class JobSchedulerDisciplineWrapper(Discipline):
+class JobSchedulerDisciplineWrapper(BaseWrapperDiscipline):
     """A discipline that wraps the execution with job schedulers.
 
     The discipline is serialized to the disk, its inputs too, then a job file is created
@@ -68,9 +69,6 @@ class JobSchedulerDisciplineWrapper(Discipline):
     # TODO: API: rename to JOB_TEMPLATES_DIR_PATH
     TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
     """The path to the directory with the job templates."""
-
-    _discipline: Discipline
-    """The discipline to wrap in the job scheduler."""
 
     _job_template_path: Path
     """The path to the template to be used to make a submission to the job scheduler
@@ -107,7 +105,6 @@ class JobSchedulerDisciplineWrapper(Discipline):
     ) -> None:
         """
         Args:
-            discipline: The discipline to wrap in the job scheduler.
             workdir_path: The path to the workdir where the files will be generated.
             scheduler_run_command: The command to call the job scheduler and submit
                 the generated script.
@@ -121,8 +118,7 @@ class JobSchedulerDisciplineWrapper(Discipline):
         Raises:
             OSError: If `job_template_path` does not exist.
         """  # noqa:D205 D212 D415
-        super().__init__(discipline.name)
-        self._discipline = discipline
+        super().__init__(discipline, copy_grammars=True)
         self._use_template = use_template
         if isinstance(job_template_path, Path):
             self._job_template_path = job_template_path
@@ -139,10 +135,6 @@ class JobSchedulerDisciplineWrapper(Discipline):
         self._setup_cmd = setup_cmd
         self._options = options
 
-        # We must copy the grammars otherwise adding namespaces to this discipline
-        # will affect the wrapped discipline.
-        self.io.input_grammar = self._discipline.io.input_grammar.copy()
-        self.io.output_grammar = self._discipline.io.output_grammar.copy()
         self.__directory_creator = DirectoryCreator(
             workdir_path, DirectoryCreator.Naming.UUID
         )

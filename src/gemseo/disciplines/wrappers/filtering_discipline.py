@@ -22,18 +22,17 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
-from gemseo.core.discipline import Discipline
+from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
 
-class FilteringDiscipline(Discipline):
+class FilteringDiscipline(BaseWrapperDiscipline):
     """A class to wrap another Discipline for a subset of inputs and outputs."""
 
     def __init__(
@@ -41,84 +40,76 @@ class FilteringDiscipline(Discipline):
         discipline: Discipline,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
-        keep_in: bool = True,
-        keep_out: bool = True,
+        keep_in: bool = True,  # TODO: API: naming and keep/exclude mechanism
+        keep_out: bool = True,  # TODO: API: naming and keep/exclude mechanism
     ) -> None:
         """
         Args:
-            discipline: The original discipline.
             input_names: The names of the inputs of interest.
                 If empty, use all the inputs.
             output_names: The names of the outputs of interest.
                 If empty, use all the outputs.
-            keep_in: Whether to keep the inputs of interest.
-                Otherwise, remove them.
-            keep_out: Whether to keep the outputs of interest.
-                Otherwise, remove them.
+            keep_in: Whether the provided input names must be kept or excluded.
+            keep_out: Whether the provided output names must be kept or excluded.
         """  # noqa:D205 D212 D415
-        self.discipline = discipline
-        super().__init__(name=discipline.name)
-        original_input_names = discipline.io.input_grammar
-        original_output_names = discipline.io.output_grammar
-        if not input_names:
-            input_names = original_input_names
-        elif not keep_in:
-            input_names = list(set(original_input_names) - set(input_names))
+        super().__init__(discipline)
 
-        if not output_names:
-            output_names = original_output_names
-        elif not keep_out:
-            output_names = list(set(original_output_names) - set(output_names))
+        if input_names:
+            if keep_in:
+                input_names_to_exclude = self._discipline.io.input_grammar.names - set(
+                    input_names
+                )
+            else:
+                input_names_to_exclude = set(input_names)
+        else:
+            input_names_to_exclude = set()
 
-        self.io.input_grammar.update_from_names(input_names)
-        self.io.output_grammar.update_from_names(output_names)
-        self.io.input_grammar.descriptions.update(
-            self.__filter(
-                discipline.io.input_grammar.descriptions, self.io.input_grammar
-            )
+        for name in input_names_to_exclude:
+            del self.io.input_grammar[name]
+
+        self._differentiated_input_names = list(
+            set(self._differentiated_input_names) - input_names_to_exclude
         )
-        self.io.output_grammar.descriptions.update(
-            self.__filter(
-                discipline.io.output_grammar.descriptions, self.io.output_grammar
-            )
+
+        if output_names:
+            if keep_out:
+                output_names_to_exclude = (
+                    self._discipline.io.output_grammar.names - set(output_names)
+                )
+            else:
+                output_names_to_exclude = set(output_names)
+        else:
+            output_names_to_exclude = set()
+
+        for name in output_names_to_exclude:
+            del self.io.output_grammar[name]
+
+        self._differentiated_output_names = list(
+            set(self._differentiated_output_names) - output_names_to_exclude
         )
-        self.io.input_grammar.defaults = self.__filter(
-            discipline.io.input_grammar.defaults, self.io.input_grammar
-        )
-        removed_inputs = set(original_input_names) - set(input_names)
-        diff_inputs = set(self.discipline._differentiated_input_names) - removed_inputs
-        self.add_differentiated_inputs(list(diff_inputs))
-        removed_outputs = set(original_output_names) - set(output_names)
-        diff_outputs = (
-            set(self.discipline._differentiated_output_names) - removed_outputs
-        )
-        self.add_differentiated_outputs(list(diff_outputs))
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        return self.__filter(
-            self.discipline.execute(self.io.get_input_data()), self.io.output_grammar
-        )
+        # TODO: try to use _run instead of execute
+        self._discipline.execute(input_data)
+
+        output_grammar = self.io.output_grammar
+        return {
+            name: value
+            for name, value in self._discipline.get_output_data().items()
+            if name in output_grammar
+        }
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self.discipline._compute_jacobian(input_names, output_names)
-        self._init_jacobian(input_names, output_names)
-        jac = self.discipline.jac
-        for output_name in self.io.output_grammar:
-            for input_name in self.io.input_grammar:
-                self.jac[output_name][input_name] = jac[output_name][input_name]
+        self._discipline._compute_jacobian(input_names, output_names)
 
-    def __filter(self, data: StrKeyMapping, grammar: BaseGrammar) -> dict[str, Any]:
-        """Filter data by variable names.
-
-        Args:
-            data: The original mapping.
-            grammar: The grammar.
-
-        Returns:
-            The mapping filtered by variable names.
-        """
-        return {k: v for k, v in data.items() if k in grammar}
+        wrapped_jac = self._discipline.jac
+        jac = self.jac
+        for output_name in output_names:
+            jac_output = jac[output_name] = {}
+            wrapped_jac_output = wrapped_jac[output_name]
+            for input_name in input_names:
+                jac_output[input_name] = wrapped_jac_output[input_name]

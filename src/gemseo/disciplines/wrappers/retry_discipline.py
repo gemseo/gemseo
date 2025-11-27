@@ -29,18 +29,19 @@ from typing import TYPE_CHECKING
 
 import psutil
 
-from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
+from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
 LOGGER = getLogger(__name__)
 
 
-class RetryDiscipline(Discipline):
+class RetryDiscipline(BaseWrapperDiscipline):
     """A discipline to be executed with retry and timeout options.
 
     This [Discipline][gemseo.core.discipline.discipline.Discipline] wraps
@@ -94,7 +95,6 @@ class RetryDiscipline(Discipline):
     ) -> None:
         """
         Args:
-            discipline: The discipline to wrap in the retry loop.
             n_trials: The number of trials of the discipline.
             wait_time: The time to wait between 2 trials (in seconds).
             timeout: The maximum duration, in seconds, that the discipline is
@@ -106,11 +106,9 @@ class RetryDiscipline(Discipline):
             timeout_with_process: Whether to use a process or a thread when using the
                 timeout feature.
         """  # noqa:D205 D212 D415
-        super().__init__(discipline.name)
-        self._discipline = discipline
+        super().__init__(discipline)
+
         self.__n_executions = 0
-        self.io.input_grammar = discipline.io.input_grammar
-        self.io.output_grammar = discipline.io.output_grammar
         self.n_trials = n_trials
         self.wait_time = wait_time
         self.timeout = timeout
