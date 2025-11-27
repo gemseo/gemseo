@@ -48,8 +48,8 @@ disciplines = create_discipline([
 # input values of a discipline with the attribute [Discipline.default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
 for discipline in disciplines:
     for discipline in disciplines:
-        print(discipline)  # noqa: T201
-        print(f"Default inputs: {discipline.default_input_data}")  # noqa: T201
+        print(discipline)
+        print(f"Default inputs: {discipline.default_input_data}")
 
 # %%
 # You may also be interested in plotting the couplings of your disciplines.

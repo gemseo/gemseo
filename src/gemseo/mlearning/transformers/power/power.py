@@ -28,7 +28,6 @@ This transformation algorithm relies on the `PowerTransformer` class of
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from sklearn.preprocessing import PowerTransformer
@@ -67,11 +66,9 @@ class Power(BaseTransformer):
         self.lambdas_ = self.__power_transformer.lambdas_
 
     @BaseTransformer._use_2d_array
-    def transform(self, data: RealArray, *args: Any, **kwargs: Any) -> RealArray:  # noqa: D102
+    def transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__power_transformer.transform(data)
 
     @BaseTransformer._use_2d_array
-    def inverse_transform(  # noqa: D102
-        self, data: RealArray, *args: Any, **kwargs: Any
-    ) -> RealArray:
+    def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
         return self.__power_transformer.inverse_transform(data)
