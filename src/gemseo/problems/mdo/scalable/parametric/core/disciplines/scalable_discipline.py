@@ -186,8 +186,8 @@ class ScalableDiscipline(BaseDiscipline):
             jac[SHARED_DESIGN_VARIABLE_NAME] = -self.coefficients.D_i0
             jac[self.__x_i_name] = -self.coefficients.D_ii
             jac[self.__u_i_name] = eye(coupling_size)
-            for y_j_name, _C_ij in self.coefficients.C_ij.items():  # noqa: N806
-                jac[y_j_name] = _C_ij
+            for y_j_name, C_ij in self.coefficients.C_ij.items():  # noqa: N806
+                jac[y_j_name] = C_ij
 
             return jacobian
 
@@ -196,7 +196,7 @@ class ScalableDiscipline(BaseDiscipline):
             - self.coefficients.D_i0 @ x_0
             - self.coefficients.D_ii @ x_i
         )
-        for y_j_name, _C_ij in self.coefficients.C_ij.items():  # noqa: N806
-            y_i += _C_ij @ y_j_[y_j_name]
+        for y_j_name, C_ij in self.coefficients.C_ij.items():  # noqa: N806
+            y_i += C_ij @ y_j_[y_j_name]
 
         return {self.output_names[0]: y_i + u_i}

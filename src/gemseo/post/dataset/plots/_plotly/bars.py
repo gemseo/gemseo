@@ -53,7 +53,7 @@ class BarPlot(PlotlyPlot):
             first_series_positions + index * width + width / 2
             for index in range(n_series)
         ]
-        for feature_positions, series_name, series_data, _series_color in zip(
+        for feature_positions, series_name, series_data, series_color in zip(
             positions,
             self._common_dataset.index,
             data,
@@ -66,7 +66,7 @@ class BarPlot(PlotlyPlot):
                     x=feature_positions,
                     y=series_data.tolist(),
                     width=width,
-                    marker={"color": self._stringify_color(_series_color)},
+                    marker={"color": self._stringify_color(series_color)},
                     name=series_name,
                     text=text,
                 )

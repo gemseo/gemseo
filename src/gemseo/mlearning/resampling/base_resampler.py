@@ -230,9 +230,9 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         color = []
         split = []
         training_point_color, test_point_color = colors
-        for i, _split in enumerate(self._splits):
-            train = _split.train
-            test = _split.test
+        for i, split_ in enumerate(self._splits):
+            train = split_.train
+            test = split_.test
             split.extend([i] * train.size)
             index.extend(train)
             color.extend([training_point_color] * train.size)

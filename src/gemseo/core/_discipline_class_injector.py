@@ -78,9 +78,9 @@ class ClassInjector(ABCGoogleDocstringInheritanceMeta):
                 cls.__NEW_BASE_DISCIPLINE_CLASS_QUAL_NAME.split(".")[-1],
             ):
                 # Find if and where is the original class is in the base classes.
-                for _index, _base in enumerate(class_bases):
-                    if _base.__name__ == cls.__ORIGINAL_BASE_DISCIPLINE_CLASS_NAME:
-                        original_discipline_index = _index
+                for index, base in enumerate(class_bases):
+                    if base.__name__ == cls.__ORIGINAL_BASE_DISCIPLINE_CLASS_NAME:
+                        original_discipline_index = index
                         break
                 else:
                     original_discipline_index = None

@@ -72,9 +72,9 @@ class Functions(MutableSequence[MDOFunction]):
         self, index: int | slice, function: MDOFunction | Iterable[MDOFunction]
     ) -> None:
         functions = [function] if isinstance(function, MDOFunction) else function
-        for _function in functions:
-            self.__check_function_type(_function)
-            self.__check_function_name(_function)
+        for function_ in functions:
+            self.__check_function_type(function_)
+            self.__check_function_name(function_)
 
         self._functions.insert(index, function)
 
