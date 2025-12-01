@@ -172,8 +172,8 @@ class ScalableProblem:
             C_ij_i = C_ij[i]  # noqa: N806
             col_start = 0
             row_end = row_start + p_i_
-            for j, _p_j in enumerate(p_i):
-                col_end = col_start + _p_j
+            for j, p_j in enumerate(p_i):
+                col_end = col_start + p_j
                 if j != i:
                     name = get_coupling_name(j + 1)
                     C[row_start:row_end, col_start:col_end] = -C_ij_i[name]
@@ -225,10 +225,10 @@ class ScalableProblem:
 
         # Define the default values of the input variables.
         default_input_values = {SHARED_DESIGN_VARIABLE_NAME: zeros(d_0) + 0.5}
-        for index, _discipline_settings in enumerate(discipline_settings):
+        for index, discipline_settings_ in enumerate(discipline_settings):
             discipline_index = index + 1
-            d_i = _discipline_settings.d_i
-            p_i = _discipline_settings.p_i
+            d_i = discipline_settings_.d_i
+            p_i = discipline_settings_.p_i
             default_input_values[get_x_local_name(discipline_index)] = full(d_i, 0.5)
             default_input_values[get_coupling_name(discipline_index)] = full(p_i, 0.5)
             default_input_values[get_constraint_name(discipline_index)] = full(p_i, 0.5)

@@ -270,7 +270,7 @@ class Constraints(Functions):
             expr = function.expr
             n_char = len(str_repr)
             # Remove empty lines with filter
-            expr_spl = [_f for _f in expr.split("\n") if _f]
+            expr_spl = [f for f in expr.split("\n") if f]
             str_repr = str_repr + expr_spl[0] + sign + str(value)
             if isinstance(function, (MDOLinearFunction, MDOQuadraticFunction)):
                 for repre in expr_spl[1:]:

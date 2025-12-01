@@ -108,11 +108,11 @@ class TaylorDiscipline(Discipline):
         discipline_jac = discipline.jac
         self.jac = {
             output_name: {
-                input_name: __jac.copy()
-                for input_name, __jac in _jac.items()
+                input_name: jac_.copy()
+                for input_name, jac_ in jac_.items()
                 if input_name in input_names
             }
-            for output_name, _jac in discipline_jac.items()
+            for output_name, jac_ in discipline_jac.items()
             if output_name in output_names
         }
         self._has_jacobian = True

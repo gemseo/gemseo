@@ -152,12 +152,12 @@ class MainDiscipline(BaseDiscipline):
 
         output_names_to_values = {
             OBJECTIVE_NAME: array([
-                sum((__y_i**2).sum() for __y_i in y_i_.values()) + (x_0**2).sum()
+                sum((y_i__**2).sum() for y_i__ in y_i_.values()) + (x_0**2).sum()
             ])
         }
-        for c_i_name, __y_i, t_i in zip(
+        for c_i_name, y_i__, t_i in zip(
             self.__c_i_names, y_i_.values(), self.__t_i, strict=False
         ):
-            output_names_to_values[c_i_name] = t_i - __y_i
+            output_names_to_values[c_i_name] = t_i - y_i__
 
         return output_names_to_values

@@ -126,8 +126,8 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
                     sensitivity = absolute(sensitivity)
                 names_to_sensitivities[function_name] = sensitivity
             else:
-                for i, _grad in enumerate(grad):
-                    sensitivity = _grad * (x_opt - x_0)
+                for i, grad_ in enumerate(grad):
+                    sensitivity = grad_ * (x_opt - x_0)
                     sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)

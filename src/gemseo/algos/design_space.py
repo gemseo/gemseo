@@ -378,15 +378,15 @@ class DesignSpace:
 
         # Update the mapping from names to array indices
         name_reached = False
-        for _name, indices in self.__names_to_indices.items():
-            if _name == name:
+        for name_, indices in self.__names_to_indices.items():
+            if name_ == name:
                 name_reached = True
-                self.__names_to_indices[_name] = range(
+                self.__names_to_indices[name_] = range(
                     indices.start,
                     indices.stop - n_removed,
                 )
             elif name_reached:
-                self.__names_to_indices[_name] = range(
+                self.__names_to_indices[name_] = range(
                     indices.start - n_removed,
                     indices.stop - n_removed,
                 )

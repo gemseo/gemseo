@@ -59,14 +59,14 @@ class GradientBoostingRegressor(BaseRegressor):
         input_data: NumberArray,
         output_data: NumberArray,
     ) -> None:
-        for _output_data in output_data.T:
+        for output_data_ in output_data.T:
             self.algo.append(
                 SKLGradientBoosting(
                     n_estimators=self.__algo["n_estimators"],
                     **self.__algo["parameters"],
                 )
             )
-            self.algo[-1].fit(input_data, _output_data)
+            self.algo[-1].fit(input_data, output_data_)
 
     def _predict(
         self,
