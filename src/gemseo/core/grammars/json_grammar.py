@@ -334,8 +334,8 @@ class JSONGrammar(BaseGrammar):
         ) in self.__schema_builder.properties.items():
             schema = property_schema.to_schema()
             schemas = schema.get("anyOf", (schema,))
-            for _schema in schemas:
-                if description := _schema.get("description"):
+            for schema_ in schemas:
+                if description := schema_.get("description"):
                     # We use the first description.
                     self._descriptions[property_name] = description
                     break
