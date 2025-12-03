@@ -1,5 +1,5 @@
 # Project information
-site_name: GEMSEO
+site_name: GEMSEO<sup>&reg;</sup>
 site_description: GEMSEO is an open-source Python software to automate multidisciplinary processes.
 
 site_url: https://gemseo.org
@@ -28,6 +28,7 @@ theme:
         name: Switch to light mode
   icon:
     repo: fontawesome/brands/gitlab
+  custom_dir: docs/overrides
 
 plugins:
 - search
@@ -107,9 +108,12 @@ nav:
   - Installation: software/installation.md
   - GEMSEO in 10 minutes: generated/examples/mdo/plot_gemseo_in_10_minutes.md
   - Changelog: changelog.md
+  - Upgrading: software/upgrading.md
   - Plugins: plugins.md
   - About us: aboutus.md
   - Contributing: contributing.md
+  - Dependencies: software/dependencies.md
+  - Licenses: software/licenses.md
   - Credits: credits.md
   - Roadmap: roadmap.md
   - FAQ: faq.md
@@ -227,16 +231,11 @@ nav:
   - Scenario: cheat_sheets/scenario.md
   - Surrogate: cheat_sheets/surrogate.md
 - Developer guide:
-  - Changelog: changelog.md
-  - Dependencies: software/dependencies.md
   - Developer information: software/developing.md
   - Example Google Style Docstrings: software/example_google_docstring.md
-  - Installation: software/installation.md
-  - Licenses: software/licenses.md
   - Maintainers information: software/maintenance.md
   - Security information: software/security.md
   - Architecture principles: software/system_architecture.md
-  - Upgrading: software/upgrading.md
 
 markdown_extensions:
 - admonition

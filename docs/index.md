@@ -18,7 +18,7 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 <a href="https://www.gnu.org/licenses/lgpl-3.0.en.html"><img alt="PyPI - License" src="https://img.shields.io/pypi/l/gemseo" /></a>
 </p>
 
-GEMSEO is an open-source Python software to automate multidisciplinary processes, starting with multidisciplinary design optimization (MDO) ones.
+GEMSEO<sup>®</sup> is an open-source Python software to automate multidisciplinary processes, starting with multidisciplinary design optimization (MDO) ones.
 
 Standing for Generic Engine for Multidisciplinary Scenarios, Exploration and Optimization, GEMSEO offers a catalog of MDO formulations to make this automation possible. Built on top of essentials such as NumPy, SciPy and Matplotlib, it also includes a wide range of algorithms for various fields, namely coupling, design of experiments, linear problems, optimization, machine learning, ordinary differential equations, surrogate modeling, uncertainty quantification, visualization, etc.
 

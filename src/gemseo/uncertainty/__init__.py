@@ -32,7 +32,7 @@ by means of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
 See Also:
     [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
     [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
-    [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.fitting.OTDistributionFitter]
+    [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
 
 The sub-package [gemseo.uncertainty.sensitivity][gemseo.uncertainty.sensitivity]
 offers an abstract level
