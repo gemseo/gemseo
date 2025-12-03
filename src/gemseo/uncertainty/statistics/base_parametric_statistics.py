@@ -34,7 +34,7 @@ uses the OpenTURNS distributions
 through the
 [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
 and
-[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.fitting.OTDistributionFitter]
+[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
 classes
 and
 its subclass

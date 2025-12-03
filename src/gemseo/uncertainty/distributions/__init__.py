@@ -41,7 +41,7 @@ This package contains:
 
 Lastly,
 the class
-[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.fitting.OTDistributionFitter]
+[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
 offers the possibility
 to fit an
 [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
