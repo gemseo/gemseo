@@ -23,7 +23,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.formulations.bilevel import BiLevel
-from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings
+from gemseo.formulations.bilevel_bcd_settings import BiLevelBCD_Settings
 from gemseo.mda.factory import MDAFactory
 
 if TYPE_CHECKING:
@@ -53,12 +53,12 @@ class BiLevelBCD(BiLevel):
     3. an MDA to compute precisely the system optimization criteria.
     """
 
-    Settings: ClassVar[type[BiLevel_BCD_Settings]] = BiLevel_BCD_Settings
+    Settings: ClassVar[type[BiLevelBCD_Settings]] = BiLevelBCD_Settings
 
     _bcd_mda: MDAGaussSeidel
     """The MDA of the BCD algorithm."""
 
-    _settings: BiLevel_BCD_Settings
+    _settings: BiLevelBCD_Settings
 
     __mda_factory: ClassVar[MDAFactory] = MDAFactory()
     """The MDA factory."""
@@ -68,7 +68,7 @@ class BiLevelBCD(BiLevel):
         disciplines: Sequence[Discipline],
         objective_name: str,
         design_space: DesignSpace,
-        settings_model: BiLevel_BCD_Settings | None = None,
+        settings_model: BiLevelBCD_Settings | None = None,
         **settings: Any,
     ) -> None:
         self._bcd_mda = None
