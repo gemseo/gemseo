@@ -18,9 +18,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from collections.abc import Iterable  # noqa:TC003
-from functools import partial
 from typing import Annotated
 from typing import Any
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa:TC002
@@ -28,13 +28,17 @@ from pydantic import WithJsonSchema
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa:TC001
-from gemseo.utils.pydantic import copy_field
-
-copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)
 
 
 class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
     """The base augmented lagrangian settings."""
+
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+        "ftol_rel": 1e-9,
+        "ftol_abs": 1e-9,
+        "xtol_rel": 1e-9,
+        "xtol_abs": 1e-9,
+    }
 
     initial_rho: NonNegativeFloat = Field(
         default=10.0,
@@ -64,11 +68,3 @@ which implies that the sub-problem is unconstrained.""",
         default=None,  # Default is None since it's now exclusively a callable
         description="""A callable for updating parameters or a function call.""",
     )
-
-    ftol_rel: NonNegativeFloat = copy_field_opt("ftol_rel", default=1e-9)
-
-    ftol_abs: NonNegativeFloat = copy_field_opt("ftol_abs", default=1e-9)
-
-    xtol_rel: NonNegativeFloat = copy_field_opt("xtol_rel", default=1e-9)
-
-    xtol_abs: NonNegativeFloat = copy_field_opt("xtol_abs", default=1e-9)

@@ -33,8 +33,6 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 class L_BFGS_B_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy L-BFGS-B algorithm."""
 
-    _TARGET_CLASS_NAME = "L-BFGS-B"
-
     maxcor: PositiveInt = Field(
         default=20,
         description=(

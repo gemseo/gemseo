@@ -28,5 +28,3 @@ class OTUniformDistribution_Settings(  # noqa: N801
     BaseUniformDistribution_Settings, _OTDistribution_Settings_Mixin
 ):
     """The settings of an OpenTURNS-based uniform distribution."""
-
-    _TARGET_CLASS_NAME = "OTUniformDistribution"

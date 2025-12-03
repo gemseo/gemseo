@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from pydantic import Field
 from pydantic import NonNegativeFloat
 
@@ -30,8 +28,6 @@ from gemseo.mlearning.linear_model_fitting.elastic_net_settings import _ElasticN
 
 class ElasticNetCV_Settings(_ElasticNetMixin, BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn elastic net algorithm with built-in cross-validation."""  # noqa: E501
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "ElasticNetCV"
 
     alphas: tuple[NonNegativeFloat, ...] = Field(
         default=(0.001, 0.01, 0.1, 1.0, 10.0),

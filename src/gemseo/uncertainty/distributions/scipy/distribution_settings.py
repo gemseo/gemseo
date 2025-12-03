@@ -41,8 +41,6 @@ _STANDARD_PARAMETERS: Final[READ_ONLY_EMPTY_DICT] = READ_ONLY_EMPTY_DICT
 class SPDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
     """The settings of an OpenTURNS-based distribution."""
 
-    _TARGET_CLASS_NAME = "SPDistribution"
-
     interfaced_distribution: str = Field(
         default="uniform", description="The name of the probability distribution."
     )

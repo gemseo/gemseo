@@ -26,8 +26,6 @@ from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Strength
 class LHS_Settings(BaseSciPyDOESettings):  # noqa: N801
     """The settings for the LHS DOE from the SciPy library."""
 
-    _TARGET_CLASS_NAME = "LHS"
-
     scramble: bool = Field(
         default=True,
         description="""Whether to use scrambling (Owen type).

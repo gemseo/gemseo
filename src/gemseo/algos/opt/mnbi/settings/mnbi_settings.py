@@ -37,8 +37,6 @@ if TYPE_CHECKING:
 class MNBI_Settings(BaseOptimizerSettings):  # noqa: N801
     """The mNBI algorithm settings."""
 
-    _TARGET_CLASS_NAME = "MNBI"
-
     normalize_design_space: bool = Field(
         default=False,
         description="""Whether to normalize the design space variables between 0 and 1.

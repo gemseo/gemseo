@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from pydantic import Field
 from pydantic import NonNegativeFloat
 
@@ -30,8 +28,6 @@ from gemseo.mlearning.linear_model_fitting.lasso_settings import _LassoSettingsM
 
 class LassoCV_Settings(_LassoSettingsMixin, BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn lasso algorithm with built-in cross-validation."""
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "LassoCV"
 
     alphas: tuple[NonNegativeFloat, ...] = Field(
         default=(0.001, 0.01, 0.1, 1.0, 10.0),

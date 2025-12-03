@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
 from typing import Literal
 
 from numpy import finfo
@@ -33,8 +32,6 @@ from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings imp
 
 class LARSCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn least angle regression (LARS) algorithm with build-in cross-validation."""  # noqa: E501
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "LARSCV"
 
     copy_X: bool = Field(  # noqa: N815
         default=True,

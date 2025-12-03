@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
     BaseLinearModelFitter_Settings,
 )
@@ -26,5 +24,3 @@ from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings imp
 
 class NullSpace_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the null space algorithm."""
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "NullSpace"

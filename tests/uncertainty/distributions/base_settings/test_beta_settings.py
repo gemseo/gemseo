@@ -24,7 +24,7 @@ from gemseo.uncertainty.distributions.base_settings.beta_settings import (
 
 
 class SpecificBetaDistribution_Settings(BaseBetaDistribution_Settings):  # noqa: N801
-    _TARGET_CLASS_NAME = "SpecificBetaDistribution"
+    pass
 
 
 def test_validator():

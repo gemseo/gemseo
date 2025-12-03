@@ -16,14 +16,16 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class Robustness_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "Robustness"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (8.0, 5.0)}
     stddev: float = Field(
         default=0.01,
         description="The standard deviation of the normal uncertain variable to be "
@@ -32,6 +34,3 @@ class Robustness_Settings(BasePostSettings):  # noqa: D101, N801
         ge=0.0,
         le=1.0,
     )
-
-
-update_field(Robustness_Settings, "fig_size", default=(8.0, 5.0))

@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.normal_settings import (
 
 class SPNormalDistribution_Settings(BaseNormalDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based normal distribution."""
-
-    _TARGET_CLASS_NAME = "SPNormalDistribution"

@@ -24,5 +24,3 @@ from gemseo.algos.opt.nlopt.settings.base_nlopt_settings import BaseNLoptSetting
 
 class NLOPT_SLSQP_Settings(BaseNLoptSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """The settings for the NLopt SLSQP algorithm."""
-
-    _TARGET_CLASS_NAME = "NLOPT_SLSQP"

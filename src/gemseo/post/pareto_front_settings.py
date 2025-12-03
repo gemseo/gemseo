@@ -17,15 +17,16 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class ParetoFront_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "ParetoFront"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     show_non_feasible: bool = Field(
         default=True,
         description="Whether to show the non-feasible points in the plot.",
@@ -40,6 +41,3 @@ class ParetoFront_Settings(BasePostSettings):  # noqa: D101, N801
         description="The labels of the objective components. If empty, use the "
         "objective name suffixed by an index.",
     )
-
-
-update_field(ParetoFront_Settings, "fig_size", default=(10.0, 10.0))

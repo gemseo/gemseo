@@ -24,7 +24,7 @@ from gemseo.uncertainty.distributions.base_settings.uniform_settings import (
 
 
 class SpecificUniformDistribution_Settings(BaseUniformDistribution_Settings):  # noqa: N801
-    _TARGET_CLASS_NAME = "SpecificUniformDistribution"
+    pass
 
 
 def test_validator():

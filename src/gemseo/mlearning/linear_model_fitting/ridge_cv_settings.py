@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable  # noqa: TC003
-from typing import ClassVar
 
 from pydantic import Field
 from pydantic import NonNegativeFloat
@@ -39,8 +38,6 @@ class GCVMode(StrEnum):
 
 class RidgeCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn ridge algorithm with build-in cross validation."""
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "RidgeCV"
 
     alphas: tuple[NonNegativeFloat, ...] = Field(
         default=(0.001, 0.01, 0.1, 1.0, 10.0),

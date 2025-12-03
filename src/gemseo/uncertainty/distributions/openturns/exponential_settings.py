@@ -28,5 +28,3 @@ class OTExponentialDistribution_Settings(  # noqa: N801
     BaseExponentialDistribution_Settings, _OTDistribution_Settings_Mixin
 ):
     """The settings of an OpenTURNS-based exponential distribution."""
-
-    _TARGET_CLASS_NAME = "OTExponentialDistribution"

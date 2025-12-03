@@ -16,12 +16,11 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class ParallelCoordinates_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "ParallelCoordinates"
-
-
-update_field(ParallelCoordinates_Settings, "fig_size", default=(10.0, 5.0))
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 5.0)}

@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.triangular_settings import (
 
 class SPTriangularDistribution_Settings(BaseTriangularDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based triangular distribution."""
-
-    _TARGET_CLASS_NAME = "SPTriangularDistribution"

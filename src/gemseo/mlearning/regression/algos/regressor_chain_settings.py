@@ -23,5 +23,3 @@ from gemseo.mlearning.regression.algos.base_regressor_settings import (
 
 class RegressorChain_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the regressor chain."""
-
-    _TARGET_CLASS_NAME = "RegressorChain"

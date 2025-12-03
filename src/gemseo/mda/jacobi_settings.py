@@ -16,18 +16,16 @@
 
 from __future__ import annotations
 
+from typing import Any
+from typing import ClassVar
+
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-from gemseo.utils.pydantic import copy_field
 
 
 class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for [MDAJacobi][gemseo.mda.jacobi.MDAJacobi]."""
 
-    _TARGET_CLASS_NAME = "MDAJacobi"
-
-    acceleration_method: AccelerationMethod = copy_field(
-        "acceleration_method",
-        BaseParallelMDASettings,
-        default=AccelerationMethod.ALTERNATE_2_DELTA,
-    )
+    _FIELD_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "acceleration_method": AccelerationMethod.ALTERNATE_2_DELTA,
+    }

@@ -28,5 +28,3 @@ class OTNormalDistribution_Settings(  # noqa: N801
     BaseNormalDistribution_Settings, _OTDistribution_Settings_Mixin
 ):
     """The settings of an OpenTURNS-based normal distribution."""
-
-    _TARGET_CLASS_NAME = "OTNormalDistribution"

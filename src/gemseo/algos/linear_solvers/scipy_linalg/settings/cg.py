@@ -23,5 +23,3 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_setting
 
 class CG_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
     """The settings of the SciPy CG algorithm."""
-
-    _TARGET_CLASS_NAME = "CG"

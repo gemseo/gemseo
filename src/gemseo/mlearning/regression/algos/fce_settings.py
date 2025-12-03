@@ -47,8 +47,6 @@ class OrthonormalFunctionBasis(StrEnum):
 class FCERegressor_Settings(BaseFCERegressor_Settings):  # noqa: N801
     """The settings of the functional chaos expansion model."""
 
-    _TARGET_CLASS_NAME = "FCERegressor"
-
     linear_model_fitter_settings: BaseLinearModelFitter_Settings | None = Field(
         default=None,
         description="""The settings of the linear solver.

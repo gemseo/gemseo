@@ -26,10 +26,10 @@ from gemseo.algos.opt.augmented_lagrangian.base_augmented_lagrangian import (
     BaseAugmentedLagrangian,
 )
 from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (  # noqa: E501
-    PenaltyHeuristicSettings,
+    PenaltyHeuristic_Settings,
 )
 
-T = TypeVar("T", bound=PenaltyHeuristicSettings)
+T = TypeVar("T", bound=PenaltyHeuristic_Settings)
 
 
 class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian[T]):

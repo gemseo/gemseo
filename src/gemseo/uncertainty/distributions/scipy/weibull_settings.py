@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
 
 class SPWeibullDistribution_Settings(BaseWeibullDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based uniform distribution."""
-
-    _TARGET_CLASS_NAME = "SPWeibullDistribution"

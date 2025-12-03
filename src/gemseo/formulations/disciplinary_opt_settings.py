@@ -21,5 +21,3 @@ from gemseo.formulations.base_formulation_settings import BaseFormulationSetting
 
 class DisciplinaryOpt_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation."""  # noqa: E501
-
-    _TARGET_CLASS_NAME = "DisciplinaryOpt"

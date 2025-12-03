@@ -25,8 +25,6 @@ from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESetting
 class PYDOE_BBDESIGN_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the Box-Behnken DOE from the pyDOE library."""
 
-    _TARGET_CLASS_NAME = "PYDOE_BBDESIGN"
-
     center: PositiveInt | None = Field(
         default=None,
         description="""The number of center points for the Box-Behnken design.

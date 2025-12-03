@@ -18,30 +18,30 @@ from __future__ import annotations
 
 from functools import partial
 from math import inf
+from typing import ClassVar
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TC002
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
+from gemseo.typing import StrKeyMapping
 from gemseo.utils.pydantic import copy_field
 
-copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)
+copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)  # pyright: ignore[reportUndefinedVariable]
 
 
 class BaseNLoptSettings(BaseOptimizerSettings):
     """The NLopt optimization library setting."""
 
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+        "ftol_rel": 1e-8,
+        "ftol_abs": 1e-14,
+        "stop_crit_n_x": None,
+        "xtol_rel": 1e-8,
+        "xtol_abs": 1e-14,
+    }
+    _FIELD_TYPES: ClassVar[StrKeyMapping] = {"stop_crit_n_x": int | None}
+
     stopval: float = Field(
         default=-inf,
         description="""The objective value at which the optimization will stop.""",
     )
-
-    ftol_rel: NonNegativeFloat = copy_field_opt("ftol_rel", default=1e-8)
-
-    ftol_abs: NonNegativeFloat = copy_field_opt("ftol_abs", default=1e-14)
-
-    stop_crit_n_x: int | None = copy_field_opt("stop_crit_n_x", default=None)
-
-    xtol_rel: NonNegativeFloat = copy_field_opt("xtol_rel", default=1e-8)
-
-    xtol_abs: NonNegativeFloat = copy_field_opt("xtol_abs", default=1e-14)

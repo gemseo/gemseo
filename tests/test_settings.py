@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from math import inf
 from typing import TYPE_CHECKING
-from typing import ClassVar
 
 import pytest
 from pydantic import Field
@@ -158,10 +157,8 @@ def test_formulation_settings(module_and_cls):
 def test_settings_inf_serialization():
     """Test the serialization of the settings with infinite values."""
 
-    class InfinitySettings(BaseSettings):
+    class Infinity_Settings(BaseSettings):  # noqa: N801
         """A settings class with infinity values for testing serialization."""
-
-        _TARGET_CLASS_NAME: ClassVar[str] = "InfinityTest"
 
         # Field with positive infinity
         pos_inf: NonNegativeFloat = Field(
@@ -181,7 +178,7 @@ def test_settings_inf_serialization():
             description="A regular float value for comparison.",
         )
 
-    settings = InfinitySettings()
+    settings = Infinity_Settings()
 
     json_data = settings.model_dump_json(indent=4)
 

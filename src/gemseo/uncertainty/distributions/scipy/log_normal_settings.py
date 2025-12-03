@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.log_normal_settings import (
 
 class SPLogNormalDistribution_Settings(BaseLogNormalDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based log-normal distribution."""
-
-    _TARGET_CLASS_NAME = "SPLogNormalDistribution"

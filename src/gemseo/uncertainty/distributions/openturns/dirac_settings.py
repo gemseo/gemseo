@@ -31,8 +31,6 @@ class OTDiracDistribution_Settings(  # noqa: N801
 ):
     """The settings of an OpenTURNS-based Dirac distribution."""
 
-    _TARGET_CLASS_NAME = "OTDiracDistribution"
-
     variable_value: float = Field(
         default=0.0,
         description="The value of the random variable.",

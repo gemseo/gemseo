@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
 from typing import Literal
 
 from numpy import ndarray  # noqa: TC002
@@ -86,8 +85,6 @@ and continues until it is smaller than `tol`.""",
 
 class Lasso_Settings(_LassoSettingsMixin, BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn lasso algorithm."""
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "Lasso"
 
     alpha: NonNegativeFloat = Field(
         default=1.0,

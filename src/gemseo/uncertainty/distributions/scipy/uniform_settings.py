@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.uniform_settings import (
 
 class SPUniformDistribution_Settings(BaseUniformDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based uniform distribution."""
-
-    _TARGET_CLASS_NAME = "SPUniformDistribution"

@@ -17,15 +17,16 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class RadarChart_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "RadarChart"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
     iteration: int | None = Field(
         default=None,
         description=r"Either an iteration in $\{-N,\ldots,-1,1,\ldots,N\}$ or "
@@ -42,6 +43,3 @@ class RadarChart_Settings(BasePostSettings):  # noqa: D101, N801
         "direction. Otherwise, write them horizontally. The radial "
         "direction can be useful for a high number of constraints.",
     )
-
-
-update_field(RadarChart_Settings, "fig_size", default=(6.4, 4.8))

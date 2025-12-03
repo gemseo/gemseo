@@ -27,8 +27,6 @@ from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressor_Settings
 class TPSRegressor_Settings(RBFRegressor_Settings):  # noqa: N801
     """The settings of the thin plate spline (TPS) regressor."""
 
-    _TARGET_CLASS_NAME = "TPSRegressor"
-
     function: Literal[RBF.THIN_PLATE] = Field(
         default=RBF.THIN_PLATE,
         description=r"The thin plate radial basis function for $r^2\log(r)$.",

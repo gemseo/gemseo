@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (
-    PenaltyHeuristicSettings,
+    PenaltyHeuristic_Settings,
 )
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
@@ -25,8 +25,6 @@ from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
 
 
 class Augmented_Lagrangian_order_1_Settings(  # noqa: N801
-    PenaltyHeuristicSettings, BaseGradientBasedAlgorithmSettings
+    PenaltyHeuristic_Settings, BaseGradientBasedAlgorithmSettings
 ):
     """The augmented Lagrangian of order 1 settings."""
-
-    _TARGET_CLASS_NAME = "Augmented_Lagrangian_order_1"

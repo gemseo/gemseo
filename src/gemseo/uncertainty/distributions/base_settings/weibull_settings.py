@@ -41,8 +41,6 @@ _USE_WEIBULL_MIN: Final[bool] = True
 class BaseWeibullDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
     """The base settings of a uniform distribution."""
 
-    _TARGET_CLASS_NAME = "SPWeibullDistribution"
-
     location: float = Field(
         default=_LOCATION,
         description=(r"The location parameter $\gamma$ of the Weibull distribution."),

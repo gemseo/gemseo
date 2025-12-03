@@ -21,5 +21,3 @@ from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import BaseSciPyDOE
 
 class MC_Settings(BaseSciPyDOESettings):  # noqa: N801
     """The settings for the Monte Carlo DOE from the SciPy library."""
-
-    _TARGET_CLASS_NAME = "MC"

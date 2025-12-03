@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import ClassVar
 from typing import Literal
 
 from numpy import inf
@@ -38,8 +37,6 @@ from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings imp
 
 class SPGL1_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the SPGL1 (Spectral Projected Gradient for L1 minimization) algorithm."""  # noqa: E501
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "SPGL1"
 
     tau: NonNegativeFloat = Field(
         default=0.0,

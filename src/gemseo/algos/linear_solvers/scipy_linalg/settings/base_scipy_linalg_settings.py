@@ -43,8 +43,6 @@ if TYPE_CHECKING:
 class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
     """The settings of the SciPy GMRES algorithm."""
 
-    _TARGET_CLASS_NAME = "TFQMR"
-
     atol: NonNegativeFloat = Field(
         default=0.0,
         description="""The absolute tolerance.

@@ -35,8 +35,6 @@ if TYPE_CHECKING:
 class IDF_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the [IDF][gemseo.formulations.idf.IDF] formulation."""
 
-    _TARGET_CLASS_NAME = "IDF"
-
     include_weak_coupling_targets: bool = Field(
         default=True,
         description="""If `True`,
