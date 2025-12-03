@@ -34,8 +34,6 @@ if TYPE_CHECKING:
 class MDAGSNewton_Settings(MDASequential_Settings):  # noqa: N801
     """The settings for [MDAGSNewton][gemseo.mda.gs_newton.MDAGSNewton]."""
 
-    _TARGET_CLASS_NAME = "MDAGSNewton"
-
     gauss_seidel_settings: StrKeyMapping | MDAGaussSeidel_Settings = Field(
         default_factory=dict, description="The settings for the Gauss-Seidel MDA."
     )

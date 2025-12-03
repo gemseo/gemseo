@@ -18,19 +18,20 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
 class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "OptHistoryView"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
     variable_names: Sequence[str] = Field(
         default=(),
         description="The names of the variables to display. "
@@ -70,6 +71,3 @@ class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
             )
             raise ValueError(msg)
         return self
-
-
-update_field(OptHistoryView_Settings, "fig_size", default=(11.0, 6.0))

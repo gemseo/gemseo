@@ -28,8 +28,6 @@ from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESetting
 class PYDOE_FULLFACT_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the full factorial DOE from the pyDOE library."""
 
-    _TARGET_CLASS_NAME = "PYDOE_FULLFACT"
-
     n_samples: NonNegativeInt = Field(
         default=0,
         description="""The number of samples.

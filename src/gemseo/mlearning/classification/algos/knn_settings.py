@@ -27,6 +27,4 @@ from gemseo.mlearning.classification.algos.base_classifier_settings import (
 class KNNClassifier_Settings(BaseClassifierSettings):  # noqa: N801
     """The settings of the k-nearest neighbors classification algorithm."""
 
-    _TARGET_CLASS_NAME = "KNNClassifier"
-
     n_neighbors: PositiveInt = Field(default=5, description="The number of neighbors.")

@@ -16,31 +16,26 @@
 
 from __future__ import annotations
 
-from functools import partial
+from typing import ClassVar
 
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa:TC002
 
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
-from gemseo.utils.pydantic import copy_field
-
-copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)
+from gemseo.typing import StrKeyMapping
 
 
 class BaseScipyLocalSettings(BaseOptimizerSettings):
     """The SciPy local optimization library setting."""
 
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+        "eq_tolerance": 1e-6,
+        "ftol_rel": 1e-9,
+        "ftol_abs": 1e-9,
+        "xtol_rel": 1e-9,
+        "xtol_abs": 1e-9,
+    }
+
     disp: bool = Field(
         default=False,
         description="""Whether to print convergence messages.""",
     )
-
-    eq_tolerance: NonNegativeFloat = copy_field_opt("eq_tolerance", default=1e-6)
-
-    ftol_rel: NonNegativeFloat = copy_field_opt("ftol_rel", default=1e-9)
-
-    ftol_abs: NonNegativeFloat = copy_field_opt("ftol_abs", default=1e-9)
-
-    xtol_rel: NonNegativeFloat = copy_field_opt("xtol_rel", default=1e-9)
-
-    xtol_abs: NonNegativeFloat = copy_field_opt("xtol_abs", default=1e-9)

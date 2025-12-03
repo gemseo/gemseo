@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.beta_settings import (
 
 class SPBetaDistribution_Settings(BaseBetaDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based Beta distribution."""
-
-    _TARGET_CLASS_NAME = "SPBetaDistribution"

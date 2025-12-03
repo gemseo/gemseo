@@ -28,8 +28,6 @@ from gemseo.utils.seeder import SEED
 class NLOPT_COBYLA_Settings(BaseGradientFreeNLoptSettings):  # noqa: N801
     """The settings for the NLopt COBYLA algorithm."""
 
-    _TARGET_CLASS_NAME = "NLOPT_COBYLA"
-
     seed: NonNegativeInt | None = Field(
         default=SEED,
         description=(

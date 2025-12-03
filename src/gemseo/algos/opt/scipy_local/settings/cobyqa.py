@@ -30,8 +30,6 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 class COBYQA_Settings(BaseScipyLocalSettings):  # noqa: N801
     """Settings for the SciPy COBYQA algorithm."""
 
-    _TARGET_CLASS_NAME = "COBYQA"
-
     f_target: float = Field(
         default=-inf,
         description="""The target value for the objective function.

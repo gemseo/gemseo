@@ -48,8 +48,6 @@ Function = RBF
 class RBFRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the RBF network for regression."""
 
-    _TARGET_CLASS_NAME = "RBFRegressor"
-
     function: RBF | Annotated[Callable[[float, float], float], WithJsonSchema({})] = (
         Field(
             default=RBF.MULTIQUADRIC,

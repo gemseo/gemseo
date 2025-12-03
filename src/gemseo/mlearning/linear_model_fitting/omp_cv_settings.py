@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from pydantic import Field
 from pydantic import PositiveInt
 
@@ -29,8 +27,6 @@ from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings imp
 
 class OrthogonalMatchingPursuitCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn Orthogonal Matching Pursuit (OMP) algorithm with build-in cross-validation."""  # noqa: E501
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "OrthogonalMatchingPursuitCV"
 
     max_iter: PositiveInt | None = Field(
         default=None,

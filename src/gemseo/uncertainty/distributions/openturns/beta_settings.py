@@ -28,5 +28,3 @@ class OTBetaDistribution_Settings(  # noqa: N801
     BaseBetaDistribution_Settings, _OTDistribution_Settings_Mixin
 ):
     """The settings of an OpenTURNS-based Beta distribution."""
-
-    _TARGET_CLASS_NAME = "SPBetaDistribution"

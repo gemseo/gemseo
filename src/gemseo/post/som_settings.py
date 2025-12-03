@@ -16,15 +16,17 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class SOM_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "SOM"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (12.0, 18.0)}
     n_x: PositiveInt = Field(
         default=4,
         description="The number of grids in x.",
@@ -37,6 +39,3 @@ class SOM_Settings(BasePostSettings):  # noqa: D101, N801
         default=False,
         description="Whether to show the label of the neuron value.",
     )
-
-
-update_field(SOM_Settings, "fig_size", default=(12.0, 18.0))

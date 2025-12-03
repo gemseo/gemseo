@@ -17,15 +17,16 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class ScatterPlotMatrix_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "ScatterPlotMatrix"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     filter_non_feasible: bool = Field(
         default=False,
         description="Whether to remove the non-feasible points from the data.",
@@ -35,6 +36,3 @@ class ScatterPlotMatrix_Settings(BasePostSettings):  # noqa: D101, N801
         description="The functions names or design variables to plot. If empty, "
         "plot all design variables.",
     )
-
-
-update_field(ScatterPlotMatrix_Settings, "fig_size", default=(10.0, 10.0))

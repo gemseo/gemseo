@@ -35,8 +35,6 @@ if TYPE_CHECKING:
 class MDF_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the [MDF][gemseo.formulations.mdf.MDF] formulation."""
 
-    _TARGET_CLASS_NAME = "MDF"
-
     main_mda_name: str = Field(
         default=MDAChain.__name__,
         description="""The name of the class of the main MDA.

@@ -23,5 +23,3 @@ from gemseo.uncertainty.distributions.base_settings.exponential_settings import 
 
 class SPExponentialDistribution_Settings(BaseExponentialDistribution_Settings):  # noqa: N801
     """The settings of a SciPy-based exponential distribution."""
-
-    _TARGET_CLASS_NAME = "SPExponentialDistribution"

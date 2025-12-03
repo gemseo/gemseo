@@ -24,8 +24,7 @@ from gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_se
 )
 
 
-# TODO: API: rename to PenaltyHeuristic_Settings
-class PenaltyHeuristicSettings(BaseAugmentedLagragianSettings):
+class PenaltyHeuristic_Settings(BaseAugmentedLagragianSettings):  # noqa: N801
     """The augmented Lagrangian with penalty update settings."""
 
     tau: PositiveFloat = Field(
@@ -42,3 +41,7 @@ class PenaltyHeuristicSettings(BaseAugmentedLagragianSettings):
         default=10_000,
         description="""The maximum penalty value.""",
     )
+
+
+# TODO: API: remove
+PenaltyHeuristicSettings = PenaltyHeuristic_Settings

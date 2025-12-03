@@ -27,8 +27,6 @@ from gemseo.typing import StrKeyMapping  # noqa: TC001
 class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801
     """The `MorrisDOE` settings."""
 
-    _TARGET_CLASS_NAME = "MorrisDOE"
-
     n_samples: NonNegativeInt = Field(
         default=0,
         description=(

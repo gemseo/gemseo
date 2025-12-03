@@ -23,7 +23,7 @@ from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1
     Augmented_Lagrangian_order_1_Settings,
 )
 from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (
-    PenaltyHeuristicSettings,
+    PenaltyHeuristic_Settings,
 )
 from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
@@ -85,7 +85,7 @@ __all__ = [
     "NLOPT_MMA_Settings",
     "NLOPT_NEWUOA_Settings",
     "NLOPT_SLSQP_Settings",
-    "PenaltyHeuristicSettings",
+    "PenaltyHeuristic_Settings",
     "SHGO_Settings",
     "SLSQP_Settings",
     "SciPyMILP_Settings",

@@ -106,8 +106,6 @@ class OTDistribution_Settings(  # noqa: N801
 ):
     """The settings of an OpenTURNS-based distribution."""
 
-    _TARGET_CLASS_NAME = "OTDistribution"
-
     interfaced_distribution: str = Field(
         default="Uniform", description="The name of the probability distribution."
     )

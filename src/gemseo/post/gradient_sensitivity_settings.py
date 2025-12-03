@@ -16,17 +16,18 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NegativeInt
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "GradientSensitivity"
-
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     iteration: NegativeInt | PositiveInt | None = Field(
         default=None,
         description="The iteration to plot the sensitivities. "
@@ -52,6 +53,3 @@ class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
         "[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] "
         "with a gradient-based algorithm.",
     )
-
-
-update_field(GradientSensitivity_Settings, "fig_size", default=(10.0, 10.0))

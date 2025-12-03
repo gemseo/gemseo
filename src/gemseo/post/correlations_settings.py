@@ -17,16 +17,17 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class Correlations_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "Correlations"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (15.0, 10.0)}
     n_plots_x: PositiveInt = Field(
         default=5,
         description="The number of horizontal plots.",
@@ -47,6 +48,3 @@ class Correlations_Settings(BasePostSettings):  # noqa: D101, N801
         description="The names of the functions to be considered. "
         "If empty, all the functions are considered.",
     )
-
-
-update_field(Correlations_Settings, "fig_size", default=(15.0, 10.0))

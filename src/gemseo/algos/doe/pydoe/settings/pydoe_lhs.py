@@ -40,8 +40,6 @@ class Criterion(StrEnum):
 class PYDOE_LHS_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the LHS DOE from the pyDOE library."""
 
-    _TARGET_CLASS_NAME = "PYDOE_LHS"
-
     criterion: Criterion | None = Field(
         default=None,
         description="""The criterion to use when sampling the points.

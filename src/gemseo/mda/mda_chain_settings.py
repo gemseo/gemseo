@@ -38,8 +38,6 @@ if TYPE_CHECKING:
 class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
     """The settings for [MDAChain][gemseo.mda.mda_chain.MDAChain]."""
 
-    _TARGET_CLASS_NAME = "MDAChain"
-
     chain_linearize: bool = Field(
         default=False,
         description="""Whether to linearize the chain of execution.

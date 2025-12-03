@@ -17,15 +17,16 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import ClassVar
 
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.utils.pydantic import update_field
+from gemseo.typing import StrKeyMapping
 
 
 class BasicHistory_Settings(BasePostSettings):  # noqa: D101, N801
-    _TARGET_CLASS_NAME = "BasicHistory"
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
 
     variable_names: Sequence[str] = Field(
         ...,
@@ -36,6 +37,3 @@ class BasicHistory_Settings(BasePostSettings):  # noqa: D101, N801
         default=False,
         description="Whether to normalize the data.",
     )
-
-
-update_field(BasicHistory_Settings, "fig_size", default=(11.0, 6.0))

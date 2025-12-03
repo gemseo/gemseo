@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from numpy import ndarray  # noqa: TC002
 from numpy.random import RandomState  # noqa: TC002
 from pydantic import Field
@@ -46,8 +44,6 @@ class Solver(StrEnum):
 
 class Ridge_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn ridge algorithm."""
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "Ridge"
 
     alpha: NonNegativeFloat | ndarray = Field(
         default=1.0,

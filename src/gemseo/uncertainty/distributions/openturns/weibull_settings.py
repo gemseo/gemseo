@@ -32,8 +32,6 @@ class OTWeibullDistribution_Settings(  # noqa: N801
 ):
     """The settings of an OpenTURNS-based uniform distribution."""
 
-    _TARGET_CLASS_NAME = "OTWeibullDistribution"
-
     location: float = Field(
         default=0.0,
         description=(r"The location parameter $\gamma$ of the Weibull distribution."),

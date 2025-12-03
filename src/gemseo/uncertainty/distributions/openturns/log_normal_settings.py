@@ -33,5 +33,3 @@ class OTLogNormalDistribution_Settings(  # noqa: N801
     BaseLogNormalDistribution_Settings, _OTDistribution_Settings_Mixin
 ):
     """The settings of an OpenTURNS-based log-normal distribution."""
-
-    _TARGET_CLASS_NAME = "OTLogNormalDistribution"

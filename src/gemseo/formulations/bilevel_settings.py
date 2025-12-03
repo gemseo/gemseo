@@ -31,8 +31,6 @@ if TYPE_CHECKING:
 class BiLevel_Settings(MDF_Settings):  # noqa: N801
     """Settings of the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""
 
-    _TARGET_CLASS_NAME = "BiLevel"
-
     parallel_scenarios: bool = Field(
         default=False, description="Whether to run the sub-scenarios in parallel."
     )

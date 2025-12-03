@@ -16,28 +16,20 @@
 
 from __future__ import annotations
 
-from functools import partial
 from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.utils.pydantic import copy_field
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-copy_field_opt = partial(copy_field, model=BaseMDASettings)
-
-
 class BiLevel_BCD_Settings(BiLevel_Settings):  # noqa: N801
     """Settings of the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""
-
-    _TARGET_CLASS_NAME = "BiLevelBCD"
 
     bcd_mda_settings: MDAGaussSeidel_Settings = Field(
         default=MDAGaussSeidel_Settings(warm_start=True),

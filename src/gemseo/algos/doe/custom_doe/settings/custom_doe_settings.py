@@ -41,8 +41,6 @@ SamplesType = (
 class CustomDOE_Settings(BaseDOESettings):  # noqa: N801
     """The settings for the `CustomDOE`."""
 
-    _TARGET_CLASS_NAME = "CustomDOE"
-
     doe_file: str | Path = Field(
         default="",
         description="""The path to the file containing the input samples.

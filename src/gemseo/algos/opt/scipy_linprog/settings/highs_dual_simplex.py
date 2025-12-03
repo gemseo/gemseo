@@ -29,8 +29,6 @@ from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import 
 class DUAL_SIMPLEX_Settings(BaseSciPyLinProgSettings):  # noqa: N801
     """The HiGHS dual simplex method setting."""
 
-    _TARGET_CLASS_NAME = "DUAL_SIMPLEX"
-
     dual_feasibility_tolerance: NonNegativeFloat = Field(
         default=1e-7,
         description="""The dual feasability tolerance.""",

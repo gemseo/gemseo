@@ -32,8 +32,6 @@ from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
 class TNC_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy TNC algorithm."""
 
-    _TARGET_CLASS_NAME = "TNC"
-
     offset: float | None = Field(
         default=None,
         description="""The value to subtract from each variable.

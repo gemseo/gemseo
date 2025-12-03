@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 from importlib.metadata import version
-from typing import ClassVar
 
 from packaging.version import parse
 from pydantic import Field
@@ -32,8 +31,6 @@ from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings imp
 
 class LinearRegression_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
     """Settings for the scikit-learn linear regression algorithm."""
-
-    _TARGET_CLASS_NAME: ClassVar[str] = "LinearRegression"
 
     copy_X: bool = Field(  # noqa: N815
         default=True,

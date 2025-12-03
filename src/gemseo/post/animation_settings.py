@@ -19,7 +19,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
@@ -30,11 +29,6 @@ from gemseo.post.base_post_settings import BasePostSettings
 
 
 class Animation_Settings(BasePostSettings):  # noqa: D101, N801
-    # This is required to supporting the field post_processor.
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    _TARGET_CLASS_NAME = "Animation"
-
     frame_rate: PositiveInt = Field(
         default=1,
         description="The number of iterations per time step.",

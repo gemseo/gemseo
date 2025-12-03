@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from pydantic import Field
 from pydantic import model_validator
@@ -29,7 +30,6 @@ from gemseo.algos.linear_solvers.base_linear_solver_settings import (
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
-from gemseo.utils.pydantic import copy_field
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -40,13 +40,7 @@ LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algori
 class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson]."""  # noqa: E501
 
-    _TARGET_CLASS_NAME = "MDANewtonRaphson"
-
-    execute_before_linearizing: bool = copy_field(
-        "execute_before_linearizing",
-        BaseParallelMDASettings,
-        default=False,
-    )
+    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"execute_before_linearizing": False}
 
     newton_linear_solver_name: LinearSolver = Field(
         default=LinearSolver.DEFAULT,

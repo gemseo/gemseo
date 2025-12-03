@@ -24,7 +24,7 @@ from gemseo.uncertainty.distributions.base_settings.triangular_settings import (
 
 
 class SpecificTriangularDistribution_Settings(BaseTriangularDistribution_Settings):  # noqa: N801
-    _TARGET_CLASS_NAME = "SpecificTriangularDistribution"
+    pass
 
 
 @pytest.mark.parametrize(
