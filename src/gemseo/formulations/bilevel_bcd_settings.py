@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class BiLevel_BCD_Settings(BiLevel_Settings):  # noqa: N801
+class BiLevelBCD_Settings(BiLevel_Settings):  # noqa: N801
     """Settings of the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""
 
     bcd_mda_settings: MDAGaussSeidel_Settings = Field(
@@ -42,3 +42,7 @@ class BiLevel_BCD_Settings(BiLevel_Settings):  # noqa: N801
         if not self.bcd_mda_settings.warm_start:
             self.bcd_mda_settings.warm_start = True
         return self
+
+
+# TODO: API: remove
+BiLevel_BCD_Settings = BiLevelBCD_Settings
