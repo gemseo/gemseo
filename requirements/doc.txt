@@ -159,7 +159,7 @@ mkdocstrings==1.0.0
     # via
     #   gemseo (pyproject.toml:doc)
     #   mkdocstrings-python
-mkdocstrings-python==2.0.0
+mkdocstrings-python==2.0.1
     # via mkdocstrings
 mpmath==1.3.0
     # via sympy
