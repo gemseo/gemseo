@@ -17,14 +17,14 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.base_settings.triangular_settings import (
-    BaseTriangularDistribution_Settings,
+    BaseTriangularDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistribution_Settings_Mixin,
+    _OTDistributionSettingsMixin,
 )
 
 
 class OTTriangularDistribution_Settings(  # noqa: N801
-    BaseTriangularDistribution_Settings, _OTDistribution_Settings_Mixin
+    BaseTriangularDistributionSettings, _OTDistributionSettingsMixin
 ):
     """The settings of an OpenTURNS-based triangular distribution."""

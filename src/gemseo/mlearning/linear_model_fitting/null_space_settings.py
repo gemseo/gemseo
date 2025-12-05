@@ -18,9 +18,9 @@
 from __future__ import annotations
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 
 
-class NullSpace_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
+class NullSpace_Settings(BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the null space algorithm."""

@@ -30,7 +30,7 @@ from numpy import vstack
 
 from gemseo import READ_ONLY_EMPTY_DICT
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 FitterType = TypeVar("FitterType", bound=Any)
-SettingsType = TypeVar("SettingsType", bound=BaseLinearModelFitter_Settings)
+SettingsType = TypeVar("SettingsType", bound=BaseLinearModelFitterSettings)
 
 
 class BaseLinearModelFitter(
@@ -51,7 +51,7 @@ class BaseLinearModelFitter(
     """Base class for linear model fitting algorithms."""
 
     # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[BaseLinearModelFitter_Settings]]
+    Settings: ClassVar[type[BaseLinearModelFitterSettings]]
     """The class for defining the settings of the linear model fitting algorithm."""
 
     _fitter: FitterType
@@ -81,7 +81,7 @@ class BaseLinearModelFitter(
         fitter_kwargs = {
             key: value
             for key, value in settings.model_dump().items()
-            if key not in BaseLinearModelFitter_Settings.model_fields
+            if key not in BaseLinearModelFitterSettings.model_fields
         }
         fitter_kwargs.update(self._PRIORITARY_FITTER_KWARGS)
         self._fitter = self._FITTER_CLASS(**fitter_kwargs)

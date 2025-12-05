@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 _INTERFACED_DISTRIBUTION: Final[str] = "Uniform"
@@ -54,7 +54,7 @@ _UPPER_BOUND: Final[None] = None
 """The default value of upper_bound."""
 
 
-class _OTDistribution_Settings_Mixin:  # noqa: N801
+class _OTDistributionSettingsMixin:  # noqa: N801
     """A mixin for the settings of an OpenTURNS-based distribution."""
 
     transformation: str = Field(
@@ -102,7 +102,7 @@ If `None`, no upper truncation.""",
 
 
 class OTDistribution_Settings(  # noqa: N801
-    BaseDistribution_Settings, _OTDistribution_Settings_Mixin
+    BaseDistributionSettings, _OTDistributionSettingsMixin
 ):
     """The settings of an OpenTURNS-based distribution."""
 

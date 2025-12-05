@@ -26,11 +26,11 @@ from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 
 
-class LARSCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
+class LARSCV_Settings(BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the scikit-learn least angle regression (LARS) algorithm with build-in cross-validation."""  # noqa: E501
 
     copy_X: bool = Field(  # noqa: N815

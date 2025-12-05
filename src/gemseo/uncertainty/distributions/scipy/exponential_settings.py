@@ -17,9 +17,9 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.base_settings.exponential_settings import (
-    BaseExponentialDistribution_Settings,
+    BaseExponentialDistributionSettings,
 )
 
 
-class SPExponentialDistribution_Settings(BaseExponentialDistribution_Settings):  # noqa: N801
+class SPExponentialDistribution_Settings(BaseExponentialDistributionSettings):  # noqa: N801
     """The settings of a SciPy-based exponential distribution."""

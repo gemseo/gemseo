@@ -19,16 +19,16 @@ import re
 import pytest
 
 from gemseo.uncertainty.distributions.base_settings.beta_settings import (
-    BaseBetaDistribution_Settings,
+    BaseBetaDistributionSettings,
 )
 
 
-class SpecificBetaDistribution_Settings(BaseBetaDistribution_Settings):  # noqa: N801
+class SpecificBetaDistribution_Settings(BaseBetaDistributionSettings):  # noqa: N801
     pass
 
 
 def test_validator():
-    """Test BaseBetaDistribution_Settings.__validate."""
+    """Test BaseBetaDistributionSettings.__validate."""
     with pytest.raises(
         ValueError,
         match=re.escape(

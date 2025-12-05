@@ -22,7 +22,7 @@ from pydantic import Field
 from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseLinearModelFitter_Settings(BaseSettings):  # noqa: N801
+class BaseLinearModelFitterSettings(BaseSettings):  # noqa: N801
     """Base settings for linear model fitting algorithms."""
 
     fit_intercept: bool = Field(
@@ -34,3 +34,7 @@ Otherwise, it is assumed to be zero.
 This option is ignored in presence of extra data, e.g., Jacobian observations;
 the intercept $b$ is assumed to be zero.""",
     )
+
+
+# TODO: API: remove
+BaseLinearModelFitter_Settings = BaseLinearModelFitterSettings

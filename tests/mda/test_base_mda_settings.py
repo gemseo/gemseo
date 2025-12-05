@@ -21,7 +21,7 @@ from gemseo.mda.base_mda_settings import BaseMDASettings
 
 
 def test_base_mda_settings():
-    """Verify that BaseMDA_Settings can handle linear solver settings as a mapping."""
+    """Verify that BaseMDASettings can handle linear solver settings as a mapping."""
     store_residuals = not BaseLinearSolverSettings().store_residuals
     settings = BaseMDASettings(
         linear_solver_settings={"store_residuals": store_residuals}

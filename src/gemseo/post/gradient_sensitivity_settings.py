@@ -27,7 +27,7 @@ from gemseo.typing import StrKeyMapping
 
 
 class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     iteration: NegativeInt | PositiveInt | None = Field(
         default=None,
         description="The iteration to plot the sensitivities. "

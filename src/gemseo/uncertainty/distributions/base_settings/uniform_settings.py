@@ -23,7 +23,7 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 if TYPE_CHECKING:
@@ -37,7 +37,7 @@ _MINIMUM: Final[float] = 0.0
 """The default value of minimum."""
 
 
-class BaseUniformDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseUniformDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of a uniform distribution."""
 
     minimum: float = Field(
@@ -60,3 +60,7 @@ class BaseUniformDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
             raise ValueError(msg)
 
         return self
+
+
+# TODO: API: remove
+BaseUniformDistribution_Settings = BaseUniformDistributionSettings

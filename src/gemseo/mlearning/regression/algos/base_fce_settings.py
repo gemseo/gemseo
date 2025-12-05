@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class BaseFCERegressor_Settings(BaseRegressorSettings):  # noqa: N801
+class BaseFCERegressorSettings(BaseRegressorSettings):  # noqa: N801
     """Base settings for functional chaos expansion (FCE) models."""
 
     degree: PositiveInt = Field(
@@ -71,3 +71,7 @@ The options `use_special_jacobian_data` and `learn_jacobian_data`
             raise ValueError(msg)
 
         return self
+
+
+# TODO: API: remove
+BaseFCERegressor_Settings = BaseFCERegressorSettings

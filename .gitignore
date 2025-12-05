@@ -1,3 +1,4 @@
+/.cache
 /.tox
 /.pytest_cache/
 /src/gemseo.egg-info

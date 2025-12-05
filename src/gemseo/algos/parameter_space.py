@@ -101,7 +101,7 @@ from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
@@ -197,7 +197,7 @@ class ParameterSpace(DesignSpace):
     def add_random_vector(
         self,
         name: str,
-        distribution: str | Iterable[BaseDistribution_Settings],
+        distribution: str | Iterable[BaseDistributionSettings],
         size: int = 0,
         interfaced_distribution: str = "",
         interfaced_distribution_parameters: tuple[list[Any]]
@@ -495,7 +495,7 @@ class ParameterSpace(DesignSpace):
     def add_random_variable(
         self,
         name: str,
-        distribution: str | BaseDistribution_Settings,
+        distribution: str | BaseDistributionSettings,
         size: int = 1,
         interfaced_distribution: str = "",
         interfaced_distribution_parameters: tuple[Any] | StrKeyMapping = (),
@@ -564,7 +564,7 @@ class ParameterSpace(DesignSpace):
             ...     "v", SPUniformDistribution_Settings(maximum=2.0), size=2
             ... )
         """
-        if isinstance(distribution, BaseDistribution_Settings):
+        if isinstance(distribution, BaseDistributionSettings):
             kwargs = {}
             distribution = (distribution,)
         else:

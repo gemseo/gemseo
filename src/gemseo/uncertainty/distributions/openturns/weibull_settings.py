@@ -20,15 +20,15 @@ from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
-    BaseWeibullDistribution_Settings,
+    BaseWeibullDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistribution_Settings_Mixin,
+    _OTDistributionSettingsMixin,
 )
 
 
 class OTWeibullDistribution_Settings(  # noqa: N801
-    BaseWeibullDistribution_Settings, _OTDistribution_Settings_Mixin
+    BaseWeibullDistributionSettings, _OTDistributionSettingsMixin
 ):
     """The settings of an OpenTURNS-based uniform distribution."""
 

@@ -27,7 +27,7 @@ from gemseo.typing import StrKeyMapping
 
 
 class Correlations_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (15.0, 10.0)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (15.0, 10.0)}
     n_plots_x: PositiveInt = Field(
         default=5,
         description="The number of horizontal plots.",

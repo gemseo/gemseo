@@ -26,6 +26,6 @@ from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
 class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for [MDAJacobi][gemseo.mda.jacobi.MDAJacobi]."""
 
-    _FIELD_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _INHERITED_FIELD_DEFAULTS: ClassVar[dict[str, Any]] = {
         "acceleration_method": AccelerationMethod.ALTERNATE_2_DELTA,
     }

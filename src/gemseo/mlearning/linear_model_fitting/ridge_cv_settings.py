@@ -24,7 +24,7 @@ from pydantic import NonNegativeFloat
 from strenum import StrEnum
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 
 
@@ -36,7 +36,7 @@ class GCVMode(StrEnum):
     EIGEN = "eigen"
 
 
-class RidgeCV_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
+class RidgeCV_Settings(BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the scikit-learn ridge algorithm with build-in cross validation."""
 
     alphas: tuple[NonNegativeFloat, ...] = Field(

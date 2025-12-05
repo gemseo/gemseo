@@ -44,7 +44,7 @@ from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.settings.base_settings import BaseSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 if TYPE_CHECKING:
@@ -213,7 +213,7 @@ def test_mda_settings(module_and_cls):
 @pytest.mark.parametrize(
     "module_and_cls",
     get_setting_classes(
-        BaseDistribution_Settings,
+        BaseDistributionSettings,
         "gemseo.uncertainty.distributions",
         probability_distributions,
     ),

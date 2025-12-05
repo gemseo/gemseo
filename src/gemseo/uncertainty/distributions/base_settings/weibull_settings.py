@@ -22,7 +22,7 @@ from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 _LOCATION: Final[float] = 0.0
@@ -38,7 +38,7 @@ _USE_WEIBULL_MIN: Final[bool] = True
 """The default value of use_weibull_min."""
 
 
-class BaseWeibullDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseWeibullDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of a uniform distribution."""
 
     location: float = Field(
@@ -64,3 +64,7 @@ the Weibull minimum extreme value distribution
 or the Weibull maximum extreme value distribution
 (the support of the random variable is $]-\infty[,\gamma]$).""",
     )
+
+
+# TODO: API: remove
+BaseWeibullDistribution_Settings = BaseWeibullDistributionSettings

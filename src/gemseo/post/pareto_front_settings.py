@@ -26,7 +26,7 @@ from gemseo.typing import StrKeyMapping
 
 
 class ParetoFront_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     show_non_feasible: bool = Field(
         default=True,
         description="Whether to show the non-feasible points in the plot.",

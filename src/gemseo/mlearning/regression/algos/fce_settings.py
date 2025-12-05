@@ -23,14 +23,12 @@ from pydantic import model_validator
 from strenum import StrEnum
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,  # noqa: TC001
+    BaseLinearModelFitterSettings,  # noqa: TC001
 )
 from gemseo.mlearning.linear_model_fitting.omp_settings import (
     OrthogonalMatchingPursuit_Settings,
 )
-from gemseo.mlearning.regression.algos.base_fce_settings import (
-    BaseFCERegressor_Settings,
-)
+from gemseo.mlearning.regression.algos.base_fce_settings import BaseFCERegressorSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -44,10 +42,10 @@ class OrthonormalFunctionBasis(StrEnum):
     HAAR = "Haar"
 
 
-class FCERegressor_Settings(BaseFCERegressor_Settings):  # noqa: N801
+class FCERegressor_Settings(BaseFCERegressorSettings):  # noqa: N801
     """The settings of the functional chaos expansion model."""
 
-    linear_model_fitter_settings: BaseLinearModelFitter_Settings | None = Field(
+    linear_model_fitter_settings: BaseLinearModelFitterSettings | None = Field(
         default=None,
         description="""The settings of the linear solver.
 If `None`, use the default

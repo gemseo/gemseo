@@ -20,7 +20,7 @@ For example,
 the Pydantic model
 [SPNormalDistribution_Settings][gemseo.uncertainty.distributions.scipy.normal_settings.SPNormalDistribution_Settings]
 deriving from
-[BaseNormalDistribution_Settings][gemseo.uncertainty.distributions.base_settings.normal_settings.BaseNormalDistribution_Settings]
+[BaseNormalDistributionSettings][gemseo.uncertainty.distributions.base_settings.normal_settings.BaseNormalDistributionSettings]
 can be used for defining a normal distribution based on SciPy
 (see
 [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]

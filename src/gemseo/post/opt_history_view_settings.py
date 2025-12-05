@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
     variable_names: Sequence[str] = Field(
         default=(),
         description="The names of the variables to display. "

@@ -26,7 +26,7 @@ from gemseo.typing import StrKeyMapping
 
 
 class SOM_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (12.0, 18.0)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (12.0, 18.0)}
     n_x: PositiveInt = Field(
         default=4,
         description="The number of grids in x.",

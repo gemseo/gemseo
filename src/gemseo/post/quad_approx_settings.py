@@ -26,7 +26,7 @@ from gemseo.typing import StrKeyMapping
 
 
 class QuadApprox_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (9.0, 6.0)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (9.0, 6.0)}
     function: str = Field(
         ...,
         description="The function name to build the quadratic approximation.",

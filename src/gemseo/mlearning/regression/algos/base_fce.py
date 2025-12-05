@@ -27,9 +27,7 @@ from numpy import swapaxes
 from numpy import vstack
 from scipy.linalg import solve
 
-from gemseo.mlearning.regression.algos.base_fce_settings import (
-    BaseFCERegressor_Settings,
-)
+from gemseo.mlearning.regression.algos.base_fce_settings import BaseFCERegressorSettings
 from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
 from gemseo.utils.pydantic import create_model
 
@@ -46,7 +44,7 @@ if TYPE_CHECKING:
 class BaseFCERegressor(BaseRegressor):
     """Base class for functional chaos expansion models."""
 
-    Settings: ClassVar[type[BaseFCERegressor_Settings]] = BaseFCERegressor_Settings
+    Settings: ClassVar[type[BaseFCERegressorSettings]] = BaseFCERegressorSettings
 
     _mean_jacobian_wrt_special_variables: RealArray | None
     """The gradient of the mean with respect to the special variables.
@@ -99,7 +97,7 @@ class BaseFCERegressor(BaseRegressor):
     def __init__(
         self,
         data: IODataset,
-        settings_model: BaseFCERegressor_Settings | None = None,
+        settings_model: BaseFCERegressorSettings | None = None,
         **settings: Any,
     ) -> None:
         """
