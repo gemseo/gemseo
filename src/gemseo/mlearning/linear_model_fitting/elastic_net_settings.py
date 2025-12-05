@@ -27,7 +27,7 @@ from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 from gemseo.settings.base_settings import BaseSettings
 
@@ -84,7 +84,7 @@ and continues until it is smaller than `tol`.""",
     )
 
 
-class ElasticNet_Settings(_ElasticNetMixin, BaseLinearModelFitter_Settings):  # noqa: N801
+class ElasticNet_Settings(_ElasticNetMixin, BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the scikit-learn elastic net algorithm."""
 
     alpha: NonNegativeFloat = Field(

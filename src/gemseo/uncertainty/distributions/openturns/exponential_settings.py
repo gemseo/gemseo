@@ -17,14 +17,14 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.base_settings.exponential_settings import (
-    BaseExponentialDistribution_Settings,
+    BaseExponentialDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistribution_Settings_Mixin,
+    _OTDistributionSettingsMixin,
 )
 
 
 class OTExponentialDistribution_Settings(  # noqa: N801
-    BaseExponentialDistribution_Settings, _OTDistribution_Settings_Mixin
+    BaseExponentialDistributionSettings, _OTDistributionSettingsMixin
 ):
     """The settings of an OpenTURNS-based exponential distribution."""

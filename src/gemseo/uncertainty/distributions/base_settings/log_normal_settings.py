@@ -22,7 +22,7 @@ from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 _MU: Final[float] = 1.0
@@ -38,7 +38,7 @@ _SET_LOG: Final[bool] = False
 """The default value of set_log."""
 
 
-class BaseLogNormalDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseLogNormalDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of a log-normal distribution."""
 
     mu: float = Field(
@@ -65,3 +65,7 @@ to the logarithm of the log-normal random variable.
 Otherwise,
 `mu` and `sigma` apply to the log-normal random variable directly.""",
     )
+
+
+# TODO: API: remove
+BaseLogNormalDistribution_Settings = BaseLogNormalDistributionSettings

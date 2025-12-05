@@ -31,9 +31,7 @@ from pydantic import model_validator
 
 from gemseo.algos.parameter_space import ParameterSpace  # noqa: TC001
 from gemseo.core.discipline.discipline import Discipline  # noqa: TC001
-from gemseo.mlearning.regression.algos.base_fce_settings import (
-    BaseFCERegressor_Settings,
-)
+from gemseo.mlearning.regression.algos.base_fce_settings import BaseFCERegressorSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -54,7 +52,7 @@ class CleaningOptions:
     """The threshold to select the efficient coefficients of the polynomial basis."""
 
 
-class PCERegressor_Settings(BaseFCERegressor_Settings):  # noqa: N801
+class PCERegressor_Settings(BaseFCERegressorSettings):  # noqa: N801
     """The settings of the polynomial chaos expansion model."""
 
     # TODO: API: remove in gemseo v7.

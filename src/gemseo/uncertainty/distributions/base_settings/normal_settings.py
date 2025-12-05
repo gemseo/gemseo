@@ -22,7 +22,7 @@ from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 _MU: Final[float] = 0.0
@@ -32,7 +32,7 @@ _SIGMA: Final[float] = 1.0
 """The default value of sigma."""
 
 
-class BaseNormalDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseNormalDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of a normal distribution."""
 
     mu: float = Field(
@@ -44,3 +44,7 @@ class BaseNormalDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
         default=_SIGMA,
         description="The standard deviation of the normal random variable.",
     )
+
+
+# TODO: API: remove
+BaseNormalDistribution_Settings = BaseNormalDistributionSettings

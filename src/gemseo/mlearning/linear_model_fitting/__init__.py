@@ -55,7 +55,7 @@ These linear model fitting algorithms derive
 from the base class
 [BaseLinearModelFitter][gemseo.mlearning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter]
 which is equipped with
-[BaseLinearModelFitter_Settings][gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings]
+[BaseLinearModelFitterSettings][gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitterSettings]
 and can be created from a
 [LinearModelFitterFactory][gemseo.mlearning.linear_model_fitting.factory.LinearModelFitterFactory].
 

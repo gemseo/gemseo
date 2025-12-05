@@ -27,7 +27,7 @@ from gemseo.typing import StrKeyMapping
 
 
 class TopologyView_Settings(BasePostSettings):  # noqa: D101, N801
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
     n_x: PositiveInt = Field(
         ...,
         description="The number of elements in the horizontal direction.",

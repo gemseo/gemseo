@@ -25,7 +25,7 @@ from pydantic import Field
 from gemseo import READ_ONLY_EMPTY_DICT
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 _INTERFACED_DISTRIBUTION: Final[str] = "uniform"
@@ -38,7 +38,7 @@ _STANDARD_PARAMETERS: Final[READ_ONLY_EMPTY_DICT] = READ_ONLY_EMPTY_DICT
 """The default value of standard_parameters."""
 
 
-class SPDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class SPDistribution_Settings(BaseDistributionSettings):  # noqa: N801
     """The settings of an OpenTURNS-based distribution."""
 
     interfaced_distribution: str = Field(

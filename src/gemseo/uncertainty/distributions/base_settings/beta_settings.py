@@ -24,7 +24,7 @@ from pydantic import PositiveFloat
 from pydantic import model_validator
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 if TYPE_CHECKING:
@@ -43,7 +43,7 @@ _MINIMUM: Final[float] = 0.0
 """The default value of minimum."""
 
 
-class BaseBetaDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseBetaDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of a Beta distribution."""
 
     alpha: PositiveFloat = Field(
@@ -76,3 +76,7 @@ class BaseBetaDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
             raise ValueError(msg)
 
         return self
+
+
+# TODO: API: remove
+BaseBetaDistribution_Settings = BaseBetaDistributionSettings

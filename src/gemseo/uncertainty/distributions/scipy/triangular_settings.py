@@ -17,9 +17,9 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.base_settings.triangular_settings import (
-    BaseTriangularDistribution_Settings,
+    BaseTriangularDistributionSettings,
 )
 
 
-class SPTriangularDistribution_Settings(BaseTriangularDistribution_Settings):  # noqa: N801
+class SPTriangularDistribution_Settings(BaseTriangularDistributionSettings):  # noqa: N801
     """The settings of a SciPy-based triangular distribution."""

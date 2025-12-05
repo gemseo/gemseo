@@ -17,14 +17,14 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.base_settings.uniform_settings import (
-    BaseUniformDistribution_Settings,
+    BaseUniformDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistribution_Settings_Mixin,
+    _OTDistributionSettingsMixin,
 )
 
 
 class OTUniformDistribution_Settings(  # noqa: N801
-    BaseUniformDistribution_Settings, _OTDistribution_Settings_Mixin
+    BaseUniformDistributionSettings, _OTDistributionSettingsMixin
 ):
     """The settings of an OpenTURNS-based uniform distribution."""

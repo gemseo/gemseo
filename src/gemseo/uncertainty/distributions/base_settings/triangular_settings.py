@@ -23,7 +23,7 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ _MODE: Final[float] = 0.5
 """The default value of mode."""
 
 
-class BaseTriangularDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseTriangularDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of a triangular distribution."""
 
     minimum: float = Field(
@@ -68,3 +68,7 @@ class BaseTriangularDistribution_Settings(BaseDistribution_Settings):  # noqa: N
             raise ValueError(msg)
 
         return self
+
+
+# TODO: API: remove
+BaseTriangularDistribution_Settings = BaseTriangularDistributionSettings

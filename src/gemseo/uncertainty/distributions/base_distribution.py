@@ -97,7 +97,7 @@ if TYPE_CHECKING:
 
     from gemseo.typing import RealArray
     from gemseo.uncertainty.distributions.base_distribution_settings import (
-        BaseDistribution_Settings,
+        BaseDistributionSettings,
     )
 
 StandardParametersType = Mapping[str, str | int | float]
@@ -124,7 +124,7 @@ class BaseDistribution(
     """
 
     # TODO: API: rename to settings_class.
-    Settings: ClassVar[BaseDistribution_Settings]
+    Settings: ClassVar[BaseDistributionSettings]
     """The Pydantic model for the settings."""
 
     distribution: _DistributionT

@@ -21,12 +21,12 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 from gemseo.mlearning.linear_model_fitting.elastic_net_settings import _ElasticNetMixin
 
 
-class ElasticNetCV_Settings(_ElasticNetMixin, BaseLinearModelFitter_Settings):  # noqa: N801
+class ElasticNetCV_Settings(_ElasticNetMixin, BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the scikit-learn elastic net algorithm with built-in cross-validation."""  # noqa: E501
 
     alphas: tuple[NonNegativeFloat, ...] = Field(

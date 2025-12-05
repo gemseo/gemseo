@@ -22,7 +22,7 @@ from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 
 _LOC: Final[float] = 0.0
@@ -32,7 +32,7 @@ _RATE: Final[float] = 1.0
 """The default value of rate."""
 
 
-class BaseExponentialDistribution_Settings(BaseDistribution_Settings):  # noqa: N801
+class BaseExponentialDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base settings of an exponential distribution."""
 
     rate: PositiveFloat = Field(
@@ -44,3 +44,7 @@ class BaseExponentialDistribution_Settings(BaseDistribution_Settings):  # noqa: 
         default=_LOC,
         description="The location of the exponential random variable.",
     )
+
+
+# TODO: API: remove
+BaseExponentialDistribution_Settings = BaseExponentialDistributionSettings

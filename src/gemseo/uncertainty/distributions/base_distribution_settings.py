@@ -19,5 +19,9 @@ from __future__ import annotations
 from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseDistribution_Settings(BaseSettings):  # noqa: N801
+class BaseDistributionSettings(BaseSettings):  # noqa: N801
     """The base class for the settings of a probability distribution."""
+
+
+# TODO: API: remove
+BaseDistribution_Settings = BaseDistributionSettings

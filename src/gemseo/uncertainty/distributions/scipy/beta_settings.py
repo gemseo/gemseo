@@ -17,9 +17,9 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.distributions.base_settings.beta_settings import (
-    BaseBetaDistribution_Settings,
+    BaseBetaDistributionSettings,
 )
 
 
-class SPBetaDistribution_Settings(BaseBetaDistribution_Settings):  # noqa: N801
+class SPBetaDistribution_Settings(BaseBetaDistributionSettings):  # noqa: N801
     """The settings of a SciPy-based Beta distribution."""

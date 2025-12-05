@@ -33,11 +33,11 @@ class BaseSettings(
 ):
     """The base class for settings.
 
-    To change the default values of field defined in a base class,
-    set the `_FIELD_DEFAULTS` class attribute in the derived class,
+    To change the default values of field defined in base classes,
+    set the `_INHERITED_FIELD_DEFAULTS` class attribute in the derived class,
     this attribute maps the field names to the new default field values.
     Changing the field type annotation can be done in a similar way
-    with the `_FIELD_TYPES` class attribute.
+    with the `_INHERITED_FIELD_TYPES` class attribute.
     """
 
     _TARGET_CLASS_NAME: ClassVar[str] = ""
@@ -49,11 +49,11 @@ class BaseSettings(
     of the target class that is bound to the settings class.
     """
 
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {}
-    """The mapping from field names to new default values."""
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {}
+    """The mapping from inherited field names to new default values."""
 
-    _FIELD_TYPES: ClassVar[StrKeyMapping] = {}
-    """The mapping from field names to new type annotations."""
+    _INHERITED_FIELD_TYPES: ClassVar[StrKeyMapping] = {}
+    """The mapping from inherited field names to new type annotations."""
 
     __SETTINGS_SUFFIX: ClassVar[str] = "_Settings"
     """The suffix used to determine the target class name."""
@@ -61,11 +61,18 @@ class BaseSettings(
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
         super().__pydantic_init_subclass__(**kwargs)
-        if cls.__name__.endswith(cls.__SETTINGS_SUFFIX):
+        if cls.__name__.endswith(cls.__SETTINGS_SUFFIX) and (
+            # This class directly inherits from BaseSettings
+            # and has no target class name.
+            not cls._TARGET_CLASS_NAME
+            # Or inherits from a class that already has a target class name that
+            # should be overriden.
+            or len(cls.__mro__) > 2
+        ):
             cls._TARGET_CLASS_NAME = cls.__name__.removesuffix(cls.__SETTINGS_SUFFIX)
         fields = cls.__pydantic_fields__
-        for name, type_ in cls._FIELD_TYPES.items():
+        for name, type_ in cls._INHERITED_FIELD_TYPES.items():
             fields[name].annotation = type_
-        for name, default in cls._FIELD_DEFAULTS.items():
+        for name, default in cls._INHERITED_FIELD_DEFAULTS.items():
             fields[name].default = default
         cls.model_rebuild(force=True)

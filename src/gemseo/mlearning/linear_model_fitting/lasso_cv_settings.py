@@ -21,12 +21,12 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 from gemseo.mlearning.linear_model_fitting.lasso_settings import _LassoSettingsMixin
 
 
-class LassoCV_Settings(_LassoSettingsMixin, BaseLinearModelFitter_Settings):  # noqa: N801
+class LassoCV_Settings(_LassoSettingsMixin, BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the scikit-learn lasso algorithm with built-in cross-validation."""
 
     alphas: tuple[NonNegativeFloat, ...] = Field(

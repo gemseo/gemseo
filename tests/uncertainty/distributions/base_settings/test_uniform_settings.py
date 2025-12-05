@@ -19,11 +19,11 @@ import re
 import pytest
 
 from gemseo.uncertainty.distributions.base_settings.uniform_settings import (
-    BaseUniformDistribution_Settings,
+    BaseUniformDistributionSettings,
 )
 
 
-class SpecificUniformDistribution_Settings(BaseUniformDistribution_Settings):  # noqa: N801
+class SpecificUniformDistribution_Settings(BaseUniformDistributionSettings):  # noqa: N801
     pass
 
 

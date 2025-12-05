@@ -31,11 +31,11 @@ from spgl1.spgl1 import _norm_l1_primal
 from spgl1.spgl1 import _norm_l1_project
 
 from gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings import (
-    BaseLinearModelFitter_Settings,
+    BaseLinearModelFitterSettings,
 )
 
 
-class SPGL1_Settings(BaseLinearModelFitter_Settings):  # noqa: N801
+class SPGL1_Settings(BaseLinearModelFitterSettings):  # noqa: N801
     """Settings for the SPGL1 (Spectral Projected Gradient for L1 minimization) algorithm."""  # noqa: E501
 
     tau: NonNegativeFloat = Field(

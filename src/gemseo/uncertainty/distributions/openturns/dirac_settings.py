@@ -19,15 +19,15 @@ from __future__ import annotations
 from pydantic import Field
 
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistribution_Settings,
+    BaseDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistribution_Settings_Mixin,
+    _OTDistributionSettingsMixin,
 )
 
 
 class OTDiracDistribution_Settings(  # noqa: N801
-    BaseDistribution_Settings, _OTDistribution_Settings_Mixin
+    BaseDistributionSettings, _OTDistributionSettingsMixin
 ):
     """The settings of an OpenTURNS-based Dirac distribution."""
 

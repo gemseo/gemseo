@@ -19,11 +19,11 @@ import re
 import pytest
 
 from gemseo.uncertainty.distributions.base_settings.triangular_settings import (
-    BaseTriangularDistribution_Settings,
+    BaseTriangularDistributionSettings,
 )
 
 
-class SpecificTriangularDistribution_Settings(BaseTriangularDistribution_Settings):  # noqa: N801
+class SpecificTriangularDistribution_Settings(BaseTriangularDistributionSettings):  # noqa: N801
     pass
 
 
@@ -31,7 +31,7 @@ class SpecificTriangularDistribution_Settings(BaseTriangularDistribution_Setting
     ("minimum", "mode", "maximum"), [(1, 3, 2), (2, 1, 3), (3, 2, 1)]
 )
 def test_validator(minimum, mode, maximum):
-    """Test BaseTriangularDistribution_Settings.__validate."""
+    """Test BaseTriangularDistributionSettings.__validate."""
     with pytest.raises(
         ValueError,
         match=re.escape(

@@ -40,7 +40,9 @@ LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algori
 class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
     """The settings for [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson]."""  # noqa: E501
 
-    _FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"execute_before_linearizing": False}
+    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+        "execute_before_linearizing": False
+    }
 
     newton_linear_solver_name: LinearSolver = Field(
         default=LinearSolver.DEFAULT,
