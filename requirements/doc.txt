@@ -218,7 +218,7 @@ pillow==11.3.0
     # via
     #   gemseo (pyproject.toml)
     #   matplotlib
-platformdirs==4.5.0
+platformdirs==4.5.1
     # via
     #   black
     #   mkdocs-get-deps
@@ -357,7 +357,7 @@ typing-inspection==0.4.2
     #   pydantic-settings
 tzdata==2025.2
     # via pandas
-urllib3==2.5.0
+urllib3==2.6.0
     # via
     #   requests
     #   responses
