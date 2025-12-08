@@ -25,7 +25,7 @@ from gemseo.utils.constants import _LOGGING_LEVEL
 from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 
 
-class WrapStdOut:
+class _WrapStdOut:
     """Dynamically wrap to sys.stdout.
 
     This makes packages that monkey-patch sys.stdout (e.g.doctest,
@@ -33,12 +33,8 @@ class WrapStdOut:
     """
 
     def __getattr__(self, name):  # noqa: D105
-        # Even more ridiculous than this class, this must be sys.stdout (not
-        # just stdout) in order for this to work (tested on OSX and Linux)
-        if hasattr(sys.stdout, name):
-            return getattr(sys.stdout, name)
-        msg = f"'file' object has not attribute '{name}'"
-        raise AttributeError(msg)
+        # Dispatch to the original stdout.
+        return getattr(sys.stdout, name)
 
 
 def reset_logging(gallery_conf, fname):
@@ -49,5 +45,5 @@ def reset_logging(gallery_conf, fname):
         _LOGGING_DATE_FORMAT,
         _LOGGING_FILE_PATH,
         _LOGGING_FILE_MODE,
-        WrapStdOut(),
+        _WrapStdOut(),
     )
