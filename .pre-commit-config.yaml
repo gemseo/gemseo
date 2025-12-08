@@ -10,7 +10,7 @@ repos:
       - id: check-yaml
         # !reference is specific to gitlab
         # !! prefix is specific to mkdocs
-        exclude: \.gitlab-ci.yml|mkdocs.yml|mkdocs_fast.yml
+        exclude: \.gitlab-ci.yml|mkdocs.yml|mkdocs-fast.yml
       - id: check-added-large-files
       - id: check-json
       - id: pretty-format-json
