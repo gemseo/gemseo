@@ -16,6 +16,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from mkdocs_gallery.gen_gallery import DEFAULT_GALLERY_CONF
+
 file_dir_path = Path(__file__).parent
 example_dir_name = "examples"
 
@@ -29,8 +31,28 @@ examples_subdirs = [
     and (examples_dir / subdir / "README.md").is_file()
 ]
 
+
+def _patch_gallery():
+    # To get the "reset_modules" to work,
+    # we have to hard code _reset_dict similarly to what
+    # is already built in it.
+    import sys
+
+    from mkdocs_gallery.scrapers import _reset_dict
+
+    sys.path.append(str(file_dir_path / "_scripts"))
+    import gallery_logging
+
+    _reset_dict["gallery_logging.reset_logging"] = gallery_logging.reset_logging
+
+
+_patch_gallery()
+
+
 conf = {
     f"{example_dir_name}_dirs": [examples_dir / subdir for subdir in examples_subdirs],
     "gallery_dirs": [gallery_dir / subdir for subdir in examples_subdirs],
-    # "reset_modules": ("logging.reset_logging",),
+    # As a precaution, keep the already defined reset modules.
+    "reset_modules": DEFAULT_GALLERY_CONF["reset_modules"]
+    + ("gallery_logging.reset_logging",),
 }
