@@ -90,11 +90,18 @@ class MDASequential(BaseMDA):
             if mda.normed_residual < self.settings.tolerance:
                 break
 
+    # TODO: why is it this method not in the base class API?
+    # (or why not using BaseMDASolver as base class?)
     def set_bounds(  # noqa: D102
         self,
         variable_names_to_bounds: Mapping[
             str, tuple[RealArray | None, RealArray | None]
         ],
     ) -> None:
+        """Set the bounds for the resolved variables.
+
+        Args:
+            variable_names_to_bounds: The mapping from variable names to bounds.
+        """
         for inner_mda in self.mda_sequence:
             inner_mda.set_bounds(variable_names_to_bounds)

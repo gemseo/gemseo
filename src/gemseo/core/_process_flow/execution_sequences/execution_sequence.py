@@ -104,9 +104,9 @@ class ExecutionSequence(BaseExecutionSequence):
     def force_statuses(self, status: ExecutionStatus) -> None:
         """Force the self status and the status of subsequences.
 
-        This is done without notifying the
-        parent (as the force_status is called by a parent), but notify the observer is
-        status changed.
+        The change of status is not notified to the parent
+        (as the `force_statuses` is called by a parent),
+        but to the observer.
 
         Args:
             status: The new status.

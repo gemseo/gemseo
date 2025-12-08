@@ -70,12 +70,28 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
         for sequence in self.sequences:
             sequence.disable()
 
+    # TODO: factorize with ExecutionSequence (mixin?)
     def force_statuses(self, status: ExecutionStatus) -> None:
+        """Set the self status and the status of subsequences.
+
+        The change of status is not notified to the parent
+        (as the `force_statuses` is called by a parent),
+        but to the observer.
+
+        Args:
+            status: The new status.
+        """
         self.status = status
         for sequence in self.sequences:
             sequence.force_statuses(status)
 
+    # TODO: factorize with ExecutionSequence (mixin?)
     def get_statuses(self) -> dict[str, ExecutionStatus.Status]:
+        """Return the statuses mapping atom uuid to status.
+
+        Returns:
+            The statuses mapping atom uuid to status.
+        """
         uuids_to_statuses = {}
         for sequence in self.sequences:
             uuids_to_statuses.update(sequence.get_statuses())
