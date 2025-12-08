@@ -58,7 +58,7 @@ griffe==1.15.0
     #   griffe-fieldz
     #   griffe-inherited-docstrings
     #   mkdocstrings-python
-griffe-fieldz==0.3.0
+griffe-fieldz==0.4.0
     # via gemseo (pyproject.toml:doc)
 griffe-inherited-docstrings==1.1.2
     # via gemseo (pyproject.toml:doc)
@@ -252,7 +252,7 @@ pygments==2.19.2
     #   pytest
 pygments-ansi-color==0.3.0
     # via markdown-exec
-pymdown-extensions==10.17.2
+pymdown-extensions==10.18
     # via
     #   markdown-exec
     #   mkdocs-material
