@@ -1,5 +1,7 @@
 INHERIT: mkdocs-fast.yml
 
+strict: true
+
 plugins:
   mkdocstrings:
     handlers:
