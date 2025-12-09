@@ -63,6 +63,7 @@ nav:
   - Upgrading: software/upgrading.md
   - Plugins: plugins.md
   - About us: aboutus.md
+  - Publications: publications.md
   - Contributing: contributing.md
   - Dependencies: software/dependencies.md
   - Licenses: software/licenses.md
@@ -154,7 +155,6 @@ nav:
   - Design of experiments (DOE): generated/examples/doe
   - Design space: generated/examples/design_space
   - Disciplines: generated/examples/disciplines
-  - Exterior penalty: generated/examples/exterior_penalty
   - MDO formulation: generated/examples/formulations
   - Multi-disciplinary analysis (MDA): generated/examples/mda
   - MDO problems: generated/examples/mdo
