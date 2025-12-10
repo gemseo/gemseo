@@ -19,24 +19,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
+from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (
+    Augmented_Lagrangian_Order_0_Settings,
+)
+
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 from gemseo.algos.opt.augmented_lagrangian.base_augmented_lagrangian import (
     BaseAugmentedLagrangian,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (  # noqa: E501
-    PenaltyHeuristic_Settings,
-)
 
-T = TypeVar("T", bound=PenaltyHeuristic_Settings)
+T = TypeVar("T", bound=Augmented_Lagrangian_Order_0_Settings)
 
 
-class AugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian[T]):
+class BaseAugmentedLagrangianPenaltyHeuristic(BaseAugmentedLagrangian[T]):
     """This class implements the penalty update scheme of Birgin and Martinez.
-
-    This class must be inherited
-    in order to implement the function `_update_lagrange_multipliers()`.
 
     !!! quote "References"
 

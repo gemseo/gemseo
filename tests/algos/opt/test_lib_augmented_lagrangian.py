@@ -22,11 +22,11 @@ from numpy import zeros
 
 from gemseo import execute_algo
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings import (  # noqa: E501
-    Augmented_Lagrangian_order_0_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (
+    Augmented_Lagrangian_Order_0_Settings,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings import (  # noqa: E501
-    Augmented_Lagrangian_order_1_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (
+    Augmented_Lagrangian_Order_1_Settings,
 )
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
@@ -49,7 +49,7 @@ def test_kkt_norm_correctly_stored(problem) -> None:
     }
     problem.reset()
     OptimizationLibraryFactory().execute(
-        problem, algo_name="Augmented_Lagrangian_order_1", **options
+        problem, algo_name="Augmented_Lagrangian_Order_1", **options
     )
     kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
@@ -66,12 +66,12 @@ parametrized_reformulate = pytest.mark.parametrize(
 parametrized_settings_model = pytest.mark.parametrize(
     "settings_model",
     [
-        Augmented_Lagrangian_order_0_Settings(
+        Augmented_Lagrangian_Order_0_Settings(
             max_iter=50,
             sub_algorithm_name="SLSQP",
             sub_algorithm_settings={"max_iter": 50},
         ),
-        Augmented_Lagrangian_order_1_Settings(
+        Augmented_Lagrangian_Order_1_Settings(
             max_iter=50,
             sub_algorithm_name="SLSQP",
             sub_algorithm_settings={"max_iter": 50},
@@ -193,7 +193,7 @@ def test_n_obj_func_calls(enable_function_statistics):
         "sub_algorithm_name": "L-BFGS-B",
     }
 
-    optimizer = OptimizationLibraryFactory().create("Augmented_Lagrangian_order_1")
+    optimizer = OptimizationLibraryFactory().create("Augmented_Lagrangian_Order_1")
     problem.reset()
     optimizer.execute(problem, **options)
     n_calls = optimizer.n_obj_func_calls  # Accessing as property, not as a method
@@ -234,7 +234,7 @@ def rosenbrock_opt_problem():
 @pytest.fixture
 def optimizer():
     # Create an optimizer instance
-    return OptimizationLibraryFactory().create("Augmented_Lagrangian_order_1")
+    return OptimizationLibraryFactory().create("Augmented_Lagrangian_Order_1")
 
 
 def test_solve_sub_problem_adds_constraints_with_rosenbrock(

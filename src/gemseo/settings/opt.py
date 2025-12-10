@@ -16,14 +16,17 @@
 
 from __future__ import annotations
 
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings import (  # noqa: E501 F401
+from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (  # noqa: E501 F401
+    Augmented_Lagrangian_Order_0_Settings,
+)
+from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (  # noqa: E501 F401
     Augmented_Lagrangian_order_0_Settings,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings import (  # noqa:  E501 F401
-    Augmented_Lagrangian_order_1_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (  # noqa:  E501 F401
+    Augmented_Lagrangian_Order_1_Settings,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (
-    PenaltyHeuristic_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (  # noqa:  E501 F401
+    Augmented_Lagrangian_order_1_Settings,
 )
 from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
@@ -68,6 +71,8 @@ from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
 from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
 
 __all__ = [
+    "Augmented_Lagrangian_Order_0_Settings",
+    "Augmented_Lagrangian_Order_1_Settings",
     "Augmented_Lagrangian_order_0_Settings",
     "Augmented_Lagrangian_order_1_Settings",
     "COBYQA_Settings",
@@ -85,7 +90,6 @@ __all__ = [
     "NLOPT_MMA_Settings",
     "NLOPT_NEWUOA_Settings",
     "NLOPT_SLSQP_Settings",
-    "PenaltyHeuristic_Settings",
     "SHGO_Settings",
     "SLSQP_Settings",
     "SciPyMILP_Settings",

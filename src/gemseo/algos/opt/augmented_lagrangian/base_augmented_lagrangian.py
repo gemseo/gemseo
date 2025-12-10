@@ -32,8 +32,8 @@ from numpy.ma import allequal
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
-from gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings import (  # noqa: E501
-    BaseAugmentedLagragianSettings,
+from gemseo.algos.opt.augmented_lagrangian.settings.base import (
+    BaseAugmentedLagrangianSettings,
 )
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=BaseAugmentedLagragianSettings)
+T = TypeVar("T", bound=BaseAugmentedLagrangianSettings)
 
 
 class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):

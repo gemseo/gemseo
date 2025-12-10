@@ -81,8 +81,8 @@ class ScalableDiscipline(Discipline):
     [
         "SLSQP",
         "NLOPT_SLSQP",
-        "Augmented_Lagrangian_order_0",
-        "Augmented_Lagrangian_order_1",
+        "Augmented_Lagrangian_Order_0",
+        "Augmented_Lagrangian_Order_1",
     ],
 )
 def test_resolution(algo, n, p, constraint_kind) -> None:

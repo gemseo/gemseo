@@ -30,7 +30,7 @@ from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.typing import StrKeyMapping  # noqa:TC001
 
 
-class BaseAugmentedLagragianSettings(BaseOptimizerSettings):
+class BaseAugmentedLagrangianSettings(BaseOptimizerSettings):
     """The base augmented lagrangian settings."""
 
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
