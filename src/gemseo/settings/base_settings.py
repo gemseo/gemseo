@@ -40,6 +40,8 @@ class BaseSettings(
     with the `_INHERITED_FIELD_TYPES` class attribute.
     """
 
+    # TODO: API: prevent this attribute from being explicitly set
+    #            and force all settings classes to have a proper naming.
     _TARGET_CLASS_NAME: ClassVar[str] = ""
     """The name of the class using these settings.
 
@@ -61,13 +63,22 @@ class BaseSettings(
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
         super().__pydantic_init_subclass__(**kwargs)
+        # Do not take into account the class cls and the implicit top base class object.
+        base_classes = cls.__mro__[1:-1]
+        # Determine automatically the target class name,
+        # when the current class name ends with a specific suffix.
         if cls.__name__.endswith(cls.__SETTINGS_SUFFIX) and (
-            # This class directly inherits from BaseSettings
-            # and has no target class name.
+            # And when the target class name is not already set
+            # (typically when all the parent classes are not exposed to end users).
             not cls._TARGET_CLASS_NAME
-            # Or inherits from a class that already has a target class name that
-            # should be overriden.
-            or len(cls.__mro__) > 2
+            # Or when the first parent class it inherits from has a target class name.
+            # (typically when the first parent class is exposed to end users)
+            # This allows to distinguish the case when the current has the
+            # target class name forced in its definition.
+            or (
+                len(base_classes) > 1
+                and cls._TARGET_CLASS_NAME == base_classes[0]._TARGET_CLASS_NAME
+            )
         ):
             cls._TARGET_CLASS_NAME = cls.__name__.removesuffix(cls.__SETTINGS_SUFFIX)
         fields = cls.__pydantic_fields__

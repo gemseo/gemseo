@@ -16,15 +16,20 @@
 
 from __future__ import annotations
 
-from gemseo.algos.opt.augmented_lagrangian.settings.penalty_heuristic_settings import (
-    PenaltyHeuristic_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (  # noqa: E501
+    Augmented_Lagrangian_Order_0_Settings,
 )
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
 )
 
 
-class Augmented_Lagrangian_order_1_Settings(  # noqa: N801
-    PenaltyHeuristic_Settings, BaseGradientBasedAlgorithmSettings
+class Augmented_Lagrangian_Order_1_Settings(  # noqa: N801
+    Augmented_Lagrangian_Order_0_Settings,
+    BaseGradientBasedAlgorithmSettings,
 ):
     """The augmented Lagrangian of order 1 settings."""
+
+
+# TODO: API: remove
+Augmented_Lagrangian_order_1_Settings = Augmented_Lagrangian_Order_1_Settings

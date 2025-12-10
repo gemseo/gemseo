@@ -2110,7 +2110,7 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     algo_opts = {"sub_algorithm_settings": {"eq_tolerance": 1e-1}}
     execute_algo(
         problem,
-        algo_name="Augmented_Lagrangian_order_0",
+        algo_name="Augmented_Lagrangian_Order_0",
         sub_algorithm_name="SLSQP",
         **algo_opts,
     )

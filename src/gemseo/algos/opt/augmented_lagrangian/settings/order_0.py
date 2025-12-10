@@ -12,20 +12,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the augmented Lagrangian with penalty update algorithm."""
+"""Settings for the augmented Lagrangian of order 0 algorithm."""
 
 from __future__ import annotations
 
 from pydantic import Field
-from pydantic import PositiveFloat  # noqa: TC002
+from pydantic import PositiveFloat
 
-from gemseo.algos.opt.augmented_lagrangian.settings.base_augmented_lagrangian_settings import (  # noqa: E501
-    BaseAugmentedLagragianSettings,
+from gemseo.algos.opt.augmented_lagrangian.settings.base import (  # noqa: E501
+    BaseAugmentedLagrangianSettings,
 )
 
 
-class PenaltyHeuristic_Settings(BaseAugmentedLagragianSettings):  # noqa: N801
-    """The augmented Lagrangian with penalty update settings."""
+class Augmented_Lagrangian_Order_0_Settings(BaseAugmentedLagrangianSettings):  # noqa: N801
+    """The augmented Lagrangian of order 0 settings."""
 
     tau: PositiveFloat = Field(
         default=0.9,
@@ -44,4 +44,4 @@ class PenaltyHeuristic_Settings(BaseAugmentedLagragianSettings):  # noqa: N801
 
 
 # TODO: API: remove
-PenaltyHeuristicSettings = PenaltyHeuristic_Settings
+Augmented_Lagrangian_order_0_Settings = Augmented_Lagrangian_Order_0_Settings

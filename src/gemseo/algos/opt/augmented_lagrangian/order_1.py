@@ -20,11 +20,11 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
-from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
-    AugmentedLagrangianPenaltyHeuristic,
+from gemseo.algos.opt.augmented_lagrangian.base_penalty_heuristic import (
+    BaseAugmentedLagrangianPenaltyHeuristic,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings import (  # noqa: E501
-    Augmented_Lagrangian_order_1_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (
+    Augmented_Lagrangian_Order_1_Settings,
 )
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class AugmentedLagrangianOrder1(
-    AugmentedLagrangianPenaltyHeuristic[Augmented_Lagrangian_order_1_Settings]
+    BaseAugmentedLagrangianPenaltyHeuristic[Augmented_Lagrangian_Order_1_Settings]
 ):
     """An augmented Lagrangian algorithm of order 1.
 
@@ -48,18 +48,19 @@ class AugmentedLagrangianOrder1(
     """The Lagrange multiplier calculator."""
 
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
-        "Augmented_Lagrangian_order_1": OptimizationAlgorithmDescription(
-            algorithm_name="Augmented_Lagrangian_order_1",
+        # TODO: o -> O
+        "Augmented_Lagrangian_Order_1": OptimizationAlgorithmDescription(
+            algorithm_name="Augmented_Lagrangian_Order_1",
             description="Augmented Lagrangian algorithm using gradient information",
             internal_algorithm_name="Augmented_Lagrangian",
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             require_gradient=True,
-            Settings=Augmented_Lagrangian_order_1_Settings,
+            Settings=Augmented_Lagrangian_Order_1_Settings,
         ),
     }
 
-    def __init__(self, algo_name: str = "Augmented_Lagrangian_order_1") -> None:  # noqa:D107
+    def __init__(self, algo_name: str = "Augmented_Lagrangian_Order_1") -> None:  # noqa:D107
         super().__init__(algo_name)
         self.__lagrange_multiplier_calculator = None
 

@@ -21,11 +21,11 @@ from typing import ClassVar
 
 from numpy import heaviside
 
-from gemseo.algos.opt.augmented_lagrangian.penalty_heuristic import (
-    AugmentedLagrangianPenaltyHeuristic,
+from gemseo.algos.opt.augmented_lagrangian.base_penalty_heuristic import (
+    BaseAugmentedLagrangianPenaltyHeuristic,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings import (  # noqa: E501
-    Augmented_Lagrangian_order_0_Settings,
+from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (
+    Augmented_Lagrangian_Order_0_Settings,
 )
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 
 class AugmentedLagrangianOrder0(
-    AugmentedLagrangianPenaltyHeuristic[Augmented_Lagrangian_order_0_Settings]
+    BaseAugmentedLagrangianPenaltyHeuristic[Augmented_Lagrangian_Order_0_Settings]
 ):
     """An augmented Lagrangian algorithm of order 0.
 
@@ -43,17 +43,18 @@ class AugmentedLagrangianOrder0(
     """
 
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {
-        "Augmented_Lagrangian_order_0": OptimizationAlgorithmDescription(
-            algorithm_name="Augmented_Lagrangian_order_0",
+        # TODO: o -> O
+        "Augmented_Lagrangian_Order_0": OptimizationAlgorithmDescription(
+            algorithm_name="Augmented_Lagrangian_Order_0",
             description="Augmented Lagrangian algorithm for gradient-less functions.",
             internal_algorithm_name="Augmented_Lagrangian",
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
-            Settings=Augmented_Lagrangian_order_0_Settings,
+            Settings=Augmented_Lagrangian_Order_0_Settings,
         )
     }
 
-    def __init__(self, algo_name: str = "Augmented_Lagrangian_order_0") -> None:  # noqa:D107
+    def __init__(self, algo_name: str = "Augmented_Lagrangian_Order_0") -> None:  # noqa:D107
         super().__init__(algo_name)
 
     def _update_lagrange_multipliers(
