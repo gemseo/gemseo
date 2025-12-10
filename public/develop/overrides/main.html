@@ -1,0 +1,18 @@
+{#-
+  This file defines the page's title that is shown in a browser's title bar or a page's tab.
+  Without this change, the rendering would be "Page title - GEMSEO<sup>®</sup>" instead of "Page title - GEMSEO®"
+  because mkdocs-material uses the site_name defined in the mkdocs.yml file which includes HTML tags
+  in order to display the ® symbol as superscript in the page's header.
+-#}
+
+{% extends "base.html" %}
+
+{% block htmltitle %}
+  {% if page.meta and page.meta.title %}
+    <title>{{ page.meta.title }} - GEMSEO&reg;</title>
+  {% elif page.title and not page.is_homepage %}
+    <title>{{ page.title | striptags }} - GEMSEO&reg;</title>
+  {% else %}
+    <title>GEMSEO&reg;</title>
+  {% endif %}
+{% endblock %}
