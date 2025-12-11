@@ -117,7 +117,6 @@ class ProblemFunction(MDOFunction, Serializable):
             jacobian_evaluation_sequence: The execution sequence
                 to compute a Jacobian from an input value.
             with_normalized_inputs: Whether the function expects normalized inputs.
-            use_database: Whether to use the database to store and retrieve values.
             database: The database to store and retrieve the evaluations;
                 if `None`, do not use database.
             counter: The counter of evaluations.
