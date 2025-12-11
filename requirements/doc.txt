@@ -35,7 +35,7 @@ cycler==0.12.1
     # via matplotlib
 dill==0.4.0
     # via openturns
-docstring-inheritance==2.2.2
+docstring-inheritance==3.0.0
     # via gemseo (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
@@ -342,6 +342,7 @@ typeguard==4.4.4
 typing-extensions==4.15.0
     # via
     #   gemseo (pyproject.toml)
+    #   docstring-inheritance
     #   fieldz
     #   pandera
     #   pydantic
