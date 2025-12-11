@@ -22,8 +22,13 @@ import re
 from pathlib import Path
 
 import pytest
+from numpy import array
+from numpy import eye
 
+from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.post.factory import PostFactory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -129,3 +134,30 @@ def test_common_scenario(
     common_problem.use_standardized_objective = use_standardized_objective
     opt = VariableInfluence(common_problem)
     opt.execute(save=False)
+
+
+@pytest.mark.parametrize(
+    ("size", "baseline_images"),
+    [
+        (10, ["VariableInfluence_multidim_10"]),
+        (20, ["VariableInfluence_multidim_20"]),
+        (21, ["VariableInfluence_multidim_21"]),
+        (30, ["VariableInfluence_multidim_30"]),
+    ],
+    indirect=["baseline_images"],
+)
+@image_comparison(None)
+def test_visible_labels(size, baseline_images) -> None:
+    """A dummy optimization problem to check post-processors."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=size, lower_bound=0, upper_bound=1, value=0.5)
+    problem = OptimizationProblem(design_space)
+    func = MDOFunction(sum, "obj", jac=lambda x: array([1.0] * size))
+    problem.objective = func
+    problem.minimize_objective = False
+    func = MDOFunction(lambda x: x * 0.5, "eq", jac=lambda x: 0.5 * eye(size))
+    problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
+    doe = DiagonalDOE()
+    doe.execute(problem, n_samples=size, eval_jac=True)
+    post = VariableInfluence(problem)
+    post.execute(save=False)

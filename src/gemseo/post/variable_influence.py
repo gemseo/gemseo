@@ -235,6 +235,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         )
 
         x_labels = self._get_design_variable_names()
+        n_x_labels = len(x_labels)
         # This variable determines the number of variables to plot in the
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
@@ -246,39 +247,42 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             "most influential variables to explain %s%% of the output variation ",
             level,
         )
-        for index, (name, sensitivity) in enumerate(
-            sorted(names_to_sensitivities.items())
-        ):
+        sorted_names = sorted(names_to_sensitivities)
+        n_outputs = len(sorted_names)
+        for index in range(n_rows * n_cols):
             i = index // n_cols
             j = index % n_cols
             ax = axs[i][j]
-            quantile, threshold = self.__get_quantile(
-                sensitivity, name, level=level, save=save
-            )
-            ax.fill_between(
-                [-1, len(sensitivity) + 1],
-                -threshold,
-                threshold,
-                color="gray",
-                facecolor="none",
-                hatch="///",
-                label="Non-influential domain",
-            )
-            ax.axhline(y=0.0, color="black")
-            ax.bar(
-                abscissas,
-                sensitivity,
-                color="blue",
-                align="center",
-                label="Partial derivatives",
-            )
-            ax.set_title(
-                f"{quantile} variables explain {round(level * 100)}% of {name}"
-            )
+            if index < n_outputs:
+                name = sorted_names[index]
+                sensitivity = names_to_sensitivities[name]
+                quantile, threshold = self.__get_quantile(
+                    sensitivity, name, level=level, save=save
+                )
+                ax.fill_between(
+                    [-1, n_x_labels],
+                    -threshold,
+                    threshold,
+                    color="gray",
+                    facecolor="none",
+                    hatch="///",
+                    label="Non-influential domain",
+                )
+                ax.axhline(color="black")
+                ax.bar(
+                    abscissas,
+                    sensitivity,
+                    color="blue",
+                    align="center",
+                    label="Partial derivatives",
+                )
+                ax.set_title(
+                    f"{quantile} variables explain {round(level * 100)}% of {name}"
+                )
+                ax.grid()
             ax.set_xticks(abscissas)
             ax.set_xticklabels(x_labels, rotation=90)
-            ax.set_xlim(-1, len(sensitivity) + 1)
-            ax.grid()
+            ax.set_xlim(-1, n_x_labels)
             ax.set_axisbelow(True)
             if log_scale:
                 ax.set_yscale("log")
