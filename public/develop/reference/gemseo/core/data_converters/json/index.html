@@ -47246,7 +47246,18 @@
 
         <p>Data values to NumPy arrays and vice versa from a <a class="autorefs autorefs-internal" title="            JSONGrammar" href="../../grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar">JSONGrammar</a>.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The data converter uses a grammar,
+and in particular its mapping from data names to data types,
+to convert a NumPy array from/to a data value.</p>
+</details>
+
+<details class="warning" open>
+  <summary>Warning</summary>
+  <p>Throughout this class, <em>NumPy array</em> is equivalent to <em>1D numeric NumPy array</em>.</p>
+</details>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>

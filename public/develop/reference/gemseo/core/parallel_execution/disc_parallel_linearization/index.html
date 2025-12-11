@@ -47231,7 +47231,6 @@
 
         <p>Linearize disciplines in parallel.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -47729,12 +47728,14 @@ is called.</p>
           </div>
         </li>
     </ul>
-        <div class="highlight"><pre><span></span><code>Warning:
-    This class relies on multiprocessing features, it is therefore
-    necessary to protect its execution with an `if __name__ == &#39;__main__&#39;:`
-    statement when working on Windows.
-</code></pre></div>
 
+
+<details class="warning" open>
+  <summary>Warning</summary>
+  <p>This class relies on multiprocessing features, it is therefore
+necessary to protect its execution with an <code>if __name__ == '__main__':</code>
+statement when working on Windows.</p>
+</details>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/core/parallel_execution/disc_parallel_linearization.py</code></summary>

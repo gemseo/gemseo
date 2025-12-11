@@ -47843,35 +47843,6 @@
 to handle macros and interprocess communication, it
 is only working under Windows and macOS.</p>
 </details>
-        <p>Initialize xls file path and macro.</p>
-<p>Inputs must be specified in the "Inputs" sheet, in the following
-format (A and B are the first two columns).</p>
-<p>+---+---+
-| A | B |
-+===+===+
-| a | 1 |
-+---+---+
-| b | 2 |
-+---+---+</p>
-<p>Where a is the name of the first input, and 1 is its default value
-b is the name of the second one, and 2 its default value.</p>
-<p>There must be no empty lines between the inputs.</p>
-<p>The number of rows is arbitrary, but they must be contiguous and
-   start at line 1.</p>
-<p>The same applies for the "Outputs" sheet
-   (A and B are the first two columns).</p>
-<p>+---+---+
-| A | B |
-+===+===+
-| c | 3 |
-+---+---+</p>
-<p>Where c is the only output. They may be multiple.</p>
-<p>If the file is a XLSM, a macro named "execute" <em>must</em> exist
-   and will be called by the _run method before retrieving
-   the outputs. The macro has no arguments, it takes its inputs in the
-   Inputs sheet, and write the outputs to the "Outputs" sheet.</p>
-<p>Alternatively, the user may provide a macro name to the constructor,
-   or <code>None</code> if no macro shall be executed.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -47932,6 +47903,35 @@ call.</p>
           </div>
         </li>
     </ul>
+        <p>Initialize xls file path and macro.</p>
+<p>Inputs must be specified in the "Inputs" sheet, in the following
+format (A and B are the first two columns).</p>
+<p>+---+---+
+| A | B |
++===+===+
+| a | 1 |
++---+---+
+| b | 2 |
++---+---+</p>
+<p>Where a is the name of the first input, and 1 is its default value
+b is the name of the second one, and 2 its default value.</p>
+<p>There must be no empty lines between the inputs.</p>
+<p>The number of rows is arbitrary, but they must be contiguous and
+   start at line 1.</p>
+<p>The same applies for the "Outputs" sheet
+   (A and B are the first two columns).</p>
+<p>+---+---+
+| A | B |
++===+===+
+| c | 3 |
++---+---+</p>
+<p>Where c is the only output. They may be multiple.</p>
+<p>If the file is a XLSM, a macro named "execute" <em>must</em> exist
+   and will be called by the _run method before retrieving
+   the outputs. The macro has no arguments, it takes its inputs in the
+   Inputs sheet, and write the outputs to the "Outputs" sheet.</p>
+<p>Alternatively, the user may provide a macro name to the constructor,
+   or <code>None</code> if no macro shall be executed.</p>
 
 
 <p><span class="doc-section-title">Raises:</span></p>
@@ -49380,6 +49380,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -49425,16 +49435,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -51122,18 +51122,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -51143,6 +51131,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">

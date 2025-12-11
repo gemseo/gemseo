@@ -47915,11 +47915,6 @@
         <p>A <a class="autorefs autorefs-internal" title="            Dataset" href="../dataset/#gemseo.datasets.dataset.Dataset">Dataset</a> to store input and output values.</p>
 
 
-<details class="see-also" open>
-  <summary>See Also</summary>
-  <p>https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html</p>
-</details>
-
 <details class="notes" open>
   <summary>Notes</summary>
   <p>The columns of a data structure
@@ -47927,17 +47922,23 @@
 are called <em>features</em>.
 The features of a <a class="autorefs autorefs-internal" title="            Dataset" href="../dataset/#gemseo.datasets.dataset.Dataset">Dataset</a> include
 all the components of all the variables of all the groups.</p>
-</details>        <div class="highlight"><pre><span></span><code>Warning:
-    A [Dataset][gemseo.datasets.dataset.Dataset] behaves
-    like any multi-index DataFrame
-    but its instantiation using the constructor `dataset = Dataset(data, ...)`
-    can lead to some inconsistencies
-    (multi-index levels, index values, dtypes, ...).
-    Hence, the construction from the dedicated methods is recommended,
-    e.g. `dataset = Dataset(); dataset.add_variable(&quot;x&quot;, data)`.
-</code></pre></div>
+</details>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<details class="warning" open>
+  <summary>Warning</summary>
+  <p>A <a class="autorefs autorefs-internal" title="            Dataset" href="../dataset/#gemseo.datasets.dataset.Dataset">Dataset</a> behaves
+like any multi-index DataFrame
+but its instantiation using the constructor <code>dataset = Dataset(data, ...)</code>
+can lead to some inconsistencies
+(multi-index levels, index values, dtypes, ...).
+Hence, the construction from the dedicated methods is recommended,
+e.g. <code>dataset = Dataset(); dataset.add_variable("x", data)</code>.</p>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html</p>
+</details>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>

@@ -47807,6 +47807,24 @@
         <p>Take an <a class="autorefs autorefs-internal" title="            MDOFunction" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction">MDOFunction</a> and apply a given restriction to its inputs.</p>
 
 
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The callable can be set to <code>None</code> (default)
+when the user does not want to use a callable
+but a database to browse for the output vector corresponding to an input vector
+(see
+<a class="autorefs autorefs-internal" title="            set_pt_from_database" href="../mdo_function/#gemseo.core.mdo_functions.mdo_function.MDOFunction.set_pt_from_database">set_pt_from_database()</a>).</p>
+</details>
+
+<details class="warning" open>
+  <summary>Warning</summary>
+  <p>For the literal expression,
+do not use <code>"f(x) = 2*x"</code> nor <code>"f = 2*x"</code> but <code>"2*x"</code>.
+The other elements will be added automatically
+in the string representation of the MDO function
+based on the name of the MDO function and the names of its inputs.</p>
+</details>
+
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>

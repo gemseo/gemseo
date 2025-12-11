@@ -47781,6 +47781,19 @@
         <p>A toolbox to compute statistics using SciPy probability distribution-fitting.</p>
 
 
+<details class="note" open>
+  <summary>Note</summary>
+  <p>Unless otherwise stated,
+the statistics are computed
+<em>variable-wise</em> and <em>component-wise</em>,
+i.e. variable-by-variable and component-by-component.
+So, for the sake of readability,
+the methods named as <code>compute_statistic()</code>
+return <code>dict[str, RealArray]</code> objects
+whose values are the names of the variables
+and the values are the statistic estimated for the different component.</p>
+</details>
+
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">gemseo</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
 <span class="gp">... </span>    <span class="n">create_discipline</span><span class="p">,</span>

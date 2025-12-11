@@ -51974,7 +51974,6 @@
 
         <p>Aerodynamics discipline for the Sobieski's SSBJ use case.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -53315,6 +53314,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -53360,16 +53369,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -55154,18 +55153,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -55175,6 +55162,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -55427,7 +55426,6 @@ when the calculation of f requires a numerical resolution.</p>
 
         <p>Abstract base discipline for the Sobieski's SSBJ use case.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -56780,6 +56778,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -56825,16 +56833,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -58585,18 +58583,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -58606,6 +58592,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -58862,7 +58860,6 @@ when the calculation of f requires a numerical resolution.</p>
         <p>Mission discipline of the Sobieski's SSBJ use case.</p>
 <p>Compute the range with the Breguet formula.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -60251,6 +60248,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -60296,16 +60303,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -60780,6 +60777,16 @@ with respect to the reference one.</p>
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
+        <li class="doc-section-item field-body">
+            <b><code>dtype</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            DataType (gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.DataType)" href="../core/utils/#gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.DataType">DataType</a></code>, default:
+                  <code><span title="gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.DataType.FLOAT">FLOAT</span></code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The data type for the NumPy arrays, either "float64" or "complex128".</p>
+          </div>
+        </li>
         <li class="doc-section-item field-body">
             <b><code>enable_delay</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
@@ -62087,18 +62094,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -62108,6 +62103,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -62360,7 +62367,6 @@ when the calculation of f requires a numerical resolution.</p>
 
         <p>Propulsion discipline of the Sobieski's SSBJ use case.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -63701,6 +63707,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -63746,16 +63762,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -65534,18 +65540,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -65555,6 +65549,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -65807,7 +65813,6 @@ when the calculation of f requires a numerical resolution.</p>
 
         <p>Structure discipline of the Sobieski's SSBJ use case.</p>
 
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -67160,6 +67165,16 @@ either "complex_step" or "finite_differences".</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
+            <b><code>step</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-07</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The differentiation step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
             <b><code>threshold</code></b>
               (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-08</code>
@@ -67205,16 +67220,6 @@ of inputs and outputs (Default value = 'auto')</p>
           –
           <div class="doc-md-description">
             <p>The names of the outputs to be differentiated.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-            <b><code>step</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>1e-07</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The differentiation step.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -69005,18 +69010,6 @@ Chapter 11, "Numerical Differentiation"</p>
 <p><span class="doc-section-title">Parameters:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-            <b><code>input_names</code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
-                  <code>()</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The inputs with respect to which the outputs are linearized.
-If empty, use the differentiated inputs defined by
-<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
             <b><code>output_names</code></b>
               (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
                   <code>()</code>
@@ -69026,6 +69019,18 @@ If empty, use the differentiated inputs defined by
             <p>The outputs to be linearized.
 If empty, use the outputs defined by
 <a class="autorefs autorefs-internal" title="            add_differentiated_outputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs">add_differentiated_outputs()</a>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>input_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The inputs with respect to which the outputs are linearized.
+If empty, use the differentiated inputs defined by
+<a class="autorefs autorefs-internal" title="            add_differentiated_inputs" href="../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs">add_differentiated_inputs()</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">

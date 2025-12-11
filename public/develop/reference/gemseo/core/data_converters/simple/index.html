@@ -47247,6 +47247,13 @@
         <p>Data values to NumPy arrays and vice versa from a simple grammar.</p>
 
 
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The data converter uses a grammar,
+and in particular its mapping from data names to data types,
+to convert a NumPy array from/to a data value.</p>
+</details>
+
 <details class="warning" open>
   <summary>Warning</summary>
   <p>Since <a class="autorefs autorefs-internal" title="            SimpleGrammar" href="../../grammars/simple_grammar/#gemseo.core.grammars.simple_grammar.SimpleGrammar">SimpleGrammar</a>
@@ -47254,7 +47261,6 @@ cannot make a distinction between the types of
 data in a NumPy array, it is assumed that those types are numeric and can
 differentiate. You may use another type of grammar if the distinction is needed.</p>
 </details>
-        <p>Initialize self.  See help(type(self)) for accurate signature.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
