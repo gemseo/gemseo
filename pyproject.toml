@@ -26,6 +26,7 @@ dependencies = [
   "h5py >=3.6.0,<=3.14.0",
   "jinja2 >=3.0.0,<=3.1.6",
   "matplotlib >=3.6.0,<=3.10.6",
+  "minisom >=2.3.5,< 2.4",
   "networkx >=2.5,<=3.5",
   "numpy >=1.23,<=2.3.3",
   "packaging >=15,<=25",
@@ -41,7 +42,6 @@ dependencies = [
   "typing-extensions >=4,<5",
   "xdsmjs >=1.0.0,<=2.0.0",
   "xxhash >=3.0.0,<=3.5.0",
-  "minisom >=2.3.5,< 2.4",
 ]
 
 [project.optional-dependencies]
@@ -56,7 +56,7 @@ all = [
   "plotly >=5.7.0,<=6.3.0",
   "pyDOE3 >=1.0.1,<=1.4.0",
   "scikit-learn >=1.2,<=1.7.2",
-  "spgl1 >= 0.0.3,<= 1.0.0",
+  "spgl1 >=0.0.3,<= 1.0.0",
   "sympy >=1.5,<=1.14.0",
   "xlwings >=0.27.0,<=0.33.16 ; platform_system=='Windows'",
 ]
@@ -88,6 +88,11 @@ doc = [
   "mkdocs-autorefs",
   # For supporting DataFrame in pydantic models in an example.
   "pandera",
+]
+check-types = [
+  "mypy[reports]",
+  "pandas-stubs",
+  "types-tqdm",
 ]
 
 [project.urls]

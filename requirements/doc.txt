@@ -35,7 +35,7 @@ cycler==0.12.1
     # via matplotlib
 dill==0.4.0
     # via openturns
-docstring-inheritance==3.0.0
+docstring-inheritance==2.2.2
     # via gemseo (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
@@ -252,7 +252,7 @@ pygments==2.19.2
     #   pytest
 pygments-ansi-color==0.3.0
     # via markdown-exec
-pymdown-extensions==10.19
+pymdown-extensions==10.18
     # via
     #   markdown-exec
     #   mkdocs-material
@@ -342,7 +342,6 @@ typeguard==4.4.4
 typing-extensions==4.15.0
     # via
     #   gemseo (pyproject.toml)
-    #   docstring-inheritance
     #   fieldz
     #   pandera
     #   pydantic
@@ -358,7 +357,7 @@ typing-inspection==0.4.2
     #   pydantic-settings
 tzdata==2025.2
     # via pandas
-urllib3==2.6.2
+urllib3==2.6.1
     # via
     #   requests
     #   responses

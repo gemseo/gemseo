@@ -47,37 +47,27 @@ developers are provided with reproducible and working environments. The
 dependencies shall be updated to benefit from packages improvements,
 security and bug fixes.
 
-The dependencies update is done with [uv](https://docs.astral.sh/uv/)
-and eventually from input requirements files. These input requirements
-files may contain the minimum pinning requirements and are intended to
-be modified by maintainers. The [uv](https://docs.astral.sh/uv/) package
-provides `uv pip compile` which may process an input requirements file
-to produce a fully pinned requirements file. The actual call to
-[uv](https://docs.astral.sh/uv/) is done via `tox` (see below).
+Development dependencies are defined in `pyproject.toml` under
+[dependency-groups (PEP 735)](https://peps.python.org/pep-0735/):
+
+- `dev`: testing dependencies (pytest, coverage, etc.)
+- `doc`: documentation dependencies (mkdocs, etc.)
+- `check`: linting dependencies (pre-commit, ruff)
+- `check-types`: type checking dependencies (mypy, stubs)
+
+All dependencies are stored in `uv.lock`, a
+[universal lockfile](https://docs.astral.sh/uv/concepts/resolution/)
+which is cross-platform and cross-Python-version,
+so it can be generated on any platform.
 
 !!! warning
       All environments and tools shall be checked whenever dependencies have been changed.
 
-Whenever a dependency defined in `pyproject.toml` is changed, update the
-requirements for the testing and `doc` environments of `tox`:
+Whenever a dependency defined in `pyproject.toml` is changed or added,
+update the lockfile:
 
 ``` shell
-tox -e update-deps-test,update-deps-doc
-```
-
-!!! warning
-      This shall be run on linux only otherwise windows specific packages will be included!
-
-The dependencies for the `check` and `dist` environments of `tox` are
-defined in:
-
-- check.in: for checking the source files.
-- dist.in: for creating the distribution.
-
-Update the requirements for the those environments of `tox`:
-
-``` shell
-tox -e update-deps-check,update-deps-dist
+tox -e update-deps
 ```
 
 ## Testing pypi packages
