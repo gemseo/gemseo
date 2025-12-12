@@ -252,7 +252,7 @@ pygments==2.19.2
     #   pytest
 pygments-ansi-color==0.3.0
     # via markdown-exec
-pymdown-extensions==10.18
+pymdown-extensions==10.19
     # via
     #   markdown-exec
     #   mkdocs-material
@@ -358,7 +358,7 @@ typing-inspection==0.4.2
     #   pydantic-settings
 tzdata==2025.2
     # via pandas
-urllib3==2.6.1
+urllib3==2.6.2
     # via
     #   requests
     #   responses
