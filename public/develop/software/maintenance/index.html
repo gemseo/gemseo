@@ -46986,33 +46986,25 @@ documentation.</p>
 developers are provided with reproducible and working environments. The
 dependencies shall be updated to benefit from packages improvements,
 security and bug fixes.</p>
-<p>The dependencies update is done with <a href="https://docs.astral.sh/uv/">uv</a>
-and eventually from input requirements files. These input requirements
-files may contain the minimum pinning requirements and are intended to
-be modified by maintainers. The <a href="https://docs.astral.sh/uv/">uv</a> package
-provides <code>uv pip compile</code> which may process an input requirements file
-to produce a fully pinned requirements file. The actual call to
-<a href="https://docs.astral.sh/uv/">uv</a> is done via <code>tox</code> (see below).</p>
+<p>Development dependencies are defined in <code>pyproject.toml</code> under
+<a href="https://peps.python.org/pep-0735/">dependency-groups (PEP 735)</a>:</p>
+<ul>
+<li><code>dev</code>: testing dependencies (pytest, coverage, etc.)</li>
+<li><code>doc</code>: documentation dependencies (mkdocs, etc.)</li>
+<li><code>check</code>: linting dependencies (pre-commit, ruff)</li>
+<li><code>check-types</code>: type checking dependencies (mypy, stubs)</li>
+</ul>
+<p>All dependencies are stored in <code>uv.lock</code>, a
+<a href="https://docs.astral.sh/uv/concepts/resolution/">universal lockfile</a>
+which is cross-platform and cross-Python-version,
+so it can be generated on any platform.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>All environments and tools shall be checked whenever dependencies have been changed.</p>
 </div>
-<p>Whenever a dependency defined in <code>pyproject.toml</code> is changed, update the
-requirements for the testing and <code>doc</code> environments of <code>tox</code>:</p>
-<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>-e<span class="w"> </span>update-deps-test,update-deps-doc
-</code></pre></div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This shall be run on linux only otherwise windows specific packages will be included!</p>
-</div>
-<p>The dependencies for the <code>check</code> and <code>dist</code> environments of <code>tox</code> are
-defined in:</p>
-<ul>
-<li>check.in: for checking the source files.</li>
-<li>dist.in: for creating the distribution.</li>
-</ul>
-<p>Update the requirements for the those environments of <code>tox</code>:</p>
-<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>-e<span class="w"> </span>update-deps-check,update-deps-dist
+<p>Whenever a dependency defined in <code>pyproject.toml</code> is changed or added,
+update the lockfile:</p>
+<div class="highlight"><pre><span></span><code>tox<span class="w"> </span>-e<span class="w"> </span>update-deps
 </code></pre></div>
 <h2 id="testing-pypi-packages">Testing pypi packages<a class="headerlink" href="#testing-pypi-packages" title="Permanent link">&para;</a></h2>
 <p>Run</p>
