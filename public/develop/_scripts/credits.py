@@ -167,7 +167,7 @@ def _render_credits() -> str:
         [Python](https://www.python.org/) |
         [uv](https://docs.astral.sh/uv) |
         [ruff](https://docs.astral.sh/ruff) |
-        [pre-commit](https://pre-commit.com)
+        [prek](https://prek.j178.dev)
 
         {% macro dep_line(dep) -%}
         [{{ dep.name }}](https://pypi.org/project/{{ dep.name }}/) | {{ dep.summary }} | {{ ("`" ~ dep.spec|sort(reverse=True)|join(", ") ~ "`") if dep.spec else "" }} | `{{ dep.version }}` | {{ dep.license }}
