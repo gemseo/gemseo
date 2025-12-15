@@ -300,8 +300,8 @@ scenario.xdsmize(show_html=True)
 ```
 
 If `save_html` (default `True`), will generate a self contained HTML file, that can be automatically open using the option `show_html=True`.
-If `save_json` is True, it will generate a [XDSMjs](https://github.com/whatsopt/XDSMjs) input file :ref:`xdsm` (legacy behavior).
-If `save_pdf=True` (default `False`), a LaTex PDF is generated.
+If `save_json` is True, it will generate an [XDSM][graphical-monitoring-using-xdsmjs] file (legacy behavior) using [XDSMjs](https://github.com/whatsopt/XDSMjs).
+If `save_pdf=True` (default `False`), a $\LaTeX$ PDF is generated.
 
 You should observe the XDSM diagram related to your MDO scenario.
 

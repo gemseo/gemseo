@@ -125,7 +125,7 @@ nav:
   - Scalable models:
     - Scalable models: scalable_models/index.md
     - The scalable problem: scalable_models/original_paper.md
-  - Benchmark problems: problems/index.md
+  - Benchmark problems: problems/benchmark_problems.md
   - Comprehensive list of tools and their settings:
     - Disciplines: algorithms/discipline_algos.md
     - DOE (design of experiments): algorithms/doe_algos.md
