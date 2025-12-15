@@ -52,7 +52,7 @@ GEMSEO aims at pushing forward the limits of automation in simulation processes 
 - Use different surrogate models to substitute a costly discipline within a process: linear regression, RBF model and Gaussian process regression [[Read more]](surrogate.md)
 - Visualize the optimization results by means of many graphs [[Read more]][how-to-deal-with-post-processing]
 - Record and cache the disciplines inputs and outputs into HDF files [[Read more]][caching-and-recording-discipline-data]
-- Experiment with different GEMSEO 's benchmark MDO problems [[Read more]](problems/index.md)
+- Experiment with different GEMSEO 's benchmark MDO problems [[Read more]][benchmark-problems]
 
 ### Advanced techniques in MDO
 

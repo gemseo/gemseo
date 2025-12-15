@@ -55,9 +55,7 @@ from gemseo.settings.mda import MDAChain_Settings
 #
 # ## A simple MDO test case: the Sellar Problem
 #
-# We will consider in this example the Sellar's problem:
-#
-# .. include:: /problems/sellar_problem_definition.inc
+# We will consider in this example the [Sellar's problem][sellars-problem].
 #
 # ## Definition of the disciplines using Python functions
 #
@@ -139,8 +137,8 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 # Note that it is possible to define the Sellar disciplines by subclassing the
 # [Discipline][gemseo.core.discipline.discipline.Discipline] class and implementing the constuctor and the _run
 # method by hand. Although it would take more time, it may also provide more
-# flexibility and more options. This method is illustrated in the :ref:`Sellar
-# from scratch tutorial <sellar_from_scratch>`.
+# flexibility and more options. This method is illustrated in the
+# [Sellar from scratch tutorial][a-from-scratch-example-on-the-sellar-problem].
 
 # %%
 # We then create a list of disciplines, which will be used later to create an
@@ -171,8 +169,8 @@ generate_n2_plot(disciplines, save=False, show=True)
 #     For the sake of clarity, these disciplines are overly simple.
 #     Yet, GEMSEO enables the definition of much more complex disciplines,
 #     such as wrapping complex COTS.
-#     Check out the other :ref:`tutorials <tutorials_sg>` and
-#     our :ref:`publications list <references>` for more information.
+#     Check out the other [discipline examples][disciplines-examples] and
+#     our [publications][publications] for more information.
 
 # %%
 # ## Definition of the design space
@@ -258,9 +256,9 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 #
 # !!! note
 #
-#     GEMSEO provides the user with a lot of optimization algorithms and
-#     options. An exhaustive list of the algorithms available in GEMSEO can be
-#     found in the :ref:`gen_opt_algos` section.
+#     GEMSEO provides the user with a lot of optimization algorithms and options.
+#     An exhaustive list of the algorithms available in GEMSEO can be found in the
+#     [available optimization algorithms section][available-optimization-algorithms].
 
 # %%
 # ## Post-processing the results
@@ -292,7 +290,7 @@ dataset = scenario.to_dataset("a_name_for_my_dataset")
 # %%
 # ## What's next?
 #
-# You have completed a short introduction to GEMSEO.  You can now look at the
-# :ref:`tutorials <tutorials_sg>` which exhibit more complex use-cases.  You
-# can also have a look at the documentation to discover the several features
+# You have completed a short introduction to GEMSEO.
+# You can now look at the examples which exhibit more complex use-cases.
+# You can also have a look at the documentation to discover the several features
 # and options of GEMSEO.

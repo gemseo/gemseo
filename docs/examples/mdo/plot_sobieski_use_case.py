@@ -83,7 +83,7 @@ disciplines = create_discipline([
 #     [gemseo][gemseo] module eases the creation of disciplines without having
 #     to import them.
 #
-#     See :ref:`api`.
+#     See the [examples about high-level functions][api].
 
 # %%
 # ## Step 2: [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] creation.
@@ -128,7 +128,7 @@ design_space = SobieskiDesignSpace()
 # y_12        24850.0      50606.9742     77250.0    float
 # y_12          0.45          0.95          1.5      float
 # ```
-
+#
 # - The available [MDO formulations][mdo-formulations] are located in the
 #   [gemseo.formulations][gemseo.formulations] package, see [this page][extend-gemseo-features] for extending
 #   GEMSEO with other formulations.
@@ -247,9 +247,11 @@ scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 # %%
 # ## Influence of gradient computation method on performance
 #
-# As mentioned in :ref:`jacobian_assembly`, several methods
-# are available in order to perform  the gradient computations: classical finite
-# differences, complex step and [MDA][multi-disciplinary-analyses] linearization in direct or adjoint mode.
+# As mentioned in
+# [the user guide][coupled-derivatives-and-gradients-computation],
+# several methods are available in order to perform  the gradient computations:
+# classical finite differences, complex step and
+# [MDA][multi-disciplinary-analyses] linearization in direct or adjoint mode.
 # These modes are automatically selected by GEMSEO to minimize the CPU time. Yet, they
 # can be forced on demand in each [MDA][multi-disciplinary-analyses]:
 scenario.formulation.mda.linearization_mode = JacobianAssembly.DerivationMode.DIRECT
