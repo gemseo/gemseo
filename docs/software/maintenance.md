@@ -11,7 +11,7 @@
  _pypi: https://pypi.org
  _anaconda: https://anaconda.org
  _conda-forge: https://conda-forge.org
- _pre-commit: https://pre-commit.com
+ _prek: https://prek.j178.dev
  _uv: https://docs.astral.sh/uv/
  -->
 
@@ -52,7 +52,7 @@ Development dependencies are defined in `pyproject.toml` under
 
 - `dev`: testing dependencies (pytest, coverage, etc.)
 - `doc`: documentation dependencies (mkdocs, etc.)
-- `check`: linting dependencies (pre-commit, ruff)
+- `check`: linting dependencies (prek, ruff)
 - `check-types`: type checking dependencies (mypy, stubs)
 
 All dependencies are stored in `uv.lock`, a

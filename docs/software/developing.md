@@ -65,11 +65,11 @@ All the directories created by [tox](https://tox.readthedocs.io) are stored unde
 
 Make sure Python 3 is installed, preferably 3.10
 
-First install [uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer), then install [tox](https://tox.readthedocs.io) and [pre-commit](https://pre-commit.com):
+First install [uv](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer), then install [tox](https://tox.readthedocs.io) and [prek](https://prek.j178.dev):
 
 ``` console
 uv tool install tox --with tox-uv
-uv tool install pre-commit
+uv tool install prek
 ```
 
 Finally, make sure that [graphviz](https://graphviz.org/download) is installed (for rendering graphs).
