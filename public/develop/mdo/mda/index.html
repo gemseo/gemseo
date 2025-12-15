@@ -991,8 +991,6 @@
         
       
         
-          
-        
       
         
       
@@ -1013,9 +1011,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../problems/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
   
   
   <span class="md-ellipsis">
@@ -1029,14 +1026,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
@@ -3151,6 +3142,32 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../problems/benchmark_problems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark problems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -47186,7 +47203,7 @@
 <p>The MDA inherits from <a class="autorefs autorefs-internal" title="            Discipline" href="../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> and can thus be executed and linearized as any other discipline.
 As mentioned in the previous section, the MDA solves the non-linear system of equations induced by coupled disciplines.
 Formally, it can be viewed as a function <span class="arithmatex">\(\text{MDA}(x, y) = y^{\star}\)</span> that takes <span class="arithmatex">\(x\)</span> and possibly initial values for the coupling variables <span class="arithmatex">\(y\)</span> and computes <span class="arithmatex">\(y^{\star}\)</span> that satisfies <span class="arithmatex">\(R(x, y^{\star}) = 0\)</span>.</p>
-<p>Let us take again the <a class="autorefs autorefs-internal" href="../../problems/#sellars-problem">Sellar's problem</a> as a toy example, where:</p>
+<p>Let us take again the <a class="autorefs autorefs-internal" href="../../problems/benchmark_problems/#sellars-problem">Sellar's problem</a> as a toy example, where:</p>
 <ul>
 <li>The design variables are labelled <span class="arithmatex">\(x_{\text{local}}\)</span> and <span class="arithmatex">\(x_{\text{shared}}\)</span>.</li>
 <li>The coupling variables are labelled <span class="arithmatex">\(y_1\)</span> and <span class="arithmatex">\(y_2\)</span>.</li>

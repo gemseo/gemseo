@@ -1157,8 +1157,6 @@
         
       
         
-          
-        
       
         
       
@@ -1176,9 +1174,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../../problems/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -1192,14 +1189,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
@@ -3115,6 +3106,32 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../problems/benchmark_problems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark problems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -47210,15 +47227,14 @@ example, we will set up a simple Multi-disciplinary Design Optimization
 <span class="kn">from</span><span class="w"> </span><span class="nn">gemseo</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_n2_plot</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">gemseo.settings.mda</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDAChain_Settings</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 51-71 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 51-69 -->
 
 <p>These imports are needed to compute mathematical expressions and to
 instantiate NumPy arrays. NumPy arrays are used to store numerical data in
 GEMSEO at a low level. If you are not comfortable using NumPy, please have a
 look at the <a href="https://numpy.org/doc/stable/user/quickstart.html">Numpy Quickstart tutorial</a>.</p>
 <h2 id="a-simple-mdo-test-case-the-sellar-problem">A simple MDO test case: the Sellar Problem<a class="headerlink" href="#a-simple-mdo-test-case-the-sellar-problem" title="Permanent link">&para;</a></h2>
-<p>We will consider in this example the Sellar's problem:</p>
-<p>.. include:: /problems/sellar_problem_definition.inc</p>
+<p>We will consider in this example the <a class="autorefs autorefs-internal" href="../../../../problems/benchmark_problems/#sellars-problem">Sellar's problem</a>.</p>
 <h2 id="definition-of-the-disciplines-using-python-functions">Definition of the disciplines using Python functions<a class="headerlink" href="#definition-of-the-disciplines-using-python-functions" title="Permanent link">&para;</a></h2>
 <p>The Sellar's problem is composed of two disciplines <discipline> and
 an objective function. As they are expressed analytically, it is
@@ -47227,7 +47243,7 @@ the design variables and the coupling variables.  The
 returned values may be the outputs of a discipline, the values of the
 constraints or the value of the objective function.  Their
 definitions read:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 71-122 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 69-120 -->
 
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">f_sellar_system</span><span class="p">(</span><span class="n">x_local</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">x_shared_2</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">y_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y_2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the values of the objective and constraints.</span>
@@ -47277,7 +47293,7 @@ definitions read:</p>
     <span class="n">y_2</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y_1</span><span class="p">)</span> <span class="o">+</span> <span class="n">x_shared_1</span> <span class="o">+</span> <span class="n">x_shared_2</span>
     <span class="k">return</span> <span class="n">y_2</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 123-131 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 121-129 -->
 
 <p>These Python functions can be easily converted into GEMSEO
 <a class="autorefs autorefs-internal" title="            Discipline" href="../../../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> objects by using the <a class="autorefs autorefs-internal" title="            AutoPyDiscipline" href="../../../../reference/gemseo/disciplines/auto_py/#gemseo.disciplines.auto_py.AutoPyDiscipline">AutoPyDiscipline</a>
@@ -47287,7 +47303,7 @@ GEMSEO
 wrapped. GEMSEO handles the wrapping and the grammar creation under the
 hood. The <a class="autorefs autorefs-internal" title="            AutoPyDiscipline" href="../../../../reference/gemseo/disciplines/auto_py/#gemseo.disciplines.auto_py.AutoPyDiscipline">AutoPyDiscipline</a> discipline can be instantiated using the
 <a class="autorefs autorefs-internal" title="            create_discipline" href="../../../../reference/gemseo/#gemseo.create_discipline">create_discipline()</a> function from the GEMSEO API:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 131-138 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 129-136 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">disc_sellar_system</span> <span class="o">=</span> <span class="n">create_discipline</span><span class="p">(</span><span class="s2">&quot;AutoPyDiscipline&quot;</span><span class="p">,</span> <span class="n">py_func</span><span class="o">=</span><span class="n">f_sellar_system</span><span class="p">)</span>
 
@@ -47295,26 +47311,26 @@ hood. The <a class="autorefs autorefs-internal" title="            AutoPyDiscipl
 
 <span class="n">disc_sellar_2</span> <span class="o">=</span> <span class="n">create_discipline</span><span class="p">(</span><span class="s2">&quot;AutoPyDiscipline&quot;</span><span class="p">,</span> <span class="n">py_func</span><span class="o">=</span><span class="n">f_sellar_2</span><span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 139-144 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 137-142 -->
 
 <p>Note that it is possible to define the Sellar disciplines by subclassing the
 <a class="autorefs autorefs-internal" title="            Discipline" href="../../../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> class and implementing the constuctor and the _run
 method by hand. Although it would take more time, it may also provide more
-flexibility and more options. This method is illustrated in the :ref:<code>Sellar
-from scratch tutorial &lt;sellar_from_scratch&gt;</code>.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 146-148 -->
+flexibility and more options. This method is illustrated in the
+<a class="autorefs autorefs-internal" title="A from scratch example on the Sellar problem." href="../plot_sellar/#a-from-scratch-example-on-the-sellar-problem">Sellar from scratch tutorial</a>.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 144-146 -->
 
 <p>We then create a list of disciplines, which will be used later to create an
 <a class="autorefs autorefs-internal" title="            MDOScenario" href="../../../../reference/gemseo/scenarios/mdo_scenario/#gemseo.scenarios.mdo_scenario.MDOScenario">MDOScenario</a>:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 148-150 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 146-148 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">disciplines</span> <span class="o">=</span> <span class="p">[</span><span class="n">disc_sellar_system</span><span class="p">,</span> <span class="n">disc_sellar_1</span><span class="p">,</span> <span class="n">disc_sellar_2</span><span class="p">]</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 151-153 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 149-151 -->
 
 <p>We can quickly access the most relevant information of any discipline (name, inputs,
 and outputs) with their string representations:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 153-155 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 151-153 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">disc_sellar_1</span>
 </code></pre></div>
@@ -47322,7 +47338,7 @@ and outputs) with their string representations:</p>
     <div style='margin: 1em;'>f_sellar_1<br/><ul><li>Inputs: x_local, x_shared_1, x_shared_2, y_2</li><li>Outputs: y_1</li></ul></div>
 </div>
 
-<!-- GENERATED FROM PYTHON SOURCE LINES 156-159 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 154-157 -->
 
 <p>Moreover,
 we can get the default input values of a discipline
@@ -47333,41 +47349,41 @@ with the attribute <a class="autorefs autorefs-internal" title="            defa
       property
       writable
   " href="../../../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.default_input_data">Discipline.default_input_data</a>:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 159-161 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 157-159 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">disc_sellar_1</span><span class="o">.</span><span class="n">default_input_data</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
 <div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="o">{</span><span class="s1">&#39;x_local&#39;</span>:<span class="w"> </span>array<span class="o">([</span><span class="m">1</span>.<span class="o">])</span>,<span class="w"> </span><span class="s1">&#39;y_2&#39;</span>:<span class="w"> </span>array<span class="o">([</span><span class="m">1</span>.<span class="o">])</span>,<span class="w"> </span><span class="s1">&#39;x_shared_1&#39;</span>:<span class="w"> </span>array<span class="o">([</span><span class="m">1</span>.<span class="o">])</span>,<span class="w"> </span><span class="s1">&#39;x_shared_2&#39;</span>:<span class="w"> </span>array<span class="o">([</span><span class="m">3</span>.<span class="o">])}</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 162-166 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 160-164 -->
 
 <p>You may also be interested in plotting the couplings of your disciplines.
 A quick way of getting this information is the high-level function
 <a class="autorefs autorefs-internal" title="            generate_n2_plot" href="../../../../reference/gemseo/#gemseo.generate_n2_plot">generate_n2_plot()</a>. A much more detailed explanation of coupling
 visualization is available <a class="autorefs autorefs-internal" title="Coupling visualization" href="../../../../mdo/coupling/#coupling-visualization">here</a>.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 166-168 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 164-166 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">generate_n2_plot</span><span class="p">(</span><span class="n">disciplines</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p><img alt="plot gemseo in 10 minutes" class="mkd-glr-single-img" src="../images/mkd_glr_plot_gemseo_in_10_minutes_001.png" srcset="../images/mkd_glr_plot_gemseo_in_10_minutes_001.png" /></p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 169-176 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 167-174 -->
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For the sake of clarity, these disciplines are overly simple.
 Yet, GEMSEO enables the definition of much more complex disciplines,
 such as wrapping complex COTS.
-Check out the other :ref:<code>tutorials &lt;tutorials_sg&gt;</code> and
-our :ref:<code>publications list &lt;references&gt;</code> for more information.</p>
+Check out the other <a class="autorefs autorefs-internal" title="Disciplines examples" href="../../disciplines/#disciplines-examples">discipline examples</a> and
+our <a class="autorefs autorefs-internal" title="Publications" href="../../../../publications/#publications">publications</a> for more information.</p>
 </div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 178-183 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 176-181 -->
 
 <h2 id="definition-of-the-design-space">Definition of the design space<a class="headerlink" href="#definition-of-the-design-space" title="Permanent link">&para;</a></h2>
 <p>In order to define <a class="autorefs autorefs-internal" title="            MDOScenario" href="../../../../reference/gemseo/scenarios/mdo_scenario/#gemseo.scenarios.mdo_scenario.MDOScenario">MDOScenario</a>,
 a design space has to be defined by creating a <a class="autorefs autorefs-internal" title="            DesignSpace" href="../../../../reference/gemseo/algos/design_space/#gemseo.algos.design_space.DesignSpace">DesignSpace</a>
 object. The design space definition reads:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 183-196 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 181-194 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">design_space</span> <span class="o">=</span> <span class="n">create_design_space</span><span class="p">()</span>
 <span class="n">design_space</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;x_local&quot;</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
@@ -47432,7 +47448,7 @@ object. The design space definition reads:</p>
     </table></div>
 </div>
 
-<!-- GENERATED FROM PYTHON SOURCE LINES 197-206 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 195-204 -->
 
 <h2 id="definition-of-the-mdo-scenario">Definition of the MDO scenario<a class="headerlink" href="#definition-of-the-mdo-scenario" title="Permanent link">&para;</a></h2>
 <p>Once the disciplines and the design space have been defined,
@@ -47442,7 +47458,7 @@ In this simple example,
 we are using a Multiple Disciplinary Feasible (MDF) strategy.
 The Multiple Disciplinary Analyses (MDA) are carried out using the
 Gauss-Seidel method. The scenario definition reads:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 206-215 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 204-213 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span> <span class="o">=</span> <span class="n">create_scenario</span><span class="p">(</span>
     <span class="n">disciplines</span><span class="p">,</span>
@@ -47452,7 +47468,7 @@ Gauss-Seidel method. The scenario definition reads:</p>
     <span class="n">main_mda_settings</span><span class="o">=</span><span class="n">MDAChain_Settings</span><span class="p">(</span><span class="n">inner_mda_name</span><span class="o">=</span><span class="s2">&quot;MDAGaussSeidel&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 216-240 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 214-238 -->
 
 <p>It can be noted that neither a workflow <work flow>
 nor a dataflow <data flow> has been defined.
@@ -47478,12 +47494,12 @@ in this example, it is strongly advised to</p>
 <p>Most of the MDO problems are under constraints.
 In our problem, we have two inequality constraints,
 and their declaration reads:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 240-244 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 238-242 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;c_1&quot;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s2">&quot;ineq&quot;</span><span class="p">)</span>
 <span class="n">scenario</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;c_2&quot;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s2">&quot;ineq&quot;</span><span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 245-252 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 243-250 -->
 
 <h2 id="execution-of-the-scenario">Execution of the scenario<a class="headerlink" href="#execution-of-the-scenario" title="Permanent link">&para;</a></h2>
 <p>The scenario is now complete and ready to be executed.
@@ -47491,67 +47507,67 @@ When running the optimization process,
 the user can choose the optimization algorithm and
 the maximum number of iterations to perform.
 The execution of the scenario reads:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 252-255 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 250-253 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">algo_name</span><span class="o">=</span><span class="s2">&quot;SLSQP&quot;</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w"> </span>***<span class="w"> </span>Start<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w"> </span>MDOScenario
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>Disciplines:<span class="w"> </span>f_sellar_1<span class="w"> </span>f_sellar_2<span class="w"> </span>f_sellar_system
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>MDO<span class="w"> </span>formulation:<span class="w"> </span>MDF
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w"> </span>Optimization<span class="w"> </span>problem:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>minimize<span class="w"> </span>obj<span class="o">(</span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2<span class="o">)</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>with<span class="w"> </span>respect<span class="w"> </span>to<span class="w"> </span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>under<span class="w"> </span>the<span class="w"> </span>inequality<span class="w"> </span>constraints
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>c_1<span class="o">(</span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>c_2<span class="o">(</span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>over<span class="w"> </span>the<span class="w"> </span>design<span class="w"> </span>space:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>+------------+-------------+-------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span><span class="p">|</span><span class="w"> </span>Name<span class="w">       </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Value<span class="w"> </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>+------------+-------------+-------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x_local<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x_shared_1<span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w">   </span><span class="m">4</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x_shared_2<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">3</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>+------------+-------------+-------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w"> </span>Solving<span class="w"> </span>optimization<span class="w"> </span>problem<span class="w"> </span>with<span class="w"> </span>algorithm<span class="w"> </span>SLSQP:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">     </span><span class="m">10</span>%<span class="p">|</span>█<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">53</span>.26<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">21</span>.8<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">     </span><span class="m">20</span>%<span class="p">|</span>██<span class="w">        </span><span class="p">|</span><span class="w"> </span><span class="m">2</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">67</span>.17<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">5</span>.39<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">     </span><span class="m">30</span>%<span class="p">|</span>███<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">3</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">73</span>.23<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.41<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">     </span><span class="m">40</span>%<span class="p">|</span>████<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">4</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">76</span>.35<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.19<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">     </span><span class="m">50</span>%<span class="p">|</span>█████<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">5</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">78</span>.19<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">     </span><span class="m">60</span>%<span class="p">|</span>██████<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">6</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">79</span>.47<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w"> </span>Optimization<span class="w"> </span>result:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>Optimizer<span class="w"> </span>info:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>Status:<span class="w"> </span><span class="m">8</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>Message:<span class="w"> </span>Positive<span class="w"> </span>directional<span class="w"> </span>derivative<span class="w"> </span><span class="k">for</span><span class="w"> </span>linesearch
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">    </span>Solution:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>The<span class="w"> </span>solution<span class="w"> </span>is<span class="w"> </span>feasible.
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>Objective:<span class="w"> </span><span class="m">3</span>.1833939517455963
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>Standardized<span class="w"> </span>constraints:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">6</span>.604938818099981e-12
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-20.244722237802005
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">       </span>Design<span class="w"> </span>space:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span>+------------+-------------+-----------------------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span><span class="p">|</span><span class="w"> </span>Name<span class="w">       </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w">         </span>Value<span class="w">         </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span>+------------+-------------+-----------------------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x_local<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">           </span><span class="m">0</span><span class="w">           </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x_shared_1<span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w">   </span><span class="m">1</span>.977638878735759<span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x_shared_2<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">9</span>.749034411601494e-13<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w">          </span>+------------+-------------+-----------------------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:53:<span class="w"> </span>***<span class="w"> </span>End<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w"> </span>***<span class="w"> </span>Start<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w"> </span>MDOScenario
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>Disciplines:<span class="w"> </span>f_sellar_1<span class="w"> </span>f_sellar_2<span class="w"> </span>f_sellar_system
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>MDO<span class="w"> </span>formulation:<span class="w"> </span>MDF
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w"> </span>Optimization<span class="w"> </span>problem:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>minimize<span class="w"> </span>obj<span class="o">(</span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2<span class="o">)</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>with<span class="w"> </span>respect<span class="w"> </span>to<span class="w"> </span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>under<span class="w"> </span>the<span class="w"> </span>inequality<span class="w"> </span>constraints
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>c_1<span class="o">(</span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>c_2<span class="o">(</span>x_local,<span class="w"> </span>x_shared_1,<span class="w"> </span>x_shared_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>over<span class="w"> </span>the<span class="w"> </span>design<span class="w"> </span>space:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>+------------+-------------+-------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span><span class="p">|</span><span class="w"> </span>Name<span class="w">       </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Value<span class="w"> </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>+------------+-------------+-------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x_local<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x_shared_1<span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w">   </span><span class="m">4</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x_shared_2<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">3</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>+------------+-------------+-------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w"> </span>Solving<span class="w"> </span>optimization<span class="w"> </span>problem<span class="w"> </span>with<span class="w"> </span>algorithm<span class="w"> </span>SLSQP:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">     </span><span class="m">10</span>%<span class="p">|</span>█<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">52</span>.37<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">21</span>.8<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">     </span><span class="m">20</span>%<span class="p">|</span>██<span class="w">        </span><span class="p">|</span><span class="w"> </span><span class="m">2</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">67</span>.31<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">5</span>.39<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">     </span><span class="m">30</span>%<span class="p">|</span>███<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">3</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">74</span>.61<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.41<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">     </span><span class="m">40</span>%<span class="p">|</span>████<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">4</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">78</span>.37<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.19<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">     </span><span class="m">50</span>%<span class="p">|</span>█████<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">5</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">80</span>.88<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">     </span><span class="m">60</span>%<span class="p">|</span>██████<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">6</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">82</span>.77<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w"> </span>Optimization<span class="w"> </span>result:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>Optimizer<span class="w"> </span>info:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>Status:<span class="w"> </span><span class="m">8</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>Message:<span class="w"> </span>Positive<span class="w"> </span>directional<span class="w"> </span>derivative<span class="w"> </span><span class="k">for</span><span class="w"> </span>linesearch
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">    </span>Solution:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>The<span class="w"> </span>solution<span class="w"> </span>is<span class="w"> </span>feasible.
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>Objective:<span class="w"> </span><span class="m">3</span>.1833939517455963
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>Standardized<span class="w"> </span>constraints:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">6</span>.604938818099981e-12
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-20.244722237802005
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">       </span>Design<span class="w"> </span>space:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span>+------------+-------------+-----------------------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span><span class="p">|</span><span class="w"> </span>Name<span class="w">       </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w">         </span>Value<span class="w">         </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span>+------------+-------------+-----------------------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x_local<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">           </span><span class="m">0</span><span class="w">           </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x_shared_1<span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w">   </span><span class="m">1</span>.977638878735759<span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x_shared_2<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">9</span>.749034411601494e-13<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w">          </span>+------------+-------------+-----------------------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:02:<span class="w"> </span>***<span class="w"> </span>End<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 256-264 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 254-262 -->
 
 <p>The scenario converged after 7 iterations.
 Useful information can be found in the standard output, as seen above.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>GEMSEO provides the user with a lot of optimization algorithms and
-options. An exhaustive list of the algorithms available in GEMSEO can be
-found in the :ref:<code>gen_opt_algos</code> section.</p>
+<p>GEMSEO provides the user with a lot of optimization algorithms and options.
+An exhaustive list of the algorithms available in GEMSEO can be found in the
+<a class="autorefs autorefs-internal" title="Available: Optimization algorithms" href="../../../../algorithms/opt_algos/#available-optimization-algorithms">available optimization algorithms section</a>.</p>
 </div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 266-274 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 264-272 -->
 
 <h2 id="post-processing-the-results">Post-processing the results<a class="headerlink" href="#post-processing-the-results" title="Permanent link">&para;</a></h2>
 <p>Post-processors such as plots exhibiting the evolutions of the
@@ -47560,7 +47576,7 @@ extremely useful. The convergence of the objective function, design
 variables and of the inequality constraints can be observed in the
 following plots. Many other post-processors are available in GEMSEO and
 are described in <a class="autorefs autorefs-internal" title="How to deal with post-processing" href="../../../../postprocessing/postprocessing/#how-to-deal-with-post-processing">this page</a>.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 274-277 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 272-275 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">post_name</span><span class="o">=</span><span class="s2">&quot;OptHistoryView&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
@@ -47569,9 +47585,9 @@ are described in <a class="autorefs autorefs-internal" title="How to deal with p
 </ul>
 
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>&lt;gemseo.post.opt_history_view.OptHistoryView<span class="w"> </span>object<span class="w"> </span>at<span class="w"> </span>0x7ab2c2aaee90&gt;
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>&lt;gemseo.post.opt_history_view.OptHistoryView<span class="w"> </span>object<span class="w"> </span>at<span class="w"> </span>0x7ff17ad6ed50&gt;
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 278-283 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 276-281 -->
 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -47579,24 +47595,24 @@ are described in <a class="autorefs autorefs-internal" title="How to deal with p
 by setting <code>save</code> to <code>True</code> and potentially additional
 settings (see the <a class="autorefs autorefs-internal" title="            post_process" href="../../../../reference/gemseo/scenarios/base_scenario/#gemseo.scenarios.base_scenario.BaseScenario.post_process">post_process()</a> options).</p>
 </div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 285-290 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 283-288 -->
 
 <h2 id="exporting-the-problem-data">Exporting the problem data.<a class="headerlink" href="#exporting-the-problem-data" title="Permanent link">&para;</a></h2>
 <p>After the execution of the scenario, you may want to export your data to use it
 elsewhere. The <a class="autorefs autorefs-internal" title="            to_dataset" href="../../../../reference/gemseo/scenarios/base_scenario/#gemseo.scenarios.base_scenario.BaseScenario.to_dataset">to_dataset()</a> will allow you to export your
 results to a <a class="autorefs autorefs-internal" title="            Dataset" href="../../../../reference/gemseo/datasets/dataset/#gemseo.datasets.dataset.Dataset">Dataset</a>, the basic GEMSEO class to store data.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 290-292 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 288-290 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">dataset</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">(</span><span class="s2">&quot;a_name_for_my_dataset&quot;</span><span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 293-299 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 291-297 -->
 
 <h2 id="whats-next">What's next?<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h2>
-<p>You have completed a short introduction to GEMSEO.  You can now look at the
-:ref:<code>tutorials &lt;tutorials_sg&gt;</code> which exhibit more complex use-cases.  You
-can also have a look at the documentation to discover the several features
+<p>You have completed a short introduction to GEMSEO.
+You can now look at the examples which exhibit more complex use-cases.
+You can also have a look at the documentation to discover the several features
 and options of GEMSEO.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.719 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.714 seconds)</p>
 <div id="download_links"></div>
 
 <p><a class="md-button center" href="../plot_gemseo_in_10_minutes.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M256 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v210.7l-41.4-41.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c12.5 12.5 32.8 12.5 45.3 0l96-96c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 242.7zM64 320c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64h-46.9l-56.6 56.6c-31.2 31.2-81.9 31.2-113.1 0L110.9 320zm304 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: plot_gemseo_in_10_minutes.py</a></p>

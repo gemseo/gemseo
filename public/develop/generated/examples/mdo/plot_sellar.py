@@ -32,9 +32,7 @@
 #
 # ## The Sellar problem
 #
-# We will consider in this example the Sellar problem:
-#
-# .. include:: /problems/sellar_problem_definition.inc
+# We will consider in this example the [Sellar's problem][sellars-problem].
 #
 # ## Imports
 #

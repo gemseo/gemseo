@@ -991,8 +991,6 @@
         
       
         
-          
-        
       
         
       
@@ -1013,9 +1011,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../problems/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
   
   
   <span class="md-ellipsis">
@@ -1029,14 +1026,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
@@ -3040,6 +3031,32 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../problems/benchmark_problems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark problems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -46880,7 +46897,7 @@ which may have been loaded from the disk.</p>
   " href="../../reference/gemseo/algos/optimization_result/#gemseo.algos.optimization_result.OptimizationResult">OptimizationResult</a> attribute.</li>
 </ul>
 <h2 id="illustration-on-the-sobieski-use-case">Illustration on the Sobieski use case<a class="headerlink" href="#illustration-on-the-sobieski-use-case" title="Permanent link">&para;</a></h2>
-<p>The post-processing features are illustrated on MDO results obtained on the <a class="autorefs autorefs-internal" title="Sobieski's SSBJ test case" href="../../problems/#sobieskis-ssbj-test-case">Sobieski's SSBH problem</a>,
+<p>The post-processing features are illustrated on MDO results obtained on the <a class="autorefs autorefs-internal" title="Sobieski's SSBJ test case" href="../../problems/benchmark_problems/#sobieskis-ssbj-test-case">Sobieski's SSBH problem</a>,
 using different types of <code>formulation</code> (<a class="autorefs autorefs-internal" href="../../mdo/mdo_formulations/#the-mdf-formulation">MDF</a>, <a class="autorefs autorefs-internal" href="../../mdo/mdo_formulations/#the-idf-formulation">IDF</a>, ...)</p>
 <p>The following code sets up and executes the problem. It is possible to try different types of MDO strategies by changing
 the <code>formulation</code> value. For a detailed explanation on how to setup the case,

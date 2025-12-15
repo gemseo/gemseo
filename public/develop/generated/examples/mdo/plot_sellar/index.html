@@ -989,8 +989,6 @@
         
       
         
-          
-        
       
         
       
@@ -1008,9 +1006,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../../problems/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -1024,14 +1021,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
@@ -2947,6 +2938,32 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../problems/benchmark_problems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark problems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -47109,7 +47126,7 @@
 to download the full example code</p>
 </div>
 <h1 id="a-from-scratch-example-on-the-sellar-problem">A from scratch example on the Sellar problem.<a class="headerlink" href="#a-from-scratch-example-on-the-sellar-problem" title="Permanent link">&para;</a></h1>
-<!-- GENERATED FROM PYTHON SOURCE LINES 24-42 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 24-40 -->
 
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
 <p>In this example,
@@ -47119,11 +47136,10 @@ all the disciplines will be implemented from scratch
 by sub-classing the <a class="autorefs autorefs-internal" title="            Discipline" href="../../../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> class
 for each discipline of the Sellar problem.</p>
 <h2 id="the-sellar-problem">The Sellar problem<a class="headerlink" href="#the-sellar-problem" title="Permanent link">&para;</a></h2>
-<p>We will consider in this example the Sellar problem:</p>
-<p>.. include:: /problems/sellar_problem_definition.inc</p>
+<p>We will consider in this example the <a class="autorefs autorefs-internal" href="../../../../problems/benchmark_problems/#sellars-problem">Sellar's problem</a>.</p>
 <h2 id="imports">Imports<a class="headerlink" href="#imports" title="Permanent link">&para;</a></h2>
 <p>All the imports needed for the tutorials are performed here.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 42-58 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 40-56 -->
 
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -47140,7 +47156,7 @@ for each discipline of the Sellar problem.</p>
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">gemseo.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrKeyMapping</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 59-82 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 57-80 -->
 
 <h2 id="create-the-disciplinary-classes">Create the disciplinary classes<a class="headerlink" href="#create-the-disciplinary-classes" title="Permanent link">&para;</a></h2>
 <p>In this section,
@@ -47169,7 +47185,7 @@ the constructor and the _run method are overridden:</p>
 In this example,
 we will approximate the derivatives using the finite differences method.</p>
 <h3 id="create-the-sellarsystem-class">Create the SellarSystem class<a class="headerlink" href="#create-the-sellarsystem-class" title="Permanent link">&para;</a></h3>
-<!-- GENERATED FROM PYTHON SOURCE LINES 82-114 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 80-112 -->
 
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SellarSystem</span><span class="p">(</span><span class="n">Discipline</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -47200,10 +47216,10 @@ we will approximate the derivatives using the finite differences method.</p>
         <span class="n">output_data</span><span class="p">[</span><span class="s2">&quot;c_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">y_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">24.0</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">output_data</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 115-116 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 113-114 -->
 
 <h3 id="create-the-sellar1-class">Create the Sellar1 class<a class="headerlink" href="#create-the-sellar1-class" title="Permanent link">&para;</a></h3>
-<!-- GENERATED FROM PYTHON SOURCE LINES 116-136 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 114-134 -->
 
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Sellar1</span><span class="p">(</span><span class="n">Discipline</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -47222,10 +47238,10 @@ we will approximate the derivatives using the finite differences method.</p>
         <span class="n">y_2</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="s2">&quot;y_2&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;y_1&quot;</span><span class="p">:</span> <span class="n">array</span><span class="p">([(</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">y_2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">])}</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 137-138 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 135-136 -->
 
 <h3 id="create-the-sellar2-class">Create the Sellar2 class<a class="headerlink" href="#create-the-sellar2-class" title="Permanent link">&para;</a></h3>
-<!-- GENERATED FROM PYTHON SOURCE LINES 138-156 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 136-154 -->
 
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Sellar2</span><span class="p">(</span><span class="n">Discipline</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -47242,17 +47258,17 @@ we will approximate the derivatives using the finite differences method.</p>
         <span class="n">y_1</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="s2">&quot;y_1&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;y_2&quot;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">y_1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]])}</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 157-162 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 155-160 -->
 
 <h2 id="create-and-execute-the-scenario">Create and execute the scenario<a class="headerlink" href="#create-and-execute-the-scenario" title="Permanent link">&para;</a></h2>
 <h3 id="instantiate-disciplines">Instantiate disciplines<a class="headerlink" href="#instantiate-disciplines" title="Permanent link">&para;</a></h3>
 <p>We can now instantiate the disciplines
 and store the instances in a list which will be used below.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 162-165 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 160-163 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">disciplines</span> <span class="o">=</span> <span class="p">[</span><span class="n">Sellar1</span><span class="p">(),</span> <span class="n">Sellar2</span><span class="p">(),</span> <span class="n">SellarSystem</span><span class="p">()]</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 166-178 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 164-176 -->
 
 <h3 id="create-the-design-space">Create the design space<a class="headerlink" href="#create-the-design-space" title="Permanent link">&para;</a></h3>
 <p>In this section,
@@ -47265,7 +47281,7 @@ and consequently they have to be included in the design space.
 Conversely,
 it would not have been necessary to include them
 if we aimed to select an MDF formulation.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 178-187 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 176-185 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">design_space</span> <span class="o">=</span> <span class="n">DesignSpace</span><span class="p">()</span>
 <span class="n">design_space</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
@@ -47275,107 +47291,107 @@ if we aimed to select an MDF formulation.</p>
 <span class="n">design_space</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;y_1&quot;</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=-</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 <span class="n">design_space</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;y_2&quot;</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=-</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 188-193 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 186-191 -->
 
 <h3 id="create-the-scenario">Create the scenario<a class="headerlink" href="#create-the-scenario" title="Permanent link">&para;</a></h3>
 <p>In this section,
 we build the MDO scenario which links the disciplines with the formulation,
 the design space and the objective function.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 193-195 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 191-193 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span> <span class="o">=</span> <span class="n">create_scenario</span><span class="p">(</span><span class="n">disciplines</span><span class="p">,</span> <span class="s2">&quot;obj&quot;</span><span class="p">,</span> <span class="n">design_space</span><span class="p">,</span> <span class="n">formulation_name</span><span class="o">=</span><span class="s2">&quot;IDF&quot;</span><span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 196-200 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 194-198 -->
 
 <h3 id="add-the-constraints">Add the constraints<a class="headerlink" href="#add-the-constraints" title="Permanent link">&para;</a></h3>
 <p>Then,
 we have to set the design constraints</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 200-203 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 198-201 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;c_1&quot;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s2">&quot;ineq&quot;</span><span class="p">)</span>
 <span class="n">scenario</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;c_2&quot;</span><span class="p">,</span> <span class="n">constraint_type</span><span class="o">=</span><span class="s2">&quot;ineq&quot;</span><span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 204-207 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 202-205 -->
 
 <p>As previously mentioned,
 we are going to use finite differences to approximate the derivatives
 since the disciplines do not provide them.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 207-209 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 205-207 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">set_differentiation_method</span><span class="p">(</span><span class="s2">&quot;finite_differences&quot;</span><span class="p">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 210-216 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 208-214 -->
 
 <h3 id="execute-the-scenario">Execute the scenario<a class="headerlink" href="#execute-the-scenario" title="Permanent link">&para;</a></h3>
 <p>Then,
 we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 In this example,
 the gradient-based <code>SLSQP</code> optimizer is selected, with 10 iterations at maximum:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 216-218 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 214-216 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">algo_name</span><span class="o">=</span><span class="s2">&quot;SLSQP&quot;</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w"> </span>***<span class="w"> </span>Start<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w"> </span>MDOScenario
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>Disciplines:<span class="w"> </span>Sellar1<span class="w"> </span>Sellar2<span class="w"> </span>SellarSystem
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>MDO<span class="w"> </span>formulation:<span class="w"> </span>IDF
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w"> </span>Optimization<span class="w"> </span>problem:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>minimize<span class="w"> </span>obj<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_1,<span class="w"> </span>y_2<span class="o">)</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>with<span class="w"> </span>respect<span class="w"> </span>to<span class="w"> </span>x,<span class="w"> </span>y_1,<span class="w"> </span>y_2,<span class="w"> </span>z
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>under<span class="w"> </span>the<span class="w"> </span>equality<span class="w"> </span>constraints
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>consistency_y_1<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_2<span class="o">)</span>:<span class="w"> </span>y_1<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_2<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="nv">y_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.0
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>consistency_y_2<span class="o">(</span>z,<span class="w"> </span>y_1<span class="o">)</span>:<span class="w"> </span>y_2<span class="o">(</span>z,<span class="w"> </span>y_1<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="nv">y_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.0
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>under<span class="w"> </span>the<span class="w"> </span>inequality<span class="w"> </span>constraints
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>c_1<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_1,<span class="w"> </span>y_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>c_2<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_1,<span class="w"> </span>y_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">    </span>over<span class="w"> </span>the<span class="w"> </span>design<span class="w"> </span>space:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>+------+-------------+-------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span><span class="p">|</span><span class="w"> </span>Name<span class="w"> </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Value<span class="w"> </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>+------+-------------+-------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w">   </span><span class="m">4</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">3</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span><span class="p">|</span><span class="w"> </span>y_1<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span><span class="p">|</span><span class="w"> </span>y_2<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">       </span>+------+-------------+-------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w"> </span>Solving<span class="w"> </span>optimization<span class="w"> </span>problem<span class="w"> </span>with<span class="w"> </span>algorithm<span class="w"> </span>SLSQP:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">     </span><span class="m">10</span>%<span class="p">|</span>█<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">80</span>.27<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">5</span>.37<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">     </span><span class="m">20</span>%<span class="p">|</span>██<span class="w">        </span><span class="p">|</span><span class="w"> </span><span class="m">2</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">107</span>.72<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">4</span>.34<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">     </span><span class="m">30</span>%<span class="p">|</span>███<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">3</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">124</span>.99<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.26<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:54:<span class="w">     </span><span class="m">40</span>%<span class="p">|</span>████<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">4</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">134</span>.82<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">     </span><span class="m">50</span>%<span class="p">|</span>█████<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">5</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">140</span>.72<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">     </span><span class="m">60</span>%<span class="p">|</span>██████<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">6</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">144</span>.15<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w"> </span>Optimization<span class="w"> </span>result:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">    </span>Optimizer<span class="w"> </span>info:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">       </span>Status:<span class="w"> </span><span class="m">8</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">       </span>Message:<span class="w"> </span>Positive<span class="w"> </span>directional<span class="w"> </span>derivative<span class="w"> </span><span class="k">for</span><span class="w"> </span>linesearch
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">    </span>Solution:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">       </span>The<span class="w"> </span>solution<span class="w"> </span>is<span class="w"> </span>feasible.
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">       </span>Objective:<span class="w"> </span><span class="m">3</span>.1833939516400456
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">       </span>Standardized<span class="w"> </span>constraints:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span>.764277943853813e-13
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-20.244722233074114
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="nv">consistency_y_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="m">2</span>.06834549e-15<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="nv">consistency_y_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="m">1</span>.98063788e-15<span class="o">]</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">       </span>Design<span class="w"> </span>space:
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span>+------+-------------+-------------------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="p">|</span><span class="w"> </span>Name<span class="w"> </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w">       </span>Value<span class="w">       </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span>+------+-------------+-------------------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.977638883463326<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="p">|</span><span class="w"> </span>y_1<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.777638883462956<span class="w"> </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span><span class="p">|</span><span class="w"> </span>y_2<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">3</span>.755277766925886<span class="w"> </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w">          </span>+------+-------------+-------------------+-------------+-------+
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">10</span>:29:55:<span class="w"> </span>***<span class="w"> </span>End<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w"> </span>***<span class="w"> </span>Start<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w"> </span>MDOScenario
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>Disciplines:<span class="w"> </span>Sellar1<span class="w"> </span>Sellar2<span class="w"> </span>SellarSystem
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>MDO<span class="w"> </span>formulation:<span class="w"> </span>IDF
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w"> </span>Optimization<span class="w"> </span>problem:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>minimize<span class="w"> </span>obj<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_1,<span class="w"> </span>y_2<span class="o">)</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>with<span class="w"> </span>respect<span class="w"> </span>to<span class="w"> </span>x,<span class="w"> </span>y_1,<span class="w"> </span>y_2,<span class="w"> </span>z
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>under<span class="w"> </span>the<span class="w"> </span>equality<span class="w"> </span>constraints
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>consistency_y_1<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_2<span class="o">)</span>:<span class="w"> </span>y_1<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_2<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="nv">y_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.0
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>consistency_y_2<span class="o">(</span>z,<span class="w"> </span>y_1<span class="o">)</span>:<span class="w"> </span>y_2<span class="o">(</span>z,<span class="w"> </span>y_1<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="nv">y_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.0
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>under<span class="w"> </span>the<span class="w"> </span>inequality<span class="w"> </span>constraints
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>c_1<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_1,<span class="w"> </span>y_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>c_2<span class="o">(</span>x,<span class="w"> </span>z,<span class="w"> </span>y_1,<span class="w"> </span>y_2<span class="o">)</span><span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>over<span class="w"> </span>the<span class="w"> </span>design<span class="w"> </span>space:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>+------+-------------+-------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span><span class="p">|</span><span class="w"> </span>Name<span class="w"> </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Value<span class="w"> </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>+------+-------------+-------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span><span class="p">|</span><span class="w"> </span>x<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w">   </span><span class="m">4</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">   </span><span class="m">3</span><span class="w">   </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span><span class="p">|</span><span class="w"> </span>y_1<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span><span class="p">|</span><span class="w"> </span>y_2<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>+------+-------------+-------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w"> </span>Solving<span class="w"> </span>optimization<span class="w"> </span>problem<span class="w"> </span>with<span class="w"> </span>algorithm<span class="w"> </span>SLSQP:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">     </span><span class="m">10</span>%<span class="p">|</span>█<span class="w">         </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">82</span>.00<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">5</span>.37<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">     </span><span class="m">20</span>%<span class="p">|</span>██<span class="w">        </span><span class="p">|</span><span class="w"> </span><span class="m">2</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">111</span>.32<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">4</span>.34<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">     </span><span class="m">30</span>%<span class="p">|</span>███<span class="w">       </span><span class="p">|</span><span class="w"> </span><span class="m">3</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">129</span>.71<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.26<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">     </span><span class="m">40</span>%<span class="p">|</span>████<span class="w">      </span><span class="p">|</span><span class="w"> </span><span class="m">4</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">140</span>.47<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">     </span><span class="m">50</span>%<span class="p">|</span>█████<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">5</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">145</span>.64<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">     </span><span class="m">60</span>%<span class="p">|</span>██████<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">6</span>/10<span class="w"> </span><span class="o">[</span><span class="m">00</span>:00&lt;<span class="m">00</span>:00,<span class="w"> </span><span class="m">148</span>.43<span class="w"> </span>it/sec,<span class="w"> </span><span class="nv">feas</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">obj</span><span class="o">=</span><span class="m">3</span>.18<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w"> </span>Optimization<span class="w"> </span>result:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>Optimizer<span class="w"> </span>info:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>Status:<span class="w"> </span><span class="m">8</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>Message:<span class="w"> </span>Positive<span class="w"> </span>directional<span class="w"> </span>derivative<span class="w"> </span><span class="k">for</span><span class="w"> </span>linesearch
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">    </span>Solution:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>The<span class="w"> </span>solution<span class="w"> </span>is<span class="w"> </span>feasible.
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>Objective:<span class="w"> </span><span class="m">3</span>.1833939516400456
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>Standardized<span class="w"> </span>constraints:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span>.764277943853813e-13
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-20.244722233074114
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="nv">consistency_y_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="m">2</span>.06834549e-15<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="nv">consistency_y_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="m">1</span>.98063788e-15<span class="o">]</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">       </span>Design<span class="w"> </span>space:
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span>+------+-------------+-------------------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="p">|</span><span class="w"> </span>Name<span class="w"> </span><span class="p">|</span><span class="w"> </span>Lower<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w">       </span>Value<span class="w">       </span><span class="p">|</span><span class="w"> </span>Upper<span class="w"> </span>bound<span class="w"> </span><span class="p">|</span><span class="w"> </span>Type<span class="w">  </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span>+------+-------------+-------------------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="p">|</span><span class="w"> </span>x<span class="w">    </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">     </span>-10<span class="w">     </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.977638883463326<span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="p">|</span><span class="w"> </span>z<span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w">      </span><span class="m">0</span><span class="w">      </span><span class="p">|</span><span class="w">         </span><span class="m">0</span><span class="w">         </span><span class="p">|</span><span class="w">      </span><span class="m">10</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="p">|</span><span class="w"> </span>y_1<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">1</span>.777638883462956<span class="w"> </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span><span class="p">|</span><span class="w"> </span>y_2<span class="w">  </span><span class="p">|</span><span class="w">     </span>-100<span class="w">    </span><span class="p">|</span><span class="w"> </span><span class="m">3</span>.755277766925886<span class="w"> </span><span class="p">|</span><span class="w">     </span><span class="m">100</span><span class="w">     </span><span class="p">|</span><span class="w"> </span>float<span class="w"> </span><span class="p">|</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w">          </span>+------+-------------+-------------------+-------------+-------+
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">17</span>:33:04:<span class="w"> </span>***<span class="w"> </span>End<span class="w"> </span>MDOScenario<span class="w"> </span>execution<span class="w"> </span>***
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 219-223 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 217-221 -->
 
 <h3 id="post-process-the-scenario">Post-process the scenario<a class="headerlink" href="#post-process-the-scenario" title="Permanent link">&para;</a></h3>
 <p>Finally,
 we can generate plots of the optimization history:</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 223-224 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 221-222 -->
 
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">post_process</span><span class="p">(</span><span class="n">post_name</span><span class="o">=</span><span class="s2">&quot;OptHistoryView&quot;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
@@ -47384,9 +47400,9 @@ we can generate plots of the optimization history:</p>
 </ul>
 
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>&lt;gemseo.post.opt_history_view.OptHistoryView<span class="w"> </span>object<span class="w"> </span>at<span class="w"> </span>0x7ab2c2af3e30&gt;
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>&lt;gemseo.post.opt_history_view.OptHistoryView<span class="w"> </span>object<span class="w"> </span>at<span class="w"> </span>0x7ff17aba0410&gt;
 </code></pre></div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.758 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.745 seconds)</p>
 <div id="download_links"></div>
 
 <p><a class="md-button center" href="../plot_sellar.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M256 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v210.7l-41.4-41.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c12.5 12.5 32.8 12.5 45.3 0l96-96c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 242.7zM64 320c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64h-46.9l-56.6 56.6c-31.2 31.2-81.9 31.2-113.1 0L110.9 320zm304 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: plot_sellar.py</a></p>

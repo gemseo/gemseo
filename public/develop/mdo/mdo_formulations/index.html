@@ -991,8 +991,6 @@
         
       
         
-          
-        
       
         
       
@@ -1013,9 +1011,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../problems/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
   
   
   <span class="md-ellipsis">
@@ -1029,14 +1026,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
@@ -3106,6 +3097,32 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../problems/benchmark_problems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark problems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -47223,8 +47240,8 @@ with the following code:</p>
 <div class="highlight"><pre><span></span><code><span class="n">scenario</span><span class="o">.</span><span class="n">xdsmize</span><span class="p">(</span><span class="n">show_html</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>If <code>save_html</code> (default <code>True</code>), will generate a self contained HTML file, that can be automatically open using the option <code>show_html=True</code>.
-If <code>save_json</code> is True, it will generate a <a href="https://github.com/whatsopt/XDSMjs">XDSMjs</a> input file :ref:<code>xdsm</code> (legacy behavior).
-If <code>save_pdf=True</code> (default <code>False</code>), a LaTex PDF is generated.</p>
+If <code>save_json</code> is True, it will generate an <a class="autorefs autorefs-internal" title="Graphical monitoring using XDSMjs" href="../../scenario/monitoring/#graphical-monitoring-using-xdsmjs">XDSM</a> file (legacy behavior) using <a href="https://github.com/whatsopt/XDSMjs">XDSMjs</a>.
+If <code>save_pdf=True</code> (default <code>False</code>), a <span class="arithmatex">\(\LaTeX\)</span> PDF is generated.</p>
 <p>You should observe the XDSM diagram related to your MDO scenario.</p>
 <h2 id="class-diagram">Class diagram<a class="headerlink" href="#class-diagram" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>classDiagram

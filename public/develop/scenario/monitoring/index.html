@@ -991,8 +991,6 @@
         
       
         
-          
-        
       
         
       
@@ -1013,9 +1011,8 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../problems/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
   
   
   <span class="md-ellipsis">
@@ -1029,14 +1026,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
@@ -3047,6 +3038,32 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../problems/benchmark_problems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark problems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
               
             
               
@@ -46872,7 +46889,7 @@ Contributors:
 GEMSEO logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
 In a situation like this, the current execution status of the <a class="autorefs autorefs-internal" title="            Discipline" href="../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a> is useful as well.</p>
-<p>In this page, the different monitoring modes of a GEMSEO scenario are illustrated on the <a class="autorefs autorefs-internal" title="Sobieski's SSBJ test case" href="../../problems/#sobieskis-ssbj-test-case">Sobieski</a> MDF test case.</p>
+<p>In this page, the different monitoring modes of a GEMSEO scenario are illustrated on the <a class="autorefs autorefs-internal" title="Sobieski's SSBJ test case" href="../../problems/benchmark_problems/#sobieskis-ssbj-test-case">Sobieski</a> MDF test case.</p>
 <p>For that, by means of the API function <a class="autorefs autorefs-internal" title="            create_discipline" href="../../reference/gemseo/#gemseo.create_discipline">create_discipline()</a>, we build the <a class="autorefs autorefs-internal" title="            Discipline" href="../../reference/gemseo/core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline">Discipline</a>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">gemseo</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_discipline</span>
 
