@@ -1968,25 +1968,40 @@ class DesignSpace:
             if hdf_node_path:
                 h5file = h5file.require_group(hdf_node_path)
             design_vars_grp = h5file.require_group(self.DESIGN_SPACE_GROUP)
-            design_vars_grp.create_dataset(
-                self.NAMES_GROUP,
-                data=array(self.variable_names, dtype=bytes_),
+            name_array = array(self.variable_names, dtype=bytes_)
+            names_dataset = design_vars_grp.require_dataset(
+                self.NAMES_GROUP, name_array.shape, name_array.dtype
             )
+            names_dataset[...] = name_array
 
             for name, variable in self._variables.items():
                 var_grp = design_vars_grp.require_group(name)
-                var_grp.create_dataset(self.SIZE_GROUP, data=variable.size)
-                var_grp.create_dataset(self.LB_GROUP, data=variable.lower_bound)
-                var_grp.create_dataset(self.UB_GROUP, data=variable.upper_bound)
-                data_array = array([variable.type] * variable.size, dtype="bytes")
-                var_grp.create_dataset(
-                    self.VAR_TYPE_GROUP,
-                    data=data_array,
-                    dtype=data_array.dtype,
+                size_ds = var_grp.require_dataset(
+                    self.SIZE_GROUP, (), dtype=self.__INT_DTYPE
                 )
+                size_ds[...] = variable.size
+
+                lb = array(variable.lower_bound, copy=False)
+                lb_ds = var_grp.require_dataset(self.LB_GROUP, lb.shape, lb.dtype)
+                lb_ds[...] = lb
+
+                ub = array(variable.upper_bound, copy=False)
+                ub_ds = var_grp.require_dataset(self.UB_GROUP, ub.shape, ub.dtype)
+                ub_ds[...] = ub
+
+                data_array = array([variable.type] * variable.size, dtype="bytes")
+                type_ds = var_grp.require_dataset(
+                    self.VAR_TYPE_GROUP, data_array.shape, data_array.dtype
+                )
+                type_ds[...] = data_array
+
                 value = self.__current_value.get(name)
                 if value is not None:
-                    var_grp.create_dataset(self.VALUE_GROUP, data=self.__to_real(value))
+                    real_val = self.__to_real(value)
+                    val_ds = var_grp.require_dataset(
+                        self.VALUE_GROUP, real_val.shape, real_val.dtype
+                    )
+                    val_ds[...] = real_val
 
     @classmethod
     def from_hdf(cls, file_path: str | Path, hdf_node_path: str = "") -> DesignSpace:
