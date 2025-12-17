@@ -976,11 +976,53 @@ def check_ds(ref_ds, read_ds, f_path) -> None:
     assert len(ref_str.split("\n")) > 20
 
 
+def check_read_ds(ref_ds, f_path) -> None:
+    """Check the design space read from a file.
+
+    Args:
+        ref_ds: The reference design space.
+        f_path: The file path.
+    """
+    assert f_path.exists()
+    read_ds = DesignSpace.from_hdf(f_path)
+    assert read_ds.variable_names == ref_ds.variable_names
+
+    err = read_ds.get_lower_bounds() - ref_ds.get_lower_bounds()
+    assert norm(err) == pytest.approx(0.0)
+
+    err = read_ds.get_upper_bounds() - ref_ds.get_upper_bounds()
+    assert norm(err) == pytest.approx(0.0)
+
+    err = read_ds.get_current_value() - ref_ds.get_current_value()
+    assert norm(err) == pytest.approx(0.0)
+
+    type_read = [t for name in read_ds for t in read_ds.get_type(name)]
+
+    type_ref = [t for name in read_ds for t in ref_ds.get_type(name)]
+
+    assert type_read == type_ref
+
+    for name in ref_ds:
+        assert name in read_ds
+
+
 def test_hdf5_export(tmp_wd) -> None:
     """Tests the export of a Design space in the HDF5 format."""
     ref_ds = get_sobieski_design_space()
     f_path = Path("_sobieski_design_space.h5")
     ref_ds.to_hdf(f_path)
+
+
+def test_hdf5_append(tmp_wd) -> None:
+    """Tests the appending of a Design space in the HDF5 format."""
+    ds = DesignSpace()
+    ds.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    f_path = Path("_append_ds.h5")
+    ds.to_hdf(f_path)
+    ds.set_current_value(array([0.75]))
+    ds.to_hdf(f_path, append=True)
+
+    check_read_ds(ds, f_path)
 
 
 def test_hdf5_with_node(tmp_wd):
