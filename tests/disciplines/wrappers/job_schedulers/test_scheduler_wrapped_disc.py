@@ -148,8 +148,7 @@ def test_handle_outputs_errors(
 
     exception = (ValueError("An error."), "stack trace.")
     outputs_path = tmp_wd / "outputs.pickl"
-    with Path(outputs_path).open("wb") as outf:
-        outf.write(pickle.dumps(exception))
+    Path(outputs_path).write_bytes(pickle.dumps(exception))
 
     with pytest.raises(ValueError, match=re.escape("An error.")):
         discipline._handle_outputs(tmp_wd, outputs_path)

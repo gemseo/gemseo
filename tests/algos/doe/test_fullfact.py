@@ -137,14 +137,18 @@ def test_fullfact_levels(
         (
             {},
             ValueError,
-            "Either 'n_samples' or 'levels' is required as an input parameter "
-            "for the full-factorial DOE.",
+            (
+                "Either 'n_samples' or 'levels' is required as an input parameter "
+                "for the full-factorial DOE."
+            ),
         ),
         (
             {"n_samples": 6, "levels": [2, 2]},
             ValueError,
-            "Only one input parameter among 'n_samples' and 'levels' must be given "
-            "for the full-factorial DOE.",
+            (
+                "Only one input parameter among 'n_samples' and 'levels' must be given "
+                "for the full-factorial DOE."
+            ),
         ),
         (
             {"levels": -1},

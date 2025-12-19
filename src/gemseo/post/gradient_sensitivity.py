@@ -152,7 +152,8 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     iteration = self._optimization_metadata.optimum_iteration
                 try:
                     gradient_value = (
-                        self._dataset.get_view(variable_names=grad_name)
+                        self._dataset
+                        .get_view(variable_names=grad_name)
                         .loc[iteration]
                         .to_numpy()
                     )

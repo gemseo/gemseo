@@ -28,8 +28,10 @@ def test_doe_settings_wait_time_between_samples(caplog):
         (
             "gemseo.algos.doe.base_doe_settings",
             30,
-            "The option 'wait_time_between_samples' is ignored "
-            "when the option 'n_processes' is 1 (serial mode).",
+            (
+                "The option 'wait_time_between_samples' is ignored "
+                "when the option 'n_processes' is 1 (serial mode)."
+            ),
         )
     ]
 

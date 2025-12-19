@@ -134,7 +134,8 @@ of iteration of the MDA algorithm required to reach convergence.""",
             factory = LinearSolverLibraryFactory()
             library_name = factory.algo_names_to_libraries[self.linear_solver]
             settings_model = (
-                factory.get_class(library_name)
+                factory
+                .get_class(library_name)
                 .ALGORITHM_INFOS[self.linear_solver]
                 .Settings
             )

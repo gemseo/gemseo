@@ -61,12 +61,8 @@ def test_directories_and_files(tmp_wd, caplog) -> None:
     """Test to copy files and directories."""
     # Create empty files and directory.
     Path("directory_tata").mkdir()
-    with (
-        Path("toto.txt").open("w") as f,
-        Path("directory_tata/tata.txt").open("w") as g,
-    ):
-        f.write("toto")
-        g.write("tata")
+    Path("toto.txt").write_text("toto")
+    Path("directory_tata/tata.txt").write_text("tata")
 
     exec_runner = _BaseExecutableRunner(
         "python --version",

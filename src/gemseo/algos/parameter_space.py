@@ -772,7 +772,8 @@ class ParameterSpace(DesignSpace):
 
         if self.uncertain_variables:
             default_variable_name = (
-                self.distributions[self.uncertain_variables[0]]
+                self
+                .distributions[self.uncertain_variables[0]]
                 .marginals[0]
                 .DEFAULT_VARIABLE_NAME
             )

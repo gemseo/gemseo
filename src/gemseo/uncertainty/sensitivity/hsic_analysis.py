@@ -314,7 +314,8 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             for output_name in output_names:
                 output_indices = []
                 for i, output_component_samples in enumerate(
-                    self.dataset.get_view(
+                    self.dataset
+                    .get_view(
                         group_names=self.dataset.OUTPUT_GROUP,
                         variable_names=output_name,
                     )

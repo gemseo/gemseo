@@ -185,12 +185,14 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             self._output_names = []
         else:
             self._input_names = list(
-                samples.get_view(group_names=samples.INPUT_GROUP)
+                samples
+                .get_view(group_names=samples.INPUT_GROUP)
                 .columns.get_level_values(1)
                 .unique()
             )
             self._output_names = list(
-                samples.get_view(group_names=samples.OUTPUT_GROUP)
+                samples
+                .get_view(group_names=samples.OUTPUT_GROUP)
                 .columns.get_level_values(1)
                 .unique()
             )

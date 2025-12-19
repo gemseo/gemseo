@@ -225,7 +225,8 @@ def test_max_design_space_dimension_to_log(max_dimension, caplog):
         (
             "gemseo.algos.base_driver_library",
             logging.INFO,
-            problem.design_space._get_string_representation(False)
+            problem.design_space
+            ._get_string_representation(False)
             .replace("Design space", "      Design space")
             .replace("\n", "\n         "),
         )

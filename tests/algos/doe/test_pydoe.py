@@ -78,8 +78,10 @@ def test_lhs_maximin() -> None:
         (
             "PYDOE_CCDESIGN",
             {"face": "unknown_value"},
-            "Input should be 'circumscribed', 'ccc', 'inscribed', 'cci', 'faced' or"
-            " 'ccf'",
+            (
+                "Input should be 'circumscribed', 'ccc', 'inscribed', 'cci', 'faced' or"
+                " 'ccf'"
+            ),
         ),
         (
             "PYDOE_CCDESIGN",
@@ -99,8 +101,10 @@ def test_lhs_maximin() -> None:
         (
             "PYDOE_LHS",
             {"criterion": "unknown_value", "n_samples": 2},
-            "Input should be 'center', 'c', 'maximin', 'm', 'centermaximin', 'cm',"
-            " 'correlation', 'corr' or 'lhsmu'",
+            (
+                "Input should be 'center', 'c', 'maximin', 'm', 'centermaximin', 'cm',"
+                " 'correlation', 'corr' or 'lhsmu'"
+            ),
         ),
     ],
 )

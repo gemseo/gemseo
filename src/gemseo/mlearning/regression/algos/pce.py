@@ -95,7 +95,6 @@ from numpy import vstack
 from numpy import zeros
 from openturns import LARS
 from openturns import CleaningStrategy
-from openturns import ComposedDistribution
 from openturns import CorrectedLeaveOneOut
 from openturns import FixedStrategy
 from openturns import FunctionalChaosAlgorithm
@@ -116,6 +115,7 @@ from gemseo.mlearning.regression.algos.base_fce import BaseFCERegressor
 from gemseo.mlearning.regression.algos.pce_settings import CleaningOptions
 from gemseo.mlearning.regression.algos.pce_settings import PCERegressor_Settings
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
+from gemseo.utils.compatibility.openturns import JointDistribution
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import pretty_str
 
@@ -256,7 +256,7 @@ class PCERegressor(BaseFCERegressor):
         self.__cleaning = cleaning_options
         self.__hyperbolic_parameter = self._settings.hyperbolic_parameter
         self.__degree = self._settings.degree
-        self.__composed_distribution = ComposedDistribution([
+        self.__composed_distribution = JointDistribution([
             marginal.distribution
             for input_name in self.input_names
             for marginal in distributions[input_name].marginals
@@ -272,7 +272,8 @@ class PCERegressor(BaseFCERegressor):
                     self.learning_set.get_view(
                         group_names=self.learning_set.INPUT_GROUP
                     ).to_numpy(),
-                    self.learning_set.get_view(variable_names=self.__WEIGHT)
+                    self.learning_set
+                    .get_view(variable_names=self.__WEIGHT)
                     .to_numpy()
                     .ravel(),
                 )

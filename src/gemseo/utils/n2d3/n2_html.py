@@ -52,8 +52,9 @@ class N2HTML:
         Args:
             json_structure: The JSON structure of the N2 chart.
         """
-        with Path(self.__file_path).open("w", encoding="utf-8", newline="") as stream:
-            stream.write(self.__create_html_contents(json_structure))
+        Path(self.__file_path).write_text(
+            self.__create_html_contents(json_structure), encoding="utf-8", newline=""
+        )
 
         if self.__show_html:
             webbrowser.open_new_tab(str(self.__file_path))

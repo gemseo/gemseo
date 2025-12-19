@@ -108,7 +108,8 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
             f_0 = dataset.get_view(variable_names=function_name).iloc[0].to_numpy()
             f_opt = (
-                dataset.get_view(variable_names=function_name)
+                dataset
+                .get_view(variable_names=function_name)
                 .loc[optimization_metadata.optimum_iteration]
                 .to_numpy()
             )

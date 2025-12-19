@@ -92,5 +92,4 @@ def save_data_arrays_to_xml(
             .replace("\n", "")
         )
 
-    with file_path.open("w") as xml_file:
-        xml_file.write(prettify(root))
+    file_path.write_text(prettify(root))

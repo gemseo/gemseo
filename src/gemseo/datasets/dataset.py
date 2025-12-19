@@ -281,7 +281,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
             return sorted(
-                self.get_view(variable_names=variable_name)
+                self
+                .get_view(variable_names=variable_name)
                 .columns.get_level_values(self.__GROUP_LEVEL)
                 .unique()
             )
@@ -307,7 +308,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
             return sorted(
-                self.get_view(group_names=group_name)
+                self
+                .get_view(group_names=group_name)
                 .columns.get_level_values(self.__VARIABLE_LEVEL)
                 .unique()
             )
@@ -331,7 +333,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
             return (
-                self.get_view(group_name, variable_name)
+                self
+                .get_view(group_name, variable_name)
                 .columns.get_level_values(self.__COMPONENT_LEVEL)
                 .tolist()
             )

@@ -343,7 +343,8 @@ def test_output_variances(sobol) -> None:
     assert compare_dict_of_arrays(
         sobol.output_variances,
         {
-            name: dataset.get_view(variable_names=name)
+            name: dataset
+            .get_view(variable_names=name)
             .to_numpy()[: len(dataset) // 8 * 2]
             .var(0)
             for name in ["y", "z"]
@@ -358,7 +359,8 @@ def test_output_standard_deviations(sobol) -> None:
     assert compare_dict_of_arrays(
         sobol.output_standard_deviations,
         {
-            name: dataset.get_view(variable_names=name)
+            name: dataset
+            .get_view(variable_names=name)
             .to_numpy()[: len(dataset) // 8 * 2]
             .std(0)
             for name in ["y", "z"]

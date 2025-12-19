@@ -93,7 +93,8 @@ def openturns_hsic_indices(
         input_samples.getMarginal(1).computeStandardDeviation()
     )
     y1_samples = Sample(
-        hsic_analysis.dataset.get_view(
+        hsic_analysis.dataset
+        .get_view(
             group_names=hsic_analysis.dataset.OUTPUT_GROUP,
             variable_names="y1",
         )
@@ -103,7 +104,8 @@ def openturns_hsic_indices(
     y1_covariance_model = SquaredExponential(1)
     y1_covariance_model.setScale(y1_samples.computeStandardDeviation())
     y2_samples = Sample(
-        hsic_analysis.dataset.get_view(
+        hsic_analysis.dataset
+        .get_view(
             group_names=hsic_analysis.dataset.OUTPUT_GROUP,
             variable_names="y2",
         )

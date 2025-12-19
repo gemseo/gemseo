@@ -152,8 +152,10 @@ def test_add_variable_with_unnumerizable_value(design_space) -> None:
         ),
         (
             "value",
-            "The following value of variable 'varname' is neither None nor a number: "
-            "nan (index 0).",
+            (
+                "The following value of variable 'varname' is "
+                "neither None nor a number: nan (index 0)."
+            ),
         ),
     ],
 )

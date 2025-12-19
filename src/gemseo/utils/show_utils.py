@@ -79,5 +79,4 @@ def generate_xdsm_html(
         file_path: The name of the path to the output HTML file.
     """
     file_path = Path(file_path)
-    with file_path.open("w") as stream:
-        stream.write(HTML_TEMPLATE.format(css(), bundlejs(), xdsm))
+    file_path.write_text(HTML_TEMPLATE.format(css(), bundlejs(), xdsm))

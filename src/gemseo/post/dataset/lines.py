@@ -84,7 +84,8 @@ class Lines(DatasetPlot):
         abscissa_variable = self._specific_settings.abscissa_variable
         if abscissa_variable:
             x_values = (
-                self.dataset.get_view(variable_names=abscissa_variable)
+                self.dataset
+                .get_view(variable_names=abscissa_variable)
                 .to_numpy()
                 .ravel()
                 .tolist()
@@ -103,7 +104,8 @@ class Lines(DatasetPlot):
                 variable_names.remove(abscissa_variable)
 
         y_names_to_values = {
-            variable_name: self.dataset.get_view(variable_names=variable_name)
+            variable_name: self.dataset
+            .get_view(variable_names=variable_name)
             .to_numpy()
             .T
             for variable_name in variable_names

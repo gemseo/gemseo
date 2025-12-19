@@ -51,8 +51,7 @@ def write_output(out1, out2, outfile, failure=None) -> None:
     out 2 = {:1.18g}
     toto"""
 
-    with Path(outfile).open("w") as fout:
-        fout.write(sout.format(out1, out2))
+    Path(outfile).write_text(sout.format(out1, out2))
 
 
 def execute(infile=None, outfile=None):

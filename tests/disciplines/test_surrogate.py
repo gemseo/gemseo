@@ -135,9 +135,11 @@ def test_execute_warning(linear_discipline, caplog):
     assert caplog.record_tuples[0] == (
         "gemseo.disciplines.surrogate",
         30,
-        "The surrogate discipline LinReg_func is used at an input point "
-        "outside its domain of validity: "
-        "{'x_1': array([1000.]), 'x_2': array([0.5])}.",
+        (
+            "The surrogate discipline LinReg_func is used at an input point "
+            "outside its domain of validity: "
+            "{'x_1': array([1000.]), 'x_2': array([0.5])}."
+        ),
     )
 
 
@@ -159,9 +161,11 @@ def test_linearize_warning(linear_discipline, caplog):
     assert caplog.record_tuples[0] == (
         "gemseo.disciplines.surrogate",
         30,
-        "The surrogate discipline LinReg_func is used at an input point "
-        "outside its domain of validity: "
-        "{'x_1': array([1000.]), 'x_2': array([0.5])}.",
+        (
+            "The surrogate discipline LinReg_func is used at an input point "
+            "outside its domain of validity: "
+            "{'x_1': array([1000.]), 'x_2': array([0.5])}."
+        ),
     )
 
 

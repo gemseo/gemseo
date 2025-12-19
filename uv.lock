@@ -627,7 +627,7 @@ requires-dist = [
     { name = "nlopt", marker = "extra == 'all'", specifier = ">=2.7.0,<=2.9.1" },
     { name = "numpy", specifier = ">=1.23,<=2.3.3" },
     { name = "openpyxl", marker = "extra == 'all'", specifier = ">=3.0.10,<=3.1.5" },
-    { name = "openturns", marker = "extra == 'all'", specifier = ">=1.20,<=1.25" },
+    { name = "openturns", marker = "extra == 'all'", specifier = ">=1.20,<=1.26" },
     { name = "packaging", specifier = ">=15,<=25" },
     { name = "pandas", specifier = ">=2.1.0,<=2.3.2" },
     { name = "pillow", marker = "extra == 'all'", specifier = ">=9.5.0,<=11.3.0" },
@@ -1411,7 +1411,7 @@ wheels = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.7.0"
+version = "9.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "babel" },
@@ -1426,9 +1426,9 @@ dependencies = [
     { name = "pymdown-extensions" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/3b/111b84cd6ff28d9e955b5f799ef217a17bc1684ac346af333e6100e413cb/mkdocs_material-9.7.0.tar.gz", hash = "sha256:602b359844e906ee402b7ed9640340cf8a474420d02d8891451733b6b02314ec", size = 4094546, upload-time = "2025-11-11T08:49:09.73Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/27/e2/2ffc356cd72f1473d07c7719d82a8f2cbd261666828614ecb95b12169f41/mkdocs_material-9.7.1.tar.gz", hash = "sha256:89601b8f2c3e6c6ee0a918cc3566cb201d40bf37c3cd3c2067e26fadb8cce2b8", size = 4094392, upload-time = "2025-12-18T09:49:00.308Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/87/eefe8d5e764f4cf50ed91b943f8e8f96b5efd65489d8303b7a36e2e79834/mkdocs_material-9.7.0-py3-none-any.whl", hash = "sha256:da2866ea53601125ff5baa8aa06404c6e07af3c5ce3d5de95e3b52b80b442887", size = 9283770, upload-time = "2025-11-11T08:49:06.26Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/32/ed071cb721aca8c227718cffcf7bd539620e9799bbf2619e90c757bfd030/mkdocs_material-9.7.1-py3-none-any.whl", hash = "sha256:3f6100937d7d731f87f1e3e3b021c97f7239666b9ba1151ab476cabb96c60d5c", size = 9297166, upload-time = "2025-12-18T09:48:56.664Z" },
 ]
 
 [[package]]
@@ -1755,18 +1755,17 @@ wheels = [
 
 [[package]]
 name = "openturns"
-version = "1.25"
+version = "1.26"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dill" },
     { name = "psutil" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4a/2a/1fea66b927ac197b33254ff611aad99d83ffeb03232097ee6e204f3b80e8/openturns-1.25-cp39-abi3-macosx_13_0_x86_64.whl", hash = "sha256:da8a97a2a42ff08f0836bc2b5b67e477b037f6f4619aefadd8cd83cce23d7c35", size = 64790636, upload-time = "2025-06-12T18:32:15.594Z" },
-    { url = "https://files.pythonhosted.org/packages/eb/ef/77add460875478b6f66afba4cf4d3bd0e6407f36728de371ed26b102758b/openturns-1.25-cp39-abi3-macosx_14_0_arm64.whl", hash = "sha256:9494798b8bd20e07b26bf645657f61013602e909c4a874fca911cd97ff533815", size = 58213804, upload-time = "2025-06-12T17:55:06.969Z" },
-    { url = "https://files.pythonhosted.org/packages/92/f5/5fa086294ad3a2d8e1fb68867d530f0a614001540ef2920983e05ffe58ce/openturns-1.25-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:da8e0441cc50b984b71fdd43d4ae167336fbc00ff8899d9aa3ac553a2df49c08", size = 61097194, upload-time = "2025-06-12T17:55:18.999Z" },
-    { url = "https://files.pythonhosted.org/packages/e3/56/a6ad0c76f903c4a8e1951690576437a297a50578a430f7ceedd16031bfa0/openturns-1.25-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4dfa95f2305537e100bbfa621964fd9e95a4eceb40de0e3b91ffbcb944bd7f6d", size = 65170826, upload-time = "2025-06-12T17:58:38.448Z" },
-    { url = "https://files.pythonhosted.org/packages/73/2c/1946b5b5ae4e6eb5fd966e9a9fe84fc281a5c23b142647201b2eca88c4a4/openturns-1.25-cp39-abi3-win_amd64.whl", hash = "sha256:c22c16b1135b855da71123c23c6c4b31bf2cb75d066d71bfeb133aa0b28ab842", size = 64172849, upload-time = "2025-06-12T18:03:24.101Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/cd/490782a207902d18e1b825e735300b4886f54dc3cc389a8855f834de4434/openturns-1.26-cp39-abi3-macosx_14_0_arm64.whl", hash = "sha256:f51acf4b2eb39dc16c1719af06980cdad0cd1b0d21dfe0a86353e6f685fe60c3", size = 58397268, upload-time = "2025-11-24T17:02:48.061Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/5e/3fd6149e8b161c3f3d7cc03e2a3d6b4a77770fbfeb2a44c2457abc163cb4/openturns-1.26-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:31a68b6968e08bc2bd2df56487387f37d6b3964fc564fc1ec0d7f91f942fb588", size = 62556348, upload-time = "2025-11-24T17:02:01.097Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/77/ddef997d1e242504b79475b750a2f49a9fc89ce28408a12e1cd60def0749/openturns-1.26-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:aa46c2708ca79659c0601ca387c630dfb8e6b94ef17eed7d0d004eaac4471ddc", size = 66816452, upload-time = "2025-11-24T17:04:23.87Z" },
+    { url = "https://files.pythonhosted.org/packages/16/22/02f7c226115fc1d0fcd52e635a4c27aaa4a5c39e75afb4175fc6bddf9665/openturns-1.26-cp39-abi3-win_amd64.whl", hash = "sha256:bf1e6c1532c74669ad3a4f7fc37e82a19f1b7799db11e2bb33b6f30b77d1ec6c", size = 65365313, upload-time = "2025-11-24T17:09:18.131Z" },
 ]
 
 [[package]]
