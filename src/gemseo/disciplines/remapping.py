@@ -61,15 +61,22 @@ class RemappingDiscipline(Discipline):
     ) -> None:
         """
         Args:
-            discipline: The original discipline.
+            discipline: The original discipline
+                for which each input variable must have a default value.
             input_mapping: The input names to the original input names.
             output_mapping: The output names to the original output names.
 
         Raises:
-            ValueError: When the original discipline has no default input values.
+            ValueError: When an input variable of the original discipline
+                has no default value.
         """  # noqa: D205, D212, D415
-        if not discipline.io.input_grammar.defaults:
-            msg = "The original discipline has no default input values."
+        if discipline.io.input_grammar and len(
+            discipline.io.input_grammar.defaults
+        ) != len(discipline.io.input_grammar):
+            msg = (
+                "Some input variables of the original discipline "
+                "have no default values."
+            )
             raise ValueError(msg)
 
         self._discipline = discipline
