@@ -42,8 +42,7 @@ def write_output(out1, out2, outfile) -> None:
 
 [ "section 1" ]
     out 2 = {:1.18g}"""
-    with Path(outfile).open("w") as fout:
-        fout.write(sout.format(out1, out2))
+    Path(outfile).write_text(sout.format(out1, out2))
 
 
 def execute(infile=None, outfile=None) -> None:

@@ -34,7 +34,6 @@ c = a**2 + b**2
 
 print("Done.")
 print("Computed output: c = a**2+b**2 = ", c)
-with Path("outputs.txt").open(mode="w") as out_file:
-    out_file.write(f"c={c}")
+Path("outputs.txt").write_text(f"c={c}")
 
 print("Wrote output file 'outputs.txt'")

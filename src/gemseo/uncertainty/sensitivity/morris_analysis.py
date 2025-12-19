@@ -300,7 +300,8 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
 
         variances = {
             name: [
-                self.dataset.get_view(
+                self.dataset
+                .get_view(
                     group_names=self.dataset.OUTPUT_GROUP,
                     variable_names=name,
                     components=i,

@@ -201,9 +201,11 @@ def test_rename_twice_log(caplog):
     assert caplog.record_tuples[0] == (
         "gemseo.utils.discipline",
         30,
-        "In discipline 'A', "
-        "the variable 'a' cannot be renamed to 'x' "
-        "because it has already been renamed to 'x'.",
+        (
+            "In discipline 'A', "
+            "the variable 'a' cannot be renamed to 'x' "
+            "because it has already been renamed to 'x'."
+        ),
     )
 
 

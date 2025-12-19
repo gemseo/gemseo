@@ -58,7 +58,8 @@ def check_main_error(
     # The replacement is for the case that used protocol_999 where 999 may be wrapped
     # with ' depending on the python version and the platform.
     assert (
-        capsys.readouterr()
+        capsys
+        .readouterr()
         .err.strip()
         .replace("'", "")
         .endswith(error_msg.replace("'", ""))
@@ -113,8 +114,10 @@ def test_cli_input_file_error(
         ),
         (
             "--protocol 999",
-            "error: argument --protocol: invalid choice: 999"
-            " (choose from 0, 1, 2, 3, 4, 5)",
+            (
+                "error: argument --protocol: invalid choice: 999"
+                " (choose from 0, 1, 2, 3, 4, 5)"
+            ),
         ),
     ],
 )

@@ -985,7 +985,8 @@ def test_observable(pow2_problem) -> None:
     assert obs_data is not None
     assert (
         iter_norms
-        == dataset.get_view(group_names="functions", variable_names=design_norm)
+        == dataset
+        .get_view(group_names="functions", variable_names=design_norm)
         .to_numpy()
         .T
     ).all()
@@ -1177,15 +1178,19 @@ def test_database_name(problem) -> None:
     [
         (
             True,
-            "Forcing the execution of an algorithm that does not handle "
-            "integer variables.",
+            (
+                "Forcing the execution of an algorithm that does not handle "
+                "integer variables."
+            ),
         ),
         (
             False,
-            "Algorithm SLSQP is not adapted to the problem, it does not handle "
-            "integer variables.\n"
-            "Execution may be forced setting the 'skip_int_check' argument "
-            "to 'True'.",
+            (
+                "Algorithm SLSQP is not adapted to the problem, it does not handle "
+                "integer variables.\n"
+                "Execution may be forced setting the 'skip_int_check' argument "
+                "to 'True'."
+            ),
         ),
     ],
 )
@@ -1583,7 +1588,8 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
                 == np.array([0.0, 0.0])
             ).all()
             assert (
-                dataset.get_view(group_names="gradients", indices=4)
+                dataset
+                .get_view(group_names="gradients", indices=4)
                 .isnull()
                 .to_numpy()
                 .all()
@@ -1591,7 +1597,8 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
 
         else:
             assert (
-                dataset.get_view(group_names="functions", indices=2)
+                dataset
+                .get_view(group_names="functions", indices=2)
                 .isnull()
                 .to_numpy()
                 .all()

@@ -23,8 +23,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from openturns import ComposedDistribution
 from openturns import IndependentCopula
+
+from gemseo.utils.compatibility.openturns import JointDistribution
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -66,7 +67,7 @@ class OTJointDistribution(BaseJointDistribution):
         """  # noqa: D205 D212
         if copula is None:
             copula = IndependentCopula(len(distributions))
-        self.distribution = ComposedDistribution(
+        self.distribution = JointDistribution(
             [distribution.distribution for distribution in distributions], copula
         )
         self._set_bounds(distributions)

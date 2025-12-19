@@ -179,8 +179,10 @@ def test_from_dataframe(df, expected):
         ),
         (
             DataFrame([[1, 2], [3, 4]], columns=[("toto", 1), ("foo", "toto")]),
-            "The column name must either be a string or "
-            "a (group_name, variable_name, variable_component) tuple.",
+            (
+                "The column name must either be a string or "
+                "a (group_name, variable_name, variable_component) tuple."
+            ),
         ),
         (
             DataFrame(

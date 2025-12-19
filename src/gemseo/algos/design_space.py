@@ -2185,9 +2185,8 @@ class DesignSpace:
             table.border = False
             for option, val in table_options.items():
                 table.__setattr__(option, val)
-            with output_file.open("w") as outf:
-                table_str = header_char + table.get_string()
-                outf.write(table_str)
+            table_str = header_char + table.get_string()
+            output_file.write_text(table_str)
         else:
             dataframe = self.__to_dataframe()
             dataframe.to_csv(

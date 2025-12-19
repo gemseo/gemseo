@@ -80,13 +80,17 @@ def test_call() -> None:
     [
         (
             {"criterion": "unknown_criterion"},
-            "\ncriterion\n  Input should be 'C2', 'PhiP' or 'MinDist' [type=enum,"
-            " input_value='unknown_criterion', input_type=str]",
+            (
+                "\ncriterion\n  Input should be 'C2', 'PhiP' or 'MinDist' [type=enum,"
+                " input_value='unknown_criterion', input_type=str]"
+            ),
         ),
         (
             {"annealing": True, "temperature": "unknown_temperature"},
-            "\ntemperature\n  Input should be 'Geometric' or 'Linear' [type=enum,"
-            " input_value='unknown_temperature', input_type=str]",
+            (
+                "\ntemperature\n  Input should be 'Geometric' or 'Linear' [type=enum,"
+                " input_value='unknown_temperature', input_type=str]"
+            ),
         ),
     ],
 )

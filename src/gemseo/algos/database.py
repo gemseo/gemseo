@@ -1202,7 +1202,8 @@ class Database(Mapping):
             # Thus, the initial data type is kept for future data type conversion.
             history_dtype = atleast_1d(history).real.dtype
             history = (
-                self.__replace_missing_values(
+                self
+                .__replace_missing_values(
                     history,
                     input_history,
                     x_vect_history,

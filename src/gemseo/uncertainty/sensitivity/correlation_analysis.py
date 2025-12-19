@@ -166,7 +166,8 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
                 if (data := output_component_samples[:, newaxis]).var() == 0.0
                 else OTCorrelationAnalysis(input_samples, Sample(data))
                 # For each component of the output variable
-                for output_component_samples in self.dataset.get_view(
+                for output_component_samples in self.dataset
+                .get_view(
                     group_names=self.dataset.OUTPUT_GROUP,
                     variable_names=output_name,
                 )

@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from typing import Final
 
-from openturns import ComposedDistribution
 from openturns import Uniform
 
 from gemseo.algos.doe.base_doe import BaseDOE
+from gemseo.utils.compatibility.openturns import JointDistribution
 
 
 class BaseOTDOE(BaseDOE):
@@ -34,7 +34,7 @@ class BaseOTDOE(BaseDOE):
     def _get_uniform_distribution(
         cls,
         dimension: int,
-    ) -> ComposedDistribution:
+    ) -> JointDistribution:
         """Return the uniform distribution over the unit hypercube.
 
         Args:
@@ -43,4 +43,4 @@ class BaseOTDOE(BaseDOE):
         Returns:
             The uniform distribution over the unit hypercube.
         """
-        return ComposedDistribution([cls._STANDARD_UNIFORM_DISTRIBUTION] * dimension)
+        return JointDistribution([cls._STANDARD_UNIFORM_DISTRIBUTION] * dimension)

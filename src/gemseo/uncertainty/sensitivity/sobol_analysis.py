@@ -371,7 +371,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         self.dataset.misc["sample_size"] = sample_size
         self.dataset.misc["n_inputs"] = n_inputs
         output_variances = split_array_to_dict_of_arrays(
-            dataset.get_view(group_names=dataset.OUTPUT_GROUP)
+            dataset
+            .get_view(group_names=dataset.OUTPUT_GROUP)
             .to_numpy()[: 2 * sample_size]
             .var(0),
             dataset.variable_names_to_n_components,

@@ -215,8 +215,10 @@ def analytic_disciplines_from_desc(descriptions):
         ),
         (
             ({"y": "x+y", "c1": "1-0.2*c2"}, {"c2": "0.1*c1"}),
-            "The following disciplines contain self-couplings and strong couplings: "
-            "['0'].",
+            (
+                "The following disciplines contain self-couplings "
+                "and strong couplings: ['0']."
+            ),
         ),
     ],
 )

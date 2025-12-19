@@ -62,8 +62,7 @@ def test_handler(tmp_wd, close) -> None:
         logger.info("foo")
         logger.warning("bar")
 
-    with file_path.open("r") as f:
-        log = f.read()
+    log = file_path.read_text()
 
     assert "foo" not in log
     assert "bar" in log

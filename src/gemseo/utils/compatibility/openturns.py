@@ -51,6 +51,11 @@ else:
         ])
 
 
+if OT_VERSION >= OT_1_23:
+    from openturns import JointDistribution
+else:
+    from openturns import ComposedDistribution as JointDistribution  # noqa: F401
+
 if OT_VERSION > OT_1_23:
     PEARSON_METHOD_NAME = "computeLinearCorrelation"
 else:

@@ -95,7 +95,8 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
                 raise ValueError(msg)
         name_to_a_b_data = {
             name: (
-                a.get_view(
+                a
+                .get_view(
                     group_names=self.__group_names,
                     variable_names=name,
                     components=self.__components,
@@ -103,7 +104,8 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
                 )
                 .to_numpy()
                 .T,
-                b.get_view(
+                b
+                .get_view(
                     group_names=self.__group_names,
                     variable_names=name,
                     components=self.__components,

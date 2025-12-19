@@ -34,9 +34,8 @@ def execute(infile=None, outfile=None) -> None:
     with Path(infile).open() as input_f:
         data = json.load(input_f)
 
-    with Path(outfile).open("w") as fout:
-        sout = json.dumps({"out": sum(data.values())}, sort_keys=True, indent=4)
-        fout.write(sout)
+    sout = json.dumps({"out": sum(data.values())}, sort_keys=True, indent=4)
+    Path(outfile).write_text(sout)
 
 
 if __name__ == "__main__":

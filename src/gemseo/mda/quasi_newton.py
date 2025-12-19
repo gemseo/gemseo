@@ -158,7 +158,8 @@ class MDAQuasiNewton(BaseParallelMDASolver):
             )
 
             return (
-                self.assembly.assemble_jacobian(
+                self.assembly
+                .assemble_jacobian(
                     self._resolved_variable_names,
                     self._resolved_variable_names,
                     is_residual=True,
