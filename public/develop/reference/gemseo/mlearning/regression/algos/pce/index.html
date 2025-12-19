@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../../../../assets/images/gemseo/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
   
@@ -31,7 +31,7 @@
   
 
     
-      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -48175,7 +48175,8 @@ or when a probability distribution is not an
 <span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
-<span class="normal">284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">284</span>
+<span class="normal">285</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">IODataset</span><span class="p">,</span>
     <span class="n">settings_model</span><span class="p">:</span> <span class="n">PCERegressor_Settings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -48280,7 +48281,7 @@ or when a probability distribution is not an
     <span class="bp">self</span><span class="o">.</span><span class="n">__cleaning</span> <span class="o">=</span> <span class="n">cleaning_options</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__hyperbolic_parameter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">hyperbolic_parameter</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">degree</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">__composed_distribution</span> <span class="o">=</span> <span class="n">ComposedDistribution</span><span class="p">([</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__composed_distribution</span> <span class="o">=</span> <span class="n">JointDistribution</span><span class="p">([</span>
         <span class="n">marginal</span><span class="o">.</span><span class="n">distribution</span>
         <span class="k">for</span> <span class="n">input_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_names</span>
         <span class="k">for</span> <span class="n">marginal</span> <span class="ow">in</span> <span class="n">distributions</span><span class="p">[</span><span class="n">input_name</span><span class="p">]</span><span class="o">.</span><span class="n">marginals</span>
@@ -48296,7 +48297,8 @@ or when a probability distribution is not an
                 <span class="bp">self</span><span class="o">.</span><span class="n">learning_set</span><span class="o">.</span><span class="n">get_view</span><span class="p">(</span>
                     <span class="n">group_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_set</span><span class="o">.</span><span class="n">INPUT_GROUP</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">learning_set</span><span class="o">.</span><span class="n">get_view</span><span class="p">(</span><span class="n">variable_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__WEIGHT</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">learning_set</span>
+                <span class="o">.</span><span class="n">get_view</span><span class="p">(</span><span class="n">variable_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__WEIGHT</span><span class="p">)</span>
                 <span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
                 <span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
             <span class="p">)</span>
@@ -50030,10 +50032,10 @@ with shape <code>(n_samples, n_outputs, special_variable_dimension)</code>.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../../..", "features": ["navigation.tabs", "navigation.instant", "navigation.indexes"], "search": "../../../../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../../..", "features": ["navigation.tabs", "navigation.instant", "navigation.indexes"], "search": "../../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="../../../../../../assets/_markdown_exec_pyodide.js"></script>
       

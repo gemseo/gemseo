@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../../../assets/images/gemseo/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
   
@@ -31,7 +31,7 @@
   
 
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -46985,8 +46985,8 @@ here the first 3 elements are missing.</p>
     <span class="n">grammar</span><span class="o">.</span><span class="n">validate</span><span class="p">({})</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w"> </span>Grammar<span class="w"> </span>grammar:<span class="w"> </span>validation<span class="w"> </span>failed.
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w"> </span>Missing<span class="w"> </span>required<span class="w"> </span>names:<span class="w"> </span>a_int,<span class="w"> </span>an_ndarray,<span class="w"> </span>an_ndarray_of_int.
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w"> </span>Grammar<span class="w"> </span>grammar:<span class="w"> </span>validation<span class="w"> </span>failed.
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w"> </span>Missing<span class="w"> </span>required<span class="w"> </span>names:<span class="w"> </span>a_int,<span class="w"> </span>an_ndarray,<span class="w"> </span>an_ndarray_of_int.
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 89-91 -->
 
@@ -47002,14 +47002,14 @@ here the first elements shall be an int and the third one shall be a ndarray of 
     <span class="p">})</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w"> </span>Grammar<span class="w"> </span>grammar:<span class="w"> </span>validation<span class="w"> </span>failed.
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w"> </span><span class="m">2</span><span class="w"> </span>validation<span class="w"> </span>errors<span class="w"> </span><span class="k">for</span><span class="w"> </span>Model
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w"> </span>a_int
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w">   </span>Input<span class="w"> </span>should<span class="w"> </span>be<span class="w"> </span>a<span class="w"> </span>valid<span class="w"> </span>integer<span class="w"> </span><span class="o">[</span><span class="nv">type</span><span class="o">=</span>int_type,<span class="w"> </span><span class="nv">input_value</span><span class="o">=</span><span class="m">0</span>.0,<span class="w"> </span><span class="nv">input_type</span><span class="o">=</span>float<span class="o">]</span>
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w">     </span>For<span class="w"> </span>further<span class="w"> </span>information<span class="w"> </span>visit<span class="w"> </span>https://errors.pydantic.dev/2.11/v/int_type
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w"> </span>an_ndarray_of_int
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w">   </span>Value<span class="w"> </span>error,<span class="w"> </span>The<span class="w"> </span>expected<span class="w"> </span>dtype<span class="w"> </span>is<span class="w"> </span>&lt;class<span class="w"> </span><span class="s1">&#39;int&#39;</span>&gt;:<span class="w"> </span>the<span class="w"> </span>actual<span class="w"> </span>dtype<span class="w"> </span>is<span class="w"> </span>&lt;class<span class="w"> </span><span class="s1">&#39;numpy.float64&#39;</span>&gt;<span class="w"> </span><span class="o">[</span><span class="nv">type</span><span class="o">=</span>value_error,<span class="w"> </span><span class="nv">input_value</span><span class="o">=</span>array<span class="o">([</span><span class="m">1</span>.<span class="o">])</span>,<span class="w"> </span><span class="nv">input_type</span><span class="o">=</span>ndarray<span class="o">]</span>
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:30:22:<span class="w">     </span>For<span class="w"> </span>further<span class="w"> </span>information<span class="w"> </span>visit<span class="w"> </span>https://errors.pydantic.dev/2.11/v/value_error
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w"> </span>Grammar<span class="w"> </span>grammar:<span class="w"> </span>validation<span class="w"> </span>failed.
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w"> </span><span class="m">2</span><span class="w"> </span>validation<span class="w"> </span>errors<span class="w"> </span><span class="k">for</span><span class="w"> </span>Model
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w"> </span>a_int
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w">   </span>Input<span class="w"> </span>should<span class="w"> </span>be<span class="w"> </span>a<span class="w"> </span>valid<span class="w"> </span>integer<span class="w"> </span><span class="o">[</span><span class="nv">type</span><span class="o">=</span>int_type,<span class="w"> </span><span class="nv">input_value</span><span class="o">=</span><span class="m">0</span>.0,<span class="w"> </span><span class="nv">input_type</span><span class="o">=</span>float<span class="o">]</span>
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w">     </span>For<span class="w"> </span>further<span class="w"> </span>information<span class="w"> </span>visit<span class="w"> </span>https://errors.pydantic.dev/2.11/v/int_type
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w"> </span>an_ndarray_of_int
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w">   </span>Value<span class="w"> </span>error,<span class="w"> </span>The<span class="w"> </span>expected<span class="w"> </span>dtype<span class="w"> </span>is<span class="w"> </span>&lt;class<span class="w"> </span><span class="s1">&#39;int&#39;</span>&gt;:<span class="w"> </span>the<span class="w"> </span>actual<span class="w"> </span>dtype<span class="w"> </span>is<span class="w"> </span>&lt;class<span class="w"> </span><span class="s1">&#39;numpy.float64&#39;</span>&gt;<span class="w"> </span><span class="o">[</span><span class="nv">type</span><span class="o">=</span>value_error,<span class="w"> </span><span class="nv">input_value</span><span class="o">=</span>array<span class="o">([</span><span class="m">1</span>.<span class="o">])</span>,<span class="w"> </span><span class="nv">input_type</span><span class="o">=</span>ndarray<span class="o">]</span>
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">19</span>:20:31:<span class="w">     </span>For<span class="w"> </span>further<span class="w"> </span>information<span class="w"> </span>visit<span class="w"> </span>https://errors.pydantic.dev/2.11/v/value_error
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 99-100 -->
 
@@ -47120,10 +47120,10 @@ Here we change the type of one element, and we add a new one.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["navigation.tabs", "navigation.instant", "navigation.indexes"], "search": "../../../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../../..", "features": ["navigation.tabs", "navigation.instant", "navigation.indexes"], "search": "../../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="../../../../../assets/_markdown_exec_pyodide.js"></script>
       

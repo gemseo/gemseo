@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/gemseo/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
   
@@ -31,7 +31,7 @@
   
 
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -66199,15 +66199,15 @@ or if the size is not a positive integer.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2509</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2508</span>
+<span class="normal">2509</span>
 <span class="normal">2510</span>
 <span class="normal">2511</span>
 <span class="normal">2512</span>
 <span class="normal">2513</span>
 <span class="normal">2514</span>
 <span class="normal">2515</span>
-<span class="normal">2516</span>
-<span class="normal">2517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_variables_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="n">DesignSpace</span><span class="p">,</span> <span class="o">*</span><span class="n">names</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">2516</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_variables_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="n">DesignSpace</span><span class="p">,</span> <span class="o">*</span><span class="n">names</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add variables from another variable space.</span>
 
 <span class="sd">    Args:</span>
@@ -66672,7 +66672,8 @@ the keys iterable from <code>variables_names</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2430</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2429</span>
+<span class="normal">2430</span>
 <span class="normal">2431</span>
 <span class="normal">2432</span>
 <span class="normal">2433</span>
@@ -66688,8 +66689,7 @@ the keys iterable from <code>variables_names</code>.</p>
 <span class="normal">2443</span>
 <span class="normal">2444</span>
 <span class="normal">2445</span>
-<span class="normal">2446</span>
-<span class="normal">2447</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span>
+<span class="normal">2446</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">other</span><span class="p">:</span> <span class="n">DesignSpace</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -67108,7 +67108,8 @@ in its header.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2241</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2240</span>
+<span class="normal">2241</span>
 <span class="normal">2242</span>
 <span class="normal">2243</span>
 <span class="normal">2244</span>
@@ -67182,8 +67183,7 @@ in its header.</p>
 <span class="normal">2312</span>
 <span class="normal">2313</span>
 <span class="normal">2314</span>
-<span class="normal">2315</span>
-<span class="normal">2316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">2315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_csv</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
@@ -69245,7 +69245,8 @@ the variables names were required.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2471</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2470</span>
+<span class="normal">2471</span>
 <span class="normal">2472</span>
 <span class="normal">2473</span>
 <span class="normal">2474</span>
@@ -69280,8 +69281,7 @@ the variables names were required.</p>
 <span class="normal">2503</span>
 <span class="normal">2504</span>
 <span class="normal">2505</span>
-<span class="normal">2506</span>
-<span class="normal">2507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_missing_current_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">2506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_missing_current_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the current values of the design variables when missing.</span>
 
 <span class="sd">    Use:</span>
@@ -69773,7 +69773,8 @@ If <code>None</code>, create a new array.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2361</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2360</span>
+<span class="normal">2361</span>
 <span class="normal">2362</span>
 <span class="normal">2363</span>
 <span class="normal">2364</span>
@@ -69800,8 +69801,7 @@ If <code>None</code>, create a new array.</p>
 <span class="normal">2385</span>
 <span class="normal">2386</span>
 <span class="normal">2387</span>
-<span class="normal">2388</span>
-<span class="normal">2389</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">project_into_bounds</span><span class="p">(</span>
+<span class="normal">2388</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">project_into_bounds</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">x_c</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span>
     <span class="n">normalized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -69975,7 +69975,8 @@ If <code>None</code>, create a new array.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2449</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2448</span>
+<span class="normal">2449</span>
 <span class="normal">2450</span>
 <span class="normal">2451</span>
 <span class="normal">2452</span>
@@ -69994,8 +69995,7 @@ If <code>None</code>, create a new array.</p>
 <span class="normal">2465</span>
 <span class="normal">2466</span>
 <span class="normal">2467</span>
-<span class="normal">2468</span>
-<span class="normal">2469</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rename_variable</span><span class="p">(</span>
+<span class="normal">2468</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rename_variable</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">current_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">new_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -70730,8 +70730,7 @@ These options will be removed in GEMSEO 7.</p>
 <span class="normal">2195</span>
 <span class="normal">2196</span>
 <span class="normal">2197</span>
-<span class="normal">2198</span>
-<span class="normal">2199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_csv</span><span class="p">(</span>
+<span class="normal">2198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_csv</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
@@ -70764,9 +70763,8 @@ These options will be removed in GEMSEO 7.</p>
         <span class="n">table</span><span class="o">.</span><span class="n">border</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">option</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">table_options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">table</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">output_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outf</span><span class="p">:</span>
-            <span class="n">table_str</span> <span class="o">=</span> <span class="n">header_char</span> <span class="o">+</span> <span class="n">table</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
-            <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">table_str</span><span class="p">)</span>
+        <span class="n">table_str</span> <span class="o">=</span> <span class="n">header_char</span> <span class="o">+</span> <span class="n">table</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+        <span class="n">output_file</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">table_str</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dataframe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__to_dataframe</span><span class="p">()</span>
         <span class="n">dataframe</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
@@ -71121,7 +71119,8 @@ If empty, the root node is considered.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/algos/design_space.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2536</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2535</span>
+<span class="normal">2536</span>
 <span class="normal">2537</span>
 <span class="normal">2538</span>
 <span class="normal">2539</span>
@@ -71149,8 +71148,7 @@ If empty, the root node is considered.</p>
 <span class="normal">2561</span>
 <span class="normal">2562</span>
 <span class="normal">2563</span>
-<span class="normal">2564</span>
-<span class="normal">2565</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_scalar_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DesignSpace</span><span class="p">:</span>
+<span class="normal">2564</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_scalar_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DesignSpace</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new design space with the variables splitted into scalar variables.</span>
 
 <span class="sd">    Returns:</span>
@@ -86722,8 +86720,7 @@ then the expansion transforms loop[A, (B,C)] in [idA, {'parallel': [idB, idC]}].
 <span class="normal">79</span>
 <span class="normal">80</span>
 <span class="normal">81</span>
-<span class="normal">82</span>
-<span class="normal">83</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_xdsm_html</span><span class="p">(</span>
+<span class="normal">82</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_xdsm_html</span><span class="p">(</span>
     <span class="n">xdsm</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="s2">&quot;xdsm.html&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -86734,8 +86731,7 @@ then the expansion transforms loop[A, (B,C)] in [idA, {'parallel': [idB, idC]}].
 <span class="sd">        file_path: The name of the path to the output HTML file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">file_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
-        <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HTML_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">css</span><span class="p">(),</span> <span class="n">bundlejs</span><span class="p">(),</span> <span class="n">xdsm</span><span class="p">))</span>
+    <span class="n">file_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">HTML_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">css</span><span class="p">(),</span> <span class="n">bundlejs</span><span class="p">(),</span> <span class="n">xdsm</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -87052,10 +87048,10 @@ The LaTeX file can be compiled to a PDF file.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.instant", "navigation.indexes"], "search": "../../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.instant", "navigation.indexes"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="../../../../assets/_markdown_exec_pyodide.js"></script>
       
