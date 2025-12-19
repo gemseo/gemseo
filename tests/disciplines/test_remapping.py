@@ -37,6 +37,29 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
+class NoInputsDiscipline(Discipline):
+    """A discipline without input variables."""
+
+    def __init__(self):
+        super().__init__()
+        self.output_grammar.update_from_names(["foo"])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {"foo": array([10.0])}
+
+
+class NoOutputsDiscipline(Discipline):
+    """A discipline without output variables."""
+
+    def __init__(self):
+        super().__init__()
+        self.input_grammar.update_from_names(["foo"])
+        self.io.input_grammar.defaults["foo"] = array([0.0])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {}
+
+
 class NewDiscipline(Discipline):
     """A new discipline."""
 
@@ -112,13 +135,19 @@ def test_original_discipline(discipline) -> None:
     assert discipline.original_discipline == discipline._discipline
 
 
-def test_with_discipline_wo_default_values() -> None:
+@pytest.mark.parametrize("use_default", [False, True])
+def test_with_discipline_wo_default_values(use_default) -> None:
     """Check that the wrapped discipline must have default input values."""
+    discipline = DummyDiscipline(input_names=["x", "y"])
+    if use_default:
+        discipline.io.input_grammar.defaults["x"] = array([0.0])
     with pytest.raises(
         ValueError,
-        match=re.escape("The original discipline has no default input values."),
+        match=re.escape(
+            "Some input variables of the original discipline have no default values."
+        ),
     ):
-        RemappingDiscipline(DummyDiscipline(), {}, {})
+        RemappingDiscipline(discipline, {}, {})
 
 
 def test_discipline_name(discipline) -> None:
@@ -265,3 +294,28 @@ def test_no_mapping():
     assert discipline._output_mapping == {
         f"out_{i}": (f"out_{i}", slice(None)) for i in range(1, 4)
     }
+
+
+def test_no_inputs_discipline():
+    """Check that RemappingDiscipline supports disciplines without input variables."""
+    discipline = NoInputsDiscipline()
+    remapping_discipline = RemappingDiscipline(
+        discipline=discipline,
+        output_mapping={"bar": "foo"},
+    )
+    remapping_discipline.execute()
+    assert_equal(remapping_discipline.io.data["bar"], array([10.0]))
+
+
+def test_no_outputs_discipline():
+    """Check that RemappingDiscipline supports disciplines without output variables."""
+    discipline = NoOutputsDiscipline()
+    remapping_discipline = RemappingDiscipline(
+        discipline=discipline, input_mapping={"bar": "foo"}
+    )
+    remapping_discipline.execute()
+    assert not remapping_discipline.get_output_data()
+    assert_equal(discipline.io.data["foo"], array([0.0]))
+    remapping_discipline.execute({"bar": array([10.0])})
+    assert not remapping_discipline.get_output_data()
+    assert_equal(discipline.io.data["foo"], array([10.0]))
