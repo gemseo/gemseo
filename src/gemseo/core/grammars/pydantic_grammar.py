@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
+from sys import modules
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -101,8 +101,7 @@ class PydanticGrammar(BaseGrammar):
         """  # noqa: D205, D212, D415
         super().__init__(name)
         if model is not None:
-            self.__model = model
-            self.__patch_model(self.__model)
+            self.__model = _copy_model(model)
         # Set the defaults and required names.
         for name, field in self.__model.__pydantic_fields__.items():
             if description := field.description:
@@ -127,25 +126,8 @@ class PydanticGrammar(BaseGrammar):
         self.__model_needs_rebuild = True
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
-        # The deepcopy of a model does not actually deep copies everything,
-        # in particular __pydantic_fields__,
-        # probably because this is defined at a compiled language level,
-        # thus we recreate the model.
-        model = self.__model
-        grammar.__model = create_model(
-            model.__class__.__name__,
-            # __config__=model.model_config,
-            __doc__=model.__doc__,
-            __base__=model.__bases__,
-            __module__=model.__module__,
-            __validators__=getattr(model, "__validators__", {}),
-            **{n: (i.annotation, i) for n, i in model.__pydantic_fields__.items()},
-        )
-        # The model config cannot be passed to create_model when __base__ is already
-        # passed, we set it now.
-        grammar.__model.model_config = deepcopy(model.model_config)
+        grammar.__model = _copy_model(self.__model)
         grammar.__model_needs_rebuild = self.__model_needs_rebuild
-        self.__patch_model(grammar.__model)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa:D102
         fields = self.__model.__pydantic_fields__
@@ -217,7 +199,7 @@ class PydanticGrammar(BaseGrammar):
         # TODO: This is no longer needed since pydantic 2.10, remove at some point.
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
-        self.__patch_model(self.__model)
+        _patch_model(self.__model)
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties.annotation}")
@@ -334,12 +316,52 @@ class PydanticGrammar(BaseGrammar):
             self.__model_needs_rebuild = True
             self.__rebuild_model()
 
-    @staticmethod
-    def __patch_model(model: ModelType) -> None:
-        """Patch the model for internal API change since pydantic 2.10.
 
-        Args:
-            model: The model to patch.
-        """
-        if not hasattr(model, "__pydantic_fields__"):  # pragma: no cover
-            model.__pydantic_fields__ = model.model_fields
+def _patch_model(model: ModelType) -> None:
+    """Patch the model for internal API change since pydantic 2.10.
+
+    Args:
+        model: The model to patch.
+    """
+    if not hasattr(model, "__pydantic_fields__"):  # pragma: no cover
+        model.__pydantic_fields__ = model.model_fields
+
+
+def _copy_model(model: ModelType) -> ModelType:
+    """Copy a pydantic model.
+
+    Args:
+        model: The model to copy.
+
+    Returns:
+        The copied model.
+    """
+    if model.__annotations__:
+        field_definitions = {}
+    else:
+        # Pydantic needs annotations to work properly,
+        # via __annotations__,
+        # which is not updated when no model is passed to the grammar,
+        # i.e. the model is created from scratch.
+        field_definitions = {
+            n: (i.annotation, i) for n, i in model.__pydantic_fields__.items()
+        }
+
+    model_copy = create_model(
+        # Since this class will pretend to be defined in the current module (see below),
+        # make sure its name is unique and related to the original model.
+        model.__qualname__.replace(".", "_"),
+        # Ensure the json dump has the same title.
+        __config__={"title": model.__name__},
+        # The model copy is made as if it was a derived class from the original model.
+        __base__=(model,),
+        # Pretend that the copy model is located in the current module,
+        # so that it can be pickled properly.
+        __module__=_copy_model.__module__,
+        **field_definitions,
+    )
+
+    # Ensure that the class is retrieved when pickling.
+    setattr(modules[model_copy.__module__], model.__name__, model_copy)
+    _patch_model(model_copy)
+    return model_copy
