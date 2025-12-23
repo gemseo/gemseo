@@ -23,11 +23,14 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import array
 from pydantic import BaseModel
+from pydantic import Field
+from pydantic import field_validator
 from pydantic.fields import FieldInfo
 
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.pydantic_grammar import _copy_model
 from gemseo.utils.testing.helpers import do_not_raise
 
 from .pydantic_models import get_model1
@@ -323,3 +326,63 @@ def test_serialize() -> None:
     assert pickled_grammar.required_names == grammar.required_names
     assert pickled_grammar.to_namespaced == grammar.to_namespaced
     assert pickled_grammar.from_namespaced == grammar.from_namespaced
+
+
+class DummyModel(BaseModel, validate_assignment=True):
+    """Dummy Model."""
+
+    dummy_var: int = Field(0, description="dummy variable")
+
+    @field_validator("dummy_var")
+    @classmethod
+    def dummy_var_must_be_positive(cls, v):
+        if v <= 0:
+            msg = "dummy_var must be positive"
+            raise ValueError(msg)
+        return v
+
+
+def test_model_on_grammar_multi_instantiation() -> None:
+    """Test that a new model is created each time a Pydantic grammar is instantiated."""
+
+    grammar_1 = PydanticGrammar(name="g", model=DummyModel)
+    grammar_2 = PydanticGrammar(name="g", model=DummyModel)
+    assert id(grammar_1._PydanticGrammar__model) != id(
+        grammar_2._PydanticGrammar__model
+    )
+    del grammar_1["dummy_var"]
+    assert "dummy_var" in grammar_2
+
+
+def test_copy_model():
+    # With a model created internally.
+    model = PydanticGrammar(name="g")._PydanticGrammar__model
+    model_copy = _copy_model(model)
+    assert_model_equal(model, model_copy)
+
+    # With a standard model.
+    model_copy = _copy_model(DummyModel)
+    assert_model_equal(DummyModel, model_copy)
+
+    obj = model_copy()
+    assert obj.dummy_var == 0
+
+    # Verify that the config dict and the validator are copied.
+    with pytest.raises(ValueError, match="dummy_var must be positive"):
+        obj.dummy_var = -1
+
+
+def assert_model_equal(model, model_copy) -> None:
+    """Assert that 2 models are identical grammar wise."""
+    assert id(model_copy) != id(model)
+    assert model_copy.__name__ == model.__name__
+    assert model_copy.__module__ == "gemseo.core.grammars.pydantic_grammar"
+
+    for field_name, field_info in model.__pydantic_fields__.items():
+        field_info_copy = model_copy.__pydantic_fields__[field_name]
+        assert id(field_info) != id(field_info_copy)
+        assert field_info.default == field_info_copy.default
+        assert field_info.description == field_info_copy.description
+        assert field_info.annotation == field_info_copy.annotation
+        assert field_info.alias == field_info_copy.alias
+        assert field_info.is_required() == field_info_copy.is_required()
