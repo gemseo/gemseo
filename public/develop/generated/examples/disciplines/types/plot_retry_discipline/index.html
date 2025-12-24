@@ -46969,8 +46969,8 @@ rather than retrying an attempt.</p>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Manage this fatal exception.&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:43:<span class="w"> </span>Failed<span class="w"> </span>to<span class="w"> </span>execute<span class="w"> </span>discipline<span class="w"> </span>AnalyticDiscipline,<span class="w"> </span>aborting<span class="w"> </span>retry<span class="w"> </span>because<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>exception<span class="w"> </span><span class="nb">type</span><span class="w"> </span>&lt;class<span class="w"> </span><span class="s1">&#39;ZeroDivisionError&#39;</span>&gt;.
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:43:<span class="w"> </span>Manage<span class="w"> </span>this<span class="w"> </span>fatal<span class="w"> </span>exception.
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:16:<span class="w"> </span>Failed<span class="w"> </span>to<span class="w"> </span>execute<span class="w"> </span>discipline<span class="w"> </span>AnalyticDiscipline,<span class="w"> </span>aborting<span class="w"> </span>retry<span class="w"> </span>because<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>exception<span class="w"> </span><span class="nb">type</span><span class="w"> </span>&lt;class<span class="w"> </span><span class="s1">&#39;ZeroDivisionError&#39;</span>&gt;.
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:16:<span class="w"> </span>Manage<span class="w"> </span>this<span class="w"> </span>fatal<span class="w"> </span>exception.
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 93-94 -->
 
@@ -47018,9 +47018,9 @@ this value to 4, knowing the discipline will complete before at the third trial:
 <span class="n">retry_disc</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:43:<span class="w"> </span>attempt:<span class="w"> </span><span class="m">1</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:43:<span class="w"> </span>attempt:<span class="w"> </span><span class="m">2</span>
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:43:<span class="w"> </span>attempt:<span class="w"> </span><span class="m">3</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:16:<span class="w"> </span>attempt:<span class="w"> </span><span class="m">1</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:16:<span class="w"> </span>attempt:<span class="w"> </span><span class="m">2</span>
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:16:<span class="w"> </span>attempt:<span class="w"> </span><span class="m">3</span>
 
 <span class="o">{}</span>
 </code></pre></div>
@@ -47067,9 +47067,9 @@ and execute this new discipline:</p>
     <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Discipline stopped, due to a TimeoutError.&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:43:<span class="w"> </span>Running<span class="w"> </span>discipline...
-<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:48:<span class="w"> </span>Failed<span class="w"> </span>to<span class="w"> </span>execute<span class="w"> </span>discipline<span class="w"> </span>DisciplineLongTimeRunning<span class="w"> </span>after<span class="w"> </span><span class="m">1</span><span class="w"> </span>attempt.
-<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">14</span>:41:48:<span class="w"> </span>Discipline<span class="w"> </span>stopped,<span class="w"> </span>due<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>TimeoutError.
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:16:<span class="w"> </span>Running<span class="w"> </span>discipline...
+<span class="w">   </span>ERROR<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:21:<span class="w"> </span>Failed<span class="w"> </span>to<span class="w"> </span>execute<span class="w"> </span>discipline<span class="w"> </span>DisciplineLongTimeRunning<span class="w"> </span>after<span class="w"> </span><span class="m">1</span><span class="w"> </span>attempt.
+<span class="w">    </span>INFO<span class="w"> </span>-<span class="w"> </span><span class="m">01</span>:04:21:<span class="w"> </span>Discipline<span class="w"> </span>stopped,<span class="w"> </span>due<span class="w"> </span>to<span class="w"> </span>a<span class="w"> </span>TimeoutError.
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 166-178 -->
 
