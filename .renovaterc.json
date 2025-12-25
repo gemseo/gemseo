@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "local>gemseo/dev/renovate-config"
+    "gitlab>gemseo/dev/renovate-config"
   ]
 }
