@@ -48,7 +48,7 @@ dependencies = [
 all = [
     # Graphviz requires the dot executable.
     "graphviz >=0.19,<=0.21",
-    "nlopt >=2.7.0,<=2.9.1",
+    "nlopt >=2.7.0,<=2.10.0",
     # For pandas excel reader.
     "openpyxl >=3.0.10,<=3.1.5",
     "openturns >=1.20,<=1.26",
