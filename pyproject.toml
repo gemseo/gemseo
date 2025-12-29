@@ -41,7 +41,7 @@ dependencies = [
     "tqdm >=4.50,<=4.67.1",
     "typing-extensions >=4,<5",
     "xdsmjs >=1.0.0,<=2.0.0",
-    "xxhash >=3.0.0,<=3.5.0",
+    "xxhash >=3.0.0,<=3.6.0",
 ]
 
 [project.optional-dependencies]
