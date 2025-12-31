@@ -632,7 +632,7 @@ requires-dist = [
     { name = "packaging", specifier = ">=15,<=25" },
     { name = "pandas", specifier = ">=2.1.0,<=2.3.3" },
     { name = "pillow", marker = "extra == 'all'", specifier = ">=9.5.0,<=12.0.0" },
-    { name = "plotly", marker = "extra == 'all'", specifier = ">=5.7.0,<=6.3.0" },
+    { name = "plotly", marker = "extra == 'all'", specifier = ">=5.7.0,<=6.5.0" },
     { name = "prettytable", specifier = ">=2.3.0,<=3.17.0" },
     { name = "pydantic", specifier = ">=2.7,<=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.1.0,<=2.12.0" },
@@ -1984,15 +1984,15 @@ wheels = [
 
 [[package]]
 name = "plotly"
-version = "6.3.0"
+version = "6.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "narwhals" },
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a0/64/850de5076f4436410e1ce4f6a69f4313ef6215dfea155f3f6559335cad29/plotly-6.3.0.tar.gz", hash = "sha256:8840a184d18ccae0f9189c2b9a2943923fd5cae7717b723f36eef78f444e5a73", size = 6923926, upload-time = "2025-08-12T20:22:14.127Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/05/1199e2a03ce6637960bc1e951ca0f928209a48cfceb57355806a88f214cf/plotly-6.5.0.tar.gz", hash = "sha256:d5d38224883fd38c1409bef7d6a8dc32b74348d39313f3c52ca998b8e447f5c8", size = 7013624, upload-time = "2025-11-17T18:39:24.523Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/a9/12e2dc726ba1ba775a2c6922d5d5b4488ad60bdab0888c337c194c8e6de8/plotly-6.3.0-py3-none-any.whl", hash = "sha256:7ad806edce9d3cdd882eaebaf97c0c9e252043ed1ed3d382c3e3520ec07806d4", size = 9791257, upload-time = "2025-08-12T20:22:09.205Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/c3/3031c931098de393393e1f93a38dc9ed6805d86bb801acc3cf2d5bd1e6b7/plotly-6.5.0-py3-none-any.whl", hash = "sha256:5ac851e100367735250206788a2b1325412aa4a4917a4fe3e6f0bc5aa6f3d90a", size = 9893174, upload-time = "2025-11-17T18:39:20.351Z" },
 ]
 
 [[package]]
