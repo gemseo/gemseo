@@ -6,7 +6,7 @@
 # 4. Be on windows
 # 5. Build the image
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/servercore:ltsc2019@sha256:a3d7773c4a836c2efd3ecb89f4fcb41199ee56d454225cf72a65b603bf569eca
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
