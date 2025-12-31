@@ -71,7 +71,7 @@ dev = [
 ]
 doc = [
     "black",
-    "click==8.2.1",
+    "click",
     "griffe-fieldz",
     "griffe-inherited-docstrings",
     "markdown-exec[ansi]",
