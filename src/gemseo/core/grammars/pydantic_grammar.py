@@ -17,6 +17,9 @@
 from __future__ import annotations
 
 import logging
+from copy import deepcopy
+from enum import Enum
+from inspect import isclass
 from sys import modules
 from typing import TYPE_CHECKING
 from typing import Any
@@ -26,6 +29,7 @@ from typing import get_origin
 
 from numpy import ndarray
 from pydantic import BaseModel
+from pydantic import Strict
 from pydantic import ValidationError
 from pydantic import create_model
 from pydantic.fields import FieldInfo
@@ -40,6 +44,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
 
+    from pydantic import ConfigDict
     from typing_extensions import Self
 
     from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
@@ -52,14 +57,27 @@ ModelType = type[BaseModel]
 
 LOGGER = logging.getLogger(__name__)
 
+# Pydantic model validation shall be strict to avoid
+# situations where for instance a string is cast to an int.
+# Nevertheless, fields of type Enum are not strictly validated,
+# because the data to be validated may have been processed
+# by external tools (e.g., JSON serialization/deserialization)
+# and may not match the exact Enum values expected by Pydantic.
+# These fields are handled in _copy_model.
+_CONFIG_DICT: ConfigDict = {"strict": True}
+
 
 class PydanticGrammar(BaseGrammar):
     """A grammar based on a Pydantic model.
 
-    The Pydantic model passed to the grammar is used to initialize the grammar defaults.
-    Currently, changing the defaults will not update the model.
-    Changing the descriptions will update the model when accessing
-    [schema][gemseo.core.grammars.pydantic_grammar.PydanticGrammar.schema].
+    When an instance of this class is created from a Pydantic model,
+    this model is copied internally to avoid any modifications on it.
+    To prevent dangerous validations,
+    for instance when validating an int field from a string data,
+    the copied model is configured to validate data strictly.
+    There is an exception for fields that are of Enum types,
+    which are configured to validate data non strictly,
+    because this would prevent a safe and natural usage such fields.
     """
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
@@ -101,7 +119,7 @@ class PydanticGrammar(BaseGrammar):
         """  # noqa: D205, D212, D415
         super().__init__(name)
         if model is not None:
-            self.__model = _copy_model(model)
+            self.__model = _create_model(model)
         # Set the defaults and required names.
         for name, field in self.__model.__pydantic_fields__.items():
             if description := field.description:
@@ -126,7 +144,7 @@ class PydanticGrammar(BaseGrammar):
         self.__model_needs_rebuild = True
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
-        grammar.__model = _copy_model(self.__model)
+        grammar.__model = _create_model(self.__model)
         grammar.__model_needs_rebuild = self.__model_needs_rebuild
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa:D102
@@ -190,7 +208,7 @@ class PydanticGrammar(BaseGrammar):
         self.__model_needs_rebuild = True
 
     def _clear(self) -> None:  # noqa:D102
-        self.__model = create_model("Model")
+        self.__model = _create_model(BaseModel)
         self.__model_needs_rebuild = False
         # The sole purpose of the following attribute is to identify a model created
         # here,
@@ -199,7 +217,6 @@ class PydanticGrammar(BaseGrammar):
         # TODO: This is no longer needed since pydantic 2.10, remove at some point.
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
-        _patch_model(self.__model)
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties.annotation}")
@@ -211,9 +228,7 @@ class PydanticGrammar(BaseGrammar):
     ) -> bool:
         self.__rebuild_model()
         try:
-            # The grammars shall be strict on typing and not coerce the data,
-            # Pydantic requires a dict, using a mapping fails.
-            self.__model.model_validate(dict(data), strict=True)
+            self.__model.model_validate(data)
         except ValidationError as errors:
             for line in str(errors).split("\n"):
                 error_message.add(line)
@@ -327,8 +342,10 @@ def _patch_model(model: ModelType) -> None:
         model.__pydantic_fields__ = model.model_fields
 
 
-def _copy_model(model: ModelType) -> ModelType:
-    """Copy a pydantic model.
+def _create_model(model: ModelType) -> ModelType:
+    """Create a pydantic model by subclassing another one.
+
+    The model validation is made strict but for Enum fields.
 
     Args:
         model: The model to copy.
@@ -336,32 +353,70 @@ def _copy_model(model: ModelType) -> ModelType:
     Returns:
         The copied model.
     """
-    if model.__annotations__:
-        field_definitions = {}
-    else:
-        # Pydantic needs annotations to work properly,
-        # via __annotations__,
-        # which is not updated when no model is passed to the grammar,
-        # i.e. the model is created from scratch.
-        field_definitions = {
-            n: (i.annotation, i) for n, i in model.__pydantic_fields__.items()
-        }
+    field_definitions = {}
 
-    model_copy = create_model(
-        # Since this class will pretend to be defined in the current module (see below),
+    if model == BaseModel:
+        class_name = "Model"
+        # Prefer a neutral name instead of BaseModel
+        # which could be misleading.
+        schema_title = class_name
+        # BaseModel has no __pydantic_fields__,
+        # thus the else block is skipped.
+    else:
+        # Since this class will pretend to be defined in the current module
+        # to allow pickling (see below),
         # make sure its name is unique and related to the original model.
-        model.__qualname__.replace(".", "_"),
-        # Ensure the json dump has the same title.
-        __config__={"title": model.__name__},
+        # We create a name similar to a fully qualified name.
+        class_name = (model.__module__ + "_" + model.__qualname__).replace(".", "_")
+        schema_title = model.__name__
+
+        if not model.__annotations__:
+            # Pydantic needs annotations to work properly,
+            # via __annotations__,
+            # which does not exist when the grammar is instantiated with no model,
+            # even if the model has been modified via the grammar API.
+            field_definitions = {
+                n: (i.annotation, i) for n, i in model.__pydantic_fields__.items()
+            }
+
+        # Enum fields shall not be validated strictly.
+        for field_name, field_info in model.__pydantic_fields__.items():
+            annotation = field_info.annotation
+            if isclass(annotation) and issubclass(annotation, Enum):
+                field_info_copy = deepcopy(field_info)
+                metadata = field_info_copy.metadata
+
+                for item in metadata:
+                    if isinstance(item, Strict):
+                        item.strict = False
+                        break
+                else:
+                    metadata.append(Strict(strict=False))
+
+                field_definitions[field_name] = (
+                    field_info_copy.annotation,
+                    field_info_copy,
+                )
+
+    derived_model = create_model(
+        class_name,
+        # title is used when creating the json schema of the model.
+        __config__={"title": schema_title, **_CONFIG_DICT},
         # The model copy is made as if it was a derived class from the original model.
         __base__=(model,),
         # Pretend that the copy model is located in the current module,
         # so that it can be pickled properly.
-        __module__=_copy_model.__module__,
+        __module__=_create_model.__module__,
         **field_definitions,
     )
 
-    # Ensure that the class is retrieved when pickling.
-    setattr(modules[model_copy.__module__], model.__name__, model_copy)
-    _patch_model(model_copy)
-    return model_copy
+    if model != BaseModel:
+        # Ensure that the class is retrieved when pickling.
+        # This is not necessary for BaseModel since the derived class has
+        # no specific behavior defined and can be recreated from BaseModel itself.
+        setattr(
+            modules[_create_model.__module__], derived_model.__name__, derived_model
+        )
+
+    _patch_model(derived_model)
+    return derived_model
