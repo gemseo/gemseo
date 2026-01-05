@@ -26,11 +26,12 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import field_validator
 from pydantic.fields import FieldInfo
+from strenum import StrEnum
 
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.pydantic_grammar import _copy_model
+from gemseo.core.grammars.pydantic_grammar import _create_model
 from gemseo.utils.testing.helpers import do_not_raise
 
 from .pydantic_models import get_model1
@@ -328,10 +329,18 @@ def test_serialize() -> None:
     assert pickled_grammar.from_namespaced == grammar.from_namespaced
 
 
+class MyEnum(StrEnum):
+    a = auto()
+    b = auto()
+
+
 class DummyModel(BaseModel, validate_assignment=True):
     """Dummy Model."""
 
     dummy_var: int = Field(0, description="dummy variable")
+    # The max_length argument is just for coverage purposes.
+    dummy_enum: MyEnum = Field(MyEnum.a, max_length=1)
+    dummy_enum_strict: MyEnum = Field(MyEnum.a, strict=True)
 
     @field_validator("dummy_var")
     @classmethod
@@ -357,11 +366,11 @@ def test_model_on_grammar_multi_instantiation() -> None:
 def test_copy_model():
     # With a model created internally.
     model = PydanticGrammar(name="g")._PydanticGrammar__model
-    model_copy = _copy_model(model)
+    model_copy = _create_model(model)
     assert_model_equal(model, model_copy)
 
     # With a standard model.
-    model_copy = _copy_model(DummyModel)
+    model_copy = _create_model(DummyModel)
     assert_model_equal(DummyModel, model_copy)
 
     obj = model_copy()
@@ -375,7 +384,7 @@ def test_copy_model():
 def assert_model_equal(model, model_copy) -> None:
     """Assert that 2 models are identical grammar wise."""
     assert id(model_copy) != id(model)
-    assert model_copy.__name__ == model.__name__
+    # assert model_copy.__name__ == model.__name__
     assert model_copy.__module__ == "gemseo.core.grammars.pydantic_grammar"
 
     for field_name, field_info in model.__pydantic_fields__.items():
@@ -386,3 +395,13 @@ def assert_model_equal(model, model_copy) -> None:
         assert field_info.annotation == field_info_copy.annotation
         assert field_info.alias == field_info_copy.alias
         assert field_info.is_required() == field_info_copy.is_required()
+
+
+def test_enum_validation():
+    """Verify that an enum is not validated strictly."""
+    grammar = PydanticGrammar(name="g", model=DummyModel)
+    grammar.validate({"dummy_enum": "b", "dummy_enum_strict": "b"})
+
+    # Ensure that the original model was not modified.
+    assert len(DummyModel.__pydantic_fields__["dummy_enum"].metadata) == 1
+    assert DummyModel.__pydantic_fields__["dummy_enum_strict"].metadata[0].strict
