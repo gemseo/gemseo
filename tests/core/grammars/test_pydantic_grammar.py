@@ -220,16 +220,9 @@ def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
     grammar = PydanticGrammar("g", model=model2)
     grammar.to_simple_grammar()
     assert caplog.records[0].levelname == "WARNING"
-    assert caplog.messages[0] in (
-        (
-            "Unsupported type '<class 'types.UnionType'>' in PydanticGrammar 'g' for "
-            "field 'name2' in conversion to SimpleGrammar."
-        ),
-        # For python 3.9.
-        (
-            "Unsupported type 'typing.Union' in PydanticGrammar 'g' for "
-            "field 'name2' in conversion to SimpleGrammar."
-        ),
+    assert caplog.messages[0] == (
+        "Unsupported type '<class 'types.UnionType'>' in PydanticGrammar 'g' for "
+        "field 'name2' in conversion to SimpleGrammar."
     )
 
 
