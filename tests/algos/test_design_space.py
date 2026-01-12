@@ -371,17 +371,29 @@ def test_filter_dimensions(current_value) -> None:
     space = DesignSpace()
     space.add_variable("z", 1, "float", -0.6, -0.4, -0.5)
     space.add_variable("x", 2, "float", [0.1, 0.4], [0.3, 0.6], current_value)
+    space.add_variable("x1", 2, "float", [0.1, 0.4], [0.3, 0.6], current_value)
     space.add_variable("y", 1, "integer", 7, 9, 8)
     space.filter_dimensions("x", [0])
-    assert space.dimension == 3
-    assert space.variable_sizes == {"z": 1, "x": 1, "y": 1}
-    assert space.variable_types == {"z": "float", "x": "float", "y": "integer"}
-    assert_array_equal(space.get_lower_bounds(), [-0.6, 0.1, 7])
-    assert_array_equal(space.get_upper_bounds(), [-0.4, 0.3, 9])
+    space.filter_dimensions("x1", [0])
+    assert space.dimension == 4
+    assert space.variable_sizes == {"z": 1, "x": 1, "x1": 1, "y": 1}
+    assert space.variable_types == {
+        "z": "float",
+        "x": "float",
+        "x1": "float",
+        "y": "integer",
+    }
+    assert_array_equal(space.get_lower_bounds(), [-0.6, 0.1, 0.1, 7])
+    assert_array_equal(space.get_upper_bounds(), [-0.4, 0.3, 0.3, 9])
     if current_value is not None:
-        assert_array_equal(space.get_current_value(), [-0.5, 0.2, 8])
+        assert_array_equal(space.get_current_value(), [-0.5, 0.2, 0.2, 8])
 
-    assert space.names_to_indices == {"z": range(1), "x": range(1, 2), "y": range(2, 3)}
+    assert space.names_to_indices == {
+        "z": range(1),
+        "x": range(1, 2),
+        "x1": range(2, 3),
+        "y": range(3, 4),
+    }
 
 
 @pytest.mark.parametrize(
