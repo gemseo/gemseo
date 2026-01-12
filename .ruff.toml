@@ -40,6 +40,8 @@ ignore = [
   "PLW3201",
   # Object does not implement `__hash__` method.
   "PLW1641",
+  # `__init__` module should only contain docstrings and re-exports.
+  "RUF067",
   # Checks for noqa directives that are no longer applicable.
   "RUF100",
   # Checks for long exception messages that are not defined in the exception class itself.
