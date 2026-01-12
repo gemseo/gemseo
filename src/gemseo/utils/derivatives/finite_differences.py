@@ -20,10 +20,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
 from numpy import argmax
+from numpy import float64
 from numpy import full
 from numpy import ndarray
 from numpy import tile
@@ -37,6 +39,9 @@ from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
 from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.error_estimators import compute_best_step
+
+if TYPE_CHECKING:
+    from numpy import floating
 
 
 class FirstOrderFD(BaseGradientApproximator):
@@ -116,7 +121,7 @@ class FirstOrderFD(BaseGradientApproximator):
         f_0: ndarray,
         f_m: ndarray,
         numerical_error: float = EPSILON,
-    ) -> tuple[ndarray, ndarray]:
+    ) -> tuple[floating, floating]:
         r"""Compute the optimal step of a function.
 
         This function may be a vector function.
@@ -144,23 +149,19 @@ class FirstOrderFD(BaseGradientApproximator):
             t_e, c_e, opt_step = compute_best_step(
                 f_p, f_0, f_m, self.step, epsilon_mach=numerical_error
             )
-            error = 0.0 if t_e is None else t_e + c_e
-        else:
-            errors = zeros(n_out)
-            opt_steps = zeros(n_out)
-            for i in range(n_out):
-                t_e, c_e, opt_steps[i] = compute_best_step(
-                    f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
-                )
-                if t_e is None:
-                    errors[i] = 0.0
-                else:
-                    errors[i] = t_e + c_e
-            max_i = argmax(errors)
-            error = errors[max_i]
-            opt_step = opt_steps[max_i]
+            return (float64(0) if t_e is None else t_e[0] + c_e[0]), opt_step[0]
 
-        return error, opt_step
+        errors = zeros(n_out)
+        opt_steps = zeros(n_out)
+        for i in range(n_out):
+            t_e, c_e, opt_step = compute_best_step(
+                f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
+            )
+            opt_steps[i] = opt_step[0]
+            errors[i] = 0.0 if t_e is None else t_e[0] + c_e[0]
+
+        max_i = argmax(errors)
+        return errors[max_i], opt_steps[max_i]
 
     def compute_optimal_step(
         self,
@@ -204,21 +205,17 @@ class FirstOrderFD(BaseGradientApproximator):
             for i in range(n_dim):
                 f_p = outputs[i + 1]
                 f_m = outputs[n_dim + i + 1]
-                errs, opt_step = comp_step(
+                errors[i], opt_steps[i] = comp_step(
                     f_p, f_0, f_m, numerical_error=numerical_error
                 )
-                errors[i] = errs
-                opt_steps[i] = opt_step
         else:
             f_0 = self.f_pointer(x_vect, **kwargs)
             for i in range(n_dim):
                 f_p = self.f_pointer(x_p_arr[:, i], **kwargs)
                 f_m = self.f_pointer(x_m_arr[:, i], **kwargs)
-                errs, opt_step = comp_step(
+                errors[i], opt_steps[i] = comp_step(
                     f_p, f_0, f_m, numerical_error=numerical_error
                 )
-                errors[i] = errs
-                opt_steps[i] = opt_step
         self.step = opt_steps
         return opt_steps, errors
 

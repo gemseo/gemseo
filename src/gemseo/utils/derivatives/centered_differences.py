@@ -26,6 +26,7 @@ from typing import ClassVar
 
 from numpy import argmax
 from numpy import concatenate
+from numpy import float64
 from numpy import full
 from numpy import tile
 from numpy import where
@@ -41,6 +42,8 @@ from gemseo.utils.derivatives.error_estimators import EPSILON
 from gemseo.utils.derivatives.error_estimators import compute_best_step
 
 if TYPE_CHECKING:
+    from numpy import floating
+
     from gemseo.typing import RealArray
 
 
@@ -109,7 +112,7 @@ class CenteredDifferences(BaseGradientApproximator):
         f_0: RealArray,
         f_m: RealArray,
         numerical_error: float = EPSILON,
-    ) -> tuple[RealArray | float, RealArray]:
+    ) -> tuple[floating, floating]:
         r"""Compute the optimal step of a function.
 
         This function may be a vector function.
@@ -137,14 +140,15 @@ class CenteredDifferences(BaseGradientApproximator):
             t_e, c_e, opt_step = compute_best_step(
                 f_p, f_0, f_m, self.step, epsilon_mach=numerical_error
             )
-            return 0.0 if t_e is None else t_e + c_e, opt_step
+            return (float64(0) if t_e is None else t_e[0] + c_e[0]), opt_step[0]
 
         errors = zeros(n_out)
         opt_steps = zeros(n_out)
         for i in range(n_out):
-            t_e, c_e, opt_steps[i] = compute_best_step(
+            t_e, c_e, opt_step = compute_best_step(
                 f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
             )
+            opt_steps[i] = opt_step[0]
             errors[i] = 0.0 if t_e is None else t_e[0] + c_e[0]
 
         max_i = argmax(errors)
