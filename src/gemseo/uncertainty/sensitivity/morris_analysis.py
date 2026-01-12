@@ -387,7 +387,9 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         x_offset = offset * (max(x_val) - min(x_val)) / 100.0
         y_offset = offset * (max(y_val) - min(y_val)) / 100.0
         for index, txt in enumerate(names):
-            ax.annotate(txt, (x_val[index] + x_offset, y_val[index] + y_offset))
+            ax.annotate(
+                txt, ((x_val[index] + x_offset)[0], (y_val[index] + y_offset)[0])
+            )
         save_show_figure_from_file_path_manager(
             fig,
             self._file_path_manager if save else None,
