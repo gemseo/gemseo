@@ -374,7 +374,7 @@ class DesignSpace:
             upper_bound=variable.upper_bound[dimensions],
         )
         if name in self.__current_value:
-            self.set_current_variable(name, self.get_current_value(name)[dimensions])
+            self.set_current_variable(name, self.get_current_value([name])[dimensions])
 
         # Update the mapping from names to array indices
         name_reached = False
