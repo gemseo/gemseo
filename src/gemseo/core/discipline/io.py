@@ -126,7 +126,7 @@ class IO:
         """The type of grammar used for inputs and outputs."""
         return GrammarType(type(self.input_grammar).__name__)
 
-    def prepare_input_data(self, data: StrKeyMapping) -> StrKeyMapping:
+    def prepare_input_data(self, data: StrKeyMapping) -> dict[str, Any]:
         """Prepare the input data.
 
         The missing input items that have default values are added,
@@ -140,7 +140,10 @@ class IO:
         """
         # TODO: remove comment: removing this line breaks one parallel test
         if not data:
-            return self.input_grammar.defaults.copy()
+            # Copy via casting in order to consistently have a dict object
+            # instead of a GrammarProperty which may have side effects
+            # and does not play well with the strictness of  pydantic grammars.
+            return dict(self.input_grammar.defaults)
 
         input_data = {}
         defaults = self.input_grammar.defaults
