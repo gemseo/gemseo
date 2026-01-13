@@ -1,6 +1,9 @@
 ---
-desription: The use of the base class `BaseDiscFromExe`
 status: draft
+description: ""
+tags: ['how_to']
+search:
+  boost: 1
 ---
 
 <!--

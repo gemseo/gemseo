@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: ['how_to']
+search:
+  boost: 1
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -25,7 +33,6 @@ Create a discipline from a Python function:
 def py_func(x=0.0, y=0.0):
     z = x + 2 * y
     return z
-
 
 discipline = create_discipline("AutoPyDiscipline", py_func)
 ```

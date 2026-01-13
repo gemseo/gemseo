@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: ['user_guide']
+search:
+  boost: 2
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -8,6 +16,14 @@
 -->
 
 # The discipline, a key concept
+
+!!! info "Learn More"
+
+    **Tutorials**: *Link to Tutorials*
+
+    **How-to**: *Link to HOWTO*
+
+    **References**: *Link to references*
 
 ## How is a discipline defined?
 

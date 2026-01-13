@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: []
+search:
+  boost: 1
+---
+
 <!--
 Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -50,7 +58,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Design space__
 
-    [:octicons-book-24: User guide][how-to-deal-with-design-spaces]
+    [:octicons-book-24: User guide][the-design-space]
     [:octicons-play-24: Examples][design-space-examples]
 
     ---

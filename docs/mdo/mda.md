@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: ['user_guide']
+search:
+  boost: 2
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -92,41 +100,6 @@ The MDA chain inspects the coupling graph and **automatically** detects strongly
 
 ``` python
 mda = create_mda("MDAChain", disciplines, inner_mda_name="MDAJacobi")
-```
-
-## MDA classes organization
-
-Here is the UML diagram of the MDA classes in GEMSEO.
-
-```mermaid
-classDiagram
-    class BaseMDA{
-    <<abstract>>
-    }
-    class BaseMDASolver{
-    <<abstract>>
-    }
-    class BaseParallelMDASolver{
-    <<abstract>>
-    }
-
-    class MDAJacobi
-    class MDAGaussSeidel
-    class MDANewtonRaphson
-    class MDAQuasiNewton
-    class MDAChain
-    class MDASequential
-    class MDAGSNewton
-
-    BaseMDA <-- MDAChain
-    BaseMDA <-- MDAGaussSeidel
-    BaseMDASolver <-- MDAJacobi
-    BaseParallelMDASolver <-- MDAQuasiNewton
-    MDASequential <|-- MDAGSNewton
-
-    MDAChain "n" *-- BaseMDASolver
-    MDASequential "n" *-- BaseMDASolver
-
 ```
 
 ## Execution of MDAs

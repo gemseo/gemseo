@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: ['reference']
+search:
+  boost: 1
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -132,7 +140,6 @@ classDiagram
        +compute_jacobian()
        +compute_jacobian_inverse()
     }
-
 
     BaseMLAlgo *-- Dataset
     BaseMLAlgo *-- BaseTransformer

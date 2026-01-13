@@ -18,6 +18,7 @@ tags
 /_docs
 /docs/generated
 /docs/examples/**/*.*
+!/docs/examples/**/*.py
 !/docs/examples/**/README.md
 !/docs/examples/design_space/design_space.csv
 !/docs/examples/disciplines/grammars/grammar_1.json

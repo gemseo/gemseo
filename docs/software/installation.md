@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: []
+search:
+  boost: 1
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -9,7 +17,7 @@
 
 # Installation
 
-You may install the core or the full features set of GEMSEO. See [Dependencies](dependencies.md) for more information. There are different ways to install GEMSEO, they are described below.
+You may install the core or the full features set of GEMSEO. There are different ways to install GEMSEO, they are described below.
 
 ## Requirements
 
@@ -19,35 +27,55 @@ To install GEMSEO, you should use a Python environment. You can create environme
 
 For using the full features set, if you are not using [Anaconda](https://docs.anaconda.com/anaconda/install), make sure that [graphviz](https://graphviz.org/download) is installed (for rendering graphs).
 
-## Install from Pypi
+## Dependencies
 
-Install the core features of the latest version with
+GEMSEO depends on external packages, some of them are optional. You may use more recent versions of these packages, but we cannot guarantee the backward compatibility. However, we have a large set of tests with a high code coverage so that you can fully check your configuration.
 
-``` console
-pip install gemseo
-```
+!!! info "See Also"
 
-or the full features with:
+    Fully check your configuration with [Test with unit tests][test-with-unit-tests].
 
-``` console
-pip install gemseo[all]
-```
+### Core features
 
-See [pip](https://pip.pypa.io/en/stable/getting-started/) for more information.
+The required dependencies provide the core features of GEMSEO, these are defined the `dependencies` entry of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/5.3.2/pyproject.toml).
 
-## Install from Anaconda
+The minimal dependencies will allow to execute [MDO processes](../mdo/mdo_formulations.md) but not all post processing tools will be available.
 
-Install the full features in an anaconda environment named *gemseo* for Python 3.9 with
+### Full features
 
-``` console
-conda create -c conda-forge -n gemseo python=3.9 gemseo
-```
+Some packages are not required to execute basic scenarios, but provide additional features. The dependencies are independent, and can be installed one by one to activate the dependent features of listed in the same table. Installing all those dependencies will provide the full features set of GEMSEO. All these tools are open source with non-viral licenses (see [Credits](../credits.md)), they are defined in the `all` entry of the `[project.optional-dependencies]` section of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/5.3.2/pyproject.toml).
 
-You can change the Python version to 3.10, 3.11 or 3.12.
+## Install from
 
-## Install without internet access
+=== "Pypi"
 
-If for some reasons you do not have access to internet from the target machine, such as behind a corporate firewall, you can use a [self-contained installer](https://mdo-ext.pf.irt-saintexupery.com/gemseo-installers).
+    Install the core features of the latest version with
+
+    ``` console
+    pip install gemseo
+    ```
+
+    or the full features with:
+
+    ``` console
+    pip install gemseo[all]
+    ```
+
+    See [pip](https://pip.pypa.io/en/stable/getting-started/) for more information.
+
+=== "Anaconda"
+
+    Install the full features in an anaconda environment named *gemseo* for Python 3.9 with
+
+    ``` console
+    conda create -c conda-forge -n gemseo python=3.9 gemseo
+    ```
+
+    You can change the Python version to 3.10, 3.11 or 3.12.
+
+=== "without internet access"
+
+    If for some reasons you do not have access to internet from the target machine, such as behind a corporate firewall, you can use a [self-contained installer](https://mdo-ext.pf.irt-saintexupery.com/gemseo-installers).
 
 ## Test the installation
 
@@ -76,7 +104,7 @@ from gemseo import print_configuration
 print_configuration()
 ```
 
-This function is useful when only some of the GEMSEO features appear to be missing. Usually this is related to external libraries that were not installed because the user did not request full features. See [Dependencies](dependencies.md) for more information.
+This function is useful when only some of the GEMSEO features appear to be missing. Usually this is related to external libraries that were not installed because the user did not request full features. See [Dependencies][dependencies] for more information.
 
 ### Test with examples
 
