@@ -1,3 +1,10 @@
+---
+status: draft
+description: ""
+tags: ['user_guide']
+search:
+  boost: 2
+---
 
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com

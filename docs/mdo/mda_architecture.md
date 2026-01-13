@@ -1,0 +1,51 @@
+---
+status: draft
+description: ""
+tags: ['reference']
+search:
+  boost: 1
+---
+
+<!--
+ Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+ This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+ International License. To view a copy of this license, visit
+ http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+ Commons, PO Box 1866, Mountain View, CA 94042, USA.
+-->
+
+# MDA classes organization
+
+Here is the UML diagram of the MDA classes in GEMSEO.
+
+```mermaid
+classDiagram
+    class BaseMDA{
+    <<abstract>>
+    }
+    class BaseMDASolver{
+    <<abstract>>
+    }
+    class BaseParallelMDASolver{
+    <<abstract>>
+    }
+
+    class MDAJacobi
+    class MDAGaussSeidel
+    class MDANewtonRaphson
+    class MDAQuasiNewton
+    class MDAChain
+    class MDASequential
+    class MDAGSNewton
+
+    BaseMDA <-- MDAChain
+    BaseMDA <-- MDAGaussSeidel
+    BaseMDASolver <-- MDAJacobi
+    BaseParallelMDASolver <-- MDAQuasiNewton
+    MDASequential <|-- MDAGSNewton
+
+    MDAChain "n" *-- BaseMDASolver
+    MDASequential "n" *-- BaseMDASolver
+
+```
