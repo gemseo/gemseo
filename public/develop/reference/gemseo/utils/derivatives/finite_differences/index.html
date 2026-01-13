@@ -47425,8 +47425,7 @@ The errors.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/gemseo/utils/derivatives/finite_differences.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
-<span class="normal">166</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
@@ -47480,10 +47479,7 @@ The errors.</p>
 <span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_optimal_step</span><span class="p">(</span>
+<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_optimal_step</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">x_vect</span><span class="p">:</span> <span class="n">ndarray</span><span class="p">,</span>
     <span class="n">numerical_error</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">EPSILON</span><span class="p">,</span>
@@ -47525,21 +47521,17 @@ The errors.</p>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dim</span><span class="p">):</span>
             <span class="n">f_p</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
             <span class="n">f_m</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="n">n_dim</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">errs</span><span class="p">,</span> <span class="n">opt_step</span> <span class="o">=</span> <span class="n">comp_step</span><span class="p">(</span>
+            <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">opt_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_step</span><span class="p">(</span>
                 <span class="n">f_p</span><span class="p">,</span> <span class="n">f_0</span><span class="p">,</span> <span class="n">f_m</span><span class="p">,</span> <span class="n">numerical_error</span><span class="o">=</span><span class="n">numerical_error</span>
             <span class="p">)</span>
-            <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">errs</span>
-            <span class="n">opt_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">opt_step</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">f_0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_pointer</span><span class="p">(</span><span class="n">x_vect</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dim</span><span class="p">):</span>
             <span class="n">f_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_pointer</span><span class="p">(</span><span class="n">x_p_arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">f_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_pointer</span><span class="p">(</span><span class="n">x_m_arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">errs</span><span class="p">,</span> <span class="n">opt_step</span> <span class="o">=</span> <span class="n">comp_step</span><span class="p">(</span>
+            <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">opt_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_step</span><span class="p">(</span>
                 <span class="n">f_p</span><span class="p">,</span> <span class="n">f_0</span><span class="p">,</span> <span class="n">f_m</span><span class="p">,</span> <span class="n">numerical_error</span><span class="o">=</span><span class="n">numerical_error</span>
             <span class="p">)</span>
-            <span class="n">errors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">errs</span>
-            <span class="n">opt_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">opt_step</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">step</span> <span class="o">=</span> <span class="n">opt_steps</span>
     <span class="k">return</span> <span class="n">opt_steps</span><span class="p">,</span> <span class="n">errors</span>
 </code></pre></div></td></tr></table></div>

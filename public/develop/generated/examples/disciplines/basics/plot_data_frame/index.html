@@ -6100,6 +6100,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#instantiate-the-discipline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instantiate the discipline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execute-the-discipline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execute the discipline
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -46806,6 +46828,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#instantiate-the-discipline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instantiate the discipline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execute-the-discipline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execute the discipline
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -46846,10 +46890,10 @@ to download the full example code</p>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandera</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandera.pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pandera.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span> <span class="k">as</span> <span class="n">DataFrameType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pandera.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Series</span>  <span class="c1"># noqa: TC002</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandera.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Series</span> <span class="k">as</span> <span class="n">SeriesType</span>  <span class="c1"># noqa: TC002</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">gemseo.core.data_converters.pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">PydanticGrammarDataConverter</span>
@@ -46890,11 +46934,11 @@ in the local data and then changes can be made to this DataFrame, e.g.
 <!-- GENERATED FROM PYTHON SOURCE LINES 72-119 -->
 
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">InputDataFrameModel</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">SeriesType</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">OutputDataFrameModel</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">DataFrameModel</span><span class="p">):</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n">Series</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">SeriesType</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">InputGrammarModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
@@ -46935,29 +46979,6 @@ in the local data and then changes can be made to this DataFrame, e.g.
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_data</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span>
         <span class="n">df</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
 </code></pre></div>
-<p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code>/builds/gemseo/dev/gemseo/.tox/doc/lib64/python3.13/site-packages/pandera/_pandas_deprecated.py:157:<span class="w"> </span>FutureWarning:
-
-Importing<span class="w"> </span>pandas-specific<span class="w"> </span>classes<span class="w"> </span>and<span class="w"> </span>functions<span class="w"> </span>from<span class="w"> </span>the
-top-level<span class="w"> </span>pandera<span class="w"> </span>module<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>**removed<span class="w"> </span><span class="k">in</span><span class="w"> </span>a<span class="w"> </span>future<span class="w"> </span>version<span class="w"> </span>of<span class="w"> </span>pandera**.
-If<span class="w"> </span>you<span class="err">&#39;</span>re<span class="w"> </span>using<span class="w"> </span>pandera<span class="w"> </span>to<span class="w"> </span>validate<span class="w"> </span>pandas<span class="w"> </span>objects,<span class="w"> </span>we<span class="w"> </span>highly<span class="w"> </span>recommend<span class="w"> </span>updating
-your<span class="w"> </span>import:
-</code></pre></div>
-<h1 id="old-import">old import<a class="headerlink" href="#old-import" title="Permanent link">&para;</a></h1>
-<p>import pandera as pa</p>
-<h1 id="new-import">new import<a class="headerlink" href="#new-import" title="Permanent link">&para;</a></h1>
-<p>import pandera.pandas as pa
-<div class="highlight"><pre><span></span><code>If you&#39;re using pandera to validate objects from other compatible libraries
-like pyspark or polars, see the supported libraries section of the documentation
-for more information on how to import pandera:
-
-https://pandera.readthedocs.io/en/stable/supported_libraries.html
-
-To disable this warning, set the environment variable:
-</code></pre></div>
-export DISABLE_PANDERA_IMPORT_WARNING=True
-<div class="highlight"><pre><span></span><code>
-</code></pre></div></p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 120-122 -->
 
 <h2 id="instantiate-the-discipline">Instantiate the discipline<a class="headerlink" href="#instantiate-the-discipline" title="Permanent link">&para;</a></h2>
@@ -46988,7 +47009,7 @@ export DISABLE_PANDERA_IMPORT_WARNING=True
 <div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><span class="o">{</span><span class="s1">&#39;df&#39;</span>:<span class="w">      </span>x<span class="w">    </span>y
 <span class="m">0</span><span class="w">  </span><span class="m">1</span>.0<span class="w">  </span><span class="m">0</span>.8<span class="o">}</span>
 </code></pre></div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.282 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.231 seconds)</p>
 <div id="download_links"></div>
 
 <p><a class="md-button center" href="../plot_data_frame.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M256 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v210.7l-41.4-41.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c12.5 12.5 32.8 12.5 45.3 0l96-96c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 242.7zM64 320c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h320c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64h-46.9l-56.6 56.6c-31.2 31.2-81.9 31.2-113.1 0L110.9 320zm304 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: plot_data_frame.py</a></p>

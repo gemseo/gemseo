@@ -51725,7 +51725,7 @@ where <span class="arithmatex">\(d\)</span> is the number of dimensions of the v
         <span class="n">upper_bound</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">[</span><span class="n">dimensions</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__current_value</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_current_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_value</span><span class="p">(</span><span class="n">name</span><span class="p">)[</span><span class="n">dimensions</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_current_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_value</span><span class="p">([</span><span class="n">name</span><span class="p">])[</span><span class="n">dimensions</span><span class="p">])</span>
 
     <span class="c1"># Update the mapping from names to array indices</span>
     <span class="n">name_reached</span> <span class="o">=</span> <span class="kc">False</span>

@@ -22,10 +22,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pandera as pa
+import pandera.pandas as pa
 from pandas import DataFrame
 from pandera.typing import DataFrame as DataFrameType
-from pandera.typing import Series  # noqa: TC002
+from pandera.typing import Series as SeriesType  # noqa: TC002
 from pydantic import BaseModel
 
 from gemseo.core.data_converters.pydantic import PydanticGrammarDataConverter
@@ -70,11 +70,11 @@ if TYPE_CHECKING:
 #
 #     [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData] has more information about how DataFrames are handled.
 class InputDataFrameModel(pa.DataFrameModel):
-    x: Series[float] = pa.Field(unique=True)
+    x: SeriesType[float] = pa.Field(unique=True)
 
 
 class OutputDataFrameModel(pa.DataFrameModel):
-    y: Series[float] = pa.Field(unique=True)
+    y: SeriesType[float] = pa.Field(unique=True)
 
 
 class InputGrammarModel(BaseModel):
