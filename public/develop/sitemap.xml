@@ -177,11 +177,11 @@
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/disciplines/</loc>
+         <loc>https://gemseo.org/latest/disciplines/analytic_discipline/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/disciplines/analytic_discipline/</loc>
+         <loc>https://gemseo.org/latest/disciplines/discipline/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
@@ -405,11 +405,23 @@
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_create_design_space/</loc>
+         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_howto_cast_design_vector/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_load_design_space/</loc>
+         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_howto_dealing_with_design_space/</loc>
+         <lastmod>2026-01-13</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_howto_load_and_save_design_space/</loc>
+         <lastmod>2026-01-13</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_howto_normalize_design_vector/</loc>
+         <lastmod>2026-01-13</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/design_space/plot_howto_project_into_bounds/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
@@ -1190,6 +1202,14 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/mdo/mda/</loc>
+         <lastmod>2026-01-13</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/mdo/mda_architecture/</loc>
+         <lastmod>2026-01-13</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/mdo/mdo_formulation_architecture/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
@@ -5021,7 +5041,7 @@
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/scalable_models/</loc>
+         <loc>https://gemseo.org/latest/scalable_models/class_diagram/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>
@@ -5050,10 +5070,6 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/settings/post_processing_settings/</loc>
-         <lastmod>2026-01-13</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/software/dependencies/</loc>
          <lastmod>2026-01-13</lastmod>
     </url>
     <url>

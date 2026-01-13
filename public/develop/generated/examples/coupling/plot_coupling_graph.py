@@ -19,9 +19,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Coupling graph.
+"""# How to generate a coupling graph.
 
-This example illustrates the notion of coupling graph.
+In this example,
+you will learn how to generate a coupling graph from a list of disciplines.
 """
 
 from __future__ import annotations
