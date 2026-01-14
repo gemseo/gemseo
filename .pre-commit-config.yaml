@@ -46,7 +46,7 @@ repos:
   #       ]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.11.2
+    rev: v4.11.3
     hooks:
       - id: commitizen
         stages: [commit-msg]
@@ -59,7 +59,7 @@ repos:
         exclude: ^.gitlab
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
+    rev: v1.5.6
     hooks:
       - id: insert-license
         name: insert LGPL license
