@@ -123,9 +123,9 @@ runtime-evaluated-base-classes = [
   "gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitterSettings",
   "gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressorSettings",
   "gemseo.algos.opt.augmented_lagrangian.settings.base.BaseAugmentedLagrangianSettings",
+  "gemseo.mlearning.regression.algos.linreg_settings.LinearRegressor_Settings",
   # TODO: API: remove
   "gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressor_Settings",
-  "gemseo.mlearning.regression.algos.linreg_settings.LinearRegressor_Settings",
   "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistribution_Settings",
   "gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistribution_Settings",
   "gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings",
