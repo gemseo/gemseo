@@ -128,7 +128,7 @@ or the full features with:
 pip install gemseo[all]@git+https://gitlab.com/gemseo/dev/gemseo.git@develop
 ```
 
-To develop in GEMSEO, see instead [Developer information][developer-information].
+To develop in GEMSEO, see instead [Developer information](https://gemseo.gitlab.io/dev/gemseo-org/develop/developing).
 
 ### Test with unit tests
 
@@ -144,4 +144,4 @@ Look at the output of the above command to determine the installed version of GE
 pytest
 ```
 
-Look at the [contributing][developer-information] section for more information on testing.
+Look at the [contributing](https://gemseo.gitlab.io/dev/gemseo-org/develop/developing) section for more information on testing.

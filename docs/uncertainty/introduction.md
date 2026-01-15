@@ -55,7 +55,7 @@ by defining both deterministic and uncertain variables.
 It can already be used in a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] to sample a multidisciplinary system.
 Moreover,
 the GEMSEO community is currently working on extending its use to
-any kind of [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] for robust MDO purposes (see [Roadmap][roadmap])
+any kind of [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] for robust MDO purposes (see [Roadmap](https://gemseo.gitlab.io/dev/gemseo-org/develop/roadmap))
 by means of dedicated MDO formulations.
 
 !!! info "See also"
