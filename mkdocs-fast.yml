@@ -60,15 +60,19 @@ nav:
       - GEMSEO in 10 minutes: generated/examples/mdo/plot_gemseo_in_10_minutes.md
       - Define an MDO problem: interface/study_analysis.md
       - Optimization and DOE framework: mdo/optimization.md
-      - MDO problems: generated/examples/mdo
+      - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
+      - Solve a mixed optimization problem: generated/examples/mdo/plot_mixed_optimization.md
+      - MDO formulations for a toy example in aerostructure: generated/examples/mdo/plot_aerostructure.md
+      - A from scratch example on the Sellar problem: generated/examples/mdo/plot_sellar.md
+      - Sobieski's Super Sonic Business Jet: generated/examples/mdo/plot_sobieski_use_case.md
     - Tutorials (advanced):
       - Multi-objective optimization: generated/examples/multi_objective
       - Topology optimization: generated/examples/topology_optimization
       - Ordinary differential equations (ODE): generated/examples/ode
-
     - Changelog: changelog.md
     - Licenses: software/licenses.md
     - Credits: credits.md
+
   - User guide:
     - Introduction:
       - What is MDO?: overview.md
@@ -101,6 +105,7 @@ nav:
         - Problem: ode/ode_problem.md
       - Scalable models: scalable_models/original_paper.md
       - Extending: extending.md
+
   - How-to:
     - High-level functions: generated/examples/api
     - Cheat Sheets:
@@ -153,7 +158,9 @@ nav:
     - Scalable model: generated/examples/scalable
     - Uncertainty: generated/examples/uncertainty
     - Upgrading: software/upgrading.md
+
   - API: reference/gemseo/
+
   - References:
     - Architecture & Design:
       - The GEMSEO concepts: optimization/concepts.md
@@ -184,6 +191,7 @@ nav:
         - Probability distributions: algorithms/distribution_algos.md
     - Use Cases:
         - Benchmark problems: problems/benchmark_problems.md
+
   - FAQ: faq.md
 
 markdown_extensions:
