@@ -5,19 +5,11 @@
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/aboutus/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
          <loc>https://gemseo.org/latest/changelog/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
          <loc>https://gemseo.org/latest/configuration/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/contributing/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
@@ -38,22 +30,6 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/overview/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/plugins/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/publications/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/roadmap/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/rss/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
@@ -641,11 +617,11 @@
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/generated/examples/mdo/plot_mixed_optimization/</loc>
+         <loc>https://gemseo.org/latest/generated/examples/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/generated/examples/mdo/plot_opt_as_mdo/</loc>
+         <loc>https://gemseo.org/latest/generated/examples/mdo/plot_mixed_optimization/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
@@ -5073,27 +5049,11 @@
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/software/developing/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/software/example_google_docstring/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
          <loc>https://gemseo.org/latest/software/installation/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>
          <loc>https://gemseo.org/latest/software/licenses/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/software/maintenance/</loc>
-         <lastmod>2026-01-15</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/software/security/</loc>
          <lastmod>2026-01-15</lastmod>
     </url>
     <url>

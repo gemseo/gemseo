@@ -170,7 +170,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 #     Yet, GEMSEO enables the definition of much more complex disciplines,
 #     such as wrapping complex COTS.
 #     Check out the other [discipline examples][disciplines-examples] and
-#     our [publications][publications] for more information.
+#     our [publications](https://gemseo.gitlab.io/dev/gemseo-org/develop/publications) for more information.
 
 # %%
 # ## Definition of the design space
