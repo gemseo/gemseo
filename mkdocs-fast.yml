@@ -40,7 +40,6 @@ plugins:
     scripts:
     - docs/gen_ref_nav.py
     - docs/_scripts/algos/script.py
-    - docs/_scripts/authors/script.py
     - docs/_scripts/credits.py
   include-markdown: {}
   literate-nav:
@@ -186,20 +185,6 @@ nav:
     - Use Cases:
         - Benchmark problems: problems/benchmark_problems.md
   - FAQ: faq.md
-  - Other (in gemseo.org):
-    - About us: aboutus.md
-    - Plugins: plugins.md
-    - Roadmap: roadmap.md
-    - Contributing: contributing.md
-    - Developer information: software/developing.md
-    - RSS: rss.md
-    - Publications: publications.md
-    - Example Google Style Docstrings: software/example_google_docstring.md
-    - Maintainers information: software/maintenance.md
-    - Security information: software/security.md
-
-
-
 
 markdown_extensions:
 - admonition
