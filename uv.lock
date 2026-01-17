@@ -636,7 +636,7 @@ requires-dist = [
     { name = "prettytable", specifier = ">=2.3.0,<=3.17.0" },
     { name = "pydantic", specifier = ">=2.7,<=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.1.0,<=2.12.0" },
-    { name = "pydoe3", marker = "extra == 'all'", specifier = ">=1.0.1,<=1.6.1" },
+    { name = "pydoe3", marker = "extra == 'all'", specifier = ">=1.0.1,<=1.6.2" },
     { name = "pyxdsm", specifier = ">=2.2.1,<=2.3.1" },
     { name = "requests", specifier = ">2,<3" },
     { name = "scikit-learn", marker = "extra == 'all'", specifier = ">=1.2,<=1.8.0" },
@@ -2153,16 +2153,16 @@ wheels = [
 
 [[package]]
 name = "pydoe3"
-version = "1.6.1"
+version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0a/84/334c4311576a45c5d81e925ad222f2222eca163f926d6e4c9ef6bdc5edfa/pydoe3-1.6.1.tar.gz", hash = "sha256:33923da2aa04ce0381a8fe9db678cba0c4b9906290a0c38dbf9cf316845ec98e", size = 156404, upload-time = "2025-11-27T16:50:22.345Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/83/4f/7ce86c4eee42019efcc49ca8a54f7896cc41c719be24bfbd8a3facde6a35/pydoe3-1.6.2.tar.gz", hash = "sha256:ff7377c30e0a2ea8af3f074723488779f557457c8b74029965896c30b8a1a541", size = 1014559, upload-time = "2026-01-12T07:33:43.216Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bf/d8/56a9181765113853a582b0519093eaa36d89d972cfb6d804026457807b16/pydoe3-1.6.1-py2.py3-none-any.whl", hash = "sha256:f49a274d6eb8f0a4bc624ab66b48a77c3a301ea480ad501cd3b85afc47f1adc9", size = 66645, upload-time = "2025-11-27T16:50:20.899Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/6e/3b16b75e1e011f95109be5dcec3d1f1d5a8585e6c42b6c5bbb17852d66b2/pydoe3-1.6.2-py2.py3-none-any.whl", hash = "sha256:21b5c3ef10a350bed01f59df54ae262fd1eda9983efac294b679988f311f3445", size = 66753, upload-time = "2026-01-12T07:33:41.387Z" },
 ]
 
 [[package]]
