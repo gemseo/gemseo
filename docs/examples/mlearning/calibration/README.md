@@ -14,9 +14,9 @@ During the training stage, the parameters of a machine learning model are modifi
 training data as well as possible.
 
 This model also depends on hyperparameters that are fixed during training. For example, the polynomial degree in the
-case of polynomial regression. The [MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration] class
+case of polynomial regression. The [MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration] class
 can be used to tune these hyperparameters so as to improve this model.
 
-Moreover, even if this model has learned well, it is possible that another has learned better. The [MLAlgoSelection]
-[gemseo.mlearning.core.selection.MLAlgoSelection] class can be used to select the best machine learning model from a
+Moreover, even if this model has learned well, it is possible that another has learned better. The [MLModelSelection]
+[gemseo.mlearning.core.selection.MLModelSelection] class can be used to select the best machine learning model from a
 collection.

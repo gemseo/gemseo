@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 
 DatasetPlotOption = ScatterMatrixOption
@@ -46,7 +46,7 @@ DatasetPlotOption = ScatterMatrixOption
 class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
     """Visualization of the quality of a regression model."""
 
-    __algo: BaseRegressor
+    __regressor: BaseRegressor
     """The regression algorithm."""
 
     __seeder: Seeder
@@ -65,12 +65,12 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         decomposable into $K$ learning-validation partitions.
         """
 
-    def __init__(self, algo: BaseRegressor) -> None:
+    def __init__(self, regressor: BaseRegressor) -> None:
         """
         Args:
-            algo: The regression algorithm.
+            regressor: The regressor.
         """  # noqa: D205 D212 D415
-        self.__algo = algo
+        self.__regressor = regressor
         self.__seeder = Seeder()
 
     def __plot_data(
@@ -148,7 +148,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             dataset.add_variable(formatted_output_name, output_observations)
         else:
             if not input_names:
-                input_names = self.__algo.input_names
+                input_names = self.__regressor.input_names
 
             input_names = convert_strings_to_iterable(input_names)
             for input_name in input_names:
@@ -204,10 +204,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             the formatted name of the output
             and the name of the quantity of interest.
         """
-        output_predictions = self.__algo.predict(
+        output_predictions = self.__regressor.predict(
             observations.get_view(
                 group_names=observations.INPUT_GROUP,
-                variable_names=self.__algo.input_names,
+                variable_names=self.__regressor.input_names,
             ).to_dict_of_arrays()[observations.INPUT_GROUP]
         )[output_name][:, output_components or Ellipsis]
         if plot_residuals:
@@ -334,7 +334,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             return observations
 
         if observations == self.ReferenceDataset.LEARNING:
-            return self.__algo.learning_set
+            return self.__regressor.learning_set
 
         return self.__create_cv_observed_dataset(samples, n_folds, seed)
 
@@ -482,27 +482,27 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             A validation dataset based on cross-validation.
         """
         if not samples:
-            samples = self.__algo.learning_samples_indices
+            samples = self.__regressor.learning_samples_indices
 
         cross_validation = CrossValidation(
             samples, n_folds, randomize=True, seed=self.__seeder.get_seed(seed)
         )
         result = cross_validation.execute(
-            self.__algo,
+            self.__regressor,
             return_models=True,
-            input_data=self.__algo.input_data,
+            input_data=self.__regressor.input_data,
             store_sampling_result=True,
         )
         observed_dataset = IODataset()
         observed_dataset.add_input_group(
-            data=self.__algo.input_data,
-            variable_names=self.__algo.input_names,
-            variable_names_to_n_components=self.__algo.sizes,
+            data=self.__regressor.input_data,
+            variable_names=self.__regressor.input_names,
+            variable_names_to_n_components=self.__regressor.sizes,
         )
         observed_dataset.add_output_group(
             data=result[-1],
-            variable_names=self.__algo.output_names,
-            variable_names_to_n_components=self.__algo.sizes,
+            variable_names=self.__regressor.output_names,
+            variable_names_to_n_components=self.__regressor.sizes,
         )
         return observed_dataset
 

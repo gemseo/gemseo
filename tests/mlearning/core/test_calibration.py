@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test machine learning algorithm calibration."""
+"""Test machine learning model calibration."""
 
 from __future__ import annotations
 
@@ -29,8 +29,8 @@ from numpy import allclose
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.mlearning.core.calibration import MLAlgoAssessor
-from gemseo.mlearning.core.calibration import MLAlgoCalibration
+from gemseo.mlearning.core.calibration import MLModelAssessor
+from gemseo.mlearning.core.calibration import MLModelCalibration
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
@@ -40,17 +40,17 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="module")
 def dataset() -> Dataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     return create_rosenbrock_dataset(opt_naming=False)
 
 
 def test_discipline_multioutput_fail(dataset) -> None:
-    """Verify that MLAlgoAssessor raises an error if multioutput option is True."""
+    """Verify that MLModelAssessor raises an error if multioutput option is True."""
     with pytest.raises(
         ValueError,
-        match=re.escape("MLAlgoAssessor does not support multioutput."),
+        match=re.escape("MLModelAssessor does not support multioutput."),
     ):
-        MLAlgoAssessor(
+        MLModelAssessor(
             "PolynomialRegressor",
             dataset,
             ["degree"],
@@ -62,8 +62,8 @@ def test_discipline_multioutput_fail(dataset) -> None:
 
 @pytest.mark.parametrize("options", [{"multioutput": False}, {}])
 def test_discipline_multioutput(dataset, options) -> None:
-    """Verify that MLAlgoAssessor works correctly when multioutput option is False."""
-    assessor = MLAlgoAssessor(
+    """Verify that MLModelAssessor works correctly when multioutput option is False."""
+    assessor = MLModelAssessor(
         "PolynomialRegressor",
         dataset,
         ["degree"],
@@ -76,7 +76,7 @@ def test_discipline_multioutput(dataset, options) -> None:
 
 def test_discipline(dataset) -> None:
     """Test discipline."""
-    disc = MLAlgoAssessor(
+    disc = MLModelAssessor(
         "PolynomialRegressor",
         dataset,
         ["degree"],
@@ -105,7 +105,7 @@ def calibration_space() -> DesignSpace:
 def test_calibration(dataset, calibration_space, algo) -> None:
     """Test calibration."""
     n_samples = 2
-    calibration = MLAlgoCalibration(
+    calibration = MLModelCalibration(
         "PolynomialRegressor",
         dataset,
         ["penalty_level"],
@@ -120,13 +120,13 @@ def test_calibration(dataset, calibration_space, algo) -> None:
     calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
     x_opt = calibration.optimal_parameters
     f_opt = calibration.optimal_criterion
-    algo_opt = calibration.optimal_algorithm
+    model_opt = calibration.optimal_model
 
-    assert algo_opt._settings.penalty_level == x_opt["penalty_level"]
+    assert model_opt._settings.penalty_level == x_opt["penalty_level"]
     assert calibration.get_history("penalty_level").shape == (n_samples, 1)
     assert calibration.get_history("criterion").shape == (n_samples, 1)
     assert calibration.get_history("learning").shape == (n_samples, 1)
-    assert len(calibration.algos) == n_samples
+    assert len(calibration.models) == n_samples
 
     calibration.maximize_objective = True
     calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})

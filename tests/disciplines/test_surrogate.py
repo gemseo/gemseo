@@ -28,8 +28,8 @@ from numpy.testing import assert_allclose
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
-from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressor_Settings
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -87,11 +87,11 @@ def test_linearization_mode_without_gradient(dataset) -> None:
     assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
 
 
-def test_instantiation_from_algo(dataset) -> None:
+def test_instantiation_from_model(dataset) -> None:
     """Check the instantiation from a BaseRegressor."""
-    algo = LinearRegressor(dataset)
-    algo.learn()
-    discipline = SurrogateDiscipline(algo)
+    model = LinearRegressor(dataset)
+    model.learn()
+    discipline = SurrogateDiscipline(model)
     assert discipline.linearization_mode == "auto"
     assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
     assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
@@ -100,7 +100,7 @@ def test_instantiation_from_algo(dataset) -> None:
 def test_instantiation_from_settings(dataset) -> None:
     """Check the instantiation from BaseRegressorSettings."""
     discipline = SurrogateDiscipline(LinearRegressor_Settings(), data=dataset)
-    assert isinstance(discipline.regression_model, LinearRegressor)
+    assert isinstance(discipline.regressor, LinearRegressor)
     assert discipline.linearization_mode == "auto"
     assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
     assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
@@ -211,7 +211,7 @@ def test_get_error_measure(linear_discipline) -> None:
     """Check that get_error_measure returns an instance of BaseRegressorQuality."""
     error_measure = linear_discipline.get_error_measure("R2Measure")
     assert isinstance(error_measure, R2Measure)
-    assert error_measure.algo == linear_discipline.regression_model
+    assert error_measure.model == linear_discipline.regressor
 
 
 def test_repr_html(dataset) -> None:
@@ -236,7 +236,7 @@ def test_get_quality_viewer(dataset) -> None:
     discipline = SurrogateDiscipline("LinearRegressor", data=dataset)
     quality_viewer = discipline.get_quality_viewer()
     assert isinstance(quality_viewer, MLRegressorQualityViewer)
-    assert quality_viewer._MLRegressorQualityViewer__algo == discipline.regression_model
+    assert quality_viewer._MLRegressorQualityViewer__regressor == discipline.regressor
 
 
 @pytest.mark.parametrize(
@@ -248,6 +248,6 @@ def test_default_input_data(dataset, kwargs):
     defaults = (
         kwargs["default_input_data"]
         if kwargs
-        else discipline.regression_model.input_space_center
+        else discipline.regressor.input_space_center
     )
     assert discipline.input_grammar.defaults == defaults

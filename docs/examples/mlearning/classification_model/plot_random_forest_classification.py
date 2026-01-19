@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Random forest.
 
-A [RandomForestClassifier][gemseo.mlearning.classification.algos.random_forest.RandomForestClassifier] is a random forest model
+A [RandomForestClassifier][gemseo.mlearning.classification.models.random_forest.RandomForestClassifier] is a random forest model
 based on [scikit-learn](https://scikit-learn.org/).
 
 We want to classify the Iris dataset using a Random Forest classifier.

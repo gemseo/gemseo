@@ -40,8 +40,8 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.rbf_settings import RBF
+from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.rbf_settings import RBF
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.scenarios.doe_scenario import DOEScenario

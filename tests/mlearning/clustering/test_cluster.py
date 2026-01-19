@@ -18,7 +18,7 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test machine learning clustering algorithm module."""
+"""Test machine learning clustering model module."""
 
 from __future__ import annotations
 
@@ -32,16 +32,16 @@ from numpy.testing import assert_allclose
 from gemseo import from_pickle
 from gemseo import to_pickle
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+from gemseo.mlearning.clustering.models.base_clusterer import BaseClusterer
+from gemseo.mlearning.clustering.models.factory import ClustererFactory
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 FACTORY = ClustererFactory()
 INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
 
-class NewAlgo(BaseClusterer):
-    """New machine learning algorithm class."""
+class NewModel(BaseClusterer):
+    """New machine learning model class."""
 
     def _fit(self, data) -> None:
         pass
@@ -52,12 +52,12 @@ def test_labels() -> None:
     dataset = Dataset.from_array(
         arange(30).reshape(10, 3), ["x_1", "x_2"], {"x_1": 1, "x_2": 2}
     )
-    algo = NewAlgo(dataset)
+    model = NewModel(dataset)
     with pytest.raises(
         NotImplementedError,
-        match=re.escape("NewAlgo._fit() did not set the labels attribute."),
+        match=re.escape("NewModel._fit() did not set the labels attribute."),
     ):
-        algo.learn()
+        model.learn()
 
 
 @pytest.fixture(scope="module")

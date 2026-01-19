@@ -29,7 +29,7 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.random_forest import RandomForestRegressor
+from gemseo.mlearning.regression.models.random_forest import RandomForestRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -43,7 +43,7 @@ INPUT_VALUES = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
@@ -83,7 +83,7 @@ def test_learn(dataset) -> None:
     model_ = RandomForestRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
-    assert model_.SHORT_ALGO_NAME == "RF"
+    assert model_.SHORT_NAME == "RF"
     assert model_.LIBRARY == "scikit-learn"
 
 

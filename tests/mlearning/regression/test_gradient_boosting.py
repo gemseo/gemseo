@@ -18,7 +18,7 @@ import pytest
 from numpy import array
 from sklearn.ensemble import GradientBoostingRegressor as SKLGradientBoosting
 
-from gemseo.mlearning.regression.algos.gradient_boosting import (
+from gemseo.mlearning.regression.models.gradient_boosting import (
     GradientBoostingRegressor,
 )
 
@@ -51,10 +51,10 @@ def test_fit(dataset, input_data, output_data):
 
 def test_predict(dataset):
     """Check the prediction stage."""
-    algo = GradientBoostingRegressor(dataset)
-    algo.learn()
+    model = GradientBoostingRegressor(dataset)
+    model.learn()
     input_data = array([[1.0, 1.0]])
-    assert algo._predict(input_data).shape == (1, 1)
+    assert model._predict(input_data).shape == (1, 1)
 
     with pytest.raises(NotImplementedError):
-        algo.predict_jacobian(input_data)
+        model.predict_jacobian(input_data)

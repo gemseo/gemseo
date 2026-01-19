@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Clusterer and quality assessment.
 
-A clusterer is a clustering algorithm.
+A clusterer is a clustering model.
 """
 
 from __future__ import annotations

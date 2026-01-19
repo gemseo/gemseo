@@ -40,7 +40,7 @@ from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
 from gemseo.mda.base_mda_settings import BaseMDASettings
-from gemseo.mlearning.core.algos.ml_algo_settings import BaseMLAlgoSettings
+from gemseo.mlearning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.settings.base_settings import BaseSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
@@ -138,7 +138,7 @@ def test_post_settings(module_and_cls):
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(BaseMLAlgoSettings, "gemseo.mlearning", mlearning),
+    get_setting_classes(BaseMLModelSettings, "gemseo.mlearning", mlearning),
 )
 def test_machine_learning_settings(module_and_cls):
     module, cls = module_and_cls

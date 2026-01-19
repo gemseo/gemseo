@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# k-nearest neighbors.
 
-A [KNNClassifier][gemseo.mlearning.classification.algos.knn.KNNClassifier] is a k-nearest neighbors model
+A [KNNClassifier][gemseo.mlearning.classification.models.knn.KNNClassifier] is a k-nearest neighbors model
 based on [scikit-learn](https://scikit-learn.org/).
 
 We want to classify the Iris dataset using a KNN classifier.

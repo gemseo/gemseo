@@ -46,8 +46,8 @@ from gemseo.mlearning.classification.quality.base_classifier_quality import (
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
+    from gemseo.mlearning.classification.models.base_classifier import BaseClassifier
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
 
 
 class F1Measure(BaseClassifierQuality):
@@ -55,18 +55,18 @@ class F1Measure(BaseClassifierQuality):
 
     SMALLER_IS_BETTER = False
 
-    algo: BaseClassifier
+    model: BaseClassifier
 
     def __init__(
         self,
-        algo: BaseClassifier,
+        model: BaseClassifier,
         fit_transformers: bool = BaseClassifierQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for classification.
+            model: A machine learning model for classification.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def _compute_measure(
         self,

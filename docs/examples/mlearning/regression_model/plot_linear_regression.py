@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Linear regression.
 
-A [LinearRegressor][gemseo.mlearning.regression.algos.linreg.LinearRegressor] is a linear regression model
+A [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor] is a linear regression model
 based on [scikit-learn](https://scikit-learn.org).
 
 !!! info "See also"
@@ -111,8 +111,8 @@ plt.show()
 # %%
 # ## Settings
 #
-# The [LinearRegressor][gemseo.mlearning.regression.algos.linreg.LinearRegressor] has many options
-# defined in the [LinearRegressor_Settings][gemseo.mlearning.regression.algos.linreg_settings.LinearRegressor_Settings] Pydantic model.
+# The [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor] has many options
+# defined in the [LinearRegressor_Settings][gemseo.mlearning.regression.models.linreg_settings.LinearRegressor_Settings] Pydantic model.
 #
 # ### Intercept
 #

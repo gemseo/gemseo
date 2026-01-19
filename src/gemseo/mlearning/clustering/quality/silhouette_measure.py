@@ -53,10 +53,10 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
+    from gemseo.mlearning.clustering.models.base_predictive_clusterer import (
         BasePredictiveClusterer,
     )
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
 
 
 class SilhouetteMeasure(BasePredictiveClustererQuality):
@@ -66,14 +66,14 @@ class SilhouetteMeasure(BasePredictiveClustererQuality):
 
     def __init__(
         self,
-        algo: BasePredictiveClusterer,
+        model: BasePredictiveClusterer,
         fit_transformers: bool = BasePredictiveClustererQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A clustering algorithm.
+            model: A clustering model.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def compute_test_measure(  # noqa: D102
         self,

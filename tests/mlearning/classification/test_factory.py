@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mlearning.classification.algos.factory import ClassifierFactory
-from gemseo.mlearning.classification.algos.knn import KNNClassifier
+from gemseo.mlearning.classification.models.factory import ClassifierFactory
+from gemseo.mlearning.classification.models.knn import KNNClassifier
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The Iris dataset used to train the classification algorithms."""
+    """The Iris dataset used to train the classification models."""
     return create_iris_dataset(as_io=True)
 
 

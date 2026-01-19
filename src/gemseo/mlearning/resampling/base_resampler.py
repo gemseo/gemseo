@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
     from numpy.typing import NDArray
 
-    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
+    from gemseo.mlearning.core.models.ml_model import BaseMLModel
     from gemseo.mlearning.resampling.splits import Splits
 
 
@@ -115,13 +115,13 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def execute(
         self,
-        model: BaseMLAlgo,
+        model: BaseMLModel,
         return_models: bool = False,
         input_data: ndarray | None = None,
         stack_predictions: bool = True,
         fit_transformers: bool = True,
         store_sampling_result: bool = False,
-    ) -> tuple[list[BaseMLAlgo], list[ndarray] | ndarray]:
+    ) -> tuple[list[BaseMLModel], list[ndarray] | ndarray]:
         """Apply the resampling technique to a machine learning model.
 
         Args:
@@ -137,7 +137,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
             fit_transformers: Whether to re-fit the transformers.
             store_sampling_result: Whether to store the sampling results
                 in the attribute
-                [BaseMLAlgo.resampling_results][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.resampling_results]
+                [BaseMLModel.resampling_results][gemseo.mlearning.core.models.ml_model.BaseMLModel.resampling_results]
                 of the original model.
 
         Returns:
@@ -147,7 +147,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         Raises:
             ValueError: When the model is
-                neither a supervised algorithm nor a clustering one.
+                neither a supervised model nor a clustering one.
         """
         if self.name in model.resampling_results:
             (resampler, sub_models, predictions) = model.resampling_results[self.name]
@@ -180,7 +180,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         return sub_models, predictions
 
     @staticmethod
-    def __create_new_model(model: BaseMLAlgo) -> BaseMLAlgo:
+    def __create_new_model(model: BaseMLModel) -> BaseMLModel:
         """Create a new machine learning model from an existing one.
 
         Args:

@@ -34,7 +34,7 @@ from sklearn.linear_model import Ridge
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
@@ -48,7 +48,7 @@ LEARNING_SIZE = 9
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
@@ -83,7 +83,7 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = LinearRegressor(dataset)
     assert model_.algo is not None
-    assert model_.SHORT_ALGO_NAME == "LinReg"
+    assert model_.SHORT_NAME == "LinReg"
     assert model_.LIBRARY == "scikit-learn"
 
 
@@ -264,7 +264,7 @@ def test_prediction_with_pls_failure(dataset) -> None:
         NotImplementedError,
         match=re.escape(
             "The transformer PLS cannot be applied to the outputs "
-            "to build a supervised machine learning algorithm."
+            "to build a supervised machine learning model."
         ),
     ):
         model.learn()

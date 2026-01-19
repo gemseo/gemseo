@@ -27,13 +27,13 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.clustering.models.kmeans import KMeans
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     data = arange(60).reshape((20, 3))
     dataset_ = Dataset()
     dataset_.add_variable("x", data, Dataset.PARAMETER_GROUP)
@@ -42,7 +42,7 @@ def dataset() -> Dataset:
 
 @pytest.fixture
 def dataset_test() -> Dataset:
-    """The dataset used to test the performance of the clustering algorithms."""
+    """The dataset used to test the performance of the clustering modelrithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
     dataset_.add_variable("x", data, Dataset.PARAMETER_GROUP)
@@ -52,14 +52,14 @@ def dataset_test() -> Dataset:
 @pytest.fixture
 def measure(dataset) -> SilhouetteMeasure:
     """A silhouette measure."""
-    algo = KMeans(dataset, n_clusters=3)
-    return SilhouetteMeasure(algo)
+    model = KMeans(dataset, n_clusters=3)
+    return SilhouetteMeasure(model)
 
 
 def test_constructor(measure, dataset) -> None:
     """Test construction."""
-    assert measure.algo is not None
-    assert measure.algo.learning_set is dataset
+    assert measure.model is not None
+    assert measure.model.learning_set is dataset
 
 
 def test_compute_learning_measure(measure) -> None:

@@ -27,30 +27,30 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.clustering.models.base_clusterer import BaseClusterer
+from gemseo.mlearning.core.models.supervised import BaseMLSupervisedModel
+from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
-    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
+    from gemseo.mlearning.classification.models.base_classifier import BaseClassifier
+    from gemseo.mlearning.core.models.ml_model import BaseMLModel
+    from gemseo.mlearning.core.models.ml_model import TransformerType
 
 LOGGER = logging.getLogger(__name__)
 
 
 def get_mlearning_models() -> list[str]:
-    """Get available machine learning algorithms.
+    """Get available machine learning models.
 
     Returns:
-        The available machine learning algorithms.
+        The available machine learning models.
     """
-    from gemseo.mlearning.core.algos.factory import MLAlgoFactory
+    from gemseo.mlearning.core.models.factory import MLModelFactory
 
-    return MLAlgoFactory().class_names
+    return MLModelFactory().class_names
 
 
 def get_regression_models() -> list[str]:
@@ -59,7 +59,7 @@ def get_regression_models() -> list[str]:
     Returns:
         The available regression models.
     """
-    from gemseo.mlearning.regression.algos.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import RegressorFactory
 
     return RegressorFactory().class_names
 
@@ -70,7 +70,7 @@ def get_classification_models() -> list[str]:
     Returns:
         The available classification models.
     """
-    from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+    from gemseo.mlearning.classification.models.factory import ClassifierFactory
 
     return ClassifierFactory().class_names
 
@@ -81,7 +81,7 @@ def get_clustering_models() -> list[str]:
     Returns:
         The available clustering models.
     """
-    from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+    from gemseo.mlearning.clustering.models.factory import ClustererFactory
 
     return ClustererFactory().class_names
 
@@ -91,27 +91,27 @@ def create_mlearning_model(
     data: Dataset,
     transformer: TransformerType = READ_ONLY_EMPTY_DICT,
     **parameters: Any,
-) -> BaseMLAlgo:
-    """Create a machine learning algorithm from a training dataset.
+) -> BaseMLModel:
+    """Create a machine learning model from a training dataset.
 
     Args:
-        name: The name of the machine learning algorithm.
+        name: The name of the machine learning model.
         data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of
             [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.models.ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
             do not transform the variables.
-        parameters: The parameters of the machine learning algorithm.
+        parameters: The parameters of the machine learning model.
 
     Returns:
         A machine learning model.
     """
-    from gemseo.mlearning.core.algos.factory import MLAlgoFactory
+    from gemseo.mlearning.core.models.factory import MLModelFactory
 
-    factory = MLAlgoFactory()
+    factory = MLModelFactory()
     return factory.create(name, data=data, transformer=transformer, **parameters)
 
 
@@ -127,21 +127,21 @@ def create_regression_model(
     """Create a regression model from a training dataset.
 
     Args:
-        name: The name of the regression algorithm.
+        name: The name of the regression model.
         data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of
             [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.models.ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
             do not transform the variables.
         parameters: The parameters of the regression model.
 
     Returns:
         A regression model.
     """
-    from gemseo.mlearning.regression.algos.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import RegressorFactory
 
     if (
         name == "PCERegressor"
@@ -161,27 +161,27 @@ def create_regression_model(
 def create_classification_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = BaseMLSupervisedAlgo.DEFAULT_TRANSFORMER,  # noqa: E501
+    transformer: TransformerType = BaseMLSupervisedModel.DEFAULT_TRANSFORMER,  # noqa: E501
     **parameters: Any,
 ) -> BaseClassifier:
     """Create a classification model from a training dataset.
 
     Args:
-        name: The name of the classification algorithm.
+        name: The name of the classification model.
         data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of
             [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.models.ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
             do not transform the variables.
         parameters: The parameters of the classification model.
 
     Returns:
         A classification model.
     """
-    from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+    from gemseo.mlearning.classification.models.factory import ClassifierFactory
 
     return ClassifierFactory().create(
         name, data=data, transformer=transformer, **parameters
@@ -197,21 +197,21 @@ def create_clustering_model(
     """Create a clustering model from a training dataset.
 
     Args:
-        name: The name of the clustering algorithm.
+        name: The name of the clustering model.
         data: The training dataset.
         transformer: The strategies to transform the variables.
             Values are instances of
             [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.algos.ml_algo.BaseMLAlgo.DEFAULT_TRANSFORMER],
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.core.models.ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
             do not transform the variables.
         parameters: The parameters of the clustering model.
 
     Returns:
         A clustering model.
     """
-    from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+    from gemseo.mlearning.clustering.models.factory import ClustererFactory
 
     return ClustererFactory().create(
         name, data=data, transformer=transformer, **parameters
@@ -221,19 +221,19 @@ def create_clustering_model(
 def get_mlearning_options(
     model_name: str, output_json: bool = False, pretty_print: bool = True
 ) -> dict[str, str] | str:
-    """Find the available options for a machine learning algorithm.
+    """Find the available options for a machine learning model.
 
     Args:
-        model_name: The name of the machine learning algorithm.
+        model_name: The name of the machine learning model.
         output_json: Whether to apply JSON format for the schema.
         pretty_print: Whether to print the schema in a pretty table.
 
     Returns:
-        The options schema of the machine learning algorithm.
+        The options schema of the machine learning model.
     """
-    from gemseo.mlearning.core.algos.factory import MLAlgoFactory
+    from gemseo.mlearning.core.models.factory import MLModelFactory
 
-    return _get_options(MLAlgoFactory(), model_name, output_json, pretty_print)
+    return _get_options(MLModelFactory(), model_name, output_json, pretty_print)
 
 
 def get_regression_options(
@@ -249,7 +249,7 @@ def get_regression_options(
     Returns:
         The options schema of the regression model.
     """
-    from gemseo.mlearning.regression.algos.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import RegressorFactory
 
     return _get_options(RegressorFactory(), model_name, output_json, pretty_print)
 
@@ -267,7 +267,7 @@ def get_classification_options(
     Returns:
         The options schema of the classification model.
     """
-    from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+    from gemseo.mlearning.classification.models.factory import ClassifierFactory
 
     return _get_options(ClassifierFactory(), model_name, output_json, pretty_print)
 
@@ -285,7 +285,7 @@ def get_clustering_options(
     Returns:
         The options schema of the clustering model.
     """
-    from gemseo.mlearning.clustering.algos.factory import ClustererFactory
+    from gemseo.mlearning.clustering.models.factory import ClustererFactory
 
     return _get_options(ClustererFactory(), model_name, output_json, pretty_print)
 

@@ -20,8 +20,8 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
+from gemseo.mlearning.clustering.models.base_clusterer import BaseClusterer
+from gemseo.mlearning.clustering.models.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
 from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
@@ -36,22 +36,22 @@ from gemseo.utils.testing.helpers import concretize_classes
 
 @pytest.fixture
 def learning_data() -> Dataset:
-    """The dataset used to train the clustering algorithms."""
+    """The dataset used to train the clustering models."""
     return Dataset.from_array(array([[1, 0], [2, 0], [3, 1], [4, 1]]), ["x", "y"])
 
 
 @pytest.fixture
 def test_data() -> Dataset:
-    """The dataset used to test the performance clustering algorithms."""
+    """The dataset used to test the performance clustering models."""
     return Dataset.from_array(array([[1, 0.5]]), ["x", "y"])
 
 
-class NewAlgo(BaseClusterer):
+class NewModel(BaseClusterer):
     def _fit(self, data) -> None:
         self.labels = data[:, 1]
 
 
-class NewPredictiveAlgo(BasePredictiveClusterer):
+class NewPredictiveModel(BasePredictiveClusterer):
     def _fit(self, data) -> None:
         self.labels = data[:, 1]
 
@@ -76,13 +76,13 @@ class NewPredictiveClustererQuality(BasePredictiveClustererQuality):
 @pytest.mark.parametrize("samples", [(), [1, 2, 3]])
 @pytest.mark.parametrize("multioutput", [True, False])
 def test_compute_learning_measure(learning_data, train, samples, multioutput) -> None:
-    algo = NewAlgo(learning_data)
+    model = NewModel(learning_data)
     if train:
-        algo.learn()
+        model.learn()
 
     with concretize_classes(NewClustererQuality):
         assert (
-            NewClustererQuality(algo).compute_learning_measure(samples, multioutput)
+            NewClustererQuality(model).compute_learning_measure(samples, multioutput)
             == 1.0
         )
 
@@ -93,11 +93,11 @@ def test_compute_learning_measure(learning_data, train, samples, multioutput) ->
 def test_compute_test_measure(
     learning_data, test_data, train, samples, multioutput
 ) -> None:
-    algo = NewPredictiveAlgo(learning_data)
+    model = NewPredictiveModel(learning_data)
     if train:
-        algo.learn()
+        model.learn()
     assert (
-        NewPredictiveClustererQuality(algo).compute_test_measure(
+        NewPredictiveClustererQuality(model).compute_test_measure(
             test_data, samples, multioutput
         )
         == 1.0
@@ -110,9 +110,9 @@ def test_compute_test_measure(
 def test_compute_bootstrap_measure(
     learning_data, n_replicates, samples, multioutput
 ) -> None:
-    algo = NewPredictiveAlgo(learning_data)
+    model = NewPredictiveModel(learning_data)
     assert (
-        NewPredictiveClustererQuality(algo).compute_bootstrap_measure(
+        NewPredictiveClustererQuality(model).compute_bootstrap_measure(
             n_replicates, samples, multioutput
         )
         == 1.0
@@ -125,9 +125,9 @@ def test_compute_bootstrap_measure(
 def test_compute_cross_validation_measure(
     learning_data, n_folds, samples, multioutput
 ) -> None:
-    algo = NewPredictiveAlgo(learning_data)
+    model = NewPredictiveModel(learning_data)
     assert (
-        NewPredictiveClustererQuality(algo).compute_cross_validation_measure(
+        NewPredictiveClustererQuality(model).compute_cross_validation_measure(
             n_folds, samples, multioutput
         )
         == 1.0

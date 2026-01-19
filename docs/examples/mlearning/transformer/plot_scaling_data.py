@@ -22,7 +22,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 

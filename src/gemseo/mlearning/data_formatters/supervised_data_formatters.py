@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Data formatters for supervised machine learning algorithms."""
+"""Data formatters for supervised machine learning models."""
 
 from __future__ import annotations
 
@@ -28,21 +28,21 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning import BaseMLSupervisedAlgo
-    from gemseo.mlearning.core.algos.ml_algo import DataType
+    from gemseo.mlearning import BaseMLSupervisedModel
+    from gemseo.mlearning.core.models.ml_model import DataType
 from gemseo.mlearning.data_formatters.base_data_formatters import BaseDataFormatters
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
 class SupervisedDataFormatters(BaseDataFormatters):
-    """Data formatters for supervised machine learning algorithms."""
+    """Data formatters for supervised machine learning models."""
 
     @classmethod
     def format_dict(
         cls,
-        func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
-    ) -> Callable[[BaseMLSupervisedAlgo, DataType, Any, ...], DataType]:
+        func: Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray],
+    ) -> Callable[[BaseMLSupervisedModel, DataType, Any, ...], DataType]:
         """Make an array-based function be called with a dictionary of NumPy arrays.
 
         Args:
@@ -58,7 +58,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: BaseMLSupervisedAlgo,
+            model: BaseMLSupervisedModel,
             input_data: DataType,
             *args: Any,
             **kwargs: Any,
@@ -79,7 +79,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
             if the input data were passed as a dictionary of NumPy data arrays.
 
             Args:
-                algo: The supervised learning algorithm.
+                model: The supervised learning model.
                 input_data: The input data.
                 *args: The positional arguments of the function `func`.
                 **kwargs: The keyword arguments of the function `func`.
@@ -90,15 +90,15 @@ class SupervisedDataFormatters(BaseDataFormatters):
             as_dict = isinstance(input_data, Mapping)
             if as_dict:
                 input_data = concatenate_dict_of_arrays_to_array(
-                    input_data, algo.input_names
+                    input_data, model.input_names
                 )
 
-            output_data = func(algo, input_data, *args, **kwargs)
+            output_data = func(model, input_data, *args, **kwargs)
             if as_dict:
                 return split_array_to_dict_of_arrays(
                     output_data,
-                    algo.learning_set.variable_names_to_n_components,
-                    algo.output_names,
+                    model.learning_set.variable_names_to_n_components,
+                    model.output_names,
                 )
 
             return output_data
@@ -110,8 +110,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         cls,
         input_axis: int = 0,
     ) -> Callable[
-        [Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]],
-        Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], DataType],
+        [Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray]],
+        Callable[[BaseMLSupervisedModel, ndarray, Any, ...], DataType],
     ]:
         """Create a decorator for functions computing output data from input data.
 
@@ -126,8 +126,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         """
 
         def format_samples_(
-            func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
-        ) -> Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], DataType]:
+            func: Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray],
+        ) -> Callable[[BaseMLSupervisedModel, ndarray, Any, ...], DataType]:
             """Make a 2D NumPy array-based function work with 1D NumPy arrays.
 
             Args:
@@ -145,7 +145,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
             @wraps(func)
             def wrapper(
-                algo: BaseMLSupervisedAlgo,
+                model: BaseMLSupervisedModel,
                 input_data: DataType,
                 *args: Any,
                 **kwargs: Any,
@@ -165,7 +165,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 if the dimension of the input data is equal to 1.
 
                 Args:
-                    algo: The supervised learning algorithm.
+                    model: The supervised learning model.
                     input_data: The input data.
                     *args: The positional arguments of the function `func`.
                     **kwargs: The keyword arguments of the function `func`.
@@ -174,7 +174,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                     The output data with the same dimension as the input one.
                 """
                 single_sample = input_data.ndim == 1
-                output_data = func(algo, atleast_2d(input_data), *args, **kwargs)
+                output_data = func(model, atleast_2d(input_data), *args, **kwargs)
                 if single_sample:
                     output_data = output_data.squeeze(input_axis)
 
@@ -190,8 +190,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         transform_inputs: bool = True,
         transform_outputs: bool = True,
     ) -> Callable[
-        [Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]],
-        Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
+        [Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray]],
+        Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray],
     ]:
         """Force a function to transform its input and/or output variables.
 
@@ -206,8 +206,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         """
 
         def format_transform_(
-            func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
-        ) -> Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]:
+            func: Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray],
+        ) -> Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray]:
             """Apply transformation to inputs and inverse transformation to outputs.
 
             Args:
@@ -221,7 +221,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
             @wraps(func)
             def wrapper(
-                algo: BaseMLSupervisedAlgo,
+                model: BaseMLSupervisedModel,
                 input_data: ndarray,
                 *args: Any,
                 **kwargs: Any,
@@ -238,7 +238,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 the post-processing stage transforms the output data if required.
 
                 Args:
-                    algo: The supervised learning algorithm.
+                    model: The supervised learning model.
                     input_data: The input data.
                     *args: The positional arguments of the function.
                     **kwargs: The keyword arguments of the function.
@@ -248,38 +248,38 @@ class SupervisedDataFormatters(BaseDataFormatters):
                     or a transformed version according to the requirements.
                 """
                 if transform_inputs:
-                    if algo._transform_input_group:
-                        input_data = algo._transform_data(
-                            input_data, algo.learning_set.INPUT_GROUP, False
+                    if model._transform_input_group:
+                        input_data = model._transform_data(
+                            input_data, model.learning_set.INPUT_GROUP, False
                         )
 
-                    if algo._input_variables_to_transform:
-                        input_data = algo._transform_data_from_variable_names(
+                    if model._input_variables_to_transform:
+                        input_data = model._transform_data_from_variable_names(
                             input_data,
-                            algo.input_names,
-                            algo.learning_set.variable_names_to_n_components,
-                            algo._input_variables_to_transform,
+                            model.input_names,
+                            model.learning_set.variable_names_to_n_components,
+                            model._input_variables_to_transform,
                             False,
                         )
 
-                output_data = func(algo, input_data, *args, **kwargs)
+                output_data = func(model, input_data, *args, **kwargs)
 
                 if not transform_outputs or (
-                    not algo._transform_output_group
-                    and not algo._output_variables_to_transform
+                    not model._transform_output_group
+                    and not model._output_variables_to_transform
                 ):
                     return output_data
 
-                if algo._transform_output_group:
-                    output_data = algo._transform_data(
-                        output_data, algo.learning_set.OUTPUT_GROUP, True
+                if model._transform_output_group:
+                    output_data = model._transform_data(
+                        output_data, model.learning_set.OUTPUT_GROUP, True
                     )
 
-                return algo._transform_data_from_variable_names(
+                return model._transform_data_from_variable_names(
                     output_data,
-                    algo.output_names,
-                    algo._transformed_output_sizes,
-                    algo._output_variables_to_transform,
+                    model.output_names,
+                    model._transformed_output_sizes,
+                    model._output_variables_to_transform,
                     True,
                 )
 
@@ -292,8 +292,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         cls,
         input_axis: int = 0,
     ) -> Callable[
-        [Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray]],
-        Callable[[BaseMLSupervisedAlgo, DataType, Any, ...], DataType],
+        [Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray]],
+        Callable[[BaseMLSupervisedModel, DataType, Any, ...], DataType],
     ]:
         """Create a decorator for functions computing output data from input data.
 
@@ -308,8 +308,8 @@ class SupervisedDataFormatters(BaseDataFormatters):
         """
 
         def format_input_output_(
-            func: Callable[[BaseMLSupervisedAlgo, ndarray, Any, ...], ndarray],
-        ) -> Callable[[BaseMLSupervisedAlgo, DataType, Any, ...], DataType]:
+            func: Callable[[BaseMLSupervisedModel, ndarray, Any, ...], ndarray],
+        ) -> Callable[[BaseMLSupervisedModel, DataType, Any, ...], DataType]:
             """Create a decorator for functions computing output data from input data.
 
             Make a function robust to type, array shape and data transformation.
@@ -328,7 +328,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
             @cls.format_samples(input_axis=input_axis)
             @cls.format_transform()
             def wrapper(
-                algo: BaseMLSupervisedAlgo,
+                model: BaseMLSupervisedModel,
                 input_data: DataType,
                 *args: Any,
                 **kwargs: Any,
@@ -336,7 +336,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 """Compute output data from input data.
 
                 Args:
-                    algo: The supervised learning algorithm.
+                    model: The supervised learning model.
                     input_data: The input data.
                     *args: The positional arguments of the function.
                     **kwargs: The keyword arguments of the function.
@@ -344,7 +344,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 Returns:
                     The output data.
                 """
-                return func(algo, input_data, *args, **kwargs)
+                return func(model, input_data, *args, **kwargs)
 
             return wrapper
 

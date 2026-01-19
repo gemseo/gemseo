@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from gemseo.mlearning.classification.algos.base_classifier import BaseClassifier
+from gemseo.mlearning.classification.models.base_classifier import BaseClassifier
 from gemseo.mlearning.regression.quality.base_regressor_quality import (
     BaseRegressorQuality,
 )

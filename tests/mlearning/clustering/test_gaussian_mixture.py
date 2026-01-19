@@ -31,7 +31,7 @@ from numpy.linalg import eigvals
 from numpy.random import default_rng
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.clustering.algos.gaussian_mixture import GaussianMixture
+from gemseo.mlearning.clustering.models.gaussian_mixture import GaussianMixture
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
@@ -119,7 +119,7 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     gaussian_mixture = GaussianMixture(dataset)
     assert gaussian_mixture.algo is not None
-    assert gaussian_mixture.SHORT_ALGO_NAME == "GMM"
+    assert gaussian_mixture.SHORT_NAME == "GMM"
     assert gaussian_mixture.LIBRARY == "scikit-learn"
 
 

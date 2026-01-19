@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test unsupervised machine learning algorithm module."""
+"""Test unsupervised machine learning model module."""
 
 from __future__ import annotations
 
@@ -25,14 +25,14 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.core.algos.unsupervised import BaseMLUnsupervisedAlgo
+from gemseo.mlearning.core.models.unsupervised import BaseMLUnsupervisedModel
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
 
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the unsupervised machine learning algorithms."""
+    """The dataset used to train the unsupervised machine learning models."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
     variable_names_to_n_components = {"x_1": 1, "x_2": 2}
@@ -43,20 +43,20 @@ def dataset() -> Dataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLUnsupervisedAlgo):
-        ml_algo = BaseMLUnsupervisedAlgo(dataset)
+    with concretize_classes(BaseMLUnsupervisedModel):
+        ml_model = BaseMLUnsupervisedModel(dataset)
 
-    assert ml_algo.algo is None
-    assert ml_algo.var_names == dataset.get_variable_names(dataset.DEFAULT_GROUP)
+    assert ml_model.algo is None
+    assert ml_model.var_names == dataset.get_variable_names(dataset.DEFAULT_GROUP)
 
 
 def test_variable_limitation(dataset) -> None:
     """Test specifying learning variables."""
-    with concretize_classes(BaseMLUnsupervisedAlgo):
-        ml_algo_limited = BaseMLUnsupervisedAlgo(
+    with concretize_classes(BaseMLUnsupervisedModel):
+        ml_model_limited = BaseMLUnsupervisedModel(
             dataset,
             transformer={"x_1": MinMaxScaler(), "x_2": MinMaxScaler()},
             var_names=["x_1"],
         )
 
-    assert ml_algo_limited.var_names == ["x_1"]
+    assert ml_model_limited.var_names == ["x_1"]

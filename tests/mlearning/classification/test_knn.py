@@ -30,7 +30,7 @@ from numpy import zeros
 from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.algos.knn import KNNClassifier
+from gemseo.mlearning.classification.models.knn import KNNClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 rng = default_rng(12345)
@@ -110,7 +110,7 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     knn = KNNClassifier(dataset)
     assert knn.algo is not None
-    assert knn.SHORT_ALGO_NAME == "KNN"
+    assert knn.SHORT_NAME == "KNN"
     assert knn.LIBRARY == "scikit-learn"
 
 

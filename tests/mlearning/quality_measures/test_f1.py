@@ -26,16 +26,16 @@ from numpy import arange
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.algos.knn import KNNClassifier
+from gemseo.mlearning.classification.models.knn import KNNClassifier
 from gemseo.mlearning.classification.quality.f1_measure import F1Measure
 from gemseo.utils.testing.helpers import concretize_classes
 
-from ..core.test_ml_algo import DummyMLAlgo
+from ..core.test_ml_model import DummyMLModel
 
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the classification algorithms."""
+    """The dataset used to train the classification models."""
     input_data = 1.0 * arange(63).reshape((21, 3))
     output_data = array([[0], [1], [2]]).repeat(7, axis=0)
     dataset_ = IODataset()
@@ -46,7 +46,7 @@ def dataset() -> IODataset:
 
 @pytest.fixture
 def dataset_test() -> IODataset:
-    """The dataset used to test the performance classification algorithms."""
+    """The dataset used to test the performance classification models."""
     input_data = 1.0 * arange(18).reshape((6, 3))
     output_data = array([[0], [1], [2]]).repeat(2, axis=0)
     dataset_ = IODataset()
@@ -57,44 +57,44 @@ def dataset_test() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(DummyMLAlgo):
-        algo = DummyMLAlgo(dataset)
+    with concretize_classes(DummyMLModel):
+        model = DummyMLModel(dataset)
 
-    measure = F1Measure(algo)
-    assert measure.algo is not None
-    assert measure.algo.learning_set is dataset
+    measure = F1Measure(model)
+    assert measure.model is not None
+    assert measure.model.learning_set is dataset
 
 
 def test_compute_learning_measure(dataset) -> None:
     """Test evaluate learn method."""
-    algo = KNNClassifier(dataset)
-    measure = F1Measure(algo)
+    model = KNNClassifier(dataset)
+    measure = F1Measure(model)
     measure.compute_learning_measure(multioutput=False)
 
 
 def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
-    algo = KNNClassifier(dataset)
-    measure = F1Measure(algo)
+    model = KNNClassifier(dataset)
+    measure = F1Measure(model)
     measure.compute_test_measure(test_data=dataset_test, multioutput=False)
 
 
 def test_compute_leave_one_out_measure(dataset) -> None:
     """Test evaluate leave one out method."""
-    algo = KNNClassifier(dataset)
-    measure = F1Measure(algo)
+    model = KNNClassifier(dataset)
+    measure = F1Measure(model)
     measure.compute_leave_one_out_measure(multioutput=False)
 
 
 def test_compute_cross_validation_measure(dataset) -> None:
     """Test evaluate k-folds method."""
-    algo = KNNClassifier(dataset)
-    measure = F1Measure(algo)
+    model = KNNClassifier(dataset)
+    measure = F1Measure(model)
     measure.compute_cross_validation_measure(multioutput=False)
 
 
 def test_compute_bootstrap_measure(dataset) -> None:
     """Test evaluate bootstrap method."""
-    algo = KNNClassifier(dataset)
-    measure = F1Measure(algo)
+    model = KNNClassifier(dataset)
+    measure = F1Measure(model)
     measure.compute_bootstrap_measure(multioutput=False)

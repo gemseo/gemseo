@@ -38,8 +38,8 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
 
 
 class RMSEMeasure(MSEMeasure):
@@ -47,14 +47,14 @@ class RMSEMeasure(MSEMeasure):
 
     def __init__(
         self,
-        algo: BaseRegressor,
+        model: BaseRegressor,
         fit_transformers: bool = MSEMeasure._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for regression.
+            model: A machine learning model for regression.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def compute_learning_measure(  # noqa: D102
         self,

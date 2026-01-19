@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-r"""The maximum error to assess the quality of a regression algorithm.
+r"""The maximum error to assess the quality of a regression model.
 
 The maximum error (ME) is defined by
 
@@ -30,7 +30,7 @@ from gemseo.mlearning.regression.quality.base_regressor_quality import (
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import NumberArray
 
 
@@ -39,10 +39,10 @@ class MEMeasure(BaseRegressorQuality):
 
     def __init__(  # noqa: D107
         self,
-        algo: BaseRegressor,
+        model: BaseRegressor,
         fit_transformers: bool = False,
     ) -> None:
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def _compute_measure(
         self,

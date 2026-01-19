@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from matplotlib.tri import Triangulation
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.mlearning.core.calibration import MLAlgoCalibration
+from gemseo.mlearning.core.calibration import MLModelCalibration
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
@@ -49,7 +49,7 @@ measure_options = {"test_data": test_dataset}
 #
 calibration_space = DesignSpace()
 calibration_space.add_variable("degree", 1, "integer", 1, 10, 1)
-calibration = MLAlgoCalibration(
+calibration = MLModelCalibration(
     "PolynomialRegressor",
     dataset,
     ["degree"],
@@ -91,7 +91,7 @@ plt.show()
 #
 calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 100.0, 0.0)
-calibration = MLAlgoCalibration(
+calibration = MLModelCalibration(
     "PolynomialRegressor",
     dataset,
     ["penalty_level"],
@@ -133,7 +133,7 @@ plt.show()
 #
 calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 100.0, 0.0)
-calibration = MLAlgoCalibration(
+calibration = MLModelCalibration(
     "PolynomialRegressor",
     dataset,
     ["penalty_level"],
@@ -177,7 +177,7 @@ plt.show()
 calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 40.0, 0.0)
 calibration_space.add_variable("l2_penalty_ratio", 1, "float", 0.0, 1.0, 0.5)
-calibration = MLAlgoCalibration(
+calibration = MLModelCalibration(
     "PolynomialRegressor",
     dataset,
     ["penalty_level", "l2_penalty_ratio"],
@@ -229,7 +229,7 @@ plt.show()
 calibration_space = DesignSpace()
 calibration_space.add_variable("penalty_level", 1, "float", 0.0, 40.0, 0.0)
 calibration_space.add_variable("l2_penalty_ratio", 1, "float", 0.0, 1.0, 0.5)
-calibration = MLAlgoCalibration(
+calibration = MLModelCalibration(
     "PolynomialRegressor",
     dataset,
     ["penalty_level", "l2_penalty_ratio"],

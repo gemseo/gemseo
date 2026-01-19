@@ -56,8 +56,8 @@ get_clustering_options("GaussianMixture", pretty_print=False)
 #     [get_clustering_models()][gemseo.mlearning.get_clustering_models] and [get_clustering_options()][gemseo.mlearning.get_clustering_options]
 #     can be very useful for the developers.
 #     As a user,
-#     it may be easier to consult [this page][available-clustering-algorithms]
-#     to find out about the different algorithms and their options.
+#     it may be easier to consult [this page][available-clustering-models]
+#     to find out about the different models and their options.
 #
 # ## Creation
 #

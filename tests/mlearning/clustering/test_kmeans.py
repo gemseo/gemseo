@@ -31,7 +31,7 @@ from numpy.linalg import eigvals
 from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.clustering.models.kmeans import KMeans
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
@@ -131,10 +131,10 @@ def model_with_transform(dataset, transformer_key, fit_transformers):
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    algo = KMeans(dataset)
-    assert algo.algo is not None
-    assert algo.SHORT_ALGO_NAME == "KMeans"
-    assert algo.LIBRARY == "scikit-learn"
+    model = KMeans(dataset)
+    assert model.algo is not None
+    assert model.SHORT_NAME == "KMeans"
+    assert model.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset) -> None:

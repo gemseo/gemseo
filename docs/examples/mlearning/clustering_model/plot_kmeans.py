@@ -22,7 +22,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# K-means.
 
-A [KMeans][gemseo.mlearning.clustering.algos.kmeans.KMeans] is a k-means model
+A [KMeans][gemseo.mlearning.clustering.models.kmeans.KMeans] is a k-means model
 based on [scikit-learn](https://scikit-learn.org/).
 
 Load Iris dataset and create clusters.

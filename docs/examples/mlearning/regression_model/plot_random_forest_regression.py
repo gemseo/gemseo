@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Random forest.
 
-A [RandomForestRegressor][gemseo.mlearning.regression.algos.random_forest.RandomForestRegressor] is a random forest model
+A [RandomForestRegressor][gemseo.mlearning.regression.models.random_forest.RandomForestRegressor] is a random forest model
 based on [scikit-learn](https://scikit-learn.org).
 """
 

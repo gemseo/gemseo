@@ -33,10 +33,10 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.disciplines.factory import DisciplineFactory
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.mda.factory import MDAFactory
-from gemseo.mlearning.classification.algos.factory import ClassifierFactory
-from gemseo.mlearning.clustering.algos.factory import ClustererFactory
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
-from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.classification.models.factory import ClassifierFactory
+from gemseo.mlearning.clustering.models.factory import ClustererFactory
+from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
+from gemseo.mlearning.regression.models.factory import RegressorFactory
 from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
@@ -614,20 +614,20 @@ class InitOptionsDoc(AlgoOptionsDoc):
 algos_options_docs = [
     BasePostAlgoOptionsDoc(
         "clustering",
-        "Clustering algorithms",
+        "Clustering models",
         ClustererFactory(),
         pydantic_model_module_path="settings.mlearning",
     ),
     BasePostAlgoOptionsDoc(
         "classification",
-        "Classification algorithms",
+        "Classification models",
         ClassifierFactory(),
         pydantic_model_module_path="settings.mlearning",
     ),
     InitOptionsDoc(
         "ml_quality",
         "Quality measures",
-        MLAlgoQualityFactory(),
+        MLModelQualityFactory(),
         use_pydantic_model=False,
     ),
     BasePostAlgoOptionsDoc(
@@ -694,9 +694,9 @@ for algos_options_doc in algos_options_docs:
 
 options_doc = BasePostAlgoOptionsDoc(
     "regression",
-    "Regression algorithms",
+    "Regression models",
     RegressorFactory(),
     pydantic_model_module_path="settings.mlearning",
 )
 options_doc.to_rst()
-options_doc.to_rst("surrogate_algos_template.tmpl", "surrogate_algos.md")
+options_doc.to_rst("surrogate_models_template.tmpl", "surrogate_models.md")

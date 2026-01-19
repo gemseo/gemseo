@@ -26,8 +26,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.discipline import Discipline
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.factory import RegressorFactory
+from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.factory import RegressorFactory
 from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -42,8 +42,8 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType
-    from gemseo.mlearning.regression.algos.base_regressor_settings import (
+    from gemseo.mlearning.core.models.ml_model import TransformerType
+    from gemseo.mlearning.regression.models.base_regressor_settings import (
         BaseRegressorSettings,
     )
     from gemseo.mlearning.regression.quality.base_regressor_quality import (
@@ -79,7 +79,7 @@ class SurrogateDiscipline(Discipline):
         >>> surrogate_discipline.execute({"x": np.array([1.5])})
     """
 
-    regression_model: BaseRegressor
+    regressor: BaseRegressor
     """The regression model called by the surrogate discipline."""
 
     def __init__(
@@ -104,13 +104,13 @@ class SurrogateDiscipline(Discipline):
             transformer: The strategies to transform the variables.
                 This argument is ignored
                 when `surrogate` is a
-                [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor];
+                [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor];
                 in this case,
                 these strategies are defined
                 with the `transformer` argument of this
-                [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor],
+                [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor],
                 whose default value is
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
+                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
                 which means no transformation.
                 In the other cases,
                 the values of the dictionary are instances of
@@ -124,19 +124,19 @@ class SurrogateDiscipline(Discipline):
                 will be applied
                 to all the variables of this group.
                 If
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
+                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
                 do not transform the variables.
                 The
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
+                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
                 uses the
                 [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]
                 strategy for both input and output variables.
                 This argument is ignored
                 when the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings].
+                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
             disc_name: The name of the discipline.
                 If empty,
-                the concatenation of the short name of the surrogate algorithm
+                the concatenation of the short name of the surrogate model
                 and the name of the training dataset is used.
             default_input_data: The default values of the input variables.
                 If empty,
@@ -147,7 +147,7 @@ class SurrogateDiscipline(Discipline):
                 If empty and `surrogate` is not a regressor instance,
                 all input variables mentioned in the training dataset are used.
                 If the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings],
+                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
                 `surrogate.input_names` is ignored and replaced by `input_names`.
             output_names: The names of the output variables of the discipline.
                 If empty and `surrogate` is a regressor instance,
@@ -155,24 +155,24 @@ class SurrogateDiscipline(Discipline):
                 If empty and `surrogate` is not a regressor instance,
                 all output variables mentioned in the training dataset are used.
                 If the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings],
+                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
                 `surrogate.output_names` is ignored and replaced by `output_names`.
-            **settings: The settings of the machine learning algorithm.
+            **settings: The settings of the machine learning model.
                 These arguments are ignored
                 when the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings].
+                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
 
         Raises:
             ValueError: If the training dataset is missing
                 whilst the regression model is not trained.
         """  # noqa: D205, D212, D415
         if isinstance(surrogate, BaseRegressor):
-            self.regression_model = surrogate
+            self.regressor = surrogate
         elif data is None:
             msg = "data is required to train the surrogate model."
             raise ValueError(msg)
         elif isinstance(surrogate, str):
-            self.regression_model = RegressorFactory().create(
+            self.regressor = RegressorFactory().create(
                 surrogate,
                 data,
                 transformer=transformer,
@@ -183,17 +183,16 @@ class SurrogateDiscipline(Discipline):
         else:
             surrogate.input_names = input_names
             surrogate.output_names = output_names
-            self.regression_model = RegressorFactory().create(
+            self.regressor = RegressorFactory().create(
                 surrogate._TARGET_CLASS_NAME, data, settings_model=surrogate
             )
 
-        if not self.regression_model.is_trained:
-            self.regression_model.learn()
+        if not self.regressor.is_trained:
+            self.regressor.learn()
 
         if not disc_name:
             disc_name = (
-                f"{self.regression_model.SHORT_ALGO_NAME}_"
-                f"{self.regression_model.learning_set.name}"
+                f"{self.regressor.SHORT_NAME}_{self.regressor.learning_set.name}"
             )
 
         super().__init__(disc_name)
@@ -202,7 +201,7 @@ class SurrogateDiscipline(Discipline):
         self.add_differentiated_inputs()
         self.add_differentiated_outputs()
         try:
-            self.regression_model.predict_jacobian(self.io.input_grammar.defaults)
+            self.regressor.predict_jacobian(self.io.input_grammar.defaults)
             self.linearization_mode = self.LinearizationMode.AUTO
         except NotImplementedError:
             self.linearization_mode = self.LinearizationMode.FINITE_DIFFERENCES
@@ -212,11 +211,11 @@ class SurrogateDiscipline(Discipline):
         mls = MultiLineString()
         mls.add("Surrogate discipline: {}", self.name)
         mls.indent()
-        mls.add("Dataset name: {}", self.regression_model.learning_set.name)
-        mls.add("Dataset size: {}", len(self.regression_model.learning_set))
-        mls.add("Surrogate model: {}", self.regression_model.__class__.__name__)
-        mls.add("Inputs: {}", pretty_str(self.regression_model.input_names))
-        mls.add("Outputs: {}", pretty_str(self.regression_model.output_names))
+        mls.add("Dataset name: {}", self.regressor.learning_set.name)
+        mls.add("Dataset size: {}", len(self.regressor.learning_set))
+        mls.add("Surrogate model: {}", self.regressor.__class__.__name__)
+        mls.add("Inputs: {}", pretty_str(self.regressor.input_names))
+        mls.add("Outputs: {}", pretty_str(self.regressor.output_names))
         mls.add("Linearization mode: {}", self.linearization_mode)
         return mls
 
@@ -238,10 +237,10 @@ class SurrogateDiscipline(Discipline):
                 If empty, use all the outputs of the regression model.
         """
         self.io.input_grammar.update_from_names(
-            input_names or self.regression_model.input_names
+            input_names or self.regressor.input_names
         )
         self.io.output_grammar.update_from_names(
-            output_names or self.regression_model.output_names
+            output_names or self.regressor.output_names
         )
 
     def _set_default_inputs(
@@ -255,7 +254,7 @@ class SurrogateDiscipline(Discipline):
                If empty, use the center of the learning input space.
         """
         if not default_input_data:
-            default_input_data = self.regression_model.input_space_center
+            default_input_data = self.regressor.input_space_center
 
         self.io.input_grammar.defaults = default_input_data
 
@@ -263,7 +262,7 @@ class SurrogateDiscipline(Discipline):
         self.__check_validity_domain(input_data)
         return {
             name: value.flatten()
-            for name, value in self.regression_model.predict(input_data).items()
+            for name, value in self.regressor.predict(input_data).items()
         }
 
     def _compute_jacobian(
@@ -273,7 +272,7 @@ class SurrogateDiscipline(Discipline):
     ) -> None:
         input_data = self.io.get_input_data()
         self.__check_validity_domain(input_data)
-        self.jac = self.regression_model.predict_jacobian(input_data)
+        self.jac = self.regressor.predict_jacobian(input_data)
 
     def __check_validity_domain(self, input_data: Mapping[str, ndarray]) -> None:
         """Check whether a point belongs to the domain of validity of the surrogate.
@@ -281,7 +280,7 @@ class SurrogateDiscipline(Discipline):
         Args:
             input_data: The input data to be checked.
         """
-        domain = self.regression_model.validity_domain
+        domain = self.regressor.validity_domain
         try:
             domain.check_membership(domain.convert_dict_to_array(input_data))
         except ValueError:
@@ -301,7 +300,7 @@ class SurrogateDiscipline(Discipline):
         Returns:
             A viewer of the quality of the underlying regressor.
         """
-        return MLRegressorQualityViewer(self.regression_model)
+        return MLRegressorQualityViewer(self.regressor)
 
     def get_error_measure(
         self,
@@ -318,5 +317,5 @@ class SurrogateDiscipline(Discipline):
             The error measure.
         """
         return RegressorQualityFactory().create(
-            measure_name, algo=self.regression_model, **measure_options
+            measure_name, self.regressor, **measure_options
         )

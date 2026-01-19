@@ -38,8 +38,8 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 
 # %%
 # For that purpose,
-# we will use an [MOERegressor][gemseo.mlearning.regression.algos.moe.MOERegressor] in an advanced way:
-# we will not set the clustering, classification and regression algorithms
+# we will use an [MOERegressor][gemseo.mlearning.regression.models.moe.MOERegressor] in an advanced way:
+# we will not set the clustering, classification and regression models
 # but select them according to their performance
 # from several candidates that we will provide.
 # Moreover,
@@ -51,7 +51,7 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 # ## Initialization
 #
 # First,
-# we initialize an [MOERegressor][gemseo.mlearning.regression.algos.moe.MOERegressor] with soft classification
+# we initialize an [MOERegressor][gemseo.mlearning.regression.models.moe.MOERegressor] with soft classification
 # by means of the high-level machine learning function [create_regression_model()][gemseo.mlearning.create_regression_model].
 model = create_regression_model("MOERegressor", dataset, hard=False)
 
@@ -59,12 +59,12 @@ model = create_regression_model("MOERegressor", dataset, hard=False)
 # ## Clustering
 #
 # Then,
-# we add two clustering algorithms
+# we add two clustering models
 # with different numbers of clusters (called *components* for the Gaussian Mixture)
 # and set the [SilhouetteMeasure][gemseo.mlearning.clustering.quality.silhouette_measure.SilhouetteMeasure] as clustering measure
 # to be evaluated from the training dataset.
 # During the learning stage,
-# the mixture of experts will select the clustering algorithm
+# the mixture of experts will select the clustering model
 # and the number of clusters
 # minimizing this measure.
 model.set_clustering_measure(SilhouetteMeasure)
@@ -74,12 +74,12 @@ model.add_clusterer_candidate("GaussianMixture", n_clusters=[3, 4, 5])
 # %%
 # ## Classification
 #
-# We also add classification algorithms
+# We also add classification models
 # with different settings
 # and set the [F1Measure][gemseo.mlearning.classification.quality.f1_measure.F1Measure] as classification measure
 # to be evaluated from the training dataset.
 # During the learning stage,
-# the mixture of experts will select the classification algorithm and the settings
+# the mixture of experts will select the classification model and the settings
 # minimizing this measure.
 model.set_classification_measure(F1Measure)
 model.add_classifier_candidate("KNNClassifier", n_neighbors=[3, 4, 5])
@@ -88,11 +88,11 @@ model.add_classifier_candidate("RandomForestClassifier", n_estimators=[100])
 # %%
 # ## Regression
 #
-# We also add regression algorithms
+# We also add regression models
 # and set the [MSEMeasure][gemseo.mlearning.regression.quality.mse_measure.MSEMeasure] as regression measure
 # to be evaluated from the training dataset.
 # During the learning stage, for each cluster,
-# the mixture of experts will select the regression algorithm minimizing this measure.
+# the mixture of experts will select the regression model minimizing this measure.
 model.set_regression_measure(MSEMeasure)
 model.add_regressor_candidate("LinearRegressor")
 model.add_regressor_candidate("RBFRegressor")
@@ -102,14 +102,14 @@ model.add_regressor_candidate("RBFRegressor")
 #
 #     We could also add candidates for some learning stages,
 #     e.g. clustering and regression,
-#     and set the machine learning algorithms for the remaining ones,
+#     and set the machine learning models for the remaining ones,
 #     e.g. classification.
 #
 # ## Training
 #
 # Lastly,
 # we learn the data
-# and select the best machine learning algorithm
+# and select the best machine learning model
 # for both clustering, classification and regression steps.
 model.learn()
 
@@ -120,9 +120,9 @@ model.learn()
 # on the sub-machine learning models selected among the candidates
 # and on their selected settings.
 # We can see that
-# a [MKeans][gemseo.mlearning.clustering.algos.kmeans.KMeans] with four clusters has been selected for the clustering stage,
-# as well as a [RandomForestClassifier][gemseo.mlearning.classification.algos.random_forest.RandomForestClassifier] for the classification stage
-# and a [RBFRegressor][gemseo.mlearning.regression.algos.rbf.RBFRegressor] for each cluster.
+# a [MKeans][gemseo.mlearning.clustering.models.kmeans.KMeans] with four clusters has been selected for the clustering stage,
+# as well as a [RandomForestClassifier][gemseo.mlearning.classification.models.random_forest.RandomForestClassifier] for the classification stage
+# and a [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor] for each cluster.
 model
 
 # %%
@@ -132,15 +132,15 @@ model
 #     and depending on the complexity of the function to be approximated,
 #     one could obtain different regression models according to the clusters.
 #     For example,
-#     one could use a [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor] with order 2
+#     one could use a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] with order 2
 #     on a sub-part of the input space
-#     and a [GaussianProcessRegressor][gemseo.mlearning.regression.algos.gpr.GaussianProcessRegressor]
+#     and a [GaussianProcessRegressor][gemseo.mlearning.regression.models.gpr.GaussianProcessRegressor]
 #     on another sub-part of the input space.
 #
 # Once built,
-# this mixture of experts can be used as any [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor].
+# this mixture of experts can be used as any [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor].
 #
 # !!! info "See also"
 #
 #     [Another example][mixture-of-experts]
-#     proposes a standard use of [MOERegressor][gemseo.mlearning.regression.algos.moe.MOERegressor].
+#     proposes a standard use of [MOERegressor][gemseo.mlearning.regression.models.moe.MOERegressor].

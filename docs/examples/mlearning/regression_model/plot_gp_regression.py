@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Gaussian process (GP) regression.
 
-A [GaussianProcessRegressor][gemseo.mlearning.regression.algos.gpr.GaussianProcessRegressor] is a GP regression model
+A [GaussianProcessRegressor][gemseo.mlearning.regression.models.gpr.GaussianProcessRegressor] is a GP regression model
 based on [scikit-learn](https://scikit-learn.org).
 
 !!! info "See also"
@@ -130,8 +130,8 @@ plt.show()
 # %%
 # ## Settings
 #
-# The [GaussianProcessRegressor][gemseo.mlearning.regression.algos.gpr.GaussianProcessRegressor] has many options
-# defined in the [GaussianProcessRegressor_Settings][gemseo.mlearning.regression.algos.gpr_settings.GaussianProcessRegressor_Settings] Pydantic model.
+# The [GaussianProcessRegressor][gemseo.mlearning.regression.models.gpr.GaussianProcessRegressor] has many options
+# defined in the [GaussianProcessRegressor_Settings][gemseo.mlearning.regression.models.gpr_settings.GaussianProcessRegressor_Settings] Pydantic model.
 # Here are the main ones.
 #
 # ### Kernel

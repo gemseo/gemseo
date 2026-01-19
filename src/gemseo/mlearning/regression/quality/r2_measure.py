@@ -47,8 +47,8 @@ from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 
 
@@ -59,14 +59,14 @@ class R2Measure(BaseRegressorQuality):
 
     def __init__(
         self,
-        algo: BaseRegressor,
+        model: BaseRegressor,
         fit_transformers: bool = BaseRegressorQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for regression.
+            model: A machine learning model for regression.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers)
+        super().__init__(model, fit_transformers)
 
     def _compute_measure(
         self,
@@ -136,14 +136,14 @@ class R2Measure(BaseRegressorQuality):
         stacked_predictions = resampler_class == CrossValidation
         resampler = resampler_class(samples, seed=seed, **kwargs)
         _, predictions = resampler.execute(
-            self.algo,
+            self.model,
             return_models=store_resampling_result,
-            input_data=self.algo.input_data,
+            input_data=self.model.input_data,
             stack_predictions=stacked_predictions,
             fit_transformers=self._fit_transformers,
             store_sampling_result=store_resampling_result,
         )
-        output_data = self.algo.output_data
+        output_data = self.model.output_data
         var = output_data.var(0)
         if stacked_predictions:
             mse = ((output_data - predictions) ** 2).mean(0)

@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
     BaseClustererQuality,
 )
-from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 
@@ -34,27 +34,27 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo import Dataset
-    from gemseo.mlearning.clustering.algos.base_predictive_clusterer import (
+    from gemseo.mlearning.clustering.models.base_predictive_clusterer import (
         BasePredictiveClusterer,
     )
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
 
 
 class BasePredictiveClustererQuality(BaseClustererQuality):
     """The base class to assess the quality of a predictive clusterer."""
 
-    algo: BasePredictiveClusterer
+    model: BasePredictiveClusterer
 
     def __init__(
         self,
-        algo: BasePredictiveClusterer,
-        fit_transformers: bool = BaseMLAlgoQuality._FIT_TRANSFORMERS,
+        model: BasePredictiveClusterer,
+        fit_transformers: bool = BaseMLModelQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for predictive clustering.
+            model: A machine learning model for predictive clustering.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def compute_test_measure(  # noqa: D102
         self,
@@ -63,8 +63,8 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
         multioutput: bool = True,
     ) -> MeasureType:
         self._pre_process(samples)
-        data = test_data.get_view(variable_names=self.algo.var_names).to_numpy()
-        return self._compute_measure(data, self.algo.predict(data), multioutput)
+        data = test_data.get_view(variable_names=self.model.var_names).to_numpy()
+        return self._compute_measure(data, self.model.predict(data), multioutput)
 
     def compute_cross_validation_measure(  # noqa: D102
         self,
@@ -79,7 +79,7 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
         data = self._get_data()
         cross_validation = CrossValidation(samples, n_folds, randomize, seed)
         _, predictions = cross_validation.execute(
-            self.algo,
+            self.model,
             return_models=store_resampling_result,
             input_data=data,
             fit_transformers=self._fit_transformers,
@@ -99,7 +99,7 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
         data = self._get_data()
         bootstrap = Bootstrap(samples, n_replicates, seed)
         _, predictions = bootstrap.execute(
-            self.algo,
+            self.model,
             return_models=store_resampling_result,
             input_data=data,
             stack_predictions=False,

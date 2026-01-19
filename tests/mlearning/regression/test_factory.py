@@ -27,8 +27,8 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.factory import RegressorFactory
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.factory import RegressorFactory
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ LEARNING_SIZE = 9
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression model."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()

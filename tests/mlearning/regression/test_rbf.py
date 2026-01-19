@@ -30,8 +30,8 @@ from scipy.interpolate import Rbf
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.rbf import RBFRegressor
-from gemseo.mlearning.regression.algos.rbf_settings import RBF
+from gemseo.mlearning.regression.models.rbf import RBFRegressor
+from gemseo.mlearning.regression.models.rbf_settings import RBF
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ INPUT_VALUES = {
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     discipline = AnalyticDiscipline({
         "y_1": "1+2*x_1+3*x_2",
         "y_2": "-1-2*x_1-3*x_2",
@@ -105,7 +105,7 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = RBFRegressor(dataset)
     assert model_.algo is None
-    assert model_.SHORT_ALGO_NAME == "RBF"
+    assert model_.SHORT_NAME == "RBF"
     assert model_.LIBRARY == "SciPy"
 
 
