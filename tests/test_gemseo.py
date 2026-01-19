@@ -35,6 +35,7 @@ from numpy import pi as np_pi
 from numpy import sin
 from numpy.testing import assert_equal
 
+from gemseo import LOGGER as GEMSEO_LOGGER
 from gemseo import DatasetClassName
 from gemseo import compute_doe
 from gemseo import configure
@@ -108,6 +109,8 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.utils.constants import _LOGGING_DATE_FORMAT
+from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.logging import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
@@ -854,6 +857,15 @@ def test_import_discipline(tmp_wd) -> None:
     assert loaded_discipline.io.data["y_1"] == discipline.io.data["y_1"]
 
 
+def test_configure_deprecated() -> None:
+    """Check that configure raises a deprecation warning."""
+    with pytest.warns(
+        DeprecationWarning,
+        match=re.escape("configure() is deprecated; use gemseo.configuration instead."),
+    ):
+        configure()
+
+
 @pytest.mark.parametrize("enable_discipline_statistics", [False, True])
 @pytest.mark.parametrize("enable_function_statistics", [False, True])
 @pytest.mark.parametrize("enable_progress_bar", [False, True])
@@ -940,6 +952,18 @@ def test_create_dataset_class_name() -> None:
     isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)
 
 
+def test_configure_logger_deprecated() -> None:
+    """Check that configure_logger raises a deprecation warning."""
+    with pytest.warns(
+        DeprecationWarning,
+        match=re.escape(
+            "configure_logger() is deprecated; "
+            "use gemseo.configuration.logging instead."
+        ),
+    ):
+        configure_logger()
+
+
 def test_configure_logger() -> None:
     """Check configure_logger() with default argument values."""
     logger = configure_logger()
@@ -947,16 +971,62 @@ def test_configure_logger() -> None:
     assert logger.level == logging.INFO
 
 
-def test_configure_logger_name() -> None:
-    """Check configure_logger() with custom name."""
-    logger = configure_logger(logger_name="foo")
+def test_configure_logger_gemseo_logger():
+    """Check that configuring the root logger
+    changes the configuration of the gemseo logger."""
+    date_format = _LOGGING_DATE_FORMAT + " - "
+    message_format = _LOGGING_MESSAGE_FORMAT + " - "
+    file_name = "foo"
+    file_mode = "w"
+    handlers = GEMSEO_LOGGER.handlers.copy()
+    configure_logger(
+        level=logging.WARNING,
+        date_format=date_format,
+        message_format=message_format,
+        filename=file_name,
+        filemode=file_mode,
+    )
+    assert GEMSEO_LOGGER.level == logging.WARNING
+    assert GEMSEO_LOGGER.handlers[0].formatter.datefmt == date_format
+    assert GEMSEO_LOGGER.handlers[0].formatter._fmt == message_format
+    assert GEMSEO_LOGGER.handlers[1].baseFilename.endswith(file_name)
+    assert GEMSEO_LOGGER.handlers[1].mode == file_mode
+    # Restore the original handlers.
+    GEMSEO_LOGGER.handlers.clear()
+    GEMSEO_LOGGER.handlers.extend(handlers)
+
+
+def test_configure_logger_no_gemseo_logger() -> None:
+    """Check that configuring a logger different from the root logger
+    does not change the configuration of the gemseo logger."""
+    date_format = _LOGGING_DATE_FORMAT + " - "
+    message_format = _LOGGING_MESSAGE_FORMAT + " - "
+    file_name = "foo"
+    file_mode = "w"
+    logger = configure_logger(
+        logger_name="foo",
+        level=logging.WARNING,
+        date_format=date_format,
+        message_format=message_format,
+        filename=file_name,
+        filemode=file_mode,
+    )
     assert logger.name == "foo"
+    assert logger.level == logging.WARNING
+    assert logger.handlers[0].formatter.datefmt == date_format
+    assert logger.handlers[0].formatter._fmt == message_format
+    assert logger.handlers[1].baseFilename.endswith(file_name)
+    assert logger.handlers[1].mode == file_mode
+    assert GEMSEO_LOGGER.level == logging.WARNING
+    assert GEMSEO_LOGGER.handlers[0].formatter.datefmt == _LOGGING_DATE_FORMAT
+    assert GEMSEO_LOGGER.handlers[0].formatter._fmt == _LOGGING_MESSAGE_FORMAT
 
 
 def test_configure_logger_level() -> None:
     """Check configure_logger() with custom level."""
     logger = configure_logger(level=logging.WARNING)
     assert logger.level == logging.WARNING
+    GEMSEO_LOGGER.level = logging.INFO
 
 
 def test_configure_logger_format(caplog) -> None:
