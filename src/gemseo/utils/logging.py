@@ -251,17 +251,6 @@ class LoggingContext:
 
     Change the level of the logger in a `with` block.
 
-    Examples:
-        >>> import logging
-        >>> logger = logging.getLogger()
-        >>> logger.setLevel(logging.INFO)
-        >>> logger.info("This should appear.")
-        >>> with LoggingContext(logger):
-        >>>    logger.warning("This should appear.")
-        >>>    logger.info("This should not appear.")
-        >>>
-        >>> logger.info("This should appear.")
-
     Source: [Logging Cookbook](https://docs.python.org/3/howto/logging-cookbook.html#using-a-context-manager-for-selective-logging)
     """
 

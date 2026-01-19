@@ -55,29 +55,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SurrogateDiscipline(Discipline):
-    """A discipline wrapping a regression model built from a dataset.
-
-    Examples:
-        >>> import numpy as np
-        >>> from gemseo.datasets.io_dataset import IODataset
-        >>> from gemseo.disciplines.surrogate import SurrogateDiscipline
-        >>>
-        >>> # Create an input-output dataset.
-        >>> dataset = IODataset()
-        >>> dataset.add_input_variable("x", np.array([[1.0], [2.0], [3.0]]))
-        >>> dataset.add_output_variable("y", np.array([[3.0], [5.0], [6.0]]))
-        >>>
-        >>> # Build a surrogate discipline relying on a linear regression model.
-        >>> surrogate_discipline = SurrogateDiscipline("LinearRegressor", dataset)
-        >>>
-        >>> # Assess its quality with the R2 measure.
-        >>> r2 = surrogate_discipline.get_error_measure("R2Measure")
-        >>> learning_r2 = r2.compute_learning_measure()
-        >>>
-        >>> # Execute the surrogate discipline, with default or custom input values.
-        >>> surrogate_discipline.execute()
-        >>> surrogate_discipline.execute({"x": np.array([1.5])})
-    """
+    """A discipline wrapping a regression model built from a dataset."""
 
     regressor: BaseRegressor
     """The regression model called by the surrogate discipline."""

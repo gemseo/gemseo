@@ -36,42 +36,7 @@ class SPParametricStatistics(
         SPDistributionFitter.SignificanceTest,
     ]
 ):
-    """A toolbox to compute statistics using SciPy probability distribution-fitting.
-
-    Examples:
-        >>> from gemseo import (
-        ...     create_discipline,
-        ...     create_parameter_space,
-        ...     sample_disciplines,
-        ... )
-        >>> from gemseo.uncertainty.statistics.sp_parametric_statistics import (
-        ...     SPParametricStatistics,
-        ... )
-        >>>
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        ... )
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "SPUniformDistribution", minimum=-1, maximum=1
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "SPNormalDistribution", mu=0.5, sigma=2
-        ... )
-        >>>
-        >>> dataset = sample_disciplines(
-        ...     [discipline],
-        ...     parameter_space,
-        ...     ["y1"],
-        ...     algo_name="OT_MONTE_CARLO",
-        ...     n_samples=100,
-        ... )
-        >>>
-        >>> statistics = SPParametricStatistics(dataset, ["norm", "uniform", "triang"])
-        >>> fitting_matrix = statistics.get_fitting_matrix()
-        >>> mean = statistics.compute_mean()
-    """
+    """A toolbox to compute statistics using SciPy probability distribution-fitting."""
 
     DistributionName: ClassVar[SPDistributionFitter.DistributionName] = (
         SPDistributionFitter.DistributionName

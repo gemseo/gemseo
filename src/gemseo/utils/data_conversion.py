@@ -52,14 +52,6 @@ def concatenate_dict_of_arrays_to_array(
     The concatenation is done according to the last dimension of the NumPy arrays.
     This dimension apart, the NumPy arrays must have the same shape.
 
-    Examples:
-        >>> result = concatenate_dict_of_arrays_to_array(
-        ...     {"x": array([1.0]), "y": array([2.0]), "z": array([3.0, 4.0])},
-        ...     ["x", "z"],
-        ... )
-        >>> print(result)
-        array([1., 3., 4.])
-
     Args:
         dict_of_arrays: The dictionary of NumPy arrays.
         names: The keys of the dictionary for which to concatenate the values.
@@ -80,24 +72,6 @@ def split_array_to_dict_of_arrays(
     check_consistency: bool = False,
 ) -> dict[str, ndarray | dict[str, ndarray]]:
     """Split a NumPy array into a dictionary of NumPy arrays.
-
-    Examples:
-        >>> result_1 = split_array_to_dict_of_arrays(
-        ...     array([1.0, 2.0, 3.0]), {"x": 1, "y": 2}, ["x", "y"]
-        ... )
-        >>> print(result_1)
-        {'x': array([1.]), 'y': array([2., 3.])}
-        >>> result_2 = split_array_to_dict_of_arrays(
-        ...     array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]),
-        ...     {"y1": 1, "y2": 2, "x2": 2, "x1": 1},
-        ...     ["y1", "y2"],
-        ...     ["x1", "x2"],
-        ... )
-        >>> print(result_2)
-        {
-            "y1": {"x1": array([[1.0]]), "x2": array([[2.0, 3.0]])},
-            "y2": {"x1": array([[4.0], [7.0]]), "x2": array([[5.0, 6.0], [8.0, 9.0]])},
-        }
 
     Args:
         array: The NumPy array.
@@ -159,13 +133,6 @@ def deepcopy_dict_of_arrays(
     This treats the NumPy arrays specially
     using `array.copy()` instead of `deepcopy`.
 
-    Examples:
-        >>> result = deepcopy_dict_of_arrays(
-        ...     {"x": array([1.0]), "y": array([2.0])}, ["x"]
-        ... )
-        >>> print(result)
-        >>> {"x": array([1.0])}
-
     Args:
         dict_of_arrays: The dictionary of NumPy arrays to be copied.
         names: The keys of the dictionary for which to deepcopy the items.
@@ -196,11 +163,6 @@ def nest_flat_bilevel_dict(
 ) -> StrKeyMapping:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
-    Examples:
-        >>> result = nest_flat_bilevel_dict({"a_b": 1, "c_b": 2}, "_")
-        >>> print(result)
-        {"a": {"b": 1}, "c": {"b": 2}}
-
     Args:
         flat_dict: The dictionary to be nested.
         separator: The keys separator, to be used as `{parent_key}{sep}{child_key}`.
@@ -227,11 +189,6 @@ def nest_flat_dict(
     separator: str = STRING_SEPARATOR,
 ) -> StrKeyMapping:
     """Nest a flat dictionary.
-
-    Examples:
-        >>> result = nest_flat_dict({"a_b": 1, "c_b": 2}, separator="_")
-        >>> print(result)
-        {"a": {"b": 1}, "c": {"b": 2}}
 
     Args:
         flat_dict: The dictionary to be nested.
@@ -280,11 +237,6 @@ def flatten_nested_bilevel_dict(
 ) -> StrKeyMapping:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
-    Examples:
-        >>> result = flatten_nested_bilevel_dict({"y": {"x": array([[1.0], [2.0]])}})
-        >>> print(result)
-        {"y#&#x": array([[1.0], [2.0]])}
-
     Args:
         nested_dict: The dictionary to be flattened.
         separator: The keys separator,
@@ -308,11 +260,6 @@ def flatten_nested_dict(
     separator: str = STRING_SEPARATOR,
 ) -> StrKeyMapping:
     """Flatten a nested dictionary.
-
-    Examples:
-        >>> result = flatten_nested_dict({"y": {"x": array([[1.0], [2.0]])}})
-        >>> print(result)
-        {"y#&#x": array([[1.0], [2.0]])}
 
     Args:
         nested_dict: The dictionary to be flattened.

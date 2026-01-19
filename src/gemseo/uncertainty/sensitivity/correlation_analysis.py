@@ -60,33 +60,7 @@ from openturns import CorrelationAnalysis as OTCorrelationAnalysis
 
 
 class CorrelationAnalysis(BaseSensitivityAnalysis):
-    """Sensitivity analysis based on indices using correlation measures.
-
-    Examples:
-        >>> from numpy import pi
-        >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.correlation_analysis import (
-        ...     CorrelationAnalysis,
-        ... )
-        >>>
-        >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>>
-        >>> analysis = CorrelationAnalysis()
-        >>> analysis.compute_samples([discipline], parameter_space, n_samples=1000)
-        >>> indices = analysis.compute_indices()
-    """  # noqa: E501
+    """Sensitivity analysis based on indices using correlation measures."""  # noqa: E501
 
     @dataclass(frozen=True)
     class SensitivityIndices:  # noqa: D106

@@ -91,43 +91,7 @@ if TYPE_CHECKING:
 
 
 class EmpiricalStatistics(BaseStatistics):
-    """A toolbox to compute statistics empirically.
-
-    Examples:
-        >>> from gemseo import (
-        ...     create_discipline,
-        ...     create_parameter_space,
-        ...     create_scenario,
-        ... )
-        >>> from gemseo.uncertainty.statistics.empirical_statistics import (
-        ...     EmpiricalStatistics,
-        ... )
-        >>>
-        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTUniformDistribution", minimum=-1, maximum=1
-        ... )
-        >>>
-        >>> scenario = create_scenario(
-        ...     [discipline],
-        ...     "y1",
-        ...     parameter_space,
-        ...     formulation_name="DisciplinaryOpt",
-        ...     scenario_type="DOE",
-        ... )
-        >>> scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)
-        >>>
-        >>> dataset = scenario.to_dataset(opt_naming=False)
-        >>>
-        >>> statistics = EmpiricalStatistics(dataset)
-        >>> mean = statistics.compute_mean()
-    """
+    """A toolbox to compute statistics empirically."""
 
     __CDF_LABEL: Final[str] = "CDF"
     """The label for the cumulative distribution function."""

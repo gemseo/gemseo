@@ -310,9 +310,8 @@ class RBFRegressor(BaseRegressor):
         """The name of the kernel function.
 
         The name is possibly different from self.parameters['function'], as it is mapped
-        (scipy). Examples:
-
-        'inverse'              -> 'inverse_multiquadric' 'InverSE MULtiQuadRIC' ->
-        'inverse_multiquadric'
+        (SciPy).
+        E.g. 'inverse' -> 'inverse_multiquadric',
+         'InverSE MULtiQuadRIC' -> 'inverse_multiquadric'
         """
         return self.algo.function

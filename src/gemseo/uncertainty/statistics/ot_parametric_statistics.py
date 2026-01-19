@@ -36,43 +36,7 @@ class OTParametricStatistics(
         OTDistributionFitter.SignificanceTest,
     ]
 ):
-    """A toolbox to compute statistics using OpenTURNS probability distribution-fitting.
-
-    Examples:
-        >>> from gemseo import (
-        ...     create_discipline,
-        ...     create_parameter_space,
-        ...     sample_disciplines,
-        ... )
-        >>> from gemseo.uncertainty.statistics.parametric_statistics import (
-        ...     OTParametricStatistics,
-        ... )
-        >>>
-        >>> discipline = create_discipline(
-        ...     "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        ... )
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTNormalDistribution", mu=0.5, sigma=2
-        ... )
-        >>>
-        >>> dataset = sample_disciplines(
-        ...     [discipline],
-        ...     parameter_space,
-        ...     ["y1"],
-        ...     algo_name="OT_MONTE_CARLO",
-        ...     n_samples=100,
-        ... )
-        >>>
-        >>> statistics = OTParametricStatistics(
-        ...     dataset, ["Normal", "Uniform", "Triangular"]
-        ... )
-        >>> fitting_matrix = statistics.get_fitting_matrix()
-        >>> mean = statistics.compute_mean()
-    """
+    """A toolbox to compute statistics using OpenTURNS probability distribution-fitting."""  # noqa: E501
 
     DistributionName: ClassVar[OTDistributionFitter.DistributionName] = (
         OTDistributionFitter.DistributionName

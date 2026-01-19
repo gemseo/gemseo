@@ -160,14 +160,6 @@ class MLModelSelection:
                 The list may contain different values
                 to try out for the given parameter,
                 or only one.
-
-        Examples:
-            >>> selector.add_candidate(
-            >>>     "LinearRegressor",
-            >>>     penalty_level=[0, 0.1, 1, 10, 20],
-            >>>     l2_penalty_ratio=[0, 0.5, 1],
-            >>>     fit_intercept=[True],
-            >>> )
         """
         keys, values = options.keys(), options.values()
 
