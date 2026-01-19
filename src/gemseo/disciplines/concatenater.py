@@ -39,19 +39,6 @@ class Concatenater(Discipline):
     """Concatenate input variables into a single output variable.
 
     These input variables can be scaled before concatenation.
-
-    Examples:
-        >>> from gemseo import create_discipline
-        >>> sellar_system_disc = create_discipline("SellarSystem")
-        >>> constraint_names = ["c1", "c2"]
-        >>> output_name = ["c"]
-        >>> concatenation_disc = create_discipline(
-        ...     "Concatenater", constraint_names, output_name
-        ... )
-        >>> disciplines = [sellar_system_disc, concatenation_disc]
-        >>> chain = create_discipline("MDOChain", disciplines=disciplines)
-        >>> print(chain.execute())
-        >>> print(chain.linearize(compute_all_jacobians=True))
     """
 
     def __init__(

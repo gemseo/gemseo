@@ -180,29 +180,6 @@ LOGGER = logging.getLogger(__name__)
 class SobolAnalysis(BaseSensitivityAnalysis):
     """Sensitivity analysis based on the Sobol' indices.
 
-    Examples:
-        >>> from numpy import pi
-        >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
-        >>>
-        >>> expressions = {"y": "sin(x1)+7*sin(x2)**2+0.1*x3**4*sin(x1)"}
-        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
-        >>>
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
-        ... )
-        >>>
-        >>> analysis = SobolAnalysis()
-        >>> analysis.compute_samples([discipline], parameter_space, n_samples=10000)
-        >>> indices = analysis.compute_indices()
-
     Note:
         The second-order Sobol' indices cannot be estimated with control variates.
     """

@@ -261,31 +261,6 @@ class ParameterSpace(DesignSpace):
                 or
                 when the lengths of the distribution parameter collections
                 are not consistent.
-
-
-        Examples:
-            >>> from gemseo.algos.parameter_space import ParameterSpace
-            >>> from gemseo.settings.probability_distributions import (
-            ...     SPNormalDistribution_Settings,
-            ... )
-            >>> from gemseo.settings.probability_distributions import (
-            ...     SPUniformDistribution_Settings,
-            ... )
-            >>> parameter_space = ParameterSpace()
-            >>> # Add a normally distributed variable
-            >>> # with mean equal to 3 and standard deviation equal to 1.
-            >>> parameter_space.add_random_vector(
-            ...     "u", (SPNormalDistribution_Settings(mu=3.0),)
-            ... )
-            >>> # Add a uniformly distributed vector variable
-            >>> # with minimum equal to 0 and maximum equal to 2.
-            >>> parameter_space.add_random_vector(
-            ...     "v",
-            ...     (
-            ...         SPUniformDistribution_Settings(maximum=2.0),
-            ...         SPUniformDistribution_Settings(maximum=2.0),
-            ...     ),
-            ... )
         """
         self._check_variable_name(name)
         get_distribution_class = DistributionFactory().get_class
@@ -542,27 +517,6 @@ class ParameterSpace(DesignSpace):
             distributed as a
             [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
             with identifier `"SP"`.
-
-        Examples:
-            >>> from gemseo.algos.parameter_space import ParameterSpace
-            >>> from gemseo.settings.probability_distributions import (
-            ...     SPNormalDistribution_Settings,
-            ... )
-            >>> from gemseo.settings.probability_distributions import (
-            ...     SPUniformDistribution_Settings,
-            ... )
-            >>> parameter_space = ParameterSpace()
-            >>> # Add a normally distributed variable
-            >>> # with mean equal to 3 and standard deviation equal to 1.
-            >>> parameter_space.add_random_variable(
-            ...     "u", SPNormalDistribution_Settings(mu=3.0)
-            ... )
-            >>> # Add a 2-length uniformly distributed vector variable
-            >>> # with minimum equal to 0 and maximum equal to 2
-            >>> # (the components are stochastically independent).
-            >>> parameter_space.add_random_variable(
-            ...     "v", SPUniformDistribution_Settings(maximum=2.0), size=2
-            ... )
         """
         if isinstance(distribution, BaseDistributionSettings):
             kwargs = {}

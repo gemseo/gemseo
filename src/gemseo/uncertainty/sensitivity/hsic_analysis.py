@@ -89,24 +89,6 @@ class HSICAnalysis(BaseSensitivityAnalysis):
     [compute_indices()][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
     method returns the standard HSIC indices
     and the normalized ones, also called R2-HSIC indices.
-
-    Examples:
-        >>> from numpy import pi
-        >>> from gemseo import create_discipline, create_parameter_space
-        >>> from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
-        >>> from gemseo.problems.uncertainty.ishigami.ishigami_discipline import (
-        ...     IshigamiDiscipline,
-        ... )
-        >>> from gemseo.problems.uncertainty.ishigami.ishigami_space import (
-        ...     IshigamiSpace,
-        ... )
-        >>>
-        >>> discipline = IshigamiDiscipline()
-        >>> uncertain_space = IshigamiSpace()
-        >>>
-        >>> analysis = HSICAnalysis()
-        >>> analysis.compute_samples([discipline], uncertain_space, n_samples=1000)
-        >>> indices = analysis.compute_indices()
     """
 
     @dataclass(frozen=True)

@@ -53,14 +53,6 @@ class LinearCombination(Discipline):
         the
         [LinearCombination][gemseo.disciplines.linear_combination.LinearCombination]
         simply sums the inputs.
-
-    Examples:
-        >>> discipline = LinearCombination(["alpha", "beta", "gamma"], "delta",
-                input_coefficients={"alpha": 1.,"beta": 2.,"gamma": 3.})
-        >>> input_data = {"alpha": array([1.0]), "beta": array([1.0]),
-                "gamma": array([1.0])}
-        >>> discipline.execute(input_data)
-        >>> delta = discipline.io.data["delta"]  # delta = array([6.])
     """
 
     __offset: float

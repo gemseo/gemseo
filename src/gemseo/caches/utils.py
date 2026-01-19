@@ -47,15 +47,6 @@ def hash_data(
 
     Returns:
         The hash value of the data.
-
-    Examples:
-        >>> from gemseo.caches.utils import hash_data
-        >>> from numpy import array
-        >>> data = {"x": array([1.0, 2.0]), "y": array([3.0])}
-        >>> hash_data(data)
-        13252388834746642440
-        >>> hash_data(data, "x")
-        4006190450215859422
     """
     names_with_hashed_values = []
 

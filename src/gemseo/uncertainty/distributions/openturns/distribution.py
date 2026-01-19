@@ -80,14 +80,6 @@ class OTDistribution(
         The probability distribution parameters must be provided
         according to the signature of the OpenTURNS classes.
         [Access the OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html).
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.openturns.distribution import (
-        ...     OTDistribution,
-        ... )
-        >>> distribution = OTDistribution("Exponential", (3, 2))
-        >>> print(distribution)
-        Exponential(3, 2)
     """
 
     Settings = OTDistribution_Settings

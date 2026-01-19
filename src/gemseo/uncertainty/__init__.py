@@ -117,18 +117,6 @@ def create_distribution(
             implementing a probability distribution,
             e.g. 'OTUniformDistribution' or 'SPDistribution'.
         **options: The distribution options.
-
-    Examples:
-        >>> from gemseo.uncertainty import create_distribution
-        >>>
-        >>> distribution = create_distribution("OTNormalDistribution", mu=1, sigma=2)
-        >>> print(distribution)
-        Normal(mu=1, sigma=2)
-        >>> print(distribution.mean, distribution.standard_deviation)
-        1.0 2.0
-        >>> samples = distribution.compute_samples(10)
-        >>> print(samples.shape)
-        (10,)
     """
     from gemseo.uncertainty.distributions.factory import DistributionFactory
 
@@ -189,38 +177,6 @@ def create_statistics(
 
     Returns:
         A statistics toolbox.
-
-    Examples:
-        >>> from gemseo import (
-        ...     create_discipline,
-        ...     create_parameter_space,
-        ...     create_scenario,
-        ... )
-        >>> from gemseo.uncertainty import create_statistics
-        >>>
-        >>> expressions = {"y1": "x1+2*x2", "y2": "x1-3*x2"}
-        >>> discipline = create_discipline("AnalyticDiscipline", expressions)
-        >>> parameter_space = create_parameter_space()
-        >>> parameter_space.add_random_variable(
-        ...     "x1", "OTUniformDistribution", minimum=-1, maximum=1
-        ... )
-        >>> parameter_space.add_random_variable(
-        ...     "x2", "OTNormalDistribution", mu=0.5, sigma=2
-        ... )
-        >>>
-        >>> scenario = create_scenario(
-        ...     [discipline],
-        ...     "y1",
-        ...     parameter_space,
-        ...     formulation_name="DisciplinaryOpt",
-        ...     scenario_type="DOE",
-        ... )
-        >>> scenario.execute(algo_name="OT_MONTE_CARLO", n_samples=100)
-        >>>
-        >>> dataset = scenario.to_dataset(opt_naming=False)
-        >>>
-        >>> statistics = create_statistics(dataset)
-        >>> mean = statistics.compute_mean()
     """
     import openturns as ot
 

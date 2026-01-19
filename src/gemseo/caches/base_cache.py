@@ -85,27 +85,6 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
       associating output and input names,
       i.e. `{"output_name": {"input_name": array}}`.
 
-    Examples:
-        The evaluation of the function $y=f(x)=(x^2, 2x^3$)`
-        and its derivative at $x=1$ leads to cache the entry defined by:
-
-        - the input data: $1.$,
-        - the output data: $(1., 2.)$,
-        - the Jacobian data: $(2., 6.)^T$.
-
-        >>> input_data = {"x": array([1.0])}
-        >>> output_data = {"y": array([1.0, 2.0])}
-        >>> jacobian_data = {"y": {"x": array([[2.0], [6.0]])}}
-
-        For this `input_data`,
-        one can cache the output data:
-
-        >>> cache.cache_outputs(input_data, output_data)
-
-        as well as the Jacobian data:
-
-        >>> cache.cache_jacobian(input_data, jacobian_data)
-
     Caches have a [Mapping][collections.abc.Mapping] interface
     making them easy to set (`cache[input_data] = (output_data, jacobian_data)`),
     access (`cache_entry = cache[input_data]`)

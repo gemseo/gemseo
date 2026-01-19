@@ -66,14 +66,6 @@ class SPDistribution(
     Warning:
        The distribution parameters must be provided according to the signature
        of the scipy classes. [Access the scipy documentation](https://docs.scipy.org/doc/scipy/reference/stats.html).
-
-    Examples:
-        >>> from gemseo.uncertainty.distributions.scipy.distribution import (
-        ...     SPDistribution,
-        ... )
-        >>> distribution = SPDistribution("expon", {"loc": 3, "scale": 1 / 2.0})
-        >>> print(distribution)
-        expon(loc=3, scale=0.5)
     """
 
     Settings = SPDistribution_Settings

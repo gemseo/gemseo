@@ -45,14 +45,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Timer:
-    """A timer to measure the time spent within a `with` statement.
-
-    Examples:
-        with Timer() as timer:
-            # do stuff
-
-        elapsed_time = timer.elapsed_time
-    """
+    """A timer to measure the time spent within a `with` statement."""
 
     __elapsed_time: float
     """The elapsed time in seconds."""
