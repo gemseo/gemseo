@@ -18,7 +18,7 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test machine learning classification algorithm module."""
+"""Test machine learning classification model module."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ from numpy.testing import assert_allclose
 
 from gemseo import from_pickle
 from gemseo import to_pickle
-from gemseo.mlearning.classification.algos.factory import ClassifierFactory
+from gemseo.mlearning.classification.models.factory import ClassifierFactory
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:

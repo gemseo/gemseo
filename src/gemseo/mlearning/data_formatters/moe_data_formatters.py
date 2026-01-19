@@ -30,8 +30,8 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.regression.algos.moe import MOERegressor
+    from gemseo.mlearning.core.models.ml_model import DataType
+    from gemseo.mlearning.regression.models.moe import MOERegressor
     from gemseo.typing import RealArray
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -59,7 +59,7 @@ class MOEDataFormatters(RegressionDataFormatters):
 
         @functools.wraps(func)
         def wrapper(
-            algo: MOERegressor,
+            model: MOERegressor,
             input_data: DataType,
             *args: Any,
             **kwargs: Any,
@@ -80,7 +80,7 @@ class MOEDataFormatters(RegressionDataFormatters):
             if the input data were passed as a dictionary of NumPy data arrays.
 
             Args:
-                algo: The mixture of experts.
+                model: The mixture of experts.
                 input_data: The input data.
                 *args: The positional arguments of the function `func`.
                 **kwargs: The keyword arguments of the function `func`.
@@ -91,11 +91,11 @@ class MOEDataFormatters(RegressionDataFormatters):
             as_dict = isinstance(input_data, Mapping)
             if as_dict:
                 input_data = concatenate_dict_of_arrays_to_array(
-                    input_data, algo.input_names
+                    input_data, model.input_names
                 )
-            output_data = func(algo, input_data, *args, **kwargs)
+            output_data = func(model, input_data, *args, **kwargs)
             if as_dict:
-                output_data = {algo.LABELS: output_data}
+                output_data = {model.LABELS: output_data}
             return output_data
 
         return wrapper

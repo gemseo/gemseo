@@ -29,7 +29,7 @@ from gemseo.mlearning.regression.quality.mae_measure import MAEMeasure
 @pytest.fixture(scope="module")
 def mae() -> MAEMeasure:
     """An MAEMeasure with mocked argument values passed at instantiation."""
-    return MAEMeasure("mocked_algo", fit_transformers="mocked_fit_transformers")
+    return MAEMeasure("mocked_model", fit_transformers="mocked_fit_transformers")
 
 
 OUTPUTS = array([[0, 1], [1, 0]])
@@ -38,7 +38,7 @@ PREDICTIONS = array([[0, 1], [1, 1]])
 
 def test_init(mae):
     """Check that the arguments are correctly used at instantiation."""
-    assert mae.algo == "mocked_algo"
+    assert mae.model == "mocked_model"
     assert mae._fit_transformers == "mocked_fit_transformers"
 
 

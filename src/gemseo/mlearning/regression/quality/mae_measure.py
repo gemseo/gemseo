@@ -32,7 +32,7 @@ from gemseo.mlearning.regression.quality.base_regressor_quality import (
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import NumberArray
 
 
@@ -41,10 +41,10 @@ class MAEMeasure(BaseRegressorQuality):
 
     def __init__(  # noqa: D107
         self,
-        algo: BaseRegressor,
+        model: BaseRegressor,
         fit_transformers: bool = False,
     ) -> None:
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def _compute_measure(
         self,

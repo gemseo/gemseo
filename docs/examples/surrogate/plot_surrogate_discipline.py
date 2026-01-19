@@ -32,7 +32,7 @@ over the unit hypercube $[0,1]\times[0,1]$.
 For that,
 we use a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
 relying on a
-[BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor].
+[BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor].
 """
 
 from __future__ import annotations

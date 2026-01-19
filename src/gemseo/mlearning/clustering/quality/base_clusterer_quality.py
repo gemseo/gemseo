@@ -24,32 +24,32 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy import ndarray
 
-    from gemseo.mlearning.clustering.algos.base_clusterer import BaseClusterer
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
+    from gemseo.mlearning.clustering.models.base_clusterer import BaseClusterer
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
 
 
-class BaseClustererQuality(BaseMLAlgoQuality):
+class BaseClustererQuality(BaseMLModelQuality):
     """The base class to assess the quality of a clusterer."""
 
-    algo: BaseClusterer
+    model: BaseClusterer
 
     def __init__(
         self,
-        algo: BaseClusterer,
-        fit_transformers: bool = BaseMLAlgoQuality._FIT_TRANSFORMERS,
+        model: BaseClusterer,
+        fit_transformers: bool = BaseMLModelQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for clustering.
+            model: A machine learning model for clustering.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def compute_learning_measure(  # noqa: D102
         self,
@@ -58,7 +58,7 @@ class BaseClustererQuality(BaseMLAlgoQuality):
     ) -> MeasureType:
         return self._compute_measure(
             self._get_data()[self._pre_process(samples)[0]],
-            self.algo.labels,
+            self.model.labels,
             multioutput,
         )
 
@@ -88,6 +88,6 @@ class BaseClustererQuality(BaseMLAlgoQuality):
         Returns:
             The learning data.
         """
-        return self.algo.learning_set.get_view(
-            variable_names=self.algo.var_names
+        return self.model.learning_set.get_view(
+            variable_names=self.model.var_names
         ).to_numpy()

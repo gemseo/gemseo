@@ -21,7 +21,7 @@ from collections.abc import Callable
 from typing import Literal
 
 from numpy import inf
-from numpy import ndarray  # noqa: TC002
+from numpy import ndarray
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveFloat

@@ -40,10 +40,10 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
-from gemseo.mlearning.regression.algos.pce import CleaningOptions
-from gemseo.mlearning.regression.algos.pce import PCERegressor
-from gemseo.mlearning.regression.algos.pce_settings import PCERegressor_Settings
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.pce import CleaningOptions
+from gemseo.mlearning.regression.models.pce import PCERegressor
+from gemseo.mlearning.regression.models.pce_settings import PCERegressor_Settings
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -296,7 +296,7 @@ def test_learn_linear_model_with_least_square(
     """Check the learning stage with least square regression.
 
     A PCE with a degree equal to 1 shall be able to the linear very precisely whatever
-    the algorithms.
+    the models.
     """
     pce = PCERegressor(
         dataset,
@@ -325,7 +325,7 @@ def test_learn_linear_model_with_quadrature_and_discipline(
     """Check the learning stage with quadrature rule and discipline.
 
     A PCE with a degree equal to 1 shall be able to the linear very precisely whatever
-    the algorithms.
+    the models.
     """
     pce = PCERegressor(
         None if dataset_is_none else IODataset(),
@@ -349,7 +349,7 @@ def test_learn_linear_model_with_quadrature_and_quadrature_points(
     """Check the learning stage with quadrature rule and quadrature points.
 
     A PCE with a degree equal to 1 shall be able to the linear very precisely whatever
-    the algorithms.
+    the models.
     """
     pce = PCERegressor(
         quadrature_points,

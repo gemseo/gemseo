@@ -19,10 +19,10 @@ from __future__ import annotations
 from gemseo.mlearning.clustering.quality.base_clusterer_quality import (
     BaseClustererQuality,
 )
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
 
 
-class ClustererQualityFactory(MLAlgoQualityFactory):
+class ClustererQualityFactory(MLModelQualityFactory):
     """A factory of objects to assess the quality of clusterers."""
 
     _CLASS = BaseClustererQuality

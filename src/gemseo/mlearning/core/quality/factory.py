@@ -12,16 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A factory of objects to assess the quality of an ML algorithm."""
+"""A factory of objects to assess the quality of an ML model."""
 
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
 
 
-class MLAlgoQualityFactory(BaseFactory):
-    """A factory of objects to assess the quality of an ML algorithm."""
+class MLModelQualityFactory(BaseFactory):
+    """A factory of objects to assess the quality of an ML model."""
 
-    _CLASS = BaseMLAlgoQuality
+    _CLASS = BaseMLModelQuality
     _PACKAGE_NAMES = ("gemseo.mlearning",)

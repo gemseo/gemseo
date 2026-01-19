@@ -18,30 +18,30 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""This module contains a class to select a machine learning algorithm from a list.
+"""This module contains a class to select a machine learning model from a list.
 
 Machine learning is used to find relations or underlying structures in data.
-There is however no algorithm that is universally better than the others
+There is however no model that is universally better than the others
 for an arbitrary problem.
 
 Provided a quality measure,
-one can thus compare the performances of different machine learning algorithms.
+one can thus compare the performances of different machine learning models.
 
 This process can be easily performed
-using the class [MLAlgoSelection][gemseo.mlearning.core.selection.MLAlgoSelection].
+using the class [MLModelSelection][gemseo.mlearning.core.selection.MLModelSelection].
 
-A machine learning algorithm is built using a set of (hyper)parameters,
+A machine learning model is built using a set of (hyper)parameters,
 before the learning takes place.
 In order to choose the best hyperparameters,
 a simple grid search over different values may be sufficient.
-The [MLAlgoSelection][gemseo.mlearning.core.selection.MLAlgoSelection] does this.
+The [MLModelSelection][gemseo.mlearning.core.selection.MLModelSelection] does this.
 It can also perform a more advanced form of optimization
 than a simple grid search over predefined values,
 using the class
-[MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration].
+[MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration].
 
 See Also:
-   [gemseo.mlearning.core.algos.ml_algo][gemseo.mlearning.core.algos.ml_algo]
+   [gemseo.mlearning.core.models.ml_model][gemseo.mlearning.core.models.ml_model]
    [gemseo.mlearning.core.calibration][gemseo.mlearning.core.calibration]
 """
 
@@ -51,10 +51,10 @@ from itertools import product
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.mlearning.core.algos.factory import MLAlgoFactory
-from gemseo.mlearning.core.calibration import MLAlgoCalibration
-from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.core.calibration import MLModelCalibration
+from gemseo.mlearning.core.models.factory import MLModelFactory
+from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
+from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -62,38 +62,38 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
-    from gemseo.mlearning.core.algos.ml_algo import BaseMLAlgo
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import (
+    from gemseo.mlearning.core.models.ml_model import BaseMLModel
+    from gemseo.mlearning.core.quality.base_ml_model_quality import (
         OptionType as MeasureOptionType,
     )
     from gemseo.scenarios.base_scenario import ScenarioInputDataType
 
 
-class MLAlgoSelection:
-    """Machine learning algorithm selector."""
+class MLModelSelection:
+    """Machine learning model selector."""
 
     dataset: Dataset
     """The training dataset."""
 
-    measure: type[BaseMLAlgoQuality]
+    measure: type[BaseMLModelQuality]
     """The name of a quality measure to measure the quality of the machine learning
-    algorithms."""
+    models."""
 
     measure_options: dict[str, int | Dataset]
     """The options for the method to evaluate the quality measure."""
 
-    factory: MLAlgoFactory
-    """The factory used for the instantiation of machine learning algorithms."""
+    factory: MLModelFactory
+    """The factory used for the instantiation of machine learning models."""
 
-    candidates: list[tuple[BaseMLAlgo, float]]
-    """The candidate machine learning algorithms, after possible calibration, and their
+    candidates: list[tuple[BaseMLModel, float]]
+    """The candidate machine learning models, after possible calibration, and their
     quality measures."""
 
     def __init__(
         self,
         dataset: Dataset,
-        measure: str | type[BaseMLAlgoQuality],
-        measure_evaluation_method_name: BaseMLAlgoQuality.EvaluationMethod = BaseMLAlgoQuality.EvaluationMethod.LEARN,  # noqa: E501
+        measure: str | type[BaseMLModelQuality],
+        measure_evaluation_method_name: BaseMLModelQuality.EvaluationMethod = BaseMLModelQuality.EvaluationMethod.LEARN,  # noqa: E501
         samples: Sequence[int] = (),
         **measure_options: MeasureOptionType,
     ) -> None:
@@ -101,7 +101,7 @@ class MLAlgoSelection:
         Args:
             dataset: The training dataset.
             measure: The name of a quality measure
-                to measure the quality of the machine learning algorithms.
+                to measure the quality of the machine learning models.
             measure_evaluation_method_name: The name of the method
                 to evaluate the quality measure.
             samples: The indices of the learning samples to consider.
@@ -116,19 +116,19 @@ class MLAlgoSelection:
         """  # noqa: D205 D212
         self.dataset = dataset
         if isinstance(measure, str):
-            self.measure = MLAlgoQualityFactory().get_class(measure)
+            self.measure = MLModelQualityFactory().get_class(measure)
         else:
             self.measure = measure
 
         self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.measure_options = dict(samples=samples, **measure_options)
-        self.factory = MLAlgoFactory()
+        self.factory = MLModelFactory()
 
         self.candidates = []
 
         if self.measure_options.get("multioutput", False):
             msg = (
-                "MLAlgoSelection does not support multioutput; "
+                "MLModelSelection does not support multioutput; "
                 "the measure shall return one value."
             )
             raise ValueError(msg)
@@ -137,25 +137,25 @@ class MLAlgoSelection:
     def add_candidate(
         self,
         name: str,
-        calib_space: DesignSpace | None = None,
-        calib_algo: ScenarioInputDataType = READ_ONLY_EMPTY_DICT,
-        **option_lists: Any,
+        calibration_space: DesignSpace | None = None,
+        calibration_algorithm: ScenarioInputDataType = READ_ONLY_EMPTY_DICT,
+        **options: Any,
     ) -> None:
-        """Add a machine learning algorithm candidate.
+        """Add a machine learning model candidate.
 
         Args:
-            name: The name of a machine learning algorithm.
-            calib_space: The design space
+            name: The name of a machine learning model.
+            calibration_space: The design space
                 defining the parameters to be calibrated
                 with an
-                [MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration].
+                [MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration].
                 If `None`, do not perform calibration.
-            calib_algo: The name and the parameters
+            calibration_algorithm: The name and the parameters
                 of the optimization algorithm,
                 e.g. {"algo_name": "PYDOE_FULLFACT", "n_samples": 10}.
                 If empty, do not perform calibration.
-            **option_lists: The parameters
-                for the machine learning algorithm candidate.
+            **options: The parameters
+                for the machine learning model candidate.
                 Each parameter has to be enclosed within a list.
                 The list may contain different values
                 to try out for the given parameter,
@@ -169,30 +169,30 @@ class MLAlgoSelection:
             >>>     fit_intercept=[True],
             >>> )
         """
-        keys, values = option_lists.keys(), option_lists.values()
+        keys, values = options.keys(), options.values()
 
         # Set initial quality to the worst possible value
         quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
 
         for prodvalues in product(*values):
             params = dict(zip(keys, prodvalues, strict=False))
-            if calib_space:
-                ml_algo_calibration = MLAlgoCalibration(
+            if calibration_space:
+                ml_model_calibration = MLModelCalibration(
                     name,
                     self.dataset,
-                    calib_space,
-                    calib_space,
+                    calibration_space,
+                    calibration_space,
                     self.measure,
                     measure_evaluation_method_name=self.__measure_evaluation_method_name,
                     measure_options=self.measure_options,
                     **params,
                 )
-                ml_algo_calibration.execute(**calib_algo)
-                algo_new = ml_algo_calibration.optimal_algorithm
-                quality_new = ml_algo_calibration.optimal_criterion
+                ml_model_calibration.execute(**calibration_algorithm)
+                model_new = ml_model_calibration.optimal_model
+                quality_new = ml_model_calibration.optimal_criterion
             else:
-                algo_new = self.factory.create(name, data=self.dataset, **params)
-                quality_measurer = self.measure(algo_new)
+                model_new = self.factory.create(name, data=self.dataset, **params)
+                quality_measurer = self.measure(model_new)
                 compute_quality_measure = getattr(
                     quality_measurer,
                     quality_measurer.EvaluationFunctionName[
@@ -202,18 +202,15 @@ class MLAlgoSelection:
                 quality_new = compute_quality_measure(**self.measure_options)
 
             if self.measure.is_better(quality_new, quality):
-                algo = algo_new
+                model = model_new
                 quality = quality_new
 
-        if not algo.is_trained:
-            algo.learn(self.measure_options["samples"])
-
-        self.candidates.append((algo, quality))
+        self.candidates.append((model, quality))
 
     def select(
         self,
         return_quality: bool = False,
-    ) -> BaseMLAlgo | tuple[BaseMLAlgo, float]:
+    ) -> BaseMLModel | tuple[BaseMLModel, float]:
         """Select the best model.
 
         The model is chosen through a grid search

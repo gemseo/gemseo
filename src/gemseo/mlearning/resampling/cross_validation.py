@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
     from numpy.typing import NDArray
 
-    from gemseo.mlearning import MLAlgo
+    from gemseo.mlearning.core.models.ml_model import BaseMLModel
 
 
 class CrossValidation(BaseResampler):
@@ -68,13 +68,13 @@ class CrossValidation(BaseResampler):
 
     def execute(
         self,
-        model: MLAlgo,
+        model: BaseMLModel,
         return_models: bool = False,
         input_data: ndarray | None = None,
         stack_predictions: bool = True,
         fit_transformers: bool = True,
         store_sampling_result: bool = False,
-    ) -> tuple[list[MLAlgo], list[ndarray] | ndarray]:
+    ) -> tuple[list[BaseMLModel], list[ndarray] | ndarray]:
         """
         Args:
             stack_predictions: Whether the sub-predictions are stacked

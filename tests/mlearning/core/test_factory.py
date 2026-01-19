@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Unit test for MLAlgoFactory class in gemseo.mlearning.core.factory."""
+"""Unit test for MLModelFactory class in gemseo.mlearning.core.factory."""
 
 from __future__ import annotations
 
@@ -25,15 +25,15 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.algos.factory import MLAlgoFactory
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.core.models.factory import MLModelFactory
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
 
 LEARNING_SIZE = 9
 
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the machine learning algorithms."""
+    """The dataset used to train the machine learning models."""
     data = arange(30).reshape((10, 3))
     dataset_ = IODataset()
     dataset_.add_group(dataset_.INPUT_GROUP, data[:, :2])
@@ -56,23 +56,23 @@ def test_constructor() -> None:
         "RandomForestClassifier",
         "RandomForestRegressor",
         "SVMClassifier",
-    } <= set(MLAlgoFactory().class_names)
+    } <= set(MLModelFactory().class_names)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = MLAlgoFactory()
+    factory = MLModelFactory()
     assert isinstance(factory.create("LinearRegressor", data=dataset), LinearRegressor)
 
 
 def test_available_models() -> None:
     """Test the getter of available regression models."""
-    factory = MLAlgoFactory()
+    factory = MLModelFactory()
     assert factory.is_available("KMeans")
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    factory = MLAlgoFactory()
+    factory = MLModelFactory()
     assert factory.is_available("PolynomialRegressor")
     assert not factory.is_available("Dummy")

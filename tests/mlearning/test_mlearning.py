@@ -68,7 +68,7 @@ AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the machine learning algorithms."""
+    """The dataset used to train the machine learning models."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
@@ -83,7 +83,7 @@ def dataset() -> Dataset:
 
 @pytest.fixture
 def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
-    """The dataset used to train the classification algorithms."""
+    """The dataset used to train the classification models."""
     data = array([
         [0, 0],
         [0, 1],
@@ -103,7 +103,7 @@ def classification_data() -> tuple[ndarray, list[str], dict[str, str]]:
 
 @pytest.fixture
 def cluster_data() -> tuple[ndarray, list[str]]:
-    """The dataset used to train the clustering algorithms."""
+    """The dataset used to train the clustering models."""
     data = array([
         [0, 0],
         [0, 1],

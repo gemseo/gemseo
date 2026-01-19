@@ -14,24 +14,24 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.mlearning.regression.algos.rbf import RBFRegressor
-from gemseo.mlearning.regression.algos.rbf_settings import RBF
-from gemseo.mlearning.regression.algos.thin_plate_spline import TPSRegressor
+from gemseo.mlearning.regression.models.rbf import RBFRegressor
+from gemseo.mlearning.regression.models.rbf_settings import RBF
+from gemseo.mlearning.regression.models.thin_plate_spline import TPSRegressor
 
 
 def test_init(dataset):
     """Check the default initialization of a TPSRegressor."""
-    algo = TPSRegressor(dataset)
-    algo.learn()
-    assert isinstance(algo, RBFRegressor)
-    assert algo.algo.function == RBF.THIN_PLATE
-    assert algo.algo.smooth == 0.0
-    assert algo.algo.norm == "euclidean"
+    model = TPSRegressor(dataset)
+    model.learn()
+    assert isinstance(model, RBFRegressor)
+    assert model.algo.function == RBF.THIN_PLATE
+    assert model.algo.smooth == 0.0
+    assert model.algo.norm == "euclidean"
 
 
 def test_init_custom(dataset):
     """Check the custom initialization of a TPSRegressor."""
-    algo = TPSRegressor(dataset, norm="minkowski", smooth=0.1)
-    algo.learn()
-    assert algo.algo.smooth == 0.1
-    assert algo.algo.norm == "minkowski"
+    model = TPSRegressor(dataset, norm="minkowski", smooth=0.1)
+    model.learn()
+    assert model.algo.smooth == 0.1
+    assert model.algo.norm == "minkowski"

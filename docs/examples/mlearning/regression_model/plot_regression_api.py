@@ -55,8 +55,8 @@ get_regression_options("GaussianProcessRegressor", pretty_print=False)
 #     [get_regression_models()][gemseo.mlearning.get_regression_models] and [get_regression_options()][gemseo.mlearning.get_regression_options]
 #     can be very useful for the developers.
 #     As a user,
-#     it may be easier to consult [this page][available-regression-algorithms]
-#     to find out about the different algorithms and their options.
+#     it may be easier to consult [this page][available-regression-models]
+#     to find out about the different models and their options.
 #
 # ## Creation
 #

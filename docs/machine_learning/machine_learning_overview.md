@@ -27,7 +27,8 @@ of this [Discipline][gemseo.core.discipline.discipline.Discipline].
 This learning phase commonly relies on a regression
 model calibrated by machine learning techniques. This is the reason why
 GEMSEO provides a machine learning package which includes the
-[BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor] class implementing the concept of regression model.
+[BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor] class implementing the concept of
+regression model.
 In addition, this machine learning package has a much broader set of features
 than regression: clustering, classification, dimension reduction, data scaling,
 ...
@@ -38,20 +39,20 @@ than regression: clustering, classification, dimension reduction, data scaling,
 
 ## Development
 
-This diagram shows the hierarchy of all machine learning algorithms,
+This diagram shows the hierarchy of all machine learning models,
 and where they interact with [Dataset][gemseo.datasets.dataset.Dataset],
-[BaseMLAlgoQuality][gemseo.mlearning.core.quality.base_ml_algo_quality.BaseMLAlgoQuality],
+[BaseMLModelQuality][gemseo.mlearning.core.quality.base_ml_model_quality.BaseMLModelQuality],
 [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-and [MLAlgoCalibration][gemseo.mlearning.core.calibration.MLAlgoCalibration].
+and [MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration].
 
 ```mermaid
 classDiagram
     class Dataset {
     }
 
-    class BaseMLAlgo {
+    class BaseMLModel {
         <<abstract>>
-       +SHORT_ALGO_NAME
+       +SHORT_NAME
        +LIBRARY
        +algo
        +is_trained
@@ -61,12 +62,10 @@ classDiagram
        +DataFormatters
        +learn()
        +save()
-       #save_algo()
-       +load_algo()
        #get_objects_to_save()
     }
 
-    class BaseMLUnsupervisedAlgo {
+    class BaseMLUnsupervisedModel {
         <<abstract>>
        +var_names
        +learn()
@@ -85,7 +84,7 @@ classDiagram
        #predict_proba_soft()
     }
 
-    class BaseMLSupervisedAlgo {
+    class BaseMLSupervisedModel {
         <<abstract>>
        +input_names
        +input_dimension
@@ -118,7 +117,7 @@ classDiagram
        #predict_jacobian()
     }
 
-    class BaseMLAlgoQuality {
+    class BaseMLModelQuality {
         <<abstract>>
     }
 
@@ -141,13 +140,13 @@ classDiagram
        +compute_jacobian_inverse()
     }
 
-    BaseMLAlgo *-- Dataset
-    BaseMLAlgo *-- BaseTransformer
-    BaseMLAlgo <|-- BaseMLUnsupervisedAlgo
-    BaseMLAlgo <|-- BaseMLSupervisedAlgo
-    BaseMLUnsupervisedAlgo <|-- BaseClusterer
-    BaseMLSupervisedAlgo <|-- BaseRegressor
-    BaseMLSupervisedAlgo <|-- BaseClassifier
-    BaseMLAlgoQuality *-- BaseMLAlgo
+    BaseMLModel *-- Dataset
+    BaseMLModel *-- BaseTransformer
+    BaseMLModel <|-- BaseMLUnsupervisedModel
+    BaseMLModel <|-- BaseMLSupervisedModel
+    BaseMLUnsupervisedModel <|-- BaseClusterer
+    BaseMLSupervisedModel <|-- BaseRegressor
+    BaseMLSupervisedModel <|-- BaseClassifier
+    BaseMLModelQuality *-- BaseMLModel
     SurrogateDiscipline *-- BaseRegressor
 ```

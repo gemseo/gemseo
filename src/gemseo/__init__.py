@@ -54,7 +54,7 @@ from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
 from gemseo.mda.base_parallel_mda_settings import (
     BaseParallelMDASettings as BaseParallelMDASettings,
 )
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
@@ -109,8 +109,8 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
     from gemseo.mda.base_mda import BaseMDA
     from gemseo.mda.base_mda_settings import BaseMDASettings
-    from gemseo.mlearning.core.algos.ml_algo import TransformerType as TransformerType
-    from gemseo.mlearning.regression.algos.base_regressor_settings import (
+    from gemseo.mlearning.core.models.ml_model import TransformerType as TransformerType
+    from gemseo.mlearning.regression.models.base_regressor_settings import (
         BaseRegressorSettings,
     )
     from gemseo.post._graph_view import GraphView
@@ -1061,13 +1061,13 @@ def create_surrogate(
         transformer: The strategies to transform the variables.
             This argument is ignored
             when `surrogate` is a
-            [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor];
+            [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor];
             in this case,
             these strategies are defined
             with the `transformer` argument of this
-            [BaseRegressor][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor],
+            [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor],
             whose default value is
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
             which means no transformation.
             In the other cases,
             the values of the dictionary are instances of
@@ -1081,16 +1081,16 @@ def create_surrogate(
             will be applied
             to all the variables of this group.
             If
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
+            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
             do not transform the variables.
             The
-            [BaseRegressor.DEFAULT_TRANSFORMER][gemseo.mlearning.regression.algos.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
+            [BaseRegressor.DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
             uses the
             [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]
             strategy for both input and output variables.
             This argument is ignored
             when the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings].
+            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
         disc_name: The name of the discipline.
             If empty,
             the concatenation of the short name of the surrogate algorithm
@@ -1104,7 +1104,7 @@ def create_surrogate(
             If empty and `surrogate` is not a regressor instance,
             all input variables mentioned in the training dataset are used.
             If the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings],
+            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
             `surrogate.input_names` is ignored and replaced by `input_names`.
         output_names: The names of the output variables of the discipline.
             If empty and `surrogate` is a regressor instance,
@@ -1112,12 +1112,12 @@ def create_surrogate(
             If empty and `surrogate` is not a regressor instance,
             all output variables mentioned in the training dataset are used.
             If the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings],
+            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
             `surrogate.output_names` is ignored and replaced by `output_names`.
-        **settings: The settings of the machine learning algorithm.
+        **settings: The settings of the machine learning model.
             These arguments are ignored
             when the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.algos.base_regressor_settings.BaseRegressorSettings].
+            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
 
@@ -1312,7 +1312,7 @@ def print_configuration() -> None:
     from gemseo.disciplines.factory import DisciplineFactory
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.mda.factory import MDAFactory
-    from gemseo.mlearning.regression.algos.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import RegressorFactory
     from gemseo.post.factory import PostFactory
 
     settings = _log_settings()

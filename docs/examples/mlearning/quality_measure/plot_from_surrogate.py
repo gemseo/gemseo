@@ -42,7 +42,7 @@ def f(x):
 
 
 # %%
-# and try to approximate it with an [RBFRegressor][gemseo.mlearning.regression.algos.rbf.RBFRegressor].
+# and try to approximate it with an [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor].
 #
 # For this,
 # we can take these 7 learning input points

@@ -16,13 +16,13 @@
 
 from __future__ import annotations
 
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
 from gemseo.mlearning.regression.quality.base_regressor_quality import (
     BaseRegressorQuality,
 )
 
 
-class RegressorQualityFactory(MLAlgoQualityFactory):
+class RegressorQualityFactory(MLModelQualityFactory):
     """A factory of objects to assess the quality of regressors."""
 
     _CLASS = BaseRegressorQuality

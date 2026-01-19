@@ -18,7 +18,7 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test machine learning regression algorithm module."""
+"""Test machine learning regression model module."""
 
 from __future__ import annotations
 
@@ -35,9 +35,9 @@ from gemseo import from_pickle
 from gemseo import to_pickle
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.algos.factory import RegressorFactory
-from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.factory import RegressorFactory
+from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 FACTORY = RegressorFactory()
@@ -47,7 +47,7 @@ INPUT_VALUE = array([0.4, 1.8])
 
 @pytest.fixture
 def io_dataset() -> IODataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     variable_names_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
@@ -75,8 +75,8 @@ def probability_space() -> ParameterSpace:
 
 def test_predict(io_dataset) -> None:
     """Test prediction."""
-    ml_algo = GaussianProcessRegressor(io_dataset)
-    ml_algo.learn()
+    ml_model = GaussianProcessRegressor(io_dataset)
+    ml_model.learn()
     input_data = io_dataset.get_view(group_names="inputs", indices=0)
     input_names = [x[1] for x in input_data.columns]
     input_data = {
@@ -94,7 +94,7 @@ def test_predict(io_dataset) -> None:
         ).to_numpy()[0]
         for name in output_names
     }
-    prediction = ml_algo.predict(input_data)
+    prediction = ml_model.predict(input_data)
     assert allclose(prediction["y_1"], output_data["y_1"])
 
 
@@ -120,9 +120,9 @@ def dataset_for_jacobian() -> IODataset:
 def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
     """Test predict Jacobian."""
     transformer = {} if not groups else dict.fromkeys(groups, "MinMaxScaler")
-    ml_algo = LinearRegressor(dataset_for_jacobian, transformer=transformer)
-    ml_algo.learn()
-    jac = ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
+    ml_model = LinearRegressor(dataset_for_jacobian, transformer=transformer)
+    ml_model.learn()
+    jac = ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
     assert allclose(jac["y_1"]["x_1"], array([[1.0], [-1.0]]))
     assert allclose(jac["y_1"]["x_2"], array([[1.0, 1.0], [-1.0, -1.0]]))
 
@@ -136,12 +136,12 @@ def test_predict_jacobian_failure(dataset_for_jacobian, variable) -> None:
         "please transform the whole group 'inputs' or 'outputs' "
         "or do not use data transformation."
     )
-    ml_algo = LinearRegressor(
+    ml_model = LinearRegressor(
         dataset_for_jacobian, transformer={variable: "MinMaxScaler"}
     )
-    ml_algo.learn()
+    ml_model.learn()
     with pytest.raises(NotImplementedError, match=expected):
-        ml_algo.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
+        ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
 
 
 CLASS_NAMES = FACTORY.class_names
@@ -164,7 +164,7 @@ def test_pickle(
 
     reference_model = FACTORY.create(class_name, rosenbrock_dataset)
     if class_name == "RegressorChain":
-        reference_model.add_algo("LinearRegressor")
+        reference_model.add_regressor("LinearRegressor")
 
     if before_training:
         to_pickle(reference_model, "model.pkl")

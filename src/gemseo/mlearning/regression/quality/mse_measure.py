@@ -37,8 +37,8 @@ from gemseo.mlearning.regression.quality.base_regressor_quality import (
 )
 
 if TYPE_CHECKING:
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 
 
@@ -47,14 +47,14 @@ class MSEMeasure(BaseRegressorQuality):
 
     def __init__(
         self,
-        algo: BaseRegressor,
+        model: BaseRegressor,
         fit_transformers: bool = BaseRegressorQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for regression.
+            model: A machine learning model for regression.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def _compute_measure(
         self,

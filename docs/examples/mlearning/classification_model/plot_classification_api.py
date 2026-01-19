@@ -55,8 +55,8 @@ get_classification_options("KNNClassifier", pretty_print=False)
 #     [get_classification_models()][gemseo.mlearning.get_classification_models] and [get_classification_options()][gemseo.mlearning.get_classification_options]
 #     can be very useful for the developers.
 #     As a user,
-#     it may be easier to consult [this page][available-classification-algorithms]
-#     to find out about the different algorithms and their options.
+#     it may be easier to consult [this page][available-classification-models]
+#     to find out about the different models and their options.
 #
 # ## Creation
 #

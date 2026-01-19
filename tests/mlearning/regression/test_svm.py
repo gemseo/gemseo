@@ -18,11 +18,11 @@ import pytest
 from numpy import array
 from sklearn.svm import SVR
 
-from gemseo.mlearning.regression.algos.svm import SVMRegressor
+from gemseo.mlearning.regression.models.svm import SVMRegressor
 
 
 def test_init(dataset):
-    """Check that the wrapped algorithm is SVR from sklearn.
+    """Check that the wrapped model is SVR from sklearn.
 
     Check also the default number of estimators.
     """
@@ -49,10 +49,10 @@ def test_fit(dataset, input_data, output_data):
 
 def test_predict(dataset):
     """Check the prediction stage."""
-    algo = SVMRegressor(dataset)
-    algo.learn()
+    model = SVMRegressor(dataset)
+    model.learn()
     input_data = array([[1.0, 1.0]])
-    assert algo._predict(input_data).shape == (1, 1)
+    assert model._predict(input_data).shape == (1, 1)
 
     with pytest.raises(NotImplementedError):
-        algo.predict_jacobian(input_data)
+        model.predict_jacobian(input_data)

@@ -17,7 +17,7 @@
 #                         documentation
 #        :author: Syver Doving Agdestein
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test machine learning algorithm selection module."""
+"""Test machine learning model selection module."""
 
 from __future__ import annotations
 
@@ -26,17 +26,17 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.selection import MLAlgoSelection
-from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
-from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.core.selection import MLModelSelection
+from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.rbf import RBFRegressor
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     data = np.linspace(0, 2 * np.pi, 10)
     data = np.vstack((data, np.sin(data), np.cos(data))).T
     variables = ["x_1", "x_2"]
@@ -52,7 +52,7 @@ def dataset() -> IODataset:
 
 def test_init(dataset) -> None:
     """Test construction."""
-    selector = MLAlgoSelection(dataset, MSEMeasure)
+    selector = MLModelSelection(dataset, MSEMeasure)
     assert selector.dataset.equals(dataset)
     assert selector.measure == MSEMeasure
     assert not selector.candidates
@@ -61,23 +61,23 @@ def test_init(dataset) -> None:
 
 @pytest.mark.parametrize("measure", ["MSEMeasure", MSEMeasure])
 def test_init_with_measure(dataset, measure) -> None:
-    """Check that the measure can be passed either as a str or a BaseMLAlgoQuality."""
-    selector = MLAlgoSelection(dataset, measure)
+    """Check that the measure can be passed either as a str or a BaseMLModelQuality."""
+    selector = MLModelSelection(dataset, measure)
     assert selector.measure == MSEMeasure
 
 
 def test_init_fails_if_multioutput_(dataset) -> None:
     expected = (
-        "MLAlgoSelection does not support multioutput; "
+        "MLModelSelection does not support multioutput; "
         "the measure shall return one value."
     )
     with pytest.raises(ValueError, match=expected):
-        MLAlgoSelection(dataset, MSEMeasure, multioutput=True)
+        MLModelSelection(dataset, MSEMeasure, multioutput=True)
 
 
 def test_add_candidate(dataset) -> None:
     """Test add candidate method."""
-    selector = MLAlgoSelection(dataset, MSEMeasure)
+    selector = MLModelSelection(dataset, MSEMeasure)
 
     # Add linear regression candidate
     selector.add_candidate("LinearRegressor")
@@ -115,23 +115,23 @@ def test_add_candidate(dataset) -> None:
 def test_select(dataset, measure_evaluation_method_name) -> None:
     """Test select method."""
     measure = MSEMeasure
-    selector = MLAlgoSelection(
+    selector = MLModelSelection(
         dataset, measure, measure_evaluation_method_name=measure_evaluation_method_name
     )
     selector.add_candidate("PolynomialRegressor", degree=[1, 2])
     selector.add_candidate("LinearRegressor")
     selector.add_candidate("RBFRegressor", smooth=[0, 0.1, 1, 10])
-    algo = selector.select(True)
-    assert isinstance(algo, tuple)
-    assert len(algo) == 2
-    assert isinstance(algo[0], BaseRegressor)
-    assert isinstance(algo[1], float)
+    model = selector.select(True)
+    assert isinstance(model, tuple)
+    assert len(model) == 2
+    assert isinstance(model[0], BaseRegressor)
+    assert isinstance(model[1], float)
     cands = selector.candidates
     for cand in cands:
-        if cand != algo:
-            assert measure.is_better(algo[1], cand[1])
-    assert algo[0].__class__.__name__ == "RBFRegressor"
+        if cand != model:
+            assert measure.is_better(model[1], cand[1])
+    assert model[0].__class__.__name__ == "RBFRegressor"
 
-    algo = selector.select()
-    assert isinstance(algo, BaseRegressor)
-    assert algo.is_trained
+    model = selector.select()
+    assert isinstance(model, BaseRegressor)
+    assert model.is_trained

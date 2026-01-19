@@ -12,45 +12,45 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings of the machine learning algorithms."""
+"""Settings of the machine learning models."""
 
 from __future__ import annotations
 
-from gemseo.mlearning.classification.algos.knn_settings import KNNClassifier_Settings
-from gemseo.mlearning.classification.algos.random_forest_settings import (
+from gemseo.mlearning.classification.models.knn_settings import KNNClassifier_Settings
+from gemseo.mlearning.classification.models.random_forest_settings import (
     RandomForestClassifier_Settings,
 )
-from gemseo.mlearning.classification.algos.svm_settings import SVMClassifier_Settings
-from gemseo.mlearning.clustering.algos.gaussian_mixture_settings import (
+from gemseo.mlearning.classification.models.svm_settings import SVMClassifier_Settings
+from gemseo.mlearning.clustering.models.gaussian_mixture_settings import (
     GaussianMixture_Settings,
 )
-from gemseo.mlearning.clustering.algos.kmeans_settings import KMeans_Settings
-from gemseo.mlearning.regression.algos.fce_settings import FCERegressor_Settings
-from gemseo.mlearning.regression.algos.gpr_settings import (
+from gemseo.mlearning.clustering.models.kmeans_settings import KMeans_Settings
+from gemseo.mlearning.regression.models.fce_settings import FCERegressor_Settings
+from gemseo.mlearning.regression.models.gpr_settings import (
     GaussianProcessRegressor_Settings,
 )
-from gemseo.mlearning.regression.algos.gradient_boosting_settings import (
+from gemseo.mlearning.regression.models.gradient_boosting_settings import (
     GradientBoostingRegressor_Settings,
 )
-from gemseo.mlearning.regression.algos.linreg_settings import LinearRegressor_Settings
-from gemseo.mlearning.regression.algos.mlp_settings import MLPRegressor_Settings
-from gemseo.mlearning.regression.algos.moe_settings import MOE_Settings
-from gemseo.mlearning.regression.algos.ot_gpr_settings import (
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
+from gemseo.mlearning.regression.models.mlp_settings import MLPRegressor_Settings
+from gemseo.mlearning.regression.models.moe_settings import MOE_Settings
+from gemseo.mlearning.regression.models.ot_gpr_settings import (
     OTGaussianProcessRegressor_Settings,
 )
-from gemseo.mlearning.regression.algos.pce_settings import PCERegressor_Settings
-from gemseo.mlearning.regression.algos.polyreg_settings import (
+from gemseo.mlearning.regression.models.pce_settings import PCERegressor_Settings
+from gemseo.mlearning.regression.models.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.mlearning.regression.algos.random_forest_settings import (
+from gemseo.mlearning.regression.models.random_forest_settings import (
     RandomForestRegressor_Settings,
 )
-from gemseo.mlearning.regression.algos.rbf_settings import RBFRegressor_Settings
-from gemseo.mlearning.regression.algos.regressor_chain_settings import (
+from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
+from gemseo.mlearning.regression.models.regressor_chain_settings import (
     RegressorChain_Settings,
 )
-from gemseo.mlearning.regression.algos.svm_settings import SVMRegressor_Settings
-from gemseo.mlearning.regression.algos.thin_plate_spline_settings import (
+from gemseo.mlearning.regression.models.svm_settings import SVMRegressor_Settings
+from gemseo.mlearning.regression.models.thin_plate_spline_settings import (
     TPSRegressor_Settings,
 )
 

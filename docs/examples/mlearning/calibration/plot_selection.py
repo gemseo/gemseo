@@ -14,10 +14,10 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-"""# Machine learning algorithm selection example.
+"""# Machine learning model selection example.
 
-In this example we use the [MLAlgoSelection][gemseo.mlearning.core.selection.MLAlgoSelection] class
-to perform a grid search over different algorithms and hyperparameter values.
+In this example we use the [MLModelSelection][gemseo.mlearning.core.selection.MLModelSelection] class
+to perform a grid search over different models and hyperparameter values.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from numpy.random import default_rng
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.selection import MLAlgoSelection
+from gemseo.mlearning.core.selection import MLModelSelection
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 rng = default_rng(54321)
@@ -58,7 +58,7 @@ dataset.add_variable("y", y[:, None], dataset.OUTPUT_GROUP)
 # We consider three regression models, with different possible hyperparameters.
 # A mean squared error quality measure is used with a k-folds cross validation
 # scheme (5 folds).
-selector = MLAlgoSelection(
+selector = MLModelSelection(
     dataset, MSEMeasure, measure_evaluation_method_name="KFOLDS", n_folds=5
 )
 selector.add_candidate(
@@ -78,26 +78,26 @@ rbf_space = DesignSpace()
 rbf_space.add_variable("epsilon", 1, "float", 0.01, 0.1, 0.05)
 selector.add_candidate(
     "RBFRegressor",
-    calib_space=rbf_space,
-    calib_algo={"algo_name": "PYDOE_FULLFACT", "n_samples": 16},
+    calibration_space=rbf_space,
+    calibration_algorithm={"algo_name": "PYDOE_FULLFACT", "n_samples": 16},
     smooth=[0, 0.01, 0.1, 1, 10, 100],
 )
 
 # %%
 # ## Select best candidate
 #
-best_algo = selector.select()
-best_algo
+best_model = selector.select()
+best_model
 
 # %%
 # ## Plot results
 #
-# Plot the best models from each candidate algorithm
+# Plot the best models from each candidate model.
 finex = linspace(0, 1, 1000)
 for candidate in selector.candidates:
-    algo = candidate[0]
-    predy = algo.predict(finex[:, None])[:, 0]
-    plt.plot(finex, predy, label=algo.SHORT_ALGO_NAME)
+    model = candidate[0]
+    predy = model.predict(finex[:, None])[:, 0]
+    plt.plot(finex, predy, label=model.SHORT_NAME)
 plt.scatter(x, y, label="Training points")
 plt.legend()
 plt.show()

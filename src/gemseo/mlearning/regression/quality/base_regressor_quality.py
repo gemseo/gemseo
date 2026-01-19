@@ -27,7 +27,7 @@ from typing import Final
 
 from numpy import atleast_1d
 
-from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
+from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
 from gemseo.mlearning.resampling.bootstrap import Bootstrap
 from gemseo.mlearning.resampling.cross_validation import CrossValidation
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
@@ -36,12 +36,12 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
-    from gemseo.mlearning.core.quality.base_ml_algo_quality import MeasureType
+    from gemseo.mlearning.core.models.supervised import BaseMLSupervisedModel
+    from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureType
     from gemseo.typing import RealArray
 
 
-class BaseRegressorQuality(BaseMLAlgoQuality):
+class BaseRegressorQuality(BaseMLModelQuality):
     """The base class to assess the quality of a regressor."""
 
     __OUTPUT_NAME_SEPARATOR: Final[str] = "#"
@@ -53,18 +53,18 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
     }
     """Map from the argument "multioutput" of GEMSEO to that of sklearn."""
 
-    algo: BaseMLSupervisedAlgo
+    model: BaseMLSupervisedModel
 
     def __init__(
         self,
-        algo: BaseMLSupervisedAlgo,
-        fit_transformers: bool = BaseMLAlgoQuality._FIT_TRANSFORMERS,
+        model: BaseMLSupervisedModel,
+        fit_transformers: bool = BaseMLModelQuality._FIT_TRANSFORMERS,
     ) -> None:
         """
         Args:
-            algo: A machine learning algorithm for supervised learning.
+            model: A machine learning model for supervised learning.
         """  # noqa: D205 D212
-        super().__init__(algo, fit_transformers=fit_transformers)
+        super().__init__(model, fit_transformers=fit_transformers)
 
     def compute_learning_measure(
         self,
@@ -75,17 +75,17 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from `algo.output names` to quality measures.
+                as a mapping from `model.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of `algo.output_names`.
+                according to the order of `model.output_names`.
         """  # noqa: D205 D212
         self._pre_process(samples)
         return self._post_process_measure(
             self._compute_measure(
-                self.algo.output_data,
-                self.algo.predict(self.algo.input_data),
+                self.model.output_data,
+                self.model.predict(self.model.input_data),
                 multioutput,
             ),
             multioutput,
@@ -102,23 +102,23 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from `algo.output names` to quality measures.
+                as a mapping from `model.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of `algo.output_names`.
+                according to the order of `model.output_names`.
         """  # noqa: D205 D212
         self._pre_process(samples)
         return self._post_process_measure(
             self._compute_measure(
                 test_data.get_view(
                     group_names=test_data.OUTPUT_GROUP,
-                    variable_names=self.algo.output_names,
+                    variable_names=self.model.output_names,
                 ).to_numpy(),
-                self.algo.predict(
+                self.model.predict(
                     test_data.get_view(
                         group_names=test_data.INPUT_GROUP,
-                        variable_names=self.algo.input_names,
+                        variable_names=self.model.input_names,
                     ).to_numpy()
                 ),
                 multioutput,
@@ -137,15 +137,15 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from `algo.output names` to quality measures.
+                as a mapping from `model.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of `algo.output_names`.
+                according to the order of `model.output_names`.
         """  # noqa: D205 D212
         return self.compute_cross_validation_measure(
             samples=samples,
-            n_folds=self.algo.learning_set.n_samples,
+            n_folds=self.model.learning_set.n_samples,
             multioutput=multioutput,
             as_dict=as_dict,
             store_resampling_result=store_resampling_result,
@@ -157,7 +157,7 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         n_folds: int = 5,
         samples: Sequence[int] = (),
         multioutput: bool = True,
-        randomize: bool = BaseMLAlgoQuality._RANDOMIZE,
+        randomize: bool = BaseMLModelQuality._RANDOMIZE,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,
@@ -165,23 +165,23 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from `algo.output names` to quality measures.
+                as a mapping from `model.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of `algo.output_names`.
+                according to the order of `model.output_names`.
         """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, randomize)
         cross_validation = CrossValidation(samples, n_folds, randomize, seed)
         _, predictions = cross_validation.execute(
-            self.algo,
+            self.model,
             return_models=store_resampling_result,
-            input_data=self.algo.input_data,
+            input_data=self.model.input_data,
             fit_transformers=self._fit_transformers,
             store_sampling_result=store_resampling_result,
         )
         return self._post_process_measure(
-            self._compute_measure(self.algo.output_data, predictions, multioutput),
+            self._compute_measure(self.model.output_data, predictions, multioutput),
             multioutput,
             as_dict,
         )
@@ -198,23 +198,23 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
         """
         Args:
             as_dict: Whether the full quality measure is returned
-                as a mapping from `algo.output names` to quality measures.
+                as a mapping from `model.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of `algo.output_names`.
+                according to the order of `model.output_names`.
         """  # noqa: D205 D212
         samples, seed = self._pre_process(samples, seed, True)
         bootstrap = Bootstrap(samples, n_replicates, seed)
         _, predictions = bootstrap.execute(
-            self.algo,
+            self.model,
             return_models=store_resampling_result,
-            input_data=self.algo.input_data,
+            input_data=self.model.input_data,
             stack_predictions=False,
             fit_transformers=self._fit_transformers,
             store_sampling_result=store_resampling_result,
         )
-        output_data = self.algo.output_data
+        output_data = self.model.output_data
         measure = 0
         for prediction, split in zip(predictions, bootstrap.splits, strict=False):
             measure += self._compute_measure(
@@ -253,11 +253,11 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
                 for each component of the outputs.
                 Otherwise, the average quality measure.
             as_dict: Whether the full quality measure is returned
-                as a mapping from `algo.output names` to quality measures.
+                as a mapping from `model.output names` to quality measures.
                 Otherwise,
                 the full quality measure as an array
                 stacking these quality measures
-                according to the order of `algo.output_names`.
+                according to the order of `model.output_names`.
 
         Returns:
             The post-processed measure.
@@ -266,10 +266,10 @@ class BaseRegressorQuality(BaseMLAlgoQuality):
             return measure
 
         data = atleast_1d(measure)
-        names = self.algo.output_names
+        names = self.model.output_names
         if not multioutput:
             return {self.__OUTPUT_NAME_SEPARATOR.join(names): data}
 
         return split_array_to_dict_of_arrays(
-            data, self.algo.learning_set.variable_names_to_n_components, names
+            data, self.model.learning_set.variable_names_to_n_components, names
         )

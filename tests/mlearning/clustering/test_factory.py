@@ -26,8 +26,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mlearning.clustering.algos.factory import ClustererFactory
-from gemseo.mlearning.clustering.algos.kmeans import KMeans
+from gemseo.mlearning.clustering.models.factory import ClustererFactory
+from gemseo.mlearning.clustering.models.kmeans import KMeans
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ N_CLUSTERS = 3
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the clustering algorithms."""
+    """The dataset used to train the clustering models."""
     return create_iris_dataset(as_io=True, as_numeric=True)
 
 

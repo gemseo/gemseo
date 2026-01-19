@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test Gaussian process regression algorithm module."""
+"""Test Gaussian process regression model module."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ from numpy.testing import assert_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -49,7 +49,7 @@ LEARNING_SIZE = 9
 
 @pytest.fixture
 def dataset() -> Dataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     discipline.set_cache(discipline.CacheType.MEMORY_FULL)
     design_space = DesignSpace()
@@ -82,7 +82,7 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     gpr = GaussianProcessRegressor(dataset)
     assert gpr.algo is not None
-    assert gpr.SHORT_ALGO_NAME == "GPR"
+    assert gpr.SHORT_NAME == "GPR"
     assert gpr.LIBRARY == "scikit-learn"
 
 
@@ -271,7 +271,7 @@ def test_std_multiple_output():
 
 
 def test_homonymous_io():
-    """Check that a supervised ML algo can use with homonymous inputs and outputs."""
+    """Check that a supervised ML model can use with homonymous inputs and outputs."""
     x = array([[0.0], [0.5], [1.0]])
     y = x**2
     dataset = IODataset()

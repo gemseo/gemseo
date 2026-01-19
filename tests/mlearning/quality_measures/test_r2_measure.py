@@ -27,13 +27,13 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.testing.helpers import concretize_classes
 
-from ..core.test_ml_algo import DummyMLAlgo
+from ..core.test_ml_model import DummyMLModel
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -49,7 +49,7 @@ ATOL = 1e-12
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
@@ -62,7 +62,7 @@ def dataset() -> IODataset:
 
 @pytest.fixture
 def dataset_test() -> IODataset:
-    """The dataset used to test the performance of the regression algorithms."""
+    """The dataset used to test the performance of the regression models."""
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
@@ -75,89 +75,89 @@ def dataset_test() -> IODataset:
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    with concretize_classes(DummyMLAlgo):
-        algo = DummyMLAlgo(dataset)
+    with concretize_classes(DummyMLModel):
+        model = DummyMLModel(dataset)
 
-    measure = R2Measure(algo)
-    assert measure.algo is not None
-    assert measure.algo.learning_set is dataset
+    measure = R2Measure(model)
+    assert measure.model is not None
+    assert measure.model.learning_set is dataset
 
 
 def test_compute_learning_measure(dataset) -> None:
     """Test evaluate learn method."""
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=2)
+    measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_2
 
-    algo = PolynomialRegressor(dataset, degree=1)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=1)
+    measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_1
 
-    algo = PolynomialRegressor(
+    model = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
-    measure = R2Measure(algo)
+    measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_2
 
 
 def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=2)
+    measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
-    algo = PolynomialRegressor(dataset, degree=1)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=1)
+    measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_1
 
-    algo = PolynomialRegressor(
+    model = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
-    measure = R2Measure(algo)
+    measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
 
 def test_compute_leave_one_out_measure(dataset) -> None:
     """Test evaluate leave one out method."""
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=2)
+    measure = R2Measure(model)
     r2_loo = measure.compute_leave_one_out_measure()
     assert r2_loo > 1 - TOL_DEG_2
 
-    algo = PolynomialRegressor(dataset, degree=1)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=1)
+    measure = R2Measure(model)
     r2_loo = measure.compute_leave_one_out_measure()
     assert r2_loo < 1 - TOL_DEG_3
 
 
 def test_compute_cross_validation_measure(dataset) -> None:
     """Test evaluate k-folds method."""
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=2)
+    measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds > 1 - TOL_DEG_2
 
-    algo = PolynomialRegressor(dataset, degree=1)
-    measure = R2Measure(algo)
+    model = PolynomialRegressor(dataset, degree=1)
+    measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds < 1 - TOL_DEG_3
 
-    algo = PolynomialRegressor(
+    model = PolynomialRegressor(
         dataset,
         degree=2,
         transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
     )
-    measure = R2Measure(algo)
+    measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds > 1 - TOL_DEG_2
 
@@ -169,15 +169,15 @@ def test_compute_bootstrap_measure(dataset) -> None:
 
 
 @pytest.mark.parametrize("fit", [False, True])
-def test_fit_transformers(algo_for_transformer, fit) -> None:
+def test_fit_transformers(model_for_transformer, fit) -> None:
     """Check that the user can fit the transformers with the sub-datasets.
 
-    Otherwise, use the transformers of the assessed algorithm as they are.
+    Otherwise, use the transformers of the assessed model as they are.
     """
-    r2 = R2Measure(algo_for_transformer)
+    r2 = R2Measure(model_for_transformer)
     r2.compute_cross_validation_measure(seed=0, store_resampling_result=True)
-    model = algo_for_transformer.resampling_results["CrossValidation"][1][0]
-    r2 = R2Measure(algo_for_transformer, fit_transformers=fit)
+    model = model_for_transformer.resampling_results["CrossValidation"][1][0]
+    r2 = R2Measure(model_for_transformer, fit_transformers=fit)
     r2.compute_cross_validation_measure(seed=0, store_resampling_result=True)
-    new_model = algo_for_transformer.resampling_results["CrossValidation"][1][0]
+    new_model = model_for_transformer.resampling_results["CrossValidation"][1][0]
     assert (model.algo.y_train_.sum() == new_model.algo.y_train_.sum()) is not fit

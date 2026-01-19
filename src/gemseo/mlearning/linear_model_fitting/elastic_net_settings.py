@@ -19,8 +19,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from numpy import ndarray  # noqa: TC002
-from numpy.random import RandomState  # noqa: TC002
+from numpy import ndarray
+from numpy.random import RandomState
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveFloat

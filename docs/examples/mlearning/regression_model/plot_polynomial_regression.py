@@ -21,14 +21,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Polynomial regression.
 
-A [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor] is a polynomial regression model
-based on a [LinearRegressor][gemseo.mlearning.regression.algos.linreg.LinearRegressor].
+A [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] is a polynomial regression model
+based on a [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor].
 This design choice was made
 because a polynomial regression model is a generalized linear model
 whose basis functions are monomials.
 Thus,
-a [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor] benefits
-from the same settings as [LinearRegressor][gemseo.mlearning.regression.algos.linreg.LinearRegressor]:
+a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] benefits
+from the same settings as [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor]:
 offset can be set to zero and regularization techniques can be used.
 
 !!! info "See also"
@@ -118,8 +118,8 @@ plt.show()
 # %%
 # ## Settings
 #
-# The [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor] has many options
-# defined in the [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg_settings.PolynomialRegressor_Settings] Pydantic model.
+# The [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] has many options
+# defined in the [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg_settings.PolynomialRegressor_Settings] Pydantic model.
 # Most of them are presented
 # in [the example about the linear regression model][polynomial-regression].
 #

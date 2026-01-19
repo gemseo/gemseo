@@ -29,7 +29,7 @@ from gemseo.mlearning.regression.quality.me_measure import MEMeasure
 @pytest.fixture(scope="module")
 def me() -> MEMeasure:
     """An MEMeasure with mocked argument values passed at instantiation."""
-    return MEMeasure("mocked_algo", fit_transformers="mocked_fit_transformers")
+    return MEMeasure("mocked_model", fit_transformers="mocked_fit_transformers")
 
 
 OUTPUTS = array([[0, 1, 0], [1, 0, 2]])
@@ -38,7 +38,7 @@ PREDICTIONS = array([[0, 1, 0], [1, 1, 0]])
 
 def test_init(me):
     """Check that the arguments are correctly used at instantiation."""
-    assert me.algo == "mocked_algo"
+    assert me.model == "mocked_model"
     assert me._fit_transformers == "mocked_fit_transformers"
 
 

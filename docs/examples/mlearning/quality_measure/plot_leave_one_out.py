@@ -25,7 +25,7 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
 
 # %%
@@ -75,7 +75,7 @@ dataset_train.add_input_group(x_train[:, newaxis], ["x"])
 dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# and build a [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor] with `degree=3` from it:
+# and build a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] with `degree=3` from it:
 polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 
@@ -111,8 +111,8 @@ rmse.compute_leave_one_out_measure(store_resampling_result=True)
 plot = plt.plot(x_test, y_test, label="Reference")
 plt.plot(x_train, y_train, "o", color=plot[0].get_color(), label="Training dataset")
 plt.plot(x_test, polynomial.predict(x_test[:, newaxis]), label="Model")
-for i, algo in enumerate(polynomial.resampling_results["LeaveOneOut"][1], 1):
-    plt.plot(x_test, algo.predict(x_test[:, newaxis]), label=f"Sub-model {i}")
+for i, model in enumerate(polynomial.resampling_results["LeaveOneOut"][1], 1):
+    plt.plot(x_test, model.predict(x_test[:, newaxis]), label=f"Sub-model {i}")
 plt.legend()
 plt.grid()
 plt.show()

@@ -18,7 +18,7 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test supervised machine learning algorithm module."""
+"""Test supervised machine learning model module."""
 
 from __future__ import annotations
 
@@ -35,8 +35,8 @@ from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.algos.supervised import BaseMLSupervisedAlgo
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
+from gemseo.mlearning.core.models.supervised import BaseMLSupervisedModel
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
 from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
     BaseDimensionReduction,
 )
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def io_dataset() -> IODataset:
-    """The dataset used to train the supervised machine learning algorithms."""
+    """The dataset used to train the supervised machine learning models."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
     variable_names_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
@@ -63,18 +63,18 @@ def io_dataset() -> IODataset:
 
 def test_constructor(io_dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLSupervisedAlgo):
-        ml_algo = BaseMLSupervisedAlgo(io_dataset)
+    with concretize_classes(BaseMLSupervisedModel):
+        ml_model = BaseMLSupervisedModel(io_dataset)
 
-    assert ml_algo.algo is None
-    assert ml_algo.input_names == io_dataset.get_variable_names("inputs")
-    assert ml_algo.output_names == io_dataset.get_variable_names("outputs")
+    assert ml_model.algo is None
+    assert ml_model.input_names == io_dataset.get_variable_names("inputs")
+    assert ml_model.output_names == io_dataset.get_variable_names("outputs")
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=54.0)
     design_space.add_variable(
         "x_2", size=2, lower_bound=array([1.0, 2.0]), upper_bound=array([55.0, 56.0])
     )
-    assert ml_algo.validity_domain == design_space
+    assert ml_model.validity_domain == design_space
 
 
 @pytest.mark.parametrize(
@@ -86,15 +86,15 @@ def test_constructor(io_dataset) -> None:
 def test_get_raw_shapes(
     io_dataset, in_transformer, n_in, out_transformer, n_out
 ) -> None:
-    """Verify the raw input and output shapes of the algorithm."""
+    """Verify the raw input and output shapes of the model."""
     transformer = {}
     transformer.update(in_transformer)
     transformer.update(out_transformer)
-    with concretize_classes(BaseMLSupervisedAlgo):
-        algo = BaseMLSupervisedAlgo(io_dataset, transformer=transformer)
+    with concretize_classes(BaseMLSupervisedModel):
+        model = BaseMLSupervisedModel(io_dataset, transformer=transformer)
 
-    assert algo._reduced_input_dimension == n_in
-    assert algo._reduced_output_dimension == n_out
+    assert model._reduced_input_dimension == n_in
+    assert model._reduced_output_dimension == n_out
 
 
 def test_learn(io_dataset) -> None:
@@ -144,32 +144,32 @@ INPUT_VALUES = array([[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
 
 def test_format_dict(io_dataset) -> None:
     """Test format dict decorator."""
-    with concretize_classes(BaseMLSupervisedAlgo):
-        ml_algo = BaseMLSupervisedAlgo(io_dataset)
+    with concretize_classes(BaseMLSupervisedModel):
+        ml_model = BaseMLSupervisedModel(io_dataset)
 
     partially_transformed = [None]
 
-    @BaseMLSupervisedAlgo.DataFormatters.format_dict
+    @BaseMLSupervisedModel.DataFormatters.format_dict
     def predict_dict(self, input_data):
         """Predict after dict formatting."""
-        assert self == ml_algo
+        assert self == ml_model
         partially_transformed[0] = input_data
         return input_data
 
-    out_dict_1d = predict_dict(ml_algo, DICT_1D)
+    out_dict_1d = predict_dict(ml_model, DICT_1D)
     assert array_equal(partially_transformed[0], INPUT_VALUE_1D)
-    out_dict_2d = predict_dict(ml_algo, DICT_2D)
+    out_dict_2d = predict_dict(ml_model, DICT_2D)
     assert array_equal(partially_transformed[0], INPUT_VALUE_2D)
-    out_dict_2d_multisamples = predict_dict(ml_algo, DICT_2D_MULTISAMPLES)
+    out_dict_2d_multisamples = predict_dict(ml_model, DICT_2D_MULTISAMPLES)
     assert array_equal(partially_transformed[0], INPUT_VALUES)
 
-    out_value_1d = predict_dict(ml_algo, INPUT_VALUE_1D)
+    out_value_1d = predict_dict(ml_model, INPUT_VALUE_1D)
     assert array_equal(partially_transformed[0], INPUT_VALUE_1D)
     assert array_equal(partially_transformed[0], out_value_1d)
-    out_value_2d = predict_dict(ml_algo, INPUT_VALUE_2D)
+    out_value_2d = predict_dict(ml_model, INPUT_VALUE_2D)
     assert array_equal(partially_transformed[0], INPUT_VALUE_2D)
     assert array_equal(partially_transformed[0], out_value_2d)
-    out_values = predict_dict(ml_algo, INPUT_VALUES)
+    out_values = predict_dict(ml_model, INPUT_VALUES)
     assert array_equal(partially_transformed[0], INPUT_VALUES)
     assert array_equal(partially_transformed[0], out_values)
 
@@ -188,23 +188,23 @@ def test_format_dict(io_dataset) -> None:
 def test_format_sample(io_dataset) -> None:
     """Test format sample decorator."""
     partially_transformed = [None]
-    with concretize_classes(BaseMLSupervisedAlgo):
-        ml_algo = BaseMLSupervisedAlgo(io_dataset)
+    with concretize_classes(BaseMLSupervisedModel):
+        ml_model = BaseMLSupervisedModel(io_dataset)
 
-    @BaseMLSupervisedAlgo.DataFormatters.format_samples()
+    @BaseMLSupervisedModel.DataFormatters.format_samples()
     def predict_sample(self, input_data):
         """Predict (identity function)."""
-        assert self == ml_algo
+        assert self == ml_model
         partially_transformed[0] = input_data
         return input_data
 
-    out_value_1d = predict_sample(ml_algo, INPUT_VALUE_1D)
+    out_value_1d = predict_sample(ml_model, INPUT_VALUE_1D)
     assert array_equal(partially_transformed[0], INPUT_VALUE_1D[None])
 
-    out_value_2d = predict_sample(ml_algo, INPUT_VALUE_2D)
+    out_value_2d = predict_sample(ml_model, INPUT_VALUE_2D)
     assert array_equal(partially_transformed[0], INPUT_VALUE_2D)
 
-    out_values = predict_sample(ml_algo, INPUT_VALUES)
+    out_values = predict_sample(ml_model, INPUT_VALUES)
     assert array_equal(partially_transformed[0], INPUT_VALUES)
 
     assert array_equal(out_value_1d, INPUT_VALUE_1D)
@@ -223,8 +223,8 @@ def dataset_for_transform() -> IODataset:
     return data
 
 
-class NewSupervisedAlgo(BaseMLSupervisedAlgo):
-    """A supervised algorithm without fitting algorithm."""
+class NewSupervisedModel(BaseMLSupervisedModel):
+    """A supervised model without fitting modelrithm."""
 
     def _fit(self, input_data, output_data) -> None:
         return
@@ -276,7 +276,7 @@ def test_format_transform(
     3. untransforms the output data.
 
     Args:
-        dataset_for_transform: The dataset used by the ML algorithm.
+        dataset_for_transform: The dataset used by the ML model.
         transform_inputs: Whether to transform the input data
             before calling the original function.
         transform_outputs: Whether to untransform the output data
@@ -288,12 +288,12 @@ def test_format_transform(
     # 1. Define the transformer: MinMaxScaler for an {in,out}put name or group.
     transformer = {transform_in_key: "MinMaxScaler", transform_out_key: "MinMaxScaler"}
 
-    # 2. Train a supervised algo.
-    algo = NewSupervisedAlgo(dataset_for_transform, transformer=transformer)
-    algo.learn()
+    # 2. Train a supervised model.
+    model = NewSupervisedModel(dataset_for_transform, transformer=transformer)
+    model.learn()
 
-    # 3. Create the DataFormatter to format the prediction method of tha algorithm.
-    format_function = algo.DataFormatters.format_transform(
+    # 3. Create the DataFormatter to format the prediction method of that model.
+    format_function = model.DataFormatters.format_transform(
         transform_inputs, transform_outputs
     )
     # 4. For ease of understanding, we consider the identity as prediction method.
@@ -304,7 +304,7 @@ def test_format_transform(
 
     # 5. Check the value
     input_data = dataset_for_transform.get_view(group_names="inputs").to_numpy()
-    assert_equal(formatted_identity_function(algo, input_data), expected)
+    assert_equal(formatted_identity_function(model, input_data), expected)
 
 
 @pytest.fixture(scope="module")
@@ -322,12 +322,12 @@ def dataset() -> Dataset:
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_fit_transformers_option(dataset, name, fit_transformers) -> None:
     """Check that the fit_transformers option is correctly used."""
-    with concretize_classes(BaseMLSupervisedAlgo):
-        algo = BaseMLSupervisedAlgo(dataset, transformer={name: "MinMaxScaler"})
+    with concretize_classes(BaseMLSupervisedModel):
+        model = BaseMLSupervisedModel(dataset, transformer={name: "MinMaxScaler"})
 
-    algo._fit = lambda x, y: None
-    algo.learn(fit_transformers=fit_transformers)
-    assert all(algo.transformer[name].offset == -1) is fit_transformers
+    model._fit = lambda x, y: None
+    model.learn(fit_transformers=fit_transformers)
+    assert all(model.transformer[name].offset == -1) is fit_transformers
 
 
 @pytest.mark.parametrize(
@@ -335,43 +335,43 @@ def test_fit_transformers_option(dataset, name, fit_transformers) -> None:
 )
 def test_compute_transformed_variable_sizes(dataset, name, expected) -> None:
     """Check that the compute_transformed_variable_sizes method works."""
-    with concretize_classes(BaseMLSupervisedAlgo, BaseDimensionReduction):
-        algo = BaseMLSupervisedAlgo(
+    with concretize_classes(BaseMLSupervisedModel, BaseDimensionReduction):
+        model = BaseMLSupervisedModel(
             dataset, transformer={name: BaseDimensionReduction(n_components=3)}
         )
 
-    algo._BaseMLSupervisedAlgo__compute_transformed_variable_sizes()
-    sizes = algo._transformed_variable_sizes
+    model._BaseMLSupervisedModel__compute_transformed_variable_sizes()
+    sizes = model._transformed_variable_sizes
     assert sizes == expected
-    assert algo._transformed_input_sizes == {"x": sizes["x"]}
-    assert algo._transformed_output_sizes == {"y": sizes["y"]}
+    assert model._transformed_input_sizes == {"x": sizes["x"]}
+    assert model._transformed_output_sizes == {"y": sizes["y"]}
 
 
 def test_crossed_transformer_failure(dataset) -> None:
     """Check that a crossed transformer cannot be applied to outputs."""
-    with concretize_classes(BaseMLSupervisedAlgo):
-        algo = BaseMLSupervisedAlgo(dataset, transformer={"y": "PLS"})
+    with concretize_classes(BaseMLSupervisedModel):
+        model = BaseMLSupervisedModel(dataset, transformer={"y": "PLS"})
 
     expected = re.escape(
         "The transformer PLS cannot be applied to the outputs "
-        "to build a supervised machine learning algorithm."
+        "to build a supervised machine learning model."
     )
     with pytest.raises(NotImplementedError, match=expected):
-        algo.learn()
+        model.learn()
 
 
 def test_crossed_transformer(dataset) -> None:
     """Check that a crossed transformer can be applied to inputs."""
-    with concretize_classes(BaseMLSupervisedAlgo):
-        algo = BaseMLSupervisedAlgo(dataset, transformer={"x": "PLS"})
+    with concretize_classes(BaseMLSupervisedModel):
+        model = BaseMLSupervisedModel(dataset, transformer={"x": "PLS"})
 
-    algo._fit = lambda x, y: None
-    algo.learn()
-    assert_close(algo.transformer["x"].algo.x_weights_, array([[1.0]]))
+    model._fit = lambda x, y: None
+    model.learn()
+    assert_close(model.transformer["x"].algo.x_weights_, array([[1.0]]))
 
-    with concretize_classes(BaseMLSupervisedAlgo):
-        algo = BaseMLSupervisedAlgo(dataset, transformer=algo.transformer)
+    with concretize_classes(BaseMLSupervisedModel):
+        model = BaseMLSupervisedModel(dataset, transformer=model.transformer)
 
-    algo._fit = lambda x, y: None
-    algo.learn(fit_transformers=False)
-    assert_close(algo.transformer["x"].algo.x_weights_, array([[1.0]]))
+    model._fit = lambda x, y: None
+    model.learn(fit_transformers=False)
+    assert_close(model.transformer["x"].algo.x_weights_, array([[1.0]]))

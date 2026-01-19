@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Data formatters for regression algorithms."""
+"""Data formatters for regression models."""
 
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from gemseo.mlearning.core.algos.ml_algo import DataType
-    from gemseo.mlearning.regression.algos.base_regressor import BaseRegressor
+    from gemseo.mlearning.core.models.ml_model import DataType
+    from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
 
 from gemseo.mlearning.data_formatters.supervised_data_formatters import (
@@ -38,7 +38,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 
 
 class RegressionDataFormatters(SupervisedDataFormatters):
-    """Data formatters for regression algorithms."""
+    """Data formatters for regression models."""
 
     @classmethod
     def format_dict_jacobian(
@@ -60,7 +60,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: BaseRegressor, input_data: DataType, *args: Any, **kwargs: Any
+            model: BaseRegressor, input_data: DataType, *args: Any, **kwargs: Any
         ) -> DataType:
             """Evaluate `func` with either array or dictionary-based data.
 
@@ -78,7 +78,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             if the input data were passed as a dictionary of NumPy data arrays.
 
             Args:
-                algo: The regression algorithm.
+                model: The regression model.
                 input_data: The input data.
                 *args: The positional arguments of the function `func`.
                 **kwargs: The keyword arguments of the function `func`.
@@ -89,19 +89,19 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             as_dict = isinstance(input_data, Mapping)
             if as_dict:
                 input_data = concatenate_dict_of_arrays_to_array(
-                    input_data, algo.input_names
+                    input_data, model.input_names
                 )
             single_sample = len(input_data.shape) == 1
-            jacobians = func(algo, input_data, *args, **kwargs)
+            jacobians = func(model, input_data, *args, **kwargs)
             if as_dict:
-                varsizes = algo.learning_set.variable_names_to_n_components
+                varsizes = model.learning_set.variable_names_to_n_components
                 if single_sample:
                     jacobians = split_array_to_dict_of_arrays(
-                        jacobians, varsizes, algo.output_names, algo.input_names
+                        jacobians, varsizes, model.output_names, model.input_names
                     )
                 else:
                     jacobians = split_array_to_dict_of_arrays(
-                        jacobians, varsizes, algo.output_names, algo.input_names
+                        jacobians, varsizes, model.output_names, model.input_names
                     )
             return jacobians
 
@@ -125,7 +125,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
 
         @wraps(func)
         def wrapper(
-            algo: BaseRegressor, input_data: RealArray, *args: Any, **kwargs: Any
+            model: BaseRegressor, input_data: RealArray, *args: Any, **kwargs: Any
         ) -> RealArray:
             """Evaluate `func` after or before data transformation.
 
@@ -139,7 +139,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             the post-processing stage transforms the output data if required.
 
             Args:
-                algo: The regression algorithm.
+                model: The regression model.
                 input_data: The input data.
                 *args: The positional arguments of the function.
                 **kwargs: The keyword arguments of the function.
@@ -153,8 +153,8 @@ class RegressionDataFormatters(SupervisedDataFormatters):
                     rather than to a group of variables.
             """
             if (
-                algo._input_variables_to_transform
-                or algo._output_variables_to_transform
+                model._input_variables_to_transform
+                or model._output_variables_to_transform
             ):
                 # TODO: implement this case
                 msg = (
@@ -165,20 +165,20 @@ class RegressionDataFormatters(SupervisedDataFormatters):
                 )
                 raise NotImplementedError(msg)
 
-            inputs = algo.learning_set.INPUT_GROUP
-            if inputs in algo.transformer:
-                jac = algo.transformer[inputs].compute_jacobian(input_data)
-                input_data = algo.transformer[inputs].transform(input_data)
+            inputs = model.learning_set.INPUT_GROUP
+            if inputs in model.transformer:
+                jac = model.transformer[inputs].compute_jacobian(input_data)
+                input_data = model.transformer[inputs].transform(input_data)
             else:
                 jac = eye(input_data.shape[1])
 
-            jac = func(algo, input_data, *args, **kwargs) @ jac
-            output_data = algo.predict_raw(input_data)
+            jac = func(model, input_data, *args, **kwargs) @ jac
+            output_data = model.predict_raw(input_data)
 
-            outputs = algo.learning_set.OUTPUT_GROUP
-            if outputs in algo.transformer:
+            outputs = model.learning_set.OUTPUT_GROUP
+            if outputs in model.transformer:
                 jac = (
-                    algo.transformer[outputs].compute_jacobian_inverse(output_data)
+                    model.transformer[outputs].compute_jacobian_inverse(output_data)
                     @ jac
                 )
             return jac

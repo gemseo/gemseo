@@ -29,7 +29,7 @@ from numpy import ndarray
 from numpy import zeros
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.algos.svm import SVMClassifier
+from gemseo.mlearning.classification.models.svm import SVMClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 N_INPUTS = 2
@@ -82,7 +82,7 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     svm = SVMClassifier(dataset)
     assert svm.algo is not None
-    assert svm.SHORT_ALGO_NAME == "SVM"
+    assert svm.SHORT_NAME == "SVM"
     assert svm.LIBRARY == "scikit-learn"
 
 

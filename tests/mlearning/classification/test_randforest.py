@@ -30,7 +30,7 @@ from numpy import zeros
 from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.algos.random_forest import RandomForestClassifier
+from gemseo.mlearning.classification.models.random_forest import RandomForestClassifier
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 RNG = default_rng(12345)
@@ -70,40 +70,40 @@ def dataset() -> IODataset:
 @pytest.fixture
 def model_1d(dataset) -> RandomForestClassifier:
     """A trained RandomForestClassifier with y_1 as single output."""
-    algo = RandomForestClassifier(dataset, output_names=["y_1"])
-    algo.learn()
-    return algo
+    model = RandomForestClassifier(dataset, output_names=["y_1"])
+    model.learn()
+    return model
 
 
 @pytest.fixture
-def model(dataset) -> RandomForestClassifier:
+def model_with_two_outputs(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier with two outputs, y_1 and y_2."""
-    algo = RandomForestClassifier(dataset)
-    algo.learn()
-    return algo
+    model = RandomForestClassifier(dataset)
+    model.learn()
+    return model
 
 
 @pytest.fixture
 def model_with_transform(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier using input scaling."""
-    algo = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
-    algo.learn()
-    return algo
+    model = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
+    model.learn()
+    return model
 
 
 def test_constructor(dataset) -> None:
     """Test construction."""
-    algo = RandomForestClassifier(dataset)
-    assert algo.algo is not None
-    assert algo.SHORT_ALGO_NAME == "RF"
-    assert algo.LIBRARY == "scikit-learn"
+    model = RandomForestClassifier(dataset)
+    assert model.algo is not None
+    assert model.SHORT_NAME == "RF"
+    assert model.LIBRARY == "scikit-learn"
 
 
 def test_learn(dataset) -> None:
     """Test learn."""
-    algo = RandomForestClassifier(dataset)
-    algo.learn()
-    assert algo.algo is not None
+    model = RandomForestClassifier(dataset)
+    model.learn()
+    assert model.algo is not None
 
 
 def test_predict_1d(model_1d) -> None:
@@ -120,10 +120,10 @@ def test_predict_1d(model_1d) -> None:
     assert predictions["y_1"].shape == (5, 1)
 
 
-def test_predict(model) -> None:
+def test_predict(model_with_two_outputs) -> None:
     """Test prediction."""
-    prediction = model.predict(INPUT_VALUE)
-    predictions = model.predict(INPUT_VALUES)
+    prediction = model_with_two_outputs.predict(INPUT_VALUE)
+    predictions = model_with_two_outputs.predict(INPUT_VALUES)
 
     assert isinstance(prediction, dict)
     assert isinstance(prediction["y_1"], ndarray)
@@ -174,11 +174,11 @@ def test_predict_proba_1d(model_1d) -> None:
         assert allclose(probas["y_1"].sum(axis=1), 1)
 
 
-def test_predict_proba(model) -> None:
+def test_predict_proba(model_with_two_outputs) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
-        proba = model.predict_proba(INPUT_VALUE, hard)
-        probas = model.predict_proba(INPUT_VALUES, hard)
+        proba = model_with_two_outputs.predict_proba(INPUT_VALUE, hard)
+        probas = model_with_two_outputs.predict_proba(INPUT_VALUES, hard)
         assert isinstance(proba, dict)
         assert isinstance(probas, dict)
         assert isinstance(proba["y_1"], ndarray)

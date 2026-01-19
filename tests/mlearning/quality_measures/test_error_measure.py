@@ -27,8 +27,8 @@ from numpy import linspace
 from numpy import newaxis
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
-from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
 from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
@@ -42,12 +42,12 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
     ["compute_bootstrap_measure", "compute_cross_validation_measure"],
 )
 def test_resampling_based_measure(method) -> None:
-    """Check that a resampling-based measure does not re-train the algo (but a copy)."""
+    """Check that a resampling-based measure does not re-train the model but a copy."""
     dataset = create_rosenbrock_dataset(opt_naming=False)
-    algo = PolynomialRegressor(dataset, degree=2)
-    measure = MSEMeasure(algo)
+    model = PolynomialRegressor(dataset, degree=2)
+    measure = MSEMeasure(model)
     getattr(measure, method)()
-    assert list(algo.learning_samples_indices) == list(range(len(dataset)))
+    assert list(model.learning_samples_indices) == list(range(len(dataset)))
 
 
 @pytest.fixture(scope="module")
@@ -65,9 +65,9 @@ def learning_dataset() -> IODataset:
 @pytest.fixture
 def linear_regressor(learning_dataset) -> LinearRegressor:
     """A linear regressor."""
-    algo = LinearRegressor(learning_dataset)
-    algo.learn()
-    return algo
+    model = LinearRegressor(learning_dataset)
+    model.learn()
+    return model
 
 
 @pytest.fixture(scope="module")
@@ -105,16 +105,16 @@ def test_subset_of_inputs_and_outputs(
     input_names,
     output_names,
 ) -> None:
-    """Check that quality measures correctly handle algo with subsets of IO names."""
+    """Check that quality measures correctly handle model with subsets of IO names."""
     kwargs = {}
     if method == "compute_test_measure":
         kwargs["test_data"] = test_dataset
 
-    algo = LinearRegressor(
+    model = LinearRegressor(
         learning_dataset, input_names=input_names, output_names=output_names
     )
     if not (measure_cls == R2Measure and method == "compute_bootstrap_measure"):
-        measure = measure_cls(algo)
+        measure = measure_cls(model)
         evaluate = getattr(measure, method)
         result = evaluate(**kwargs)
         assert result == pytest.approx(expected)
@@ -155,21 +155,21 @@ def test_no_resampling_result_storage(linear_regressor) -> None:
 def test_resampling_result_storage(
     linear_regressor, method, resampler_name, class_name, dimension
 ) -> None:
-    """Check that the resampling result can be stored in the ML algorithm and reused."""
+    """Check that the resampling result can be stored in the ML model and reused."""
     options = {}
     if resampler_name == "Bootstrap":
         options["n_replicates"] = dimension
     mse = MSEMeasure(linear_regressor)
     getattr(mse, method)(store_resampling_result=True, **options)
 
-    # 1. Check the resampling result attached to the ML algorithm.
+    # 1. Check the resampling result attached to the ML model.
     resampling_result = linear_regressor.resampling_results[resampler_name]
     assert resampling_result[0].__class__.__name__ == class_name
-    algos = resampling_result[1]
-    first_algo_id = id(algos[0])
-    assert len(algos) == dimension
-    for algo in algos:
-        assert algo.is_trained
+    models = resampling_result[1]
+    first_model_id = id(models[0])
+    assert len(models) == dimension
+    for model in models:
+        assert model.is_trained
 
     predictions = resampling_result[2]
     n_samples = len(linear_regressor.learning_set)
@@ -187,12 +187,12 @@ def test_resampling_result_storage(
     # because the default seed is random (default value: None).
     # For LeaveOneOut, we use the same seed.
     getattr(mse, method)(store_resampling_result=True, **options)
-    algos = linear_regressor.resampling_results[resampler_name][1]
+    models = linear_regressor.resampling_results[resampler_name][1]
     methods_with_random_seed_by_default = ["CrossValidation", "Bootstrap"]
     if resampler_name in methods_with_random_seed_by_default:
-        assert id(algos[0]) != first_algo_id
+        assert id(models[0]) != first_model_id
     else:
-        assert id(algos[0]) == first_algo_id
+        assert id(models[0]) == first_model_id
 
     # 3. Check that a new computation reuses the existing resampling result
     # when using the same seed.
@@ -200,11 +200,11 @@ def test_resampling_result_storage(
         options["seed"] = 1
 
     getattr(mse, method)(store_resampling_result=True, **options)
-    algos = linear_regressor.resampling_results[resampler_name][1]
-    first_algo_id = id(algos[0])
+    models = linear_regressor.resampling_results[resampler_name][1]
+    first_model_id = id(models[0])
     getattr(mse, method)(store_resampling_result=True, **options)
-    algos = linear_regressor.resampling_results[resampler_name][1]
-    assert id(algos[0]) == first_algo_id
+    models = linear_regressor.resampling_results[resampler_name][1]
+    assert id(models[0]) == first_model_id
 
 
 def test_factory() -> None:

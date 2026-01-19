@@ -43,9 +43,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.algos.ot_gpr import OTGaussianProcessRegressor
-from gemseo.mlearning.regression.algos.ot_gpr_settings import CovarianceModel
-from gemseo.mlearning.regression.algos.ot_gpr_settings import Trend
+from gemseo.mlearning.regression.models.ot_gpr import OTGaussianProcessRegressor
+from gemseo.mlearning.regression.models.ot_gpr_settings import CovarianceModel
+from gemseo.mlearning.regression.models.ot_gpr_settings import Trend
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
@@ -115,7 +115,7 @@ def kriging(dataset) -> OTGaussianProcessRegressor:
 def test_class_constants(kriging):
     """Check the class constants."""
     assert kriging.LIBRARY == "OpenTURNS"
-    assert kriging.SHORT_ALGO_NAME == "GPR"
+    assert kriging.SHORT_NAME == "GPR"
 
 
 @pytest.mark.parametrize(

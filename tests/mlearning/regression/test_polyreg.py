@@ -35,7 +35,7 @@ from scipy.special import comb
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 LEARNING_SIZE = 50
@@ -89,7 +89,7 @@ def dataset() -> IODataset:
 
 @pytest.fixture
 def dataset_from_cache() -> IODataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     discipline = AnalyticDiscipline({
         "y_1": "1 + x_1 + x_2**2",
         "y_2": "3 + 4*x_1*x_2 + 5*x_1**3",

@@ -25,8 +25,8 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.algos.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.algos.rbf import RBFRegressor
+from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.rbf import RBFRegressor
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 
 # %%
@@ -75,7 +75,7 @@ dataset_train.add_input_group(x_train[:, newaxis], ["x"])
 dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# and build a [PolynomialRegressor][gemseo.mlearning.regression.algos.polyreg.PolynomialRegressor] with `degree=3` from it:
+# and build a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] with `degree=3` from it:
 polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 
@@ -126,7 +126,7 @@ rbf = RBFRegressor(dataset_train)
 rbf.learn()
 
 # %%
-# The quality of this [RBFRegressor][gemseo.mlearning.regression.algos.rbf.RBFRegressor] is quite good,
+# The quality of this [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor] is quite good,
 # both on the learning side:
 r2_rbf = R2Measure(rbf)
 r2_rbf.compute_learning_measure()

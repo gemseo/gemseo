@@ -15,4 +15,4 @@ search:
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
---8<-- "_docs/surrogate_algos.md"
+--8<-- "_docs/surrogate_models.md"

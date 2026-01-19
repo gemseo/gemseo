@@ -19,10 +19,10 @@ from __future__ import annotations
 from gemseo.mlearning.classification.quality.base_classifier_quality import (
     BaseClassifierQuality,
 )
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
 
 
-class ClassifierQualityFactory(MLAlgoQualityFactory):
+class ClassifierQualityFactory(MLModelQualityFactory):
     """A factory of objects to assess the quality of classifiers."""
 
     _CLASS = BaseClassifierQuality

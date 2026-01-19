@@ -30,10 +30,10 @@ from numpy import newaxis
 from numpy import ones_like
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.algos.random_forest import RandomForestClassifier
-from gemseo.mlearning.clustering.algos.kmeans import KMeans
-from gemseo.mlearning.regression.algos.linreg import LinearRegressor
-from gemseo.mlearning.regression.algos.moe import MOERegressor
+from gemseo.mlearning.classification.models.random_forest import RandomForestClassifier
+from gemseo.mlearning.clustering.models.kmeans import KMeans
+from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.moe import MOERegressor
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -55,7 +55,7 @@ RTOL = 1e-5
 
 @pytest.fixture
 def dataset() -> IODataset:
-    """The dataset used to train the regression algorithms."""
+    """The dataset used to train the regression models."""
     x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
     x_2 = linspace(0, 1, ROOT_LEARNING_SIZE)
     grid_x_1, grid_x_2 = meshgrid(x_1, x_2)
@@ -117,9 +117,9 @@ def model_with_transform(dataset) -> MOERegressor:
 def test_constructor(dataset) -> None:
     """Test construction."""
     moe = MOERegressor(dataset)
-    assert moe.cluster_algo is not None
-    assert moe.classif_algo is not None
-    assert moe.regress_algo is not None
+    assert moe.clusterer_name is not None
+    assert moe.classifier_name is not None
+    assert moe.regressor_name is not None
 
 
 def test_learn(dataset) -> None:
@@ -128,13 +128,13 @@ def test_learn(dataset) -> None:
     moe.learn()
     assert moe.clusterer is not None
     assert moe.classifier is not None
-    assert moe.regress_models is not None
+    assert moe.regressors is not None
     for label in moe.clusterer.labels:
         assert label in moe.labels
     assert len(moe.labels) == len(dataset)
 
 
-def test_set_algos(dataset) -> None:
+def test_set_models(dataset) -> None:
     """Test learn."""
     moe = MOERegressor(dataset)
     moe.set_classifier("RandomForestClassifier")
@@ -143,7 +143,7 @@ def test_set_algos(dataset) -> None:
     moe.learn()
     assert isinstance(moe.clusterer, KMeans)
     assert isinstance(moe.classifier, RandomForestClassifier)
-    for local_model in moe.regress_models:
+    for local_model in moe.regressors:
         assert isinstance(local_model, LinearRegressor)
 
 
@@ -263,21 +263,21 @@ def test_repr_html(model) -> None:
 def test_moe_with_candidates(dataset) -> None:
     moe = MOERegressor(dataset)
 
-    assert not moe.cluster_cands
-    assert not moe.regress_cands
-    assert not moe.classif_cands
+    assert not moe.clustering_candidates
+    assert not moe.regression_candidates
+    assert not moe.classification_candidates
 
     moe.add_clusterer_candidate("GaussianMixture", n_clusters=[5])
-    assert len(moe.cluster_cands) == 1
+    assert len(moe.clustering_candidates) == 1
 
     moe.add_classifier_candidate("SVMClassifier", kernel=["rbf"])
-    assert len(moe.classif_cands) == 1
+    assert len(moe.classification_candidates) == 1
 
     moe.add_regressor_candidate("PolynomialRegressor", degree=[2])
-    assert len(moe.regress_cands) == 1
+    assert len(moe.regression_candidates) == 1
 
     moe.learn()
     assert moe.classifier.__class__.__name__ == "SVMClassifier"
     assert moe.clusterer.__class__.__name__ == "GaussianMixture"
-    for regression_model in moe.regress_models:
+    for regression_model in moe.regressors:
         assert regression_model.__class__.__name__ == "PolynomialRegressor"

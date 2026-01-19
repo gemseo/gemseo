@@ -25,11 +25,11 @@ import pytest
 from numpy import array
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.quality.base_ml_algo_quality import BaseMLAlgoQuality
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
+from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
+from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
 from gemseo.utils.testing.helpers import concretize_classes
 
-from ..core.test_ml_algo import DummyMLAlgo
+from ..core.test_ml_model import DummyMLModel
 
 
 @pytest.fixture(scope="module")
@@ -41,29 +41,29 @@ def dataset() -> IODataset:
 
 
 @pytest.fixture(scope="module")
-def measure(dataset) -> BaseMLAlgoQuality:
-    """The quality measure related to a trained machine learning algorithm."""
-    with concretize_classes(BaseMLAlgoQuality, DummyMLAlgo):
-        return BaseMLAlgoQuality(DummyMLAlgo(dataset))
+def measure(dataset) -> BaseMLModelQuality:
+    """The quality measure related to a trained machine learning model."""
+    with concretize_classes(BaseMLModelQuality, DummyMLModel):
+        return BaseMLModelQuality(DummyMLModel(dataset))
 
 
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_constructor(fit_transformers, dataset) -> None:
     """Test construction."""
-    with concretize_classes(BaseMLAlgoQuality, DummyMLAlgo):
-        measure = BaseMLAlgoQuality(
-            DummyMLAlgo(dataset), fit_transformers=fit_transformers
+    with concretize_classes(BaseMLModelQuality, DummyMLModel):
+        measure = BaseMLModelQuality(
+            DummyMLModel(dataset), fit_transformers=fit_transformers
         )
 
-    assert measure.algo.learning_set.name == "the_dataset"
+    assert measure.model.learning_set.name == "the_dataset"
     assert measure._fit_transformers is fit_transformers
 
 
 def test_is_better() -> None:
-    class MLQualityMeasureToMinimize(BaseMLAlgoQuality):
+    class MLQualityMeasureToMinimize(BaseMLModelQuality):
         SMALLER_IS_BETTER = True
 
-    class MLQualityMeasureToMaximize(BaseMLAlgoQuality):
+    class MLQualityMeasureToMaximize(BaseMLModelQuality):
         SMALLER_IS_BETTER = False
 
     assert MLQualityMeasureToMinimize.is_better(1, 2)
@@ -71,5 +71,5 @@ def test_is_better() -> None:
 
 
 def test_factory() -> None:
-    """Check that the factory of BaseMLAlgoQuality works correctly."""
-    assert MLAlgoQualityFactory().is_available("MSEMeasure")
+    """Check that the factory of BaseMLModelQuality works correctly."""
+    assert MLModelQualityFactory().is_available("MSEMeasure")

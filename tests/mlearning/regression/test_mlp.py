@@ -18,16 +18,16 @@ import pytest
 import sklearn.neural_network
 from numpy import array
 
-from gemseo.mlearning.regression.algos.mlp import MLPRegressor
+from gemseo.mlearning.regression.models.mlp import MLPRegressor
 
 
 def test_init(dataset):
-    """Check that the wrapped algorithm is MLPRegressor from sklearn.
+    """Check that the wrapped  is MLPRegressor from sklearn.
 
     Check also the default number of neurons per hidden layer.
     """
     mlp = MLPRegressor(dataset)
-    assert mlp.SHORT_ALGO_NAME == "MLP"
+    assert mlp.SHORT_NAME == "MLP"
     assert mlp.LIBRARY == "scikit-learn"
     algo = mlp.algo
     assert isinstance(algo, sklearn.neural_network.MLPRegressor)
@@ -57,9 +57,9 @@ def test_fit(dataset, input_data, output_data):
 @pytest.mark.parametrize("output_name", ["rosen", "rosen2"])
 def test_predict(dataset_2, output_name):
     """Check the prediction stage."""
-    algo = MLPRegressor(dataset_2, output_names=[output_name])
-    algo.learn()
+    model = MLPRegressor(dataset_2, output_names=[output_name])
+    model.learn()
     input_data = array([[1.0, 1.0]])
-    assert algo._predict(input_data).shape == (1, algo.output_dimension)
+    assert model._predict(input_data).shape == (1, model.output_dimension)
     with pytest.raises(NotImplementedError):
-        algo.predict_jacobian(input_data)
+        model.predict_jacobian(input_data)
