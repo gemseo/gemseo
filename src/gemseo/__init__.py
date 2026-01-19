@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import logging
+import warnings
 from collections.abc import Collection
 from os import PathLike
 from pathlib import Path
@@ -74,6 +75,7 @@ from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.global_configuration import _configuration as configuration
 from gemseo.utils.logging import _configure_logger
+from gemseo.utils.logging import _is_gemseo_logger as _is_gemseo_logger
 from gemseo.utils.pickle import from_pickle  # noqa: F401
 from gemseo.utils.pickle import to_pickle  # noqa: F401
 
@@ -893,7 +895,6 @@ def create_scenario(
     )
 
 
-# TODO: API: remove and use gemseo.configuration.logging instead.
 def configure_logger(
     logger_name: str = "",
     level: str | int = _LOGGING_LEVEL,
@@ -929,6 +930,18 @@ def configure_logger(
         >>> import logging
         >>> configure_logger(level=logging.WARNING)
     """
+    warnings.warn(
+        "configure_logger() is deprecated; use gemseo.configuration.logging instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    if logger_name == "":
+        configuration.logging.level = level
+        configuration.logging.date_format = date_format
+        configuration.logging.message_format = message_format
+        configuration.logging.file_path = filename
+        configuration.logging.file_mode = filemode
+
     return _configure_logger(
         logger_name, level, message_format, date_format, filename, filemode
     )
@@ -1731,7 +1744,6 @@ def _log_settings() -> str:
     return str(text)
 
 
-# TODO: API: remove and use gemseo.configuration instead.
 def configure(
     enable_discipline_statistics: bool = _ENABLE_DISCIPLINE_STATISTICS,
     enable_function_statistics: bool = _ENABLE_FUNCTION_STATISTICS,
@@ -1767,6 +1779,11 @@ def configure(
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
     """
+    warnings.warn(
+        "configure() is deprecated; use gemseo.configuration instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     configuration.check_desvars_bounds = check_desvars_bounds
     configuration.enable_discipline_cache = enable_discipline_cache
     configuration.enable_discipline_statistics = enable_discipline_statistics
