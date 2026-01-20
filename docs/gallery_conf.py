@@ -55,4 +55,5 @@ conf = {
     # As a precaution, keep the already defined reset modules.
     "reset_modules": DEFAULT_GALLERY_CONF["reset_modules"]
     + ("gallery_logging.reset_logging",),
+    "within_subsection_order": "FileNameSortKey",
 }

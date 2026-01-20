@@ -127,7 +127,7 @@ plt.show()
 # %%
 # ### Plot components
 #
-local_models = model.regress_models
+local_models = model.regressors
 plt.subplot(121)
 plt.plot(local_models[0].transformer["outputs"].components)
 plt.title("1st local model")
