@@ -14,39 +14,41 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Create a discipline from a Python function.
+r"""# Use a Python function
 
-There is a simplified and straightforward way of integrating a discipline
-from a Python function that:
+## Problem
 
-- returns variables,
-  e.g. `return x` or `return x, y`,
-  but no expression like `return a+b` or `return a+b, y`,
-- must have a default value per argument
-  if the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] is used by an `MDA`
-  (deriving from [BaseMDA][gemseo.mda.base_mda.BaseMDA]),
-  as in the case of [MDF][gemseo.formulations.mdf.MDF] and [BiLevel][gemseo.formulations.bilevel.BiLevel] formulations.
+How can I create a discipline from a Python function?
+
+## Solution
+
+Instantiate
+the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] class
+from a function computing the outputs, and possibly a function computing the Jacobian.
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
 
 from numpy import array
 
-from gemseo import create_discipline
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 
 # %%
-# In this example,
-# we will illustrate this feature
-# using the Python function:
+# ### 1. Create the Python function
 
 
 def f(x, y=0.0):
-    """A simple Python function taking float numbers and returning a float number."""
+    """A simple Python function taking float numbers and returning a float number.
+
+    Args:
+        x: The first input variable.
+        y: The second input variable.
+
+    Returns:
+        The Jacobian.
+    """
     z = x + 2 * y
     return z
 
@@ -54,8 +56,9 @@ def f(x, y=0.0):
 # %%
 # !!! warning
 #
-#     Note that the Python function must return one or more *variables*.
-#     The following Python function would not be suitable
+#     Note that the Python function must return
+#     one (e.g. `return z`) or more *variables* (e.g. `return z1, z2`) .
+#     The following Python function is not allowed
 #     as it returns an *expression* instead of a variable:
 #
 #     ``` python
@@ -70,42 +73,28 @@ def f(x, y=0.0):
 #     the arguments and the returned variables of the Python function
 #     are supposed to be either `float` numbers
 #     or NumPy arrays with dimensions greater than 1.
-#     At the end of the example, we will see how to use other types.
+#     At the end of this guide, we will see how to use other types.
 #
-# Then, we can consider the
-# [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] class
-# to wrap this Python function into a [Discipline][gemseo.core.discipline.discipline.Discipline].
-# For that,
-# we can use the [create_discipline()][gemseo.create_discipline] high-level function
-# with the string `"AutoPyDiscipline"` as first argument:
-discipline = create_discipline("AutoPyDiscipline", py_func=f)
+# ### 2. Create the discipline from this function
+discipline = AutoPyDiscipline(f)
 
 # %%
 # The input variables of the discipline are the arguments of the Python function `f`:
 discipline.io.input_grammar.names
+
 # %%
 # the output variables of the discipline are the variables returned by `f`:
 discipline.io.output_grammar.names
+
 # %%
 # and the default input values of the discipline
 # are the default values of the arguments of `f`:
 discipline.io.input_grammar.defaults
 
 # %%
-# !!! note
+# ### 3. Execute the discipline
 #
-#     The argument `x` of the Python function `f` shall have a default value
-#     when the discipline is used by an `MDA` (deriving from [BaseMDA][gemseo.mda.base_mda.BaseMDA]),
-#     as in the case of [MDF][gemseo.formulations.mdf.MDF] and [BiLevel][gemseo.formulations.bilevel.BiLevel] formulations,
-#     in presence of strong couplings.
-#     This is not the case in this example.
-
-# %%
-# ## Execute the discipline
-#
-# Then,
-# we can execute this discipline easily,
-# either considering default input values:
+# Using the default input values (note that sole `"y"` as a default input value):
 discipline.execute({"x": array([1.0])})
 
 # %%
@@ -119,29 +108,29 @@ discipline.execute({"x": array([1.0]), "y": array([-3.2])})
 #     the input data are passed to the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] as NumPy arrays
 #     even if the Python function `f` is expecting `float` numbers.
 #
-# ## Define the Jacobian function
-#
-# Here is an example of a Python function
-# returning the Jacobian matrix as a 2D NumPy array:
+# ### 4. Use a Jacobian function
 
 
 def df(x, y):
-    """Function returning the Jacobian of z=f(x,y)."""
+    """Function returning the Jacobian of z=f(x,y).
+
+    Args:
+        x: The first input variable.
+        y: The second input variable.
+
+    Returns:
+        The Jacobian, shaped as (output_dimension, input_dimension).
+    """
     z = array([[1.0, 2.0]])
     return z
 
 
-# %%
-# We can create a new [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] from `f` and `df`:
-discipline = create_discipline("AutoPyDiscipline", py_func=f, py_jac=df)
-# %%
-# and compute its Jacobian at `{"x": array([1.0]), "y": array([0.0])}`:
+discipline = AutoPyDiscipline(f, py_jac=df)
 discipline.linearize(input_data={"x": array([1.0])}, compute_all_jacobians=True)
-discipline.jac
 
 
 # %%
-# ## Use custom types
+# ### 5.  Use custom types
 #
 # By default,
 # the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] assumes that
@@ -149,7 +138,7 @@ discipline.jac
 # either `float` numbers or NumPy arrays with dimensions greater than 1.
 # This behaviour can be changed in two different ways.
 #
-# ### NumPy arrays
+# #### NumPy arrays
 #
 # We can force [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
 # to consider all arguments and variables as NumPy arrays
@@ -160,11 +149,11 @@ def copy_array(a):
     return a_copy
 
 
-discipline = create_discipline("AutoPyDiscipline", py_func=copy_array, use_arrays=True)
+discipline = AutoPyDiscipline(copy_array, use_arrays=True)
 discipline.execute({"a": array([1.0])})
 
 # %%
-# ### User types
+# #### User types
 #
 # We can also define specific types for each argument and return variable.
 #
@@ -182,13 +171,20 @@ def replicate_string(string: str = "a", n: int = 3) -> str:
     return final_string
 
 
+discipline = AutoPyDiscipline(replicate_string)
+
 # %%
-# Then,
-# we create the discipline:
-discipline = create_discipline("AutoPyDiscipline", py_func=replicate_string)
-# %%
-# execute it with its default input values:
+# Execution with default input values:
 discipline.execute()
+
 # %%
-# and with custom ones:
+# Execution with custom input values:
 discipline.execute({"string": "ab", "n": 5})
+
+# %%
+# ## Summary
+#
+# A discipline can be created
+# from the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] class
+# using Python functions.
+#
