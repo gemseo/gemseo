@@ -120,7 +120,7 @@ class BaseMLSupervisedModel(BaseMLModel):
     """The names of the input variables."""
 
     input_space_center: dict[str, RealArray]
-    """The center of the input space."""
+    """The mapping from the input names to their averaged training values."""
 
     output_names: list[str]
     """The names of the output variables."""

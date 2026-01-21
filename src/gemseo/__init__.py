@@ -883,96 +883,57 @@ def create_scalable(
 
 
 def create_surrogate(
-    surrogate: str | BaseRegressor | BaseRegressorSettings,
+    regressor: str | BaseRegressor | BaseRegressorSettings,
     data: IODataset | None = None,
-    # TODO: API: remove in favor of settings or surrogate as BaseRegressorSettings.
     transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
-    # TODO: API: rename to name.
-    disc_name: str = "",
-    default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
-    input_names: Sequence[str] = (),
-    output_names: Sequence[str] = (),
-    **settings: Any,
+    name: str = "",
 ) -> SurrogateDiscipline:
-    """Create a surrogate discipline.
+    """Create a surrogate model.
+
+    This discipline is based on a regressor.
+    The default input values correspond to
+    the average of the input values used to train the regressor.
 
     Args:
-        surrogate: Either a regressor class name,
-            a regressor instance or regressor settings.
-        data: The dataset to train the regression model.
-            If `None`, the regression model is supposed to be trained.
-        transformer: The strategies to transform the variables.
-            This argument is ignored
-            when `surrogate` is a
-            [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor];
-            in this case,
-            these strategies are defined
-            with the `transformer` argument of this
-            [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor],
-            whose default value is
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
-            which means no transformation.
-            In the other cases,
-            the values of the dictionary are instances of
-            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-            while the keys can be variable names,
-            the group name `"inputs"`
-            or the group name `"outputs"`.
-            If a group name is specified,
-            the
-            [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-            will be applied
-            to all the variables of this group.
-            If
-            [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
-            do not transform the variables.
-            The
-            [BaseRegressor.DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
-            uses the
-            [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]
-            strategy for both input and output variables.
-            This argument is ignored
-            when the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
-        disc_name: The name of the discipline.
+        regressor: Either a regressor, a regressor class name or regressor settings.
+        data: The training dataset.
+            This argument is mandatory when `regressor` is not a regressor.
+            This argument is ignored when `regressor` is a regressor.
+        transformer: The policy to transform the input and output variables.
+            This argument is ignored when `regressor` is a regressor;
+            in this case, the policy is defined by the regressor.
+            This argument is used instead of `regressor.transformer`
+            when `regressor` defines the regressor settings.
+            When used,
+            the input and output variables are scaled between 0 and 1 by default.
+            Use a dictionary to change this behavior.
+            The values of the dictionary are transformers
+            ([BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer])
+            while a key can be either
+            a variable name (apply the transformer to this variable),
+            `"inputs"` (apply the transformer to all the input variables),
+            or `"outputs"` (apply the transformer to all the output variables).
+        name: The name of the discipline.
             If empty,
             the concatenation of the short name of the surrogate algorithm
             and the name of the training dataset is used.
-        default_input_data: The default values of the input variables.
-            If empty,
-            the center of the learning input space is used.
-        input_names: The names of the input variables of the discipline.
-            If empty and `surrogate` is a regressor instance,
-            all input variables of the regressor are used.
-            If empty and `surrogate` is not a regressor instance,
-            all input variables mentioned in the training dataset are used.
-            If the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
-            `surrogate.input_names` is ignored and replaced by `input_names`.
-        output_names: The names of the output variables of the discipline.
-            If empty and `surrogate` is a regressor instance,
-            all output variables of the regressor are used.
-            If empty and `surrogate` is not a regressor instance,
-            all output variables mentioned in the training dataset are used.
-            If the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
-            `surrogate.output_names` is ignored and replaced by `output_names`.
-        **settings: The settings of the machine learning model.
-            These arguments are ignored
-            when the type of `surrogate` is
-            [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
+    from gemseo.mlearning.regression.models.factory import RegressorFactory
 
-    return SurrogateDiscipline(
-        surrogate,
-        data=data,
+    if isinstance(regressor, BaseRegressor):
+        return SurrogateDiscipline(regressor, name=name)
+
+    if isinstance(regressor, str):
+        settings = RegressorFactory().get_class(regressor).Settings()
+    else:
+        settings = regressor
+
+    return SurrogateDiscipline.from_settings(
+        settings,
+        data,
         transformer=transformer,
-        disc_name=disc_name,
-        default_input_data=default_input_data,
-        input_names=input_names,
-        output_names=output_names,
-        **settings,
+        name=name,
     )
 
 

@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
 from gemseo.mlearning.regression.quality.base_regressor_quality import (
     BaseRegressorQuality,
@@ -27,3 +29,7 @@ class RegressorQualityFactory(MLModelQualityFactory):
 
     _CLASS = BaseRegressorQuality
     _PACKAGE_NAMES = ("gemseo.mlearning.regression.quality",)
+
+
+REGRESSOR_QUALITY_FACTORY: Final[RegressorQualityFactory] = RegressorQualityFactory()
+"""The factory for `BaseRegressorQuality` objects."""
