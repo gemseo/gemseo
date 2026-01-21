@@ -24,6 +24,7 @@ from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
+from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
 
 # %%
 # The quality of a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] can easily be quantified
@@ -61,7 +62,9 @@ dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
 # and build a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] from it:
-surrogate_discipline = SurrogateDiscipline("RBFRegressor", dataset_train)
+surrogate_discipline = SurrogateDiscipline.from_settings(
+    RBFRegressor_Settings(), dataset_train
+)
 
 # %%
 # Lastly,

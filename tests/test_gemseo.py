@@ -100,6 +100,8 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mlearning.regression.models.rbf import RBFRegressor
+from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -519,8 +521,9 @@ def test_create_discipline_with_positional_arguments():
     assert discipline.io.data["y"] == 6.0
 
 
-def test_create_surrogate() -> None:
-    """Test the creation of a surrogate discipline."""
+@pytest.fixture(scope="module")
+def training_dataset() -> IODataset:
+    """A training dataset for testing the create_surrogate function."""
     disc = SobieskiMission()
     input_names = ["y_24", "y_34"]
     disc.set_cache(disc.CacheType.MEMORY_FULL)
@@ -528,14 +531,29 @@ def test_create_surrogate() -> None:
     design_space.filter(input_names)
     doe = DOEScenario([disc], "y_4", design_space, formulation_name="DisciplinaryOpt")
     doe.execute(algo_name="PYDOE_FULLFACT", n_samples=10)
-    surr = create_surrogate(
-        "RBFRegressor",
-        disc.cache.to_dataset(),
-        input_names=["y_24", "y_34"],
-    )
-    outs = surr.execute({"y_24": array([1.0]), "y_34": array([1.0])})
+    return disc.cache.to_dataset()
 
-    assert outs["y_4"] > 0.0
+
+@pytest.mark.parametrize("option", [1, 2, 3, 4])
+def test_create_surrogate(training_dataset, option) -> None:
+    """Test the creation of a surrogate discipline."""
+    if option == 1:
+        surrogate = create_surrogate("RBFRegressor", training_dataset, name="foo")
+    elif option == 2:
+        surrogate = create_surrogate(
+            RBFRegressor_Settings(), training_dataset, name="foo"
+        )
+    elif option == 3:
+        regressor = RBFRegressor(training_dataset)
+        surrogate = create_surrogate(regressor, training_dataset, name="foo")
+    else:
+        surrogate = create_surrogate(
+            "RBFRegressor", training_dataset, transformer={}, name="foo"
+        )
+
+    assert surrogate.name == "foo"
+    surrogate.execute({"y_24": array([1.0]), "y_34": array([1.0])})
+    assert surrogate.io.data["y_4"] > 0.0
 
 
 def test_create_scalable() -> None:

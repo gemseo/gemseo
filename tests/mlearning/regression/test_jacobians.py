@@ -41,7 +41,13 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
+from gemseo.mlearning.regression.models.pce_settings import PCERegressor_Settings
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.regression.models.rbf_settings import RBF
+from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.scenarios.doe_scenario import DOEScenario
@@ -178,11 +184,10 @@ def test_regression_model_hessian() -> None:
 @pytest.mark.parametrize("fit_intercept", [True, False])
 def test_linreg(dataset, transformer, fit_intercept) -> None:
     """Test linear regression Jacobians."""
-    discipline = SurrogateDiscipline(
-        "LinearRegressor",
-        data=dataset,
+    discipline = SurrogateDiscipline.from_settings(
+        LinearRegressor_Settings(fit_intercept=fit_intercept),
+        dataset,
         transformer=transformer,
-        fit_intercept=fit_intercept,
     )
     discipline.check_jacobian()
 
@@ -192,12 +197,10 @@ def test_linreg(dataset, transformer, fit_intercept) -> None:
 @pytest.mark.parametrize("degree", arange(1, 5))
 def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
     """Test polynomial regression Jacobians."""
-    discipline = SurrogateDiscipline(
-        "PolynomialRegressor",
-        data=dataset,
+    discipline = SurrogateDiscipline.from_settings(
+        PolynomialRegressor_Settings(fit_intercept=fit_intercept, degree=degree),
+        dataset,
         transformer=transformer,
-        fit_intercept=fit_intercept,
-        degree=degree,
     )
     discipline.check_jacobian()
 
@@ -214,14 +217,11 @@ def _der_r3(x, norx, eps):
 @pytest.mark.parametrize("function", [*list(RBF), _r3])
 def test_rbf(dataset, transformer, function) -> None:
     """Test polynomial regression Jacobians."""
-    der_func = _der_r3 if function is _r3 else None
-
-    discipline = SurrogateDiscipline(
-        "RBFRegressor",
-        data=dataset,
+    der_function = _der_r3 if function is _r3 else None
+    discipline = SurrogateDiscipline.from_settings(
+        RBFRegressor_Settings(function=function, der_function=der_function),
+        dataset,
         transformer=transformer,
-        function=function,
-        der_function=der_func,
     )
     discipline.check_jacobian()
 
@@ -233,7 +233,7 @@ def test_pce(dataset) -> None:
     for input_name in dataset.get_variable_names(dataset.INPUT_GROUP):
         space.add_random_variable(input_name, "OTUniformDistribution")
 
-    discipline = SurrogateDiscipline(
-        "PCERegressor", data=dataset, transformer={}, probability_space=space
+    discipline = SurrogateDiscipline.from_settings(
+        PCERegressor_Settings(probability_space=space), dataset, transformer={}
     )
     discipline.check_jacobian()

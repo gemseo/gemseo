@@ -18,8 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import concatenate
@@ -28,6 +26,9 @@ from numpy.testing import assert_allclose
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
+from gemseo.mlearning.regression.models.gpr_settings import (
+    GaussianProcessRegressor_Settings,
+)
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
 from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
@@ -56,22 +57,16 @@ def dataset():
 @pytest.fixture(scope="module")
 def linear_discipline(dataset) -> SurrogateDiscipline:
     """A surrogate discipline relying on a linear regressor."""
-    return SurrogateDiscipline("LinearRegressor", data=dataset)
+    return SurrogateDiscipline.from_settings(LinearRegressor_Settings(), dataset)
 
 
-@pytest.mark.parametrize("kwargs", [{}, {"disc_name": "foo"}])
+@pytest.mark.parametrize("kwargs", [{}, {"name": "foo"}])
 def test_name(dataset, kwargs):
     """Check the name argument."""
-    surrogate = SurrogateDiscipline("LinearRegressor", data=dataset, **kwargs)
+    surrogate = SurrogateDiscipline.from_settings(
+        LinearRegressor_Settings(), dataset, **kwargs
+    )
     assert surrogate.name == ("foo" if kwargs else "LinReg_func")
-
-
-def test_instantiation_without_data(dataset) -> None:
-    """Check that instantiation without existing model and data raises an error."""
-    with pytest.raises(
-        ValueError, match=re.escape("data is required to train the surrogate model.")
-    ):
-        SurrogateDiscipline("LinearRegressor")
 
 
 def test_linearization_mode_with_gradient(linear_discipline) -> None:
@@ -81,7 +76,9 @@ def test_linearization_mode_with_gradient(linear_discipline) -> None:
 
 def test_linearization_mode_without_gradient(dataset) -> None:
     """Check the attribute linearization_mode for a model without gradient."""
-    discipline = SurrogateDiscipline("GaussianProcessRegressor", data=dataset)
+    discipline = SurrogateDiscipline.from_settings(
+        GaussianProcessRegressor_Settings(), dataset
+    )
     assert discipline.linearization_mode == "finite_differences"
     assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
     assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
@@ -92,15 +89,6 @@ def test_instantiation_from_model(dataset) -> None:
     model = LinearRegressor(dataset)
     model.learn()
     discipline = SurrogateDiscipline(model)
-    assert discipline.linearization_mode == "auto"
-    assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
-    assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
-
-
-def test_instantiation_from_settings(dataset) -> None:
-    """Check the instantiation from BaseRegressorSettings."""
-    discipline = SurrogateDiscipline(LinearRegressor_Settings(), data=dataset)
-    assert isinstance(discipline.regressor, LinearRegressor)
     assert discipline.linearization_mode == "auto"
     assert {"x_1", "x_2"} == set(discipline.io.input_grammar)
     assert {"y_1", "y_2"} == set(discipline.io.output_grammar)
@@ -171,7 +159,9 @@ def test_linearize_warning(linear_discipline, caplog):
 
 def test_parallel_execute(linear_discipline, dataset) -> None:
     """Test the execution of the surrogate discipline in parallel."""
-    other_linear_discipline = SurrogateDiscipline("LinearRegressor", data=dataset)
+    other_linear_discipline = SurrogateDiscipline.from_settings(
+        LinearRegressor_Settings(), dataset
+    )
 
     parallel_execution = DiscParallelExecution(
         [linear_discipline, other_linear_discipline], n_processes=2
@@ -216,9 +206,8 @@ def test_get_error_measure(linear_discipline) -> None:
 
 def test_repr_html(dataset) -> None:
     """Check SurrogateDiscipline._repr_html_."""
-    assert SurrogateDiscipline(
-        "LinearRegressor", dataset
-    )._repr_html_() == REPR_HTML_WRAPPER.format(
+    discipline = SurrogateDiscipline.from_settings(LinearRegressor_Settings(), dataset)
+    assert discipline._repr_html_() == REPR_HTML_WRAPPER.format(
         "Surrogate discipline: LinReg_func<br/>"
         "<ul>"
         "<li>Dataset name: func</li>"
@@ -233,21 +222,16 @@ def test_repr_html(dataset) -> None:
 
 def test_get_quality_viewer(dataset) -> None:
     """Check the method get_quality_viewer()."""
-    discipline = SurrogateDiscipline("LinearRegressor", data=dataset)
+    discipline = SurrogateDiscipline.from_settings(LinearRegressor_Settings(), dataset)
     quality_viewer = discipline.get_quality_viewer()
     assert isinstance(quality_viewer, MLRegressorQualityViewer)
     assert quality_viewer._MLRegressorQualityViewer__regressor == discipline.regressor
 
 
-@pytest.mark.parametrize(
-    "kwargs", [{}, {"default_input_data": {"x_1": array([1.0]), "x_2": array([2.0])}}]
-)
-def test_default_input_data(dataset, kwargs):
-    """Check that default_input_data is used as default input values."""
-    discipline = SurrogateDiscipline("LinearRegressor", data=dataset, **kwargs)
-    defaults = (
-        kwargs["default_input_data"]
-        if kwargs
-        else discipline.regressor.input_space_center
-    )
-    assert discipline.input_grammar.defaults == defaults
+def test_default_input_data(dataset):
+    """Check that the average training input values are used as default input values."""
+    discipline = SurrogateDiscipline.from_settings(LinearRegressor_Settings(), dataset)
+    assert discipline.input_grammar.defaults == {
+        "x_1": array([0.5]),
+        "x_2": array([0.5]),
+    }

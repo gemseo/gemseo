@@ -27,17 +27,15 @@ from typing import Any
 
 from gemseo.core.discipline import Discipline
 from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.models.factory import RegressorFactory
-from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
+from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
+from gemseo.mlearning.regression.quality.factory import REGRESSOR_QUALITY_FACTORY
 from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from collections.abc import Sequence
 
     from numpy import ndarray
 
@@ -55,127 +53,41 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SurrogateDiscipline(Discipline):
-    """A discipline wrapping a regression model built from a dataset."""
+    """A surrogate model used as a discipline.
+
+    This discipline is based on a regressor.
+    The default input values correspond to
+    the average of the input values used to train the regressor.
+    """
 
     regressor: BaseRegressor
     """The regression model called by the surrogate discipline."""
 
     def __init__(
         self,
-        surrogate: str | BaseRegressor | BaseRegressorSettings,
-        data: IODataset | None = None,
-        # TODO: API: remove in favor of settings or surrogate as BaseRegressorSettings.
-        transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
-        # TODO: API: rename to name.
-        disc_name: str = "",
-        default_input_data: dict[str, ndarray] = READ_ONLY_EMPTY_DICT,
-        input_names: Sequence[str] = (),
-        output_names: Sequence[str] = (),
-        **settings: Any,
+        regressor: BaseRegressor,
+        name: str = "",
     ) -> None:
         """
         Args:
-            surrogate: Either a regressor class name,
-                a regressor instance or regressor settings.
-            data: The dataset to train the regression model.
-                If `None`, the regression model is supposed to be trained.
-            transformer: The strategies to transform the variables.
-                This argument is ignored
-                when `surrogate` is a
-                [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor];
-                in this case,
-                these strategies are defined
-                with the `transformer` argument of this
-                [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor],
-                whose default value is
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
-                which means no transformation.
-                In the other cases,
-                the values of the dictionary are instances of
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                while the keys can be variable names,
-                the group name `"inputs"`
-                or the group name `"outputs"`.
-                If a group name is specified,
-                the
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                will be applied
-                to all the variables of this group.
-                If
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER],
-                do not transform the variables.
-                The
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.regression.models.base_regressor.BaseRegressor.DEFAULT_TRANSFORMER]
-                uses the
-                [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]
-                strategy for both input and output variables.
-                This argument is ignored
-                when the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
-            disc_name: The name of the discipline.
+            regressor: A regression model.
+            name: The name of the discipline.
                 If empty,
-                the concatenation of the short name of the surrogate model
-                and the name of the training dataset is used.
-            default_input_data: The default values of the input variables.
-                If empty,
-                the center of the learning input space is used.
-            input_names: The names of the input variables of the discipline.
-                If empty and `surrogate` is a regressor instance,
-                all input variables of the regressor are used.
-                If empty and `surrogate` is not a regressor instance,
-                all input variables mentioned in the training dataset are used.
-                If the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
-                `surrogate.input_names` is ignored and replaced by `input_names`.
-            output_names: The names of the output variables of the discipline.
-                If empty and `surrogate` is a regressor instance,
-                all output variables of the regressor are used.
-                If empty and `surrogate` is not a regressor instance,
-                all output variables mentioned in the training dataset are used.
-                If the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings],
-                `surrogate.output_names` is ignored and replaced by `output_names`.
-            **settings: The settings of the machine learning model.
-                These arguments are ignored
-                when the type of `surrogate` is
-                [BaseRegressorSettings][gemseo.mlearning.regression.models.base_regressor_settings.BaseRegressorSettings].
-
-        Raises:
-            ValueError: If the training dataset is missing
-                whilst the regression model is not trained.
+                the name will concatenate
+                the short name of the regression model
+                and the name of the training dataset.
         """  # noqa: D205, D212, D415
-        if isinstance(surrogate, BaseRegressor):
-            self.regressor = surrogate
-        elif data is None:
-            msg = "data is required to train the surrogate model."
-            raise ValueError(msg)
-        elif isinstance(surrogate, str):
-            self.regressor = RegressorFactory().create(
-                surrogate,
-                data,
-                transformer=transformer,
-                input_names=input_names,
-                output_names=output_names,
-                **settings,
-            )
-        else:
-            surrogate.input_names = input_names
-            surrogate.output_names = output_names
-            self.regressor = RegressorFactory().create(
-                surrogate._TARGET_CLASS_NAME, data, settings_model=surrogate
-            )
-
+        self.regressor = regressor
         if not self.regressor.is_trained:
             self.regressor.learn()
 
-        if not disc_name:
-            disc_name = (
-                f"{self.regressor.SHORT_NAME}_{self.regressor.learning_set.name}"
-            )
+        if not name:
+            name = f"{self.regressor.SHORT_NAME}_{self.regressor.learning_set.name}"
 
-        super().__init__(disc_name)
-        self._initialize_grammars(input_names, output_names)
-        self._set_default_inputs(default_input_data)
+        super().__init__(name)
+        self.io.input_grammar.update_from_names(self.regressor.input_names)
+        self.io.output_grammar.update_from_names(self.regressor.output_names)
+        self.io.input_grammar.defaults = self.regressor.input_space_center
         self.add_differentiated_inputs()
         self.add_differentiated_outputs()
         try:
@@ -183,6 +95,37 @@ class SurrogateDiscipline(Discipline):
             self.linearization_mode = self.LinearizationMode.AUTO
         except NotImplementedError:
             self.linearization_mode = self.LinearizationMode.FINITE_DIFFERENCES
+
+    @classmethod
+    def from_settings(
+        cls,
+        settings: BaseRegressorSettings,
+        data: IODataset | None = None,
+        transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
+        name: str = "",
+    ) -> SurrogateDiscipline:
+        """Create a surrogate discipline from regressor settings.
+
+        Args:
+            settings: The regressor settings.
+            data: The training dataset.
+            transformer: The policy to transform the variables,
+                used instead of `settings.transformer`.
+                By default,
+                the input and output variables are scaled between 0 and 1.
+            name: The name of the discipline.
+                If empty,
+                the name will concatenate
+                the short name of the regressor and the name of the training dataset.
+
+        Returns:
+            The surrogate discipline.
+        """
+        settings.transformer = dict(transformer)
+        regressor = REGRESSOR_FACTORY.create(
+            settings._TARGET_CLASS_NAME, data, settings_model=settings
+        )
+        return cls(regressor, name=name)
 
     def _get_string_representation(self) -> MultiLineString:
         """The string representation of the object."""
@@ -202,39 +145,6 @@ class SurrogateDiscipline(Discipline):
 
     def _repr_html_(self) -> str:
         return self._get_string_representation()._repr_html_()
-
-    def _initialize_grammars(
-        self, input_names: Iterable[str] = (), output_names: Iterable[str] = ()
-    ) -> None:
-        """Initialize the input and output grammars.
-
-        Args:
-            input_names: The names of the discipline inputs.
-                If empty, use all the inputs of the regression model.
-            output_names: The names of the discipline outputs.
-                If empty, use all the outputs of the regression model.
-        """
-        self.io.input_grammar.update_from_names(
-            input_names or self.regressor.input_names
-        )
-        self.io.output_grammar.update_from_names(
-            output_names or self.regressor.output_names
-        )
-
-    def _set_default_inputs(
-        self,
-        default_input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
-    ) -> None:
-        """Set the default values of the inputs.
-
-        Args:
-           default_input_data: The default values of the inputs.
-               If empty, use the center of the learning input space.
-        """
-        if not default_input_data:
-            default_input_data = self.regressor.input_space_center
-
-        self.io.input_grammar.defaults = default_input_data
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.__check_validity_domain(input_data)
@@ -294,6 +204,6 @@ class SurrogateDiscipline(Discipline):
         Returns:
             The error measure.
         """
-        return RegressorQualityFactory().create(
+        return REGRESSOR_QUALITY_FACTORY.create(
             measure_name, self.regressor, **measure_options
         )
