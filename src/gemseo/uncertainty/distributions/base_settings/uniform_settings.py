@@ -60,7 +60,3 @@ class BaseUniformDistributionSettings(BaseDistributionSettings):  # noqa: N801
             raise ValueError(msg)
 
         return self
-
-
-# TODO: API: remove
-BaseUniformDistribution_Settings = BaseUniformDistributionSettings

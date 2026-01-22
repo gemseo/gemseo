@@ -41,7 +41,3 @@ class Augmented_Lagrangian_Order_0_Settings(BaseAugmentedLagrangianSettings):  #
         default=10_000,
         description="""The maximum penalty value.""",
     )
-
-
-# TODO: API: remove
-Augmented_Lagrangian_order_0_Settings = Augmented_Lagrangian_Order_0_Settings

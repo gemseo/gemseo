@@ -76,7 +76,3 @@ class BaseBetaDistributionSettings(BaseDistributionSettings):  # noqa: N801
             raise ValueError(msg)
 
         return self
-
-
-# TODO: API: remove
-BaseBetaDistribution_Settings = BaseBetaDistributionSettings

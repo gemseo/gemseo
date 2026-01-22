@@ -44,7 +44,6 @@ from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
 from gemseo.uncertainty.statistics.ot_parametric_statistics import (
     OTParametricStatistics,
 )
-from gemseo.uncertainty.statistics.parametric_statistics import ParametricStatistics
 from gemseo.uncertainty.statistics.sp_parametric_statistics import (
     SPParametricStatistics,
 )
@@ -105,11 +104,6 @@ def statistics(dataset, tested_distributions) -> OTParametricStatistics:
 def tested_distributions() -> list[str]:
     """The tested distributions."""
     return ["Exponential", "Normal", "Uniform"]
-
-
-def test_parametric_statistics():
-    """Check that ParametricStatistics is OTParametricStatistics."""
-    assert ParametricStatistics is OTParametricStatistics
 
 
 @image_comparison(["pdf_cdf_x_1", "pdf_cdf_x_2", "pdf_cdf_x_3_0", "pdf_cdf_x_3_1"])

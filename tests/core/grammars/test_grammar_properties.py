@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.core.grammars.defaults import Defaults
 from gemseo.core.grammars.grammar_properties import GrammarProperties
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 
@@ -36,11 +35,6 @@ def properties() -> GrammarProperties:
     return GrammarProperties(
         SimpleGrammar("g", names_to_types={"name": None, "other_name": None}), {}
     )
-
-
-def test_defaults():
-    """Verify that Defaults is GrammarProperties."""
-    assert Defaults is GrammarProperties
 
 
 def test_init() -> None:

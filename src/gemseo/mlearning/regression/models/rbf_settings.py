@@ -41,10 +41,6 @@ class RBF(StrEnum):
     THIN_PLATE = "thin_plate"
 
 
-# TODO: API: remove Function.
-Function = RBF
-
-
 class RBFRegressor_Settings(BaseRegressorSettings):  # noqa: N801
     """The settings of the RBF network for regression."""
 

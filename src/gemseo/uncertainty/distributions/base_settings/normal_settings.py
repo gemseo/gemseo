@@ -44,7 +44,3 @@ class BaseNormalDistributionSettings(BaseDistributionSettings):  # noqa: N801
         default=_SIGMA,
         description="The standard deviation of the normal random variable.",
     )
-
-
-# TODO: API: remove
-BaseNormalDistribution_Settings = BaseNormalDistributionSettings

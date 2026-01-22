@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-from gemseo.formulations.bilevel_bcd_settings import BiLevel_BCD_Settings
 from gemseo.formulations.bilevel_bcd_settings import BiLevelBCD_Settings
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
@@ -25,7 +24,6 @@ from gemseo.formulations.mdf_settings import MDF_Settings
 
 __all__ = [
     "BiLevelBCD_Settings",
-    "BiLevel_BCD_Settings",
     "BiLevel_Settings",
     "DisciplinaryOpt_Settings",
     "IDF_Settings",

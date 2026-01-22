@@ -42,7 +42,3 @@ class BiLevelBCD_Settings(BiLevel_Settings):  # noqa: N801
         if not self.bcd_mda_settings.warm_start:
             self.bcd_mda_settings.warm_start = True
         return self
-
-
-# TODO: API: remove
-BiLevel_BCD_Settings = BiLevelBCD_Settings

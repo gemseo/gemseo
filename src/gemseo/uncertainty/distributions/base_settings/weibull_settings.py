@@ -64,7 +64,3 @@ the Weibull minimum extreme value distribution
 or the Weibull maximum extreme value distribution
 (the support of the random variable is $]-\infty[,\gamma]$).""",
     )
-
-
-# TODO: API: remove
-BaseWeibullDistribution_Settings = BaseWeibullDistributionSettings

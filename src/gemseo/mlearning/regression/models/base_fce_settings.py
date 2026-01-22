@@ -71,7 +71,3 @@ The options `use_special_jacobian_data` and `learn_jacobian_data`
             raise ValueError(msg)
 
         return self
-
-
-# TODO: API: remove
-BaseFCERegressor_Settings = BaseFCERegressorSettings
