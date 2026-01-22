@@ -34,7 +34,7 @@ from gemseo.mlearning.regression.models.gradient_boosting_settings import (
 )
 from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.models.mlp_settings import MLPRegressor_Settings
-from gemseo.mlearning.regression.models.moe_settings import MOE_Settings
+from gemseo.mlearning.regression.models.moe_settings import MOERegressor_Settings
 from gemseo.mlearning.regression.models.ot_gpr_settings import (
     OTGaussianProcessRegressor_Settings,
 )
@@ -63,7 +63,7 @@ __all__ = [
     "KNNClassifier_Settings",
     "LinearRegressor_Settings",
     "MLPRegressor_Settings",
-    "MOE_Settings",
+    "MOERegressor_Settings",
     "OTGaussianProcessRegressor_Settings",
     "PCERegressor_Settings",
     "PolynomialRegressor_Settings",

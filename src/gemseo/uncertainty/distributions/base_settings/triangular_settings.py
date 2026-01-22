@@ -68,7 +68,3 @@ class BaseTriangularDistributionSettings(BaseDistributionSettings):  # noqa: N80
             raise ValueError(msg)
 
         return self
-
-
-# TODO: API: remove
-BaseTriangularDistribution_Settings = BaseTriangularDistributionSettings

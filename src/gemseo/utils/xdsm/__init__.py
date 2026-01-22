@@ -15,6 +15,3 @@
 """XDSM (eXtended Design Structure Matrix)."""
 
 from __future__ import annotations
-
-# TODO: API: remove this module.
-from gemseo.utils.xdsm.xdsm import *  # noqa: F403

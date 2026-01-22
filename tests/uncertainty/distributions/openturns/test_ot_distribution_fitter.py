@@ -31,9 +31,6 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
     OTDistributionFitter,
 )
-from gemseo.uncertainty.distributions.openturns.fitting import (
-    OTDistributionFitter as OldOTDistributionFitter,
-)
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
 
@@ -57,11 +54,6 @@ def fitter(data) -> OTDistributionFitter:
 def normal(fitter) -> OTDistribution:
     """The normal distribution fitted from the samples."""
     return fitter.fit("Normal")
-
-
-def test_alias():
-    """Check that the deprecated import."""
-    assert OldOTDistributionFitter is OTDistributionFitter
 
 
 def test_data(fitter, data):

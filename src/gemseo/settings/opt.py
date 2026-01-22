@@ -19,14 +19,8 @@ from __future__ import annotations
 from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (  # noqa: E501 F401
     Augmented_Lagrangian_Order_0_Settings,
 )
-from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (  # noqa: E501 F401
-    Augmented_Lagrangian_order_0_Settings,
-)
 from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (  # noqa:  E501 F401
     Augmented_Lagrangian_Order_1_Settings,
-)
-from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (  # noqa:  E501 F401
-    Augmented_Lagrangian_order_1_Settings,
 )
 from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
@@ -73,8 +67,6 @@ from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_S
 __all__ = [
     "Augmented_Lagrangian_Order_0_Settings",
     "Augmented_Lagrangian_Order_1_Settings",
-    "Augmented_Lagrangian_order_0_Settings",
-    "Augmented_Lagrangian_order_1_Settings",
     "COBYQA_Settings",
     "DIFFERENTIAL_EVOLUTION_Settings",
     "DUAL_ANNEALING_Settings",

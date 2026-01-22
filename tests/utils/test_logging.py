@@ -27,7 +27,6 @@ import pytest
 
 from gemseo.utils.logging import LoggingConfiguration
 from gemseo.utils.logging import LoggingContext
-from gemseo.utils.logging import LoggingContext as _LoggingContext
 from gemseo.utils.logging import OneLineLogging
 
 
@@ -117,11 +116,6 @@ def test_while_false() -> None:
     context = OneLineLogging(logging.root)
     with context:
         pass
-
-
-def test_deprecated_logging_tools():
-    """Check the deprecated module logging_tools."""
-    assert _LoggingContext is LoggingContext
 
 
 def test_configured_loggers():

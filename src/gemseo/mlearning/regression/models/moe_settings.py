@@ -29,7 +29,3 @@ class MOERegressor_Settings(BaseRegressorSettings):  # noqa: N801
     hard: bool = Field(
         default=True, description="Whether to use a hard classification."
     )
-
-
-# TODO: API: Remove.
-MOE_Settings = MOERegressor_Settings

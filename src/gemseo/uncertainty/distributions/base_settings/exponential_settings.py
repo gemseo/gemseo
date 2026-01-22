@@ -44,7 +44,3 @@ class BaseExponentialDistributionSettings(BaseDistributionSettings):  # noqa: N8
         default=_LOC,
         description="The location of the exponential random variable.",
     )
-
-
-# TODO: API: remove
-BaseExponentialDistribution_Settings = BaseExponentialDistributionSettings

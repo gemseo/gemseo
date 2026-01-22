@@ -65,7 +65,3 @@ to the logarithm of the log-normal random variable.
 Otherwise,
 `mu` and `sigma` apply to the log-normal random variable directly.""",
     )
-
-
-# TODO: API: remove
-BaseLogNormalDistribution_Settings = BaseLogNormalDistributionSettings
