@@ -25,6 +25,7 @@ import pytest
 from numpy import allclose
 from numpy import array
 from numpy import inf
+from numpy import int_
 from openturns import NormalCopula
 
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
@@ -98,8 +99,9 @@ def test_str(joint_distribution) -> None:
     )
 
 
-def test_get_sample(joint_distribution) -> None:
-    sample = joint_distribution.compute_samples(3)
+@pytest.mark.parametrize("n_samples", [3, int_(3)])
+def test_get_sample(joint_distribution, n_samples) -> None:
+    sample = joint_distribution.compute_samples(n_samples)
     assert sample.shape == (3, 2)
 
 
