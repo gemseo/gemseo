@@ -27,6 +27,7 @@ import pytest
 from numpy import array
 from numpy import inf
 from numpy import int32
+from numpy import int_
 from numpy import ndarray
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
@@ -102,10 +103,11 @@ def test_str() -> None:
     assert str(distribution) == "Normal(mean=0, var=4)"
 
 
-def test_compute_samples() -> None:
+@pytest.mark.parametrize("n_samples", [3, int_(3)])
+def test_compute_samples(n_samples) -> None:
     RandomGenerator.SetSeed(0)
     distribution = OTDistribution("Normal", (0, 2))
-    sample = distribution.compute_samples(3)
+    sample = distribution.compute_samples(n_samples)
     assert isinstance(sample, ndarray)
     assert sample.ndim == 1
     assert_almost_equal(sample, array([1.216403, -2.532346, -0.876531]), decimal=3)

@@ -76,7 +76,9 @@ class OTJointDistribution(BaseJointDistribution):
         self,
         n_samples: int = 1,
     ) -> RealArray:
-        return array(self.distribution.getSample(n_samples))
+        # We cast the value to int
+        # because getSample does not support numpy.int_.
+        return array(self.distribution.getSample(int(n_samples)))
 
     def compute_cdf(  # noqa: D102
         self,

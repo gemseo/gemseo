@@ -190,7 +190,9 @@ class OTDistribution(
         self.distribution = distribution
 
     def compute_samples(self, n_samples: int = 1) -> RealArray:  # noqa: D102
-        return array(self.distribution.getSample(n_samples)).ravel()
+        # We cast the value to int
+        # because getSample does not support numpy.int_.
+        return array(self.distribution.getSample(int(n_samples))).ravel()
 
     def compute_cdf(self, value: float) -> float:  # noqa: D102
         # We cast the value to float
