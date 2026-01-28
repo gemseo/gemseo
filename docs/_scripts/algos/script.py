@@ -33,10 +33,10 @@ from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.disciplines.factory import DisciplineFactory
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.mda.factory import MDAFactory
-from gemseo.mlearning.classification.models.factory import ClassifierFactory
-from gemseo.mlearning.clustering.models.factory import ClustererFactory
+from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
+from gemseo.mlearning.clustering.models.factory import CLUSTERER_FACTORY
 from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
-from gemseo.mlearning.regression.models.factory import RegressorFactory
+from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
@@ -615,13 +615,13 @@ algos_options_docs = [
     BasePostAlgoOptionsDoc(
         "clustering",
         "Clustering models",
-        ClustererFactory(),
+        CLUSTERER_FACTORY,
         pydantic_model_module_path="settings.mlearning",
     ),
     BasePostAlgoOptionsDoc(
         "classification",
         "Classification models",
-        ClassifierFactory(),
+        CLASSIFIER_FACTORY,
         pydantic_model_module_path="settings.mlearning",
     ),
     InitOptionsDoc(
@@ -695,7 +695,7 @@ for algos_options_doc in algos_options_docs:
 options_doc = BasePostAlgoOptionsDoc(
     "regression",
     "Regression models",
-    RegressorFactory(),
+    REGRESSOR_FACTORY,
     pydantic_model_module_path="settings.mlearning",
 )
 options_doc.to_rst()

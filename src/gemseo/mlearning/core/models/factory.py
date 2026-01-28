@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.mlearning.core.models.ml_model import BaseMLModel
 
@@ -30,3 +32,7 @@ class MLModelFactory(BaseFactory):
 
     _CLASS = BaseMLModel
     _PACKAGE_NAMES = ("gemseo.mlearning",)
+
+
+ML_MODEL_FACTORY: Final[MLModelFactory] = MLModelFactory()
+"""The factory for `BaseMLModel` objects."""

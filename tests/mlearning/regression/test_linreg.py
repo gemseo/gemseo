@@ -35,6 +35,7 @@ from sklearn.linear_model import Ridge
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
 from gemseo.mlearning.transformers.dimension_reduction.pls import PLS
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
@@ -73,7 +74,10 @@ def model(dataset) -> LinearRegressor:
 def model_with_transform(dataset) -> LinearRegressor:
     """A trained LinearRegressor with inputs and outputs scaling."""
     linreg = LinearRegressor(
-        dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        dataset,
+        LinearRegressor_Settings(
+            transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        ),
     )
     linreg.learn()
     return linreg
@@ -94,7 +98,8 @@ def test_constructor(dataset) -> None:
 def test_constructor_penalty(dataset, l2_penalty_ratio, type_) -> None:
     """Test construction."""
     model_ = LinearRegressor(
-        dataset, penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio
+        dataset,
+        LinearRegressor_Settings(penalty_level=0.1, l2_penalty_ratio=l2_penalty_ratio),
     )
     assert isinstance(model_.algo, type_)
     model_.learn()
@@ -149,7 +154,9 @@ def test_reduced_io_dimensions(
     reduced_output_dimension,
 ):
     """Check the reduced input and output dimensions."""
-    regressor = LinearRegressor(dataset, transformer={key: transformer})
+    regressor = LinearRegressor(
+        dataset, LinearRegressor_Settings(transformer={key: transformer})
+    )
     assert regressor.input_dimension == input_dimension
     assert regressor.output_dimension == output_dimension
     assert regressor._reduced_input_dimension == reduced_input_dimension
@@ -162,7 +169,10 @@ def test_coefficients_with_transform(dataset, model_with_transform) -> None:
     model_with_transform.get_coefficients(as_dict=True)
 
     model_with_pca = LinearRegressor(
-        dataset, transformer={dataset.OUTPUT_GROUP: PCA(n_components=1)}
+        dataset,
+        LinearRegressor_Settings(
+            transformer={dataset.OUTPUT_GROUP: PCA(n_components=1)}
+        ),
     )
     model_with_pca.learn()
     model_with_pca.get_coefficients(as_dict=False)
@@ -191,7 +201,9 @@ def test_intercept_false(model) -> None:
 
 def test_intercept_with_output_dimension_change(dataset) -> None:
     """Verify that an error is raised."""
-    model = LinearRegressor(dataset, transformer={"outputs": PCA(n_components=2)})
+    model = LinearRegressor(
+        dataset, LinearRegressor_Settings(transformer={"outputs": PCA(n_components=2)})
+    )
     model.learn()
     with pytest.raises(
         ValueError,
@@ -240,7 +252,9 @@ def test_prediction_with_transform(model_with_transform) -> None:
 
 def test_prediction_with_pls(dataset) -> None:
     """Test prediction."""
-    model = LinearRegressor(dataset, transformer={"inputs": PLS(n_components=2)})
+    model = LinearRegressor(
+        dataset, LinearRegressor_Settings(transformer={"inputs": PLS(n_components=2)})
+    )
     model.learn()
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     another_input_value = {
@@ -259,7 +273,9 @@ def test_prediction_with_pls(dataset) -> None:
 
 def test_prediction_with_pls_failure(dataset) -> None:
     """Test that PLS does not work with output group."""
-    model = LinearRegressor(dataset, transformer={"outputs": PLS(n_components=2)})
+    model = LinearRegressor(
+        dataset, LinearRegressor_Settings(transformer={"outputs": PLS(n_components=2)})
+    )
     with pytest.raises(
         NotImplementedError,
         match=re.escape(

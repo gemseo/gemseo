@@ -52,21 +52,23 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.mlearning.core.calibration import MLModelCalibration
-from gemseo.mlearning.core.models.factory import MLModelFactory
+from gemseo.mlearning.core.models.factory import ML_MODEL_FACTORY
 from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
 from gemseo.mlearning.core.quality.factory import MLModelQualityFactory
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Sequence
 
+    from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
+    from gemseo.mlearning.core.models.factory import MLModelFactory
     from gemseo.mlearning.core.models.ml_model import BaseMLModel
+    from gemseo.mlearning.core.models.ml_model_settings import BaseMLModelSettings
     from gemseo.mlearning.core.quality.base_ml_model_quality import (
         OptionType as MeasureOptionType,
     )
-    from gemseo.scenarios.base_scenario import ScenarioInputDataType
 
 
 class MLModelSelection:
@@ -122,7 +124,7 @@ class MLModelSelection:
 
         self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.measure_options = dict(samples=samples, **measure_options)
-        self.factory = MLModelFactory()
+        self.factory = ML_MODEL_FACTORY
 
         self.candidates = []
 
@@ -136,54 +138,46 @@ class MLModelSelection:
 
     def add_candidate(
         self,
-        name: str,
+        settings: BaseMLModelSettings,
         calibration_space: DesignSpace | None = None,
-        calibration_algorithm: ScenarioInputDataType = READ_ONLY_EMPTY_DICT,
-        **options: Any,
+        calibration_settings: BaseDriverSettings | None = None,
+        **settings_catalogs: Iterable[Any],
     ) -> None:
         """Add a machine learning model candidate.
 
         Args:
-            name: The name of a machine learning model.
-            calibration_space: The design space
-                defining the parameters to be calibrated
-                with an
-                [MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration].
-                If `None`, do not perform calibration.
-            calibration_algorithm: The name and the parameters
-                of the optimization algorithm,
-                e.g. {"algo_name": "PYDOE_FULLFACT", "n_samples": 10}.
-                If empty, do not perform calibration.
-            **options: The parameters
-                for the machine learning model candidate.
-                Each parameter has to be enclosed within a list.
-                The list may contain different values
-                to try out for the given parameter,
-                or only one.
+            settings: The settings of the machine learning model candidate.
+            calibration_space: The space defining the settings to calibrate, if any.
+            calibration_settings: The settings of the driver for calibration.
+            **settings_catalogs: The catalogs of settings.
+                Unlike the settings to calibrate,
+                these settings are optimized using a grid search over the catalogs.
         """
-        keys, values = options.keys(), options.values()
+        keys, values = settings_catalogs.keys(), settings_catalogs.values()
 
         # Set initial quality to the worst possible value
         quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
 
         for prodvalues in product(*values):
             params = dict(zip(keys, prodvalues, strict=False))
+            for class_name, value in params.items():
+                setattr(settings, class_name, value)
             if calibration_space:
                 ml_model_calibration = MLModelCalibration(
-                    name,
+                    settings,
                     self.dataset,
-                    calibration_space,
                     calibration_space,
                     self.measure,
                     measure_evaluation_method_name=self.__measure_evaluation_method_name,
                     measure_options=self.measure_options,
-                    **params,
                 )
-                ml_model_calibration.execute(**calibration_algorithm)
+                ml_model_calibration.execute(calibration_settings)
                 model_new = ml_model_calibration.optimal_model
                 quality_new = ml_model_calibration.optimal_criterion
             else:
-                model_new = self.factory.create(name, data=self.dataset, **params)
+                model_new = self.factory.create(
+                    settings._TARGET_CLASS_NAME, self.dataset, settings=settings
+                )
                 quality_measurer = self.measure(model_new)
                 compute_quality_measure = getattr(
                     quality_measurer,

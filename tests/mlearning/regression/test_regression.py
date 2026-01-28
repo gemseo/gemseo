@@ -35,12 +35,11 @@ from gemseo import from_pickle
 from gemseo import to_pickle
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.models.factory import RegressorFactory
+from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
-
-FACTORY = RegressorFactory()
 
 INPUT_VALUE = array([0.4, 1.8])
 
@@ -120,7 +119,9 @@ def dataset_for_jacobian() -> IODataset:
 def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
     """Test predict Jacobian."""
     transformer = {} if not groups else dict.fromkeys(groups, "MinMaxScaler")
-    ml_model = LinearRegressor(dataset_for_jacobian, transformer=transformer)
+    ml_model = LinearRegressor(
+        dataset_for_jacobian, LinearRegressor_Settings(transformer=transformer)
+    )
     ml_model.learn()
     jac = ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
     assert allclose(jac["y_1"]["x_1"], array([[1.0], [-1.0]]))
@@ -137,14 +138,15 @@ def test_predict_jacobian_failure(dataset_for_jacobian, variable) -> None:
         "or do not use data transformation."
     )
     ml_model = LinearRegressor(
-        dataset_for_jacobian, transformer={variable: "MinMaxScaler"}
+        dataset_for_jacobian,
+        LinearRegressor_Settings(transformer={variable: "MinMaxScaler"}),
     )
     ml_model.learn()
     with pytest.raises(NotImplementedError, match=expected):
         ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
 
 
-CLASS_NAMES = FACTORY.class_names
+CLASS_NAMES = REGRESSOR_FACTORY.class_names
 CLASS_NAMES.remove("OTGaussianProcessRegressor")
 # test_pickle succeeds with OTGaussianProcessRegressor when run separately
 # but fails when run with the other tests. To be investigated.
@@ -157,14 +159,14 @@ def test_pickle(
 ):
     """Check that regression models are picklable."""
     # Prevent failure when testing in environments with plugins.
-    if not FACTORY.get_class(class_name).__module__.startswith("gemseo."):
+    if not REGRESSOR_FACTORY.get_class(class_name).__module__.startswith("gemseo."):
         return
     if class_name in ["PCERegressor", "FCERegressor"]:
         rosenbrock_dataset.misc["input_space"] = probability_space
 
-    reference_model = FACTORY.create(class_name, rosenbrock_dataset)
+    reference_model = REGRESSOR_FACTORY.create(class_name, rosenbrock_dataset)
     if class_name == "RegressorChain":
-        reference_model.add_regressor("LinearRegressor")
+        reference_model.add_regressor(LinearRegressor_Settings())
 
     if before_training:
         to_pickle(reference_model, "model.pkl")

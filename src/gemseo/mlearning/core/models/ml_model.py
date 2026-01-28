@@ -195,27 +195,20 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         data: Dataset,
-        settings_model: BaseMLModelSettings | None = None,
-        **settings: Any,
+        settings: BaseMLModelSettings | None = None,
     ) -> None:
         """
         Args:
             data: The training dataset.
-            settings_model: The  machine learning model settings
-                as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The machine learning model settings.
-                These arguments are ignored when `settings_model` is not `None`.
+            settings: The machine learning model settings.
+                If `None`, use the default settings.
 
         Raises:
             ValueError: When both the variable and the group it belongs to
                 have a transformer.
         """  # noqa: D205 D212
-        self._settings = create_model(
-            self.Settings, settings_model=settings_model, **settings
-        )
-        settings = self._settings.model_dump()
-        transformer = settings.pop("transformer")
+        self._settings = create_model(self.Settings, settings_model=settings)
+        transformer = self._settings.transformer
         self.resampling_results = {}
         self.learning_set = data
         self.transformer = {}

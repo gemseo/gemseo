@@ -26,6 +26,9 @@ from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.core.models.unsupervised import BaseMLUnsupervisedModel
+from gemseo.mlearning.core.models.unsupervised_settings import (
+    BaseMLUnsupervisedModelSettings,
+)
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.utils.testing.helpers import concretize_classes
 
@@ -55,8 +58,10 @@ def test_variable_limitation(dataset) -> None:
     with concretize_classes(BaseMLUnsupervisedModel):
         ml_model_limited = BaseMLUnsupervisedModel(
             dataset,
-            transformer={"x_1": MinMaxScaler(), "x_2": MinMaxScaler()},
-            var_names=["x_1"],
+            BaseMLUnsupervisedModelSettings(
+                transformer={"x_1": MinMaxScaler(), "x_2": MinMaxScaler()},
+                var_names=["x_1"],
+            ),
         )
 
     assert ml_model_limited.var_names == ["x_1"]

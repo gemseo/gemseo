@@ -30,6 +30,7 @@ from numpy import zeros
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.models.svm import SVMClassifier
+from gemseo.mlearning.classification.models.svm_settings import SVMClassifier_Settings
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 N_INPUTS = 2
@@ -63,7 +64,7 @@ def dataset() -> IODataset:
 @pytest.fixture
 def model(dataset) -> SVMClassifier:
     """A trained SVMClassifier with two outputs, y_1 and y_2."""
-    svm = SVMClassifier(dataset, probability=True)
+    svm = SVMClassifier(dataset, SVMClassifier_Settings(probability=True))
     svm.learn()
     return svm
 
@@ -72,7 +73,10 @@ def model(dataset) -> SVMClassifier:
 def model_with_transform(dataset) -> SVMClassifier:
     """A trained SVMClassifier using input scaling."""
     svm = SVMClassifier(
-        dataset, transformer={"inputs": MinMaxScaler()}, probability=True
+        dataset,
+        SVMClassifier_Settings(
+            transformer={"inputs": MinMaxScaler()}, probability=True
+        ),
     )
     svm.learn()
     return svm

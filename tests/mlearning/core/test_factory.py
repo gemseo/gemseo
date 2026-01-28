@@ -25,7 +25,7 @@ import pytest
 from numpy import arange
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.models.factory import MLModelFactory
+from gemseo.mlearning.core.models.factory import ML_MODEL_FACTORY
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
 
 LEARNING_SIZE = 9
@@ -56,23 +56,22 @@ def test_constructor() -> None:
         "RandomForestClassifier",
         "RandomForestRegressor",
         "SVMClassifier",
-    } <= set(MLModelFactory().class_names)
+    } <= set(ML_MODEL_FACTORY.class_names)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = MLModelFactory()
-    assert isinstance(factory.create("LinearRegressor", data=dataset), LinearRegressor)
+    assert isinstance(
+        ML_MODEL_FACTORY.create("LinearRegressor", data=dataset), LinearRegressor
+    )
 
 
 def test_available_models() -> None:
     """Test the getter of available regression models."""
-    factory = MLModelFactory()
-    assert factory.is_available("KMeans")
+    assert ML_MODEL_FACTORY.is_available("KMeans")
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    factory = MLModelFactory()
-    assert factory.is_available("PolynomialRegressor")
-    assert not factory.is_available("Dummy")
+    assert ML_MODEL_FACTORY.is_available("PolynomialRegressor")
+    assert not ML_MODEL_FACTORY.is_available("Dummy")

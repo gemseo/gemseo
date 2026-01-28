@@ -21,7 +21,11 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.regression.models.regressor_chain import RegressorChain
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
@@ -30,8 +34,8 @@ from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 def model(dataset) -> RegressorChain:
     """A regressor chain model for the Rosenbrock dataset."""
     model = RegressorChain(dataset)
-    model.add_regressor("LinearRegressor")
-    model.add_regressor("PolynomialRegressor", degree=2)
+    model.add_regressor(LinearRegressor_Settings())
+    model.add_regressor(PolynomialRegressor_Settings(degree=2))
     return model
 
 
@@ -45,7 +49,7 @@ def standard_model(model) -> RegressorChain:
 @pytest.fixture(scope="module")
 def improved_model(model) -> RegressorChain:
     """A polynomial chain model with degree 4."""
-    model.add_regressor("PolynomialRegressor", degree=4)
+    model.add_regressor(PolynomialRegressor_Settings(degree=4))
     model.learn()
     return model
 

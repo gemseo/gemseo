@@ -19,6 +19,7 @@ from numpy import array
 from sklearn.svm import SVR
 
 from gemseo.mlearning.regression.models.svm import SVMRegressor
+from gemseo.mlearning.regression.models.svm_settings import SVMRegressor_Settings
 
 
 def test_init(dataset):
@@ -33,7 +34,7 @@ def test_init(dataset):
 
 def test_init_kernel(dataset):
     """Check that the kernel can be changed."""
-    for algo in SVMRegressor(dataset, kernel="linear").algo:
+    for algo in SVMRegressor(dataset, SVMRegressor_Settings(kernel="linear")).algo:
         assert algo.kernel == "linear"
 
 

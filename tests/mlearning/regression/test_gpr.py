@@ -38,6 +38,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.models.gpr_settings import (
+    GaussianProcessRegressor_Settings,
+)
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -65,7 +68,9 @@ def dataset() -> Dataset:
 @pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
 def model(request, dataset) -> GaussianProcessRegressor:
     """A trained GaussianProcessRegressor."""
-    gpr = GaussianProcessRegressor(dataset, transformer=request.param)
+    gpr = GaussianProcessRegressor(
+        dataset, GaussianProcessRegressor_Settings(transformer=request.param)
+    )
     gpr.learn()
     return gpr
 
@@ -73,7 +78,9 @@ def model(request, dataset) -> GaussianProcessRegressor:
 @pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
 def model_1d(request, dataset) -> GaussianProcessRegressor:
     """A trained GaussianProcessRegressor with 1d output."""
-    gpr = GaussianProcessRegressor(dataset, output_names=["y_1"])
+    gpr = GaussianProcessRegressor(
+        dataset, GaussianProcessRegressor_Settings(output_names=["y_1"])
+    )
     gpr.learn()
     return gpr
 
@@ -156,7 +163,9 @@ def test_predict_std_shape(model, x_1, x_2) -> None:
 )
 def test_bounds(dataset, bounds, expected) -> None:
     """Verify that bounds are correctly passed to the default kernel."""
-    model = GaussianProcessRegressor(dataset, bounds=bounds)
+    model = GaussianProcessRegressor(
+        dataset, GaussianProcessRegressor_Settings(bounds=bounds)
+    )
     assert model.algo.kernel.length_scale_bounds == expected
 
 
@@ -246,7 +255,10 @@ def test_compute_samples(
     transformer,
 ):
     """Test the method compute_samples."""
-    model = GaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model = GaussianProcessRegressor(
+        dataset,
+        GaussianProcessRegressor_Settings(transformer=transformer, **init_options),
+    )
     model.learn()
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     samples = model.compute_samples(input_data, 2, **compute_options)

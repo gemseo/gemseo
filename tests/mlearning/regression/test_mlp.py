@@ -19,6 +19,7 @@ import sklearn.neural_network
 from numpy import array
 
 from gemseo.mlearning.regression.models.mlp import MLPRegressor
+from gemseo.mlearning.regression.models.mlp_settings import MLPRegressor_Settings
 
 
 def test_init(dataset):
@@ -36,13 +37,15 @@ def test_init(dataset):
 
 def test_init_hidden_layer_sizes(dataset):
     """Check that the hidden layer sizes can be changed."""
-    algo = MLPRegressor(dataset, hidden_layer_sizes=(3, 2)).algo
+    algo = MLPRegressor(dataset, MLPRegressor_Settings(hidden_layer_sizes=(3, 2))).algo
     assert algo.hidden_layer_sizes == (3, 2)
 
 
 def test_init_parameter(dataset):
     """Check that a sklearn parameter can be changed."""
-    algo = MLPRegressor(dataset, parameters={"activation": "identity"}).algo
+    algo = MLPRegressor(
+        dataset, MLPRegressor_Settings(parameters={"activation": "identity"})
+    ).algo
     assert algo.activation == "identity"
 
 
@@ -57,7 +60,7 @@ def test_fit(dataset, input_data, output_data):
 @pytest.mark.parametrize("output_name", ["rosen", "rosen2"])
 def test_predict(dataset_2, output_name):
     """Check the prediction stage."""
-    model = MLPRegressor(dataset_2, output_names=[output_name])
+    model = MLPRegressor(dataset_2, MLPRegressor_Settings(output_names=[output_name]))
     model.learn()
     input_data = array([[1.0, 1.0]])
     assert model._predict(input_data).shape == (1, model.output_dimension)

@@ -28,7 +28,11 @@ from numpy import newaxis
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.regression.quality.factory import RegressorQualityFactory
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
@@ -44,7 +48,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 def test_resampling_based_measure(method) -> None:
     """Check that a resampling-based measure does not re-train the model but a copy."""
     dataset = create_rosenbrock_dataset(opt_naming=False)
-    model = PolynomialRegressor(dataset, degree=2)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = MSEMeasure(model)
     getattr(measure, method)()
     assert list(model.learning_samples_indices) == list(range(len(dataset)))
@@ -111,7 +115,8 @@ def test_subset_of_inputs_and_outputs(
         kwargs["test_data"] = test_dataset
 
     model = LinearRegressor(
-        learning_dataset, input_names=input_names, output_names=output_names
+        learning_dataset,
+        LinearRegressor_Settings(input_names=input_names, output_names=output_names),
     )
     if not (measure_cls == R2Measure and method == "compute_bootstrap_measure"):
         measure = measure_cls(model)

@@ -189,7 +189,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The new machine learning model.
         """
-        sub_model = model.__class__(model.learning_set, settings_model=model._settings)
+        sub_model = model.__class__(model.learning_set, settings=model._settings)
         sub_model.transformer = model.transformer
         return sub_model
 

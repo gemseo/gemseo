@@ -154,8 +154,7 @@ class PCERegressor(BaseFCERegressor):
     def __init__(
         self,
         data: IODataset,
-        settings_model: PCERegressor_Settings | None = None,
-        **settings: Any,
+        settings: PCERegressor_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -178,9 +177,7 @@ class PCERegressor(BaseFCERegressor):
                 or when a probability distribution is not an
                 [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
         """  # noqa: D205 D212
-        settings_ = create_model(
-            self.Settings, settings_model=settings_model, **settings
-        )
+        settings_ = create_model(self.Settings, settings_model=settings)
         cleaning_options = settings_.cleaning_options
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
@@ -208,7 +205,7 @@ class PCERegressor(BaseFCERegressor):
         if settings_.probability_space is not None:
             data.misc["input_space"] = settings_.probability_space
 
-        super().__init__(data, settings_model=settings_)
+        super().__init__(data, settings=settings_)
 
         probability_space = data.misc["input_space"]
         if self._settings.use_quadrature and data.empty:

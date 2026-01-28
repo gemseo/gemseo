@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mlearning.classification.models.factory import ClassifierFactory
+from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
 from gemseo.mlearning.classification.models.knn import KNNClassifier
 from gemseo.problems.dataset.iris import create_iris_dataset
 
@@ -40,9 +40,8 @@ def dataset() -> IODataset:
 
 def test_constructor() -> None:
     """Test factory constructor."""
-    factory = ClassifierFactory()
     # plugins may add classes
-    assert set(factory.class_names) <= {
+    assert set(CLASSIFIER_FACTORY.class_names) <= {
         "KNNClassifier",
         "RandomForestClassifier",
         "SVMClassifier",
@@ -51,12 +50,12 @@ def test_constructor() -> None:
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = ClassifierFactory()
-    assert isinstance(factory.create("KNNClassifier", data=dataset), KNNClassifier)
+    assert isinstance(
+        CLASSIFIER_FACTORY.create("KNNClassifier", data=dataset), KNNClassifier
+    )
 
 
 def test_is_available() -> None:
     """Test the existence of a classification model."""
-    factory = ClassifierFactory()
-    assert factory.is_available("KNNClassifier")
-    assert not factory.is_available("Dummy")
+    assert CLASSIFIER_FACTORY.is_available("KNNClassifier")
+    assert not CLASSIFIER_FACTORY.is_available("Dummy")

@@ -30,10 +30,24 @@ from numpy import newaxis
 from numpy import ones_like
 
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.mlearning.classification.models.knn_settings import KNNClassifier_Settings
 from gemseo.mlearning.classification.models.random_forest import RandomForestClassifier
+from gemseo.mlearning.classification.models.random_forest_settings import (
+    RandomForestClassifier_Settings,
+)
+from gemseo.mlearning.classification.models.svm_settings import SVMClassifier_Settings
+from gemseo.mlearning.clustering.models.gaussian_mixture_settings import (
+    GaussianMixture_Settings,
+)
 from gemseo.mlearning.clustering.models.kmeans import KMeans
+from gemseo.mlearning.clustering.models.kmeans_settings import KMeans_Settings
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.models.moe import MOERegressor
+from gemseo.mlearning.regression.models.moe_settings import MOERegressor_Settings
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.mlearning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
@@ -85,7 +99,7 @@ def dataset() -> IODataset:
 def model(dataset) -> MOERegressor:
     """A trained MOERegressor."""
     moe = MOERegressor(dataset)
-    moe.set_clusterer("KMeans", n_clusters=2)
+    moe.set_clusterer(KMeans_Settings(n_clusters=2))
     moe.learn()
     return moe
 
@@ -93,8 +107,8 @@ def model(dataset) -> MOERegressor:
 @pytest.fixture
 def model_soft(dataset) -> MOERegressor:
     """A trained MOERegressor with soft classification."""
-    moe = MOERegressor(dataset, hard=False)
-    moe.set_clusterer("KMeans", n_clusters=2)
+    moe = MOERegressor(dataset, MOERegressor_Settings(hard=False))
+    moe.set_clusterer(KMeans_Settings(n_clusters=2))
     moe.learn()
     return moe
 
@@ -103,12 +117,16 @@ def model_soft(dataset) -> MOERegressor:
 def model_with_transform(dataset) -> MOERegressor:
     """A trained MOERegressor with inputs and outputs scaling."""
     moe = MOERegressor(
-        dataset, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        dataset,
+        MOERegressor_Settings(
+            transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        ),
     )
-    moe.set_clusterer("KMeans", n_clusters=2)
+    moe.set_clusterer(KMeans_Settings(n_clusters=2))
     moe.set_regressor(
-        "LinearRegressor",
-        transformer={"inputs": Scaler(offset=5), "outputs": Scaler(coefficient=-1)},
+        LinearRegressor_Settings(
+            transformer={"inputs": Scaler(offset=5), "outputs": Scaler(coefficient=-1)}
+        )
     )
     moe.learn()
     return moe
@@ -117,9 +135,9 @@ def model_with_transform(dataset) -> MOERegressor:
 def test_constructor(dataset) -> None:
     """Test construction."""
     moe = MOERegressor(dataset)
-    assert moe.clusterer_name is not None
-    assert moe.classifier_name is not None
-    assert moe.regressor_name is not None
+    assert moe.clusterer_settings == KMeans_Settings()
+    assert moe.classifier_settings == KNNClassifier_Settings()
+    assert moe.regressor_settings == LinearRegressor_Settings()
 
 
 def test_learn(dataset) -> None:
@@ -137,9 +155,9 @@ def test_learn(dataset) -> None:
 def test_set_models(dataset) -> None:
     """Test learn."""
     moe = MOERegressor(dataset)
-    moe.set_classifier("RandomForestClassifier")
-    moe.set_clusterer("KMeans", n_clusters=3)
-    moe.set_regressor("LinearRegressor", fit_intercept=False)
+    moe.set_classifier(RandomForestClassifier_Settings())
+    moe.set_clusterer(KMeans_Settings(n_clusters=3))
+    moe.set_regressor(LinearRegressor_Settings(fit_intercept=False))
     moe.learn()
     assert isinstance(moe.clusterer, KMeans)
     assert isinstance(moe.classifier, RandomForestClassifier)
@@ -267,13 +285,13 @@ def test_moe_with_candidates(dataset) -> None:
     assert not moe.regression_candidates
     assert not moe.classification_candidates
 
-    moe.add_clusterer_candidate("GaussianMixture", n_clusters=[5])
+    moe.add_clusterer_candidate(GaussianMixture_Settings(n_clusters=5))
     assert len(moe.clustering_candidates) == 1
 
-    moe.add_classifier_candidate("SVMClassifier", kernel=["rbf"])
+    moe.add_classifier_candidate(SVMClassifier_Settings(kernel="rbf"))
     assert len(moe.classification_candidates) == 1
 
-    moe.add_regressor_candidate("PolynomialRegressor", degree=[2])
+    moe.add_regressor_candidate(PolynomialRegressor_Settings(degree=2))
     assert len(moe.regression_candidates) == 1
 
     moe.learn()

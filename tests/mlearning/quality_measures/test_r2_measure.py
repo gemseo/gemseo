@@ -28,6 +28,9 @@ import pytest
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.regression.quality.r2_measure import R2Measure
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
@@ -85,20 +88,21 @@ def test_constructor(dataset) -> None:
 
 def test_compute_learning_measure(dataset) -> None:
     """Test evaluate learn method."""
-    model = PolynomialRegressor(dataset, degree=2)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_2
 
-    model = PolynomialRegressor(dataset, degree=1)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
     assert r2_train > 1 - TOL_DEG_1
 
     model = PolynomialRegressor(
         dataset,
-        degree=2,
-        transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
+        PolynomialRegressor_Settings(
+            degree=2, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        ),
     )
     measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
@@ -107,20 +111,21 @@ def test_compute_learning_measure(dataset) -> None:
 
 def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
-    model = PolynomialRegressor(dataset, degree=2)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_2
 
-    model = PolynomialRegressor(dataset, degree=1)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
     assert r2_test > 1 - TOL_DEG_1
 
     model = PolynomialRegressor(
         dataset,
-        degree=2,
-        transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
+        PolynomialRegressor_Settings(
+            degree=2, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        ),
     )
     measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
@@ -129,12 +134,12 @@ def test_compute_test_measure(dataset, dataset_test) -> None:
 
 def test_compute_leave_one_out_measure(dataset) -> None:
     """Test evaluate leave one out method."""
-    model = PolynomialRegressor(dataset, degree=2)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_loo = measure.compute_leave_one_out_measure()
     assert r2_loo > 1 - TOL_DEG_2
 
-    model = PolynomialRegressor(dataset, degree=1)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_loo = measure.compute_leave_one_out_measure()
     assert r2_loo < 1 - TOL_DEG_3
@@ -142,20 +147,21 @@ def test_compute_leave_one_out_measure(dataset) -> None:
 
 def test_compute_cross_validation_measure(dataset) -> None:
     """Test evaluate k-folds method."""
-    model = PolynomialRegressor(dataset, degree=2)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds > 1 - TOL_DEG_2
 
-    model = PolynomialRegressor(dataset, degree=1)
+    model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
     assert r2_kfolds < 1 - TOL_DEG_3
 
     model = PolynomialRegressor(
         dataset,
-        degree=2,
-        transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()},
+        PolynomialRegressor_Settings(
+            degree=2, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
+        ),
     )
     measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
@@ -164,7 +170,9 @@ def test_compute_cross_validation_measure(dataset) -> None:
 
 def test_compute_bootstrap_measure(dataset) -> None:
     """Test evaluate bootstrap method."""
-    r2_measure = R2Measure(PolynomialRegressor(dataset, degree=2))
+    r2_measure = R2Measure(
+        PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
+    )
     assert r2_measure.compute_bootstrap_measure() == pytest.approx(1.0)
 
 

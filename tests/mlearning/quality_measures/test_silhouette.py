@@ -28,6 +28,7 @@ from numpy import arange
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.models.kmeans import KMeans
+from gemseo.mlearning.clustering.models.kmeans_settings import KMeans_Settings
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 
 
@@ -52,7 +53,7 @@ def dataset_test() -> Dataset:
 @pytest.fixture
 def measure(dataset) -> SilhouetteMeasure:
     """A silhouette measure."""
-    model = KMeans(dataset, n_clusters=3)
+    model = KMeans(dataset, KMeans_Settings(n_clusters=3))
     return SilhouetteMeasure(model)
 
 

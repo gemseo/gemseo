@@ -48,9 +48,9 @@ def get_mlearning_models() -> list[str]:
     Returns:
         The available machine learning models.
     """
-    from gemseo.mlearning.core.models.factory import MLModelFactory
+    from gemseo.mlearning.core.models.factory import ML_MODEL_FACTORY
 
-    return MLModelFactory().class_names
+    return ML_MODEL_FACTORY.class_names
 
 
 def get_regression_models() -> list[str]:
@@ -59,9 +59,9 @@ def get_regression_models() -> list[str]:
     Returns:
         The available regression models.
     """
-    from gemseo.mlearning.regression.models.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 
-    return RegressorFactory().class_names
+    return REGRESSOR_FACTORY.class_names
 
 
 def get_classification_models() -> list[str]:
@@ -70,9 +70,9 @@ def get_classification_models() -> list[str]:
     Returns:
         The available classification models.
     """
-    from gemseo.mlearning.classification.models.factory import ClassifierFactory
+    from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
 
-    return ClassifierFactory().class_names
+    return CLASSIFIER_FACTORY.class_names
 
 
 def get_clustering_models() -> list[str]:
@@ -81,9 +81,9 @@ def get_clustering_models() -> list[str]:
     Returns:
         The available clustering models.
     """
-    from gemseo.mlearning.clustering.models.factory import ClustererFactory
+    from gemseo.mlearning.clustering.models.factory import CLUSTERER_FACTORY
 
-    return ClustererFactory().class_names
+    return CLUSTERER_FACTORY.class_names
 
 
 def create_mlearning_model(
@@ -109,10 +109,11 @@ def create_mlearning_model(
     Returns:
         A machine learning model.
     """
-    from gemseo.mlearning.core.models.factory import MLModelFactory
+    from gemseo.mlearning.core.models.factory import ML_MODEL_FACTORY
 
-    factory = MLModelFactory()
-    return factory.create(name, data=data, transformer=transformer, **parameters)
+    cls = ML_MODEL_FACTORY.get_class(name)
+    settings = cls.Settings(transformer=transformer, **parameters)
+    return ML_MODEL_FACTORY.create(name, data, settings=settings)
 
 
 minmax_inputs = {IODataset.INPUT_GROUP: MinMaxScaler()}
@@ -141,7 +142,7 @@ def create_regression_model(
     Returns:
         A regression model.
     """
-    from gemseo.mlearning.regression.models.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 
     if (
         name == "PCERegressor"
@@ -154,8 +155,10 @@ def create_regression_model(
         )
         transformer = dict(transformer)
         del transformer[IODataset.INPUT_GROUP]
-    factory = RegressorFactory()
-    return factory.create(name, data=data, transformer=transformer, **parameters)
+
+    cls = REGRESSOR_FACTORY.get_class(name)
+    settings = cls.Settings(transformer=transformer, **parameters)
+    return REGRESSOR_FACTORY.create(name, data, settings=settings)
 
 
 def create_classification_model(
@@ -181,11 +184,11 @@ def create_classification_model(
     Returns:
         A classification model.
     """
-    from gemseo.mlearning.classification.models.factory import ClassifierFactory
+    from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
 
-    return ClassifierFactory().create(
-        name, data=data, transformer=transformer, **parameters
-    )
+    cls = CLASSIFIER_FACTORY.get_class(name)
+    settings = cls.Settings(transformer=transformer, **parameters)
+    return CLASSIFIER_FACTORY.create(name, data, settings=settings)
 
 
 def create_clustering_model(
@@ -211,11 +214,11 @@ def create_clustering_model(
     Returns:
         A clustering model.
     """
-    from gemseo.mlearning.clustering.models.factory import ClustererFactory
+    from gemseo.mlearning.clustering.models.factory import CLUSTERER_FACTORY
 
-    return ClustererFactory().create(
-        name, data=data, transformer=transformer, **parameters
-    )
+    cls = CLUSTERER_FACTORY.get_class(name)
+    settings = cls.Settings(transformer=transformer, **parameters)
+    return CLUSTERER_FACTORY.create(name, data, settings=settings)
 
 
 def get_mlearning_options(
@@ -231,9 +234,9 @@ def get_mlearning_options(
     Returns:
         The options schema of the machine learning model.
     """
-    from gemseo.mlearning.core.models.factory import MLModelFactory
+    from gemseo.mlearning.core.models.factory import ML_MODEL_FACTORY
 
-    return _get_options(MLModelFactory(), model_name, output_json, pretty_print)
+    return _get_options(ML_MODEL_FACTORY, model_name, output_json, pretty_print)
 
 
 def get_regression_options(
@@ -249,9 +252,9 @@ def get_regression_options(
     Returns:
         The options schema of the regression model.
     """
-    from gemseo.mlearning.regression.models.factory import RegressorFactory
+    from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 
-    return _get_options(RegressorFactory(), model_name, output_json, pretty_print)
+    return _get_options(REGRESSOR_FACTORY, model_name, output_json, pretty_print)
 
 
 def get_classification_options(
@@ -267,9 +270,9 @@ def get_classification_options(
     Returns:
         The options schema of the classification model.
     """
-    from gemseo.mlearning.classification.models.factory import ClassifierFactory
+    from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
 
-    return _get_options(ClassifierFactory(), model_name, output_json, pretty_print)
+    return _get_options(CLASSIFIER_FACTORY, model_name, output_json, pretty_print)
 
 
 def get_clustering_options(
@@ -285,9 +288,9 @@ def get_clustering_options(
     Returns:
         The options schema of the clustering model.
     """
-    from gemseo.mlearning.clustering.models.factory import ClustererFactory
+    from gemseo.mlearning.clustering.models.factory import CLUSTERER_FACTORY
 
-    return _get_options(ClustererFactory(), model_name, output_json, pretty_print)
+    return _get_options(CLUSTERER_FACTORY, model_name, output_json, pretty_print)
 
 
 def _get_options(
