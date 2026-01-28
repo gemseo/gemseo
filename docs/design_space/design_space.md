@@ -1,5 +1,4 @@
 ---
-status: draft
 description: ""
 tags: ['user_guide']
 search:
@@ -17,23 +16,33 @@ search:
 
 # The Design Space
 
-!!! info "Learn More"
+!!! info "Tutorial"
 
-    **How-to**: [Design Space How-tos][design-space-examples]
+    - [Tutorial - The design space][tutorial-the-design-space]
 
-The Design Space defines the domain of design variables for your optimization problem.
-It specifies for each variable its name,
+!!! info "How-to"
+
+    - [How to import and export a design space from disk][how-to-import-and-export-a-design-space-from-disk]
+    - [How to reduce a design space][how-to-reduce-a-design-space]
+    - [How to project parameters into boundaries][how-to-project-parameters-into-boundaries]
+    - [How to (un)normalize design parameters][how-to-unnormalize-design-parameters]
+    - [How to cast parameters into different types][how-to-cast-parameters-into-different-types]
+
+The Design Space defines the domain of design variables for your problem.
+It specifies for each design variable its name,
 type (continuous, integer, or discrete),
 lower and upper bounds,
 and optionally an initial value.
 
 For example, in an aerodynamic optimization,
-your Design Space might include a continuous variable "wing_span"
+your design space might include a continuous variable "wing_span"
 bounded between 10 and 15 meters,
 an integer variable "number_of_ribs" between 5 and 20,
 and discrete variables for material selection.
+In that case, any algorithm has to find the best solution
+by changing the values of these 3 variables into their boundaries.
 
-In GEMSEO, the Design Space is implemented through
+In GEMSEO, the design space is implemented through
 the [DesignSpace][gemseo.algos.design_space.DesignSpace] class,
 which serves as a container storing all variable definitions and their current values.
 This centralized representation ensures that
@@ -42,38 +51,39 @@ all components of your optimization workflow
 work with a consistent definition of the design variables,
 eliminating ambiguity and reducing errors in complex multi-disciplinary studies.
 
-The design space is thus defined by:
+## Normalization of the variables
 
-- the number of the variables
-- the names of the variables
-- the sizes of the variables
-- the upper bounds of the variables (optional; by default: $-\infty$)
-- the lower bounds of the variables (optional; by default: $+\infty$)
-- the normalization policies of the variables:
-    - bounded float variables are normalizable,
-    - bounded integer variables are normalizable,
-    - unbounded float variables are not normalizable,
-    - unbounded integer variables are not normalizable.
+Design variables can be normalized by the design space.
+Different normalizations can be used to transform a given variable
+$x$ into $x_{\mathrm{normalized}}$,
+so that $x_{\mathrm{normalized} = \frac{x-lb_x}{ub_x-lb_x}}$ or
+$x_{\mathrm{normalized}} = \frac{x}{ub_x-lb_x}$.
 
 !!! note
-    The normalized version of a given variable $x$ is either $\frac{x-lb_x}{ub_x-lb_x}$ or $\frac{x}{ub_x-lb_x}$.
+    Obviously, unormalization processes exist so to retrieve $x$ from $x_{\mathrm{normalized}}$.
 
-## What are the API functions in GEMSEO?
+!!! warning
+    A variable cannot be normalized if unbounded.
 
-A design space can be created from the [create_design_space()][gemseo.create_design_space] and [read_design_space()][gemseo.read_design_space] API functions and then, enhanced by methods of the [DesignSpace][gemseo.algos.design_space.DesignSpace] class. It can be exported to a file by means of the [write_design_space()][gemseo.write_design_space].
+## Handling integer variables
 
-## How does GEMSEO handle integer variables?
+In some cases, GEMSEO can consider integer variables as continuous,
+meaning that GEMSEO tries to solve the relaxed optimization problem.
+GEMSEO may round integer variable values to keep them consistent with the specified type.
+This rounding takes place when the variables vector is unnormalized, and just before a function or its gradient are evaluated.
 
-When integer variables are included in a [DesignSpace][gemseo.algos.design_space.DesignSpace], GEMSEO may round its values to keep them consistent with the specified type. This rounding takes place when the variables vector is unnormalized, and just before a function or its gradient are evaluated. Depending on the problem that is being solved and the algorithm that is being used, the results may or may not be affected.
+!!! warning
+    Depending on the problem that is being solved and the algorithm that is being used, the results may or may not be affected.
 
-- In the case of an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem], the main issue is that this rounding introduces discontinuities.
+    - In the case of an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
+    the main issue is that this rounding introduces discontinuities.
 
-    Gradient-based algorithms are very sensitive to discontinuities and do not handle integer variables, they may not crash, but they will probably end up returning local minima, not converging, or exhibit unexpected behavior.
+        Gradient-based algorithms are very sensitive to discontinuities and do not handle integer variables, they may not crash, but they will probably end up returning local minima, not converging, or exhibit unexpected behavior.
 
-    Gradient-free algorithms handle rounding a little bit better, in the case of COBYLA it is equivalent to a strong relaxation. Still, we strongly recommend to choose carefully to avoid issues.
+        Gradient-free algorithms handle rounding a little bit better, in the case of COBYLA it is equivalent to a strong relaxation. Still, we strongly recommend to choose carefully to avoid issues.
 
-    By default, GEMSEO will not allow the user to run an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] using an algorithm that does not handle integer variables. However, since the potential issues also depend on the problem itself, a user can skip this check passing the argument `skip_int_check=True` in `algo_options`.
+        By default, GEMSEO will not allow the user to run an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] using an algorithm that does not handle integer variables. However, since the potential issues also depend on the problem itself, a user can skip this check passing the argument `skip_int_check=True` in `algo_options`.
 
-    For updated information about the optimization algorithms that handle integer variables, refer to [the available algorithms][available-optimization-algorithms].
+        For updated information about the optimization algorithms that handle integer variables, refer to [the available algorithms][available-optimization-algorithms].
 
-- In the case of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario], there are no convergence issues because we are only evaluating pre-defined samples. Nevertheless, one should remember that the samples generated by the DoE algorithm will be rounded if necessary. This may impact the mathematical properties of the sample distribution.
+    - In the case of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario], there are no convergence issues because we are only evaluating pre-defined samples. Nevertheless, one should remember that the samples generated by the DoE algorithm will be rounded if necessary. This may impact the mathematical properties of the sample distribution.

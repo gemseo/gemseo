@@ -100,4 +100,4 @@ ODESolverLibraryFactory().execute(ode_problem, algo_name="RK45")
 ## Examples
 
 See the examples about the class [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem] here:
-[ODEProblem examples][odeproblem-and-oderesult-examples].
+[ODEProblem examples][ordinary-differential-equations].

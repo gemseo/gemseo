@@ -18,14 +18,27 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# How to project parameters into boundaries.
+"""# How to project parameters into boundaries
+
+## Problem
 
 In this example, we will see how to project design paramters into a design space.
 
 Sometimes, components of a design vector are greater than the upper bounds or
 lower than the upper bounds.
+The design vector is outside its definition, and you have to bring it back.
+
+## Solution
+
 For that, it is possible to project the vector into the bounds by means of
-the [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds]:
+the [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds].
+
+## Step-by-step guide
+
+We will create a design space,
+and see the impact of the
+[project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds]
+method.
 """
 
 from __future__ import annotations
@@ -36,7 +49,7 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ## Create a design space
+# ###  1. Create a design space
 #
 # First, let's create a design space.
 design_space = create_design_space()
@@ -47,7 +60,14 @@ design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 
 # %%
 #
-# ## Array projection
+# ###  2. Array projection
 point = array([1.0, 3, -15.0, 23.0])
 p_point = design_space.project_into_bounds(point)
 p_point
+
+# %%
+# ## Summary
+#
+# Use the
+# [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds]
+# method to bring a design vector back into its boundaries.

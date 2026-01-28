@@ -18,9 +18,20 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# How to (un)normalize design parameters.
+"""# How to (un)normalize design parameters
 
-In this example, we will see how to use a design space to normalize design paramters.
+## Problem
+
+You want to use normalization on your design variables.
+
+## Solution
+
+The design space has two methods to normalize variables:
+
+- [normalize_vect()][gemseo.algos.design_space.DesignSpace.normalize_vect]
+- [unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
@@ -31,7 +42,7 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ## Create a design space
+# ### 1. Create a design space
 #
 # First, let's create a design space.
 design_space = create_design_space()
@@ -41,7 +52,7 @@ design_space.add_variable("x3", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 
 # %%
-# ## Normalize a given array
+# ### 2. Normalize a given array
 
 normalized_x_vect = design_space.normalize_vect(array([1.0, 10.0, 1.0, 1.0]))
 normalized_x_vect
@@ -51,7 +62,7 @@ normalized_x_vect
 #     When each variable has a current value, it can be retrieved as its normalized form with:
 #     ``design_space.get_current_value(normalize=True)``.
 #
-# ## Un-normalize the array
+# ### 3. Un-normalize the array
 unnormalized_x_vect = design_space.unnormalize_vect(normalized_x_vect)
 unnormalized_x_vect
 
@@ -64,3 +75,12 @@ unnormalized_x_vect
 #     `(x-lb_x)/(ub_x-lb_x)`.
 #     Otherwise,
 #     it is of the form `x/(ub_x-lb_x)`.
+#
+# ## Summary
+#
+# Normalization (resp. un-normalization) can be done by the use of the
+# [normalize_vect()][gemseo.algos.design_space.DesignSpace.normalize_vect] method
+# (resp. [unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]).
+#
+# A design vector can be retrieved in its normalized form with
+# ``design_space.get_current_value(normalize=True)`` when it has a current value.

@@ -57,18 +57,19 @@ nav:
   - Getting started:
     - Installation: software/installation.md
     - Tutorials:
-      - GEMSEO in 10 minutes: generated/examples/mdo/plot_gemseo_in_10_minutes.md
+      - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
+      - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
       - Define an MDO problem: interface/study_analysis.md
       - Optimization and DOE framework: mdo/optimization.md
-      - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
-      - Solve a mixed optimization problem: generated/examples/mdo/plot_mixed_optimization.md
-      - MDO formulations for a toy example in aerostructure: generated/examples/mdo/plot_aerostructure.md
-      - A from scratch example on the Sellar problem: generated/examples/mdo/plot_sellar.md
-      - Sobieski's Super Sonic Business Jet: generated/examples/mdo/plot_sobieski_use_case.md
+      - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
+      - Solve a mixed optimization problem: generated/examples/bulk/mdo/plot_mixed_optimization.md
+      - MDO formulations for a toy example in aerostructure: generated/examples/bulk/mdo/plot_aerostructure.md
+      - A from scratch example on the Sellar problem: generated/examples/bulk/mdo/plot_sellar.md
+      - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
     - Tutorials (advanced):
-      - Multi-objective optimization: generated/examples/multi_objective
-      - Topology optimization: generated/examples/topology_optimization
-      - Ordinary differential equations (ODE): generated/examples/ode
+      - Multi-objective optimization: generated/examples/bulk/multi_objective
+      - Topology optimization: generated/examples/bulk/topology_optimization
+      - Ordinary differential equations (ODE): generated/examples/bulk/ode
     - Changelog: changelog.md
     - Licenses: software/licenses.md
     - Credits: credits.md
@@ -107,7 +108,7 @@ nav:
       - Extending: extending.md
 
   - How-to:
-    - High-level functions: generated/examples/api
+    - High-level functions: generated/examples/bulk/api
     - Cheat Sheets:
       - Available: cheat_sheets/availables.md
       - Cache: cheat_sheets/cache.md
@@ -127,36 +128,36 @@ nav:
       - Interface with HPC job schedulers (SLURM, LSF, PBS, etc): interface/job_schedulers.md
       - Create a discipline interfacing an external executable: disciplines/discipline_interfacing_executable.md
       - Create a discipline interfacing an external executable (using GUI): interface/exe_discipline.md
-      - Disciplines examples: generated/examples/disciplines
-      - Surrogate discipline: generated/examples/surrogate
-      - Namespaces: generated/examples/namespaces
-    - Design Space: generated/examples/design_space
+      - Disciplines examples: generated/examples/bulk/disciplines
+      - Surrogate discipline: generated/examples/bulk/surrogate
+      - Namespaces: generated/examples/bulk/namespaces
+    - Design Space: generated/examples/how_tos/design_space
     - Scenario:
       - How to deal with scenarios: scenario/scenario.md
       - Monitoring the execution of a scenario: scenario/monitoring.md
-      - Coupling: generated/examples/coupling
-      - Study analysis: generated/examples/study_analysis
-      - Scenario examples: generated/examples/scenario
-      - Multi-disciplinary analysis (MDA): generated/examples/mda
-      - Optimization: generated/examples/optimization_problem
-      - Multi-start optimization: generated/examples/optimizers/plot_multistart_example.md
-    - Design of experiments (DOE): generated/examples/doe
+      - Coupling: generated/examples/bulk/coupling
+      - Study analysis: generated/examples/bulk/study_analysis
+      - Scenario examples: generated/examples/bulk/scenario
+      - Multi-disciplinary analysis (MDA): generated/examples/bulk/mda
+      - Optimization: generated/examples/bulk/optimization_problem
+      - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
+    - Design of experiments (DOE): generated/examples/bulk/doe
     - Define settings models:
       - Formulation settings:
         - Settings: settings/formulation_settings.md
-        - MDO formulation examples: generated/examples/formulations
+        - MDO formulation examples: generated/examples/bulk/formulations
       - Algorithm settings: settings/algorithm_settings.md
       - MDA settings: settings/mda_settings.md
       - Post-processor settings: settings/post_processing_settings.md
     - Post-processing:
       - How to deal with post-processing: postprocessing/postprocessing.md
-      - Dataset: generated/examples/dataset
-      - Post-process an optimization problem: generated/examples/post_process
-    - Machine learning: generated/examples/mlearning
-    - Cache: generated/examples/cache
-    - Constraint aggregation: generated/examples/constraint_aggregation
-    - Scalable model: generated/examples/scalable
-    - Uncertainty: generated/examples/uncertainty
+      - Dataset: generated/examples/bulk/dataset
+      - Post-process an optimization problem: generated/examples/bulk/post_process
+    - Machine learning: generated/examples/bulk/mlearning
+    - Cache: generated/examples/bulk/cache
+    - Constraint aggregation: generated/examples/bulk/constraint_aggregation
+    - Scalable model: generated/examples/bulk/scalable
+    - Uncertainty: generated/examples/bulk/uncertainty
     - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/

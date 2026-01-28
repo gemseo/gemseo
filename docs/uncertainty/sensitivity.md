@@ -22,7 +22,7 @@ Contributors:
 
 # Sensitivity analysis
 
-Read [the API documentation][gemseo.uncertainty.sensitivity] and [the examples][sensitivity-analysis-examples] for more information.
+Read [the API documentation][gemseo.uncertainty.sensitivity] and [the examples][uncertainty-examples] for more information.
 
 ## Architecture
 
