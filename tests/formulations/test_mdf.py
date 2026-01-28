@@ -41,10 +41,11 @@ class TestMDFFormulation(FormulationsBaseTest):
     # Complex step mdf already tested on propane, lighter
     def build_and_run_mdf_scenario_with_constraints(
         self,
-        formulation,
-        algo="SLSQP",
-        linearize=False,
-        dtype="complex128",
+        formulation: str,
+        algo: str = "SLSQP",
+        linearize: bool = False,
+        dtype: str = "complex128",
+        normalize_objective: bool = False,
         **options,
     ):
         """
@@ -60,6 +61,8 @@ class TestMDFFormulation(FormulationsBaseTest):
         scenario = self.build_mdo_scenario(
             formulation, dtype, main_mda_settings=options
         )
+        if normalize_objective:
+            scenario.formulation.optimization_problem.objective *= 0.001
         if linearize:
             scenario.set_differentiation_method("user")
         else:
@@ -93,10 +96,15 @@ class TestMDFFormulation(FormulationsBaseTest):
         }
 
         obj = self.build_and_run_mdf_scenario_with_constraints(
-            "MDF", "SLSQP", linearize=True, dtype="float64", **options
+            "MDF",
+            "SLSQP",
+            linearize=True,
+            dtype="float64",
+            normalize_objective=True,
+            **options,
         )
 
-        assert_allclose(-obj, 3964.0, atol=4.0, rtol=0)
+        assert_allclose(-obj, 3.9640, atol=4e-3, rtol=0)
 
     def test_getsuboptions(self) -> None:
         self.assertRaises(ValueError, MDF.get_sub_options_grammar)

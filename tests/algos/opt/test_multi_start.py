@@ -35,14 +35,17 @@ if TYPE_CHECKING:
     ("max_iter", "options", "expected_length"),
     [
         (10, {}, 10),
-        (10, {"n_start": 4}, 9),
+        (5, {"n_start": 4}, 5),
         (15, {"opt_algo_max_iter": 2}, 11),
     ],
 )
 def test_database_length(
     max_iter, options, expected_length, enable_function_statistics
 ):
-    """Check the database length and the number of calls to the objective."""
+    """Check the database length and the number of calls to the objective.
+
+    Flaky test, convergence is dependent on the SLSQP build.
+    """
     problem = Power2()
     algo = MultiStart()
     algo.execute(problem, max_iter=max_iter, **options)

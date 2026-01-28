@@ -297,6 +297,8 @@ class ProblemFunction(MDOFunction, Serializable):
             if self.__store_jacobian:
                 self._database.store(hashed_input_value, {name: jacobian})
 
+        if self.dim == 1:
+            return jacobian.ravel()
         return jacobian
 
     def _compute_output_db_vect(self, input_values: NumberArray) -> NumberArray:
@@ -410,6 +412,8 @@ class ProblemFunction(MDOFunction, Serializable):
         else:
             jac_n = self._normalize_grad(jac_u)
 
+        if self.dim == 1:
+            return jac_n.real.ravel()
         return jac_n.real
 
     @staticmethod
