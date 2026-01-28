@@ -36,7 +36,11 @@ from numpy.testing import assert_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.models.supervised import BaseMLSupervisedModel
+from gemseo.mlearning.core.models.supervised_settings import (
+    BaseMLSupervisedModelSettings,
+)
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.transformers.dimension_reduction.base_dimension_reduction import (
     BaseDimensionReduction,
 )
@@ -91,7 +95,9 @@ def test_get_raw_shapes(
     transformer.update(in_transformer)
     transformer.update(out_transformer)
     with concretize_classes(BaseMLSupervisedModel):
-        model = BaseMLSupervisedModel(io_dataset, transformer=transformer)
+        model = BaseMLSupervisedModel(
+            io_dataset, BaseMLSupervisedModelSettings(transformer=transformer)
+        )
 
     assert model._reduced_input_dimension == n_in
     assert model._reduced_output_dimension == n_out
@@ -103,15 +109,17 @@ def test_learn(io_dataset) -> None:
     model.learn()
     reference = model.get_coefficients(False)
 
-    model = LinearRegressor(io_dataset, input_names=["x_1"])
+    model = LinearRegressor(io_dataset, LinearRegressor_Settings(input_names=["x_1"]))
     model.learn()
     assert not array_equal(model.get_coefficients(False), reference)
 
-    model = LinearRegressor(io_dataset, input_names=["x_1", "x_2"])
+    model = LinearRegressor(
+        io_dataset, LinearRegressor_Settings(input_names=["x_1", "x_2"])
+    )
     model.learn()
     assert array_equal(model.get_coefficients(False), reference)
 
-    model = LinearRegressor(io_dataset, output_names=["y_1"])
+    model = LinearRegressor(io_dataset, LinearRegressor_Settings(output_names=["y_1"]))
     model.learn()
     assert array_equal(model.get_coefficients(False), reference)
 
@@ -226,6 +234,8 @@ def dataset_for_transform() -> IODataset:
 class NewSupervisedModel(BaseMLSupervisedModel):
     """A supervised model without fitting modelrithm."""
 
+    Settings = BaseMLSupervisedModelSettings
+
     def _fit(self, input_data, output_data) -> None:
         return
 
@@ -289,7 +299,9 @@ def test_format_transform(
     transformer = {transform_in_key: "MinMaxScaler", transform_out_key: "MinMaxScaler"}
 
     # 2. Train a supervised model.
-    model = NewSupervisedModel(dataset_for_transform, transformer=transformer)
+    model = NewSupervisedModel(
+        dataset_for_transform, BaseMLSupervisedModelSettings(transformer=transformer)
+    )
     model.learn()
 
     # 3. Create the DataFormatter to format the prediction method of that model.
@@ -323,7 +335,9 @@ def dataset() -> Dataset:
 def test_fit_transformers_option(dataset, name, fit_transformers) -> None:
     """Check that the fit_transformers option is correctly used."""
     with concretize_classes(BaseMLSupervisedModel):
-        model = BaseMLSupervisedModel(dataset, transformer={name: "MinMaxScaler"})
+        model = BaseMLSupervisedModel(
+            dataset, BaseMLSupervisedModelSettings(transformer={name: "MinMaxScaler"})
+        )
 
     model._fit = lambda x, y: None
     model.learn(fit_transformers=fit_transformers)
@@ -337,7 +351,10 @@ def test_compute_transformed_variable_sizes(dataset, name, expected) -> None:
     """Check that the compute_transformed_variable_sizes method works."""
     with concretize_classes(BaseMLSupervisedModel, BaseDimensionReduction):
         model = BaseMLSupervisedModel(
-            dataset, transformer={name: BaseDimensionReduction(n_components=3)}
+            dataset,
+            BaseMLSupervisedModelSettings(
+                transformer={name: BaseDimensionReduction(n_components=3)}
+            ),
         )
 
     model._BaseMLSupervisedModel__compute_transformed_variable_sizes()
@@ -350,7 +367,9 @@ def test_compute_transformed_variable_sizes(dataset, name, expected) -> None:
 def test_crossed_transformer_failure(dataset) -> None:
     """Check that a crossed transformer cannot be applied to outputs."""
     with concretize_classes(BaseMLSupervisedModel):
-        model = BaseMLSupervisedModel(dataset, transformer={"y": "PLS"})
+        model = BaseMLSupervisedModel(
+            dataset, BaseMLSupervisedModelSettings(transformer={"y": "PLS"})
+        )
 
     expected = re.escape(
         "The transformer PLS cannot be applied to the outputs "
@@ -363,14 +382,18 @@ def test_crossed_transformer_failure(dataset) -> None:
 def test_crossed_transformer(dataset) -> None:
     """Check that a crossed transformer can be applied to inputs."""
     with concretize_classes(BaseMLSupervisedModel):
-        model = BaseMLSupervisedModel(dataset, transformer={"x": "PLS"})
+        model = BaseMLSupervisedModel(
+            dataset, BaseMLSupervisedModelSettings(transformer={"x": "PLS"})
+        )
 
     model._fit = lambda x, y: None
     model.learn()
     assert_close(model.transformer["x"].algo.x_weights_, array([[1.0]]))
 
     with concretize_classes(BaseMLSupervisedModel):
-        model = BaseMLSupervisedModel(dataset, transformer=model.transformer)
+        model = BaseMLSupervisedModel(
+            dataset, BaseMLSupervisedModelSettings(transformer=model.transformer)
+        )
 
     model._fit = lambda x, y: None
     model.learn(fit_transformers=False)

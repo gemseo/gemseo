@@ -63,33 +63,47 @@ from numpy import nonzero
 from numpy import unique
 from numpy import zeros
 
+from gemseo import REGRESSOR_FACTORY
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.classification.models.factory import ClassifierFactory
+from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
+from gemseo.mlearning.classification.models.knn_settings import KNNClassifier_Settings
 from gemseo.mlearning.classification.quality.f1_measure import F1Measure
-from gemseo.mlearning.clustering.models.factory import ClustererFactory
+from gemseo.mlearning.clustering.models.factory import CLUSTERER_FACTORY
+from gemseo.mlearning.clustering.models.kmeans_settings import KMeans_Settings
 from gemseo.mlearning.clustering.quality.silhouette_measure import SilhouetteMeasure
 from gemseo.mlearning.core.models.ml_model import MLModelSettingsType
 from gemseo.mlearning.core.models.supervised import SavedObjectType as _SavedObjectType
 from gemseo.mlearning.core.selection import MLModelSelection
 from gemseo.mlearning.data_formatters.moe_data_formatters import MOEDataFormatters
 from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.models.factory import RegressorFactory
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.models.moe_settings import MOERegressor_Settings
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from numpy import ndarray
 
+    from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.classification.models.base_classifier import BaseClassifier
+    from gemseo.mlearning.classification.models.base_classifier_settings import (
+        BaseClassifierSettings,
+    )
     from gemseo.mlearning.clustering.models.base_clusterer import BaseClusterer
+    from gemseo.mlearning.clustering.models.base_clusterer_settings import (
+        BaseClustererSettings,
+    )
     from gemseo.mlearning.core.models.ml_model import DataType
     from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
     from gemseo.mlearning.core.quality.base_ml_model_quality import (
         OptionType as EvalOptionType,
+    )
+    from gemseo.mlearning.regression.models.base_regressor_settings import (
+        BaseRegressorSettings,
     )
     from gemseo.typing import RealArray
 
@@ -109,22 +123,13 @@ class MOERegressor(BaseRegressor):
     hard: bool
     """Whether clustering/classification should be hard or soft."""
 
-    clusterer_name: str
-    """The clusterer's class name."""
-
-    classifier_name: str
-    """The classifier's class name."""
-
-    regressor_name: str
-    """The regressor's class name."""
-
-    clusterer_settings: MLModelSettingsType
+    clusterer_settings: BaseClustererSettings
     """The clusterer's settings."""
 
-    classifier_settings: MLModelSettingsType
+    classifier_settings: BaseClassifierSettings
     """The classifier's settings."""
 
-    regressor_settings: MLModelSettingsType
+    regressor_settings: BaseRegressorSettings
     """The regressor's settings."""
 
     clustering_quality: dict[str, str | EvalOptionType]
@@ -145,10 +150,10 @@ class MOERegressor(BaseRegressor):
     regression_candidates: list[MLModelType]
     """The regression model candidates."""
 
-    clusterer: BaseClusterer
+    clusterer: BaseClusterer | None
     """The clustering model."""
 
-    classifier: BaseClassifier
+    classifier: BaseClassifier | None
     """The classification model."""
 
     regressors: list[BaseRegressor]
@@ -168,16 +173,13 @@ class MOERegressor(BaseRegressor):
     def _post_init(self):
         super()._post_init()
         self.hard = self._settings.hard
-        self.clusterer_name = "KMeans"
-        self.classifier_name = "KNNClassifier"
-        self.regressor_name = "LinearRegressor"
-        self.clusterer_settings = {}
-        self.classifier_settings = {}
-        self.regressor_settings = {}
+        self.clusterer_settings = KMeans_Settings()
+        self.classifier_settings = KNNClassifier_Settings()
+        self.regressor_settings = LinearRegressor_Settings()
 
-        self.clustering_quality = None
-        self.classification_quality = None
-        self.regression_quality = None
+        self.clustering_quality = {}
+        self.classification_quality = {}
+        self.regression_quality = {}
 
         self.set_clustering_measure(SilhouetteMeasure)
         self.set_classification_measure(F1Measure)
@@ -189,48 +191,30 @@ class MOERegressor(BaseRegressor):
 
         self.clusterer = None
         self.classifier = None
-        self.regressors = None
+        self.regressors = []
 
-    def set_clusterer(
-        self,
-        name: str,
-        **settings: MLModelSettingsType | None,
-    ) -> None:
+    def set_clusterer(self, settings: BaseClustererSettings) -> None:
         """Set the clusterer.
 
         Args:
-            name: The clusterer's class name.
-            **settings: The clusterer's settings.
+            settings: The settings of the clusterer.
         """
-        self.clusterer_name = name
         self.clusterer_settings = settings
 
-    def set_classifier(
-        self,
-        name: str,
-        **settings: MLModelSettingsType | None,
-    ) -> None:
+    def set_classifier(self, settings: BaseClassifierSettings) -> None:
         """Set the classifier.
 
         Args:
-            name: The classifier's class name.
-            **settings: The classifier's settings.
+            settings: The settings of the classifier.
         """
-        self.classifier_name = name
         self.classifier_settings = settings
 
-    def set_regressor(
-        self,
-        name: str,
-        **settings: MLModelSettingsType | None,
-    ) -> None:
+    def set_regressor(self, settings: BaseRegressorSettings) -> None:
         """Set the regressor.
 
         Args:
-            name: The regressor's class name.
-            **settings: The regressor's settings.
+            settings: The settings of the regressor.
         """
-        self.regressor_name = name
         self.regressor_settings = settings
 
     def set_clustering_measure(
@@ -283,91 +267,79 @@ class MOERegressor(BaseRegressor):
 
     def add_clusterer_candidate(
         self,
-        name: str,
+        settings: BaseClustererSettings,
         calibration_space: DesignSpace | None = None,
-        calibration_algorithm: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
-        **options: list[MLModelSettingsType] | None,
+        calibration_settings: BaseDriverSettings | None = None,
+        **settings_catalogs: Iterable[MLModelSettingsType],
     ) -> None:
-        """Add a candidate for clustering.
+        """Add a clusterer candidate.
 
         Args:
-            name: The name of a clustering model.
-            calibration_space: The space
-                defining the calibration variables.
-            calibration_algorithm: The name and options of the DOE or optimization
-                algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If `None`, do not perform calibration.
-            **options: Parameters for the clustering model candidate.
-                Each parameter has to be enclosed within a list.
-                The list may contain different values to try out for the given
-                parameter, or only one.
+            settings: The settings of the clusterer candidate.
+            calibration_space: The space defining the settings to calibrate, if any.
+            calibration_settings: The settings of the driver for calibration.
+            **settings_catalogs: The catalogs of settings.
+                Unlike the settings to calibrate,
+                these settings are optimized using a grid search over the catalogs.
         """
         self.clustering_candidates.append(
             dict(
-                name=name,
+                settings=settings,
                 calibration_space=calibration_space,
-                calibration_algorithm=calibration_algorithm,
-                **options,
+                calibration_settings=calibration_settings,
+                **settings_catalogs,
             )
         )
 
     def add_classifier_candidate(
         self,
-        name: str,
+        settings: BaseClassifierSettings,
         calibration_space: DesignSpace | None = None,
-        calibration_algorithm: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
-        **options: list[MLModelSettingsType] | None,
+        calibration_settings: BaseDriverSettings | None = None,
+        **settings_catalogs: Iterable[MLModelSettingsType],
     ) -> None:
-        """Add a candidate for classification.
+        """Add a classifier candidate.
 
         Args:
-            name: The name of a classification model.
-            calibration_space: The space
-                defining the calibration variables.
-            calibration_algorithm: The name and options of the DOE or optimization
-                algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If `None`, do not perform calibration.
-            **options: Parameters for the clustering model candidate.
-                Each parameter has to be enclosed within a list.
-                The list may contain different values to try out for the given
-                parameter, or only one.
+            settings: The settings of the classifier candidate.
+            calibration_space: The space defining the settings to calibrate, if any.
+            calibration_settings: The settings of the driver for calibration.
+            **settings_catalogs: The catalogs of settings.
+                Unlike the settings to calibrate,
+                these settings are optimized using a grid search over the catalogs.
         """
         self.classification_candidates.append(
             dict(
-                name=name,
+                settings=settings,
                 calibration_space=calibration_space,
-                calibration_algorithm=calibration_algorithm,
-                **options,
+                calibration_settings=calibration_settings,
+                **settings_catalogs,
             )
         )
 
     def add_regressor_candidate(
         self,
-        name: str,
+        settings: BaseRegressorSettings,
         calibration_space: DesignSpace | None = None,
-        calibration_algorithm: dict[str, str | int] = READ_ONLY_EMPTY_DICT,
-        **options: list[MLModelSettingsType] | None,
+        calibration_settings: BaseDriverSettings | None = None,
+        **settings_catalogs: Iterable[MLModelSettingsType],
     ) -> None:
-        """Add a candidate for regression.
+        """Add a regressor candidate.
 
         Args:
-            name: The name of a regression model.
-            calibration_space: The space
-                defining the calibration variables.
-            calibration_algorithm: The name and options of the DOE or optimization
-                algorithm, e.g. {"algo": "fullfact", "n_samples": 10}).
-                If `None`, do not perform calibration.
-            **options: Parameters for the regression model candidate.
-                Each parameter has to be enclosed within a list.
-                The list may contain different values to try out for the given
-                parameter, or only one.
+            settings: The settings of the regressor candidate.
+            calibration_space: The space defining the settings to calibrate, if any.
+            calibration_settings: The settings of the driver for calibration.
+            **settings_catalogs: The catalogs of settings.
+                Unlike the settings to calibrate,
+                these settings are optimized using a grid search over the catalogs.
         """
         self.regression_candidates.append(
             dict(
-                name=name,
+                settings=settings,
                 calibration_space=calibration_space,
-                calibration_algorithm=calibration_algorithm,
-                **options,
+                calibration_settings=calibration_settings,
+                **settings_catalogs,
             )
         )
 
@@ -460,9 +432,10 @@ class MOERegressor(BaseRegressor):
             dataset: The dataset containing input and output data.
         """
         if not self.clustering_candidates:
-            factory = ClustererFactory()
-            self.clusterer = factory.create(
-                self.clusterer_name, data=dataset, **self.clusterer_settings
+            self.clusterer = CLUSTERER_FACTORY.create(
+                self.clusterer_settings._TARGET_CLASS_NAME,
+                dataset,
+                settings=self.clusterer_settings,
             )
             self.clusterer.learn()
         else:
@@ -485,12 +458,11 @@ class MOERegressor(BaseRegressor):
             dataset: The dataset containing labeled input and output data.
         """
         if not self.classification_candidates:
-            factory = ClassifierFactory()
-            self.classifier = factory.create(
-                self.classifier_name,
-                data=dataset,
-                output_names=[self.LABELS],
-                **self.classifier_settings,
+            self.classifier_settings.output_names = [self.LABELS]
+            self.classifier = CLASSIFIER_FACTORY.create(
+                self.classifier_settings._TARGET_CLASS_NAME,
+                dataset,
+                settings=self.classifier_settings,
             )
             self.classifier.learn()
         else:
@@ -512,7 +484,6 @@ class MOERegressor(BaseRegressor):
         Args:
             dataset: The dataset containing labeled input and output data.
         """
-        factory = RegressorFactory()
         self.regressors = []
         for index in range(self.clusterer.n_clusters):
             samples = nonzero(self.clusterer.labels == index)[0].tolist()
@@ -530,8 +501,10 @@ class MOERegressor(BaseRegressor):
                 with MultiLineString.offset():
                     LOGGER.info("%s", local_model)
             else:
-                local_model = factory.create(
-                    self.regressor_name, data=dataset, **self.regressor_settings
+                local_model = REGRESSOR_FACTORY.create(
+                    self.regressor_settings._TARGET_CLASS_NAME,
+                    dataset,
+                    settings=self.regressor_settings,
                 )
                 local_model.learn(samples=samples)
 

@@ -25,12 +25,18 @@ import numpy as np
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.core.selection import MLModelSelection
 from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
+from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
 from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.regression.models.rbf import RBFRegressor
+from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 
 
@@ -80,35 +86,45 @@ def test_add_candidate(dataset) -> None:
     selector = MLModelSelection(dataset, MSEMeasure)
 
     # Add linear regression candidate
-    selector.add_candidate("LinearRegressor")
+    selector.add_candidate(LinearRegressor_Settings())
     assert selector.candidates
-    cand = selector.candidates[0]
-    assert isinstance(cand[0], LinearRegressor)
-    assert isinstance(cand[1], float)
+    model, quality = selector.candidates[0]
+    assert isinstance(model, LinearRegressor)
+    assert quality == pytest.approx(0.40, abs=1e-2)
 
-    # Add polynomial regression candidate
-    degrees = [2, 5, 7]
-    fit_int = False
+    # Add polynomial regression candidate with options
     selector.add_candidate(
-        "PolynomialRegressor", degree=[2, 5, 7], fit_intercept=[fit_int]
+        PolynomialRegressor_Settings(fit_intercept=False), degree=[2, 5, 7]
     )
-    cand = selector.candidates[-1]
-    assert isinstance(cand[0], PolynomialRegressor)
-    assert isinstance(cand[1], float)
-    assert cand[0]._settings.degree in degrees
-    assert cand[0]._settings.fit_intercept == fit_int
+    model, quality = selector.candidates[-1]
+    assert isinstance(model, PolynomialRegressor)
+    assert quality == pytest.approx(0.05, abs=1e-2)
+    assert model._settings.degree == 7
+    assert model._settings.fit_intercept is False
 
-    # Add RBF candidate
+    # Add RBF candidate with calibration
     space = DesignSpace()
     space.add_variable("smooth", 1, "float", 0.0, 10.0, 0.0)
-    algorithm = {"algo_name": "PYDOE_FULLFACT", "n_samples": 11}
-    selector.add_candidate("RBFRegressor", space, algorithm)
-    cand = selector.candidates[-1]
-    assert isinstance(cand[0], RBFRegressor)
-    assert isinstance(cand[1], float)
-    assert isinstance(cand[0]._settings.smooth, float)
-    assert cand[0]._settings.smooth >= 0
-    assert cand[0]._settings.smooth <= 10
+    selector.add_candidate(
+        RBFRegressor_Settings(), space, PYDOE_FULLFACT_Settings(n_samples=1)
+    )
+    model, quality = selector.candidates[-1]
+    assert isinstance(model, RBFRegressor)
+    assert quality == pytest.approx(0.12, abs=1e-2)
+    assert model._settings.smooth == 5.0
+
+    # Add RBF candidate with calibration and options
+    selector.add_candidate(
+        RBFRegressor_Settings(),
+        space,
+        PYDOE_FULLFACT_Settings(n_samples=1),
+        epsilon=[0.1, 0.2],
+    )
+    model, quality = selector.candidates[-1]
+    assert isinstance(model, RBFRegressor)
+    assert quality == pytest.approx(0.01, abs=1e-2)
+    assert model._settings.smooth == 5.0
+    assert model._settings.epsilon == 0.1
 
 
 @pytest.mark.parametrize("measure_evaluation_method_name", ["KFOLDS", "LEARN"])
@@ -118,9 +134,9 @@ def test_select(dataset, measure_evaluation_method_name) -> None:
     selector = MLModelSelection(
         dataset, measure, measure_evaluation_method_name=measure_evaluation_method_name
     )
-    selector.add_candidate("PolynomialRegressor", degree=[1, 2])
-    selector.add_candidate("LinearRegressor")
-    selector.add_candidate("RBFRegressor", smooth=[0, 0.1, 1, 10])
+    selector.add_candidate(PolynomialRegressor_Settings(), degree=[1, 2])
+    selector.add_candidate(LinearRegressor_Settings())
+    selector.add_candidate(RBFRegressor_Settings(), smooth=[0, 0.1, 1, 10])
     model = selector.select(True)
     assert isinstance(model, tuple)
     assert len(model) == 2

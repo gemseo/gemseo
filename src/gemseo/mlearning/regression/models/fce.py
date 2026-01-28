@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from numpy import array
@@ -29,7 +28,6 @@ from gemseo.mlearning._basis.factory import BasisFactory
 from gemseo.mlearning.linear_model_fitting.factory import LinearModelFitterFactory
 from gemseo.mlearning.regression.models.base_fce import BaseFCERegressor
 from gemseo.mlearning.regression.models.fce_settings import FCERegressor_Settings
-from gemseo.utils.pydantic import create_model
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -73,8 +71,7 @@ class FCERegressor(BaseFCERegressor):
     def __init__(
         self,
         data: IODataset,
-        settings_model: FCERegressor_Settings | None = None,
-        **settings: Any,
+        settings: FCERegressor_Settings | None = None,
     ) -> None:
         """
         Args:
@@ -85,12 +82,7 @@ class FCERegressor(BaseFCERegressor):
                 defining the random input variables as
                 [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
         """  # noqa: D205 D212
-        super().__init__(
-            data,
-            settings_model=create_model(
-                self.Settings, settings_model=settings_model, **settings
-            ),
-        )
+        super().__init__(data, settings=settings)
         self.__basis = None
 
     def _get_features_for_special_jacobian_data_use(

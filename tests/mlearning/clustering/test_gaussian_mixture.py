@@ -32,6 +32,9 @@ from numpy.random import default_rng
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.models.gaussian_mixture import GaussianMixture
+from gemseo.mlearning.clustering.models.gaussian_mixture_settings import (
+    GaussianMixture_Settings,
+)
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
@@ -98,7 +101,9 @@ def dataset(samples) -> Dataset:
 def model(dataset) -> GaussianMixture:
     """A trained GaussianMixture."""
     n_clusters = 3
-    gaussian_mixture = GaussianMixture(dataset, n_clusters=n_clusters)
+    gaussian_mixture = GaussianMixture(
+        dataset, GaussianMixture_Settings(n_clusters=n_clusters)
+    )
     gaussian_mixture.learn()
     return gaussian_mixture
 
@@ -109,7 +114,8 @@ def model_with_transform(dataset) -> GaussianMixture:
     n_clusters = 3
     transformer = {"parameters": MinMaxScaler()}
     gaussian_mixture = GaussianMixture(
-        dataset, transformer=transformer, n_clusters=n_clusters
+        dataset,
+        GaussianMixture_Settings(transformer=transformer, n_clusters=n_clusters),
     )
     gaussian_mixture.learn()
     return gaussian_mixture
@@ -126,12 +132,14 @@ def test_constructor(dataset) -> None:
 def test_learn(dataset) -> None:
     """Test learn."""
     n_clusters = 5
-    gaussian_mixture = GaussianMixture(dataset, n_clusters=n_clusters)
+    gaussian_mixture = GaussianMixture(
+        dataset, GaussianMixture_Settings(n_clusters=n_clusters)
+    )
     another_gaussian_mixture = GaussianMixture(
-        dataset, var_names=["x_1"], n_clusters=n_clusters
+        dataset, GaussianMixture_Settings(var_names=["x_1"], n_clusters=n_clusters)
     )
     yet_another_gaussian_mixture = GaussianMixture(
-        dataset, var_names=["x_2"], n_clusters=n_clusters
+        dataset, GaussianMixture_Settings(var_names=["x_2"], n_clusters=n_clusters)
     )
     gaussian_mixture.learn()
     another_gaussian_mixture.learn()

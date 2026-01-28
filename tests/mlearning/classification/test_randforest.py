@@ -31,6 +31,9 @@ from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.models.random_forest import RandomForestClassifier
+from gemseo.mlearning.classification.models.random_forest_settings import (
+    RandomForestClassifier_Settings,
+)
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 RNG = default_rng(12345)
@@ -70,7 +73,9 @@ def dataset() -> IODataset:
 @pytest.fixture
 def model_1d(dataset) -> RandomForestClassifier:
     """A trained RandomForestClassifier with y_1 as single output."""
-    model = RandomForestClassifier(dataset, output_names=["y_1"])
+    model = RandomForestClassifier(
+        dataset, RandomForestClassifier_Settings(output_names=["y_1"])
+    )
     model.learn()
     return model
 
@@ -86,7 +91,9 @@ def model_with_two_outputs(dataset) -> RandomForestClassifier:
 @pytest.fixture
 def model_with_transform(dataset) -> RandomForestClassifier:
     """A trained KNNClassifier using input scaling."""
-    model = RandomForestClassifier(dataset, transformer={"inputs": MinMaxScaler()})
+    model = RandomForestClassifier(
+        dataset, RandomForestClassifier_Settings(transformer={"inputs": MinMaxScaler()})
+    )
     model.learn()
     return model
 

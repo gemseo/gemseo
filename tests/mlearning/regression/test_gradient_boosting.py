@@ -21,6 +21,9 @@ from sklearn.ensemble import GradientBoostingRegressor as SKLGradientBoosting
 from gemseo.mlearning.regression.models.gradient_boosting import (
     GradientBoostingRegressor,
 )
+from gemseo.mlearning.regression.models.gradient_boosting_settings import (
+    GradientBoostingRegressor_Settings,
+)
 
 
 def test_init(dataset):
@@ -35,7 +38,9 @@ def test_init(dataset):
 
 def test_init_n_estimators(dataset):
     """Check that the number of estimators can be changed."""
-    for algo in GradientBoostingRegressor(dataset, n_estimators=10).algo:
+    for algo in GradientBoostingRegressor(
+        dataset, GradientBoostingRegressor_Settings(n_estimators=10)
+    ).algo:
         assert algo.n_estimators == 10
 
 

@@ -36,6 +36,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 LEARNING_SIZE = 50
@@ -109,7 +112,7 @@ def dataset_from_cache() -> IODataset:
 @pytest.fixture
 def model(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor."""
-    polyreg = PolynomialRegressor(dataset, degree=DEGREE)
+    polyreg = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=DEGREE))
     polyreg.learn()
     return polyreg
 
@@ -117,25 +120,27 @@ def model(dataset) -> PolynomialRegressor:
 @pytest.fixture
 def model_without_intercept(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor without intercept fitting."""
-    polyreg = PolynomialRegressor(dataset, degree=DEGREE, fit_intercept=False)
+    polyreg = PolynomialRegressor(
+        dataset, PolynomialRegressor_Settings(degree=DEGREE, fit_intercept=False)
+    )
     polyreg.learn()
     return polyreg
 
 
 def test_constructor(dataset) -> None:
-    model_ = PolynomialRegressor(dataset, degree=2)
+    model_ = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     assert model_.algo is not None
 
 
 def test_degree(dataset) -> None:
     """Test correct handling of incorrect degree ( < 1)."""
     with pytest.raises(ValueError):
-        PolynomialRegressor(dataset, degree=0)
+        PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=0))
 
 
 def test_learn(dataset) -> None:
     """Test learn."""
-    model_ = PolynomialRegressor(dataset, degree=2)
+    model_ = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     model_.learn()
     assert model_.algo is not None
 
@@ -196,7 +201,7 @@ def test_prediction_jacobian(model) -> None:
 
 def test_jacobian_constant(dataset) -> None:
     """Test Jacobians linear polynomials."""
-    model_ = PolynomialRegressor(dataset, degree=1)
+    model_ = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     model_.learn()
     model_.predict_jacobian(INPUT_VALUE)
     model_.predict_jacobian(ANOTHER_INPUT_VALUE)

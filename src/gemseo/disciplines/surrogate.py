@@ -123,7 +123,7 @@ class SurrogateDiscipline(Discipline):
         """
         settings.transformer = dict(transformer)
         regressor = REGRESSOR_FACTORY.create(
-            settings._TARGET_CLASS_NAME, data, settings_model=settings
+            settings._TARGET_CLASS_NAME, data, settings=settings
         )
         return cls(regressor, name=name)
 

@@ -218,6 +218,7 @@ def _der_r3(x, norx, eps):
 def test_rbf(dataset, transformer, function) -> None:
     """Test polynomial regression Jacobians."""
     der_function = _der_r3 if function is _r3 else None
+
     discipline = SurrogateDiscipline.from_settings(
         RBFRegressor_Settings(function=function, der_function=der_function),
         dataset,

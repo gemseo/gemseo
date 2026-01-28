@@ -31,6 +31,7 @@ from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.classification.models.knn import KNNClassifier
+from gemseo.mlearning.classification.models.knn_settings import KNNClassifier_Settings
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 rng = default_rng(12345)
@@ -70,7 +71,7 @@ def dataset() -> IODataset:
 @pytest.fixture
 def model_1d(dataset) -> KNNClassifier:
     """A trained KNNClassifier with y_1 as single output."""
-    knn = KNNClassifier(dataset, output_names=["y_1"])
+    knn = KNNClassifier(dataset, KNNClassifier_Settings(output_names=["y_1"]))
     knn.learn()
     return knn
 
@@ -98,10 +99,14 @@ def model(dataset) -> KNNClassifier:
 @pytest.fixture
 def model_with_transform(dataset, transformer_key, fit_transformers) -> KNNClassifier:
     """A trained KNNClassifier using input scaling."""
-    knn = KNNClassifier(dataset, transformer={transformer_key: MinMaxScaler()})
+    knn = KNNClassifier(
+        dataset, KNNClassifier_Settings(transformer={transformer_key: MinMaxScaler()})
+    )
     knn.learn()
     if not fit_transformers:
-        knn = KNNClassifier(dataset, transformer=knn.transformer)
+        knn = KNNClassifier(
+            dataset, KNNClassifier_Settings(transformer=knn.transformer)
+        )
         knn.learn(fit_transformers=fit_transformers)
     return knn
 

@@ -30,6 +30,9 @@ from numpy import array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.models.random_forest import RandomForestRegressor
+from gemseo.mlearning.regression.models.random_forest_settings import (
+    RandomForestRegressor_Settings,
+)
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -67,7 +70,9 @@ def model(dataset) -> RandomForestRegressor:
 @pytest.fixture
 def model_1d_output(dataset) -> RandomForestRegressor:
     """A trained RandomForestRegressor with only y_1 as outputs."""
-    random_forest = RandomForestRegressor(dataset, output_names=["y_1"])
+    random_forest = RandomForestRegressor(
+        dataset, RandomForestRegressor_Settings(output_names=["y_1"])
+    )
     random_forest.learn()
     return random_forest
 

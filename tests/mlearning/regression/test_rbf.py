@@ -32,6 +32,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mlearning.regression.models.rbf import RBFRegressor
 from gemseo.mlearning.regression.models.rbf_settings import RBF
+from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.scenarios.doe_scenario import DOEScenario
 
 if TYPE_CHECKING:
@@ -81,7 +82,8 @@ def model_with_custom_function(dataset) -> RBFRegressor:
         return 2 * input_data / eps**2
 
     rbf = RBFRegressor(
-        dataset, function=(lambda r: r**2 - 1), der_function=der_function
+        dataset,
+        RBFRegressor_Settings(function=lambda r: r**2 - 1, der_function=der_function),
     )
     rbf.learn()
     return rbf
@@ -90,7 +92,7 @@ def model_with_custom_function(dataset) -> RBFRegressor:
 @pytest.fixture
 def model_with_1d_output(dataset) -> RBFRegressor:
     """A trained RBFRegressor with y_1 as output."""
-    rbf = RBFRegressor(dataset, output_names=["y_1"])
+    rbf = RBFRegressor(dataset, RBFRegressor_Settings(output_names=["y_1"]))
     rbf.learn()
     return rbf
 
@@ -112,13 +114,13 @@ def test_constructor(dataset) -> None:
 def test_jacobian_not_implemented(dataset) -> None:
     """Test cases where the Jacobian is not implemented."""
     # Test unimplemented norm
-    rbf = RBFRegressor(dataset, norm="canberra")
+    rbf = RBFRegressor(dataset, RBFRegressor_Settings(norm="canberra"))
     rbf.learn()
     with pytest.raises(NotImplementedError):
         rbf.predict_jacobian(INPUT_VALUE)
 
     # Test rbf function without derivative
-    rbf = RBFRegressor(dataset, function=(lambda x: x - 5))
+    rbf = RBFRegressor(dataset, RBFRegressor_Settings(function=lambda x: x - 5))
     rbf.learn()
     with pytest.raises(NotImplementedError):
         rbf.predict_jacobian(INPUT_VALUE)
@@ -179,7 +181,7 @@ def test_pred_single_out(model_with_1d_output) -> None:
 def test_predict_jacobian(dataset) -> None:
     """Test prediction."""
     for function in RBF:
-        model_ = RBFRegressor(dataset, function=function)
+        model_ = RBFRegressor(dataset, RBFRegressor_Settings(function=function))
         model_.learn()
         jacobian = model_.predict_jacobian(INPUT_VALUE)
         jacobians = model_.predict_jacobian(INPUT_VALUES)

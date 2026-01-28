@@ -33,10 +33,9 @@ from gemseo import from_pickle
 from gemseo import to_pickle
 from gemseo.datasets.dataset import Dataset
 from gemseo.mlearning.clustering.models.base_clusterer import BaseClusterer
-from gemseo.mlearning.clustering.models.factory import ClustererFactory
+from gemseo.mlearning.clustering.models.factory import CLUSTERER_FACTORY
 from gemseo.problems.dataset.iris import create_iris_dataset
 
-FACTORY = ClustererFactory()
 INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
 
@@ -66,14 +65,16 @@ def dataset() -> Dataset:
     return create_iris_dataset()
 
 
-@pytest.mark.parametrize("class_name", FACTORY.class_names)
+@pytest.mark.parametrize("class_name", CLUSTERER_FACTORY.class_names)
 @pytest.mark.parametrize("before_training", [False, True])
 def test_pickle(class_name, dataset, before_training, tmp_wd):
     """Check that clustering models are picklable."""
-    reference_model = FACTORY.create(
+    reference_model = CLUSTERER_FACTORY.create(
         class_name,
         dataset,
-        var_names=("sepal_length", "sepal_width", "petal_length", "petal_width"),
+        CLUSTERER_FACTORY.get_class(class_name).Settings(
+            var_names=("sepal_length", "sepal_width", "petal_length", "petal_width")
+        ),
     )
 
     if before_training:

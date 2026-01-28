@@ -120,7 +120,9 @@ def test_repr_html(dataset) -> None:
 def test_transformer(dataset, transformer) -> None:
     """Check if transformers are correctly passed."""
     with concretize_classes(DummyMLModel):
-        ml_model = DummyMLModel(dataset, transformer={"parameters": transformer})
+        ml_model = DummyMLModel(
+            dataset, BaseMLModelSettings(transformer={"parameters": transformer})
+        )
 
     assert isinstance(ml_model.transformer["parameters"], Scaler)
     if isinstance(transformer, tuple):
@@ -139,7 +141,7 @@ def test_transformer_wrong_type(dataset) -> None:
         ),
         concretize_classes(DummyMLModel),
     ):
-        DummyMLModel(dataset, transformer={"parameters": 1})
+        DummyMLModel(dataset, BaseMLModelSettings(transformer={"parameters": 1}))
 
 
 def test_transformers_error(dataset) -> None:
@@ -157,4 +159,9 @@ def test_transformers_error(dataset) -> None:
         ),
         concretize_classes(DummyMLModel),
     ):
-        DummyMLModel(dataset, transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"})
+        DummyMLModel(
+            dataset,
+            BaseMLModelSettings(
+                transformer={"x": "MinMaxScaler", "foo": "MinMaxScaler"}
+            ),
+        )

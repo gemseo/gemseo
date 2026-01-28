@@ -30,13 +30,12 @@ from numpy.testing import assert_allclose
 
 from gemseo import from_pickle
 from gemseo import to_pickle
-from gemseo.mlearning.classification.models.factory import ClassifierFactory
+from gemseo.mlearning.classification.models.factory import CLASSIFIER_FACTORY
 from gemseo.problems.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
-FACTORY = ClassifierFactory()
 INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
 
@@ -46,11 +45,11 @@ def dataset() -> Dataset:
     return create_iris_dataset(as_io=True)
 
 
-@pytest.mark.parametrize("class_name", FACTORY.class_names)
+@pytest.mark.parametrize("class_name", CLASSIFIER_FACTORY.class_names)
 @pytest.mark.parametrize("before_training", [False, True])
 def test_pickle(class_name, dataset, before_training, tmp_wd):
     """Check that classification models are picklable."""
-    reference_model = FACTORY.create(class_name, dataset)
+    reference_model = CLASSIFIER_FACTORY.create(class_name, dataset)
 
     if before_training:
         to_pickle(reference_model, "model.pkl")

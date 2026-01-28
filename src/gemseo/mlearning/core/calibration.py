@@ -52,14 +52,13 @@ while the output is the quality criterion.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import argmin
 from numpy import array
 
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import Discipline
-from gemseo.mlearning.core.models.factory import MLModelFactory
+from gemseo.mlearning.core.models.factory import ML_MODEL_FACTORY
 from gemseo.mlearning.core.quality.base_ml_model_quality import BaseMLModelQuality
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
@@ -70,11 +69,11 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
+    from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.datasets.dataset import Dataset
     from gemseo.mlearning.core.models.ml_model import BaseMLModel
-    from gemseo.mlearning.core.models.ml_model import MLModelSettingsType
-    from gemseo.mlearning.core.models.ml_model import TransformerType
+    from gemseo.mlearning.core.models.ml_model_settings import BaseMLModelSettings
     from gemseo.mlearning.core.quality.base_ml_model_quality import MeasureOptionsType
     from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping
@@ -87,23 +86,17 @@ class MLModelAssessor(Discipline):
     [MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration].
     """
 
-    model_name: str
-    """The name of a machine learning model."""
-
-    measure: type[BaseMLModelQuality]
+    __measure: type[BaseMLModelQuality]
     """The measure to assess the machine learning model."""
 
-    measure_options: dict[str, int | Dataset]
+    __measure_options: dict[str, int | Dataset]
     """The options of the quality measure."""
 
-    parameters: dict[str, MLModelSettingsType]
-    """The parameters of the machine learning model."""
+    __settings: BaseMLModelSettings
+    """The settings of the machine learning model."""
 
-    dataset: Dataset
+    __training_dataset: Dataset
     """The training dataset."""
-
-    transformer: TransformerType
-    """The transformation strategy for data groups."""
 
     models: list[BaseMLModel]
     """The instances of the machine learning model (one per execution of the machine
@@ -115,44 +108,25 @@ class MLModelAssessor(Discipline):
 
     def __init__(
         self,
-        model_name: str,
+        settings: BaseMLModelSettings,
         dataset: Dataset,
         parameters: Iterable[str],
         measure: type[BaseMLModelQuality],
         measure_evaluation_method_name: BaseMLModelQuality.EvaluationMethod = BaseMLModelQuality.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
-        transformer: TransformerType = READ_ONLY_EMPTY_DICT,
-        **settings: MLModelSettingsType,
     ) -> None:
         """
         Args:
-            model_name: The name of a machine learning model.
-            dataset: A training dataset.
+            settings: The settings of the machine learning model.
+            dataset: The training dataset.
             parameters: The parameters of the machine learning model to calibrate.
-            measure: A measure to assess the machine learning model.
+            measure: The measure to assess the machine learning model.
             measure_evaluation_method_name: The name of the method
                 to evaluate the quality measure.
             measure_options: The options of the quality measure.
                 If "multioutput" is missing,
                 it is added with False as value.
                 If empty, do not use quality measure options.
-            transformer: The strategies
-                to transform the variables.
-                The values are instances of
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                while the keys are the names of
-                either the variables
-                or the groups of variables,
-                e.g. `"inputs"` or `"outputs"`
-                in the case of the regression models.
-                If a group is specified,
-                the
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                will be applied to all the variables of this group.
-                If
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.core.models.ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
-                do not transform the variables.
-            **settings: The settings of the machine learning model.
 
         Raises:
             ValueError: If the measure option "multioutput" is True.
@@ -160,19 +134,18 @@ class MLModelAssessor(Discipline):
         super().__init__()
         self.io.input_grammar.update_from_names(parameters)
         self.io.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
-        self.model_name = model_name
-        self.measure = measure
-        self.measure_options = dict(measure_options)
+        self.model_name = settings._TARGET_CLASS_NAME
+        self.__measure = measure
+        self.__measure_options = dict(measure_options)
         self.__measure_evaluation_method_name = measure_evaluation_method_name
-        self.parameters = settings
-        self.data = dataset
-        self.transformer = transformer
+        self.__settings = settings
+        self.__training_dataset = dataset
         self.models = []
-        if self.measure_options.get("multioutput", False):
+        if self.__measure_options.get("multioutput", False):
             msg = "MLModelAssessor does not support multioutput."
             raise ValueError(msg)
 
-        self.measure_options[self.MULTIOUTPUT] = False
+        self.__measure_options[self.MULTIOUTPUT] = False
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Run method.
@@ -184,26 +157,28 @@ class MLModelAssessor(Discipline):
         quality with the
         [BaseMLModelQuality][gemseo.mlearning.core.quality.base_ml_model_quality.BaseMLModelQuality].
         """
+        settings = self.__settings.model_copy()
         inputs = self.io.get_input_data()
         for index in inputs:
             if len(inputs[index]) == 1:
                 inputs[index] = inputs[index][0]
-        self.parameters.update(inputs)
-        model = MLModelFactory().create(
-            self.model_name,
-            data=self.data,
-            transformer=self.transformer,
-            **self.parameters,
+        for name, value in inputs.items():
+            setattr(settings, name, value)
+
+        model = ML_MODEL_FACTORY.create(
+            self.__settings._TARGET_CLASS_NAME,
+            self.__training_dataset,
+            settings=settings,
         )
         model.learn()
-        measure = self.measure(model)
+        measure = self.__measure(model)
         compute_criterion = getattr(
             measure,
             measure.EvaluationFunctionName[self.__measure_evaluation_method_name],
         )
         self.models.append(model)
         return {
-            "criterion": array([compute_criterion(**self.measure_options)]),
+            "criterion": array([compute_criterion(**self.__measure_options)]),
             "learning": array([measure.compute_learning_measure(multioutput=False)]),
         }
 
@@ -237,59 +212,34 @@ class MLModelCalibration:
 
     def __init__(
         self,
-        model_name: str,
+        settings: BaseMLModelSettings,
         dataset: Dataset,
-        parameters: Iterable[str],
         calibration_space: DesignSpace,
         measure: type[BaseMLModelQuality],
         measure_evaluation_method_name: str
         | BaseMLModelQuality.EvaluationMethod = BaseMLModelQuality.EvaluationMethod.LEARN,  # noqa: E501
         measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
-        transformer: TransformerType = READ_ONLY_EMPTY_DICT,
-        **settings: MLModelSettingsType,
     ) -> None:
         """
         Args:
-            model_name: The name of a machine learning model.
-            dataset: A training dataset.
-            parameters: The parameters of the machine learning model
-                to calibrate.
-            calibration_space: The space defining the calibration variables.
-            measure: A measure to assess the machine learning model.
+            settings: The settings of the machine learning model.
+            dataset: The training dataset.
+            calibration_space: The space defining the settings to calibrate.
+            measure: The measure to assess the machine learning model.
             measure_evaluation_method_name: The name of the method
                 to evaluate the quality measure.
             measure_options: The options of the quality measure.
                 If empty, do not use the quality measure options.
-            transformer: The strategies
-                to transform the variables.
-                The values are instances of
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                while the keys are the names of
-                either the variables
-                or the groups of variables,
-                e.g. `"inputs"` or `"outputs"`
-                in the case of the regression models.
-                If a group is specified,
-                the
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                will be applied
-                to all the variables of this group.
-                If
-                [DEFAULT_TRANSFORMER][gemseo.mlearning.core.models.ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
-                do not transform the variables.
-            **settings: The settings of the machine learning model.
         """  # noqa: D205 D212
-        disc = MLModelAssessor(
-            model_name,
+        model_assessor = MLModelAssessor(
+            settings,
             dataset,
-            parameters,
+            calibration_space.variable_names,
             measure,
             measure_evaluation_method_name=measure_evaluation_method_name,
             measure_options=measure_options,
-            transformer=transformer,
-            **settings,
         )
-        self.model_assessor = disc
+        self.model_assessor = model_assessor
         self.calibration_space = calibration_space
         self.maximize_objective = not measure.SMALLER_IS_BETTER
         self.dataset = None
@@ -298,20 +248,15 @@ class MLModelCalibration:
         self.optimal_model = None
         self.scenario = None
 
-    def execute(
-        self,
-        algo_name: str,
-        **algo_settings: Any,
-    ) -> None:
+    def execute(self, settings: BaseDriverSettings) -> None:
         """Calibrate the machine learning model from a driver.
 
         The driver can be either a DOE or an optimizer.
 
         Args:
-            algo_name: The name of the model.
-            **algo_settings: The settings of the model.
+            settings: The settings of the driver.
         """
-        if DOELibraryFactory().is_available(algo_name):
+        if DOELibraryFactory().is_available(settings._TARGET_CLASS_NAME):
             cls = DOEScenario
         else:
             cls = MDOScenario
@@ -324,7 +269,7 @@ class MLModelCalibration:
             maximize_objective=self.maximize_objective,
         )
         self.scenario.add_observable(self.model_assessor.LEARNING)
-        self.scenario.execute(algo_name=algo_name, **algo_settings)
+        self.scenario.execute(settings)
         self.dataset = self.scenario.to_dataset(opt_naming=False)
         self.optimal_parameters = self.scenario.optimization_result.x_opt_as_dict
         self.optimal_criterion = self.scenario.optimization_result.f_opt

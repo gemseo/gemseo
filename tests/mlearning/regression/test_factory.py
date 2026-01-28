@@ -27,7 +27,7 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mlearning.regression.models.factory import RegressorFactory
+from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.mlearning.regression.models.linreg import LinearRegressor
 from gemseo.scenarios.doe_scenario import DOEScenario
 
@@ -62,17 +62,17 @@ def test_constructor() -> None:
         "PolynomialRegressor",
         "RBFRegressor",
         "RandomForestRegressor",
-    } <= set(RegressorFactory().class_names)
+    } <= set(REGRESSOR_FACTORY.class_names)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
-    factory = RegressorFactory()
-    assert isinstance(factory.create("LinearRegressor", data=dataset), LinearRegressor)
+    assert isinstance(
+        REGRESSOR_FACTORY.create("LinearRegressor", data=dataset), LinearRegressor
+    )
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    factory = RegressorFactory()
-    assert factory.is_available("LinearRegressor")
-    assert not factory.is_available("Dummy")
+    assert REGRESSOR_FACTORY.is_available("LinearRegressor")
+    assert not REGRESSOR_FACTORY.is_available("Dummy")

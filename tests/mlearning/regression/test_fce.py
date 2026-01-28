@@ -306,7 +306,7 @@ def test_settings():
 def test_basis(dataset, basis, mean, mean2, variance, variance2, multioutput):
     """Check different orthonormal function bases."""
     settings = FCERegressor_Settings(basis=basis)
-    fce = FCERegressor(dataset, settings_model=settings)
+    fce = FCERegressor(dataset, settings=settings)
     fce.learn()
     assert_almost_equal(fce.mean, mean2 if multioutput else mean)
     assert_almost_equal(fce.variance, variance2 if multioutput else variance)

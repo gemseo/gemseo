@@ -29,8 +29,13 @@ from numpy import allclose
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.mlearning.core.calibration import MLModelAssessor
 from gemseo.mlearning.core.calibration import MLModelCalibration
+from gemseo.mlearning.regression.models.polyreg_settings import (
+    PolynomialRegressor_Settings,
+)
 from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
@@ -51,7 +56,7 @@ def test_discipline_multioutput_fail(dataset) -> None:
         match=re.escape("MLModelAssessor does not support multioutput."),
     ):
         MLModelAssessor(
-            "PolynomialRegressor",
+            PolynomialRegressor_Settings(),
             dataset,
             ["degree"],
             MSEMeasure,
@@ -64,20 +69,20 @@ def test_discipline_multioutput_fail(dataset) -> None:
 def test_discipline_multioutput(dataset, options) -> None:
     """Verify that MLModelAssessor works correctly when multioutput option is False."""
     assessor = MLModelAssessor(
-        "PolynomialRegressor",
+        PolynomialRegressor_Settings(),
         dataset,
         ["degree"],
         MSEMeasure,
         measure_evaluation_method_name="LOO",
         measure_options=options,
     )
-    assert not assessor.measure_options["multioutput"]
+    assert not assessor._MLModelAssessor__measure_options["multioutput"]
 
 
 def test_discipline(dataset) -> None:
     """Test discipline."""
     disc = MLModelAssessor(
-        "PolynomialRegressor",
+        PolynomialRegressor_Settings(),
         dataset,
         ["degree"],
         MSEMeasure,
@@ -100,24 +105,25 @@ def calibration_space() -> DesignSpace:
 
 
 @pytest.mark.parametrize(
-    "algo", [("PYDOE_FULLFACT", "n_samples"), ("NLOPT_COBYLA", "max_iter")]
+    "algo",
+    [(PYDOE_FULLFACT_Settings(), "n_samples"), (NLOPT_COBYLA_Settings(), "max_iter")],
 )
 def test_calibration(dataset, calibration_space, algo) -> None:
     """Test calibration."""
     n_samples = 2
     calibration = MLModelCalibration(
-        "PolynomialRegressor",
+        PolynomialRegressor_Settings(degree=2),
         dataset,
-        ["penalty_level"],
         calibration_space,
         MSEMeasure,
         measure_evaluation_method_name="LOO",
-        degree=2,
     )
 
     assert calibration.get_history("learning") is None
 
-    calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
+    settings = algo[0]
+    setattr(settings, algo[1], n_samples)
+    calibration.execute(settings)
     x_opt = calibration.optimal_parameters
     f_opt = calibration.optimal_criterion
     model_opt = calibration.optimal_model
@@ -129,5 +135,5 @@ def test_calibration(dataset, calibration_space, algo) -> None:
     assert len(calibration.models) == n_samples
 
     calibration.maximize_objective = True
-    calibration.execute(algo_name=algo[0], **{algo[1]: n_samples})
+    calibration.execute(settings)
     assert -calibration.optimal_criterion > f_opt

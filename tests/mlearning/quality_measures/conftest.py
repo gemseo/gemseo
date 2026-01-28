@@ -22,6 +22,9 @@ from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
+from gemseo.mlearning.regression.models.gpr_settings import (
+    GaussianProcessRegressor_Settings,
+)
 
 
 @pytest.fixture(scope="module")
@@ -33,8 +36,10 @@ def model_for_transformer() -> GaussianProcessRegressor:
     dataset.add_variable("y", x * sin(x) ** 2, "outputs")
     model = GaussianProcessRegressor(
         dataset,
-        transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER,
-        n_restarts_optimizer=0,
+        GaussianProcessRegressor_Settings(
+            transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER,
+            n_restarts_optimizer=0,
+        ),
     )
     model.algo.normalize_y = False
     model.learn()

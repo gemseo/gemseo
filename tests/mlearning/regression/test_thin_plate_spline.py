@@ -17,6 +17,9 @@ from __future__ import annotations
 from gemseo.mlearning.regression.models.rbf import RBFRegressor
 from gemseo.mlearning.regression.models.rbf_settings import RBF
 from gemseo.mlearning.regression.models.thin_plate_spline import TPSRegressor
+from gemseo.mlearning.regression.models.thin_plate_spline_settings import (
+    TPSRegressor_Settings,
+)
 
 
 def test_init(dataset):
@@ -31,7 +34,7 @@ def test_init(dataset):
 
 def test_init_custom(dataset):
     """Check the custom initialization of a TPSRegressor."""
-    model = TPSRegressor(dataset, norm="minkowski", smooth=0.1)
+    model = TPSRegressor(dataset, TPSRegressor_Settings(norm="minkowski", smooth=0.1))
     model.learn()
     assert model.algo.smooth == 0.1
     assert model.algo.norm == "minkowski"

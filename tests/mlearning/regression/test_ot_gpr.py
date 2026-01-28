@@ -45,6 +45,9 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.regression.models.ot_gpr import OTGaussianProcessRegressor
 from gemseo.mlearning.regression.models.ot_gpr_settings import CovarianceModel
+from gemseo.mlearning.regression.models.ot_gpr_settings import (
+    OTGaussianProcessRegressor_Settings,
+)
 from gemseo.mlearning.regression.models.ot_gpr_settings import Trend
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
@@ -142,7 +145,9 @@ def test_kriging_use_hmat_default(n_samples, use_hmat):
 @pytest.mark.parametrize("use_hmat", [True, False])
 def test_kriging_use_hmat(dataset, use_hmat):
     """Check that the HMAT can be specified at initialization or after."""
-    kriging = OTGaussianProcessRegressor(dataset, use_hmat=use_hmat)
+    kriging = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(use_hmat=use_hmat)
+    )
     # Check at initialization
     assert kriging.use_hmat is use_hmat
 
@@ -167,7 +172,9 @@ def test_kriging_predict_on_learning_set(dataset):
 @pytest.mark.parametrize("x2", [-1, 1])
 def test_kriging_predict(dataset, x1, x2):
     """Check that the Kriging is not yet good enough to extrapolate."""
-    kriging = OTGaussianProcessRegressor(dataset, multi_start_n_samples=1)
+    kriging = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(multi_start_n_samples=1)
+    )
     kriging.learn()
     x = array([x1, x2])
     prediction = kriging.predict({"x": x})
@@ -181,7 +188,9 @@ def test_kriging_predict_std_on_learning_set(transformer, dataset):
 
     The standard deviation should be equal to zero.
     """
-    kriging = OTGaussianProcessRegressor(dataset, transformer=transformer)
+    kriging = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(transformer=transformer)
+    )
     kriging.learn()
     for x in kriging.learning_set.get_view(
         group_names=IODataset.INPUT_GROUP
@@ -198,7 +207,9 @@ def test_kriging_predict_std(transformer, dataset, x1, x2):
     The standard deviation should be the square root of the variance computed by the
     method KrigingResult.getConditionalCovariance of OpenTURNS.
     """
-    kriging = OTGaussianProcessRegressor(dataset, transformer=transformer)
+    kriging = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(transformer=transformer)
+    )
     original_method = KrigingResult.getConditionalCovariance
     v1 = 4.0 + x1 + x2
     v2 = 9.0 + x1 + x2
@@ -250,7 +261,9 @@ def test_kriging_predict_hessian(kriging, input_data, expected_shape):
 )
 def test_kriging_std_output_dimension(dataset_2, output_name, input_data):
     """Check the shape of the array returned by predict_std()."""
-    model = OTGaussianProcessRegressor(dataset_2, output_names=[output_name])
+    model = OTGaussianProcessRegressor(
+        dataset_2, OTGaussianProcessRegressor_Settings(output_names=[output_name])
+    )
     model.learn()
     ndim = model.output_dimension
     if isinstance(input_data, dict):
@@ -272,7 +285,9 @@ def test_kriging_std_output_dimension(dataset_2, output_name, input_data):
 )
 def test_trend_type(dataset, trend, shape):
     """Check the trend type of the Gaussian process regressor."""
-    model = OTGaussianProcessRegressor(dataset, trend=trend)
+    model = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(trend=trend)
+    )
     model.learn()
     if version.parse(openturns.__version__) < version.parse("1.21"):
         assert array(model.algo.getTrendCoefficients()).shape == shape
@@ -282,7 +297,9 @@ def test_trend_type(dataset, trend, shape):
 
 def test_default_optimizer(dataset):
     """Check that the default optimizer is TNC."""
-    model = OTGaussianProcessRegressor(dataset, multi_start_n_samples=1)
+    model = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(multi_start_n_samples=1)
+    )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
         model.learn()
 
@@ -293,7 +310,10 @@ def test_custom_optimizer(dataset):
     """Check that the optimizer can be changed."""
     optimizer = NLopt("LN_NELDERMEAD")
     model = OTGaussianProcessRegressor(
-        dataset, optimizer=optimizer, multi_start_n_samples=0
+        dataset,
+        OTGaussianProcessRegressor_Settings(
+            optimizer=optimizer, multi_start_n_samples=0
+        ),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
         model.learn()
@@ -326,7 +346,10 @@ def test_custom_optimization_space(dataset, optimization_space_type):
         )
 
     model = OTGaussianProcessRegressor(
-        dataset, optimization_space=optimization_space, multi_start_n_samples=0
+        dataset,
+        OTGaussianProcessRegressor_Settings(
+            optimization_space=optimization_space, multi_start_n_samples=0
+        ),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationBounds") as method:
         model.learn()
@@ -349,16 +372,20 @@ def test_multi_start_optimization(dataset):
     assert model.algo.getCovarianceModel().getFullParameter() == reference_length_scales
 
     # Here we check that multi-start optimization leads to a different solution.
-    model = OTGaussianProcessRegressor(dataset, multi_start_n_samples=2)
+    model = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(multi_start_n_samples=2)
+    )
     model.learn()
     assert model.algo.getCovarianceModel().getFullParameter() != reference_length_scales
 
     # Here we check that the multi_start_xxx arguments are passed to OpenTURNS.
     model = OTGaussianProcessRegressor(
         dataset,
-        multi_start_algo_name="LHS",
-        multi_start_n_samples=9,
-        multi_start_algo_settings={"strength": 2},
+        OTGaussianProcessRegressor_Settings(
+            multi_start_algo_name="LHS",
+            multi_start_n_samples=9,
+            multi_start_algo_settings={"strength": 2},
+        ),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
         model.learn()
@@ -408,7 +435,9 @@ def test_default_covariance_model(dataset):
 def test_custom_covariance_model(dataset, covariance_model, nu):
     """Check that the covariance model can be changed."""
     use_other_covariance_model = isinstance(covariance_model, list)
-    model = OTGaussianProcessRegressor(dataset, covariance_model=covariance_model)
+    model = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(covariance_model=covariance_model)
+    )
     model.learn()
     covariance_model_str = str(model.algo.getCovarianceModel())
     assert "MaternModel" in covariance_model_str
@@ -420,7 +449,9 @@ def test_custom_covariance_model(dataset, covariance_model, nu):
 @pytest.mark.parametrize("kernel_type", CovarianceModel)
 def test_covariance_kernel_type(dataset, kernel_type):
     """Check the attribute CovarianceModel."""
-    model = OTGaussianProcessRegressor(dataset, covariance_model=kernel_type)
+    model = OTGaussianProcessRegressor(
+        dataset, OTGaussianProcessRegressor_Settings(covariance_model=kernel_type)
+    )
     model.learn()
     name = kernel_type.value
     covariance_model_str = str(model.algo.getCovarianceModel())
@@ -447,7 +478,10 @@ def test_compute_samples(
     transformer,
 ):
     """Check the method compute_samples."""
-    model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model = OTGaussianProcessRegressor(
+        dataset,
+        OTGaussianProcessRegressor_Settings(transformer=transformer, **init_options),
+    )
     model.learn()
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     samples = model.compute_samples(input_data, 2)
@@ -456,13 +490,19 @@ def test_compute_samples(
     samples_1pt = model.compute_samples(input_data[0], 2)
     assert samples_1pt.shape == expected_shape_1pt
 
-    model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model = OTGaussianProcessRegressor(
+        dataset,
+        OTGaussianProcessRegressor_Settings(transformer=transformer, **init_options),
+    )
     model.learn()
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     assert model.compute_samples(input_data, 2, seed=1)[0, 0, 0] == samples[0, 0, 0]
     assert model.compute_samples(input_data[0], 2, seed=2)[0, 0] == samples_1pt[0, 0]
 
-    model = OTGaussianProcessRegressor(dataset, transformer=transformer, **init_options)
+    model = OTGaussianProcessRegressor(
+        dataset,
+        OTGaussianProcessRegressor_Settings(transformer=transformer, **init_options),
+    )
     model.learn()
     input_data = array([[0.23, 0.19], [0.73, 0.69], [0.13, 0.89]])
     assert model.compute_samples(input_data, 2, seed=123)[0, 0, 0] != samples[0, 0, 0]

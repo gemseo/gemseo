@@ -32,6 +32,7 @@ from numpy.random import default_rng
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.mlearning.clustering.models.kmeans import KMeans
+from gemseo.mlearning.clustering.models.kmeans_settings import KMeans_Settings
 from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
@@ -111,7 +112,7 @@ def fit_transformers(request):
 @pytest.fixture
 def model(dataset):
     """A trained KMeans with parameters scaling."""
-    kmeans = KMeans(dataset, n_clusters=3)
+    kmeans = KMeans(dataset, KMeans_Settings(n_clusters=3))
     kmeans.learn()
     return kmeans
 
@@ -120,11 +121,14 @@ def model(dataset):
 def model_with_transform(dataset, transformer_key, fit_transformers):
     """A trained KMeans with parameters scaling."""
     kmeans = KMeans(
-        dataset, transformer={transformer_key: MinMaxScaler()}, n_clusters=3
+        dataset,
+        KMeans_Settings(transformer={transformer_key: MinMaxScaler()}, n_clusters=3),
     )
     kmeans.learn()
     if not fit_transformers:
-        kmeans = KMeans(dataset, transformer=kmeans.transformer, n_clusters=3)
+        kmeans = KMeans(
+            dataset, KMeans_Settings(transformer=kmeans.transformer, n_clusters=3)
+        )
         kmeans.learn(fit_transformers=False)
     return kmeans
 
@@ -140,9 +144,13 @@ def test_constructor(dataset) -> None:
 def test_learn(dataset) -> None:
     """Test learn."""
     n_clusters = 5
-    kmeans = KMeans(dataset, n_clusters=n_clusters)
-    another_kmeans = KMeans(dataset, var_names=["x_1"], n_clusters=n_clusters)
-    yet_another_kmeans = KMeans(dataset, var_names=["x_2"], n_clusters=n_clusters)
+    kmeans = KMeans(dataset, KMeans_Settings(n_clusters=n_clusters))
+    another_kmeans = KMeans(
+        dataset, KMeans_Settings(var_names=["x_1"], n_clusters=n_clusters)
+    )
+    yet_another_kmeans = KMeans(
+        dataset, KMeans_Settings(var_names=["x_2"], n_clusters=n_clusters)
+    )
     kmeans.learn()
     another_kmeans.learn()
     yet_another_kmeans.learn(samples=[2, 4, 5, 1, 10, 11, 12])

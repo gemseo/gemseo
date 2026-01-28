@@ -34,17 +34,17 @@ from typing import Any
 from typing import ClassVar
 from typing import NamedTuple
 
-from gemseo.mlearning import create_regression_model
 from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.mlearning.regression.models.regressor_chain_settings import (
     RegressorChain_Settings,
 )
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from gemseo.mlearning.core.models.ml_model import TransformerType
+    from gemseo.mlearning.regression.models.base_regressor_settings import (
+        BaseRegressorSettings,
+    )
     from gemseo.typing import NumberArray
 
 
@@ -65,37 +65,15 @@ class RegressorChain(BaseRegressor):
         super()._post_init()
         self.__regressors = []
 
-    def add_regressor(
-        self,
-        name: str,
-        transformer: Mapping[str, TransformerType] = READ_ONLY_EMPTY_DICT,
-        **parameters: Any,
-    ) -> None:
+    def add_regressor(self, settings: BaseRegressorSettings) -> None:
         """Add a new regression model in the chain.
 
         Args:
-            name: The name of the regression model.
-            transformer: The strategies to transform the variables.
-                The values are instances of
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                while the keys are the names of
-                either the variables
-                or the groups of variables,
-                e.g. "inputs" or "outputs" in the case of the regression models.
-                If a group is specified,
-                the
-                [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-                will be applied
-                to all the variables of this group.
-                If empty, do not transform the variables.
-            **parameters: The parameters of the regression model
+            settings: The settings of the regression model.
         """
         self.__regressors.append(
-            create_regression_model(
-                name,
-                self.learning_set,
-                transformer=transformer,
-                **parameters,
+            REGRESSOR_FACTORY.create(
+                settings._TARGET_CLASS_NAME, self.learning_set, settings
             )
         )
 

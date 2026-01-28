@@ -55,6 +55,7 @@ from gemseo.mda.base_parallel_mda_settings import (
     BaseParallelMDASettings as BaseParallelMDASettings,
 )
 from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
+from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
@@ -919,13 +920,12 @@ def create_surrogate(
             and the name of the training dataset is used.
     """
     from gemseo.disciplines.surrogate import SurrogateDiscipline  # noqa:F811
-    from gemseo.mlearning.regression.models.factory import RegressorFactory
 
     if isinstance(regressor, BaseRegressor):
         return SurrogateDiscipline(regressor, name=name)
 
     if isinstance(regressor, str):
-        settings = RegressorFactory().get_class(regressor).Settings()
+        settings = REGRESSOR_FACTORY.get_class(regressor).Settings()
     else:
         settings = regressor
 
