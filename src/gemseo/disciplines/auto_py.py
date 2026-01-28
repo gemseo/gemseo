@@ -85,7 +85,7 @@ class AutoPyDiscipline(Discipline):
     The default input values are the default values of the Python function arguments,
     if any.
 
-    [This example][create-a-discipline-from-a-python-function]
+    [This example][use-a-python-function]
     from the documentation
     illustrates this feature.
     """
