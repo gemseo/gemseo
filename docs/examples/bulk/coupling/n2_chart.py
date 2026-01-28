@@ -73,4 +73,4 @@ dummy_disciplines = [
 generate_n2_plot(dummy_disciplines, save=False, show_html=True)
 
 # %%
-# [Click here](../../../_static/n2.html) to see the rendering.
+# [Click here](../../../../_static/n2.html) to see the rendering.

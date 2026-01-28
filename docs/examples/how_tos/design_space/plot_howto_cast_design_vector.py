@@ -25,10 +25,26 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial
 #                           documentation
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# How to cast parameters into different types.
+"""# How to cast parameters into different types
 
-Design parameters can be defined in different types.
-In this example, we will see how to deal with type casting.
+## Problem
+
+Design parameters can be defined in different ways:
+arrays, dict, rela or complex...
+
+## Solution
+
+The [DesignSpace][gemseo.algos.design_space.DesignSpace] can cast design parameters
+into different types.
+
+## Step-by-step guide
+
+You will see how to deal with type casting:
+
+- cast an array to a dict;
+- cast a dict into an array;
+- cast to complex values;
+- convert to integer, if needed.
 """
 
 from __future__ import annotations
@@ -39,17 +55,19 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ## Create a design space
+# ### 1. Create a design space
 #
 # First, let's create a design space.
 design_space = create_design_space()
 design_space.add_variable("x1", lower_bound=-10, upper_bound=10)
-design_space.add_variable("x2", lower_bound=-10, upper_bound=10)
+design_space.add_variable(
+    "x2", lower_bound=-10, upper_bound=10, type_=design_space.DesignVariableType.INTEGER
+)
 design_space.add_variable("x3", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 
 # %%
-# ## Cast a design point from array to dict
+# ### 2. Cast a design point from array to dict
 #
 # We can cast a design point from `array` to `dict`,
 # by means of the
@@ -58,7 +76,8 @@ array_point = array([1, 2, 3, 4])
 dict_point = design_space.convert_array_to_dict(array_point)
 dict_point
 
-# ## Cast a design point from dict to array
+# %%
+# ### 3. Cast a design point from dict to array
 #
 # We can cast a design point from `dict` to `array` by means of
 # the [convert_dict_to_array()][gemseo.algos.design_space.DesignSpace.convert_dict_to_array] method.
@@ -72,7 +91,7 @@ new_array_point = design_space.convert_dict_to_array(dict_point)
 new_array_point
 
 # %%
-# ## Cast a the current value to complex
+# ### 4. Cast the current value to complex
 #
 # We can cast the current value to complex by means of
 # the [to_complex()][gemseo.algos.design_space.DesignSpace.to_complex] method:
@@ -81,7 +100,7 @@ design_space.to_complex()
 design_space.get_current_value()
 
 # %%
-# ## How to cast the right component values of a vector to integer?
+# ### 5. Cast the right component values of a vector to integer
 #
 # For a given vector where some components should be integer,
 # it is possible to round them by means of
@@ -89,3 +108,13 @@ design_space.get_current_value()
 vector = array([1.3, 3.4, 3.6, -1.4])
 rounded_vector = design_space.round_vect(vector)
 rounded_vector
+
+# %%
+# ## Summary
+#
+# You can transform a design vector with:
+#
+# - [convert_array_to_dict()][gemseo.algos.design_space.DesignSpace.convert_array_to_dict] to cast an array into a dict;
+# - [convert_dict_to_array()][gemseo.algos.design_space.DesignSpace.convert_dict_to_array] to cast a dict into an array;
+# - [to_complex()][gemseo.algos.design_space.DesignSpace.to_complex] to cast into complex;
+# - [round_vect()][gemseo.algos.design_space.DesignSpace.round_vect] to take into account integers.

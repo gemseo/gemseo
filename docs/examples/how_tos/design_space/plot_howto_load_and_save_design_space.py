@@ -19,10 +19,18 @@
 #                           documentation
 #        :author: Jean-Christophe Giret
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# How to import and export a design space from disk.
+"""# How to import and export a design space from disk
 
-In this example, we will see how to read, filter, and export a design space
-from the disk.
+## Problem
+
+You want to save a design space as a file, and be able to read it afterwards.
+
+## Solution
+
+GEMSEO brings high level functions to save and load a design space stored in a file.
+
+## Step-by-step guide
+
 """
 
 from __future__ import annotations
@@ -31,11 +39,19 @@ from gemseo import read_design_space
 from gemseo import write_design_space
 
 # %%
-# ## Read a design space from a file
+# ### 1. Read a design space from a file
 #
+# Let's imagine we get a design space stored as:
+#
+# ``` txt
+# name lower_bound value upper_bound type
+# x1 -1. 0. 1. float
+# x2 5. 6. 8. float
+# x 2. 3. 5. integer
+# ```
 #
 # The user can read a design space from a file using the
-# [create_design_space()][gemseo.create_design_space] function.
+# [read_design_space()][gemseo.read_design_space] function.
 design_space = read_design_space("design_space.csv")
 design_space
 
@@ -67,21 +83,21 @@ design_space
 #         ```
 #
 # !!! note
-#     -   Lower infinite bound is encoded `-inf'` or `'-Inf'`.
+#     -   Lower infinite bound is encoded `'-inf'` or `'-Inf'`.
 #     -   Upper infinite bound is encoded `'inf'`, `'Inf'`, `'+inf'` or `'+Inf'`.
 #
-# ## Filtering the design space
-#
-#
-# The user can filter the design space in order to only keep some variables. To
-# do so, the user can use the [filter()][gemseo.algos.design_space.DesignSpace.filter] method:
-design_space.filter(["x1", "x2"])
-design_space
 
 # %%
-# ## Export the design space
+# ### 2. Export the design space
 #
-#
-# The user can export a [DesignSpace][gemseo.algos.design_space.DesignSpace] instance by using the
+# Then, you can export this design space by using the
 # [write_design_space()][gemseo.write_design_space] function.
 write_design_space(design_space, "new_design_space.csv")
+
+# %%
+#
+# ## Summary
+#
+# Loading and exporting a design space can be done through the high-level functions
+# [read_design_space()][gemseo.read_design_space] and
+# [write_design_space()][gemseo.write_design_space].
