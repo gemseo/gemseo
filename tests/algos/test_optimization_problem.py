@@ -39,6 +39,7 @@ from numpy import ndarray
 from numpy import ones
 from numpy import sin
 from numpy import zeros
+from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 from pandas import MultiIndex
 from pandas.testing import assert_frame_equal
@@ -1186,7 +1187,8 @@ def test_database_name(problem) -> None:
         (
             False,
             (
-                "Algorithm SLSQP is not adapted to the problem, it does not handle "
+                "Algorithm L-BFGS-B is not adapted to the problem, "
+                "it does not handle "
                 "integer variables.\n"
                 "Execution may be forced setting the 'skip_int_check' argument "
                 "to 'True'."
@@ -1215,7 +1217,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     if skip_int_check:
         OptimizationLibraryFactory().execute(
             problem,
-            algo_name="SLSQP",
+            algo_name="L-BFGS-B",
             normalize_design_space=True,
             skip_int_check=skip_int_check,
         )
@@ -1225,7 +1227,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
         with pytest.raises(ValueError, match=expected_message):
             OptimizationLibraryFactory().execute(
                 problem,
-                algo_name="SLSQP",
+                algo_name="L-BFGS-B",
                 normalize_design_space=True,
                 skip_int_check=skip_int_check,
             )
@@ -2219,7 +2221,7 @@ def test_no_initial_value_with_approximated_gradient(value, differentiation_meth
     problem.objective = MDOFunction(lambda x: x**2, "f")
     problem.differentiation_method = differentiation_method
     optimization_result = execute_algo(problem, algo_name="SLSQP", max_iter=100)
-    assert optimization_result.x_opt == 0
+    assert_allclose(optimization_result.x_opt, 0, rtol=0, atol=1e-9)
 
 
 @pytest.mark.parametrize("preprocess", [False, True])

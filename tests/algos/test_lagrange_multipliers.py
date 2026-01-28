@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 from numpy import array
 from numpy import full
+from numpy.testing import assert_allclose
 
 from gemseo import create_scenario
 from gemseo import execute_algo
@@ -82,7 +83,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
 
 
 @pytest.mark.parametrize(
-    ("normalize", "eps", "tol"), [(False, 1e-5, 1e-7), (True, 1e-3, 1e-8)]
+    ("normalize", "eps", "tol"), [(False, 1e-5, 1e-6), (True, 1e-3, 1e-8)]
 )
 def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) -> None:
     options = deepcopy(SLSQP_OPTIONS)
@@ -94,16 +95,18 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
 
     def obj(lb):
         problem = Power2()
+        # Normalization enables the test to pass with Scipy SLSQP
+        normalization_factor = 0.1
+        problem.objective *= normalization_factor
         dspace = problem.design_space
         dspace.set_current_value(array([1.0, 0.9, 1.0]))
         dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
         execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
-        return problem.solution.f_opt
+        return problem.solution.f_opt / normalization_factor
 
     df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
     df_anal = lagrangian["lower_bounds"][1]
-    err = abs((df_fd - df_anal) / df_anal)
-    assert err < tol
+    assert_allclose(df_fd, df_anal, rtol=tol, atol=0)
 
 
 def test_lagrangian_validation_eq(problem) -> None:

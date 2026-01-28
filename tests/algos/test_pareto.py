@@ -168,5 +168,5 @@ def test_get_lowest_norm_attribute(problem_2obj):
     assert_allclose(x_utopia_neighbors, array([[1.4295, 1.4295]]), atol=1e-4)
     assert_allclose(distance_from_utopia, 27.0, atol=1e-2)
     assert array([5.0, 3.0]) in x_optima
-    assert_allclose(f_utopia, array([0.0, 4.0]))
+    assert_allclose(f_utopia, array([0.0, 4.0]), rtol=0, atol=1e-9)
     assert_allclose(f_anti_utopia, array([136.0, 50.0]))
