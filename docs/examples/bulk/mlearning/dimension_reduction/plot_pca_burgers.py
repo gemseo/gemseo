@@ -29,7 +29,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from numpy import eye
 
-from gemseo.mlearning.transformers.dimension_reduction.pca import PCA
+from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 from gemseo.problems.dataset.burgers import create_burgers_dataset
 
 # %%
@@ -40,6 +40,7 @@ dataset
 t = dataset.input_dataset.to_numpy()[:, 0]
 u_t = dataset.output_dataset.to_numpy()
 t_split = 0.87
+
 
 # %%
 # ## Plot dataset

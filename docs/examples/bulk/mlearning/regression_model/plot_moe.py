@@ -21,7 +21,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Mixture of experts.
 
-A [MOERegressor][gemseo.mlearning.regression.models.moe.MOERegressor] is a mixture of experts for regression purposes.
+A [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] is a
+mixture of
+experts for regression purposes.
 
 In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
@@ -39,7 +41,7 @@ from numpy import sqrt
 from numpy import zeros
 
 from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_regression_model
+from gemseo.machine_learning import create_regression_model
 
 # %%
 # ## Dataset (Rosenbrock)
@@ -78,7 +80,8 @@ dataset
 # ### Mixture of experts model
 #
 # We construct the MoE model using the predefined parameters,
-# and fit the model to the dataset through the [learn()][gemseo.mlearning.regression.models.moe.MOERegressor.learn] method.
+# and fit the model to the dataset through the [learn()][
+# gemseo.machine_learning.regression.models.moe.MOERegressor.learn] method.
 model = create_regression_model("MOERegressor", dataset)
 model.set_clusterer("KMeans", n_clusters=3)
 model.set_classifier("KNNClassifier", n_neighbors=5)

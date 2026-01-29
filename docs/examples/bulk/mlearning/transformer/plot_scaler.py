@@ -26,9 +26,9 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 from numpy import linspace
 
-from gemseo.mlearning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.mlearning.transformers.scaler.scaler import Scaler
-from gemseo.mlearning.transformers.scaler.standard_scaler import StandardScaler
+from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformers.scaler.scaler import Scaler
+from gemseo.machine_learning.transformers.scaler.standard_scaler import StandardScaler
 
 # %%
 # Scaling data may be important, as discussed in another example.
@@ -38,7 +38,9 @@ data = linspace(-2, 2, 100)
 
 # %%
 # First,
-# a [Scaler][gemseo.mlearning.transformers.scaler.scaler.Scaler] transforms a value $x$ into a new value $\tilde{x}$
+# a [Scaler][gemseo.machine_learning.transformers.scaler.scaler.Scaler] transforms a
+# value
+# $x$ into a new value $\tilde{x}$
 # based on the linear function $\tilde{x}=a+bx$.
 # By default, the offset $a$ is zero and the coefficient $b$ is one:
 default_scaler = Scaler()
@@ -48,12 +50,16 @@ default_scaler = Scaler()
 custom_scaler = Scaler(offset=-1, coefficient=0.5)
 
 # %%
-# or use a specific [Scaler][gemseo.mlearning.transformers.scaler.scaler.Scaler] for that,
-# e.g. a [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]:
+# or use a specific [Scaler][gemseo.machine_learning.transformers.scaler.scaler
+# .Scaler] for
+# that,
+# e.g. a [MinMaxScaler][gemseo.machine_learning.transformers.scaler.min_max_scaler
+# .MinMaxScaler]:
 min_max_scaler = MinMaxScaler()
 
 # %%
-# or a [StandardScaler][gemseo.mlearning.transformers.scaler.standard_scaler.StandardScaler]:
+# or a [StandardScaler][gemseo.machine_learning.transformers.scaler.standard_scaler
+# .StandardScaler]:
 standard_scaler = StandardScaler()
 
 # %%
@@ -81,9 +87,12 @@ plt.show()
 # %%
 # The specific features of the different scalers are clearly visible.
 # In particular,
-# the [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler] projects the data onto the interval $[0,1]$
+# the [MinMaxScaler][gemseo.machine_learning.transformers.scaler.min_max_scaler
+# .MinMaxScaler
+# ] projects the data onto the interval $[0,1]$
 # as long as this data is included in the fitting interval.
-# The [StandardScaler][gemseo.mlearning.transformers.scaler.standard_scaler.StandardScaler] guarantees that
+# The [StandardScaler][gemseo.machine_learning.transformers.scaler.standard_scaler
+# .StandardScaler] guarantees that
 # the transformed `data` have zero mean and unit variance.
 #
 # Lastly,

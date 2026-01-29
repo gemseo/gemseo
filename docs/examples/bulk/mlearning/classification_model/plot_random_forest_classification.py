@@ -21,7 +21,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Random forest.
 
-A [RandomForestClassifier][gemseo.mlearning.classification.models.random_forest.RandomForestClassifier] is a random forest model
+A [RandomForestClassifier][gemseo.machine_learning.classification.models.random_forest
+.RandomForestClassifier] is a random forest model
 based on [scikit-learn](https://scikit-learn.org/).
 
 We want to classify the Iris dataset using a Random Forest classifier.
@@ -32,7 +33,7 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_classification_model
+from gemseo.machine_learning import create_classification_model
 
 # %%
 # ## Load Iris dataset

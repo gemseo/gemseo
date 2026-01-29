@@ -50,12 +50,12 @@ from numpy import ndarray
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
+from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
 from gemseo.mda.base_parallel_mda_settings import (
     BaseParallelMDASettings as BaseParallelMDASettings,
 )
-from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
 from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
@@ -108,12 +108,14 @@ if TYPE_CHECKING:
         JobSchedulerDisciplineWrapper,
     )
     from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-    from gemseo.mda.base_mda import BaseMDA
-    from gemseo.mda.base_mda_settings import BaseMDASettings
-    from gemseo.mlearning.core.models.ml_model import TransformerType as TransformerType
-    from gemseo.mlearning.regression.models.base_regressor_settings import (
+    from gemseo.machine_learning.core.models.ml_model import (
+        TransformerType as TransformerType,
+    )
+    from gemseo.machine_learning.regression.models.base_regressor_settings import (
         BaseRegressorSettings,
     )
+    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base_mda_settings import BaseMDASettings
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
@@ -254,7 +256,7 @@ def get_available_surrogates() -> list[str]:
     Returns:
         The names of the available surrogate disciplines.
     """
-    from gemseo.mlearning import get_regression_models
+    from gemseo.machine_learning import get_regression_models
 
     return get_regression_models()
 
@@ -285,7 +287,7 @@ def get_surrogate_options_schema(
     Returns:
         The schema of the options of the surrogate discipline.
     """
-    from gemseo.mlearning import get_regression_options
+    from gemseo.machine_learning import get_regression_options
 
     return get_regression_options(surrogate_name, output_json, pretty_print)
 
@@ -909,7 +911,7 @@ def create_surrogate(
             the input and output variables are scaled between 0 and 1 by default.
             Use a dictionary to change this behavior.
             The values of the dictionary are transformers
-            ([BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer])
+            ([BaseTransformer][gemseo.machine_learning.transformers.base_transformer.BaseTransformer])
             while a key can be either
             a variable name (apply the transformer to this variable),
             `"inputs"` (apply the transformer to all the input variables),
@@ -1073,8 +1075,8 @@ def print_configuration() -> None:
     from gemseo.algos.opt.factory import OptimizationLibraryFactory
     from gemseo.disciplines.factory import DisciplineFactory
     from gemseo.formulations.factory import MDOFormulationFactory
+    from gemseo.machine_learning.regression.models.factory import RegressorFactory
     from gemseo.mda.factory import MDAFactory
-    from gemseo.mlearning.regression.models.factory import RegressorFactory
     from gemseo.post.factory import PostFactory
 
     settings = _log_settings()

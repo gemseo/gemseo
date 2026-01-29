@@ -27,7 +27,7 @@ of this [Discipline][gemseo.core.discipline.discipline.Discipline].
 This learning phase commonly relies on a regression
 model calibrated by machine learning techniques. This is the reason why
 GEMSEO provides a machine learning package which includes the
-[BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor] class implementing the concept of
+[BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor] class implementing the concept of
 regression model.
 In addition, this machine learning package has a much broader set of features
 than regression: clustering, classification, dimension reduction, data scaling,
@@ -41,9 +41,9 @@ than regression: clustering, classification, dimension reduction, data scaling,
 
 This diagram shows the hierarchy of all machine learning models,
 and where they interact with [Dataset][gemseo.datasets.dataset.Dataset],
-[BaseMLModelQuality][gemseo.mlearning.core.quality.base_ml_model_quality.BaseMLModelQuality],
-[BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer]
-and [MLModelCalibration][gemseo.mlearning.core.calibration.MLModelCalibration].
+[BaseMLModelQuality][gemseo.machine_learning.core.quality.base_ml_model_quality.BaseMLModelQuality],
+[BaseTransformer][gemseo.machine_learning.transformers.base_transformer.BaseTransformer]
+and [MLModelCalibration][gemseo.machine_learning.core.calibration.MLModelCalibration].
 
 ```mermaid
 classDiagram

@@ -25,8 +25,8 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
+from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.quality.rmse_measure import RMSEMeasure
 
 # %%
 # Every quality measure can be computed from a training dataset or a test dataset.
@@ -69,13 +69,16 @@ y_train = f(x_train)
 
 # %%
 # Then,
-# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7 learning samples:
+# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7
+# learning samples:
 dataset_train = IODataset()
 dataset_train.add_input_group(x_train[:, newaxis], ["x"])
 dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# and build a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] with `degree=3` from it:
+# and build a [PolynomialRegressor][
+# gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] with `degree=3`
+# from it:
 polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 

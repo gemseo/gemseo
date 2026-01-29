@@ -21,28 +21,30 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# High-level functions.
 
-The [gemseo.mlearning][gemseo.mlearning] package includes high-level functions
+The [gemseo.machine_learning][gemseo.machine_learning] package includes high-level functions
 to create classification models from model class names.
 """
 
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_classification_model
-from gemseo.mlearning import get_classification_models
-from gemseo.mlearning import get_classification_options
+from gemseo.machine_learning import create_classification_model
+from gemseo.machine_learning import get_classification_models
+from gemseo.machine_learning import get_classification_options
 
 # %%
 # ## Available models
 #
-# Use the [get_classification_models()][gemseo.mlearning.get_classification_models]
+# Use the [get_classification_models()][
+# gemseo.machine_learning.get_classification_models]
 # to list the available model class names:
 get_classification_models()
 
 # %%
 # ## Available model options
 #
-# Use the [get_classification_options()][gemseo.mlearning.get_classification_options]
+# Use the [get_classification_options()][
+# gemseo.machine_learning.get_classification_options]
 # to get the options of a model
 # from its class name:
 get_classification_options("KNNClassifier", pretty_print=False)
@@ -52,7 +54,9 @@ get_classification_options("KNNClassifier", pretty_print=False)
 # !!! info "See also"
 #
 #     The functions
-#     [get_classification_models()][gemseo.mlearning.get_classification_models] and [get_classification_options()][gemseo.mlearning.get_classification_options]
+#     [get_classification_models()][
+#     gemseo.machine_learning.get_classification_models] and [
+#     get_classification_options()][gemseo.machine_learning.get_classification_options]
 #     can be very useful for the developers.
 #     As a user,
 #     it may be easier to consult [this page][available-classification-models]
@@ -63,7 +67,8 @@ get_classification_options("KNNClassifier", pretty_print=False)
 # Given a training dataset, *e.g.*
 dataset = create_benchmark_dataset("IrisDataset", as_io=True)
 # %%
-# use the [create_classification_model()][gemseo.mlearning.create_classification_model] function
+# use the [create_classification_model()][
+# gemseo.machine_learning.create_classification_model] function
 # to create a classification model from its class name and settings:
 model = create_classification_model("KNNClassifier", data=dataset)
 model.learn()

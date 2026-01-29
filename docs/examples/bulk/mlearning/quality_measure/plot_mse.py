@@ -25,9 +25,9 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.models.rbf import RBFRegressor
-from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.models.rbf import RBFRegressor
+from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 
 # %%
 # Given a dataset $(x_i,y_i,\hat{y}_i)_{1\leq i \leq N}$
@@ -44,7 +44,8 @@ from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
 # this depends on the order of magnitude of the outputs.
 # The square root of this average is often easier to interpret,
 # as it is expressed in the units of the output
-# (see [RMSEMeasure][gemseo.mlearning.regression.quality.rmse_measure.RMSEMeasure]).
+# (see [RMSEMeasure][gemseo.machine_learning.regression.quality.rmse_measure
+# .RMSEMeasure]).
 #
 # To illustrate this quality measure,
 # let us consider the function $f(x)=(6x-2)^2\sin(12x-4)$.
@@ -71,13 +72,16 @@ y_train = f(x_train)
 
 # %%
 # Then,
-# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7 learning samples:
+# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7
+# learning samples:
 dataset_train = IODataset()
 dataset_train.add_input_group(x_train[:, newaxis], ["x"])
 dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# and build a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] with `degree=3` from it:
+# and build a [PolynomialRegressor][
+# gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] with `degree=3`
+# from it:
 polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 
@@ -133,7 +137,8 @@ rbf = RBFRegressor(dataset_train)
 rbf.learn()
 
 # %%
-# The quality of this [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor] is quite good,
+# The quality of this [RBFRegressor][
+# gemseo.machine_learning.regression.models.rbf.RBFRegressor] is quite good,
 # both on the learning side:
 mse_rbf = MSEMeasure(rbf)
 result = mse_rbf.compute_learning_measure()

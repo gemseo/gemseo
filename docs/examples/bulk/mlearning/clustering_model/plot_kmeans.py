@@ -22,7 +22,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# K-means.
 
-A [KMeans][gemseo.mlearning.clustering.models.kmeans.KMeans] is a k-means model
+A [KMeans][gemseo.machine_learning.clustering.models.kmeans.KMeans] is a k-means model
 based on [scikit-learn](https://scikit-learn.org/).
 
 Load Iris dataset and create clusters.
@@ -34,7 +34,7 @@ from numpy import array
 
 from gemseo import create_benchmark_dataset
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning import create_clustering_model
+from gemseo.machine_learning import create_clustering_model
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 # %%

@@ -19,7 +19,7 @@
 - `gemseo.core.grammars.defaults.Defaults` was removed; use `gemseo.core.grammars.grammar_properties.GrammarProperties` instead.
 - `gemseo.disciplines.utils` was removed; use `gemseo.utils.discipline` instead.
 - `gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings` was removed; use `gemseo.formulations.bilevel_bcd_settings.BiLevelBCD_Settings` instead.
-- `gemseo.mlearning.linear_model_fitting.BaseLinearModelFitter_Settings` was removed; use `gemseo.mlearning.linear_model_fitting.BaseLinearModelFitterSettings` instead.
-- `gemseo.mlearning.regression.models.base_fce_settings.BaseFCERegressor_Settings` was removed; use `gemseo.mlearning.regression.models.base_fce_settings.BaseFCERegressorSettings` instead.
-- `gemseo.mlearning.regression.models.mode_settings.MOE_Settings` was removed; use `gemseo.mlearning.regression.models.mode_settings.MOERegressor_Settings` instead.
-- `gemseo.mlearning.regression.models.rbf_settings.Function` was removed; use `gemseo.mlearning.regression.models.rbf_settings.RBF` instead.
+- `gemseo.mlearning.linear_model_fitting.BaseLinearModelFitter_Settings` was removed; use `gemseo.machine_learning.linear_model_fitting.BaseLinearModelFitterSettings` instead.
+- `gemseo.mlearning.regression.models.base_fce_settings.BaseFCERegressor_Settings` was removed; use `gemseo.machine_learning.regression.models.base_fce_settings.BaseFCERegressorSettings` instead.
+- `gemseo.mlearning.regression.models.mode_settings.MOE_Settings` was removed; use `gemseo.machine_learning.regression.models.mode_settings.MOERegressor_Settings` instead.
+- `gemseo.mlearning.regression.models.rbf_settings.Function` was removed; use `gemseo.machine_learning.regression.models.rbf_settings.RBF` instead.

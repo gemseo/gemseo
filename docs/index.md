@@ -230,11 +230,11 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     Apply clustering, classification and regression methods from the machine learning community.
 
     Features:
-    [clustering][gemseo.mlearning.clustering.models],
-    [classification][gemseo.mlearning.classification.models],
-    [regression][gemseo.mlearning.regression.models],
-    [quality measures][gemseo.mlearning.core.quality.base_ml_model_quality] and
-    [data transformation][gemseo.mlearning.transformers.pipeline].
+    [clustering][gemseo.machine_learning.clustering.models],
+    [classification][gemseo.machine_learning.classification.models],
+    [regression][gemseo.machine_learning.regression.models],
+    [quality measures][gemseo.machine_learning.core.quality.base_ml_model_quality] and
+    [data transformation][gemseo.machine_learning.transformers.pipeline].
 
 - ### __Uncertainty__
 

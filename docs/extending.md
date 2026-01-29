@@ -21,7 +21,7 @@ The simplest way is to create a subclass associated to the feature you want to e
 
 - for optimizers, inherit from [BaseOptimizationLibrary][gemseo.algos.opt.base_optimization_library.BaseOptimizationLibrary], and put the Python file in the **`src/gemseo/algos/opt`** package,
 - for DOEs, inherit from [BaseDOELibrary][gemseo.algos.doe.base_doe_library.BaseDOELibrary], and put the Python file in the **`src/gemseo/algos/doe`** package,
-- for surrogate models, inherit from [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor], and put the Python file in the **`src/gemseo/mlearning/regression/algos`** package,
+- for surrogate models, inherit from [BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor], and put the Python file in the **`src/gemseo/machine_learning/regression/algos`** package,
 - for MDAs, inherit from [BaseMDA][gemseo.mda.base_mda.BaseMDA], and put the Python file in the **`src/gemseo/mda`** package,
 - for MDO formulations, inherit from [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation], and put the Python file in the **`src/gemseo/formulations`** package,
 - for disciplines, inherit from [Discipline][gemseo.core.discipline.discipline.Discipline], and put the Python file in the **`src/gemseo/disciplines`** package, which you created.

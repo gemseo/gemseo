@@ -21,7 +21,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Polynomial chaos expansion (PCE).
 
-A [PCERegressor][gemseo.mlearning.regression.models.pce.PCERegressor] is a PCE model
+A [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor] is a PCE
+model
 based on [OpenTURNS](http://openturns.github.io/).
 """
 
@@ -33,7 +34,7 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_parameter_space
 from gemseo import sample_disciplines
-from gemseo.mlearning import create_regression_model
+from gemseo.machine_learning import create_regression_model
 
 # %%
 # ## Problem
@@ -106,8 +107,12 @@ plt.show()
 # %%
 # ## Settings
 #
-# The [PCERegressor][gemseo.mlearning.regression.models.pce.PCERegressor] has many options
-# defined in the [PCERegressor_Settings][gemseo.mlearning.regression.models.pce_settings.PCERegressor_Settings] Pydantic model.
+# The [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor] has
+# many
+# options
+# defined in the [PCERegressor_Settings][
+# gemseo.machine_learning.regression.models.pce_settings.PCERegressor_Settings]
+# Pydantic model.
 #
 # ### Degree
 #

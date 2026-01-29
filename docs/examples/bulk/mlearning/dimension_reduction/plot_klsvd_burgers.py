@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 
-from gemseo.mlearning.transformers.dimension_reduction.klsvd import KLSVD
+from gemseo.machine_learning.transformers.dimension_reduction.klsvd import KLSVD
 from gemseo.problems.dataset.burgers import create_burgers_dataset
 
 # %%
@@ -41,6 +41,7 @@ dataset
 t = dataset.input_dataset.to_numpy()[:, 0]
 u_t = dataset.output_dataset.to_numpy()
 t_split = 0.87
+
 
 # %%
 # ## Plot dataset

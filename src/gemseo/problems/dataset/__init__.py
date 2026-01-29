@@ -34,8 +34,8 @@ to illustrate its capabilities:
   the [Burgers' equation](https://en.wikipedia.org/wiki/Burgers%27_equation)
   at given times,
   initially introduced to illustrate dimension reduction methods,
-  e.g. [PCA][gemseo.mlearning.transformers.dimension_reduction.pca.PCA] or
-  [KLSVD][gemseo.mlearning.transformers.dimension_reduction.klsvd.KLSVD].
+  e.g. [PCA][gemseo.machine_learning.transformers.dimension_reduction.pca.PCA] or
+  [KLSVD][gemseo.machine_learning.transformers.dimension_reduction.klsvd.KLSVD].
 """
 
 from __future__ import annotations

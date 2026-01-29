@@ -21,7 +21,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Random forest.
 
-A [RandomForestRegressor][gemseo.mlearning.regression.models.random_forest.RandomForestRegressor] is a random forest model
+A [RandomForestRegressor][gemseo.machine_learning.regression.models.random_forest
+.RandomForestRegressor] is a random forest model
 based on [scikit-learn](https://scikit-learn.org).
 """
 
@@ -35,7 +36,7 @@ from numpy import array
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import sample_disciplines
-from gemseo.mlearning import create_regression_model
+from gemseo.machine_learning import create_regression_model
 
 # %%
 # ## Problem
@@ -135,7 +136,8 @@ plt.show()
 # ## Others
 #
 # The `RandomForestRegressor` class of scikit-learn has a lot of settings
-# ([read more](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)),
+# ([read more](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble
+# .RandomForestRegressor.html)),
 # and we have chosen to exhibit only `n_estimators`.
 # However,
 # any argument of `RandomForestRegressor` can be set

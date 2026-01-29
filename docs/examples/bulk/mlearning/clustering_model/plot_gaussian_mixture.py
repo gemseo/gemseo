@@ -22,7 +22,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Gaussian mixture.
 
-A [GaussianMixture][gemseo.mlearning.clustering.models.gaussian_mixture.GaussianMixture] is a Gaussian mixture model
+A [GaussianMixture][gemseo.machine_learning.clustering.models.gaussian_mixture
+.GaussianMixture] is a Gaussian mixture model
 based on [scikit-learn](https://scikit-learn.org/).
 
 Load Iris dataset and create clusters.
@@ -34,7 +35,7 @@ from numpy import array
 
 from gemseo import create_benchmark_dataset
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning import create_clustering_model
+from gemseo.machine_learning import create_clustering_model
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 # %%

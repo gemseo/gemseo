@@ -27,8 +27,8 @@ from numpy import allclose
 from numpy import linspace
 from numpy import newaxis
 
-from gemseo.mlearning.transformers.pipeline import Pipeline
-from gemseo.mlearning.transformers.scaler.scaler import Scaler
+from gemseo.machine_learning.transformers.pipeline import Pipeline
+from gemseo.machine_learning.transformers.scaler.scaler import Scaler
 
 # %%
 # To illustrate the pipeline,
@@ -43,7 +43,8 @@ pipeline = Pipeline(transformers=[Scaler(offset=1), Scaler(coefficient=2)])
 
 # %%
 # Then,
-# we fit this [Pipeline][gemseo.mlearning.transformers.pipeline.Pipeline] to the data,
+# we fit this [Pipeline][gemseo.machine_learning.transformers.pipeline.Pipeline] to
+# the data,
 # transform them and compute the Jacobian:
 transformed_data = pipeline.fit_transform(data)
 transformed_jac_data = pipeline.compute_jacobian(data)
@@ -65,5 +66,10 @@ assert allclose(transformed_data, data_shifted_then_scaled)
 assert allclose(transformed_jac_data, jac_shifted_then_scaled)
 
 # %%
-# Note that a [Pipeline][gemseo.mlearning.transformers.pipeline.Pipeline] can compute the Jacobian
-# as long as the [BaseTransformer][gemseo.mlearning.transformers.base_transformer.BaseTransformer] instances that make it up can do so.
+# Note that a [Pipeline][gemseo.machine_learning.transformers.pipeline.Pipeline] can
+# compute
+# the Jacobian
+# as long as the [BaseTransformer][
+# gemseo.machine_learning.transformers.base_transformer.BaseTransformer] instances
+# that make
+# it up can do so.

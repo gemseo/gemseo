@@ -98,10 +98,10 @@ from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.machine_learning.regression.models.rbf import RBFRegressor
+from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.mda.base_mda import BaseMDA
 from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
-from gemseo.mlearning.regression.models.rbf import RBFRegressor
-from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1

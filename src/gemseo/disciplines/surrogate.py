@@ -26,10 +26,12 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.discipline import Discipline
-from gemseo.mlearning.regression.models.base_regressor import BaseRegressor
-from gemseo.mlearning.regression.models.factory import REGRESSOR_FACTORY
-from gemseo.mlearning.regression.quality.factory import REGRESSOR_QUALITY_FACTORY
-from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
+from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
+from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.quality.factory import REGRESSOR_QUALITY_FACTORY
+from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
+    MLRegressorQualityViewer,
+)
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -40,11 +42,11 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.mlearning.core.models.ml_model import TransformerType
-    from gemseo.mlearning.regression.models.base_regressor_settings import (
+    from gemseo.machine_learning.core.models.ml_model import TransformerType
+    from gemseo.machine_learning.regression.models.base_regressor_settings import (
         BaseRegressorSettings,
     )
-    from gemseo.mlearning.regression.quality.base_regressor_quality import (
+    from gemseo.machine_learning.regression.quality.base_regressor_quality import (
         BaseRegressorQuality,
     )
     from gemseo.typing import StrKeyMapping
