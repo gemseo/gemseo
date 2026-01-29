@@ -177,6 +177,9 @@ class XLSDiscipline(Discipline):
         try:
             self._xls_app = xlwings.App(visible=False)
             self._xls_app.interactive = False
+            # Open workbook in manual mode to recalculate cells only when instructed.
+            self._xls_app.calculation = "manual"
+
         # Wide except because I cannot tell what is the exception raised by xlwings.
         except BaseException:  # noqa: BLE001
             msg = "xlwings requires Microsoft Excel"
@@ -225,7 +228,7 @@ class XLSDiscipline(Discipline):
         self,
         sheet_name: str,
         column: int = 0,
-    ) -> list[list[str], list[str], list[float], list[float]]:
+    ) -> list[str | float | None]:
         """Read a specific column of the sheet.
 
         Args:
@@ -236,14 +239,36 @@ class XLSDiscipline(Discipline):
             The column values.
         """
         sht = self._book.sheets[sheet_name]
-        i = 0
-        value = sht[i, column].value
-        values = []
-        while value is not None:
-            values.append(value)
-            i += 1
-            value = sht[i, column].value
-        return values
+
+        return sht[0, column].expand("down").options(ndim=1).value
+
+    def __build_data_dict(
+        self,
+        names: list[str],
+        values: list[float | None],
+    ) -> tuple[dict[str, array], list[int]]:
+        """Build the data dictionary while listing Excel rows where errors are found.
+
+        A `None` value is interpreted as an Excel error in that cell.
+
+        Args:
+            names: The variable names.
+            values: The values read from the Excel sheet.
+
+        Returns:
+            The data dictionary and the list of Excel rows with None values.
+        """
+        data_dict = {}
+        error_rows = []
+        for row, (k, v) in enumerate(
+            zip(names, values, strict=False),
+            start=1,
+        ):
+            data_dict[k] = array([v])
+            if v is None:
+                error_rows.append(row)
+
+        return data_dict, error_rows
 
     def _init_grammars(self) -> None:
         """Initialize grammars by parsing the Inputs and Outputs sheets."""
@@ -257,7 +282,8 @@ class XLSDiscipline(Discipline):
 
         Raises:
             ValueError: If the "Inputs" sheet does not have the same number of
-                entries in the name column and the value column.
+                entries in the name column and the value column, or if the value column
+                contains Excel errors.
         """
         inputs = self.__read_sheet_col("Inputs", 1)
         if len(inputs) != len(self.input_names):
@@ -267,9 +293,14 @@ class XLSDiscipline(Discipline):
             )
             raise ValueError(msg)
 
-        self.io.input_grammar.defaults = {
-            k: array([v]) for k, v in zip(self.input_names, inputs, strict=False)
-        }
+        input_defaults, error_rows = self.__build_data_dict(self.input_names, inputs)
+        if error_rows:
+            msg = (
+                "Inputs sheet contains Excel errors in the second column at rows "
+                f"{error_rows}"
+            )
+            raise ValueError(msg)
+        self.io.input_grammar.defaults = input_defaults
 
     def __write_inputs(self, input_data: Mapping[str, float]) -> None:
         """Write the inputs values to the Inputs sheet."""
@@ -285,7 +316,8 @@ class XLSDiscipline(Discipline):
         Raises:
             RuntimeError: If the macro fails to be executed.
             ValueError: If the "Outputs" sheet does not have the same number of
-                entries in the name column and the value column.
+                entries in the name column and the value column, or if the value column
+                contains Excel errors.
         """
         # If threading, the run method is called from different threads.
         # But it is not possible to pass xlwings objects between threads.
@@ -299,6 +331,9 @@ class XLSDiscipline(Discipline):
             self.__create_book(quit_xls_at_exit=False)
 
         self.__write_inputs(input_data)
+
+        # Explicitly call calculate() because the workbook is in manual mode.
+        self._xls_app.calculate()
 
         if self._xls_file_path.match("*.xlsm") and self.macro_name:
             try:
@@ -316,6 +351,14 @@ class XLSDiscipline(Discipline):
             )
             raise ValueError(msg) from None
 
+        output_data, error_rows = self.__build_data_dict(self.output_names, out_vals)
+        if error_rows:
+            msg = (
+                "Outputs sheet contains Excel errors in the second column at rows "
+                f"{error_rows}"
+            )
+            raise ValueError(msg)
+
         # When using threads, each computation is made with a unique `_xls_app`.
         # If we do not quit at this point, we loose the reference and
         # the process ends up hung.
@@ -324,6 +367,4 @@ class XLSDiscipline(Discipline):
         if self._recreate_book_at_run:
             self.__reset_xls_objects()
 
-        return {
-            k: array([v]) for k, v in zip(self.output_names, out_vals, strict=False)
-        }
+        return output_data

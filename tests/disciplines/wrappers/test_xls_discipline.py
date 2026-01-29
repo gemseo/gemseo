@@ -90,6 +90,36 @@ def test_error_execute(skip_if_xlwings_is_not_usable) -> None:
         disc.execute(INPUT_DATA)
 
 
+def test_excel_error_defaults(skip_if_xlwings_is_not_usable) -> None:
+    """Check that an exception is raised if default inputs contain excel errors.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+    """
+    with pytest.raises(
+        ValueError,
+        match=r"Inputs sheet contains Excel errors in the second column at rows \[2\]",
+    ):
+        XLSDiscipline(FILE_PATH_PATTERN.format(5))
+
+
+def test_excel_error_execute(skip_if_xlwings_is_not_usable) -> None:
+    """Check that an exception is raised if output data contain excel errors.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+    """
+    disc = XLSDiscipline(FILE_PATH_PATTERN.format(6))
+    with pytest.raises(
+        ValueError,
+        match="Outputs sheet contains Excel errors "
+        r"in the second column at rows \[1\]",
+    ):
+        disc.execute(INPUT_DATA)
+
+
 def test_multiprocessing(skip_if_xlwings_is_not_usable) -> None:
     """Test the parallel execution xls disciplines.
 
