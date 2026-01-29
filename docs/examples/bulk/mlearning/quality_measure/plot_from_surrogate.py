@@ -24,11 +24,13 @@ from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.models.rbf_settings import RBFRegressor_Settings
+from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 
 # %%
-# The quality of a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] can easily be quantified
-# from its method [get_error_measure()][gemseo.disciplines.surrogate.SurrogateDiscipline.get_error_measure].
+# The quality of a [SurrogateDiscipline][
+# gemseo.disciplines.surrogate.SurrogateDiscipline] can easily be quantified
+# from its method [get_error_measure()][
+# gemseo.disciplines.surrogate.SurrogateDiscipline.get_error_measure].
 #
 # To illustrate this point,
 # let us consider the function $f(x)=(6x-2)^2\sin(12x-4)$.
@@ -43,7 +45,8 @@ def f(x):
 
 
 # %%
-# and try to approximate it with an [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor].
+# and try to approximate it with an [RBFRegressor][
+# gemseo.machine_learning.regression.models.rbf.RBFRegressor].
 #
 # For this,
 # we can take these 7 learning input points
@@ -55,20 +58,23 @@ y_train = f(x_train)
 
 # %%
 # Then,
-# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7 learning samples:
+# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7
+# learning samples:
 dataset_train = IODataset()
 dataset_train.add_input_group(x_train[:, newaxis], ["x"])
 dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# and build a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] from it:
+# and build a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
+# from it:
 surrogate_discipline = SurrogateDiscipline.from_settings(
     RBFRegressor_Settings(), dataset_train
 )
 
 # %%
 # Lastly,
-# we can get its [R2Measure][gemseo.mlearning.regression.quality.r2_measure.R2Measure]
+# we can get its [R2Measure][gemseo.machine_learning.regression.quality.r2_measure
+# .R2Measure]
 r2 = surrogate_discipline.get_error_measure("R2Measure")
 
 # %%
@@ -88,5 +94,6 @@ r2.compute_test_measure(dataset_test)
 
 # %%
 # We can conclude that
-# the regression model on which the [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] is based
+# the regression model on which the [SurrogateDiscipline][
+# gemseo.disciplines.surrogate.SurrogateDiscipline] is based
 # is a very good approximation of the original function $f$.

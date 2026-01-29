@@ -25,8 +25,8 @@ from pydantic import ValidationError
 import gemseo.settings.doe as doe
 import gemseo.settings.formulations as formulations
 import gemseo.settings.linear_solvers as linear_solvers
+import gemseo.settings.machine_learning as mlearning
 import gemseo.settings.mda as mda
-import gemseo.settings.mlearning as mlearning
 import gemseo.settings.ode as ode
 import gemseo.settings.opt as opt
 import gemseo.settings.post as post
@@ -39,8 +39,8 @@ from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.mda.base_mda_settings import BaseMDASettings
-from gemseo.mlearning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.settings.base_settings import BaseSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
@@ -138,7 +138,7 @@ def test_post_settings(module_and_cls):
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(BaseMLModelSettings, "gemseo.mlearning", mlearning),
+    get_setting_classes(BaseMLModelSettings, "gemseo.machine_learning", mlearning),
 )
 def test_machine_learning_settings(module_and_cls):
     module, cls = module_and_cls

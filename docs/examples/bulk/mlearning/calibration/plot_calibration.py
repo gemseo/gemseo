@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 from matplotlib.tri import Triangulation
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.mlearning.core.calibration import MLModelCalibration
-from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.machine_learning.core.calibration import MLModelCalibration
+from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 
 # %%

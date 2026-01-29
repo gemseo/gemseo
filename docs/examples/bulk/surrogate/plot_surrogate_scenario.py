@@ -32,7 +32,7 @@ can be used to substitute a
 [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
 is an evaluation of the [Discipline][gemseo.core.discipline.discipline.Discipline]
 and is faster to compute than the original one. It relies on a
-[BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor].
+[BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor].
 This comes at the price of computing a DOE
 on the original [Discipline][gemseo.core.discipline.discipline.Discipline],
 and validating the approximation. The
@@ -48,7 +48,8 @@ outputs of the DOE. This
 GEMSEO from a cache, using the
 [BaseCache.to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset] method,
 from a database, using the
-[OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset] method,
+[OptimizationProblem.to_dataset()][
+gemseo.algos.optimization_problem.OptimizationProblem.to_dataset] method,
 or from a NumPy array or
 a text file using the
 [Dataset.from_array()][gemseo.datasets.dataset.Dataset.from_array] and
@@ -170,7 +171,8 @@ mission_dataset = sample_disciplines(
 # Precisely,
 # by means of the API function [create_surrogate()][gemseo.create_surrogate],
 # we create a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
-# relying on a [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor]
+# relying on a [LinearRegressor][
+# gemseo.machine_learning.regression.models.linreg.LinearRegressor]
 # and inheriting from [Discipline][gemseo.core.discipline.discipline.Discipline]:
 
 synthetic_surrogate = create_surrogate("LinearRegressor", synthetic_dataset)
@@ -190,7 +192,7 @@ out["y"]
 
 # %%
 # In our study case, from the DOE built at Step 1,
-# we build a [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor]
+# we build a [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor]
 # of $y_4$
 # representing the range in function of $L/D$:
 range_surrogate = create_surrogate("RBFRegressor", mission_dataset)
@@ -218,7 +220,8 @@ for i in range(5):
 # The design variables are $y_24$. The Jacobian matrix is computed by finite
 # differences by default for surrogates, except for the
 # [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] relying on
-# [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor] which has
+# [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor]
+# which has
 # an analytical (and constant) Jacobian.
 design_space = design_space.filter(["y_24"])
 scenario = create_scenario(
@@ -238,32 +241,36 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=30)
 # - Linear regression,
 #   based on the [Scikit-learn](http://scikit-learn.org/stable/) library,
 #   for that use the
-#   [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor] class.
+#   [LinearRegressor][gemseo.machine_learning.regression.models.linreg
+#   .LinearRegressor] class.
 # - Polynomial regression,
 #   based on the [Scikit-learn](http://scikit-learn.org/stable/) library,
 #   for that use the
-#   [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor]
+#   [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg
+#   .PolynomialRegressor]
 #   class,
 # - Gaussian processes (also known as Kriging),
 #   based on the [Scikit-learn](http://scikit-learn.org/stable/) library,
 #   for that use the
-#   [GaussianProcessRegressor][gemseo.mlearning.regression.models.gpr.GaussianProcessRegressor]
+#   [GaussianProcessRegressor][
+#   gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor]
 #   class,
 # - Mixture of experts, for that use the
-#   [MOERegressor][gemseo.mlearning.regression.models.moe.MOERegressor] class,
+#   [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] class,
 # - Random forest models,
 #   based on the [Scikit-learn](http://scikit-learn.org/stable/) library,
 #   for that use the
-#   [RandomForestRegressor][gemseo.mlearning.regression.models.random_forest.RandomForestRegressor]
+#   [RandomForestRegressor][gemseo.machine_learning.regression.models.random_forest
+#   .RandomForestRegressor]
 #   class.
 # - RBF models (Radial Basis Functions),
 #   using the [SciPy](http://scipy.org/) library,
 #   for that use the
-#   [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor] class.
+#   [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] class.
 # - PCE models (Polynomial Chaos Expansion),
 #   based on the [OpenTURNS](https://openturns.github.io/www/) library,
 #   for that use the
-#   [PCERegressor][gemseo.mlearning.regression.models.pce.PCERegressor] class.
+#   [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor] class.
 #
 # To understand the detailed behavior of the models, please go to the
 # documentation of the used packages.
@@ -271,12 +278,15 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=30)
 # ## Extending surrogate models
 #
 # All surrogate models work the same way: the
-# [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor] base
+# [BaseRegressor][gemseo.machine_learning.regression.models.base_regressor
+# .BaseRegressor] base
 # class shall be extended. See [this page][extend-gemseo-features] to learn how to run
 # GEMSEO with external Python modules. Then, the
-# [RegressorFactory][gemseo.mlearning.regression.models.factory.RegressorFactory] can
+# [RegressorFactory][gemseo.machine_learning.regression.models.factory
+# .RegressorFactory] can
 # build the new
-# [BaseRegressor][gemseo.mlearning.regression.models.base_regressor.BaseRegressor]
+# [BaseRegressor][gemseo.machine_learning.regression.models.base_regressor
+# .BaseRegressor]
 # automatically from its regression
 # algorithm name and options. This factory is called by the constructor of
 # [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline].

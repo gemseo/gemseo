@@ -33,7 +33,7 @@ from matplotlib.lines import Line2D
 from numpy import nonzero
 
 from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_regression_model
+from gemseo.machine_learning import create_regression_model
 
 # %%
 # ## Load dataset (Burgers)
@@ -82,6 +82,7 @@ plt.legend(
     ["Cluster 0", "Cluster 1"],
 )
 plt.show()
+
 
 # %%
 # ### Plot predictions

@@ -21,7 +21,8 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# k-nearest neighbors.
 
-A [KNNClassifier][gemseo.mlearning.classification.models.knn.KNNClassifier] is a k-nearest neighbors model
+A [KNNClassifier][gemseo.machine_learning.classification.models.knn.KNNClassifier] is a
+k-nearest neighbors model
 based on [scikit-learn](https://scikit-learn.org/).
 
 We want to classify the Iris dataset using a KNN classifier.
@@ -32,7 +33,7 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_classification_model
+from gemseo.machine_learning import create_classification_model
 
 # %%
 # ## Load Iris dataset

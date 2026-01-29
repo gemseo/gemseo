@@ -18,7 +18,9 @@ r"""# Function chaos expansion.
 
 Given a training dataset
 whose input samples are generated from OpenTURNS probability distributions,
-the [FCERegressor][gemseo.mlearning.regression.models.fce.FCERegressor] can use any linear model fitting algorithm,
+the [FCERegressor][gemseo.machine_learning.regression.models.fce.FCERegressor] can
+use any
+linear model fitting algorithm,
 including sparse techniques,
 to fit a functional chaos expansion (FCE) model of the form
 
@@ -29,16 +31,21 @@ and $\mathbb{E}[\Psi_i(X)\Psi_j(X)]=\delta_{ij}$
 with $\delta$ the Kronecker delta and $X$ a random vector.
 
 A particular version of FCE is the polynomial chaos expansion (PCE)
-for which the class [PCERegressor][gemseo.mlearning.regression.models.pce.PCERegressor] interfaces
+for which the class [PCERegressor][
+gemseo.machine_learning.regression.models.pce.PCERegressor] interfaces
 the OpenTURNS algorithm `openturns.FunctionalChaosAlgorithm`
-(see the [OpenTURNS documentation](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FunctionalChaosAlgorithm.html?highlight=functionalchaosalgorithm#openturns.FunctionalChaosAlgorithm)).
+(see the [OpenTURNS documentation](
+https://openturns.github.io/openturns/latest/user_manual/_generated/openturns
+.FunctionalChaosAlgorithm.html?highlight=functionalchaosalgorithm#openturns
+.FunctionalChaosAlgorithm)).
 
 Note that FCE can also learn Jacobian data
 in the hope of improving the quality of the surrogate model
 for the same evaluation budget.
 
 In this example,
-we will compare different types of [FCERegressor][gemseo.mlearning.regression.models.fce.FCERegressor]
+we will compare different types of [FCERegressor][
+gemseo.machine_learning.regression.models.fce.FCERegressor]
 to approximate the Ishigami function
 
 $$f(X) = \sin(X_1) + 7\sin(X_2)^2 + 0.1X_3^4\sin(X_1)$$
@@ -55,26 +62,36 @@ from gemseo import sample_disciplines
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.datasets.dataset import Dataset
-from gemseo.mlearning.linear_model_fitting.elastic_net_cv_settings import (
+from gemseo.machine_learning.linear_model_fitting.elastic_net_cv_settings import (
     ElasticNetCV_Settings,
 )
-from gemseo.mlearning.linear_model_fitting.lars_cv_settings import LARSCV_Settings
-from gemseo.mlearning.linear_model_fitting.lasso_cv_settings import LassoCV_Settings
-from gemseo.mlearning.linear_model_fitting.linear_regression_settings import (
+from gemseo.machine_learning.linear_model_fitting.lars_cv_settings import (
+    LARSCV_Settings,
+)
+from gemseo.machine_learning.linear_model_fitting.lasso_cv_settings import (
+    LassoCV_Settings,
+)
+from gemseo.machine_learning.linear_model_fitting.linear_regression_settings import (
     LinearRegression_Settings,
 )
-from gemseo.mlearning.linear_model_fitting.null_space_settings import NullSpace_Settings
-from gemseo.mlearning.linear_model_fitting.omp_cv_settings import (
+from gemseo.machine_learning.linear_model_fitting.null_space_settings import (
+    NullSpace_Settings,
+)
+from gemseo.machine_learning.linear_model_fitting.omp_cv_settings import (
     OrthogonalMatchingPursuitCV_Settings,
 )
-from gemseo.mlearning.linear_model_fitting.ridge_cv_settings import RidgeCV_Settings
-from gemseo.mlearning.linear_model_fitting.spgl1_settings import SPGL1_Settings
-from gemseo.mlearning.regression.models.fce import FCERegressor
-from gemseo.mlearning.regression.models.fce_settings import FCERegressor_Settings
-from gemseo.mlearning.regression.models.fce_settings import OrthonormalFunctionBasis
-from gemseo.mlearning.regression.models.pce import PCERegressor
-from gemseo.mlearning.regression.models.pce_settings import PCERegressor_Settings
-from gemseo.mlearning.regression.quality.r2_measure import R2Measure
+from gemseo.machine_learning.linear_model_fitting.ridge_cv_settings import (
+    RidgeCV_Settings,
+)
+from gemseo.machine_learning.linear_model_fitting.spgl1_settings import SPGL1_Settings
+from gemseo.machine_learning.regression.models.fce import FCERegressor
+from gemseo.machine_learning.regression.models.fce_settings import FCERegressor_Settings
+from gemseo.machine_learning.regression.models.fce_settings import (
+    OrthonormalFunctionBasis,
+)
+from gemseo.machine_learning.regression.models.pce import PCERegressor
+from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
+from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
@@ -109,12 +126,19 @@ validation_dataset = sample_disciplines(
 # using an orthonormal polynomial basis (default basis)
 # with a maximum total degree of 7
 # and different regression techniques from scikit-learn to estimate the coefficients,
-# namely [ordinary least squares](https://scikit-learn.org/stable/modules/linear_model.html#ordinary-least-squares),
-# [ridge](https://scikit-learn.org/stable/modules/linear_model.html#regression) (i.e., L2 regularisation),
-# [lasso](https://scikit-learn.org/stable/modules/linear_model.html#lasso) (i.e., L1 regularisation),
-# [elasticnet](https://scikit-learn.org/stable/modules/linear_model.html#elastic-net) (i.e., L1 and L2 regularisation),
-# [least angle regression](https://scikit-learn.org/stable/modules/linear_model.html#least-angle-regression) (LARS)
-# and [orthogonal matching pursuit](https://scikit-learn.org/stable/modules/linear_model.html#orthogonal-matching-pursuit-omp).
+# namely [ordinary least squares](
+# https://scikit-learn.org/stable/modules/linear_model.html#ordinary-least-squares),
+# [ridge](https://scikit-learn.org/stable/modules/linear_model.html#regression) (
+# i.e., L2 regularisation),
+# [lasso](https://scikit-learn.org/stable/modules/linear_model.html#lasso) (i.e.,
+# L1 regularisation),
+# [elasticnet](https://scikit-learn.org/stable/modules/linear_model.html#elastic-net)
+# (i.e., L1 and L2 regularisation),
+# [least angle regression](https://scikit-learn.org/stable/modules/linear_model.html
+# #least-angle-regression) (LARS)
+# and [orthogonal matching pursuit](
+# https://scikit-learn.org/stable/modules/linear_model.html#orthogonal-matching
+# -pursuit-omp).
 # Note that all these models have been finely tuned using cross-validation,
 # except ordinary least squares regression for which there is no parameter to tune.
 # We also add the [SPGL1 algorithm](https://friedlander.io/spgl1)
@@ -123,7 +147,9 @@ validation_dataset = sample_disciplines(
 #
 # !!! quote "References"
 #       Tiziano Ghisu, Diego I. Lopez, Pranay Seshadri and Shahrokh Shahpar.
-#       [Gradient-enhanced Least-square Polynomial Chaos Expansions for Uncertainty Quantification and Robust Optimization](https://arc.aiaa.org/doi/abs/10.2514/6.2021-3073).
+#       [Gradient-enhanced Least-square Polynomial Chaos Expansions for Uncertainty
+#       Quantification and Robust Optimization](
+#       https://arc.aiaa.org/doi/abs/10.2514/6.2021-3073).
 #       AIAA AVIATION FORUM, 2021.
 r2_learning = []
 r2_validation = []
@@ -173,7 +199,8 @@ for linear_model_fitter_settings in [
     r2_validation_ge.append(r2.compute_test_measure(validation_dataset).round(2)[0])
 
 # %%
-# We create also a [PCERegressor][gemseo.mlearning.regression.models.pce.PCERegressor]
+# We create also a [PCERegressor][
+# gemseo.machine_learning.regression.models.pce.PCERegressor]
 # using the LARS algorithm implemented in OpenTURNS:
 pce = PCERegressor(training_dataset, PCERegressor_Settings(degree=7, use_lars=True))
 pce.learn()

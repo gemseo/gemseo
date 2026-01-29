@@ -22,28 +22,29 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# High-level functions.
 
-The [gemseo.mlearning][gemseo.mlearning] package includes high-level functions
+The [gemseo.machine_learning][gemseo.machine_learning] package includes high-level
+functions
 to create clustering models from model class names.
 """
 
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.mlearning import create_clustering_model
-from gemseo.mlearning import get_clustering_models
-from gemseo.mlearning import get_clustering_options
+from gemseo.machine_learning import create_clustering_model
+from gemseo.machine_learning import get_clustering_models
+from gemseo.machine_learning import get_clustering_options
 
 # %%
 # ## Available models
 #
-# Use the [get_clustering_models()][gemseo.mlearning.get_clustering_models]
+# Use the [get_clustering_models()][gemseo.machine_learning.get_clustering_models]
 # to list the available model class names:
 get_clustering_models()
 
 # %%
 # ## Available model options
 #
-# Use the [get_clustering_options()][gemseo.mlearning.get_clustering_options]
+# Use the [get_clustering_options()][gemseo.machine_learning.get_clustering_options]
 # to get the options of a model
 # from its class name:
 get_clustering_options("GaussianMixture", pretty_print=False)
@@ -53,7 +54,8 @@ get_clustering_options("GaussianMixture", pretty_print=False)
 # !!! info "See also"
 #
 #     The functions
-#     [get_clustering_models()][gemseo.mlearning.get_clustering_models] and [get_clustering_options()][gemseo.mlearning.get_clustering_options]
+#     [get_clustering_models()][gemseo.machine_learning.get_clustering_models] and [
+#     get_clustering_options()][gemseo.machine_learning.get_clustering_options]
 #     can be very useful for the developers.
 #     As a user,
 #     it may be easier to consult [this page][available-clustering-models]
@@ -64,7 +66,8 @@ get_clustering_options("GaussianMixture", pretty_print=False)
 # Given a training dataset, *e.g.*
 dataset = create_benchmark_dataset("IrisDataset")
 # %%
-# use the [create_clustering_model()][gemseo.mlearning.create_clustering_model] function
+# use the [create_clustering_model()][
+# gemseo.machine_learning.create_clustering_model] function
 # to create a clustering model from its class name and settings:
 model = create_clustering_model("KMeans", data=dataset, n_clusters=3)
 model.learn()

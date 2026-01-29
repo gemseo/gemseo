@@ -26,13 +26,17 @@ from numpy.testing import assert_allclose
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.mlearning.regression.models.gpr_settings import (
+from gemseo.machine_learning.regression.models.gpr_settings import (
     GaussianProcessRegressor_Settings,
 )
-from gemseo.mlearning.regression.models.linreg import LinearRegressor
-from gemseo.mlearning.regression.models.linreg_settings import LinearRegressor_Settings
-from gemseo.mlearning.regression.quality.r2_measure import R2Measure
-from gemseo.post.mlearning.ml_regressor_quality_viewer import MLRegressorQualityViewer
+from gemseo.machine_learning.regression.models.linreg import LinearRegressor
+from gemseo.machine_learning.regression.models.linreg_settings import (
+    LinearRegressor_Settings,
+)
+from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
+from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
+    MLRegressorQualityViewer,
+)
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle

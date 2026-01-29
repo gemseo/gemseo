@@ -9,7 +9,7 @@
 
 # Machine learning examples
 
-This section illustrates the features of the [gemseo.mlearning][gemseo.mlearning] package:
+This section illustrates the features of the [gemseo.machine_learning][gemseo.machine_learning] package:
 
 - how to create a machine learning model for classification, clustering or regression,
 - how to transform the data,

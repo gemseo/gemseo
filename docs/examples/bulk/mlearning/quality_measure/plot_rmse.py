@@ -25,9 +25,9 @@ from numpy import newaxis
 from numpy import sin
 
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.regression.models.polyreg import PolynomialRegressor
-from gemseo.mlearning.regression.models.rbf import RBFRegressor
-from gemseo.mlearning.regression.quality.rmse_measure import RMSEMeasure
+from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.models.rbf import RBFRegressor
+from gemseo.machine_learning.regression.quality.rmse_measure import RMSEMeasure
 
 # %%
 # Given a dataset $(x_i,y_i,\hat{y}_i)_{1\leq i \leq N}$
@@ -68,13 +68,16 @@ y_train = f(x_train)
 
 # %%
 # Then,
-# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7 learning samples:
+# we create an [IODataset][gemseo.datasets.io_dataset.IODataset] from these 7
+# learning samples:
 dataset_train = IODataset()
 dataset_train.add_input_group(x_train[:, newaxis], ["x"])
 dataset_train.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# and build a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] with `degree=3` from it:
+# and build a [PolynomialRegressor][
+# gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] with `degree=3`
+# from it:
 polynomial = PolynomialRegressor(dataset_train, degree=3)
 polynomial.learn()
 
@@ -130,7 +133,8 @@ rbf = RBFRegressor(dataset_train)
 rbf.learn()
 
 # %%
-# The quality of this [RBFRegressor][gemseo.mlearning.regression.models.rbf.RBFRegressor] is quite good,
+# The quality of this [RBFRegressor][
+# gemseo.machine_learning.regression.models.rbf.RBFRegressor] is quite good,
 # both on the learning side:
 rmse_rbf = RMSEMeasure(rbf)
 result = rmse_rbf.compute_learning_measure()

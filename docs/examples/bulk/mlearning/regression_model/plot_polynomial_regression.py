@@ -21,14 +21,18 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Polynomial regression.
 
-A [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] is a polynomial regression model
-based on a [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor].
+A [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg
+.PolynomialRegressor] is a polynomial regression model
+based on a [LinearRegressor][gemseo.machine_learning.regression.models.linreg
+.LinearRegressor].
 This design choice was made
 because a polynomial regression model is a generalized linear model
 whose basis functions are monomials.
 Thus,
-a [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] benefits
-from the same settings as [LinearRegressor][gemseo.mlearning.regression.models.linreg.LinearRegressor]:
+a [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg
+.PolynomialRegressor] benefits
+from the same settings as [LinearRegressor][
+gemseo.machine_learning.regression.models.linreg.LinearRegressor]:
 offset can be set to zero and regularization techniques can be used.
 
 !!! info "See also"
@@ -44,7 +48,7 @@ from numpy import array
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import sample_disciplines
-from gemseo.mlearning import create_regression_model
+from gemseo.machine_learning import create_regression_model
 
 # %%
 # ## Problem
@@ -118,8 +122,12 @@ plt.show()
 # %%
 # ## Settings
 #
-# The [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg.PolynomialRegressor] has many options
-# defined in the [PolynomialRegressor][gemseo.mlearning.regression.models.polyreg_settings.PolynomialRegressor_Settings] Pydantic model.
+# The [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg
+# .PolynomialRegressor] has many options
+# defined in the [PolynomialRegressor][
+# gemseo.machine_learning.regression.models.polyreg_settings
+# .PolynomialRegressor_Settings]
+# Pydantic model.
 # Most of them are presented
 # in [the example about the linear regression model][polynomial-regression].
 #

@@ -16,7 +16,7 @@
 
 """# Machine learning model selection example.
 
-In this example we use the [MLModelSelection][gemseo.mlearning.core.selection.MLModelSelection] class
+In this example we use the [MLModelSelection][gemseo.machine_learning.core.selection.MLModelSelection] class
 to perform a grid search over different models and hyperparameter values.
 """
 
@@ -29,8 +29,8 @@ from numpy.random import default_rng
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.datasets.io_dataset import IODataset
-from gemseo.mlearning.core.selection import MLModelSelection
-from gemseo.mlearning.regression.quality.mse_measure import MSEMeasure
+from gemseo.machine_learning.core.selection import MLModelSelection
+from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 
 rng = default_rng(54321)
 

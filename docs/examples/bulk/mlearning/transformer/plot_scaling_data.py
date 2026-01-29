@@ -22,8 +22,8 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.mlearning.regression.models.gpr import GaussianProcessRegressor
-from gemseo.mlearning.regression.quality.r2_measure import R2Measure
+from gemseo.machine_learning.regression.models.gpr import GaussianProcessRegressor
+from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 # %%
@@ -69,7 +69,8 @@ r2.compute_test_measure(dataset_test)
 # %%
 # Then,
 # we create a second Gaussian process regressor from the training dataset
-# with the default input and output transformers that are [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler]:
+# with the default input and output transformers that are [MinMaxScaler][
+# gemseo.machine_learning.transformers.scaler.min_max_scaler.MinMaxScaler]:
 gpr = GaussianProcessRegressor(
     dataset_train, transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER
 )
@@ -88,7 +89,9 @@ r2 = R2Measure(gpr)
 r2.compute_test_measure(dataset_test)
 
 # %%
-# We can also see that using a [StandardScaler][gemseo.mlearning.transformers.scaler.standard_scaler.StandardScaler] is less relevant in this case:
+# We can also see that using a [StandardScaler][
+# gemseo.machine_learning.transformers.scaler.standard_scaler.StandardScaler] is less
+# relevant in this case:
 gpr = GaussianProcessRegressor(dataset_train, transformer={"outputs": "StandardScaler"})
 gpr.learn()
 r2 = R2Measure(gpr)
@@ -124,7 +127,9 @@ r2.compute_test_measure(dataset_test)
 # %%
 # The R2 quality is degraded
 # because estimating the model's correlation lengths is complicated.
-# This can be facilitated by setting a [MinMaxScaler][gemseo.mlearning.transformers.scaler.min_max_scaler.MinMaxScaler] for the inputs:
+# This can be facilitated by setting a [MinMaxScaler][
+# gemseo.machine_learning.transformers.scaler.min_max_scaler.MinMaxScaler] for the
+# inputs:
 gpr = GaussianProcessRegressor(
     dataset_train, transformer={"inputs": "MinMaxScaler", "outputs": "MinMaxScaler"}
 )
