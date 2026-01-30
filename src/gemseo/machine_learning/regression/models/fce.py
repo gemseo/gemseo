@@ -169,9 +169,8 @@ class FCERegressor(BaseFCERegressor):
         features, jac_features = self._evaluate_basis_functions(input_data)
         linear_model_fitter_settings = self._settings.linear_model_fitter_settings
         linear_model_fitter_settings.fit_intercept = False
-        linear_model = LinearModelFitterFactory().create(
-            linear_model_fitter_settings._TARGET_CLASS_NAME,
-            linear_model_fitter_settings,
+        linear_model = LinearModelFitterFactory().create_from_settings(
+            linear_model_fitter_settings
         )
         output_scale = norm(output_data, axis=0)
         output_data /= output_scale
