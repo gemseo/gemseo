@@ -181,9 +181,7 @@ class MLModelSelection:
                 model_new = ml_model_calibration.optimal_model
                 quality_new = ml_model_calibration.optimal_criterion
             else:
-                model_new = self.factory.create(
-                    settings._TARGET_CLASS_NAME, self.dataset, settings=settings
-                )
+                model_new = self.factory.create_from_settings(settings, self.dataset)
                 quality_measurer = self.measure(model_new)
                 compute_quality_measure = getattr(
                     quality_measurer,

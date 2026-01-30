@@ -171,11 +171,7 @@ class MLModelAssessor(Discipline):
         for name, value in inputs.items():
             setattr(settings, name, value)
 
-        model = ML_MODEL_FACTORY.create(
-            self.__settings._TARGET_CLASS_NAME,
-            self.__training_dataset,
-            settings=settings,
-        )
+        model = ML_MODEL_FACTORY.create_from_settings(settings, self.__training_dataset)
         model.learn()
         measure = self.__measure(model)
         compute_criterion = getattr(

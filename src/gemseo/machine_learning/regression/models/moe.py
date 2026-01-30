@@ -446,10 +446,8 @@ class MOERegressor(BaseRegressor):
             dataset: The dataset containing input and output data.
         """
         if not self.clustering_candidates:
-            self.clusterer = CLUSTERER_FACTORY.create(
-                self.clusterer_settings._TARGET_CLASS_NAME,
-                dataset,
-                settings=self.clusterer_settings,
+            self.clusterer = CLUSTERER_FACTORY.create_from_settings(
+                self.clusterer_settings, dataset
             )
             self.clusterer.learn()
         else:
@@ -473,10 +471,8 @@ class MOERegressor(BaseRegressor):
         """
         if not self.classification_candidates:
             self.classifier_settings.output_names = [self.LABELS]
-            self.classifier = CLASSIFIER_FACTORY.create(
-                self.classifier_settings._TARGET_CLASS_NAME,
-                dataset,
-                settings=self.classifier_settings,
+            self.classifier = CLASSIFIER_FACTORY.create_from_settings(
+                self.classifier_settings, dataset
             )
             self.classifier.learn()
         else:
@@ -515,10 +511,8 @@ class MOERegressor(BaseRegressor):
                 with MultiLineString.offset():
                     LOGGER.info("%s", local_model)
             else:
-                local_model = REGRESSOR_FACTORY.create(
-                    self.regressor_settings._TARGET_CLASS_NAME,
-                    dataset,
-                    settings=self.regressor_settings,
+                local_model = REGRESSOR_FACTORY.create_from_settings(
+                    self.regressor_settings, dataset
                 )
                 local_model.learn(samples=samples)
 

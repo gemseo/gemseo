@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.settings.base_settings import BaseSettings
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -350,7 +351,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         Args:
             class_name: The name of the class.
-            **args: The positional arguments to be passed to the class constructor.
+            *args: The positional arguments to be passed to the class constructor.
             **kwargs: The keyword arguments to be passed to the class constructor.
 
         Returns:
@@ -374,6 +375,27 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
                 kwargs,
             )
             raise
+
+    def create_from_settings(
+        self,
+        settings: BaseSettings,
+        *args: Any,
+        **kwargs: Any,
+    ) -> T:
+        """Return an instance of a class.
+
+        Args:
+            settings: The settings of the class instance,
+                to be passed to the class constructor using the `settings` argument.
+            *args: The positional arguments to be passed to the class constructor.
+            **kwargs: The keyword arguments to be passed to the class constructor.
+
+        Returns:
+            The instance of the class.
+        """
+        return self.create(
+            settings._TARGET_CLASS_NAME, *args, settings=settings, **kwargs
+        )
 
     def get_options_doc(self, name: str) -> dict[str, str]:
         """Return the documentation for the arguments of a class.

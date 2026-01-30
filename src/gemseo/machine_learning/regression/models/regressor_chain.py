@@ -72,9 +72,7 @@ class RegressorChain(BaseRegressor):
             settings: The settings of the regression model.
         """
         self.__regressors.append(
-            REGRESSOR_FACTORY.create(
-                settings._TARGET_CLASS_NAME, self.learning_set, settings
-            )
+            REGRESSOR_FACTORY.create_from_settings(settings, self.learning_set)
         )
 
     def _fit(

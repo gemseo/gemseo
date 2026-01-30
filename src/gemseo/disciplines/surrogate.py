@@ -124,9 +124,7 @@ class SurrogateDiscipline(Discipline):
             The surrogate discipline.
         """
         settings.transformer = dict(transformer)
-        regressor = REGRESSOR_FACTORY.create(
-            settings._TARGET_CLASS_NAME, data, settings=settings
-        )
+        regressor = REGRESSOR_FACTORY.create_from_settings(settings, data)
         return cls(regressor, name=name)
 
     def _get_string_representation(self) -> MultiLineString:
