@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import types
-from dataclasses import dataclass
 from logging import WARNING
 from logging import FileHandler
 from logging import Formatter
@@ -54,16 +53,7 @@ if TYPE_CHECKING:
     from _typeshed import SupportsWrite
     from typing_extensions import Self
 
-# TODO: API: remove this variable.
-DEFAULT_DATE_FORMAT: Final[str] = _LOGGING_DATE_FORMAT
-"""The format of the date of the logged message."""
-
-# TODO: API: remove this variable.
-DEFAULT_MESSAGE_FORMAT: Final[str] = _LOGGING_MESSAGE_FORMAT
-"""The format of the logged message."""
-
-# TODO: API: remove this variable.
-GEMSEO_LOGGER: Final[Logger] = getLogger("gemseo")
+_GEMSEO_LOGGER: Final[Logger] = getLogger("gemseo")
 """The GEMSEO's logger."""
 
 _StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")
@@ -188,29 +178,6 @@ def _configure_logger(
         logger.addHandler(file_handler)
 
     return logger
-
-
-# TODO: API: remove and use gemseo.configuration.logger instead.
-@dataclass
-class LoggingSettings:
-    """The settings of a logger."""
-
-    date_format: str = DEFAULT_DATE_FORMAT
-    """The format of the date of the logged message."""
-
-    message_format: str = DEFAULT_MESSAGE_FORMAT
-    """The format of the logged message."""
-
-    logger: Logger = GEMSEO_LOGGER
-    """The logger."""
-
-
-# TODO: API: remove and use gemseo.configuration.logger instead.
-LOGGING_SETTINGS = LoggingSettings()
-"""The logging settings.
-
-The parameters are changed by [configure_logger][gemseo.configure_logger].
-"""
 
 
 class MultiLineHandlerMixin:

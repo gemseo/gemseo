@@ -29,7 +29,6 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import model_validator
 
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.machine_learning.regression.models.base_fce_settings import (
     BaseFCERegressorSettings,
@@ -56,20 +55,6 @@ class CleaningOptions:
 
 class PCERegressor_Settings(BaseFCERegressorSettings):  # noqa: N801
     """The settings of the polynomial chaos expansion model."""
-
-    # TODO: API: remove in gemseo v7.
-    probability_space: ParameterSpace | None = Field(
-        default=None,
-        description="""The random input variables using
-[OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
-
-If `None`,
-[PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor]
-uses `data.misc["input_space"]`
-where `data` is the [IODataset][gemseo.datasets.io_dataset.IODataset]
-passed at instantiation.
-""",
-    )
 
     discipline: Discipline | None = Field(
         default=None,

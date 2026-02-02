@@ -925,7 +925,7 @@ def test_read_write(tmp_wd) -> None:
     ds.set_upper_bound("x_shared", inf)
 
     out_f = Path("table.csv")
-    ds.to_csv(out_f, sortby="upper_bound")
+    ds.to_csv(out_f)
     assert out_f.exists()
 
 
@@ -2117,13 +2117,3 @@ def test_normalize_vect_with_inout_argument() -> None:
     inout = array([0])
     space.normalize_vect(array([0]), out=inout)
     assert_array_equal(inout, array([0]))
-
-
-# TODO: API: remove this test along with **table_options
-def test_to_csv_pretty_table(tmp_wd):
-    """Test that the pretty table options are taken into account."""
-    ref_ds = get_sobieski_design_space()
-    f_path = Path("sobieski_design_space.csv")
-    ref_ds.to_csv(f_path, border=True)
-    table_text = f_path.read_text()
-    assert "-" in table_text

@@ -30,7 +30,6 @@ from numpy import atleast_2d
 from numpy import hstack
 
 from gemseo import create_dataset
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.machine_learning import create_classification_model
@@ -70,15 +69,18 @@ AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
 def dataset() -> Dataset:
     """The dataset used to train the machine learning models."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
-    design_space = DesignSpace()
-    design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
-    design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
+    probability_space = ParameterSpace()
+    probability_space.add_random_variable(
+        "x_1", "OTUniformDistribution", minimum=0, maximum=1
+    )
+    probability_space.add_random_variable(
+        "x_2", "OTUniformDistribution", minimum=0, maximum=1
+    )
     scenario = DOEScenario(
-        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+        [discipline], "y_1", probability_space, formulation_name="DisciplinaryOpt"
     )
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
-    return discipline.cache.to_dataset("dataset_name")
+    return scenario.to_dataset(opt_naming=False)
 
 
 @pytest.fixture
@@ -179,17 +181,9 @@ def test_create_regression_model(dataset) -> None:
     model = create_regression_model("LinearRegressor", dataset)
     assert model.algo is not None
 
-    probability_space = ParameterSpace()
-    probability_space.add_random_variable(
-        "x_1", "OTUniformDistribution", minimum=0, maximum=1
-    )
-    probability_space.add_random_variable(
-        "x_2", "OTUniformDistribution", minimum=0, maximum=1
-    )
     model = create_regression_model(
         "PCERegressor",
         dataset,
-        probability_space=probability_space,
         transformer={"inputs": MinMaxScaler()},
     )
     assert not model.transformer
