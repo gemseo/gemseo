@@ -202,9 +202,6 @@ class PCERegressor(BaseFCERegressor):
                 msg = "The least-squares regression requires data."
                 raise ValueError(msg)
 
-        if settings_.probability_space is not None:
-            data.misc["input_space"] = settings_.probability_space
-
         super().__init__(data, settings=settings_)
 
         probability_space = data.misc["input_space"]

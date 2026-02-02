@@ -35,7 +35,6 @@ import pytest
 from numpy import arange
 from numpy import array
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -53,6 +52,9 @@ from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_
 from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 from gemseo.machine_learning.transformers.scaler.scaler import Scaler
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -74,16 +76,25 @@ def create_dataset(
         objective_name (str): The name of the objective variable.
     """
     discipline = AnalyticDiscipline(expressions)
-    discipline.set_cache(discipline.CacheType.MEMORY_FULL)
-    design_space = DesignSpace()
-    design_space.add_variable("x_1", lower_bound=-3.0, upper_bound=3.0)
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable(
+        "x_1", OTUniformDistribution_Settings(minimum=-3.0, maximum=3.0)
+    )
     for name, bounds in design_space_variables.items():
-        design_space.add_variable(name, **bounds)
+        parameter_space.add_random_variable(
+            name,
+            OTUniformDistribution_Settings(
+                minimum=bounds["lower_bound"], maximum=bounds["upper_bound"]
+            ),
+        )
     scenario = DOEScenario(
-        [discipline], objective_name, design_space, formulation_name="DisciplinaryOpt"
+        [discipline],
+        objective_name,
+        parameter_space,
+        formulation_name="DisciplinaryOpt",
     )
     scenario.execute(algo_name="LHS", n_samples=LEARNING_SIZE)
-    return discipline.cache.to_dataset(dataset_name)
+    return scenario.to_dataset(opt_naming=False)
 
 
 # the following contains the arguments passed to create_dataset
@@ -231,12 +242,7 @@ def test_rbf(dataset, transformer, function) -> None:
 
 def test_pce(dataset) -> None:
     """Test polynomial regression Jacobians."""
-    space = ParameterSpace()
-
-    for input_name in dataset.get_variable_names(dataset.INPUT_GROUP):
-        space.add_random_variable(input_name, "OTUniformDistribution")
-
     discipline = SurrogateDiscipline.from_settings(
-        PCERegressor_Settings(probability_space=space), dataset, transformer={}
+        PCERegressor_Settings(), dataset, transformer={}
     )
     discipline.check_jacobian()
