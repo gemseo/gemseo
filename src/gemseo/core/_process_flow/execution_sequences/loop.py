@@ -66,10 +66,12 @@ class LoopExecSequence(BaseCompositeExecSequence):
     def _accept(self, visitor) -> None:
         visitor.visit_loop(self)
 
-    def enable(self) -> None:
-        super().enable()
-        self.atom_controller.enable()
-        self.iteration_count = 0
+    @BaseCompositeExecSequence.is_enabled.setter
+    def is_enabled(self, enable: bool) -> None:
+        super(__class__, self.__class__).is_enabled.fset(self, enable)
+        if enable:
+            self.atom_controller.is_enabled = True
+            self.iteration_count = 0
 
     def _update_child_status(self, child) -> None:
         """Update iteration successively regarding controller status.
@@ -83,12 +85,12 @@ class LoopExecSequence(BaseCompositeExecSequence):
         if child == self.atom_controller:
             if self.status == _Status.RUNNING:
                 if not self.iteration_sequence.is_enabled:
-                    self.iteration_sequence.enable()
+                    self.iteration_sequence.is_enabled = True
             elif self.status == _Status.DONE:
-                self.disable()
+                self.is_enabled = False
                 self.force_statuses(_Status.DONE)
         if child == self.iteration_sequence and child.status == _Status.DONE:
             self.iteration_count += 1
-            self.iteration_sequence.enable()
+            self.iteration_sequence.is_enabled = True
         if child.status == _Status.FAILED:
             self.status = _Status.FAILED

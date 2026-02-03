@@ -418,7 +418,7 @@ def test_multithreading(
     s_s.cache = memory_cache
     assert len(memory_cache) == 0
     par = MDOParallelChain([s_1, s_s])
-    ds = SellarDesignSpace("float64")
+    ds = SellarDesignSpace()
     scen = create_scenario(
         par, "obj", ds, scenario_type="DOE", formulation_name="DisciplinaryOpt"
     )

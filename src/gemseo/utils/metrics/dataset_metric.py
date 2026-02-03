@@ -49,8 +49,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
 
     def __init__(
         self,
-        # TODO: API: keep the name of the parent class, i.e., metric.
-        composed_metric: BaseMetric[Any, Any],
+        metric: BaseMetric[Any, Any],
         group_names: StrColumnType = (),
         variable_names: StrColumnType = (),
         components: ComponentType = (),
@@ -58,7 +57,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
     ) -> None:
         """
         Args:
-            composed_metric: The name of the metric applied at element level.
+            metric: The name of the metric applied at element level.
             group_names: The name(s) of the group(s) to compare.
                 If empty, consider all the groups.
             variable_names: The name(s) of the variables(s) to compare.
@@ -68,7 +67,7 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
             indices: The index (indices) of the dataset to compare.
                 If empty, consider all the indices.
         """  # noqa: D205, D212, D415
-        super().__init__(composed_metric)
+        super().__init__(metric)
         self.__group_names = group_names
         self.__variable_names = variable_names
         self.__components = components

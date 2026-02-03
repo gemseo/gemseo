@@ -26,12 +26,12 @@ from pydantic import NonNegativeInt  # noqa: TC002
 from pydantic import model_validator
 from strenum import StrEnum
 
-from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TC001
     BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
+from gemseo.settings.base_settings import BaseSettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
-class BaseMDASettings(BaseAlgorithmSettings):
+class BaseMDASettings(BaseSettings):
     """The base settings class for MDA algorithms."""
 
     model_config = ConfigDict(
@@ -56,7 +56,7 @@ If `None`, the coupling structure is created from the disciplines.""",
     )
 
     linear_solver: LinearSolver = Field(
-        default=LinearSolver.DEFAULT,
+        default=LinearSolver.LGMRES,
         description="""The name of the linear solver.
 
 This field is ignored when `linear_solver_settings` is a Pydantic model.""",

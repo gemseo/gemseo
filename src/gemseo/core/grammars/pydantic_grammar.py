@@ -42,7 +42,6 @@ from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
-    from collections.abc import Mapping
 
     from pydantic import ConfigDict
     from typing_extensions import Self
@@ -281,15 +280,6 @@ class PydanticGrammar(BaseGrammar):
 
         self.__rebuild_model()
         return self.__model.model_json_schema()
-
-    # TODO: API: remove this deprecated method.
-    def set_descriptions(self, descriptions: Mapping[str, str]) -> None:
-        """Set the properties descriptions.
-
-        Args:
-            descriptions: The mapping from names to the description.
-        """
-        self._descriptions.update(descriptions)
 
     def _check_name(self, *names: str) -> None:
         if not names:

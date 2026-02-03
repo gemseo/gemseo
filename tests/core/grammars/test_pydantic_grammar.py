@@ -241,7 +241,7 @@ def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
 def test_set_descriptions(descriptions, model2) -> None:
     """Verify setting descriptions."""
     grammar = PydanticGrammar("g", model=model2)
-    grammar.set_descriptions(descriptions)
+    grammar.descriptions.update(descriptions)
 
     descriptions_ = {"name2": "Original description for name 2"}
     descriptions_.update(descriptions)
@@ -260,7 +260,7 @@ def test_set_descriptions_no_rebuild(model2) -> None:
     with pytest.raises(
         KeyError, match=re.escape("The name 'dummy' is not in the grammar.")
     ):
-        grammar.set_descriptions({"dummy": "description"})
+        grammar.descriptions.update({"dummy": "description"})
 
 
 @pytest.mark.parametrize(

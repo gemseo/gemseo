@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from math import inf
-from typing import TYPE_CHECKING
 
 import pytest
 from pydantic import Field
@@ -47,12 +46,9 @@ from gemseo.uncertainty.distributions.base_distribution_settings import (
     BaseDistributionSettings,
 )
 
-if TYPE_CHECKING:
-    from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
-
 
 def get_setting_classes(
-    BaseSettings: type[BaseAlgorithmSettings],  # noqa: N803
+    BaseSettings: type[BaseSettings],  # noqa: N803
     package_name: str,
     module_,
 ) -> list[str]:

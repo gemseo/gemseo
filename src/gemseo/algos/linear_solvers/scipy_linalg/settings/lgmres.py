@@ -56,8 +56,3 @@ class LGMRES_Settings(BaseSciPyLinalgSettingsBase):  # noqa: N801
             """Whether to put `outer_v` augmentation vectors before Krylov iterates."""
         ),
     )
-
-
-# TODO: API: remove DEFAULTSettings.
-DEFAULTSettings = LGMRES_Settings
-DEFAULT_Settings = LGMRES_Settings

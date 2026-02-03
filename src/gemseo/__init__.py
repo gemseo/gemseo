@@ -89,7 +89,6 @@ if TYPE_CHECKING:
 
     from pydantic import BaseModel
 
-    from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
     from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
@@ -127,6 +126,7 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario_results.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
+    from gemseo.settings.base_settings import BaseSettings
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -1012,7 +1012,7 @@ def execute_post(
 def execute_algo(
     opt_problem: OptimizationProblem,
     algo_type: str = "opt",
-    settings_model: BaseAlgorithmSettings | None = None,
+    settings_model: BaseSettings | None = None,
     **settings: Any,
 ) -> OptimizationResult:
     """Solve an optimization problem.

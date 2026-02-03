@@ -113,7 +113,7 @@ def test_loop(disciplines) -> None:
 
 def test_serial_execution(disciplines) -> None:
     seq = SequentialExecSequence([disciplines.d1, disciplines.d1])
-    seq.enable()
+    seq.is_enabled = True
     assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.DONE
@@ -128,12 +128,12 @@ def test_serial_execution(disciplines) -> None:
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.DONE
     with pytest.raises(ValueError):
-        SequentialExecSequence().enable()
+        SequentialExecSequence().is_enabled = True
 
 
 def test_serial_execution_failed(disciplines) -> None:
     seq = SequentialExecSequence([disciplines.d1, disciplines.d2])
-    seq.enable()
+    seq.is_enabled = True
     assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.DONE
@@ -149,7 +149,7 @@ def test_serial_execution_failed(disciplines) -> None:
 
 def test_parallel_execution(disciplines) -> None:
     seq = ParallelExecSequence([disciplines.d1, disciplines.d2])
-    seq.enable()
+    seq.is_enabled = True
     assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
@@ -168,7 +168,7 @@ def test_parallel_execution(disciplines) -> None:
 
 def test_parallel_execution_failed(disciplines) -> None:
     seq = ParallelExecSequence([disciplines.d1, disciplines.d2])
-    seq.enable()
+    seq.is_enabled = True
     assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d2.execution_status.value = ExecutionStatus.Status.DONE
     disciplines.d1.execution_status.value = ExecutionStatus.Status.DONE
@@ -182,7 +182,7 @@ def test_loop_execution(disciplines) -> None:
         disciplines.d3,
         SequentialExecSequence([disciplines.d1, disciplines.d2]),
     )
-    seq.enable()
+    seq.is_enabled = True
     disciplines.d3.execution_status.value = ExecutionStatus.Status.DONE
     assert seq.status == ExecutionStatus.Status.DONE
     disciplines.d3.execution_status.value = ExecutionStatus.Status.RUNNING
@@ -213,7 +213,7 @@ def test_loop_execution_failed(disciplines) -> None:
         disciplines.d3,
         SequentialExecSequence([disciplines.d1, disciplines.d2]),
     )
-    seq.enable()
+    seq.is_enabled = True
     disciplines.d3.execution_status.value = ExecutionStatus.Status.FAILED
     assert seq.status == ExecutionStatus.Status.FAILED
 
@@ -235,7 +235,7 @@ def test_sub_scenario() -> None:
     d2 = MDOScenarioAdapter(sc_prop, [], [])
     seq = SequentialExecSequence([d1])
     seq.extend(d2.get_process_flow().get_execution_flow())
-    seq.enable()
+    seq.is_enabled = True
     d1.execution_status.value = ExecutionStatus.Status.DONE
     assert status_of(seq, d1) == ExecutionStatus.Status.DONE
     assert status_of(seq, sc_prop) is ExecutionStatus.Status.DONE

@@ -624,11 +624,7 @@ def get_discipline_variable_properties(
     input_names_to_properties = {}
     output_names_to_properties = {}
     data_processor = discipline.io.data_processor
-    if isinstance(data_processor, NameMapping):
-        data_processor_mapping = data_processor.mapping
-    else:
-        data_processor_mapping = None
-
+    is_name_mapping = isinstance(data_processor, NameMapping)
     for grammar, names_to_properties in zip(
         (discipline.io.input_grammar, discipline.io.output_grammar),
         (input_names_to_properties, output_names_to_properties),
@@ -639,12 +635,16 @@ def get_discipline_variable_properties(
             current_name_without_namespace = from_namespaced.get(
                 current_name, current_name
             )
-            if data_processor_mapping is None:
-                original_name = current_name_without_namespace
-            else:
-                original_name = data_processor_mapping.get(
-                    current_name_without_namespace, current_name_without_namespace
+            if is_name_mapping:
+                original_name = next(
+                    iter(
+                        data_processor.pre_process_data({
+                            current_name_without_namespace: None
+                        })
+                    )
                 )
+            else:
+                original_name = current_name_without_namespace
 
             names_to_properties[current_name] = DisciplineVariableProperties(
                 current_name=current_name,

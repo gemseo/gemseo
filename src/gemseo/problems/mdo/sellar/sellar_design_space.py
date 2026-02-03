@@ -54,14 +54,11 @@ class SellarDesignSpace(DesignSpace):
 
     def __init__(
         self,
-        # TODO: API: remove dtype.
-        dtype: RealOrComplexDType = RealOrComplexDType.COMPLEX,
         n: int = 1,
         add_couplings: bool = True,
     ) -> None:
         """
         Args:
-            dtype: The type of the variables defined in the design space.
             n: The size of the local design variables and coupling variables.
             add_couplings: Whether to add the coupling variables to the design space.
         """  # noqa: D205 D212

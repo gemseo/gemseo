@@ -167,7 +167,7 @@ def test_no_discipline_and_no_data_with_quadrature(probability_space) -> None:
         match=re.escape("The quadrature rule requires either data or discipline."),
     ):
         PCERegressor(
-            None,
+            IODataset(),
             PCERegressor_Settings(discipline=None, use_quadrature=True),
         )
 
@@ -187,7 +187,7 @@ def test_no_dataset_with_least_square(probability_space, discipline) -> None:
         ValueError,
         match=re.escape("The least-squares regression requires data."),
     ):
-        PCERegressor(None, PCERegressor_Settings())
+        PCERegressor(IODataset(), PCERegressor_Settings())
 
 
 def test_discipline_with_least_square(probability_space, dataset, discipline) -> None:

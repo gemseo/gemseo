@@ -33,10 +33,12 @@ class ParallelExecSequence(BaseExtendableExecSequence):
     def _accept(self, visitor) -> None:
         visitor.visit_parallel(self)
 
-    def enable(self) -> None:
-        super().enable()
-        for sequence in self.sequences:
-            sequence.enable()
+    @BaseExtendableExecSequence.is_enabled.setter
+    def is_enabled(self, enable: bool) -> None:
+        super(__class__, self.__class__).is_enabled.fset(self, enable)
+        if enable:
+            for sequence in self.sequences:
+                sequence.is_enabled = True
 
     def _update_child_done_status(self, child) -> None:
         """Disable itself when all children done.
@@ -49,4 +51,4 @@ class ParallelExecSequence(BaseExtendableExecSequence):
             all_done = all_done and (sequence.status == _Status.DONE)
         if all_done:
             self.status = _Status.DONE
-            self.disable()
+            self.is_enabled = False

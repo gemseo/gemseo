@@ -57,14 +57,14 @@ def test_is_scipy_available() -> None:
 def test_solver_factory_cache() -> None:
     """Verify the caching of the solver factory."""
     factory = LinearSolverLibraryFactory(use_cache=True)
-    lib1 = factory.create("DEFAULT")
-    lib2 = factory.create("DEFAULT")
+    lib1 = factory.create("LGMRES")
+    lib2 = factory.create("LGMRES")
     assert lib2 is lib1
 
     # A new instance has a different cache.
     factory = LinearSolverLibraryFactory(use_cache=True)
-    lib1_bis = factory.create("DEFAULT")
-    lib2_bis = factory.create("DEFAULT")
+    lib1_bis = factory.create("LGMRES")
+    lib2_bis = factory.create("LGMRES")
     assert lib2_bis is lib1_bis
     assert lib2_bis is not lib2
     assert lib1_bis is not lib1
@@ -73,7 +73,7 @@ def test_solver_factory_cache() -> None:
 def test_clear_lib_cache() -> None:
     """Verify clearing the lib cache."""
     factory = LinearSolverLibraryFactory(use_cache=True)
-    lib1 = factory.create("DEFAULT")
+    lib1 = factory.create("LGMRES")
     factory.clear_lib_cache()
-    lib2 = factory.create("DEFAULT")
+    lib2 = factory.create("LGMRES")
     assert lib1 is not lib2
