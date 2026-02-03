@@ -36,6 +36,7 @@ from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -117,6 +118,21 @@ def f_docstring(foo, bar):
     return baz  # noqa: RET504
 
 
+class Functor:
+    """A callable class."""
+
+    def __call__(self, x=1):
+        y = 2 * x
+        return y  # noqa: RET504
+
+
+def test_grammar():
+    """Test the grammar type of IO grammars."""
+    d = AutoPyDiscipline(f1)
+    assert isinstance(d.io.input_grammar, SimpleGrammar)
+    assert isinstance(d.io.output_grammar, SimpleGrammar)
+
+
 def test_basic() -> None:
     """Test a basic auto-discipline execution."""
     d1 = AutoPyDiscipline(f1)
@@ -152,8 +168,6 @@ def test_jac() -> None:
     [
         ("py_func", f5),
         ("py_jac", df5),
-        ("input_names", ["y"]),
-        ("output_names", ["u", "f"]),
     ],
 )
 def test_read_only(name, value) -> None:
@@ -280,8 +294,8 @@ def test_multiline_return() -> None:
         )
 
     discipline = AutoPyDiscipline(f)
-    assert discipline.input_names == ["x"]
-    assert discipline.output_names == [
+    assert list(discipline.io.input_grammar) == ["x"]
+    assert list(discipline.io.output_grammar) == [
         "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
         "zzzzzzzzzzzzzzzzz",
     ]
@@ -587,3 +601,13 @@ def test_descriptions():
         "foo": "The docstring of foo.",
         "bar": "The docstring of bar.",
     }
+
+
+def test_callable_class():
+    """Check that AutoPyDiscipline supports callable class instances."""
+    functor = Functor()
+    discipline = AutoPyDiscipline(functor, py_jac=functor)
+    discipline.execute()
+    assert discipline.io.data["y"] == 2
+    discipline.linearize(compute_all_jacobians=True)
+    assert discipline.jac["y"]["x"] == 2

@@ -22,10 +22,12 @@
 from __future__ import annotations
 
 import ast
+import inspect
 import logging
 from inspect import getsource
 from inspect import signature
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 from typing import get_args
 from typing import get_origin
@@ -90,6 +92,10 @@ class AutoPyDiscipline(Discipline):
     illustrates this feature.
     """
 
+    default_grammar_type: ClassVar[Discipline.GrammarType] = (
+        Discipline.GrammarType.SIMPLE
+    )
+
     __input_names: tuple[str, ...]
     """The names of the input variables."""
 
@@ -142,7 +148,20 @@ class AutoPyDiscipline(Discipline):
             ValueError: Either when the function returns an expression
                 or when two return statements use different variables.
         """  # noqa: D205 D212 D415
-        super().__init__(name=name or py_func.__name__)
+        py_func_is_a_functor = self.__is_functor(py_func)
+        if not name:
+            if py_func_is_a_functor:
+                name = py_func.__class__.__name__
+            else:
+                name = py_func.__name__
+
+        if py_func_is_a_functor:
+            py_func = py_func.__call__
+
+        if py_jac is not None and self.__is_functor(py_jac):
+            py_jac = py_jac.__call__
+
+        super().__init__(name=name)
         self.__py_func = py_func
         self.__py_jac = py_jac
         self.__input_names = tuple(signature(self.__py_func).parameters)
@@ -162,17 +181,17 @@ class AutoPyDiscipline(Discipline):
         self.__input_names_with_namespaces = ()
         self.__output_names_with_namespaces = ()
 
-    # TODO: API: remove and use self.io.input_grammar.names instead.
-    @property
-    def input_names(self) -> list[str]:
-        """The names of the input variables."""
-        return list(self.__input_names)
+    @staticmethod
+    def __is_functor(f: Callable) -> bool:
+        """Check if a callable is a functor.
 
-    # TODO: API: remove and use self.io.output_grammar.names instead.
-    @property
-    def output_names(self) -> list[str]:
-        """The names of the output variables."""
-        return list(self.__output_names)
+        Args:
+            f: A callable.
+
+        Returns:
+            Whether the callable is a functor.
+        """
+        return not inspect.ismethod(f) and not inspect.isfunction(f)
 
     @property
     def py_func(self) -> Callable:
