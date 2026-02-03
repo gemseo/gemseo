@@ -626,7 +626,7 @@ class JacobianAssembly:
         functions: Collection[str],
         variables: Collection[str],
         couplings: Iterable[str],
-        linear_solver: str = "DEFAULT",
+        linear_solver: str = "LGMRES",
         mode: DerivationMode = DerivationMode.AUTO,
         matrix_type: JacobianType = JacobianType.MATRIX,
         use_lu_fact: bool = False,
@@ -831,7 +831,7 @@ class JacobianAssembly:
         self,
         in_data: Mapping[str, RealArray],
         couplings: Collection[str],
-        linear_solver: str = "DEFAULT",
+        linear_solver: str = "LGMRES",
         matrix_type: JacobianType = JacobianType.MATRIX,
         residuals: RealOrComplexArray | None = None,
         resolved_residual_names: Collection[str] = (),
@@ -1005,7 +1005,7 @@ class CoupledSystem:
     linear_problem: LinearProblem | None
     """The considered linear problem."""
 
-    DEFAULT_LINEAR_SOLVER: ClassVar[str] = "DEFAULT"
+    DEFAULT_LINEAR_SOLVER: ClassVar[str] = "LGMRES"
     """The default linear solver."""
 
     def __init__(self) -> None:  # noqa:D107
@@ -1138,7 +1138,7 @@ class CoupledSystem:
         # function to differentiate
         dy_dx = empty((n_couplings, n_variables))
         self.linear_problem = LinearProblem(dres_dy)
-        if linear_solver in {"DEFAULT", "LGMRES"}:
+        if linear_solver == "LGMRES":
             # Reinit outerV, and store it for all RHS
             linear_solver_settings["outer_v"] = []
         for var_index in range(n_variables):
@@ -1182,7 +1182,7 @@ class CoupledSystem:
         jac = {}
 
         # adjoint vector for each interest function
-        if linear_solver in {"DEFAULT", "LGMRES"}:
+        if linear_solver == "LGMRES":
             # Reinit outerV, and store it for all RHS
             linear_solver_settings["outer_v"] = []
 

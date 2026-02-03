@@ -215,7 +215,7 @@ def test_exception_mda_jacobi(
     scenario = DOEScenario(
         sellar_disciplines,
         "obj",
-        SellarDesignSpace("float64"),
+        SellarDesignSpace(),
         formulation_name="MDF",
         main_mda_name="MDAChain",
         main_mda_settings={

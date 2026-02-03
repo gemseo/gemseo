@@ -65,10 +65,12 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
         for sequence in self.sequences:
             sequence.set_observer(obs)
 
-    def disable(self) -> None:
-        super().disable()
-        for sequence in self.sequences:
-            sequence.disable()
+    @BaseExecutionSequence.is_enabled.setter
+    def is_enabled(self, enable: bool) -> None:
+        super(__class__, self.__class__).is_enabled.fset(self, enable)
+        if not enable:
+            for sequence in self.sequences:
+                sequence.is_enabled = False
 
     # TODO: factorize with ExecutionSequence (mixin?)
     def force_statuses(self, status: ExecutionStatus) -> None:

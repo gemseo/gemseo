@@ -16,8 +16,8 @@
 
 from __future__ import annotations
 
-from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
+from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseODESolverSettings(BaseAlgorithmSettings):
+class BaseODESolverSettings(BaseSettings):
     """Settings for the ODE solvers."""

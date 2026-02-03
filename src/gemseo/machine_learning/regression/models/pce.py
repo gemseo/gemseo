@@ -182,8 +182,7 @@ class PCERegressor(BaseFCERegressor):
         if cleaning_options is None:
             cleaning_options = CleaningOptions()
 
-        # TODO: API: remove backward compatibility wrt data in gemseo v7.
-        there_are_data = data is not None and len(data) > 0
+        there_are_data = not data.empty
         there_is_a_discipline = settings_.discipline is not None
         if settings_.use_quadrature:
             if not there_is_a_discipline and not there_are_data:

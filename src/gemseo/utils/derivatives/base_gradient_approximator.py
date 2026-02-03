@@ -76,8 +76,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.f_pointer = f_pointer
         self._parallel_args = parallel_args
         self._parallel = parallel
-        # TODO: API: replace "step not in (None, 0.0)" by "step != 0.0".
-        if isinstance(step, ndarray) or step not in (None, 0.0):
+        if isinstance(step, ndarray) or step != 0.0:
             self.step = step
         else:
             self._step = self._DEFAULT_STEP

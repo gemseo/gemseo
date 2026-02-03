@@ -33,10 +33,10 @@ from typing import TypeVar
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
 )
+from gemseo.settings.base_settings import BaseSettings
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import pretty_str
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
-T = TypeVar("T", bound=BaseAlgorithmSettings)
+T = TypeVar("T", bound=BaseSettings)
 
 
 @dataclass
@@ -75,7 +75,7 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
     #  future we should have one algorithm per module and use the Settings class
     #  variable to validate the settings in _validate_settings.
     # TODO: API: rename to settings_class.
-    Settings: type[BaseAlgorithmSettings] = BaseAlgorithmSettings
+    Settings: type[BaseSettings] = BaseSettings
     """The Pydantic model for the settings."""
 
 
@@ -136,7 +136,7 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
     @staticmethod
     def _filter_settings(
         settings: StrKeyMapping,
-        model_to_exclude: type[BaseAlgorithmSettings],
+        model_to_exclude: type[BaseSettings],
     ) -> dict[str, Any]:
         """Filter settings.
 
@@ -181,7 +181,7 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
     def execute(
         self,
         problem: BaseProblem,
-        settings_model: BaseAlgorithmSettings | None = None,
+        settings_model: BaseSettings | None = None,
         **settings: Any,
     ) -> Any:
         """Solve a problem with an algorithm from this library.

@@ -113,10 +113,10 @@ class ComplexDataProcessor(DataProcessor):
 class NameMapping(DataProcessor):
     """A data preprocessor to map process level names to local discipline names."""
 
-    mapping: Mapping[str, str]
+    __mapping: Mapping[str, str]
     """The mapping structure of the form `{global_name: local_name}`."""
 
-    reverse_mapping: Mapping[str, str]
+    __reverse_mapping: Mapping[str, str]
     """The reverse mapping structure of the form `{local_name: global_name}`."""
 
     def __init__(self, mapping: Mapping[str, str]) -> None:
@@ -131,21 +131,20 @@ class NameMapping(DataProcessor):
                 the global name is the local name.
         """  # noqa: D205, D212, D415
         super().__init__()
-        # TODO: API: make those private.
-        self.mapping = mapping
-        self.reverse_mapping = {
+        self.__mapping = mapping
+        self.__reverse_mapping = {
             local_key: global_key for global_key, local_key in mapping.items()
         }
 
     def pre_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        get_local_name = self.mapping.get
+        get_local_name = self.__mapping.get
         return {
             get_local_name(global_key, global_key): value
             for global_key, value in data.items()
         }
 
     def post_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        get_global_name = self.reverse_mapping.get
+        get_global_name = self.__reverse_mapping.get
         return {
             get_global_name(local_key, local_key): value
             for local_key, value in data.items()

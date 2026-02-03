@@ -91,13 +91,9 @@ class LinearCombination(Discipline):
         input_grammar = self.io.input_grammar
         input_grammar.update_from_names(input_names)
         self.io.output_grammar.update_from_names((output_name,))
-
-        # TODO: API: remove this line in GEMSEO v7.
-        default_size = 1 if input_size is None else input_size
         input_grammar.defaults.update({
-            input_name: zeros(default_size) for input_name in input_names
+            input_name: zeros(input_size) for input_name in input_names
         })
-
         if input_coefficients:
             self.__coefficients = dict.fromkeys(input_names, 1.0)
             self.__coefficients.update(input_coefficients)

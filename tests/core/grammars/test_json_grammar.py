@@ -387,6 +387,6 @@ def test_update_from_types():
 def test_update_from_types_error():
     """Verify error when updated from a bad type."""
     grammar = JSONGrammar("g")
-    match = "Unsupported python type for a JSON Grammar: <class 'set'>"
-    with pytest.raises(KeyError, match=match):
+    match = "Unsupported Python type for a JSON Grammar: <class 'set'>"
+    with pytest.raises(TypeError, match=match):
         grammar.update_from_types({"x": set})

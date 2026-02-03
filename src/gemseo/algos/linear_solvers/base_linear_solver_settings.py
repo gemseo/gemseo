@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
+from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseLinearSolverSettings(BaseAlgorithmSettings):
+class BaseLinearSolverSettings(BaseSettings):
     """The settings common to all the linear solver libraries."""
 
     store_residuals: bool = Field(

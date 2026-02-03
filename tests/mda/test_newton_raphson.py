@@ -295,11 +295,11 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
         "newton_linear_solver_settings",
     ),
     [
-        ("DEFAULT", {}, "DEFAULT", {}),
-        ("DEFAULT", {"atol": 1e-6}, "DEFAULT", {}),
-        ("DEFAULT", {}, "DEFAULT", {"atol": 1e-3}),
-        ("BICG", {}, "DEFAULT", {}),
-        ("DEFAULT", {}, "BICG", {}),
+        ("LGMRES", {}, "LGMRES", {}),
+        ("LGMRES", {"atol": 1e-6}, "LGMRES", {}),
+        ("LGMRES", {}, "LGMRES", {"atol": 1e-3}),
+        ("BICG", {}, "LGMRES", {}),
+        ("LGMRES", {}, "BICG", {}),
     ],
 )
 def test_pass_dedicated_newton_options(
@@ -351,8 +351,8 @@ def test_pass_dedicated_newton_options(
 @pytest.mark.parametrize(
     ("newton_linear_solver_name", "newton_linear_solver_settings"),
     [
-        ("DEFAULT", {"atol": 1e-7}),
-        ("DEFAULT", {}),
+        ("LGMRES", {"atol": 1e-7}),
+        ("LGMRES", {}),
         ("BICGSTAB", {}),
         ("GMRES", {}),
     ],

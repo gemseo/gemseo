@@ -34,10 +34,10 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
-    from gemseo.algos.base_algorithm_settings import BaseAlgorithmSettings
     from gemseo.algos.base_problem import BaseProblem
     from gemseo.algos.ode.ode_result import ODEResult
     from gemseo.algos.optimization_result import OptimizationResult
+    from gemseo.settings.base_settings import BaseSettings
 
 
 class _AlgoFactoryMeta(ABCMeta):
@@ -197,7 +197,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
     def execute(
         self,
         problem: BaseProblem,
-        settings_model: BaseAlgorithmSettings | None = None,
+        settings_model: BaseSettings | None = None,
         **settings: Any,
     ) -> OptimizationResult | ODEResult:
         """Execute a problem with an algorithm.

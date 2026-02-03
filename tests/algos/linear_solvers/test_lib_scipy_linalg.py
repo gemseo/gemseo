@@ -55,7 +55,7 @@ def test_algo_list() -> None:
     """Tests the algo list detection at lib creation."""
     factory = LinearSolverLibraryFactory()
     assert len(factory.algorithms) >= 6
-    for algo in ("LGMRES", "GMRES", "BICG", "QMR", "BICGSTAB", "DEFAULT"):
+    for algo in ("LGMRES", "GMRES", "BICG", "QMR", "BICGSTAB", "LGMRES"):
         factory.is_available(algo)
 
 
@@ -72,13 +72,13 @@ def test_default(kwargs) -> None:
     rng = default_rng(1)
     n = 5
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    factory.execute(problem, algo_name="DEFAULT", **kwargs)
+    factory.execute(problem, algo_name="LGMRES", **kwargs)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
 @pytest.mark.parametrize("n", [1, 4, 20])
-@pytest.mark.parametrize("algo_name", ["DEFAULT", "LGMRES", "BICGSTAB"])
+@pytest.mark.parametrize("algo_name", ["LGMRES", "BICGSTAB"])
 @pytest.mark.parametrize("use_preconditioner", [True, False])
 @pytest.mark.parametrize("use_ilu_precond", [True, False])
 @pytest.mark.parametrize("use_x0", [True, False])
@@ -118,11 +118,11 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
 def test_common_dtype_cplx() -> None:
     factory = LinearSolverLibraryFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
-    factory.execute(problem, algo_name="DEFAULT")
+    factory.execute(problem, algo_name="LGMRES")
     assert problem.compute_residuals() < RESIDUALS_TOL
 
     problem = LinearProblem(eye(2), ones(2, dtype="complex128"))
-    factory.execute(problem, algo_name="DEFAULT")
+    factory.execute(problem, algo_name="LGMRES")
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
@@ -155,7 +155,7 @@ def test_hard_conv(tmp_wd, seed) -> None:
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     LinearSolverLibraryFactory().execute(
         problem,
-        algo_name="DEFAULT",
+        algo_name="LGMRES",
         max_iter=3,
         store_residuals=True,
         use_ilu_precond=True,
@@ -172,13 +172,13 @@ def test_inconsistent_options() -> None:
         ValueError, match=re.escape("matrix and preconditioner have different shapes")
     ):
         LinearSolverLibraryFactory().execute(
-            problem, algo_name="DEFAULT", preconditioner=ones((3, 3))
+            problem, algo_name="LGMRES", preconditioner=ones((3, 3))
         )
 
     with pytest.raises(
         ValueError, match=re.escape("shapes of A (2, 2) and x0 (3,) are incompatible")
     ):
-        LinearSolverLibraryFactory().execute(problem, algo_name="DEFAULT", x0=ones(3))
+        LinearSolverLibraryFactory().execute(problem, algo_name="LGMRES", x0=ones(3))
 
     with pytest.raises(
         ValueError,
@@ -188,7 +188,7 @@ def test_inconsistent_options() -> None:
     ):
         LinearSolverLibraryFactory().execute(
             problem,
-            algo_name="DEFAULT",
+            algo_name="LGMRES",
             preconditioner=ones((2, 2)),
             use_ilu_precond=True,
         )

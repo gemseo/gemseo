@@ -29,7 +29,3 @@ class Augmented_Lagrangian_Order_1_Settings(  # noqa: N801
     BaseGradientBasedAlgorithmSettings,
 ):
     """The augmented Lagrangian of order 1 settings."""
-
-
-# TODO: API: remove
-Augmented_Lagrangian_order_1_Settings = Augmented_Lagrangian_Order_1_Settings

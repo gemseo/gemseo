@@ -45,7 +45,7 @@ class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
     }
 
     newton_linear_solver_name: LinearSolver = Field(
-        default=LinearSolver.DEFAULT,
+        default=LinearSolver.LGMRES,
         description="""The name of the linear solver for the Newton method.
 
 This field is ignored when `newton_linear_solver_settings` is a Pydantic model.""",

@@ -66,13 +66,13 @@ class ExecutionSequence(BaseExecutionSequence):
     def set_observer(self, obs: BaseExecutionStatusObserver) -> None:
         self._observer = obs
 
-    def enable(self) -> None:
-        super().enable()
-        self.process.execution_status.add_observer(self)
-
-    def disable(self) -> None:
-        super().disable()
-        self.process.execution_status.remove_observer(self)
+    @BaseExecutionSequence.is_enabled.setter
+    def is_enabled(self, enable: bool) -> None:
+        super(__class__, self.__class__).is_enabled.fset(self, enable)
+        if enable:
+            self.process.execution_status.add_observer(self)
+        else:
+            self.process.execution_status.remove_observer(self)
 
     def get_statuses(self) -> dict[str, ExecutionStatus.Status]:
         """Return the statuses mapping atom uuid to status.
@@ -95,7 +95,7 @@ class ExecutionSequence(BaseExecutionSequence):
         if self.is_enabled and self.status != status.value:
             self.status = status.value or _Status.DONE
             if self.status in {_Status.DONE, _Status.FAILED}:
-                self.disable()
+                self.is_enabled = False
             if self._parent:
                 self._parent.update_child_status(self)
             if self._observer:

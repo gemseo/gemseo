@@ -56,7 +56,6 @@ from gemseo.algos.linear_solvers.scipy_linalg.settings.cg import CG_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.cgs import CGS_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.gcrot import GCROT_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.gmres import GMRES_Settings
-from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import DEFAULTSettings
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
 
 if TYPE_CHECKING:
@@ -91,7 +90,6 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
 
     __BASE_INFO_MSG: ClassVar[str] = "SciPy linear solver algorithm stop info"
 
-    # TODO: API - remove DEFAULT solver since it's a duplicate (LGMRES)
     __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
         "BICG": bicg,
         "BICGSTAB": bicgstab,
@@ -101,7 +99,6 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
         "LGMRES": lgmres,
         "GCROT": gcrotmk,
         "TFQMR": tfqmr,
-        "DEFAULT": lgmres,
     }
     """The algorithm name bound to the SciPy function."""
 
@@ -165,13 +162,6 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
             internal_algorithm_name="tfqmr",
             website=f"{__DOC}generated/scipy.sparse.linalg.tfqmr.html",
             Settings=BaseSciPyLinalgSettingsBase,
-        ),
-        "DEFAULT": LinearSolverDescription(
-            algorithm_name="DEFAULT",
-            description="Default solver (LGMRES)",
-            internal_algorithm_name="lgmres",
-            website=f"{__DOC}generated/scipy.sparse.linalg.lgmres.html",
-            Settings=DEFAULTSettings,
         ),
     }
 

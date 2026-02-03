@@ -67,7 +67,7 @@ class Monitoring(metaclass=SingleInstancePerAttributeId):
         self._observers = []
         self.workflow = scenario.get_process_flow().get_execution_flow()
         self.workflow.set_observer(self)
-        self.workflow.enable()
+        self.workflow.is_enabled = True
 
     def add_observer(self, observer: Observer) -> None:
         """Register an observer object interested in observable update events.

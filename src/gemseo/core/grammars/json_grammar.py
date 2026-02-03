@@ -234,10 +234,9 @@ class JSONGrammar(BaseGrammar):
                     if element_type == ndarray:
                         sub_property["items"] = {"type": "number"}
                 properties[element_name] = sub_property
-        # TODO: API: use TypeError.
         except KeyError as error:
-            msg = f"Unsupported python type for a JSON Grammar: {error}"
-            raise KeyError(msg) from None
+            msg = f"Unsupported Python type for a JSON Grammar: {error}"
+            raise TypeError(msg) from None
 
         schema: Schema = {
             "$schema": "http://json-schema.org/draft-04/schema",

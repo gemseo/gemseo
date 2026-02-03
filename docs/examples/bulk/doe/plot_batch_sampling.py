@@ -270,7 +270,7 @@ def solve_sellar(
         The samples, the execution time.
     """
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
-    design_space = SellarDesignSpace(dtype="float")
+    design_space = SellarDesignSpace()
     scenario = MDOScenario(
         disciplines, "obj", design_space, formulation_settings_model=MDF_Settings()
     )

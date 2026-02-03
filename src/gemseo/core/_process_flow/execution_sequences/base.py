@@ -113,15 +113,11 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Whether the sequence is enabled."""
         return self.__is_enabled
 
-    # TODO: API: use a property setter for is_enabled.
-    def enable(self) -> None:
-        """Enable the execution sequence."""
-        self.status = _Status.DONE
-        self.__is_enabled = True
-
-    def disable(self) -> None:
-        """Disable the execution sequence."""
-        self.__is_enabled = False
+    @is_enabled.setter
+    def is_enabled(self, enable: bool) -> None:
+        self.__is_enabled = enable
+        if enable:
+            self.status = _Status.DONE
 
     def _compute_disc_to_uuids(self) -> None:
         """Update discipline to uuids mapping from uuids to discipline mapping.

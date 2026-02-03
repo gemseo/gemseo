@@ -37,13 +37,17 @@ class SequentialExecSequence(BaseExtendableExecSequence):
     def _accept(self, visitor) -> None:
         visitor.visit_serial(self)
 
-    def enable(self) -> None:
-        if not self.sequences:
-            msg = "Serial execution is empty"
-            raise ValueError(msg)
-        super().enable()
-        self.exec_index = 0
-        self.sequences[self.exec_index].enable()
+    @BaseExtendableExecSequence.is_enabled.setter
+    def is_enabled(self, enable: bool) -> None:
+        if enable:
+            if not self.sequences:
+                msg = "Serial execution is empty"
+                raise ValueError(msg)
+            super(__class__, self.__class__).is_enabled.fset(self, True)
+            self.exec_index = 0
+            self.sequences[self.exec_index].is_enabled = True
+        else:
+            super(__class__, self.__class__).is_enabled.fset(self, False)
 
     def _update_child_done_status(self, child) -> None:
         """Update next child to given child execution sequence.
@@ -56,11 +60,11 @@ class SequentialExecSequence(BaseExtendableExecSequence):
         if child.status != _Status.DONE:
             return
 
-        child.disable()
+        child.is_enabled = False
         self.exec_index += 1
 
         if self.exec_index < len(self.sequences):
-            self.sequences[self.exec_index].enable()
+            self.sequences[self.exec_index].is_enabled = True
         else:  # last seq done
             self.status = _Status.DONE
-            self.disable()
+            self.is_enabled = False
