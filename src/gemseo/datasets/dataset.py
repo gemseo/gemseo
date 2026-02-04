@@ -255,7 +255,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """The names of the variables bound to their number of components."""
         return {
             variable_name: self.get_view(variable_names=variable_name).shape[1]
-            for variable_name in self.variable_names
+            for variable_name in self.columns.levels[self.__VARIABLE_LEVEL].unique()
         }
 
     @property
@@ -365,7 +365,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             A normalized dataset.
         """
         output_dataset = self.copy()
-        variables_to_normalize = setdiff1d(self.variable_names, excluded_variable_names)
+        variables_to_normalize = setdiff1d(
+            list(self.columns.levels[self.__VARIABLE_LEVEL].unique()),
+            excluded_variable_names,
+        )
         groups_to_normalize = setdiff1d(self.group_names, excluded_group_names)
         data = output_dataset.get_view(
             group_names=groups_to_normalize, variable_names=variables_to_normalize

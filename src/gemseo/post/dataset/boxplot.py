@@ -99,7 +99,7 @@ class Boxplot(DatasetPlot):
         """  # noqa: D205, D212, D415
         self._n_items = self.__n_datasets
         return (
-            self._specific_settings.variables or self.dataset.variable_names,
+            self._specific_settings.variables,
             [
                 (self.__n_datasets - 1) / self.__n_datasets + i * self.__n_datasets
                 for i, _ in enumerate(self.__names)

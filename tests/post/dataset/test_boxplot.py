@@ -38,7 +38,7 @@ def dataset():
     variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
     dataset = Dataset.from_array(
         data_array,
-        variable_names=["x", "y", "z"],
+        variable_names=["y", "x", "z"],
         variable_names_to_n_components=variable_names_to_n_components,
     )
     dataset.name = "A dataset"
@@ -55,7 +55,7 @@ def other_dataset():
     variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
     dataset = Dataset.from_array(
         data_array,
-        variable_names=["x", "y", "z"],
+        variable_names=["y", "x", "z"],
         variable_names_to_n_components=variable_names_to_n_components,
     )
     dataset.name = "Another dataset"

@@ -76,10 +76,10 @@ class ColorEvolution(DatasetPlot):
             The data to be plotted,
             the names of the variables.
         """  # noqa: D205, D212, D415
-        variable_names = (
-            self._specific_settings.variables or self.dataset.variable_names
-        )
         return (
-            self.dataset.get_view(variable_names=variable_names).to_numpy().T,
-            variable_names,
+            self.dataset
+            .get_view(variable_names=self._specific_settings.variables)
+            .to_numpy()
+            .T,
+            self._specific_settings.variables,
         )

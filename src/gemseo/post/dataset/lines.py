@@ -94,7 +94,7 @@ class Lines(DatasetPlot):
             x_values = list(range(len(self.dataset)))
 
         variable_names = list(
-            self._specific_settings.variables or self.dataset.variable_names
+            self._specific_settings.variables or self.dataset.columns.levels[1].unique()
         )
         if abscissa_variable:
             if self._specific_settings.plot_abscissa_variable:
