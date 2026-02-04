@@ -50,7 +50,7 @@ class AugmentedLagrangianOrder0(
             internal_algorithm_name="Augmented_Lagrangian",
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
-            Settings=Augmented_Lagrangian_Order_0_Settings,
+            settings_class=Augmented_Lagrangian_Order_0_Settings,
         )
     }
 

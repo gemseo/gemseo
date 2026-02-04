@@ -72,10 +72,9 @@ class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
 
     # TODO: The field below is a workaround to be able to access algo-specific settings
     #  in modules for which one library class handles many different algorithms. In the
-    #  future we should have one algorithm per module and use the Settings class
+    #  future we should have one algorithm per module and use the settings_class class
     #  variable to validate the settings in _validate_settings.
-    # TODO: API: rename to settings_class.
-    Settings: type[BaseSettings] = BaseSettings
+    settings_class: type[BaseSettings] = BaseSettings
     """The Pydantic model for the settings."""
 
 
@@ -200,7 +199,7 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
         problem.check()
 
         self._settings = create_model(
-            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            self.ALGORITHM_INFOS[self.algo_name].settings_class,
             settings_model=settings_model,
             **settings,
         )

@@ -54,6 +54,6 @@ class OrthogonalMatchingPursuitCV(
     where $\tau$ is a specific model error.
     """  # noqa: E501
 
-    Settings = OrthogonalMatchingPursuitCV_Settings
+    settings_class = OrthogonalMatchingPursuitCV_Settings
 
     _FITTER_CLASS = SKLearnOrthogonalMatchingPursuitCV

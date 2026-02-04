@@ -454,14 +454,14 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
         def f(algo):
             klass = self.get_class(algo)
-            return klass.ALGORITHM_INFOS[algo].Settings.__name__
+            return klass.ALGORITHM_INFOS[algo].settings_class.__name__
 
         self.get_pydantic_model_class_name = f
 
         def get_options_schema(algo):
             klass = self.get_class(algo)
             return self.get_options_schema_from_pydantic_model(
-                klass.ALGORITHM_INFOS[algo].Settings
+                klass.ALGORITHM_INFOS[algo].settings_class
             )
 
         self.get_options_schema = get_options_schema
@@ -484,7 +484,9 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The options schema.
             """
-            return self.get_class(algo).ALGORITHM_INFOS[algo].Settings.model_fields
+            return (
+                self.get_class(algo).ALGORITHM_INFOS[algo].settings_class.model_fields
+            )
 
         return get_options_schema
 
@@ -573,13 +575,13 @@ class BasePostAlgoOptionsDoc(AlgoOptionsDoc):
 
         def f(algo):
             klass = self.get_class(algo)
-            return klass.Settings.__name__
+            return klass.settings_class.__name__
 
         self.get_pydantic_model_class_name = f
 
         def get_options_schema(algo):
             klass = self.get_class(algo)
-            return self.get_options_schema_from_pydantic_model(klass.Settings)
+            return self.get_options_schema_from_pydantic_model(klass.settings_class)
 
         self.get_options_schema = get_options_schema
 

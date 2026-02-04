@@ -51,7 +51,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
     mda: BaseMDA
     """The MDA used in the formulation."""
 
-    Settings: ClassVar[type[MDF_Settings]] = MDF_Settings
+    settings_class: ClassVar[type[MDF_Settings]] = MDF_Settings
 
     def _init_before_design_space_and_objective(self) -> BaseMDA:
         self.mda = MDAFactory().create(

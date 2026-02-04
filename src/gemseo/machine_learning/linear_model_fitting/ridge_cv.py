@@ -41,6 +41,6 @@ class RidgeCV(BaseSKLearnLinearModelFitter[SKLearnRidgeCV, RidgeCV_Settings]):
     and $\alpha>0$ is estimated by cross-validation.
     """
 
-    Settings = RidgeCV_Settings
+    settings_class = RidgeCV_Settings
 
     _FITTER_CLASS = SKLearnRidgeCV

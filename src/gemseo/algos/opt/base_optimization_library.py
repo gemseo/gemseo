@@ -70,7 +70,7 @@ class OptimizationAlgorithmDescription(DriverDescription):
     require_gradient: bool = False
     """Whether the optimization algorithm requires the gradient."""
 
-    Settings: type[BaseOptimizerSettings] = BaseOptimizerSettings
+    settings_class: type[BaseOptimizerSettings] = BaseOptimizerSettings
     """The settings validation model."""
 
 

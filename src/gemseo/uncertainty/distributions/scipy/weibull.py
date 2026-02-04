@@ -31,7 +31,7 @@ from gemseo.uncertainty.distributions.scipy.weibull_settings import (
 class SPWeibullDistribution(SPDistribution):
     """The SciPy-based Weibull distribution."""
 
-    Settings = SPWeibullDistribution_Settings
+    settings_class = SPWeibullDistribution_Settings
 
     def __init__(
         self,

@@ -45,7 +45,7 @@ from gemseo.uncertainty.distributions.openturns.log_normal_settings import (
 class OTLogNormalDistribution(OTDistribution):
     """The OpenTURNS-based log-normal distribution."""
 
-    Settings = OTLogNormalDistribution_Settings
+    settings_class = OTLogNormalDistribution_Settings
 
     def __init__(
         self,

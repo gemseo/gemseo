@@ -28,6 +28,6 @@ from gemseo.machine_learning.linear_model_fitting.lars_settings import LARS_Sett
 class LARS(BaseSKLearnLinearModelFitter[SKLearnLars, LARS_Settings]):
     """Scikit-learn least angle regression (LARS) algorithm."""
 
-    Settings = LARS_Settings
+    settings_class = LARS_Settings
 
     _FITTER_CLASS = SKLearnLars

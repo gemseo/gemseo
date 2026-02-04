@@ -236,7 +236,7 @@ def dataset_for_transform() -> IODataset:
 class NewSupervisedModel(BaseMLSupervisedModel):
     """A supervised model without fitting modelrithm."""
 
-    Settings = BaseMLSupervisedModelSettings
+    settings_class = BaseMLSupervisedModelSettings
 
     def _fit(self, input_data, output_data) -> None:
         return

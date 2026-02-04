@@ -75,7 +75,7 @@ class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
     handle_integer_variables: bool = True
     """Whether the optimization algorithm handles integer variables."""
 
-    Settings: type[BaseSciPyGlobalSettings] = BaseSciPyGlobalSettings
+    settings_class: type[BaseSciPyGlobalSettings] = BaseSciPyGlobalSettings
     """The option validation model for SciPy global optimization library."""
 
 
@@ -97,7 +97,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             description="Dual annealing",
             internal_algorithm_name="dual_annealing",
             website=f"{__DOC}scipy.optimize.dual_annealing.html",
-            Settings=DUAL_ANNEALING_Settings,
+            settings_class=DUAL_ANNEALING_Settings,
         ),
         "SHGO": SciPyGlobalAlgorithmDescription(
             algorithm_name="SHGO",
@@ -107,7 +107,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             internal_algorithm_name="shgo",
             positive_constraints=True,
             website=f"{__DOC}scipy.optimize.shgo.html",
-            Settings=SHGO_Settings,
+            settings_class=SHGO_Settings,
         ),
         "DIFFERENTIAL_EVOLUTION": SciPyGlobalAlgorithmDescription(
             algorithm_name="Differential evolution",
@@ -116,7 +116,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             handle_inequality_constraints=True,
             internal_algorithm_name="differential_evolution",
             website=f"{__DOC}scipy.optimize.differential_evolution.html",
-            Settings=DIFFERENTIAL_EVOLUTION_Settings,
+            settings_class=DIFFERENTIAL_EVOLUTION_Settings,
         ),
     }
 

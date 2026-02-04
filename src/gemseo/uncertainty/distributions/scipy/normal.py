@@ -32,7 +32,7 @@ from gemseo.uncertainty.distributions.scipy.normal_settings import (
 class SPNormalDistribution(SPDistribution):
     """The SciPy-based normal distribution."""
 
-    Settings = SPNormalDistribution_Settings
+    settings_class = SPNormalDistribution_Settings
 
     def __init__(
         self,

@@ -54,7 +54,7 @@ def test_generate_samples(algo_name, version, seed, caplog, monkeypatch) -> None
     n_samples = 3
     library = SciPyDOE(algo_name)
     library._settings = create_model(
-        library.ALGORITHM_INFOS[library.algo_name].Settings, n_samples=n_samples
+        library.ALGORITHM_INFOS[library.algo_name].settings_class, n_samples=n_samples
     )
     library._settings.seed = seed
 

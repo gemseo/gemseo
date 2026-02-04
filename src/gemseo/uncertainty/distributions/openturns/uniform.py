@@ -42,7 +42,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 class OTUniformDistribution(OTDistribution):
     """The OpenTURNS-based uniform distribution."""
 
-    Settings = OTUniformDistribution_Settings
+    settings_class = OTUniformDistribution_Settings
 
     def __init__(
         self,

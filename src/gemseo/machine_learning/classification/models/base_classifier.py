@@ -52,7 +52,7 @@ class BaseClassifier(BaseMLSupervisedModel):
     n_classes: int
     """The number of classes."""
 
-    Settings = BaseClassifierSettings
+    settings_class = BaseClassifierSettings
 
     def _post_init(self):
         super()._post_init()

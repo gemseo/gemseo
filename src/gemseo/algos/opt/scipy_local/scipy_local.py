@@ -58,7 +58,7 @@ class SciPyAlgorithmDescription(OptimizationAlgorithmDescription):
     library_name: str = "SciPy Local"
     """The library name."""
 
-    Settings: type[BaseScipyLocalSettings] = BaseScipyLocalSettings
+    settings_class: type[BaseScipyLocalSettings] = BaseScipyLocalSettings
     """The option validation model for SciPy local optimization library."""
 
 
@@ -80,7 +80,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             require_gradient=True,
             positive_constraints=True,
             website=f"{__DOC}optimize.minimize-slsqp.html",
-            Settings=SLSQP_Settings,
+            settings_class=SLSQP_Settings,
         ),
         "L-BFGS-B": SciPyAlgorithmDescription(
             algorithm_name="L-BFGS-B",
@@ -90,7 +90,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             internal_algorithm_name="L-BFGS-B",
             require_gradient=True,
             website=f"{__DOC}optimize.minimize-lbfgsb.html",
-            Settings=L_BFGS_B_Settings,
+            settings_class=L_BFGS_B_Settings,
         ),
         "TNC": SciPyAlgorithmDescription(
             algorithm_name="TNC",
@@ -100,14 +100,14 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             internal_algorithm_name="TNC",
             require_gradient=True,
             website=f"{__DOC}optimize.minimize-tnc.html",
-            Settings=TNC_Settings,
+            settings_class=TNC_Settings,
         ),
         "NELDER-MEAD": SciPyAlgorithmDescription(
             algorithm_name="NELDER-MEAD",
             description="Nelder-Mead algorithm implemented in the SciPy library",
             internal_algorithm_name="Nelder-Mead",
             website=f"{__DOC}optimize.minimize-neldermead.html",
-            Settings=NELDER_MEAD_Settings,
+            settings_class=NELDER_MEAD_Settings,
         ),
     }
 
@@ -123,7 +123,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             handle_inequality_constraints=True,
             positive_constraints=True,
             website=f"{__DOC}optimize.minimize-cobyqa.html",
-            Settings=COBYQA_Settings,
+            settings_class=COBYQA_Settings,
         )
 
     def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:

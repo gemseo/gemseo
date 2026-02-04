@@ -39,7 +39,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 class OTBetaDistribution(OTDistribution):
     """The OpenTURNS-based Beta distribution."""
 
-    Settings = OTBetaDistribution_Settings
+    settings_class = OTBetaDistribution_Settings
 
     def __init__(
         self,

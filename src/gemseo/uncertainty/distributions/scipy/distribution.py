@@ -68,7 +68,7 @@ class SPDistribution(
        of the scipy classes. [Access the scipy documentation](https://docs.scipy.org/doc/scipy/reference/stats.html).
     """
 
-    Settings = SPDistribution_Settings
+    settings_class = SPDistribution_Settings
 
     JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]] = (
         SPJointDistribution

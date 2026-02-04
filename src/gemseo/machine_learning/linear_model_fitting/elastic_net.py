@@ -43,6 +43,6 @@ class ElasticNet(BaseSKLearnLinearModelFitter[SKLearnElasticNet, ElasticNet_Sett
     and $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
     """  # noqa: E501
 
-    Settings = ElasticNet_Settings
+    settings_class = ElasticNet_Settings
 
     _FITTER_CLASS = SKLearnElasticNet

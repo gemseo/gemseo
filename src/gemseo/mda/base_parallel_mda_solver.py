@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 class BaseParallelMDASolver(BaseMDASolver):
     """Abstract class for MDA solvers that can be run in parallel."""
 
-    Settings: ClassVar[type[BaseParallelMDASettings]] = BaseParallelMDASettings
+    settings_class: ClassVar[type[BaseParallelMDASettings]] = BaseParallelMDASettings
     """The pydantic model for the settings."""
 
     settings: BaseParallelMDASettings

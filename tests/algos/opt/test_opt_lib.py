@@ -180,7 +180,7 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
     library._problem = power
     library._problem.preprocess_functions()
     library._settings = create_model(
-        library.ALGORITHM_INFOS[library.algo_name].Settings,
+        library.ALGORITHM_INFOS[library.algo_name].settings_class,
         max_iter=2,
         scaling_threshold=scaling_threshold,
     )

@@ -66,7 +66,9 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
     constraint is (or should be) active.
     """
 
-    Settings: ClassVar[type[ConstraintsHistory_Settings]] = ConstraintsHistory_Settings
+    settings_class: ClassVar[type[ConstraintsHistory_Settings]] = (
+        ConstraintsHistory_Settings
+    )
 
     def _plot(self, settings: ConstraintsHistory_Settings) -> None:
         """

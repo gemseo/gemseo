@@ -92,7 +92,7 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             description="Box-Behnken design",
             internal_algorithm_name="bbdesign",
             website=f"{__DOC}rsm.html#box-behnken",
-            Settings=PYDOE_BBDESIGN_Settings,
+            settings_class=PYDOE_BBDESIGN_Settings,
             minimum_dimension=3,
         ),
         "PYDOE_CCDESIGN": PyDOEAlgorithmDescription(
@@ -100,7 +100,7 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             description="Central Composite",
             internal_algorithm_name="ccdesign",
             website=f"{__DOC}rsm.html#central-composite",
-            Settings=PYDOE_CCDESIGN_Settings,
+            settings_class=PYDOE_CCDESIGN_Settings,
             minimum_dimension=2,
         ),
         "PYDOE_FF2N": PyDOEAlgorithmDescription(
@@ -108,28 +108,28 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             description="2-Level Full-Factorial",
             internal_algorithm_name="ff2n",
             website=f"{__DOC}factorial.html#level-full-factorial",
-            Settings=PYDOE_FF2N_Settings,
+            settings_class=PYDOE_FF2N_Settings,
         ),
         "PYDOE_FULLFACT": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_FULLFACT",
             description="Full-Factorial",
             internal_algorithm_name="fullfact",
             website=f"{__DOC}factorial.html#general-full-factorial",
-            Settings=PYDOE_FULLFACT_Settings,
+            settings_class=PYDOE_FULLFACT_Settings,
         ),
         "PYDOE_LHS": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_LHS",
             description="Latin Hypercube Sampling",
             internal_algorithm_name="lhs",
             website=f"{__DOC}randomized.html#latin-hypercube",
-            Settings=PYDOE_LHS_Settings,
+            settings_class=PYDOE_LHS_Settings,
         ),
         "PYDOE_PBDESIGN": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_PBDESIGN",
             description="Plackett-Burman design",
             internal_algorithm_name="pbdesign",
             website=f"{__DOC}factorial.html#plackett-burman",
-            Settings=PYDOE_PBDESIGN_Settings,
+            settings_class=PYDOE_PBDESIGN_Settings,
         ),
     }
 

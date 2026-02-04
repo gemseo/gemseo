@@ -94,7 +94,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
        and makes it possible to evaluate the disciplines in parallel.
     """  # noqa: E501
 
-    Settings: ClassVar[type[IDF_Settings]] = IDF_Settings
+    settings_class: ClassVar[type[IDF_Settings]] = IDF_Settings
 
     __coupling_structure: CouplingStructure
     """The coupling structure of the disciplines."""

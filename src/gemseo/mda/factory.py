@@ -54,7 +54,7 @@ class MDAFactory(BaseFactory):
         Returns:
             The mapping from the argument names to their documentation.
         """
-        fields = self.get_class(name).Settings.model_fields
+        fields = self.get_class(name).settings_class.model_fields
         return {k: v.description for k, v in fields.items()}
 
     def get_default_option_values(self, name: str) -> StrKeyMapping:
@@ -66,7 +66,7 @@ class MDAFactory(BaseFactory):
         Returns:
             The mapping from the argument names to their default values.
         """
-        fields = self.get_class(name).Settings.model_fields
+        fields = self.get_class(name).settings_class.model_fields
         defaults = {}
         for field_name, field_default in fields.items():
             default_value = field_default.default

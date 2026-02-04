@@ -38,6 +38,6 @@ class Ridge(BaseSKLearnLinearModelFitter[SKLearnRidge, Ridge_Settings]):
     and $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
     """
 
-    Settings = Ridge_Settings
+    settings_class = Ridge_Settings
 
     _FITTER_CLASS = SKLearnRidge

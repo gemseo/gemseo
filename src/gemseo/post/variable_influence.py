@@ -68,7 +68,9 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
       in a NumPy file.
     """
 
-    Settings: ClassVar[type[VariableInfluence_Settings]] = VariableInfluence_Settings
+    settings_class: ClassVar[type[VariableInfluence_Settings]] = (
+        VariableInfluence_Settings
+    )
 
     _USE_JACOBIAN_DATA: ClassVar[bool] = True
 

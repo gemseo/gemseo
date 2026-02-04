@@ -46,7 +46,7 @@ def problem() -> Rosenbrock:
 class NewBasePost(BasePost[BasePostSettings]):
     """A new optimization post processor returning an empty figure."""
 
-    Settings = BasePostSettings
+    settings_class = BasePostSettings
 
     def _plot(self, settings: BasePostSettings) -> None:
         self._add_figure(plt.Figure(), "my_figure")

@@ -427,7 +427,7 @@ def test_inner_mda_name_setting(coupled_disciplines, inner_mda):
 
     for inner_mda in mda_chain.inner_mdas:
         assert isinstance(inner_mda, inner_mda_class)
-        assert isinstance(inner_mda.settings, inner_mda_class.Settings)
+        assert isinstance(inner_mda.settings, inner_mda_class.settings_class)
 
     # Inner MDA name is ignored when a Pydantic model is passed.
     mda_chain = MDAChain(

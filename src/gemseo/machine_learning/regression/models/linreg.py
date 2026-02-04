@@ -85,7 +85,7 @@ class LinearRegressor(BaseRegressor):
     SHORT_NAME: ClassVar[str] = "LinReg"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[LinearRegressor_Settings]] = LinearRegressor_Settings
+    settings_class: ClassVar[type[LinearRegressor_Settings]] = LinearRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

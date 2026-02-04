@@ -57,7 +57,7 @@ class BaseClusterer(BaseMLUnsupervisedModel):
     This attribute is set during the learning phase.
     """
 
-    Settings: ClassVar[type[BaseClustererSettings]] = BaseClustererSettings
+    settings_class: ClassVar[type[BaseClustererSettings]] = BaseClustererSettings
 
     def _post_init(self):
         super()._post_init()

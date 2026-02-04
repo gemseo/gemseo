@@ -89,7 +89,7 @@ def sellar_inputs():
 def base_mda_solver(sellar_with_2d_array, sellar_disciplines) -> BaseMDASolver:
     """A concretized BaseMDASolver instance with the Sellar's disciplines."""
     with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
+        BaseMDASolver.settings_class = BaseMDASolverSettings
         return BaseMDASolver(sellar_disciplines)
 
 
@@ -103,14 +103,14 @@ def test_reset(sellar_mda, sellar_inputs) -> None:
 
 def test_input_couplings() -> None:
     with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
+        BaseMDASolver.settings_class = BaseMDASolverSettings
         mda = BaseMDASolver([Sellar1()])
         mda._set_resolved_variables([])
 
     assert len(mda.get_current_resolved_variables_vector()) == 0
 
     with concretize_classes(BaseMDASolver):
-        BaseMDASolver.Settings = BaseMDASolverSettings
+        BaseMDASolver.settings_class = BaseMDASolverSettings
         mda = BaseMDASolver(
             create_discipline([
                 "SobieskiPropulsion",
@@ -231,7 +231,7 @@ def test_consistency_fail(desc, log_message, caplog) -> None:
         caplog: Fixture to access and control log capturing.
     """
     with concretize_classes(BaseMDA):
-        BaseMDA.Settings = BaseMDASettings
+        BaseMDA.settings_class = BaseMDASettings
         BaseMDA(analytic_disciplines_from_desc(desc))
     assert log_message in caplog.text
 
@@ -336,7 +336,7 @@ def test_not_numeric_couplings(caplog) -> None:
     sub_prop["type"] = "string"
 
     with concretize_classes(BaseMDA):
-        BaseMDA.Settings = BaseMDASettings
+        BaseMDA.settings_class = BaseMDASettings
         BaseMDA([sellar1, sellar2])
         msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
         assert msg in caplog.text
@@ -631,7 +631,7 @@ def test_scaling_method() -> None:
     sellar2 = Sellar2()
 
     with concretize_classes(BaseMDA):
-        BaseMDA.Settings = BaseMDASettings
+        BaseMDA.settings_class = BaseMDASettings
         mda = BaseMDA([sellar1, sellar2])
         mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
         assert mda.scaling == BaseMDA.ResidualScaling.NO_SCALING
@@ -645,9 +645,9 @@ def test_namespaces(sellar_mda) -> None:
 
 def test_settings_type_error():
     settings = "toto"
-    BaseMDA.Settings = BaseMDASettings
+    BaseMDA.settings_class = BaseMDASettings
     msg = (
-        f"The Pydantic model must be a {BaseMDA.Settings.__name__}; "
+        f"The Pydantic model must be a {BaseMDA.settings_class.__name__}; "
         f"got {settings.__class__.__name__}"
     )
 

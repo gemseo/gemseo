@@ -40,7 +40,7 @@ def test_default_settings(prefix, distribution_name):
         pytest.skip("invalid parameter combination")
 
     cls = DistributionFactory().get_class(f"{prefix}{distribution_name}")
-    from_args = cls(settings=cls.Settings())
+    from_args = cls(settings=cls.settings_class())
     from_settings = cls()
     assert from_args.mean == from_settings.mean
     assert from_args.standard_deviation == from_settings.standard_deviation
@@ -79,7 +79,7 @@ def test_user_settings(prefix, distribution_name, kwargs):
         kwargs["interfaced_distribution"] = "norm"
 
     cls = DistributionFactory().get_class(f"{prefix}{distribution_name}")
-    settings = cls.Settings(**kwargs)
+    settings = cls.settings_class(**kwargs)
     from_args = cls(settings=settings)
     from_settings = cls(**settings.model_dump())
     assert from_args.mean == from_settings.mean

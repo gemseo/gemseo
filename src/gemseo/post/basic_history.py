@@ -38,7 +38,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
     This post-processor requires the names of these selected outputs.
     """
 
-    Settings: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
+    settings_class: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
 
     __ITERATION_NAME: Final[str] = ",;:!"
     """The name for the variable iteration in the dataset.

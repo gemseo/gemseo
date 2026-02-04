@@ -32,7 +32,7 @@ from gemseo.uncertainty.distributions.scipy.uniform_settings import (
 class SPUniformDistribution(SPDistribution):
     """The SciPy-based uniform distribution."""
 
-    Settings = SPUniformDistribution_Settings
+    settings_class = SPUniformDistribution_Settings
 
     def __init__(
         self,

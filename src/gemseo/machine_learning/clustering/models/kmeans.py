@@ -99,7 +99,7 @@ class KMeans(BasePredictiveClusterer):
 
     EPS = finfo(float).eps
 
-    Settings: ClassVar[type[KMeans_Settings]] = KMeans_Settings
+    settings_class: ClassVar[type[KMeans_Settings]] = KMeans_Settings
 
     def _post_init(self):
         super()._post_init()

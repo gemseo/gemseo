@@ -107,7 +107,7 @@ class DriverDescription(AlgorithmDescription):
     handle_integer_variables: bool = False
     """Whether the driver handles integer variables."""
 
-    Settings: type[BaseDriverSettings] = BaseDriverSettings
+    settings_class: type[BaseDriverSettings] = BaseDriverSettings
     """The Pydantic model for the driver library settings."""
 
 
@@ -342,7 +342,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
         self._check_integer_handling(problem.design_space, skip_int_check)
 
         self._settings = create_model(
-            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            self.ALGORITHM_INFOS[self.algo_name].settings_class,
             settings_model=settings_model,
             **settings,
         )

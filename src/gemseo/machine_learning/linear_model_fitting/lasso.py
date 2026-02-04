@@ -38,6 +38,6 @@ class Lasso(BaseSKLearnLinearModelFitter[SKLearnLasso, Lasso_Settings]):
     and $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
     """
 
-    Settings = Lasso_Settings
+    settings_class = Lasso_Settings
 
     _FITTER_CLASS = SKLearnLasso

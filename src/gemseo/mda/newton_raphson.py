@@ -64,7 +64,9 @@ class MDANewtonRaphson(BaseParallelMDASolver):
     where $J_f(x_k)$ denotes the Jacobian of $f$ at $x_k$.
     """
 
-    Settings: ClassVar[type[MDANewtonRaphson_Settings]] = MDANewtonRaphson_Settings
+    settings_class: ClassVar[type[MDANewtonRaphson_Settings]] = (
+        MDANewtonRaphson_Settings
+    )
     """The pydantic model for the settings."""
 
     settings: MDANewtonRaphson_Settings

@@ -37,7 +37,7 @@ from gemseo.uncertainty.distributions.scipy.log_normal_settings import (
 class SPLogNormalDistribution(SPDistribution):
     """The SciPy-based log-normal distribution."""
 
-    Settings = SPLogNormalDistribution_Settings
+    settings_class = SPLogNormalDistribution_Settings
 
     def __init__(
         self,

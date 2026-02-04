@@ -46,6 +46,6 @@ class ElasticNetCV(
     $\alpha$ and $\rho$ are estimated by cross-validation.
     """  # noqa: E501
 
-    Settings = ElasticNetCV_Settings
+    settings_class = ElasticNetCV_Settings
 
     _FITTER_CLASS = SKLearnElasticNetCV

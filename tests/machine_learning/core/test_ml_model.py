@@ -39,7 +39,7 @@ from .new_ml_model.new_ml_model import NewMLModel
 
 
 class DummyMLModel(BaseMLModel):
-    Settings = BaseMLModelSettings
+    settings_class = BaseMLModelSettings
 
 
 @pytest.fixture

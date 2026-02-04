@@ -57,7 +57,7 @@ class FCERegressor(BaseFCERegressor):
     SHORT_NAME: ClassVar[str] = "FCE"
     LIBRARY: ClassVar[str] = "GEMSEO"
 
-    Settings: ClassVar[type[FCERegressor_Settings]] = FCERegressor_Settings
+    settings_class: ClassVar[type[FCERegressor_Settings]] = FCERegressor_Settings
 
     __basis: BaseBasis | None
     """The orthonormal multivariate basis after training, `None` before."""

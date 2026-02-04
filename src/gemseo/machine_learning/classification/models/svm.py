@@ -55,7 +55,7 @@ class SVMClassifier(BaseClassifier):
     SHORT_NAME: ClassVar[str] = "SVM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[SVMClassifier_Settings]] = SVMClassifier_Settings
+    settings_class: ClassVar[type[SVMClassifier_Settings]] = SVMClassifier_Settings
 
     def _post_init(self):
         super()._post_init()

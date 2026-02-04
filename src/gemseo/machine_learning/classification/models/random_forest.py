@@ -54,7 +54,7 @@ class RandomForestClassifier(BaseClassifier):
     SHORT_NAME: ClassVar[str] = "RF"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[RandomForestClassifier_Settings]] = (
+    settings_class: ClassVar[type[RandomForestClassifier_Settings]] = (
         RandomForestClassifier_Settings
     )
 

@@ -59,7 +59,7 @@ class RegressorChain(BaseRegressor):
 
     SHORT_NAME: ClassVar[str] = "RegressorChain"
 
-    Settings: ClassVar[type[RegressorChain_Settings]] = RegressorChain_Settings
+    settings_class: ClassVar[type[RegressorChain_Settings]] = RegressorChain_Settings
 
     def _post_init(self):
         super()._post_init()

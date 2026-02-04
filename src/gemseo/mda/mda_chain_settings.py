@@ -96,6 +96,6 @@ If empty, they are created from `disciplines`.""",
     def __inner_mda_settings_to_pydantic_model(self) -> Self:
         """Convert the inner MDA settings into a Pydantic model."""
         if isinstance(self.inner_mda_settings, Mapping):
-            settings_model = MDAFactory().get_class(self.inner_mda_name).Settings
+            settings_model = MDAFactory().get_class(self.inner_mda_name).settings_class
             self.inner_mda_settings = settings_model(**self.inner_mda_settings)
         return self

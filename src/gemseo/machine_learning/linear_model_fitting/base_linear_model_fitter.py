@@ -50,8 +50,7 @@ class BaseLinearModelFitter(
 ):
     """Base class for linear model fitting algorithms."""
 
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[BaseLinearModelFitterSettings]]
+    settings_class: ClassVar[type[BaseLinearModelFitterSettings]]
     """The class for defining the settings of the linear model fitting algorithm."""
 
     _fitter: FitterType
@@ -73,10 +72,10 @@ class BaseLinearModelFitter(
         Args:
             settings: The settings of the linear model fitting algorithm.
                 If `None`, use a default instance of
-                [Settings][gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter.Settings].
+                [settings_class][gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter.settings_class].
         """  # noqa: D205, D212
         if settings is None:
-            settings = self.Settings()
+            settings = self.settings_class()
 
         fitter_kwargs = {
             key: value

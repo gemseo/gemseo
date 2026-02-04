@@ -87,7 +87,7 @@ class MDAChain(BaseMDA):
     by the [DependencyGraph][gemseo.core.dependency_graph.DependencyGraph].
     """
 
-    Settings: ClassVar[type[MDAChain_Settings]] = MDAChain_Settings
+    settings_class: ClassVar[type[MDAChain_Settings]] = MDAChain_Settings
     """The pydantic model for the settings."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow

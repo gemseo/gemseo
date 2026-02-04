@@ -42,7 +42,7 @@ from gemseo.uncertainty.distributions.openturns.exponential_settings import (
 class OTExponentialDistribution(OTDistribution):
     """The OpenTURNS-based exponential distribution."""
 
-    Settings = OTExponentialDistribution_Settings
+    settings_class = OTExponentialDistribution_Settings
 
     def __init__(
         self,

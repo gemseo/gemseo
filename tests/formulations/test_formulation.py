@@ -47,7 +47,7 @@ class NewMDOFormulationSettings(BaseFormulationSettings): ...
 
 
 class NewMDOFormulation(BaseMDOFormulation):
-    Settings = NewMDOFormulationSettings
+    settings_class = NewMDOFormulationSettings
 
     def get_top_level_disciplines(
         self, include_sub_formulations: bool = False

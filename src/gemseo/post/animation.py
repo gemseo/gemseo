@@ -37,7 +37,7 @@ class Animation(BasePost[Animation_Settings]):
     __FRAME: Final[str] = "frame"
     """The prefix for frame images."""
 
-    Settings: ClassVar[type[Animation_Settings]] = Animation_Settings
+    settings_class: ClassVar[type[Animation_Settings]] = Animation_Settings
 
     def _plot(
         self,

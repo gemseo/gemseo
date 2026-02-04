@@ -68,7 +68,7 @@ This field is ignored when `newton_linear_solver_settings` is a Pydantic model."
                 factory
                 .get_class(library_name)
                 .ALGORITHM_INFOS[self.newton_linear_solver_name]
-                .Settings
+                .settings_class
             )
             self.newton_linear_solver_settings = settings_model(
                 **self.newton_linear_solver_settings

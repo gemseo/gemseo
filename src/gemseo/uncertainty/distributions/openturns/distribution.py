@@ -82,7 +82,7 @@ class OTDistribution(
         [Access the OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html).
     """
 
-    Settings = OTDistribution_Settings
+    settings_class = OTDistribution_Settings
 
     JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]] = (
         OTJointDistribution

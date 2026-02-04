@@ -38,7 +38,9 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
     The list of variable names has to be passed as arguments of the plot method.
     """
 
-    Settings: ClassVar[type[ScatterPlotMatrix_Settings]] = ScatterPlotMatrix_Settings
+    settings_class: ClassVar[type[ScatterPlotMatrix_Settings]] = (
+        ScatterPlotMatrix_Settings
+    )
 
     def _plot(self, settings: ScatterPlotMatrix_Settings) -> None:
         """

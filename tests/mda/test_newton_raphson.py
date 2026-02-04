@@ -338,7 +338,10 @@ def test_pass_dedicated_newton_options(
     factory = LinearSolverLibraryFactory()
     library_name = factory.algo_names_to_libraries[mda_linear_solver]
     settings_model = (
-        factory.get_class(library_name).ALGORITHM_INFOS[mda_linear_solver].Settings
+        factory
+        .get_class(library_name)
+        .ALGORITHM_INFOS[mda_linear_solver]
+        .settings_class
     )
     mda_linear_solver_settings = settings_model(**mda_linear_solver_settings)
     assert mda.settings.linear_solver_settings == mda_linear_solver_settings

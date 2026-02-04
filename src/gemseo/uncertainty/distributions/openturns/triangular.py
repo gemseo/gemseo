@@ -43,7 +43,7 @@ from gemseo.uncertainty.distributions.openturns.triangular_settings import (
 class OTTriangularDistribution(OTDistribution):
     """The OpenTURNS-based triangular distribution."""
 
-    Settings = OTTriangularDistribution_Settings
+    settings_class = OTTriangularDistribution_Settings
 
     def __init__(
         self,

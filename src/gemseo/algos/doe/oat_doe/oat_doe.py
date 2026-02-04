@@ -71,7 +71,7 @@ class OATDOE(BaseDOELibrary[OATDOE_Settings]):
             description="The DOE used by a One-factor-at-a-Time sensitivity analysis.",
             internal_algorithm_name="OATDOE",
             library_name="OATDOE",
-            Settings=OATDOE_Settings,
+            settings_class=OATDOE_Settings,
         )
     }
 

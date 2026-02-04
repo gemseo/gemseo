@@ -52,7 +52,7 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
     - red: the inequality constraint is violated.
     """
 
-    Settings: ClassVar[type[ObjConstrHist_Settings]] = ObjConstrHist_Settings
+    settings_class: ClassVar[type[ObjConstrHist_Settings]] = ObjConstrHist_Settings
 
     __Y_MARGIN: Final[float] = 0.05
     """The left and right margin for the y-axis."""

@@ -51,6 +51,6 @@ def test_custom_settings(
     if multioutput and class_name in MONO_OUTPUT_ALGORITHMS:
         return
     cls = LinearModelFitterFactory().get_class(class_name)
-    settings = cls.Settings(fit_intercept=fit_intercept)
+    settings = cls.settings_class(fit_intercept=fit_intercept)
     coefficients = cls(settings=settings).fit(input_data, output_data)
     assert coefficients.shape == (4 if multioutput else 1, 3 if fit_intercept else 2)

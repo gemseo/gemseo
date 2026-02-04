@@ -46,7 +46,7 @@ from gemseo.post.hessian_history_settings import HessianHistory_Settings
 class HessianHistory(BasePost):
     """Plot the history of the diagonal of the Hessian matrix."""
 
-    Settings: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
+    settings_class: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
 
     _USE_JACOBIAN_DATA: ClassVar[bool] = True
 

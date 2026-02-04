@@ -137,7 +137,7 @@ of iteration of the MDA algorithm required to reach convergence.""",
                 factory
                 .get_class(library_name)
                 .ALGORITHM_INFOS[self.linear_solver]
-                .Settings
+                .settings_class
             )
             is_default_setting = "linear_solver_settings" not in self.model_fields_set
             self.linear_solver_settings = settings_model(**self.linear_solver_settings)

@@ -72,7 +72,7 @@ class ScipyLinProgAlgorithmDescription(OptimizationAlgorithmDescription):
     for_linear_problems: bool = True
     """Whether the optimization algorithm is dedicated to linear problems."""
 
-    Settings: type[BaseSciPyLinProgSettings] = BaseSciPyLinProgSettings
+    settings_class: type[BaseSciPyLinProgSettings] = BaseSciPyLinProgSettings
     """The option validation model for SciPy linear programming library."""
 
 
@@ -94,14 +94,14 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
             description=("Linear programming using the HiGHS interior point solver."),
             internal_algorithm_name="highs-ipm",
             website=f"{__DOC}optimize.linprog-highs-ipm.html",
-            Settings=INTERIOR_POINT_Settings,
+            settings_class=INTERIOR_POINT_Settings,
         ),
         "DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
             algorithm_name="Dual simplex",
             description=("Linear programming using the HiGHS dual simplex solver."),
             internal_algorithm_name="highs-ds",
             website=f"{__DOC}optimize.linprog-highs-ds.html",
-            Settings=DUAL_SIMPLEX_Settings,
+            settings_class=DUAL_SIMPLEX_Settings,
         ),
     }
 

@@ -40,7 +40,7 @@ class MLPRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_NAME: ClassVar[str] = "MLP"
 
-    Settings: ClassVar[type[MLPRegressor_Settings]] = MLPRegressor_Settings
+    settings_class: ClassVar[type[MLPRegressor_Settings]] = MLPRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

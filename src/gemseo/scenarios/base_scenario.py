@@ -177,11 +177,10 @@ class BaseScenario(BaseMonitoredProcess):
     _formulation_factory: ClassVar[MDOFormulationFactory] = MDO_FORMULATION_FACTORY
     """The factory of formulations."""
 
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[_BaseSettings]] = _BaseSettings
+    settings_class: ClassVar[type[_BaseSettings]] = _BaseSettings
     """The class used to validate the arguments of [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute]."""  # noqa: E501
 
-    _settings: Settings | None
+    _settings: settings_class | None
     """The algorithm name and settings (`None` before execution)."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ScenarioProcessFlow
@@ -280,7 +279,9 @@ class BaseScenario(BaseMonitoredProcess):
             algo_settings = {"settings_model": algo_settings_model}
             algo_name = algo_settings_model._TARGET_CLASS_NAME
 
-        self._settings = self.Settings(algo_name=algo_name, algo_settings=algo_settings)
+        self._settings = self.settings_class(
+            algo_name=algo_name, algo_settings=algo_settings
+        )
 
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
@@ -310,8 +311,8 @@ class BaseScenario(BaseMonitoredProcess):
             )
 
         Settings.__module__ = cls.__module__
-        Settings.__qualname__ = cls.__qualname__ + ".Settings"
-        cls.Settings = Settings
+        Settings.__qualname__ = cls.__qualname__ + ".settings_class"
+        cls.settings_class = Settings
 
     @property
     def use_standardized_objective(self) -> bool:

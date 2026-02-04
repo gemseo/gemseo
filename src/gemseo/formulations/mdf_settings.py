@@ -57,6 +57,6 @@ These settings may include those of the inner-MDA.""",
     def __mda_settings_to_pydantic_model(self) -> Self:
         """Convert MDA settings into a Pydantic model."""
         if isinstance(self.main_mda_settings, Mapping):
-            settings_model = MDAFactory().get_class(self.main_mda_name).Settings
+            settings_model = MDAFactory().get_class(self.main_mda_name).settings_class
             self.main_mda_settings = settings_model(**self.main_mda_settings)
         return self

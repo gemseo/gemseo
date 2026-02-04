@@ -34,7 +34,7 @@ from gemseo.post.radar_chart_settings import RadarChart_Settings
 class RadarChart(BasePost[RadarChart_Settings]):
     """Plot the constraints on a radar chart at a given dataset index."""
 
-    Settings: ClassVar[type[RadarChart_Settings]] = RadarChart_Settings
+    settings_class: ClassVar[type[RadarChart_Settings]] = RadarChart_Settings
 
     def _plot(self, settings: RadarChart_Settings) -> None:
         """

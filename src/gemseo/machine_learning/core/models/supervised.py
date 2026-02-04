@@ -175,7 +175,7 @@ class BaseMLSupervisedModel(BaseMLModel):
 
     DataFormatters = SupervisedDataFormatters
 
-    Settings: ClassVar[type[BaseMLSupervisedModelSettings]] = (
+    settings_class: ClassVar[type[BaseMLSupervisedModelSettings]] = (
         BaseMLSupervisedModelSettings
     )
 

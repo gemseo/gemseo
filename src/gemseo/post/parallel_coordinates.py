@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
     """Parallel coordinates plot."""
 
-    Settings: ClassVar[type[ParallelCoordinates_Settings]] = (
+    settings_class: ClassVar[type[ParallelCoordinates_Settings]] = (
         ParallelCoordinates_Settings
     )
 

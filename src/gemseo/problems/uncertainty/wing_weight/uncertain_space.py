@@ -51,7 +51,7 @@ class WingWeightUncertainSpace(ParameterSpace):
             "tc": (0.08, 0.18),
         }
         settings_class = (
-            DistributionFactory().get_class(uniform_distribution_name).Settings
+            DistributionFactory().get_class(uniform_distribution_name).settings_class
         )
         for name, (minimum, maximum) in data.items():
             self.add_random_vector(

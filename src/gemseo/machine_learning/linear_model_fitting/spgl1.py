@@ -69,7 +69,7 @@ class SPGL1(BaseLinearModelFitter[_SGPL1FittingFunction, SPGL1_Settings]):
     and $\|Xw-y\|_2$ is the $\ell_2$-norm of the residual $Xw-y$.
     """  # noqa: E501
 
-    Settings = SPGL1_Settings
+    settings_class = SPGL1_Settings
 
     _FITTER_CLASS = _SGPL1FittingFunction
 

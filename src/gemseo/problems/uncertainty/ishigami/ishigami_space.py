@@ -41,7 +41,7 @@ class IshigamiSpace(ParameterSpace):
         settings = (
             DistributionFactory()
             .get_class(uniform_distribution_name)
-            .Settings(minimum=-pi, maximum=pi)
+            .settings_class(minimum=-pi, maximum=pi)
         )
         for index in range(3):
             self.add_random_vector(f"x{index + 1}", (settings,))

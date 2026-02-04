@@ -111,7 +111,7 @@ class KNNClassifier(BaseClassifier):
     SHORT_NAME: ClassVar[str] = "KNN"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[KNNClassifier_Settings]] = KNNClassifier_Settings
+    settings_class: ClassVar[type[KNNClassifier_Settings]] = KNNClassifier_Settings
 
     def _post_init(self):
         super()._post_init()

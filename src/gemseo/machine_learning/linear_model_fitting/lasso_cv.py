@@ -41,6 +41,6 @@ class LassoCV(BaseSKLearnLinearModelFitter[SKLearnLassoCV, LassoCV_Settings]):
     and $\alpha>0$ is estimated by cross-validation.
     """
 
-    Settings = LassoCV_Settings
+    settings_class = LassoCV_Settings
 
     _FITTER_CLASS = SKLearnLassoCV
