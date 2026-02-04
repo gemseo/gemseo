@@ -117,7 +117,7 @@ def test_execute_error_with_no_dataset():
     """Tests that an error is raised when executing a post without a dataset."""
 
     problem = OptimizationProblem(DesignSpace())
-    problem.objective = MDOFunction(lambda x: x, "f")
+    problem.objective = MDOFunction(lambda x: x, name="f")
     with pytest.raises(
         ValueError,
         match=r"The post-processor NewBasePost cannot"

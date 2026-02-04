@@ -205,7 +205,7 @@ def test_jac_pb(design_space) -> None:
     algo = "L-BFGS-B"
 
     pb = OptimizationProblem(design_space)
-    pb.objective = MDOFunction(rosen, "rosen", jac=rosen_der)
+    pb.objective = MDOFunction(rosen, name="rosen", jac=rosen_der)
     execute_algo(pb, algo_name=algo, max_iter=max_iter)
     fopt_ref = pb.solution.f_opt
 

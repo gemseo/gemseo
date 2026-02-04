@@ -115,7 +115,7 @@ def unconstrained_problem() -> OptimizationProblem:
         "x", size=1, lower_bound=array([-1.0]), upper_bound=array([1.0])
     )
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(name="f", func=lambda x: x**2)
+    problem.objective = MDOFunction(lambda x: x**2, name="f")
     return problem
 
 

@@ -147,7 +147,7 @@ def test_protected_const(binh_korn):
     """Test that an exception is raised for a protected constraint name."""
     protected_constraint = MDOFunction(
         lambda x: x,
-        MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME,
+        name=MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME,
         f_type=MDOFunction.ConstraintType.INEQ,
     )
     binh_korn.add_constraint(protected_constraint)

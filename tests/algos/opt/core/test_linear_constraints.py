@@ -101,7 +101,7 @@ def test_constraint_check() -> None:
     ineq_cstr_1, _ = get_ineq_constraints()
     # Check function type
     nonlinear_ineq_cstr = MDOFunction(
-        lambda x: x**2, "square", f_type=MDOFunction.ConstraintType.INEQ
+        lambda x: x**2, name="square", f_type=MDOFunction.ConstraintType.INEQ
     )
     with pytest.raises(TypeError):
         build_constraints_matrices(

@@ -63,7 +63,7 @@ if TYPE_CHECKING:
 @pytest.fixture(scope="module")
 def sinus() -> MDOFunction:
     """The sinus function."""
-    return MDOFunction(sin, "sin")
+    return MDOFunction(sin, name="sin")
 
 
 @pytest.fixture(scope="module")
@@ -71,10 +71,30 @@ def sinus_eq_output_names() -> MDOFunction:
     """The sinus function of type ConstraintType.EQ with output_names."""
     return MDOFunction(
         sin,
-        "sin",
+        name="sin",
         output_names=array(["sin"]),
         f_type=MDOFunction.ConstraintType.EQ,
     )
+
+
+def f(x):
+    """A function."""
+    return 2 * x
+
+
+class ClassWithMethod:
+    """A class with a method."""
+
+    @staticmethod
+    def evaluate(x):
+        return 2 * x
+
+
+class Functor:
+    """A functor."""
+
+    def __call__(self, x):
+        return 2 * x
 
 
 @pytest.mark.parametrize("x", [0, 1])
@@ -87,7 +107,7 @@ def test_output_names_error() -> None:
     """Check that TypeError is raised when output_names has a wrong type."""
     with pytest.raises(TypeError):
         # TypeError: 'float' object is not iterable
-        MDOFunction(sin, "sin", output_names=1.3)
+        MDOFunction(sin, name="sin", output_names=1.3)
 
 
 def test_f_type(sinus, sinus_eq_output_names) -> None:
@@ -295,7 +315,7 @@ def test_wrong_jac_shape() -> None:
 @pytest.mark.parametrize(
     "function",
     [
-        MDOFunction(lambda x: norm(x) ** 2, "f", jac=lambda x: 2.0 * x, dim=2),
+        MDOFunction(lambda x: norm(x) ** 2, name="f", jac=lambda x: 2.0 * x, dim=2),
         MDOFunction(
             lambda x: array([norm(x) ** 2, -(norm(x) ** 2)]),
             "f",
@@ -319,7 +339,7 @@ def test_linearization() -> None:
     """Test the linearization of a function."""
     function = MDOFunction(
         lambda x: 0.5 * array([norm(x) ** 2, -(norm(x) ** 2)]),
-        "f",
+        name="f",
         jac=lambda x: array([x, -x]),
         dim=2,
     )
@@ -333,7 +353,7 @@ def test_convex_linearization() -> None:
     # Vectorial function
     function = MDOFunction(
         lambda x: 0.5 * array([norm(x) ** 2, -(norm(x) ** 2)]),
-        "f",
+        name="f",
         jac=lambda x: array([x, -x]),
         dim=2,
     )
@@ -351,7 +371,7 @@ def test_convex_linearization() -> None:
     # Scalar function (N.B. scalar value and 1-dimensional Jacobian matrix)
     function = MDOFunction(
         lambda x: 0.5 * norm(x) ** 2,
-        "f",
+        name="f",
         jac=lambda x: x,
         dim=1,
     )
@@ -371,7 +391,7 @@ def function_for_quadratic_approximation() -> MDOFunction:
     """A function to check quadratic approximation."""
     return MDOFunction(
         lambda x: 0.5 * norm(x) ** 2,
-        "f",
+        name="f",
         jac=lambda x: x,
         input_names=["x_0", "x_1", "x_2"],
     )
@@ -401,9 +421,9 @@ def test_quadratic_approximation(function_for_quadratic_approximation) -> None:
 def test_concatenation() -> None:
     """Test the concatenation of functions."""
     dim = 2
-    f = MDOFunction(lambda x: norm(x) ** 2, "f", jac=lambda x: 2 * x, dim=1)
-    g = MDOFunction(lambda x: x, "g", jac=lambda x: eye(dim), dim=dim)
-    h = Concatenate([f, g], "h")
+    f = MDOFunction(lambda x: norm(x) ** 2, name="f", jac=lambda x: 2 * x, dim=1)
+    g = MDOFunction(lambda x: x, name="g", jac=lambda x: eye(dim), dim=dim)
+    h = Concatenate([f, g], name="h")
     x_vect = ones(dim)
     assert allclose(h.evaluate(x_vect), array([2.0, 1.0, 1.0]))
     assert allclose(h.jac(x_vect), array([[2.0, 2.0], [1.0, 0.0], [0.0, 1.0]]))
@@ -416,7 +436,7 @@ def test_set_pt_from_database(normalize) -> None:
     problem.preprocess_functions(is_function_input_normalized=normalize)
     x = zeros(3)
     problem.evaluate_functions(design_vector=x, design_vector_is_normalized=normalize)
-    function = MDOFunction(sum, problem.objective.name)
+    function = MDOFunction(sum, name=problem.objective.name)
     function.set_pt_from_database(
         problem.database, problem.design_space, normalize=normalize, jac=False
     )
@@ -438,7 +458,7 @@ def test_linear_approximation() -> None:
 
     function = MDOFunction(
         func,
-        "f",
+        name="f",
         jac=jac,
         expr="[1 2] [x] + [5]\n[3 4] [y]   [6]",
         input_names=["x", "y"],
@@ -452,7 +472,7 @@ def test_linear_approximation() -> None:
 
 @pytest.fixture
 def function():
-    return MDOFunction(lambda x: x, "n", expr="e", special_repr="a_special_repr")
+    return MDOFunction(lambda x: x, name="n", expr="e", special_repr="a_special_repr")
 
 
 @pytest.mark.parametrize(
@@ -546,7 +566,7 @@ def test_expect_normalized_inputs_from_database(
 
 def test_activate_counters(enable_function_statistics) -> None:
     """Check that the function counter is active by default."""
-    func = MDOFunction(lambda x: x, "func")
+    func = MDOFunction(lambda x: x, name="func")
     func = ProblemFunction(
         func,
         (func.func,),
@@ -568,7 +588,7 @@ def test_deactivate_counters() -> None:
 
     ProblemFunction.enable_statistics = False
 
-    func = MDOFunction(lambda x: x, "func")
+    func = MDOFunction(lambda x: x, name="func")
     func = ProblemFunction(
         func,
         (func.func,),
@@ -603,10 +623,10 @@ def test_get_indexed_name(function) -> None:
 def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac) -> None:
     """Check the multiplication of a function by a function or its inverse."""
     f = MDOFunction(
-        lambda x: x**2, "f", jac=lambda x: 2 * x, input_names=["x"], expr=fexpr
+        lambda x: x**2, name="f", jac=lambda x: 2 * x, input_names=["x"], expr=fexpr
     )
     g = MDOFunction(
-        lambda x: x**3, "g", jac=lambda x: 3 * x**2, input_names=["x"], expr=gexpr
+        lambda x: x**3, name="g", jac=lambda x: 3 * x**2, input_names=["x"], expr=gexpr
     )
 
     f_op_g = op(f, g)
@@ -626,7 +646,7 @@ def test_multiplication_by_function(fexpr, gexpr, op, op_name, func, jac) -> Non
 def test_multiplication_by_scalar(expr, op, op_name, func, jac) -> None:
     """Check the multiplication of a function by a scalar or its inverse."""
     f = MDOFunction(
-        lambda x: x**3, "f", jac=lambda x: 3 * x**2, input_names=["x"], expr=expr
+        lambda x: x**3, name="f", jac=lambda x: 3 * x**2, input_names=["x"], expr=expr
     )
     f_op_2 = op(f, 2)
     suffix = ""
@@ -644,7 +664,9 @@ def test_multiplication_by_scalar(expr, op, op_name, func, jac) -> None:
 
 @pytest.fixture(scope="module")
 def multidimensional_function() -> MDOFunction:
-    return MDOFunction(itemgetter(slice(-1)), "f", jac=lambda x: eye(x.size)[:-1, :])
+    return MDOFunction(
+        itemgetter(slice(-1)), name="f", jac=lambda x: eye(x.size)[:-1, :]
+    )
 
 
 def test_multiplication_by_array(multidimensional_function):
@@ -674,8 +696,8 @@ def test_division_by_array(multidimensional_function):
 )
 def test_repr_mult_sum(expr_1, expr_2, op, expected) -> None:
     """Test the str repr of the product of two functions."""
-    f = MDOFunction(simple_function, "f", expr=expr_1, input_names=["x"])
-    g = MDOFunction(simple_function, "g", expr=expr_2, input_names=["x"])
+    f = MDOFunction(simple_function, name="f", expr=expr_1, input_names=["x"])
+    g = MDOFunction(simple_function, name="g", expr=expr_2, input_names=["x"])
     assert repr(op(f, g)) == expected
 
 
@@ -760,7 +782,7 @@ def test_serialize_deserialize(
 )
 def test_force_real(force_real, expected) -> None:
     """Verify the use of force_real."""
-    f = MDOFunction(lambda x: x, "f", force_real=force_real)
+    f = MDOFunction(lambda x: x, name="f", force_real=force_real)
     assert f.evaluate(array([1j])) == expected
 
 
@@ -769,7 +791,7 @@ def test_force_real(force_real, expected) -> None:
 )
 def test_f_type_sum_two_functions(ft1, ft2, ft) -> None:
     """Verify the f_type of the sum of two functions."""
-    f = MDOFunction(lambda x: x, "f1", f_type=ft1) + MDOFunction(
+    f = MDOFunction(lambda x: x, name="f1", f_type=ft1) + MDOFunction(
         lambda x: x, "f2", f_type=ft2
     )
     assert f.f_type == ft
@@ -778,7 +800,7 @@ def test_f_type_sum_two_functions(ft1, ft2, ft) -> None:
 @pytest.mark.parametrize("f_type", ["", "obj"])
 def test_f_type_sum_function_and_number(f_type) -> None:
     """Verify the f_type of the sum of a function and a number."""
-    f = MDOFunction(lambda x: x, "f", f_type=f_type) + 1.0
+    f = MDOFunction(lambda x: x, name="f", f_type=f_type) + 1.0
     assert f.f_type == f_type
 
 
@@ -795,8 +817,8 @@ def test_concatenate(f_out, g_out, h_out) -> None:
     """Check ``Concatenate.output_names``."""
     f = Concatenate(
         [
-            MDOFunction(lambda x: x, "f", output_names=f_out),
-            MDOFunction(lambda x: x, "g", output_names=g_out),
+            MDOFunction(lambda x: x, name="f", output_names=f_out),
+            MDOFunction(lambda x: x, name="g", output_names=g_out),
         ],
         "h",
     )
@@ -833,7 +855,9 @@ def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
     - inequality type or not,
     - negation operator or not.
     """
-    f = MDOFunction(lambda x: x, "f", f_type=f_type, input_names=input_names, expr=expr)
+    f = MDOFunction(
+        lambda x: x, name="f", f_type=f_type, input_names=input_names, expr=expr
+    )
     if neg:
         f = -f
     assert f.default_repr == expected
@@ -842,7 +866,7 @@ def test_default_repr(f_type, input_names, expr, neg, expected) -> None:
 @pytest.mark.parametrize(("method", "n_calls"), [("func", 0), ("evaluate", 1)])
 def test_func(method, n_calls, enable_function_statistics):
     """Check that the property func is an alias of _func."""
-    f = MDOFunction(lambda x: 2 * x, "f")
+    f = MDOFunction(lambda x: 2 * x, name="f")
     f = ProblemFunction(
         f,
         (f.func,),
@@ -856,3 +880,26 @@ def test_func(method, n_calls, enable_function_statistics):
     assert f.n_calls == 0
     assert_array_equal(getattr(f, method)(array([2])), array([4]))
     assert f.n_calls == n_calls
+
+
+@pytest.mark.parametrize(
+    ("func", "kwargs", "name"),
+    [
+        # function
+        (f, {}, "f"),
+        (f, {"name": "foo"}, "foo"),
+        # method
+        (ClassWithMethod().evaluate, {}, "evaluate"),
+        (ClassWithMethod().evaluate, {"name": "foo"}, "foo"),
+        # functor
+        (Functor(), {}, "Functor"),
+        (Functor(), {"name": "foo"}, "foo"),
+        # builtin function
+        (sum, {}, "sum"),
+        (sum, {"name": "foo"}, "foo"),
+    ],
+)
+def test_name(func, kwargs, name) -> None:
+    """Check the argument 'name'; if empty, use the callable name."""
+    function = MDOFunction(func, **kwargs)
+    assert function.name == name

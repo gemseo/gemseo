@@ -61,7 +61,7 @@ def identity_problem() -> OptimizationProblem:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, "f")
+    problem.objective = MDOFunction(lambda x: x, name="f")
     return problem
 
 

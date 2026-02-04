@@ -252,7 +252,7 @@ def test_reaching_max_time_does_not_stop_storing():
     """Check that reaching maximum time does not stop storing in the database."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(sum, "sum"), constraint_type=MDOFunction.ConstraintType.EQ
+        MDOFunction(sum, name="sum"), constraint_type=MDOFunction.ConstraintType.EQ
     )
     n_samples = 100
     with mock.patch.object(base_driver_library, "time", MockedTime()):
@@ -279,7 +279,7 @@ def test_progress_bar_database_n_processes(caplog, use_database, n_processes):
     """Check that the progress bar is logged w/wo parallelization and w/wo database."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(G(), "g"), value=1.0, constraint_type=problem.ConstraintType.EQ
+        MDOFunction(G(), name="g"), value=1.0, constraint_type=problem.ConstraintType.EQ
     )
     execute_algo(
         problem,

@@ -80,7 +80,9 @@ class FonsecaFleming(OptimizationProblem):
         )
         super().__init__(design_space)
         self.objective = MDOFunction(
-            self._compute_output, self.__class__.__name__, jac=self._compute_jacobian
+            self._compute_output,
+            name=self.__class__.__name__,
+            jac=self._compute_jacobian,
         )
 
     def _compute_output(self, x: RealArray) -> RealArray:

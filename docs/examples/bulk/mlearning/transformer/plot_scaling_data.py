@@ -110,7 +110,7 @@ design_space.add_variable("x2", lower_bound=-200, upper_bound=200)
 # We create the learning and test datasets in the same way:
 problem = OptimizationProblem(design_space)
 problem.objective = MDOFunction(
-    lambda x: (1 - x[0]) ** 2 + 100 * (0.01 * x[1] - x[0] ** 2) ** 2, "f"
+    lambda x: (1 - x[0]) ** 2 + 100 * (0.01 * x[1] - x[0] ** 2) ** 2, name="f"
 )
 opt_lhs.execute(problem, n_samples=30)
 dataset_train = problem.to_dataset(opt_naming=False)

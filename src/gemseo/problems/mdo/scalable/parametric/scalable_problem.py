@@ -167,12 +167,16 @@ class ScalableProblem(_ScalableProblem):
         )
 
         problem = OptimizationProblem(design_space)
-        problem.objective = MDOFunction(f, "f", expr="0.5x'Qx + c'x + d", jac=df)
+        problem.objective = MDOFunction(f, name="f", expr="0.5x'Qx + c'x + d", jac=df)
         problem.add_constraint(
             MDOFunction(
-                g, "g", f_type=MDOFunction.FunctionType.INEQ, expr="Ax-b <= 0", jac=dg
+                g,
+                name="g",
+                f_type=MDOFunction.FunctionType.INEQ,
+                expr="Ax-b <= 0",
+                jac=dg,
             )
         )
         if add_coupling:
-            problem.add_observable(MDOFunction(self.compute_y, "coupling"))
+            problem.add_observable(MDOFunction(self.compute_y, name="coupling"))
         return problem

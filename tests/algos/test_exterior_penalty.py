@@ -36,7 +36,9 @@ def create_problem():
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
 
-    func = MDOFunction(cstr, "cstr", jac=jac, f_type=MDOFunction.ConstraintType.INEQ)
+    func = MDOFunction(
+        cstr, name="cstr", jac=jac, f_type=MDOFunction.ConstraintType.INEQ
+    )
     problem.constraints = [func, eq]
     return problem
 

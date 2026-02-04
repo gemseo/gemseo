@@ -37,7 +37,7 @@ def doe_problem_dim_2():
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, lower_bound=-2.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, "func")
+    problem.objective = MDOFunction(sum, name="func")
     return problem
 
 
@@ -62,7 +62,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, "func")
+    problem.objective = MDOFunction(sum, name="func")
     doe_library_class(algo_name).execute(problem, n_samples=n_samples)
     assert array_equal(
         problem.to_dataset("data").get_view(variable_names="x").to_numpy(),
@@ -81,7 +81,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, "func")
+    problem.objective = MDOFunction(sum, name="func")
     doe_library_class(algo_name).execute(problem, n_samples=n_samples)
     data = problem.to_dataset().get_view(variable_names="x").to_numpy()
     if n_samples < 2**size:

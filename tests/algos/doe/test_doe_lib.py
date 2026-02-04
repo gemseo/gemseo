@@ -222,7 +222,7 @@ def doe_database(request) -> Database:
         space.add_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
 
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(lambda x: x, "func")
+    problem.objective = MDOFunction(lambda x: x, name="func")
     execute_algo(
         problem,
         algo_name="CustomDOE",
@@ -378,7 +378,7 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
     design_space.add_variable("z", lower_bound=0, upper_bound=1)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, "f")
+    problem.objective = MDOFunction(sum, name="f")
 
     error_message = "The components 2, 3 and 4 of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
@@ -397,7 +397,7 @@ def test_uunormalized_components_with_parameter_space(mc) -> None:
     assert not parameter_space.normalize["x"]
 
     problem = OptimizationProblem(parameter_space)
-    problem.objective = MDOFunction(sum, "f")
+    problem.objective = MDOFunction(sum, name="f")
 
     mc.compute_doe(parameter_space, n_samples=3)
     mc.execute(problem, n_samples=3)
@@ -422,7 +422,7 @@ def problem():
     design_space.add_variable("x")
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(f, "f")
+    problem.objective = MDOFunction(f, name="f")
     return problem
 
 

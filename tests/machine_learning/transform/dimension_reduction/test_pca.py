@@ -154,7 +154,7 @@ def test_shape(data, pca) -> None:
 
 def test_transformation_jacobian(pca) -> None:
     """Check the Jacobian of the transformation."""
-    function = MDOFunction(pca.transform, "transform", jac=pca.compute_jacobian)
+    function = MDOFunction(pca.transform, name="transform", jac=pca.compute_jacobian)
     input_data = array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
     function.check_grad(input_data, error_max=1e-7)
     function.check_grad(input_data[::-1], error_max=1e-7)
@@ -163,7 +163,9 @@ def test_transformation_jacobian(pca) -> None:
 def test_inverse_transformation_jacobian(pca) -> None:
     """Check the Jacobian of the inverse transformation."""
     function = MDOFunction(
-        pca.inverse_transform, "inverse_transform", jac=pca.compute_jacobian_inverse
+        pca.inverse_transform,
+        name="inverse_transform",
+        jac=pca.compute_jacobian_inverse,
     )
     input_data = array([1.0, 2.0, 3.0])
     function.check_grad(input_data, error_max=1e-7)

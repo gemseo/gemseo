@@ -401,13 +401,13 @@ def check_obj_scenario_adapter(
     output_names = objective.output_names
     problem.objective = MDOFunction(
         lambda _: 123.456,
-        objective.name,
-        MDOFunction.FunctionType.OBJ,
-        lambda _: zeros(dim),
-        "123.456",
-        objective.input_names,
-        objective.dim,
-        output_names,
+        name=objective.name,
+        f_type=MDOFunction.FunctionType.OBJ,
+        jac=lambda _: zeros(dim),
+        expr="123.456",
+        input_names=objective.input_names,
+        dim=objective.dim,
+        output_names=output_names,
     )
     adapter = MDOObjectiveScenarioAdapter(scenario, ["x_shared"], outputs)
 

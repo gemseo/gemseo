@@ -343,11 +343,13 @@ def test_nnls_linalgerror():
     space = DesignSpace()
     space.add_variable("x", 1, lower_bound=0, upper_bound=1)
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(lambda x: 18 * x, "f", jac=lambda _: array([18]))
+    problem.objective = MDOFunction(
+        lambda x: 18 * x, name="f", jac=lambda _: array([18])
+    )
     gradient = array([9.9, -1.98000003])
     problem.add_constraint(
         MDOFunction(
-            lambda x: x * gradient, "g", jac=lambda _: gradient.reshape((-1, 1))
+            lambda x: x * gradient, name="g", jac=lambda _: gradient.reshape((-1, 1))
         ),
         constraint_type=MDOFunction.ConstraintType.INEQ,
     )
@@ -362,14 +364,16 @@ def test_nnls_runtimeerror():
     space = DesignSpace()
     space.add_variable("x", 3, lower_bound=-1, upper_bound=1)
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(lambda x: 18 * x, "f", jac=lambda _: full(3, 18))
+    problem.objective = MDOFunction(
+        lambda x: 18 * x, name="f", jac=lambda _: full(3, 18)
+    )
     jacobian = array([
         [0, 0, 9.9],
         [-9.9000119968124, 0, 0],
         [0, 0, -0.9900000000001],
     ])
     problem.add_constraint(
-        MDOFunction(lambda x: jacobian @ x, "g", jac=lambda _: jacobian),
+        MDOFunction(lambda x: jacobian @ x, name="g", jac=lambda _: jacobian),
         constraint_type=problem.ConstraintType.INEQ,
     )
     LagrangeMultipliers(problem).compute(array([0, 0, 0]))

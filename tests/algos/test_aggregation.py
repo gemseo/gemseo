@@ -54,7 +54,9 @@ def create_problem():
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
 
-    func = MDOFunction(cstr, "cstr", jac=jac, f_type=MDOFunction.ConstraintType.INEQ)
+    func = MDOFunction(
+        cstr, name="cstr", jac=jac, f_type=MDOFunction.ConstraintType.INEQ
+    )
     problem.constraints = [func, eq]
     return problem
 
@@ -76,7 +78,7 @@ def create_pb_alleq():
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])
 
-    func = MDOFunction(cstr, "cstr", jac=jac, f_type=MDOFunction.ConstraintType.EQ)
+    func = MDOFunction(cstr, name="cstr", jac=jac, f_type=MDOFunction.ConstraintType.EQ)
     problem.constraints = [func]
     return problem
 
@@ -227,13 +229,13 @@ def complex_real_mdo_func_aggregation(
     return (
         MDOFunction(
             lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))], complex128),
-            "c",
+            name="c",
             f_type=request.param[0],
             jac=jacobian_function,
         ),
         MDOFunction(
             lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))]),
-            "r",
+            name="r",
             f_type=request.param[0],
             jac=jacobian_function,
         ),

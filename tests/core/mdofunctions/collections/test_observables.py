@@ -35,14 +35,14 @@ def test_f_types():
 
 def test_format_cast(problem):
     """Check that the method format casts a function to observable."""
-    function = Observables().format(MDOFunction(lambda x: x, "o"))
+    function = Observables().format(MDOFunction(lambda x: x, name="o"))
     assert function.f_type == function.FunctionType.OBS
 
 
 def test_format_warn(problem, caplog):
     """Check that the method format warns and return None if already observed."""
     observables = Observables()
-    observable = MDOFunction(lambda x: x, "o", f_type=MDOFunction.FunctionType.OBS)
+    observable = MDOFunction(lambda x: x, name="o", f_type=MDOFunction.FunctionType.OBS)
     assert observables.format(observable) is not None
     observables.append(observable)
     assert observables.format(observable) is None

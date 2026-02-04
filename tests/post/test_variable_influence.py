@@ -152,10 +152,10 @@ def test_visible_labels(size, baseline_images) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0, upper_bound=1, value=0.5)
     problem = OptimizationProblem(design_space)
-    func = MDOFunction(sum, "obj", jac=lambda x: array([1.0] * size))
+    func = MDOFunction(sum, name="obj", jac=lambda x: array([1.0] * size))
     problem.objective = func
     problem.minimize_objective = False
-    func = MDOFunction(lambda x: x * 0.5, "eq", jac=lambda x: 0.5 * eye(size))
+    func = MDOFunction(lambda x: x * 0.5, name="eq", jac=lambda x: 0.5 * eye(size))
     problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
     doe = DiagonalDOE()
     doe.execute(problem, n_samples=size, eval_jac=True)

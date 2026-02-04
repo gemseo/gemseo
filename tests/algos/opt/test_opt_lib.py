@@ -86,7 +86,7 @@ def test_is_algorithm_suited_has_eq_constraints() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.add_constraint(
-        MDOFunction(lambda x: x, "c", f_type=MDOFunction.FunctionType.EQ)
+        MDOFunction(lambda x: x, name="c", f_type=MDOFunction.FunctionType.EQ)
     )
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
@@ -104,7 +104,7 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.add_constraint(
-        MDOFunction(lambda x: x, "c", f_type=MDOFunction.FunctionType.INEQ)
+        MDOFunction(lambda x: x, name="c", f_type=MDOFunction.FunctionType.INEQ)
     )
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
@@ -164,7 +164,7 @@ def test_execute_without_current_value() -> None:
     design_space.add_variable("x")
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: (x - 1) ** 2, "obj")
+    problem.objective = MDOFunction(lambda x: (x - 1) ** 2, name="obj")
     driver = OptimizationLibraryFactory().create("NLOPT_COBYLA")
     driver.execute(problem, max_iter=1)
     assert design_space.get_current_value(["x"]) == 0.0

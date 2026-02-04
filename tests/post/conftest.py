@@ -31,19 +31,19 @@ def __common_problem():  # noqa: PT005
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, lower_bound=0, upper_bound=1, value=0.5)
     problem = OptimizationProblem(design_space)
-    func = MDOFunction(sum, "obj")
+    func = MDOFunction(sum, name="obj")
     func.has_default_name = True
     problem.objective = func
     problem.minimize_objective = False
-    func = MDOFunction(lambda x: x * 0.5, "eq")
+    func = MDOFunction(lambda x: x * 0.5, name="eq")
     func.has_default_name = True
     problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
-    func = MDOFunction(lambda x: x * 1.5, "pos")
+    func = MDOFunction(lambda x: x * 1.5, name="pos")
     func.has_default_name = True
     problem.add_constraint(
         func, constraint_type=MDOFunction.ConstraintType.INEQ, positive=True
     )
-    func = MDOFunction(lambda x: x * 1.5, "pos")
+    func = MDOFunction(lambda x: x * 1.5, name="pos")
     func.has_default_name = True
     problem.add_constraint(
         func,
@@ -51,10 +51,10 @@ def __common_problem():  # noqa: PT005
         value=0.5,
         positive=True,
     )
-    func = MDOFunction(lambda x: x * 2.5, "neg")
+    func = MDOFunction(lambda x: x * 2.5, name="neg")
     func.has_default_name = True
     problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.INEQ)
-    func = MDOFunction(lambda x: x * 2.5, "neg")
+    func = MDOFunction(lambda x: x * 2.5, name="neg")
     func.has_default_name = True
     problem.add_constraint(
         func, constraint_type=MDOFunction.ConstraintType.INEQ, value=0.5
