@@ -38,30 +38,16 @@ class OTSobolDOE(BaseOTDOE):
     """
 
     def generate_samples(  # noqa: D102
-        self,
-        n_samples: int,
-        dimension: int,
-        eval_second_order: bool = True,
-        settings: OT_SOBOL_INDICES_Settings | None = None,
+        self, dimension: int, settings: OT_SOBOL_INDICES_Settings
     ) -> RealArray:
-        """
-        Args:
-            eval_second_order: Whether to build a DOE
-                to evaluate also the second-order indices.
-                If `False`,
-                the DOE is designed for first and total-order indices only.
-                Ignored if `settings` is not `None`.
-
-        """  # noqa: D205, D212
         # If eval_second_order is set to False, the input design is of size N(2+n_X).
         # If eval_second_order is set to False,
         #   if n_X = 2, the input design is of size N(2+n_X).
         #   if n_X != 2, the input design is of size N(2+2n_X).
         # Ref: https://openturns.github.io/openturns/latest/user_manual/_generated/
         # openturns.SobolIndicesExperiment.html#openturns.SobolIndicesExperiment
-        if settings is not None:
-            n_samples = settings.n_samples
-            eval_second_order = settings.eval_second_order
+        eval_second_order = settings.eval_second_order
+        n_samples = settings.n_samples
 
         if eval_second_order and dimension > 2:
             sub_sample_size = int(n_samples / (2 * dimension + 2))

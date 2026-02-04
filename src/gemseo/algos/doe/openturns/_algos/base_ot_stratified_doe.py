@@ -28,8 +28,6 @@ from numpy import where
 from gemseo.algos.doe.openturns._algos.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from openturns import StratifiedExperiment
 
     from gemseo.algos.doe.openturns.settings.base_ot_stratified_doe import (
@@ -45,46 +43,17 @@ class BaseOTStratifiedDOE(BaseOTDOE):
     """The OpenTURNS class implementing the stratified DOE algorithm."""
 
     def generate_samples(
-        self,
-        n_samples: int,
-        dimension: int,
-        centers: float | Sequence[float] = 0.5,
-        levels: Sequence[float] = (),
-        settings: BaseOTStratifiedDOESettings | None = None,
+        self, dimension: int, settings: BaseOTStratifiedDOESettings
     ) -> NumberArray:
-        r"""
-        Args:
-            n_samples: The maximum number of samples.
-                If 0, deduce this number from `dimension` and `levels`.
-                Otherwise,
-                the DOE will use the center of the unit hypercube
-                and the levels and the effective number of samples
-                will depend on the stratified DOE type.
-                Ignored if `settings` is not `None`.
-            centers: The center of the DOE in the unit hypercube.
-                This argument is used when `n_samples` is greater than 0.
-                If a real number is passed,
-                create a `dimension`-length vector filled with this value.
-                Otherwise, the length of `centers` must be equal to `dimension`.
-                Ignored if `settings` is not `None`.
-            levels: The relative positions of the levels
-                This argument is used when `n_samples` is greater than 0.
-                between the center and the bounds
-                E.g. [0.2, 0.8] with [0.5] as center
-                will generate the values [0.1, 0.4, 0.5, 0.6, 0.9].
-                Ignored if `settings` is not `None`.
-            settings: The settings of the DOE algorithm.
-
+        """
         Raises:
             ValueError: When the number of centers is different from the dimension,
                 when a center is outside $]0,1[$
                 or when a level is outside $[0,1]$.
         """  # noqa: D205, D212
-        if settings is not None:
-            n_samples = settings.n_samples
-            centers = settings.centers
-            levels = settings.levels
-
+        centers = settings.centers
+        levels = settings.levels
+        n_samples = settings.n_samples
         if n_samples > 0:
             n_levels = self._compute_n_levels(n_samples, dimension)
             centers = full(dimension, 0.5)

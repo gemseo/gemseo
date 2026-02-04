@@ -38,15 +38,8 @@ class OTStandardLHS(BaseOTDOE):
     """
 
     def generate_samples(  # noqa: D102
-        self,
-        n_samples: int,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings | None = None,
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
-        if settings is not None:
-            n_samples = settings.n_samples
-
-        lhs_experiment = LHSExperiment(
-            self._get_uniform_distribution(dimension), n_samples
-        )
+        distribution = self._get_uniform_distribution(dimension)
+        lhs_experiment = LHSExperiment(distribution, settings.n_samples)
         return array(lhs_experiment.generate())

@@ -37,12 +37,7 @@ class BaseOTLowDiscrepancySequence(BaseOTDOE):
 
     _ALGO_CLASS: ClassVar[type[LowDiscrepancySequenceImplementation]]
 
-    def generate_samples(  # noqa: D102
-        self,
-        n_samples: int,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings | None = None,
-    ) -> RealArray:
-        if settings is not None:
-            n_samples = settings.n_samples
-        return array(self._ALGO_CLASS(dimension).generate(n_samples))
+    def generate_samples(
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
+    ) -> RealArray:  # noqa: D102
+        return array(self._ALGO_CLASS(dimension).generate(settings.n_samples))

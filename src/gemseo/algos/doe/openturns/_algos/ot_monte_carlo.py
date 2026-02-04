@@ -37,13 +37,8 @@ class OTMonteCarlo(BaseOTDOE):
     """
 
     def generate_samples(  # noqa: D102
-        self,
-        n_samples: int,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings | None = None,
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
-        if settings is not None:
-            n_samples = settings.n_samples
-
+        n_samples = settings.n_samples
         samples = self._STANDARD_UNIFORM_DISTRIBUTION.getSample(dimension * n_samples)
         return array(samples).reshape((n_samples, dimension))

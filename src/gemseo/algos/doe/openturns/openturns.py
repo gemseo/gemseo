@@ -246,9 +246,4 @@ class OpenTURNS(BaseDOELibrary[BaseOpenTURNSSettings]):
     ) -> NumberArray:
         openturns.RandomGenerator.SetSeed(self._seeder.get_seed(self._settings.seed))
         doe_algo = self.__NAMES_TO_CLASSES[self._algo_name]()
-
-        return doe_algo.generate_samples(
-            self._settings.n_samples,
-            design_space.dimension,
-            settings=self._settings,
-        )
+        return doe_algo.generate_samples(design_space.dimension, self._settings)
