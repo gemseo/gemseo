@@ -31,20 +31,14 @@ if TYPE_CHECKING:
 class BaseDOE(metaclass=BaseABCMultiton):
     """The base class for DOE algorithms."""
 
-    # TODO: API: remove n_samples from the signature.
     @abstractmethod
     def generate_samples(
-        self,
-        n_samples: int,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings | None = None,
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
         """Generate samples.
 
         Args:
-            n_samples: The number of samples.
-                Ignored if `settings` is not `None`.
-            dimension: The dimension of the sampling space.
+            dimension: The dimension of the variable space.
             settings: The settings of the DOE algorithm.
 
         Returns:

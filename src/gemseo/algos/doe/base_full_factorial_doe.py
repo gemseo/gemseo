@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-from typing import Any
 
 from gemseo.algos.doe.base_doe import BaseDOE
 
@@ -35,25 +34,13 @@ LOGGER = logging.getLogger(__name__)
 class BaseFullFactorialDOE(BaseDOE):
     """The base class of a full-factorial DOE."""
 
-    def generate_samples(
-        self,
-        n_samples: int,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings | None = None,
-        # TODO: API: remove.
-        **options: Any,
+    def generate_samples(  # noqa: D102
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
-        """
-        Args:
-            **options: These options are ignored.
-        """  # noqa: D205, D212
         return self._generate_fullfact(dimension, settings)
 
-    # TODO: Propagate a settings pydantic model.
     def _generate_fullfact(
-        self,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings,
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
         """Generate a full-factorial DOE.
 
@@ -63,22 +50,11 @@ class BaseFullFactorialDOE(BaseDOE):
         the levels are deduced and are uniformly distributed among all the inputs.
 
         Args:
-            dimension: The dimension of the parameter space.
-            n_samples: The maximum number of samples from which the number of levels
-                per input is deduced.
-                The number of samples which is finally applied
-                is the product of the numbers of levels.
-                If 0, the algorithm uses the number of levels per input dimension
-                provided by the argument `levels`.
-            levels: The number of levels per input direction.
-                If `levels` is given as a scalar value, the same number of
-                levels is used for all the inputs.
-                If empty, the number of samples provided in argument `n_samples`
-                is used in order to deduce the levels.
-            **settings: The settings of the DOE algorithm.
+            dimension: The dimension of the input space.
+            settings: The settings of the full-factorial DOE algorithm.
 
         Returns:
-            The values of the DOE.
+            The full-factorial DOE.
 
         Raises:
             ValueError:
@@ -86,23 +62,24 @@ class BaseFullFactorialDOE(BaseDOE):
                 * If both `n_samples` and `levels` are provided.
         """
         levels = settings.levels
+        n_samples = settings.n_samples
 
-        if not levels and settings.n_samples == 0:
+        if not levels and n_samples == 0:
             msg = (
                 "Either 'n_samples' or 'levels' is required as an input "
                 "parameter for the full-factorial DOE."
             )
             raise ValueError(msg)
 
-        if levels and settings.n_samples > 0:
+        if levels and n_samples > 0:
             msg = (
                 "Only one input parameter among 'n_samples' and 'levels' "
                 "must be given for the full-factorial DOE."
             )
             raise ValueError(msg)
 
-        if settings.n_samples > 0:
-            levels = self._compute_fullfact_levels(settings.n_samples, dimension)
+        if n_samples > 0:
+            levels = self._compute_fullfact_levels(n_samples, dimension)
 
         if isinstance(levels, int):
             levels = [levels] * dimension

@@ -134,12 +134,9 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
     }
 
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
-        n = design_space.dimension
-
         if self._algo_name == "PYDOE_FULLFACT":
-            self._settings: PYDOE_FULLFACT_Settings
             return PyDOEFullFactorialDOE().generate_samples(
-                n_samples=self._settings.n_samples, dimension=n, settings=self._settings
+                design_space.dimension, self._settings
             )
 
         settings_ = self._filter_settings(
@@ -153,9 +150,9 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             )
             settings_["samples"] = settings_["n_samples"]
             del settings_["n_samples"]
-            return doe_algorithm(n, **settings_)
+            return doe_algorithm(design_space.dimension, **settings_)
 
-        data = doe_algorithm(n, **settings_)
+        data = doe_algorithm(design_space.dimension, **settings_)
         # Scale data from [-1,1] to [0,1]
         return (data + 1.0) / 2.0
 

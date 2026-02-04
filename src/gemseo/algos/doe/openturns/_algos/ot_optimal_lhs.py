@@ -71,35 +71,14 @@ class OTOptimalLHS(BaseOTDOE):
         SpaceFillingCriterion.MINDIST: SpaceFillingMinDist(),
     }
 
-    def generate_samples(  # noqa: D102
-        self,
-        n_samples: int,
-        dimension: int,
-        annealing: bool = True,
-        criterion: SpaceFillingCriterion = SpaceFillingCriterion.C2,
-        n_replicates: int = 1_000,
-        temperature: TemperatureProfile = TemperatureProfile.GEOMETRIC,
-        settings: OT_OPT_LHS_Settings | None = None,
+    def generate_samples(
+        self, dimension: int, settings: OT_OPT_LHS_Settings
     ) -> RealArray:
-        """
-        Args:
-            annealing: Whether to use simulated annealing to optimize the LHS.
-                If `False`, the crude Monte Carlo method is used.
-                Ignored if `settings` is not `None`.
-            criterion: The space-filling criterion.
-                Ignored if `settings` is not `None`.
-            n_replicates: The number of Monte Carlo replicates to optimize LHS.
-                Ignored if `settings` is not `None`.
-            temperature: The temperature profile for simulated annealing.
-                Either "Geometric" or "Linear".
-                Ignored if `settings` is not `None`.
-        """  # noqa: D205, D212
-        if settings is not None:
-            n_samples = settings.n_samples
-            annealing = settings.annealing
-            criterion = settings.criterion
-            n_replicates = settings.n_replicates
-            temperature = settings.temperature
+        annealing = settings.annealing
+        criterion = settings.criterion
+        n_samples = settings.n_samples
+        n_replicates = settings.n_replicates
+        temperature = settings.temperature
 
         lhs_experiment = LHSExperiment(
             self._get_uniform_distribution(dimension), n_samples

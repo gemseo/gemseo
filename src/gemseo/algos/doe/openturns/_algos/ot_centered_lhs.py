@@ -35,12 +35,8 @@ class OTCenteredLHS(OTStandardLHS):
     """
 
     def generate_samples(  # noqa: D102
-        self,
-        n_samples: int,
-        dimension: int,
-        settings: BaseNSamplesBasedDOESettings | None = None,
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
-        if settings is not None:
-            n_samples = settings.n_samples
-        samples = super().generate_samples(n_samples, dimension, settings)
+        n_samples = settings.n_samples
+        samples = super().generate_samples(dimension, settings)
         return (samples // (1.0 / n_samples) + 0.5) / n_samples
