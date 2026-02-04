@@ -66,7 +66,9 @@ class BaseMLUnsupervisedModel(BaseMLModel):
 
     def _post_init(self):
         super()._post_init()
-        self.var_names = self._settings.var_names or self.learning_set.variable_names
+        self.var_names = self._settings.var_names or list(
+            self.learning_set.columns.levels[1].unique()
+        )
 
     def _learn(
         self,

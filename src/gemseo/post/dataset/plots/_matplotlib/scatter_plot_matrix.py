@@ -51,9 +51,6 @@ class ScatterMatrix(MatplotlibPlot):
         kde = self._specific_settings.kde
         size = self._specific_settings.size
         marker = self._specific_settings.marker
-        if not variable_names:
-            variable_names = self._common_dataset.variable_names
-
         dataframe = self._common_dataset.get_view(variable_names=variable_names)
         kwargs = {}
         if classifier:

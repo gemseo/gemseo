@@ -174,7 +174,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.name = name or f"{class_name}({dataset.name})"
         self.dataset = dataset
         self.n_samples = len(dataset)
-        self.names = variable_names or dataset.variable_names
+        self.names = variable_names or list(dataset.columns.levels[1].unique())
         self.n_variables = len(self.names)
 
     @property
