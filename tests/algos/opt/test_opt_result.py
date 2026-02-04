@@ -226,9 +226,9 @@ def test_from_optimization_problem(
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, "f")
+    problem.objective = MDOFunction(lambda x: x, name="f")
     problem.add_constraint(
-        MDOFunction(lambda x: x, "g"), value, MDOFunction.ConstraintType.INEQ
+        MDOFunction(lambda x: x, name="g"), value, MDOFunction.ConstraintType.INEQ
     )
     if maximize:
         problem.minimize_objective = False

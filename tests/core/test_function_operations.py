@@ -43,7 +43,7 @@ from gemseo.problems.optimization.rosen_mf import RosenMF
 def test_linear_composition_expr(input_names, expected_expr):
     """Check the expression of a LinearCombination."""
     linear_composition = LinearCompositeFunction(
-        MDOFunction(lambda x: x, "foo", input_names=input_names), array([[1]])
+        MDOFunction(lambda x: x, name="foo", input_names=input_names), array([[1]])
     )
     assert linear_composition.name == "[foo o A]"
     assert linear_composition.expr == expected_expr

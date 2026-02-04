@@ -163,7 +163,7 @@ def test_preprocess_functions_vectorize(
         expected = array([1.0, 9.0])
 
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(f_vectorized, "out", jac=dfdx_vectorized))
+    problem.add_observable(MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized))
     problem.preprocess_functions(
         use_database=use_database,
         vectorize=vectorize,
@@ -184,7 +184,7 @@ def test_doe_vectorize_evaluation_problem(
 ):
     """Check the DOE option 'vectorize' with an EvaluationProblem."""
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(f_vectorized, "out", jac=dfdx_vectorized))
+    problem.add_observable(MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized))
     callback = Callback()
 
     lib = SciPyDOE("MC")
@@ -230,7 +230,7 @@ def test_doe_vectorize_optimization_problem(
 ):
     """Check the DOE option 'vectorize' with an OptimizationProblem."""
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(f_vectorized, "out", jac=dfdx_vectorized)
+    problem.objective = MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized)
 
     lib = SciPyDOE("MC")
     lib.execute(problem, n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac)

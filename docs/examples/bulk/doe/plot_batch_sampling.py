@@ -126,7 +126,7 @@ function = AreaFunction()
 # This function can be attached
 # to an [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem] using an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
 problem = EvaluationProblem(design_space)
-problem.add_observable(MDOFunction(function, "area"))
+problem.add_observable(MDOFunction(function, name="area"))
 
 # %%
 # Then,

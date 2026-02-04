@@ -31,10 +31,10 @@ def constraints(problem) -> Constraints:
     design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
     constraints = Constraints(design_space, ConstraintTolerances())
     constraints.append(
-        MDOFunction(lambda x: x, "c1", f_type=MDOFunction.FunctionType.EQ)
+        MDOFunction(lambda x: x, name="c1", f_type=MDOFunction.FunctionType.EQ)
     )
     constraints.append(
-        MDOFunction(lambda x: x, "c2", f_type=MDOFunction.FunctionType.EQ)
+        MDOFunction(lambda x: x, name="c2", f_type=MDOFunction.FunctionType.EQ)
     )
     return constraints
 

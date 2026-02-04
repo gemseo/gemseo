@@ -102,7 +102,7 @@ scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
 # ### Basic
 #
 # Let us consider an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] representing the function $y=x^2$:
-function = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
+function = MDOFunction(lambda x: x**2, name="f", input_names=["x"], output_names=["y"])
 
 # %%
 # and defined over the unit interval $x\in[0,1]$:

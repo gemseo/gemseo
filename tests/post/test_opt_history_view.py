@@ -208,10 +208,10 @@ def test_461(case, baseline_images) -> None:
 
     problem = OptimizationProblem(design_space)
     if case == 1:
-        problem.objective = MDOFunction(lambda x: x[0] ** 2, "func")
+        problem.objective = MDOFunction(lambda x: x[0] ** 2, name="func")
     elif case == 2:
         problem.objective = problem.objective = MDOFunction(
-            lambda x: array([x[0] ** 2 + x[1] ** 2]), "func"
+            lambda x: array([x[0] ** 2 + x[1] ** 2]), name="func"
         )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
 
@@ -243,7 +243,7 @@ def test_no_gradient_history(caplog) -> None:
     design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.objective = MDOFunction(lambda x: x**2, name="f")
     problem.database.store(array([-1]), {"f": array([1])})
     problem.database.store(array([0]), {"f": array([0])})
     problem.database.store(array([1]), {"f": array([1])})

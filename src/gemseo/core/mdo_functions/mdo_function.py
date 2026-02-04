@@ -27,6 +27,7 @@ which take an array as argument and return an array.
 
 from __future__ import annotations
 
+import inspect
 import logging
 from collections.abc import Callable
 from collections.abc import Sized
@@ -85,7 +86,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
 
     An [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
     wraps an output function which takes an array as argument and returns an array,
-    e.g. `func = MDOFunction(lambda x: 2*x, "my_function")`.
+    e.g. `func = MDOFunction(lambda x: 2*x, name="my_function")`.
 
     The following information can also be provided at initialization:
 
@@ -257,7 +258,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     def __init__(
         self,
         func: WrappedFunctionType | None,
-        name: str,
+        name: str = "",
         f_type: FunctionType = FunctionType.NONE,
         jac: WrappedJacobianType | None = None,
         expr: str = "",
@@ -273,6 +274,10 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
         Args:
             func: The output function to be actually called, if any.
             name: The name of the MDO function.
+                If empty, use the name of the output function `func`.
+                Specifying the `name` argument is recommended when using
+                `lambda` functions. By definition they are anonymous and
+                they have the same name, namely `"<lambda>"`.
             f_type: The type of the MDO function.
             jac: The Jacobian function to be actually called, if any.
             expr: The expression of the MDO function, e.g. `"2*x"`, if any.
@@ -291,6 +296,16 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use the same name than the `name` input.
             with_normalized_inputs: Whether the MDO function expects normalized inputs.
         """  # noqa: D205, D212, D415
+        if not name:
+            if (
+                inspect.ismethod(func)
+                or inspect.isfunction(func)
+                or inspect.isbuiltin(func)
+            ):
+                name = func.__name__
+            else:
+                name = func.__class__.__name__
+
         self.__original_name = original_name or name
         self.name = name
         self.func = func
@@ -507,7 +522,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
 
         return MDOFunction(
             self._min_pt,
-            name,
+            name=name,
             jac=jac,
             input_names=self.input_names,
             f_type=self.f_type,

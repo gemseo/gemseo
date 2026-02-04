@@ -303,7 +303,9 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         jac = (
             None if pb_obj.jac is NotImplementedCallable else objective.compute_jacobian
         )
-        opt_problem.objective = MDOFunction(objective.compute_output, f"f_{i}", jac=jac)
+        opt_problem.objective = MDOFunction(
+            objective.compute_output, name=f"f_{i}", jac=jac
+        )
         opt_result = OptimizationLibraryFactory().execute(
             opt_problem,
             algo_name=self._settings.sub_optim_algo,

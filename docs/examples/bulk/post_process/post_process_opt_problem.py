@@ -33,7 +33,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 # We consider a minimization problem over the interval $[0,1]$
 # of the $f(x)=x^2$ objective function:
 
-objective = MDOFunction(lambda x: x**2, "f", input_names=["x"], output_names=["y"])
+objective = MDOFunction(lambda x: x**2, name="f", input_names=["x"], output_names=["y"])
 
 design_space = create_design_space()
 design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)

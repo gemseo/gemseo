@@ -82,7 +82,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         if minimize:
             obj_func = MDOFunction(
                 lambda xy: norm(xy) ** 2 + p**2,
-                "f",
+                name="f",
                 jac=lambda xy: 2.0 * xy,
                 expr="x^2+y^2+p^2",
                 input_names=["x", "y"],
@@ -92,7 +92,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         else:
             obj_func = MDOFunction(
                 lambda xy: -(norm(xy) ** 2 + p**2),
-                "f",
+                name="f",
                 jac=lambda xy: -2.0 * xy,
                 expr="-x^2-y^2-p^2",
                 input_names=["x", "y"],
@@ -102,7 +102,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         opt_problem.objective = obj_func
         ineq_func = MDOFunction(
             lambda x: array([p - x[0] - x[1]]),
-            "g",
+            name="g",
             jac=lambda _: array([-1.0, -1.0]),
             expr="p-x-y",
             input_names=["x", "y"],
@@ -112,7 +112,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         opt_problem.add_constraint(ineq_func)
         eq_func = MDOFunction(
             lambda x: array([x[1] - p * x[0]]),
-            "h",
+            name="h",
             jac=lambda _: array([p, -1.0]),
             expr="p*x-y",
             input_names=["x", "y"],

@@ -80,7 +80,7 @@ def func(x: ndarray) -> float:
 def problem() -> Rosenbrock:
     """The Rosenbrock problem with an observable summing the inputs."""
     rosenbrock = Rosenbrock()
-    rosenbrock.add_observable(MDOFunction(func, "sum"))
+    rosenbrock.add_observable(MDOFunction(func, name="sum"))
     return rosenbrock
 
 

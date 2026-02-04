@@ -217,9 +217,7 @@ def rosenbrock_opt_problem():
         return jacobian
 
     # Create the MDOFunction with the Jacobian
-    eq_constraint_func = MDOFunction(
-        func=eq_constraint, jac=eq_constraint_jac, name="c_eq"
-    )
+    eq_constraint_func = MDOFunction(eq_constraint, jac=eq_constraint_jac, name="c_eq")
 
     # Add the equality constraint to the problem
     problem.add_constraint(

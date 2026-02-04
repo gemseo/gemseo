@@ -98,7 +98,7 @@ class TestScipy(TestCase):
                 raise ValueError(x)
             return rosen(x)
 
-        problem.objective = MDOFunction(i_fail, "rosen")
+        problem.objective = MDOFunction(i_fail, name="rosen")
         self.assertRaises(
             AttributeError, OptimizationLibraryFactory().execute, problem, algo_name
         )
@@ -174,7 +174,9 @@ class TestScipy(TestCase):
             "x4", 1, DesignSpace.DesignVariableType.FLOAT, -inf, inf, 0.0
         )
         problem = OptimizationProblem(design_space)
-        problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
+        problem.objective = MDOFunction(
+            rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
+        )
         OptimizationLibraryFactory().execute(
             problem, algo_name="L-BFGS-B", normalize_design_space=True
         )
@@ -189,7 +191,9 @@ class TestScipy(TestCase):
                 "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
             )
             problem = OptimizationProblem(design_space)
-            problem.objective = MDOFunction(rosen, "Rosenbrock", "obj", rosen_der)
+            problem.objective = MDOFunction(
+                rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
+            )
             res = OptimizationLibraryFactory().execute(
                 problem, algo_name="L-BFGS-B", **algo_options
             )
@@ -345,7 +349,7 @@ def test_cannot_handle_inequality_constraints():
     """Check the error raised when an algo does not handle inequality constraints."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(sum, "sum"),
+        MDOFunction(sum, name="sum"),
         value=1.0,
         constraint_type=MDOFunction.ConstraintType.INEQ,
     )

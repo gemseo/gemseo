@@ -196,7 +196,9 @@ def test_rate_expression(e, r) -> None:
 def test_feasibility(caplog, n_processes):
     """Check that the feasibility is correctly logged."""
     problem = Rosenbrock()
-    problem.add_constraint(MDOFunction(sum, "g"), value=0.0, constraint_type="ineq")
+    problem.add_constraint(
+        MDOFunction(sum, name="g"), value=0.0, constraint_type="ineq"
+    )
     CustomDOE().execute(
         problem,
         settings_model=CustomDOE_Settings(

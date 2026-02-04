@@ -32,8 +32,8 @@ def test_default(caplog):
     design_space.add_variable("x", size=2)
 
     evaluation_problem = EvaluationProblem(design_space)
-    evaluation_problem.add_observable(MDOFunction(sum, "sum"))
-    evaluation_problem.add_observable(MDOFunction(prod, "prod"))
+    evaluation_problem.add_observable(MDOFunction(sum, name="sum"))
+    evaluation_problem.add_observable(MDOFunction(prod, name="prod"))
 
     custom_doe = CustomDOE()
     custom_doe.execute(evaluation_problem, samples=array([[2.0, 3.0], [4.0, 5.0]]))

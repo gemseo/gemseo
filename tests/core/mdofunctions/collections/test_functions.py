@@ -29,7 +29,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 @pytest.fixture(scope="module")
 def mdo_functions() -> list[MDOFunction]:
     """Some MDOFunction objects."""
-    return [MDOFunction(lambda x: x, f"f{i}") for i in range(3)]
+    return [MDOFunction(lambda x: x, name=f"f{i}") for i in range(3)]
 
 
 @pytest.fixture
@@ -81,7 +81,7 @@ def test_original_reset(functions: Functions, mdo_functions: list[MDOFunction]):
     functions.extend(mdo_functions)
     assert list(functions.get_originals()) == mdo_functions
     original_mdo_functions = [
-        MDOFunction(mdo_function, f"g{i}")
+        MDOFunction(mdo_function, name=f"g{i}")
         for i, mdo_function in enumerate(mdo_functions)
     ]
     for mdo_function, original_mdo_function in zip(
@@ -125,7 +125,7 @@ def test_f_types(functions: Functions):
             "The function type 'bar' is not one of those authorized (foo)."
         ),
     ):
-        functions.append(MDOFunction(lambda x: x, "f", f_type="bar"))
+        functions.append(MDOFunction(lambda x: x, name="f", f_type="bar"))
 
     functions._F_TYPES = f_types
 
