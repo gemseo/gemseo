@@ -63,7 +63,7 @@ class LinearSolverDescription(AlgorithmDescription):
     lhs_must_be_linear_operator: bool = False
     """Whether the left-hand side matrix must be a linear operator."""
 
-    Settings: type[BaseLinearSolverSettings] = BaseLinearSolverSettings
+    settings_class: type[BaseLinearSolverSettings] = BaseLinearSolverSettings
     """The linear solver libraries settings."""
 
 

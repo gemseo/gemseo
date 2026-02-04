@@ -94,7 +94,7 @@ class NullSpace(BaseLinearModelFitter[_NullSpaceFittingFunction, NullSpace_Setti
     AIAA 2021-3073. AIAA AVIATION 2021 FORUM. August 2021.
     """
 
-    Settings = NullSpace_Settings
+    settings_class = NullSpace_Settings
 
     _FITTER_CLASS = _NullSpaceFittingFunction
 

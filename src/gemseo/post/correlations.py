@@ -59,7 +59,7 @@ class Correlations(BasePost[Correlations_Settings]):
     MAXIMUM_CORRELATION_COEFFICIENT: ClassVar[float] = 1.0 - 1e-9
     """The maximum correlation coefficient above which the variable is not plotted."""
 
-    Settings: ClassVar[type[Correlations_Settings]] = Correlations_Settings
+    settings_class: ClassVar[type[Correlations_Settings]] = Correlations_Settings
 
     def _plot(self, settings: Correlations_Settings) -> None:
         """

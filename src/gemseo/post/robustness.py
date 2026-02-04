@@ -50,7 +50,7 @@ class Robustness(BasePost[Robustness_Settings]):
     """
 
     SR1_APPROX: ClassVar[str] = "SR1"
-    Settings: ClassVar[type[Robustness_Settings]] = Robustness_Settings
+    settings_class: ClassVar[type[Robustness_Settings]] = Robustness_Settings
 
     _USE_JACOBIAN_DATA: ClassVar[bool] = True
 

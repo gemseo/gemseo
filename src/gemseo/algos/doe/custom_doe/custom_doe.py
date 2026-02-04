@@ -71,7 +71,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
             ),
             internal_algorithm_name="CustomDOE",
             library_name="CustomDOE",
-            Settings=CustomDOE_Settings,
+            settings_class=CustomDOE_Settings,
         )
     }
 

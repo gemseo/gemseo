@@ -97,7 +97,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     MDA2_RESIDUAL_NAMESPACE: ClassVar[str] = "MDA2"
     """The name of the namespace for the MDA2 residuals."""
 
-    Settings: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
+    settings_class: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
 
     chain: MDOChain
     """The chain of the inner problem of the BiLevel formulation

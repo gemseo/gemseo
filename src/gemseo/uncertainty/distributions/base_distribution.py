@@ -123,8 +123,7 @@ class BaseDistribution(
     ).
     """
 
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[BaseDistributionSettings]
+    settings_class: ClassVar[type[BaseDistributionSettings]]
     """The Pydantic model for the settings."""
 
     distribution: _DistributionT

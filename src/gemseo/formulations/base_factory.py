@@ -72,7 +72,7 @@ class BaseFormulationFactory(BaseFactory[BaseFormulation]):
         del options_doc["settings"]
         options_doc.update({
             field_name: field.description
-            for field_name, field in cls.Settings.model_fields.items()
+            for field_name, field in cls.settings_class.model_fields.items()
         })
         return options_doc
 
@@ -82,7 +82,7 @@ class BaseFormulationFactory(BaseFactory[BaseFormulation]):
         del default_option_values["settings_model"]
         default_option_values.update({
             field_name: field.get_default(call_default_factory=True)
-            for field_name, field in cls.Settings.model_fields.items()
+            for field_name, field in cls.settings_class.model_fields.items()
             if not field.is_required()
         })
         return default_option_values

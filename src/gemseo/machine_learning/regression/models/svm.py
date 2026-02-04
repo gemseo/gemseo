@@ -40,7 +40,7 @@ class SVMRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_NAME: ClassVar[str] = "SVMRegression"
 
-    Settings: ClassVar[type[SVMRegressor_Settings]] = SVMRegressor_Settings
+    settings_class: ClassVar[type[SVMRegressor_Settings]] = SVMRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

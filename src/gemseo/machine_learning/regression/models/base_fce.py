@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 class BaseFCERegressor(BaseRegressor):
     """Base class for functional chaos expansion models."""
 
-    Settings: ClassVar[type[BaseFCERegressorSettings]] = BaseFCERegressorSettings
+    settings_class: ClassVar[type[BaseFCERegressorSettings]] = BaseFCERegressorSettings
 
     _mean_jacobian_wrt_special_variables: RealArray | None
     """The gradient of the mean with respect to the special variables.
@@ -113,7 +113,7 @@ class BaseFCERegressor(BaseRegressor):
             ValueError: When `learn_jacobian_data` or `use_special_jacobian_data`
                 is `True` but the training dataset does not contain Jacobian data.
         """  # noqa: D205 D212
-        settings_ = create_model(self.Settings, settings_model=settings)
+        settings_ = create_model(self.settings_class, settings_model=settings)
         super().__init__(data, settings=settings_)
         self._mean = array([])
         self._variance = array([])

@@ -33,7 +33,7 @@ from gemseo.uncertainty.distributions.scipy.triangular_settings import (
 class SPTriangularDistribution(SPDistribution):
     """The SciPy-based triangular distribution."""
 
-    Settings = SPTriangularDistribution_Settings
+    settings_class = SPTriangularDistribution_Settings
 
     def __init__(
         self,

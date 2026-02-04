@@ -122,7 +122,7 @@ class MDAGaussSeidel(BaseMDASolver):
     These $n$ steps account for one iteration of the Gauss-Seidel method.
     """
 
-    Settings: ClassVar[type[MDAGaussSeidel_Settings]] = MDAGaussSeidel_Settings
+    settings_class: ClassVar[type[MDAGaussSeidel_Settings]] = MDAGaussSeidel_Settings
     """The pydantic model for the settings."""
 
     settings: MDAGaussSeidel_Settings

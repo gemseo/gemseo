@@ -61,8 +61,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     # Silencing mypy since the root cause does not seem legit,
     # and may be changed.
     # See https://github.com/python/mypy/issues/5144.
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[T]]
+    settings_class: ClassVar[type[T]]
     """The Pydantic model for the settings."""
 
     optimization_problem: OptimizationProblem
@@ -196,7 +195,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             raise ValueError(msg)
 
         settings_ = create_model(
-            self.Settings, settings_model=settings_model, **settings
+            self.settings_class, settings_model=settings_model, **settings
         )
 
         if settings_.use_best_iteration_history:

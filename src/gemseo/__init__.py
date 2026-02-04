@@ -316,7 +316,7 @@ def get_algorithm_options_schema(
     for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
-            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].Settings
+            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].settings_class
             return _get_json_schema_from_settings(
                 settings,
                 output_json,
@@ -416,7 +416,7 @@ def get_post_processing_options_schema(
     from gemseo.post.factory import PostFactory
 
     cls = PostFactory().get_class(post_proc_name)
-    return _get_json_schema_from_settings(cls.Settings, output_json, pretty_print)
+    return _get_json_schema_from_settings(cls.settings_class, output_json, pretty_print)
 
 
 def get_formulation_options_schema(
@@ -563,7 +563,7 @@ def get_scenario_inputs_schema(
     Returns:
         The schema of the inputs of the scenario.
     """
-    return scenario.Settings.model_json_schema()
+    return scenario.settings_class.model_json_schema()
 
 
 def get_discipline_options_defaults(
@@ -927,7 +927,7 @@ def create_surrogate(
         return SurrogateDiscipline(regressor, name=name)
 
     if isinstance(regressor, str):
-        settings = REGRESSOR_FACTORY.get_class(regressor).Settings()
+        settings = REGRESSOR_FACTORY.get_class(regressor).settings_class()
     else:
         settings = regressor
 

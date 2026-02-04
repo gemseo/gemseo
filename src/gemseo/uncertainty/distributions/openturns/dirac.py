@@ -40,7 +40,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 class OTDiracDistribution(OTDistribution):
     """The OpenTURNS-based Dirac distribution."""
 
-    Settings = OTDiracDistribution_Settings
+    settings_class = OTDiracDistribution_Settings
 
     def __init__(
         self,

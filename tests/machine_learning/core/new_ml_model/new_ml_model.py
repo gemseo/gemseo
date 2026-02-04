@@ -22,7 +22,7 @@ class NewMLModel(BaseMLModel):
     """New machine learning model class."""
 
     LIBRARY = "NewLibrary"
-    Settings = BaseMLModelSettings
+    settings_class = BaseMLModelSettings
 
     def learn(self, samples=()) -> None:
         super().learn(samples=samples)

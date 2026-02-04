@@ -34,7 +34,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 class SPBetaDistribution(SPDistribution):
     """The SciPy-based Beta distribution."""
 
-    Settings = SPBetaDistribution_Settings
+    settings_class = SPBetaDistribution_Settings
 
     def __init__(
         self,

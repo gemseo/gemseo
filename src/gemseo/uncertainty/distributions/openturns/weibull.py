@@ -41,7 +41,7 @@ from gemseo.uncertainty.distributions.openturns.weibull_settings import (
 class OTWeibullDistribution(OTDistribution):
     """The OpenTURNS-based Weibull distribution."""
 
-    Settings = OTWeibullDistribution_Settings
+    settings_class = OTWeibullDistribution_Settings
 
     def __init__(
         self,

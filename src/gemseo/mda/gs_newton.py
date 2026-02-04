@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 class MDAGSNewton(MDASequential):
     """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
 
-    Settings: ClassVar[type[MDAGSNewton_Settings]] = MDAGSNewton_Settings
+    settings_class: ClassVar[type[MDAGSNewton_Settings]] = MDAGSNewton_Settings
     """The pydantic model for the settings."""
 
     settings: MDAGSNewton_Settings

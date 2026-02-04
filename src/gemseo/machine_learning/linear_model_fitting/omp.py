@@ -51,6 +51,6 @@ class OrthogonalMatchingPursuit(
     where $\tau$ is a specific model error.
     """
 
-    Settings = OrthogonalMatchingPursuit_Settings
+    settings_class = OrthogonalMatchingPursuit_Settings
 
     _FITTER_CLASS = SKLearnOrthogonalMatchingPursuit

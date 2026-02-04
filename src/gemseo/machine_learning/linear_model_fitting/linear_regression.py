@@ -43,6 +43,6 @@ class LinearRegression(
     The solution of this problem is $w^*=(X^\top X)^{-1}X^\top y$.
     """
 
-    Settings = LinearRegression_Settings
+    settings_class = LinearRegression_Settings
 
     _FITTER_CLASS = SKLearnLinearRegression

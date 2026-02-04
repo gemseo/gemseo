@@ -66,7 +66,7 @@ class SOM(BasePost[SOM_Settings]):
     Options of the plot method are the x- and y- numbers of cells in the SOM.
     """
 
-    Settings: ClassVar[type[SOM_Settings]] = SOM_Settings
+    settings_class: ClassVar[type[SOM_Settings]] = SOM_Settings
     __CMAP: Final[tuple[str, tuple[tuple[float, float, float], ...]]] = PARULA
 
     @staticmethod

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 class TopologyView(BasePost[TopologyView_Settings]):
     """Visualization of the solution of a 2D topology optimization problem."""
 
-    Settings: ClassVar[type[TopologyView_Settings]] = TopologyView_Settings
+    settings_class: ClassVar[type[TopologyView_Settings]] = TopologyView_Settings
 
     def _plot(
         self,

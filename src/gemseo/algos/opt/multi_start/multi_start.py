@@ -54,7 +54,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             handle_integer_variables=True,
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
-            Settings=MultiStart_Settings,
+            settings_class=MultiStart_Settings,
         )
     }
 
@@ -102,7 +102,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             "n_samples"
             in doe_algo.ALGORITHM_INFOS[
                 self._settings.doe_algo_name
-            ].Settings.model_fields
+            ].settings_class.model_fields
         ):
             self._settings.doe_algo_settings["n_samples"] = n_start
         samples = doe_algo.compute_doe(design_space, **self._settings.doe_algo_settings)

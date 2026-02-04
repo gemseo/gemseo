@@ -56,7 +56,7 @@ LOGGER = logging.getLogger(__name__)
 class BaseMDASolver(BaseMDA):
     """The base class for MDA solvers."""
 
-    Settings: ClassVar[type[BaseMDASolverSettings]]
+    settings_class: ClassVar[type[BaseMDASolverSettings]]
     """The Pydantic model for the settings."""
 
     settings: BaseMDASolverSettings

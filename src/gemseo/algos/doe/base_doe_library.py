@@ -79,7 +79,7 @@ class DOEAlgorithmDescription(DriverDescription):
     minimum_dimension: int = 1
     """The minimum dimension of the parameter space."""
 
-    Settings: type[BaseDOESettings] = BaseDOESettings
+    settings_class: type[BaseDOESettings] = BaseDOESettings
     """The Pydantic model for the DOE library settings."""
 
 
@@ -457,7 +457,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             self.__check_unnormalization_capability(design_space)
 
         self._settings = create_model(
-            self.ALGORITHM_INFOS[self.algo_name].Settings,
+            self.ALGORITHM_INFOS[self.algo_name].settings_class,
             settings_model=settings_model,
             **settings,
         )

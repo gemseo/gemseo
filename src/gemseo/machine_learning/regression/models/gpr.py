@@ -124,7 +124,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
 
-    Settings: ClassVar[type[GaussianProcessRegressor_Settings]] = (
+    settings_class: ClassVar[type[GaussianProcessRegressor_Settings]] = (
         GaussianProcessRegressor_Settings
     )
 

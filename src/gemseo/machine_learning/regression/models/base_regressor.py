@@ -54,7 +54,7 @@ class BaseRegressor(BaseMLSupervisedModel):
 
     DataFormatters = RegressionDataFormatters
 
-    Settings: ClassVar[type[BaseRegressorSettings]] = BaseRegressorSettings
+    settings_class: ClassVar[type[BaseRegressorSettings]] = BaseRegressorSettings
 
     _jacobian_data: RealArray | None
     """The Jacobian data if any."""

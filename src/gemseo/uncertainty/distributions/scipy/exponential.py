@@ -32,7 +32,7 @@ from gemseo.uncertainty.distributions.scipy.exponential_settings import (
 class SPExponentialDistribution(SPDistribution):
     """The SciPy-based exponential distribution."""
 
-    Settings = SPExponentialDistribution_Settings
+    settings_class = SPExponentialDistribution_Settings
 
     def __init__(
         self,

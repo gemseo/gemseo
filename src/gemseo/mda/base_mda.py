@@ -113,8 +113,7 @@ class BaseMDA(ProcessDiscipline):
     """Whether to update the local data from the input data before linearizing."""
 
     # TODO: use generics to handle the type of the settings
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[BaseMDASettings]]
+    settings_class: ClassVar[type[BaseMDASettings]]
     """The Pydantic model for the settings."""
 
     settings: BaseMDASettings
@@ -224,7 +223,7 @@ class BaseMDA(ProcessDiscipline):
                 These arguments are ignored when `settings_model` is not `None`.
         """  # noqa:D205 D212 D415
         self.settings = create_model(
-            self.Settings,
+            self.settings_class,
             settings_model=settings_model,
             **settings,
         )

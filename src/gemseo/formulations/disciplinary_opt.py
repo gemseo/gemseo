@@ -39,7 +39,7 @@ class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
     from an ordered list of disciplines, an objective function and a design space.
     """
 
-    Settings: ClassVar[type[DisciplinaryOpt_Settings]] = DisciplinaryOpt_Settings
+    settings_class: ClassVar[type[DisciplinaryOpt_Settings]] = DisciplinaryOpt_Settings
 
     __top_level_disciplines: tuple[Discipline]
     """The top-level disciplines."""

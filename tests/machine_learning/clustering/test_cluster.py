@@ -72,7 +72,7 @@ def test_pickle(class_name, dataset, before_training, tmp_wd):
     reference_model = CLUSTERER_FACTORY.create(
         class_name,
         dataset,
-        CLUSTERER_FACTORY.get_class(class_name).Settings(
+        CLUSTERER_FACTORY.get_class(class_name).settings_class(
             var_names=("sepal_length", "sepal_width", "petal_length", "petal_width")
         ),
     )

@@ -103,8 +103,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     __disciplines: tuple[Discipline, ...]
     """The disciplines."""
 
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[T]]
+    settings_class: ClassVar[type[T]]
     """The Pydantic model class for the settings of the formulation."""
 
     _settings: T
@@ -135,7 +134,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 This argument is ignored when `settings_model` is not `None`.
         """  # noqa: D205, D212, D415
         self._settings = create_model(
-            self.Settings, settings_model=settings_model, **settings
+            self.settings_class, settings_model=settings_model, **settings
         )
         self.__disciplines = tuple(disciplines)
         self.__check_disciplines()

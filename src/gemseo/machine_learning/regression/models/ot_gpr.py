@@ -141,7 +141,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     __use_hmat: bool
     """Whether to use HMAT or LAPACK for linear algebra."""
 
-    Settings: ClassVar[type[OTGaussianProcessRegressor_Settings]] = (
+    settings_class: ClassVar[type[OTGaussianProcessRegressor_Settings]] = (
         OTGaussianProcessRegressor_Settings
     )
 

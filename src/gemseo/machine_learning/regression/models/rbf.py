@@ -81,7 +81,7 @@ class RBFRegressor(BaseRegressor):
 
     EUCLIDEAN: Final[str] = "euclidean"
 
-    Settings: ClassVar[type[RBFRegressor_Settings]] = RBFRegressor_Settings
+    settings_class: ClassVar[type[RBFRegressor_Settings]] = RBFRegressor_Settings
 
     def _post_init(self):
         super()._post_init()

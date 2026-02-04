@@ -56,7 +56,7 @@ class AugmentedLagrangianOrder1(
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             require_gradient=True,
-            Settings=Augmented_Lagrangian_Order_1_Settings,
+            settings_class=Augmented_Lagrangian_Order_1_Settings,
         ),
     }
 

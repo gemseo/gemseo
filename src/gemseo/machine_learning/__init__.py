@@ -114,7 +114,7 @@ def create_mlearning_model(
     from gemseo.machine_learning.core.models.factory import ML_MODEL_FACTORY
 
     cls = ML_MODEL_FACTORY.get_class(name)
-    settings = cls.Settings(transformer=transformer, **parameters)
+    settings = cls.settings_class(transformer=transformer, **parameters)
     return ML_MODEL_FACTORY.create(name, data, settings=settings)
 
 
@@ -159,7 +159,7 @@ def create_regression_model(
         del transformer[IODataset.INPUT_GROUP]
 
     cls = REGRESSOR_FACTORY.get_class(name)
-    settings = cls.Settings(transformer=transformer, **parameters)
+    settings = cls.settings_class(transformer=transformer, **parameters)
     return REGRESSOR_FACTORY.create(name, data, settings=settings)
 
 
@@ -190,7 +190,7 @@ def create_classification_model(
     from gemseo.machine_learning.classification.models.factory import CLASSIFIER_FACTORY
 
     cls = CLASSIFIER_FACTORY.get_class(name)
-    settings = cls.Settings(transformer=transformer, **parameters)
+    settings = cls.settings_class(transformer=transformer, **parameters)
     return CLASSIFIER_FACTORY.create(name, data, settings=settings)
 
 
@@ -220,7 +220,7 @@ def create_clustering_model(
     from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
 
     cls = CLUSTERER_FACTORY.get_class(name)
-    settings = cls.Settings(transformer=transformer, **parameters)
+    settings = cls.settings_class(transformer=transformer, **parameters)
     return CLUSTERER_FACTORY.create(name, data, settings=settings)
 
 
@@ -312,7 +312,7 @@ def _get_options(
     """
     from gemseo import _pretty_print_schema
 
-    schema = factory.get_class(model_name).Settings.model_json_schema()
+    schema = factory.get_class(model_name).settings_class.model_json_schema()
     if pretty_print:
         _pretty_print_schema(schema)
     if output_json:

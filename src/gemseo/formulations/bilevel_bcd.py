@@ -53,7 +53,7 @@ class BiLevelBCD(BiLevel):
     3. an MDA to compute precisely the system optimization criteria.
     """
 
-    Settings: ClassVar[type[BiLevelBCD_Settings]] = BiLevelBCD_Settings
+    settings_class: ClassVar[type[BiLevelBCD_Settings]] = BiLevelBCD_Settings
 
     _bcd_mda: MDAGaussSeidel
     """The MDA of the BCD algorithm."""

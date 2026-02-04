@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import ClassVar
 
 from gemseo.mda.base_mda import _BaseMDAProcessFlow
 from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
@@ -98,7 +97,7 @@ class MDAJacobi(BaseParallelMDASolver):
     $$
     """
 
-    Settings: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
+    settings_class: ClassVar[type[MDAJacobi_Settings]] = MDAJacobi_Settings
     """The pydantic model for the settings."""
 
     settings: MDAJacobi_Settings

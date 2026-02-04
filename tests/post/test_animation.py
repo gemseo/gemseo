@@ -40,7 +40,7 @@ def test_common_scenario(
     """Check Animation with objective, standardized or not."""
     animation = Animation(common_problem)
     post_processing = PostFactory().create("BasicHistory", common_problem)
-    pp_settings = post_processing.Settings(
+    pp_settings = post_processing.settings_class(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
     output_files = animation.execute(
@@ -60,7 +60,7 @@ def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
     """Check Animation with objective, standardized or not."""
     opt = Animation(large_common_problem)
     post_processing = PostFactory().create("BasicHistory", large_common_problem)
-    pp_settings = post_processing.Settings(
+    pp_settings = post_processing.settings_class(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
     output_files = opt.execute(
@@ -76,7 +76,7 @@ def test_opt_hist_const(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     opt = Animation(problem)
     post_processing = PostFactory().create("OptHistoryView", problem)
-    pp_settings = post_processing.Settings(
+    pp_settings = post_processing.settings_class(
         variable_names=["x"],
         file_path="power2_2",
         obj_min=0.0,
@@ -125,7 +125,7 @@ def test_l_shape(tmp_wd) -> None:
     post_processing = PostFactory().create(
         "TopologyView", scenario.formulation.optimization_problem
     )
-    pp_settings = post_processing.Settings(n_x=n_x, n_y=n_y)
+    pp_settings = post_processing.settings_class(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(
         post_name="Animation",
         post_processing=post_processing,

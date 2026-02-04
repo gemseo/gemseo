@@ -50,7 +50,7 @@ class RandomForestRegressor(BaseRegressor):
     SHORT_NAME: ClassVar[str] = "RF"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[RandomForestRegressor_Settings]] = (
+    settings_class: ClassVar[type[RandomForestRegressor_Settings]] = (
         RandomForestRegressor_Settings
     )
 

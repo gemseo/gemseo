@@ -29,7 +29,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 class _BaseMDASolver(BaseMDASolver):
     """Concretizable BaseMDASolver class for test purpose."""
 
-    Settings = BaseMDASolverSettings
+    settings_class = BaseMDASolverSettings
     """The Pydantic model for the settings."""
 
 

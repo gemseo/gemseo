@@ -75,7 +75,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     constraints (if any).
     """
 
-    Settings: ClassVar[type[OptHistoryView_Settings]] = OptHistoryView_Settings
+    settings_class: ClassVar[type[OptHistoryView_Settings]] = OptHistoryView_Settings
 
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""

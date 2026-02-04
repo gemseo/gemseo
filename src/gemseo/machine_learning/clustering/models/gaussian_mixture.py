@@ -96,7 +96,7 @@ class GaussianMixture(BasePredictiveClusterer):
     SHORT_NAME: ClassVar[str] = "GMM"
     LIBRARY: ClassVar[str] = "scikit-learn"
 
-    Settings: ClassVar[type[GaussianMixture_Settings]] = GaussianMixture_Settings
+    settings_class: ClassVar[type[GaussianMixture_Settings]] = GaussianMixture_Settings
 
     def _post_init(self):
         super()._post_init()

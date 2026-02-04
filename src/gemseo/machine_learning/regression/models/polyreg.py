@@ -97,7 +97,7 @@ class PolynomialRegressor(LinearRegressor):
 
     SHORT_NAME: ClassVar[str] = "PolyReg"
 
-    Settings: ClassVar[type[PolynomialRegressor_Settings]] = (
+    settings_class: ClassVar[type[PolynomialRegressor_Settings]] = (
         PolynomialRegressor_Settings
     )
 

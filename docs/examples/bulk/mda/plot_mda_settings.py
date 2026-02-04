@@ -74,7 +74,7 @@ mda_jacobi = create_mda(
 # - The auto-complementation and documentation of the model shows all the settings available for the MDA of interest and their **default values**.
 #
 # The name of the Pydantic model associated with an MDA class is available via the class
-# attribute [Settings][gemseo.mda.base_mda.BaseMDA.Settings]. For instance:
+# attribute [settings_class][gemseo.mda.base_mda.BaseMDA.settings_class]. For instance:
 
 
 # %%

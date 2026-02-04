@@ -252,7 +252,7 @@ def test_solve_sub_problem_adds_constraints_with_rosenbrock(
     optimizer.execute(rosenbrock_opt_problem, **options)
     optimizer._problem = rosenbrock_opt_problem
     optimizer._settings = create_model(
-        optimizer.ALGORITHM_INFOS[optimizer.algo_name].Settings,
+        optimizer.ALGORITHM_INFOS[optimizer.algo_name].settings_class,
         sub_problem_constraints=["c_eq"],
         **options,
     )
@@ -299,7 +299,7 @@ def test_solve_sub_problem_triggers_update_options_callback(
 
     optimizer._problem = rosenbrock_opt_problem
     optimizer._settings = create_model(
-        optimizer.ALGORITHM_INFOS[optimizer.algo_name].Settings,
+        optimizer.ALGORITHM_INFOS[optimizer.algo_name].settings_class,
         **alm_options,
     )
 

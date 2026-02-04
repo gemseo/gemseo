@@ -31,6 +31,6 @@ from gemseo.machine_learning.linear_model_fitting.lars_settings import LARS_Sett
 class LARSCV(BaseSKLearnLinearModelFitter[SKLearnLarsCV, LARS_Settings]):
     """Scikit-learn least angle regression (LARS) algorithm with built-in cross-validation."""  # noqa: E501
 
-    Settings = LARSCV_Settings
+    settings_class = LARSCV_Settings
 
     _FITTER_CLASS = SKLearnLarsCV

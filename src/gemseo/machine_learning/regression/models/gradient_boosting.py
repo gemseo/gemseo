@@ -42,7 +42,7 @@ class GradientBoostingRegressor(BaseRegressor):
     LIBRARY: ClassVar[str] = "scikit-learn"
     SHORT_NAME: ClassVar[str] = "GradientBoostingRegressor"
 
-    Settings: ClassVar[type[GradientBoostingRegressor_Settings]] = (
+    settings_class: ClassVar[type[GradientBoostingRegressor_Settings]] = (
         GradientBoostingRegressor_Settings
     )
 

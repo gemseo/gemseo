@@ -34,4 +34,4 @@ class TPSRegressor(RBFRegressor):
 
     SHORT_NAME: ClassVar[str] = "TPS"
 
-    Settings: ClassVar[type[TPSRegressor_Settings]] = TPSRegressor_Settings
+    settings_class: ClassVar[type[TPSRegressor_Settings]] = TPSRegressor_Settings

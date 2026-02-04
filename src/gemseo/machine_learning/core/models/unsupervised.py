@@ -60,7 +60,7 @@ class BaseMLUnsupervisedModel(BaseMLModel):
 
     SHORT_NAME: ClassVar[str] = "BaseMLUnsupervisedModel"
 
-    Settings: ClassVar[type[BaseMLUnsupervisedModelSettings]] = (
+    settings_class: ClassVar[type[BaseMLUnsupervisedModelSettings]] = (
         BaseMLUnsupervisedModelSettings
     )
 

@@ -72,28 +72,28 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             internal_algorithm_name="RK45",
             description="Explicit Runge-Kutta method of order 5(4)",
             website=f"{__DOC}scipy.integrate.RK45.html",
-            Settings=RK45_Settings,
+            settings_class=RK45_Settings,
         ),
         "RK23": ScipyODESolverDescription(
             algorithm_name="RK23",
             internal_algorithm_name="RK23",
             description="Explicit Runge-Kutta method of order 3(2)",
             website=f"{__DOC}scipy.integrate.RK23.html",
-            Settings=RK23_Settings,
+            settings_class=RK23_Settings,
         ),
         "DOP853": ScipyODESolverDescription(
             algorithm_name="DOP853",
             internal_algorithm_name="DOP853",
             description="Explicit Runge-Kutta method of order 8",
             website=f"{__DOC}scipy.integrate.DOP853.html",
-            Settings=DOP853_Settings,
+            settings_class=DOP853_Settings,
         ),
         "Radau": ScipyODESolverDescription(
             algorithm_name="Radau",
             internal_algorithm_name="Radau",
             description="Implicit Runge-Kutta method of the Radau IIA type of order 5",
             website=f"{__DOC}scipy.integrate.Radau.html",
-            Settings=Radau_Settings,
+            settings_class=Radau_Settings,
         ),
         "BDF": ScipyODESolverDescription(
             algorithm_name="BDF",
@@ -103,14 +103,14 @@ class ScipyODEAlgos(BaseODESolverLibrary):
                 " differentiation formula for the derivative approximation"
             ),
             website=f"{__DOC}scipy.integrate.BDF.html",
-            Settings=BDF_Settings,
+            settings_class=BDF_Settings,
         ),
         "LSODA": ScipyODESolverDescription(
             algorithm_name="LSODA",
             internal_algorithm_name="LSODA",
             description="Adams/BDF method with automatic stiffness detection/switching",
             website=f"{__DOC}scipy.integrate.LSODA.html",
-            Settings=LSODA_Settings,
+            settings_class=LSODA_Settings,
         ),
     }
 
@@ -119,7 +119,8 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             self._settings.model_dump(), model_to_exclude=BaseODESolverSettings
         )
         if issubclass(
-            self.ALGORITHM_INFOS[self.algo_name].Settings, BaseScipyODESolverJacSettings
+            self.ALGORITHM_INFOS[self.algo_name].settings_class,
+            BaseScipyODESolverJacSettings,
         ):
             settings_["jac"] = problem.jac_function_wrt_state
 

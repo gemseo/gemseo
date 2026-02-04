@@ -53,7 +53,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
     The latter are also called `Pareto optimal points`.
     """
 
-    Settings: ClassVar[type[ParetoFront_Settings]] = ParetoFront_Settings
+    settings_class: ClassVar[type[ParetoFront_Settings]] = ParetoFront_Settings
 
     def _plot(self, settings: ParetoFront_Settings) -> None:
         """

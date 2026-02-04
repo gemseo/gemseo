@@ -68,7 +68,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
     Jacobian of $f$ at $x_k$.
     """
 
-    Settings: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
+    settings_class: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
     """The pydantic model for the settings."""
 
     _METHODS_SUPPORTING_CALLBACKS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (

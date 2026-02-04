@@ -125,7 +125,7 @@ def test_new_iteration_callback_xvect(caplog, kwargs, expected, parallelize) -> 
     test_driver = ScipyOpt("SLSQP")
     test_driver._problem = power_2
     test_driver._settings = create_model(
-        test_driver.ALGORITHM_INFOS[test_driver.algo_name].Settings
+        test_driver.ALGORITHM_INFOS[test_driver.algo_name].settings_class
     )
     test_driver._settings.max_time = 0
     test_driver._init_iter_observer(power_2, max_iter=2, **kwargs)

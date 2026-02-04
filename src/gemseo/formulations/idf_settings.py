@@ -101,7 +101,7 @@ you shall use multiprocessing.""",
         """Convert the MDA chain settings into a Pydantic model."""
         mda_chain_settings = self.mda_chain_settings_for_start_at_equilibrium
         if isinstance(mda_chain_settings, Mapping):
-            self.mda_chain_settings_for_start_at_equilibrium = MDAChain.Settings(
+            self.mda_chain_settings_for_start_at_equilibrium = MDAChain.settings_class(
                 **mda_chain_settings
             )
         return self

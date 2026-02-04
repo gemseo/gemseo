@@ -42,7 +42,7 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
 class OTNormalDistribution(OTDistribution):
     """The OpenTURNS-based normal distribution."""
 
-    Settings = OTNormalDistribution_Settings
+    settings_class = OTNormalDistribution_Settings
 
     def __init__(
         self,

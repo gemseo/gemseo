@@ -140,7 +140,7 @@ class PCERegressor(BaseFCERegressor):
     LIBRARY: ClassVar[str] = "OpenTURNS"
     __WEIGHT: Final[str] = "weight"
 
-    Settings: ClassVar[type[PCERegressor_Settings]] = PCERegressor_Settings
+    settings_class: ClassVar[type[PCERegressor_Settings]] = PCERegressor_Settings
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = (
         BaseFCERegressor._ATTR_NOT_TO_SERIALIZE.union({
@@ -177,7 +177,7 @@ class PCERegressor(BaseFCERegressor):
                 or when a probability distribution is not an
                 [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution].
         """  # noqa: D205 D212
-        settings_ = create_model(self.Settings, settings_model=settings)
+        settings_ = create_model(self.settings_class, settings_model=settings)
         cleaning_options = settings_.cleaning_options
         if cleaning_options is None:
             cleaning_options = CleaningOptions()

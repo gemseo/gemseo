@@ -53,7 +53,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
     The function index can be passed as option.
     """
 
-    Settings: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
+    settings_class: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
     _USE_JACOBIAN_DATA: ClassVar[bool] = True
 

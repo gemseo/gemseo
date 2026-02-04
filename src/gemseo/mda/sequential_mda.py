@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 class MDASequential(BaseMDA):
     """A sequence of elementary MDAs."""
 
-    Settings: ClassVar[type[MDASequential_Settings]] = MDASequential_Settings
+    settings_class: ClassVar[type[MDASequential_Settings]] = MDASequential_Settings
     """The pydantic model for the settings."""
 
     mda_sequence: Sequence[BaseMDA]

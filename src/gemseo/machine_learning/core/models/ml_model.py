@@ -189,8 +189,7 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     DataFormatters: ClassVar[type[BaseDataFormatters]]
     """The data formatters for the learning and prediction methods."""
 
-    # TODO: API: rename to settings_class.
-    Settings: ClassVar[type[BaseMLModelSettings]]
+    settings_class: ClassVar[type[BaseMLModelSettings]]
     """The Pydantic model class for the settings of the machine learning model."""
 
     _settings: BaseMLModelSettings
@@ -211,7 +210,7 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: When both the variable and the group it belongs to
                 have a transformer.
         """  # noqa: D205 D212
-        self._settings = create_model(self.Settings, settings_model=settings)
+        self._settings = create_model(self.settings_class, settings_model=settings)
         transformer = self._settings.transformer
         self.resampling_results = {}
         self.learning_set = data

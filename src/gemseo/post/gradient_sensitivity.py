@@ -51,7 +51,7 @@ LOGGER = logging.getLogger(__name__)
 class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
     """Derivatives of the objective and constraints at a given iteration."""
 
-    Settings: ClassVar[type[GradientSensitivity_Settings]] = (
+    settings_class: ClassVar[type[GradientSensitivity_Settings]] = (
         GradientSensitivity_Settings
     )
 

@@ -309,7 +309,7 @@ def test_stop_crit_n_x(algorithm_name) -> None:
     library = ScipyOpt(algorithm_name)
     library._problem = Rosenbrock()
     library._settings = create_model(
-        library.ALGORITHM_INFOS[library.algo_name].Settings, stop_crit_n_x=5
+        library.ALGORITHM_INFOS[library.algo_name].settings_class, stop_crit_n_x=5
     )
     assert library._settings.stop_crit_n_x == 5
 
@@ -336,7 +336,7 @@ def test_initial_tr_radius_cobyqa() -> None:
     library = ScipyOpt("COBYQA")
     library._problem = Rosenbrock()
     library._settings = create_model(
-        library.ALGORITHM_INFOS[library.algo_name].Settings, initial_tr_radius=1
+        library.ALGORITHM_INFOS[library.algo_name].settings_class, initial_tr_radius=1
     )
     assert library._settings.initial_tr_radius == 1
 

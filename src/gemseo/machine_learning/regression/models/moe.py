@@ -182,7 +182,7 @@ class MOERegressor(BaseRegressor):
 
     DataFormatters = MOEDataFormatters
 
-    Settings: ClassVar[type[MOERegressor_Settings]] = MOERegressor_Settings
+    settings_class: ClassVar[type[MOERegressor_Settings]] = MOERegressor_Settings
 
     def _post_init(self):
         super()._post_init()
