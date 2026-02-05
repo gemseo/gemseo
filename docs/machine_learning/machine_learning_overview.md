@@ -54,7 +54,7 @@ classDiagram
         <<abstract>>
        +SHORT_NAME
        +LIBRARY
-       +algo
+       +model
        +is_trained
        +learning_set
        +parameters

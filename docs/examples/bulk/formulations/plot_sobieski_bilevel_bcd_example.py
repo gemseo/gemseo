@@ -44,7 +44,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo_scenario import MDOScenario
-from gemseo.settings.formulations import BiLevel_BCD_Settings
+from gemseo.settings.formulations import BiLevelBCD_Settings
 from gemseo.settings.formulations import MDF_Settings
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
@@ -158,7 +158,7 @@ bcd_mda_settings = MDAGaussSeidel_Settings(tolerance=1e-5, max_mda_iter=10)
 # applied to the sub-scenarios, we set `apply_cstr_tosub_scenarios=False` to avoid
 # adding the same constraints twice on the lower level.
 
-system_settings = BiLevel_BCD_Settings(
+system_settings = BiLevelBCD_Settings(
     bcd_mda_settings=bcd_mda_settings,
     apply_cstr_tosub_scenarios=False,
 )

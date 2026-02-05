@@ -36,6 +36,7 @@ from numpy import array
 from gemseo import sample_disciplines
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.disciplines.surrogate import SurrogateDiscipline
+from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
 from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
     WingWeightUncertainSpace,
@@ -69,10 +70,14 @@ training_dataset = sample_disciplines(
 #
 # We create a discipline based on a regressor trained from this training dataset.
 
-discipline = SurrogateDiscipline("RBFRegressor", training_dataset)
+discipline = SurrogateDiscipline.from_settings(
+    RBFRegressor_Settings(), training_dataset
+)
 discipline
 
 # %%
+# This discipline could also be created directly from a regressor,
+# using `discipline = SurrogateDiscipline(regressor)`.
 #
 # Note that
 # the surrogate discipline automatically scales the input and output variables
