@@ -20,7 +20,7 @@ tags
 /docs/examples/**/*.*
 !/docs/examples/**/*.py
 !/docs/examples/**/README.md
-!/docs/examples/design_space/design_space.csv
+!/docs/examples/howtos/design_space/design_space.csv
 !/docs/examples/disciplines/grammars/grammar_1.json
 !/docs/examples/disciplines/grammars/grammar_2.json
 !/docs/examples/doe/algorithms/doe.txt

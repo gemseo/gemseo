@@ -18,77 +18,7 @@
 #        :author: Syver Doving Agdestein
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""This module contains the base class for machine learning models.
-
-Machine learning is the art of building models from data,
-the latter being samples of properties of interest
-that can sometimes be sorted by group, such as inputs, outputs, categories, ...
-
-In the absence of such groups,
-the data can be analyzed through a study of commonalities,
-leading to plausible clusters.
-This is referred to as clustering,
-a branch of unsupervised learning
-dedicated to the detection of patterns in unlabeled data.
-
-See Also:
-   [gemseo.machine_learning.core.models.unsupervised][gemseo.machine_learning.core.models.unsupervised],
-   [gemseo.machine_learning.clustering][gemseo.machine_learning.clustering]
-
-When data can be separated into at least two categories by a human,
-supervised learning can start with classification
-whose purpose is to model the relations
-between these categories and the properties of interest.
-Once trained,
-a classification model can predict the category
-corresponding to new property values.
-
-See Also:
-   [gemseo.machine_learning.core.models.supervised][gemseo.machine_learning.core.models.supervised]
-   [gemseo.machine_learning.classification][gemseo.machine_learning.classification]
-
-When the distinction between inputs and outputs can be made among the data properties,
-another branch of supervised learning can be considered: regression modeling.
-Once trained,
-a regression model can predict the outputs corresponding to new inputs values.
-
-See Also:
-   [gemseo.machine_learning.core.models.supervised][gemseo.machine_learning.core.models.supervised]
-   [gemseo.machine_learning.regression][gemseo.machine_learning.regression]
-
-The quality of a machine learning model can be measured
-using a
-[BaseMLModelQuality][gemseo.machine_learning.core.quality.base_ml_model_quality.BaseMLModelQuality]
-either with respect to the training dataset
-or to a test dataset or using resampling methods,
-such as K-folds or leave-one-out cross-validation techniques.
-The challenge is to avoid over-learning the learning data
-leading to a loss of generality.
-We often want to build models that are not too dataset-dependent.
-For that,
-we want to maximize both a learning quality and a generalization quality.
-In unsupervised learning,
-a quality measure can represent the robustness of clusters definition
-while in supervised learning, a quality measure can be interpreted as an error,
-whether it is a misclassification in the case of the classification models
-or a prediction one in the case of the regression models.
-This quality can often be improved
-by building machine learning models from standardized data
-in such a way that the data properties have the same order of magnitude.
-
-
-See Also:
-   [gemseo.machine_learning.core.quality.base_ml_model_quality][gemseo.machine_learning.core.quality.base_ml_model_quality],
-   [gemseo.machine_learning.transformers.base_transformer][gemseo.machine_learning.transformers.base_transformer]
-
-Lastly,
-a machine learning model often depends on hyperparameters
-to be carefully tuned in order to maximize the generalization power of the model.
-
-See Also:
-   [gemseo.machine_learning.core.calibration][gemseo.machine_learning.core.calibration]
-   [gemseo.machine_learning.core.selection][gemseo.machine_learning.core.selection]
-"""
+"""This module contains the base class for machine learning models."""
 
 from __future__ import annotations
 

@@ -29,7 +29,7 @@ theme:
         name: Switch to light mode
 
 plugins:
-  autorefs: {}
+  autorefs: { }
   bibtex:
     bib_file: "docs/references.bib"
     enable_inline_citations: false
@@ -38,194 +38,195 @@ plugins:
     default_thumb_file: docs/assets/images/gemseo/monogram.png
   gen-files:
     scripts:
-    - docs/gen_ref_nav.py
-    - docs/_scripts/algos/script.py
-    - docs/_scripts/credits.py
-  include-markdown: {}
+      - docs/gen_ref_nav.py
+      - docs/_scripts/algos/script.py
+      - docs/_scripts/credits.py
+  include-markdown: { }
   literate-nav:
     nav_file: SUMMARY.md
-  macros: {}
-  markdown-exec: {}
+  macros: { }
+  markdown-exec: { }
   mike:
     canonical_version: latest
     # Gitlab pages expects the docs in this directory.
     deploy_prefix: public
-  search: {}
-  section-index: {}
+  search: { }
+  section-index: { }
 
 nav:
   - Getting started:
-    - Installation: software/installation.md
-    - Tutorials:
-      - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
-      - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
-      - Define an MDO problem: interface/study_analysis.md
-      - Optimization and DOE framework: mdo/optimization.md
-      - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
-      - Solve a mixed optimization problem: generated/examples/bulk/mdo/plot_mixed_optimization.md
-      - MDO formulations for a toy example in aerostructure: generated/examples/bulk/mdo/plot_aerostructure.md
-      - A from scratch example on the Sellar problem: generated/examples/bulk/mdo/plot_sellar.md
-      - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
-    - Tutorials (advanced):
-      - Multi-objective optimization: generated/examples/bulk/multi_objective
-      - Topology optimization: generated/examples/bulk/topology_optimization
-      - Ordinary differential equations (ODE): generated/examples/bulk/ode
-    - Changelog: changelog.md
-    - Licenses: software/licenses.md
-    - Credits: credits.md
+      - Installation: software/installation.md
+      - Tutorials:
+          - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
+          - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
+          - Define an MDO problem: interface/study_analysis.md
+          - Optimization and DOE framework: mdo/optimization.md
+          - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
+          - Solve a mixed optimization problem: generated/examples/bulk/mdo/plot_mixed_optimization.md
+          - MDO formulations for a toy example in aerostructure: generated/examples/bulk/mdo/plot_aerostructure.md
+          - A from scratch example on the Sellar problem: generated/examples/bulk/mdo/plot_sellar.md
+          - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
+      - Tutorials (advanced):
+          - Multi-objective optimization: generated/examples/bulk/multi_objective
+          - Topology optimization: generated/examples/bulk/topology_optimization
+          - Ordinary differential equations (ODE): generated/examples/bulk/ode
+      - Changelog: changelog.md
+      - Licenses: software/licenses.md
+      - Credits: credits.md
 
   - User guide:
-    - Introduction:
-      - What is MDO?: overview.md
-      - Couplings: mdo/coupling.md
-      - Multidisciplinary Analysis (MDA): mdo/mda.md
-    - Scenario:
-      - Discipline: disciplines/discipline.md
-      - Design space: design_space/design_space.md
-    - Formulations:
-      - MDO formulations: mdo/mdo_formulations.md
-    - Evaluations (DoE):
-      - Design of Experiment algorithms: doe.md
-    - Optimization:
-      - Optimization algorithms: doe.md
-    - Need for speed:
-      - Global configuration: configuration.md
-      - Data persistence: data_persistence/index.md
-      - Cache: data_persistence/cache.md
-      - Coupled derivatives and gradients computation: disciplines/jacobian_assembly.md
-      - Surrogate models: surrogate.md
-    - Advanced:
+      - Introduction:
+          - What is MDO?: overview.md
+          - Couplings: mdo/coupling.md
+          - Multidisciplinary Analysis (MDA): mdo/mda.md
       - Scenario:
-        - Namespaces: disciplines/namespaces.md
-      - Uncertainty quantification:
-        - Introduction: uncertainty/introduction.md
-        - Sensitivity analysis: uncertainty/sensitivity.md
-      - Ordinary differential equations:
-        - Introduction: ode/introduction.md
-        - Discipline: ode/ode_discipline.md
-        - Problem: ode/ode_problem.md
-      - Scalable models: scalable_models/original_paper.md
-      - Extending: extending.md
+          - Discipline: disciplines/discipline.md
+          - Design space: design_space/design_space.md
+      - Formulations:
+          - MDO formulations: mdo/mdo_formulations.md
+      - Evaluations (DoE):
+          - Design of Experiment algorithms: doe.md
+      - Optimization:
+          - Optimization algorithms: doe.md
+      - Need for speed:
+          - Global configuration: configuration.md
+          - Data persistence: data_persistence/index.md
+          - Cache: data_persistence/cache.md
+          - Coupled derivatives and gradients computation: disciplines/jacobian_assembly.md
+          - Surrogate models: surrogate.md
+      - Advanced:
+          - Scenario:
+              - Namespaces: disciplines/namespaces.md
+          - Machine learning: machine_learning.md
+          - Uncertainty quantification:
+              - Introduction: uncertainty/introduction.md
+              - Sensitivity analysis: uncertainty/sensitivity.md
+          - Ordinary differential equations:
+              - Introduction: ode/introduction.md
+              - Discipline: ode/ode_discipline.md
+              - Problem: ode/ode_problem.md
+          - Scalable models: scalable_models/original_paper.md
+          - Extending: extending.md
 
   - How-to:
-    - High-level functions: generated/examples/bulk/api
-    - Cheat Sheets:
-      - Available: cheat_sheets/availables.md
-      - Cache: cheat_sheets/cache.md
-      - Coupling: cheat_sheets/coupling.md
-      - Design space: cheat_sheets/design_space.md
-      - Discipline: cheat_sheets/discipline.md
-      - New discipline: cheat_sheets/new_discipline.md
-      - Post: cheat_sheets/post.md
-      - Scenario: cheat_sheets/scenario.md
-      - Surrogate: cheat_sheets/surrogate.md
-    - Disciplines:
-      - Interfacing simulation software: interface/software_connection.md
-      - Create an analytic discipline: disciplines/analytic_discipline.md
-      - Create a discipline from scratch: disciplines/discipline_from_scratch.md
-      - Create an Excel discipline: interface/xls_discipline.md
-      - Automatic wrapper for executables with Graphical User Interface: interface/exe_discipline.md
-      - Interface with HPC job schedulers (SLURM, LSF, PBS, etc): interface/job_schedulers.md
-      - Create a discipline interfacing an external executable: disciplines/discipline_interfacing_executable.md
-      - Create a discipline interfacing an external executable (using GUI): interface/exe_discipline.md
-      - Disciplines examples: generated/examples/bulk/disciplines
-      - Surrogate discipline: generated/examples/bulk/surrogate
-      - Namespaces: generated/examples/bulk/namespaces
-    - Design Space: generated/examples/how_tos/design_space
-    - Scenario:
-      - How to deal with scenarios: scenario/scenario.md
-      - Monitoring the execution of a scenario: scenario/monitoring.md
-      - Coupling: generated/examples/bulk/coupling
-      - Study analysis: generated/examples/bulk/study_analysis
-      - Scenario examples: generated/examples/bulk/scenario
-      - Multi-disciplinary analysis (MDA): generated/examples/bulk/mda
-      - Optimization: generated/examples/bulk/optimization_problem
-      - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
-    - Design of experiments (DOE): generated/examples/bulk/doe
-    - Define settings models:
-      - Formulation settings:
-        - Settings: settings/formulation_settings.md
-        - MDO formulation examples: generated/examples/bulk/formulations
-      - Algorithm settings: settings/algorithm_settings.md
-      - MDA settings: settings/mda_settings.md
-      - Post-processor settings: settings/post_processing_settings.md
-    - Post-processing:
-      - How to deal with post-processing: postprocessing/postprocessing.md
-      - Dataset: generated/examples/bulk/dataset
-      - Post-process an optimization problem: generated/examples/bulk/post_process
-    - Machine learning: generated/examples/bulk/mlearning
-    - Cache: generated/examples/bulk/cache
-    - Constraint aggregation: generated/examples/bulk/constraint_aggregation
-    - Scalable model: generated/examples/bulk/scalable
-    - Uncertainty: generated/examples/bulk/uncertainty
-    - Upgrading: software/upgrading.md
+      - High-level functions: generated/examples/bulk/api
+      - Cheat Sheets:
+          - Available: cheat_sheets/availables.md
+          - Cache: cheat_sheets/cache.md
+          - Coupling: cheat_sheets/coupling.md
+          - Design space: cheat_sheets/design_space.md
+          - Discipline: cheat_sheets/discipline.md
+          - New discipline: cheat_sheets/new_discipline.md
+          - Post: cheat_sheets/post.md
+          - Scenario: cheat_sheets/scenario.md
+          - Surrogate: cheat_sheets/surrogate.md
+      - Disciplines:
+          - Interfacing simulation software: interface/software_connection.md
+          - Create an analytic discipline: disciplines/analytic_discipline.md
+          - Create a discipline from scratch: disciplines/discipline_from_scratch.md
+          - Create an Excel discipline: interface/xls_discipline.md
+          - Automatic wrapper for executables with Graphical User Interface: interface/exe_discipline.md
+          - Interface with HPC job schedulers (SLURM, LSF, PBS, etc): interface/job_schedulers.md
+          - Create a discipline interfacing an external executable: disciplines/discipline_interfacing_executable.md
+          - Create a discipline interfacing an external executable (using GUI): interface/exe_discipline.md
+          - Disciplines examples: generated/examples/bulk/disciplines
+          - Surrogate discipline: generated/examples/bulk/surrogate
+          - Namespaces: generated/examples/bulk/namespaces
+      - Design Space: generated/examples/howtos/design_space
+      - Scenario:
+          - How to deal with scenarios: scenario/scenario.md
+          - Monitoring the execution of a scenario: scenario/monitoring.md
+          - Coupling: generated/examples/bulk/coupling
+          - Study analysis: generated/examples/bulk/study_analysis
+          - Scenario examples: generated/examples/bulk/scenario
+          - Multi-disciplinary analysis (MDA): generated/examples/bulk/mda
+          - Optimization: generated/examples/bulk/optimization_problem
+          - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
+      - Design of experiments (DOE): generated/examples/bulk/doe
+      - Define settings models:
+          - Formulation settings:
+              - Settings: settings/formulation_settings.md
+              - MDO formulation examples: generated/examples/bulk/formulations
+          - Algorithm settings: settings/algorithm_settings.md
+          - MDA settings: settings/mda_settings.md
+          - Post-processor settings: settings/post_processing_settings.md
+      - Post-processing:
+          - How to deal with post-processing: postprocessing/postprocessing.md
+          - Dataset: generated/examples/bulk/dataset
+          - Post-process an optimization problem: generated/examples/bulk/post_process
+      - Machine learning: generated/examples/howtos/machine_learning
+      - Cache: generated/examples/bulk/cache
+      - Constraint aggregation: generated/examples/bulk/constraint_aggregation
+      - Scalable model: generated/examples/bulk/scalable
+      - Uncertainty: generated/examples/bulk/uncertainty
+      - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/
 
   - References:
-    - Architecture & Design:
-      - The GEMSEO concepts: optimization/concepts.md
-      - Machine learning: machine_learning/machine_learning_overview.md
-      - Architecture principles: software/system_architecture.md
-      - Architecture of MDO formulations: mdo/mdo_formulation_architecture.md
-      - MDA classes organization: mdo/mda_architecture.md
-      - Scalable models: scalable_models/class_diagram.md
-    - Comprehensive list of tools and their settings:
-      - Disciplines: algorithms/discipline_algos.md
-      - DOE (design of experiments): algorithms/doe_algos.md
-      - Linear solvers: algorithms/linear_solver_algos.md
-      - Machine learning:
-        - All: algorithms/mlearning_algos.md
-        - Classification: algorithms/classification_algos.md
-        - Clustering: algorithms/clustering_algos.md
-        - Regression: algorithms/regression_algos.md
-        - Quality: algorithms/ml_quality_algos.md
-      - MDA (multidisciplinary analysis): algorithms/mda_algos.md
-      - MDO formulations: algorithms/formulation_algos.md
-      - ODE (ordinary differential equation) solvers: algorithms/ode_algos.md
-      - Optimizers: algorithms/opt_algos.md
-      - Post-processors: algorithms/post_algos.md
-      - Surrogate disciplines: algorithms/surrogate_algos.md
-      - Uncertainty:
-        - All: algorithms/uncertainty_algos.md
-        - Sensitivity analysis: algorithms/sensitivity_algos.md
-        - Probability distributions: algorithms/distribution_algos.md
-    - Use Cases:
-        - Benchmark problems: problems/benchmark_problems.md
+      - Architecture & Design:
+          - The GEMSEO concepts: optimization/concepts.md
+          - Machine learning: machine_learning/machine_learning_overview.md
+          - Architecture principles: software/system_architecture.md
+          - Architecture of MDO formulations: mdo/mdo_formulation_architecture.md
+          - MDA classes organization: mdo/mda_architecture.md
+          - Scalable models: scalable_models/class_diagram.md
+      - Comprehensive list of tools and their settings:
+          - Disciplines: algorithms/discipline_algos.md
+          - DOE (design of experiments): algorithms/doe_algos.md
+          - Linear solvers: algorithms/linear_solver_algos.md
+          - Machine learning:
+              - All: algorithms/mlearning_algos.md
+              - Classification: algorithms/classification_algos.md
+              - Clustering: algorithms/clustering_algos.md
+              - Regression: algorithms/regression_algos.md
+              - Quality: algorithms/ml_quality_algos.md
+          - MDA (multidisciplinary analysis): algorithms/mda_algos.md
+          - MDO formulations: algorithms/formulation_algos.md
+          - ODE (ordinary differential equation) solvers: algorithms/ode_algos.md
+          - Optimizers: algorithms/opt_algos.md
+          - Post-processors: algorithms/post_algos.md
+          - Surrogate disciplines: algorithms/surrogate_algos.md
+          - Uncertainty:
+              - All: algorithms/uncertainty_algos.md
+              - Sensitivity analysis: algorithms/sensitivity_algos.md
+              - Probability distributions: algorithms/distribution_algos.md
+      - Use Cases:
+          - Benchmark problems: problems/benchmark_problems.md
 
   - FAQ: faq.md
 
 markdown_extensions:
-- admonition
-- attr_list
-- footnotes
-- md_in_html
-- pymdownx.arithmatex:
-    generic: true
-- pymdownx.details
-- pymdownx.emoji:
-    emoji_index: !!python/name:material.extensions.emoji.twemoji
-    emoji_generator: !!python/name:material.extensions.emoji.to_svg
-- pymdownx.superfences:
-    custom_fences:
-      - name: mermaid
-        class: mermaid
-- pymdownx.snippets
-- pymdownx.tabbed:
-    alternate_style: true
-- toc:
-    permalink: true
+  - admonition
+  - attr_list
+  - footnotes
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
 
 extra_css:
-- assets/css/style.css
-- assets/css/fontello.css
-- assets/css/xdsmjs.css
+  - assets/css/style.css
+  - assets/css/fontello.css
+  - assets/css/xdsmjs.css
 
 extra_javascript:
-- assets/js/mathjax.js
-- assets/js/xdsmjs.js
-- https://polyfill.io/v3/polyfill.min.js?features=es6
-- https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - assets/js/mathjax.js
+  - assets/js/xdsmjs.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 watch:
   - src/gemseo
@@ -249,7 +250,7 @@ extra:
     gemseo-pymoo: Pymoo wrapper for optimization algorithms.
     gemseo-pyoptsparse: ("GEMSEO interface to pyoptsparse algorithms.
     gemseo-ssh: SSH plugin for GEMSEO.
-    gemseo-http:  GEMSEO plugin to seamlessly expose GEMSEO disciplines as HTTP RESTful web services.
+    gemseo-http: GEMSEO plugin to seamlessly expose GEMSEO disciplines as HTTP RESTful web services.
     gemseo-scilab: Interfacing Scilab functions.
     gemseo-template-editor-gui: A GUI to create input and output file templates for DiscFromExe.
     gemseo-umdo: Capability for MDO under uncertainty.
