@@ -234,25 +234,5 @@ watch:
   - CHANGELOG.md
 
 extra:
-  gemseo_plugins:
-    gemseo-benchmark: A GEMSEO-based package to benchmark optimization algorithm.
-    gemseo-bilevel-outer-approximation: GEMSEO plugin for the bi-level outer approximation (shortened as bi-level OA) algorithm.
-    gemseo-calibration: Capability to calibrate GEMSEO disciplines from data.
-    gemseo-fmu: GEMSEO plugin for FMU dynamic models.
-    gemseo-hexaly: GEMSEO interface to Hexaly solver.
-    gemseo-jax: GEMSEO plugin for JAX.
-    gemseo-matlab: GEMSEO plugin for MATLAB.
-    gemseo-mlearning: Miscellaneous machine learning capabilities.
-    gemseo-mma: GEMSEO plugin for the MMA (Method of Moving Asymptotes) algorithm.
-    gemseo-pdfo: GEMSEO plugin for the PDFO library.
-    gemseo-petsc: PETSc wrapper for linear solvers and MDA.
-    gemseo-pseven: GEMSEO plugin for the pSeven library.
-    gemseo-pymoo: Pymoo wrapper for optimization algorithms.
-    gemseo-pyoptsparse: ("GEMSEO interface to pyoptsparse algorithms.
-    gemseo-ssh: SSH plugin for GEMSEO.
-    gemseo-http: GEMSEO plugin to seamlessly expose GEMSEO disciplines as HTTP RESTful web services.
-    gemseo-scilab: Interfacing Scilab functions.
-    gemseo-template-editor-gui: A GUI to create input and output file templates for DiscFromExe.
-    gemseo-umdo: Capability for MDO under uncertainty.
   version:
     provider: mike

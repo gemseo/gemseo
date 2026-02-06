@@ -33,7 +33,7 @@ example_dir_name = "examples"
 examples_dir = file_dir_path / example_dir_name
 
 examples_subdirs = []
-for category_name in ["bulk", "how_tos", "tutorials"]:
+for category_name in ["bulk", "howtos", "tutorials"]:
     directory_path = examples_dir / category_name
     examples_subdirs += [
         subdir

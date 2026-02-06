@@ -13,4 +13,4 @@ This section illustrates how to create and use a [SurrogateDiscipline][gemseo.di
 
 This [Discipline][gemseo.core.discipline.discipline.Discipline] implements the notion of surrogate model, mainly used to approximate an expensive discipline from samples.
 
-A [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] wraps a regression model built from the [gemseo.machine_learning][gemseo.machine_learning] package. For those who are interested in machine learning techniques, such as data transformation and model assessment, please refer to [the corresponding examples][machine-learning-examples].
+A [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] wraps a regression model built from the [gemseo.machine_learning][gemseo.machine_learning] package. For those who are interested in machine learning techniques, such as data transformation and model assessment, please refer to [the corresponding examples][machine-learning-howtos].

@@ -222,7 +222,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 - ### __Machine learning__
 
     [:octicons-book-24: User guide][introduction-to-machine-learning]
-    [:octicons-play-24: Examples][machine-learning-examples]
+    [:octicons-play-24: Examples][machine-learning-howtos]
     [:octicons-gear-24: Algorithms][algorithms-of-machine-learning]
 
     ---

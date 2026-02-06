@@ -77,7 +77,7 @@ design_space
 # %%
 # !!! tip
 #     A design space can also be loaded from a file,
-#     as shown in [How to import and export a design space from disk](../../how_tos/design_space/plot_howto_load_and_save_design_space.md).
+#     as shown in [How to import and export a design space from disk](../../howtos/design_space/plot_howto_load_and_save_design_space.md).
 #
 #
 # !!! note
@@ -211,8 +211,8 @@ design_space
 # For further information,
 # please refer to the following how-to guides:
 #
-# - [How to import and export a design space from disk](../../how_tos/design_space/plot_howto_load_and_save_design_space.md)
-# - [How to reduce a design space](../../how_tos/design_space/plot_howto_reduce_a_design_space.md)
-# - [How to project parameters into boundaries](../../how_tos/design_space/plot_howto_project_into_bounds.md)
-# - [How to (un)normalize design parameters](../../how_tos/design_space/plot_howto_normalize_design_vector.md)
-# - [How to cast parameters into different types](../../how_tos/design_space/plot_howto_cast_design_vector.md)
+# - [How to import and export a design space from disk](../../howtos/design_space/plot_howto_load_and_save_design_space.md)
+# - [How to reduce a design space](../../howtos/design_space/plot_howto_reduce_a_design_space.md)
+# - [How to project parameters into boundaries](../../howtos/design_space/plot_howto_project_into_bounds.md)
+# - [How to (un)normalize design parameters](../../howtos/design_space/plot_howto_normalize_design_vector.md)
+# - [How to cast parameters into different types](../../howtos/design_space/plot_howto_cast_design_vector.md)
