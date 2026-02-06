@@ -85,6 +85,10 @@ from typing import Any
 
 from prettytable import PrettyTable
 
+from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
@@ -93,17 +97,17 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.typing import StrKeyMapping
+    from gemseo.settings.base_settings import BaseSettings
+    from gemseo.typing import RealArray
+    from gemseo.uncertainty.distributions.base_distribution_settings import (
+        BaseDistributionSettings,
+    )
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 from numpy import array
 from numpy import ndarray
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
-from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import _format_value_in_pretty_table_16
@@ -123,8 +127,8 @@ class ParameterSpace(DesignSpace):
     These variables are defined as random vectors with independent components.
     """
 
-    distribution: BaseJointDistribution
-    """The joint probability distribution of the uncertain variables."""
+    distribution: BaseJointDistribution | None
+    """The joint probability distribution of the uncertain variables, if any."""
 
     _INITIAL_DISTRIBUTION = "Initial distribution"
     _TRANSFORMATION = "Transformation"
@@ -135,8 +139,11 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    __uncertain_variables_to_definitions: dict[str, dict[str, Any]]
+    __random_vectors_to_settings: dict[str, Sequence[BaseSettings]]
     """The uncertain variable names bound to their definition."""
+
+    __distribution_library_name: str
+    """The name of the library implementing the probability distributions."""
 
     def __init__(self, name: str = "") -> None:  # noqa:D107
         LOGGER.debug("*** Create a new parameter space ***")
@@ -144,8 +151,8 @@ class ParameterSpace(DesignSpace):
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
-        self.__uncertain_variables_to_definitions = {}
-        self.__distribution_family_id = ""
+        self.__random_vectors_to_settings = {}
+        self.__distribution_library_name = ""
 
     def build_joint_distribution(self, copula: Any = None) -> None:
         """Build the joint probability distribution.
@@ -156,14 +163,17 @@ class ParameterSpace(DesignSpace):
                 if `None`, consider an independent copula.
         """
         if self.uncertain_variables:
-            distributions = [
-                marginal
-                for name in self.uncertain_variables
-                for marginal in self.distributions[name].marginals
-            ]
-            self.distribution = distributions[0].JOINT_DISTRIBUTION_CLASS(
-                distributions, copula
-            )
+            settings = []
+            for value in self.__random_vectors_to_settings.values():
+                settings.extend(value)
+
+            cls = DISTRIBUTION_FACTORY.get_class(settings[0]._TARGET_CLASS_NAME)
+            cls = cls.JOINT_DISTRIBUTION_CLASS
+            if copula is None:
+                joint_settings = cls.Settings(marginal_settings=settings)
+            else:
+                joint_settings = cls.Settings(marginal_settings=settings, copula=copula)
+            self.distribution = cls(joint_settings)
 
     def is_uncertain(
         self,
@@ -197,60 +207,13 @@ class ParameterSpace(DesignSpace):
     def add_random_vector(
         self,
         name: str,
-        distribution: str | Iterable[BaseDistributionSettings],
-        size: int = 0,
-        interfaced_distribution: str = "",
-        interfaced_distribution_parameters: tuple[list[Any]]
-        | Mapping[str, list[Any]] = (),
-        **parameters: list[Any],
+        *settings: BaseDistributionSettings,
     ) -> None:
-        """Add a *d*-length random vector from a probability distribution.
-
-        Warning:
-            The probability distributions must have
-            the same identifier. For instance,
-            one cannot mix a random vector
-            using a
-            [OTUniformDistribution][gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution]
-            with identifier `"OT"`
-            and a random vector
-            using a
-            [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
-            with identifier `"SP"`.
+        """Add a random vector.
 
         Args:
-            name: The name of the random vector.
-            distribution: Either te name of a class
-                implementing a probability distribution,
-                e.g. `"OTUniformDistribution"` or `"SPUniformDistribution"`,
-                an interface to a library of probability distributions,
-                e.g. `"OTDistribution"` or `"SPDistribution"`,
-                or a collection of distribution settings.
-                In the case of settings,
-                the argument `size`, `interfaced_distribution`,
-                `interfaced_distribution_parameters` and `parameters` are ignored.
-            size: The length *d* of the random vector.
-                If `0`, deduce it from the parameters.
-            interfaced_distribution: The name of the distribution
-                in the library of probability distributions
-                when `distribution` is the name of a class
-                implementing an interface to this library.
-            interfaced_distribution_parameters: The parameters of the distribution
-                in the library of probability distributions
-                when `distribution` is the name of a class
-                implementing an interface to this library.
-                The values of the data structure (mapping or tuple) must be set
-                either as `[p_1,...,p_d]`
-                (one value per component of the random vector)
-                or as `[p]`
-                (one value for all the components)
-                If empty, use the default ones.
-            **parameters: The parameters of the distribution,
-                either as `[p_1,...,p_d]`
-                (one value per component of the random vector)
-                or as `[p]`
-                (one value for all the components);
-                otherwise, use the default ones.
+            name: The name of the vector.
+            *settings: The settings of the marginal probability distributions.
 
         Raises:
             ValueError: When mixing probability distributions from different families,
@@ -263,112 +226,25 @@ class ParameterSpace(DesignSpace):
                 are not consistent.
         """
         self._check_variable_name(name)
-        get_distribution_class = DistributionFactory().get_class
-        if isinstance(distribution, str):
-            distribution_class = get_distribution_class(distribution)
-            parameters_as_tuple = isinstance(interfaced_distribution_parameters, tuple)
-            distribution_family_id = distribution_class.__name__[0:2]
-            if self.__distribution_family_id:
-                if distribution_family_id != self.__distribution_family_id:
-                    msg = (
-                        f"A parameter space cannot mix {self.__distribution_family_id} "
-                        f"and {distribution_family_id} distributions."
-                    )
-                    raise ValueError(msg)
-            else:
-                self.__distribution_family_id = distribution_family_id
-
-            # Set the size if undefined and check the consistency with the parameters.
-            size = self.__get_random_vector_size(
-                interfaced_distribution_parameters, parameters.values(), size
+        distribution_library_names = {s._LIBRARY_NAME for s in settings}
+        if self.__distribution_library_name:
+            distribution_library_names.add(self.__distribution_library_name)
+        if len(distribution_library_names) > 1:
+            msg = (
+                "A parameter space cannot mix probability distributions "
+                "based on different libraries; "
+                f"got {pretty_repr(distribution_library_names, use_and=True)}."
             )
+            raise ValueError(msg)
 
-            # Force the collections of the parameters to the same size.
-            parameters = {
-                name: self.__get_random_vector_parameter_value(size, value)
-                for name, value in parameters.items()
-            }
-            if parameters_as_tuple:
-                interfaced_distribution_parameters = tuple(
-                    self.__get_random_vector_parameter_value(size, value)
-                    for value in interfaced_distribution_parameters
-                )
-            else:
-                interfaced_distribution_parameters = {
-                    name: self.__get_random_vector_parameter_value(size, value)
-                    for name, value in interfaced_distribution_parameters.items()
-                }
-
-            # Store the definitions of the uncertain variables
-            # for use by RandomVariable and RandomVector
-            # (see __getitem__ and __setitem__).
-            is_random_variable = size == 1
-            if is_random_variable:
-                data = {name: value[0] for name, value in parameters.items()}
-                if parameters_as_tuple:
-                    idp_data = {
-                        value[0] for value in interfaced_distribution_parameters
-                    }
-                else:
-                    idp_data = {
-                        name: value[0]
-                        for name, value in interfaced_distribution_parameters.items()
-                    }
-            else:
-                data = parameters.copy()
-                idp_data = interfaced_distribution_parameters
-            if idp_data:
-                data["parameters"] = idp_data
-
-            # Define the marginal distributions
-            # (one marginal for each component of the random vector).
-            marginals = []
-            for i in range(size):
-                kwargs = {k: v[i] for k, v in parameters.items()}
-                if interfaced_distribution:
-                    kwargs["interfaced_distribution"] = interfaced_distribution
-                    if parameters_as_tuple:
-                        kwargs["parameters"] = tuple(
-                            v[i] for v in interfaced_distribution_parameters
-                        )
-                    else:
-                        kwargs["parameters"] = {
-                            k: v[i]
-                            for k, v in interfaced_distribution_parameters.items()
-                        }
-
-                marginals.append(distribution_class(**kwargs))
-
-        else:
-            marginals = [
-                get_distribution_class(d._TARGET_CLASS_NAME)(settings=d)
-                for d in distribution
-            ]
-            ids = {m.__class__.__name__[0:2] for m in marginals}
-            if self.__distribution_family_id:
-                ids.add(self.__distribution_family_id)
-            if len(ids) > 1:
-                msg = (
-                    "A parameter space cannot mix probability distributions "
-                    "based on different libraries; "
-                    f"got {pretty_repr(ids, use_and=True)}."
-                )
-                raise ValueError(msg)
-
-            self.__distribution_family_id = next(iter(ids))
-            distribution_class = marginals[0].__class__
-
-        self.__uncertain_variables_to_definitions[name] = {
-            "distribution": distribution,
-            "size": size,
-            "interfaced_distribution": interfaced_distribution,
-            "interfaced_distribution_parameters": interfaced_distribution_parameters,  # noqa: E501
-            **parameters,
-        }
+        marginals = [DISTRIBUTION_FACTORY.create_from_settings(s) for s in settings]
+        self.__distribution_library_name = next(iter(distribution_library_names))
+        self.__random_vectors_to_settings[name] = settings
 
         # Define the distribution of the random vector with a joint distribution.
-        joint_distribution_class = distribution_class.JOINT_DISTRIBUTION_CLASS
-        self.distributions[name] = joint_distribution_class(marginals)
+        cls = marginals[0].JOINT_DISTRIBUTION_CLASS
+        distribution = cls(cls.Settings(marginal_settings=settings))
+        self.distributions[name] = distribution
 
         # Update the uncertain variables.
         self.uncertain_variables.append(name)
@@ -380,176 +256,34 @@ class ParameterSpace(DesignSpace):
         # Update the parameter space as subclass of a DesignSpace.
         self.add_variable(
             name,
-            self.distributions[name].dimension,
+            distribution.dimension,
             self.DesignVariableType.FLOAT,
-            self.distributions[name].math_lower_bound,
-            self.distributions[name].math_upper_bound,
-            self.distributions[name].mean,
+            distribution.math_lower_bound,
+            distribution.math_upper_bound,
+            distribution.mean,
         )
-
-    @staticmethod
-    def __get_random_vector_parameter_value(size: int, value: list[Any]) -> list[Any]:
-        """Adapt the parameter value if its size is inconsistent with the random vector.
-
-        When the `size` of the random vector greater than one
-        and the length of the parameter `value` is 1,
-        the parameter value is repeated `size` times.
-
-        Args:
-            size: The size of the random vector.
-            value: The value of the parameter of the probability distribution,
-                whose length is either `1` or `size`.
-
-        Returns:
-            The value of the parameter of the probability distribution
-            for each component of the random vector.
-        """
-        return value * size if len(value) == 1 and size != 1 else value
-
-    @staticmethod
-    def __get_random_vector_size(
-        interfaced_distribution_parameters: tuple[list[Any]] | Mapping[str, list[Any]],
-        parameter_values: Iterable[list[Any]],
-        size: int,
-    ) -> int:
-        """Define the random vector size if undefined.
-
-        Args:
-            interfaced_distribution_parameters: The parameters of the distribution
-                in the library of probability distributions
-                when `distribution` is the name of a class
-                implementing an interface to this library;
-                if empty, use the default ones.
-            parameter_values: The parameters of the distribution,
-                either as `(p_1,...,p_d)`
-                (one value per component of the random vector)
-                or as `(p)`
-                (one value for all the components);
-                otherwise, use the default ones.
-            size: The length *d* of the random vector.
-                If `0`, deduce it from the parameters.
-
-        Returns:
-            The size of the random vector.
-
-        Raises:
-            ValueError: The lengths of the distribution parameter collections
-                are not consistent.
-        """
-        parameters_as_tuple = isinstance(interfaced_distribution_parameters, tuple)
-
-        # Bring together the collections of values of the various parameters.
-        values = (
-            interfaced_distribution_parameters
-            if parameters_as_tuple
-            else interfaced_distribution_parameters.values()
-        )
-
-        # Compute the unique collection sizes; expectation: {1}, {d} or {1,d}.
-        sizes = {len(v) for vv in [values, parameter_values] for v in vv}
-        n_sizes = len(sizes)
-
-        # Set the size if undefined.
-        if not size:
-            size = max(sizes) if sizes else 1
-
-        # Check the consistency of the size with the parameters.
-        if (
-            n_sizes > 2
-            or (n_sizes == 2 and sizes != {1, size})
-            or (n_sizes == 1 and not sizes.issubset({1, size}))
-        ):
-            msg = (
-                "The lengths of the distribution parameter collections "
-                "are not consistent."
-            )
-            raise ValueError(msg)
-
-        return size
 
     def add_random_variable(
         self,
         name: str,
-        distribution: str | BaseDistributionSettings,
+        distribution_settings: BaseDistributionSettings,
         size: int = 1,
-        interfaced_distribution: str = "",
-        interfaced_distribution_parameters: tuple[Any] | StrKeyMapping = (),
-        **parameters: Any,
     ) -> None:
-        """Add a random variable from a probability distribution.
+        """Add a random variable.
 
         Args:
-            name: The name of the random variable.
-            distribution: Either
-                the name of a class
-                implementing a probability distribution,
-                e.g. `"OTUniformDistribution"` or `"SPUniformDistribution"`,
-                the name of a class implementing
-                an interface to a library of probability distributions,
-                e.g. `"OTDistribution"` or `"SPDistribution"`,
-                or the settings of the distribution.
-                In the case of settings,
-                the argument `interfaced_distribution`,
-                `interfaced_distribution_parameters` and `parameters` are ignored.
-            size: The dimension of the random variable.
-                The parameters of the distribution are shared
-                by all the components of the random variable.
-            interfaced_distribution: The name of the distribution
-                in the library of probability distributions
-                when `distribution` is the name of a class
-                implementing an interface to this library.
-            interfaced_distribution_parameters: The parameters of the distribution
-                in the library of probability distributions
-                when `distribution` is the name of a class
-                implementing an interface to this library;
-                if empty, use the default ones.
-            **parameters: The parameters of the distribution;
-                otherwise, use the default ones.
-
-        Warning:
-            The probability distributions must have
-            the same identifier. For instance,
-            one cannot mix a random variable
-            distributed as an
-            [OTUniformDistribution][gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution]
-            with identifier `"OT"`
-            and a random variable
-            distributed as a
-            [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
-            with identifier `"SP"`.
+            name: The name of the variable.
+            distribution_settings: The settings
+                of the marginal probability distribution.
+                This distribution is common to all components of the variable.
+            size: The dimension of the variable.
         """
-        if isinstance(distribution, BaseDistributionSettings):
-            kwargs = {}
-            distribution = (distribution,)
-        else:
-            kwargs = {k: [v] for k, v in parameters.items()}
-            if interfaced_distribution:
-                kwargs["interfaced_distribution"] = interfaced_distribution
-                if interfaced_distribution_parameters:
-                    if isinstance(interfaced_distribution_parameters, tuple):
-                        formatted_parameters = tuple(
-                            [v] for v in interfaced_distribution_parameters
-                        )
-                    else:
-                        formatted_parameters = {
-                            k: [v]
-                            for k, v in interfaced_distribution_parameters.items()
-                        }
-                    kwargs.update({
-                        "interfaced_distribution_parameters": formatted_parameters
-                    })
-
-        self.add_random_vector(
-            name,
-            distribution,
-            size,
-            **kwargs,
-        )
+        self.add_random_vector(name, *[distribution_settings] * size)
 
     def get_range(
         self,
         variable: str,
-    ) -> list[ndarray]:
+    ) -> RealArray:
         """Return the numerical range of a random variable.
 
         Args:
@@ -563,7 +297,7 @@ class ParameterSpace(DesignSpace):
     def get_support(
         self,
         variable: str,
-    ) -> list[ndarray]:
+    ) -> RealArray:
         """Return the mathematical support of a random variable.
 
         Args:
@@ -1027,9 +761,9 @@ class ParameterSpace(DesignSpace):
                     for idx in range(size):
                         parameter_space.add_random_variable(
                             f"{name}_{idx}",
-                            "OTUniformDistribution",
-                            minimum=float(l_b[idx]),
-                            maximum=float(u_b[idx]),
+                            OTUniformDistribution_Settings(
+                                minimum=float(l_b[idx]), maximum=float(u_b[idx])
+                            ),
                         )
                 else:
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
@@ -1071,7 +805,7 @@ class ParameterSpace(DesignSpace):
         if current_name in self.uncertain_variables:
             position = self.uncertain_variables.index(current_name)
             self.uncertain_variables[position] = new_name
-            dict_ = self.__uncertain_variables_to_definitions
+            dict_ = self.__random_vectors_to_settings
             dict_[new_name] = dict_.pop(current_name)
             dict_ = self.distributions
             dict_[new_name] = dict_.pop(current_name)
@@ -1083,8 +817,10 @@ class ParameterSpace(DesignSpace):
 
         for name in names:
             if name in space.uncertain_variables:
-                definition = space.__uncertain_variables_to_definitions[name]
-                self.add_random_vector(name, **definition)
+                self.add_random_vector(
+                    name,
+                    *space.__random_vectors_to_settings[name],
+                )
                 self.set_current_variable(name, space._current_value[name])
             else:
                 self._add_variable_from(space, name)

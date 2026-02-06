@@ -21,9 +21,10 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.exponential_settings import _LOC
-from gemseo.uncertainty.distributions.base_settings.exponential_settings import _RATE
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.exponential_settings import (
     SPExponentialDistribution_Settings,
 )
@@ -34,21 +35,18 @@ class SPExponentialDistribution(SPDistribution):
 
     settings_class = SPExponentialDistribution_Settings
 
-    def __init__(
-        self,
-        rate: float = _RATE,
-        loc: float = _LOC,
-        settings: SPExponentialDistribution_Settings | None = None,
+    def __init__(  # noqa: D107
+        self, settings: SPExponentialDistribution_Settings | None = None
     ) -> None:
-        """
-        Args:
-            rate: The rate of the exponential random variable.
-            loc: The location of the exponential random variable.
-        """  # noqa: D205,D212,D415
         if settings is None:
-            settings = SPExponentialDistribution_Settings(rate=rate, loc=loc)
+            settings = SPExponentialDistribution_Settings()
         super().__init__(
-            interfaced_distribution="expon",
-            parameters={"loc": settings.loc, "scale": 1 / settings.rate},
-            standard_parameters={self._RATE: settings.rate, self._LOC: settings.loc},
+            SPDistribution_Settings(
+                interfaced_distribution="expon",
+                parameters={"loc": settings.loc, "scale": 1 / settings.rate},
+                standard_parameters={
+                    self._RATE: settings.rate,
+                    self._LOC: settings.loc,
+                },
+            )
         )

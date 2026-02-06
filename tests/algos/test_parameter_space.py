@@ -36,11 +36,23 @@ from openturns import NormalCopula
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    OTDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.normal_settings import (
     SPNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.triangular_settings import (
+    SPTriangularDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
@@ -68,7 +80,7 @@ def test_add_random_variable() -> None:
     """Check that add_random_variable adds a random variable."""
     space = ParameterSpace()
     space.add_variable("x")
-    space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
+    space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
     assert not space.is_deterministic("y")
     assert space.is_uncertain("y")
     assert space.variable_names == ["x", "y"]
@@ -83,7 +95,7 @@ def mixed_space():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2", value=0.0, lower_bound=0.0, upper_bound=1.0)
-    space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
+    space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
     return space
 
 
@@ -153,8 +165,8 @@ def test_remove_variable() -> None:
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0)
+    space.add_random_variable("y1", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    space.add_random_variable("y2", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
     space.remove_variable("x2")
     assert space.variable_names == ["x1", "y1", "y2"]
     assert space.uncertain_variables == ["y1", "y2"]
@@ -169,8 +181,10 @@ def test_compute_samples() -> None:
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0, size=3)
+    space.add_random_variable("y1", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    space.add_random_variable(
+        "y2", SPNormalDistribution_Settings(mu=0.0, sigma=1.0), size=3
+    )
     sample = space.compute_samples(2)
     assert len(sample) == 2
     assert isinstance(sample, ndarray)
@@ -191,8 +205,10 @@ def test_evaluate_cdf() -> None:
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=1.0, size=3)
+    space.add_random_variable("y1", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    space.add_random_variable(
+        "y2", SPNormalDistribution_Settings(mu=0.0, sigma=1.0), size=3
+    )
     cdf = space.evaluate_cdf({"y1": array([0.0]), "y2": array([0.0] * 3)})
     inv_cdf = space.evaluate_cdf({"y1": array([0.5]), "y2": array([0.5] * 3)}, True)
     with pytest.raises(TypeError):
@@ -210,8 +226,12 @@ def test_range() -> None:
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
+    space.add_random_variable(
+        "y1", SPUniformDistribution_Settings(minimum=0.0, maximum=2.0)
+    )
+    space.add_random_variable(
+        "y2", SPNormalDistribution_Settings(mu=0.0, sigma=2.0), size=3
+    )
     expectation = array([0.0, 2.0])
     assert allclose(expectation, space.get_range("y1")[0], 1e-3)
     assert allclose(expectation, space.get_support("y1")[0], 1e-3)
@@ -227,8 +247,12 @@ def parameter_space():
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
-    space.add_random_variable("y1", "SPUniformDistribution", minimum=0.0, maximum=2.0)
-    space.add_random_variable("y2", "SPNormalDistribution", mu=0.0, sigma=2.0, size=3)
+    space.add_random_variable(
+        "y1", SPUniformDistribution_Settings(minimum=0.0, maximum=2.0)
+    )
+    space.add_random_variable(
+        "y2", SPNormalDistribution_Settings(mu=0.0, sigma=2.0), size=3
+    )
     return space
 
 
@@ -258,8 +282,10 @@ def test_str_and_tabularview() -> None:
     """Check that str and unnormalize_vect work correctly."""
     space = ParameterSpace()
     space.add_variable("x")
-    space.add_random_variable("y", "SPNormalDistribution", mu=0.0, sigma=1.0)
-    space.add_random_variable("z", "SPUniformDistribution", minimum=0.0, maximum=1.0)
+    space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    space.add_random_variable(
+        "z", SPUniformDistribution_Settings(minimum=0.0, maximum=1.0)
+    )
     assert "Parameter space" in str(space)
     tabular_view = space.get_tabular_view()
     assert "Parameter space" in tabular_view
@@ -274,7 +300,7 @@ def test_unnormalize_vect() -> None:
     """Check that unnormalize_vect works correctly."""
     space = ParameterSpace()
     space.add_random_variable(
-        "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
+        "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
     )
     assert allclose(
         space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5**0.5])
@@ -286,7 +312,7 @@ def test_normalize_vect() -> None:
     """Check that normalize_vect works correctly."""
     space = ParameterSpace()
     space.add_random_variable(
-        "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
+        "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
     )
     assert allclose(
         space.normalize_vect(array([2.0 - 1.5**0.5]), use_dist=True), array([0.5])
@@ -298,7 +324,7 @@ def test_evaluate_cdf_raising_errors() -> None:
     """Check that evaluate_cdf raises errors."""
     space = ParameterSpace()
     space.add_random_variable(
-        "x", "SPTriangularDistribution", minimum=0.0, mode=0.5, maximum=2.0
+        "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
     )
 
     expected = (
@@ -399,7 +425,7 @@ def test_gradient_normalization() -> None:
     parameter_space = ParameterSpace()
     parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
     parameter_space.add_random_variable(
-        "y", "OTUniformDistribution", minimum=1.0, maximum=3
+        "y", OTUniformDistribution_Settings(minimum=1.0, maximum=3)
     )
     x_vect = array([0.5, 1.5])
     assert array_equal(
@@ -428,7 +454,7 @@ def test_parameter_space_name() -> None:
 def test_transform() -> None:
     """Check that transformation and inverse transformation works correctly."""
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", "SPNormalDistribution")
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())
     vector = array([0.0])
     transformed_vector = parameter_space.transform_vect(vector)
     assert transformed_vector == array([0.5])
@@ -441,10 +467,12 @@ def test_rename_variable() -> None:
     parameter_space = ParameterSpace()
     parameter_space.add_variable("x", 2, "integer", 0.0, 2.0, array([1.0, 2.0]))
     parameter_space.add_random_variable(
-        "u", "SPNormalDistribution", 2, mu=0.5, sigma=2.0
+        "u", SPNormalDistribution_Settings(mu=0.5, sigma=2.0), size=2
     )
     parameter_space.add_random_vector(
-        "z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0]
+        "z",
+        SPNormalDistribution_Settings(mu=0.5, sigma=2.0),
+        SPNormalDistribution_Settings(mu=1.0, sigma=2.0),
     )
     parameter_space.rename_variable("x", "y")
     parameter_space.rename_variable("u", "v")
@@ -452,10 +480,12 @@ def test_rename_variable() -> None:
     expected_space = ParameterSpace()
     expected_space.add_variable("y", 2, "integer", 0.0, 2.0, array([1.0, 2.0]))
     expected_space.add_random_variable(
-        "v", "SPNormalDistribution", 2, mu=0.5, sigma=2.0
+        "v", SPNormalDistribution_Settings(mu=0.5, sigma=2.0), size=2
     )
     expected_space.add_random_vector(
-        "z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0]
+        "z",
+        SPNormalDistribution_Settings(mu=0.5, sigma=2.0),
+        SPNormalDistribution_Settings(mu=1.0, sigma=2.0),
     )
 
     assert parameter_space == expected_space
@@ -465,23 +495,32 @@ def test_rename_variable() -> None:
     )
 
 
-@pytest.mark.parametrize(("first", "second"), [("SP", "OT"), ("OT", "SP")])
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [
+        (SPUniformDistribution_Settings(), OTDistribution_Settings()),
+        (OTUniformDistribution_Settings(), SPUniformDistribution_Settings()),
+    ],
+)
 def test_mix_different_distribution_families(first, second) -> None:
     """Check that a ParameterSpace cannot mix distributions from different families."""
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", f"{first}UniformDistribution")
+    parameter_space.add_random_variable("x", first)
     with pytest.raises(
         ValueError,
-        match=f"A parameter space cannot mix {first} and {second} distributions.",
+        match=re.escape(
+            "A parameter space cannot mix probability distributions "
+            "based on different libraries; got 'OpenTURNS' and 'SciPy'."
+        ),
     ):
-        parameter_space.add_random_variable("y", f"{second}UniformDistribution")
+        parameter_space.add_random_variable("y", second)
 
 
 def test_copula() -> None:
     """Check build_joint_distribution."""
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", "OTNormalDistribution")
-    parameter_space.add_random_variable("y", "OTNormalDistribution", 2)
+    parameter_space.add_random_variable("x", OTNormalDistribution_Settings())
+    parameter_space.add_random_variable("y", OTNormalDistribution_Settings(), size=2)
     parameter_space.build_joint_distribution(NormalCopula(3))
     assert (
         parameter_space.distribution.distribution.getCopula().getName()
@@ -490,115 +529,66 @@ def test_copula() -> None:
 
 
 @pytest.mark.parametrize(
-    "kwargs",
+    ("settings", "samples"),
     [
-        {"minimum": [0], "mode": [1, 2], "maximum": [3, 4, 5]},
-        {"minimum": [0, 1], "mode": [2, 3, 4]},
-        {"size": 3, "minimum": [0, 1]},
-    ],
-)
-def test_random_vector_consistency(kwargs) -> None:
-    """Check the error when adding a random vector with inconsistent parameter sizes."""
-    text = "The lengths of the distribution parameter collections are not consistent."
-    parameter_space = ParameterSpace()
-    with pytest.raises(ValueError, match=re.escape(text)):
-        parameter_space.add_random_vector("x", "SPTriangularDistribution", **kwargs)
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "samples"),
-    [
-        ({"variable_value": [1, 2]}, array([[1, 2]] * 4)),
-        ({"variable_value": [1, 2], "size": 2}, array([[1, 2]] * 4)),
-        ({"variable_value": [1]}, array([[1]] * 4)),
-        ({"variable_value": [1], "size": 2}, array([[1, 1]] * 4)),
-    ],
-)
-def test_ot_random_vector(kwargs, samples) -> None:
-    """Check add_random_vector with different settings.
-
-    Use OpenTURNS.
-    """
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_vector("x", "OTDiracDistribution", **kwargs)
-    assert_array_equal(parameter_space.compute_samples(4), samples)
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "upper_bound"),
-    [
-        ({"maximum": [1, 2]}, [1, 2]),
-        ({"maximum": [1, 2], "size": 2}, [1, 2]),
-        ({"maximum": [1]}, [1]),
-        ({"maximum": [1], "size": 2}, [1, 1]),
-    ],
-)
-def test_sp_random_vector(kwargs, upper_bound) -> None:
-    """Check add_random_vector with different settings.
-
-    Use SciPy.
-    """
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_vector("x", "SPUniformDistribution", **kwargs)
-    assert_array_equal(
-        parameter_space.distribution.math_upper_bound, array(upper_bound)
-    )
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "samples"),
-    [
-        ({"interfaced_distribution_parameters": ([1, 2],)}, array([[1, 2]] * 4)),
         (
-            {"interfaced_distribution_parameters": ([1, 2],), "size": 2},
+            [
+                OTDistribution_Settings(
+                    interfaced_distribution="Dirac", parameters=(1,)
+                ),
+                OTDistribution_Settings(
+                    interfaced_distribution="Dirac", parameters=(2,)
+                ),
+            ],
             array([[1, 2]] * 4),
         ),
-        ({"interfaced_distribution_parameters": ([1],)}, array([[1]] * 4)),
         (
-            {"interfaced_distribution_parameters": ([1],), "size": 2},
-            array([[1, 1]] * 4),
+            [OTDistribution_Settings(interfaced_distribution="Dirac", parameters=(1,))],
+            array([[1]] * 4),
         ),
     ],
 )
-def test_ot_random_vector_interfaced_distribution(kwargs, samples) -> None:
+def test_ot_random_vector_interfaced_distribution(settings, samples) -> None:
     """Check add_random_vector with interfaced_distribution and different settings.
 
     Use OpenTURNS.
     """
     parameter_space = ParameterSpace()
-    parameter_space.add_random_vector(
-        "x", "OTDistribution", interfaced_distribution="Dirac", **kwargs
-    )
+    parameter_space.add_random_vector("x", *settings)
     assert_array_equal(parameter_space.compute_samples(4), samples)
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "upper_bound"),
+    ("settings", "upper_bound"),
     [
         (
-            {"interfaced_distribution_parameters": {"scale": [1, 2]}},
-            [1, 2],
+            [
+                SPDistribution_Settings(
+                    interfaced_distribution="uniform", parameters={"scale": 1}
+                )
+            ],
+            [1],
         ),
         (
-            {"interfaced_distribution_parameters": {"scale": [1, 2]}, "size": 2},
+            [
+                SPDistribution_Settings(
+                    interfaced_distribution="uniform", parameters={"scale": 1}
+                ),
+                SPDistribution_Settings(
+                    interfaced_distribution="uniform", parameters={"scale": 2}
+                ),
+            ],
             [1, 2],
-        ),
-        ({"interfaced_distribution_parameters": {"scale": [1]}}, [1]),
-        (
-            {"interfaced_distribution_parameters": {"scale": [1]}, "size": 2},
-            [1, 1],
         ),
     ],
 )
-def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound) -> None:
+def test_sp_random_vector_interfaced_distribution(settings, upper_bound) -> None:
     """Check add_random_vector with interfaced_distribution.
 
     Use SciPy.
     """
     parameter_space = ParameterSpace()
-    parameter_space.add_random_vector(
-        "x", "SPDistribution", interfaced_distribution="uniform", **kwargs
-    )
+    parameter_space.add_random_vector("x", *settings)
     assert_array_equal(
         parameter_space.distribution.math_upper_bound, array(upper_bound)
     )
@@ -606,17 +596,17 @@ def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound) -> None:
 
 @pytest.mark.parametrize(
     (
-        "distribution",
+        "settings_class",
         "interfaced_distribution",
         "interfaced_distribution_parameters",
         "string_representation",
     ),
     [
-        ("OTDistribution", "Uniform", (), "Uniform()"),
-        ("OTDistribution", "Uniform", (2, 4), "Uniform(2.0, 4.0)"),
-        ("SPDistribution", "uniform", {}, "uniform()"),
+        (OTDistribution_Settings, "Uniform", (), "Uniform()"),
+        (OTDistribution_Settings, "Uniform", (2, 4), "Uniform(2.0, 4.0)"),
+        (SPDistribution_Settings, "uniform", {}, "uniform()"),
         (
-            "SPDistribution",
+            SPDistribution_Settings,
             "uniform",
             {"scale": 2, "loc": 2},
             "uniform(scale=2, loc=2)",
@@ -624,17 +614,18 @@ def test_sp_random_vector_interfaced_distribution(kwargs, upper_bound) -> None:
     ],
 )
 def test_random_variable_interfaced_distribution(
-    distribution,
+    settings_class,
     interfaced_distribution,
     interfaced_distribution_parameters,
     string_representation,
 ) -> None:
     """Test adding a random variable from an interfaced distribution."""
     parameter = ParameterSpace()
-    kwargs = {"interfaced_distribution_parameters": interfaced_distribution_parameters}
-    parameter.add_random_variable(
-        "x", distribution, interfaced_distribution=interfaced_distribution, **kwargs
+    settings = settings_class(
+        interfaced_distribution=interfaced_distribution,
+        parameters=interfaced_distribution_parameters,
     )
+    parameter.add_random_variable("x", settings)
     marginal = parameter.distributions["x"].marginals[0]
     assert str(marginal) == string_representation
 
@@ -643,9 +634,14 @@ def test_string_representation() -> None:
     """Check the string representation of a parameter space."""
     parameter_space = ParameterSpace()
     parameter_space.add_variable("a")
-    parameter_space.add_random_variable("b", "OTUniformDistribution")
-    parameter_space.add_random_variable("c", "OTUniformDistribution", 2)
-    parameter_space.add_random_vector("d", "OTUniformDistribution", maximum=[2, 3, 4])
+    parameter_space.add_random_variable("b", OTUniformDistribution_Settings())
+    parameter_space.add_random_variable("c", OTUniformDistribution_Settings(), size=2)
+    parameter_space.add_random_vector(
+        "d",
+        OTUniformDistribution_Settings(maximum=2),
+        OTUniformDistribution_Settings(maximum=3),
+        OTUniformDistribution_Settings(maximum=4),
+    )
     expected = """Parameter space:
 +------+-------------+-------+-------------+-------+-------------------------------+
 | Name | Lower bound | Value | Upper bound | Type  |          Distribution         |
@@ -704,7 +700,7 @@ def test_string_representation() -> None:
     assert str(parameter_space) == expected
 
     parameter_space.add_random_variable(
-        "e", "OTNormalDistribution", transformation="x+2"
+        "e", OTNormalDistribution_Settings(transformation="x+2")
     )
     expected = """Uncertain space:
 +------+-------------------------------+--------------------+
@@ -724,9 +720,9 @@ def test_string_representation() -> None:
 def test_existing_variable() -> None:
     """Check that one cannot add a random variable twice."""
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("a", "OTUniformDistribution")
+    parameter_space.add_random_variable("a", OTUniformDistribution_Settings())
     with pytest.raises(ValueError, match=re.escape("The variable 'a' already exists.")):
-        parameter_space.add_random_variable("a", "OTUniformDistribution")
+        parameter_space.add_random_variable("a", OTUniformDistribution_Settings())
 
 
 def test_add_variable_from():
@@ -739,7 +735,11 @@ def test_add_variable_from():
     ds2.add_variable(
         "y", 3, type_=DesignVariableType.INTEGER, lower_bound=3, upper_bound=5, value=4
     )
-    ds2.add_random_vector("z", "SPNormalDistribution", 2, mu=[0.5, 1], sigma=[2.0])
+    ds2.add_random_vector(
+        "z",
+        SPNormalDistribution_Settings(mu=0.5, sigma=2.0),
+        SPNormalDistribution_Settings(mu=1.0, sigma=2.0),
+    )
 
     ps = ParameterSpace()
     ps.add_variables_from(ds2, "z", "y")
@@ -784,10 +784,8 @@ def test_add_random_vector_from_settings():
     parameter_space = ParameterSpace()
     parameter_space.add_random_vector(
         "x",
-        (
-            SPNormalDistribution_Settings(mu=3.0),
-            SPUniformDistribution_Settings(minimum=1.0, maximum=3.0),
-        ),
+        SPNormalDistribution_Settings(mu=3.0),
+        SPUniformDistribution_Settings(minimum=1.0, maximum=3.0),
     )
     assert parameter_space.distributions["x"].marginals[0].mean == 3.0
     assert parameter_space.distributions["x"].marginals[1].mean == 2.0
@@ -800,16 +798,16 @@ def test_add_random_vector_from_settings_error(use_two_variables):
     second_settings = SPUniformDistribution_Settings(minimum=1.0, maximum=3.0)
     parameter_space = ParameterSpace()
     if use_two_variables:
-        parameter_space.add_random_vector("x", (first_settings,))
-        distribution = (second_settings,)
+        parameter_space.add_random_vector("x", first_settings)
+        settings = (second_settings,)
     else:
-        distribution = (first_settings, second_settings)
+        settings = (first_settings, second_settings)
 
     with pytest.raises(
         ValueError,
         match=re.escape(
             "A parameter space cannot mix probability distributions "
-            "based on different libraries; got 'OT' and 'SP'."
+            "based on different libraries; got 'OpenTURNS' and 'SciPy'."
         ),
     ):
-        parameter_space.add_random_vector("y", distribution)
+        parameter_space.add_random_vector("y", *settings)

@@ -29,26 +29,31 @@ from numpy import int_
 from openturns import NormalCopula
 
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
-from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
+from gemseo.uncertainty.distributions.openturns.joint_settings import (
+    OTJointDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-
 
 @pytest.fixture(scope="module")
-def distributions() -> list[OTNormalDistribution]:
-    """Two normal distributions."""
-    return [OTNormalDistribution(), OTNormalDistribution()]
+def distribution_settings() -> list[OTNormalDistribution_Settings]:
+    """Two normal distribution settings."""
+    return [OTNormalDistribution_Settings(), OTNormalDistribution_Settings()]
 
 
 @pytest.fixture(scope="module")
 def joint_distribution(
-    distributions: Sequence[OTDistribution],
+    distribution_settings: Sequence[OTNormalDistribution_Settings],
 ) -> OTJointDistribution:
     """A joint probability distribution."""
-    return OTJointDistribution(distributions)
+    return OTJointDistribution(
+        OTJointDistribution_Settings(marginal_settings=distribution_settings)
+    )
 
 
 @pytest.mark.parametrize(
@@ -67,16 +72,29 @@ def joint_distribution(
 )
 def test_repr(joint_distribution, n_marginals, expected) -> None:
     """Check the string representation of a joint probability distribution."""
-    assert repr(OTJointDistribution([OTNormalDistribution()] * n_marginals)) == expected
+    assert (
+        repr(
+            OTJointDistribution(
+                OTJointDistribution_Settings(
+                    marginal_settings=[OTNormalDistribution_Settings()] * n_marginals
+                )
+            )
+        )
+        == expected
+    )
 
 
 def test_constructor(joint_distribution) -> None:
     assert joint_distribution.transformation == "x"
 
 
-def test_copula(distributions) -> None:
+def test_copula(distribution_settings) -> None:
     """Check the use of an OpenTURNS copula."""
-    distribution = OTJointDistribution(distributions, copula=NormalCopula(2))
+    distribution = OTJointDistribution(
+        OTJointDistribution_Settings(
+            marginal_settings=distribution_settings, copula=NormalCopula(2)
+        )
+    )
     assert repr(distribution) == (
         "OTJointDistribution("
         "Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); NormalCopula)"

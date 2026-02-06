@@ -103,5 +103,5 @@ class ScalableDesignSpace(ParameterSpace):
             for index, settings in enumerate(discipline_settings):
                 self.add_random_vector(
                     get_u_local_name(index + 1),
-                    (OTNormalDistribution_Settings(),) * settings.p_i,
+                    *[OTNormalDistribution_Settings()] * settings.p_i,
                 )

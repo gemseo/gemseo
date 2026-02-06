@@ -12,19 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the SciPy-based exponential distributions."""
+"""Settings for SciPy-based probability distributions."""
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.exponential_settings import (
-    BaseExponentialDistributionSettings,
-)
-from gemseo.uncertainty.distributions.scipy.base_settings import (
-    BaseSPDistributionSettings,
+from typing import ClassVar
+
+from gemseo.uncertainty.distributions.base_distribution_settings import (
+    BaseDistributionSettings,
 )
 
 
-class SPExponentialDistribution_Settings(  # noqa: N801
-    BaseExponentialDistributionSettings, BaseSPDistributionSettings
-):
-    """The settings of a SciPy-based exponential distribution."""
+class BaseSPDistributionSettings(BaseDistributionSettings):  # noqa: N801
+    """The base class for the settings of a SciPy-based probability distribution."""
+
+    _LIBRARY_NAME: ClassVar[str] = "SciPy"

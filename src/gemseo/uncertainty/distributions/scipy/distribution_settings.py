@@ -16,42 +16,25 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping  # noqa: TC003
-from typing import Any
-from typing import Final
+from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo import READ_ONLY_EMPTY_DICT
-from gemseo.typing import StrKeyMapping  # noqa: TC001
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
+    BaseGenericDistributionSettings,
+)
+from gemseo.uncertainty.distributions.scipy.base_settings import (
+    BaseSPDistributionSettings,
 )
 
-_INTERFACED_DISTRIBUTION: Final[str] = "uniform"
-"""The default value of interfaced_distribution."""
 
-_PARAMETERS: Final[READ_ONLY_EMPTY_DICT] = READ_ONLY_EMPTY_DICT
-"""The default value of parameters."""
-
-_STANDARD_PARAMETERS: Final[READ_ONLY_EMPTY_DICT] = READ_ONLY_EMPTY_DICT
-"""The default value of standard_parameters."""
-
-
-class SPDistribution_Settings(BaseDistributionSettings):  # noqa: N801
+class SPDistribution_Settings(  # noqa: N801
+    BaseGenericDistributionSettings, BaseSPDistributionSettings
+):
     """The settings of an OpenTURNS-based distribution."""
+
+    _LIBRARY_NAME: ClassVar[str] = "SciPy"
 
     interfaced_distribution: str = Field(
         default="uniform", description="The name of the probability distribution."
-    )
-
-    parameters: StrKeyMapping | tuple[Any, ...] = Field(
-        default_factory=dict,
-        description="The parameters of the probability distribution.",
-    )
-
-    standard_parameters: Mapping[str, str | int | float] = Field(
-        default_factory=dict,
-        description="""The parameters of the probability distribution
-used for string representation only.""",
     )

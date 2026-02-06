@@ -22,20 +22,20 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from openturns import IndependentCopula
 
+from gemseo.uncertainty.distributions.openturns.joint_settings import (
+    OTJointDistribution_Settings,
+)
 from gemseo.utils.compatibility.openturns import JointDistribution
+from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Sequence
-
-    from openturns import Distribution
 
     from gemseo.typing import RealArray
-    from gemseo.typing import StrKeyMapping
-    from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 
 from numpy import array
 
@@ -45,32 +45,34 @@ from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 class OTJointDistribution(BaseJointDistribution):
     """The OpenTURNS-based joint probability distribution."""
 
-    def __init__(  # noqa: D107
-        self,
-        distributions: Sequence[OTDistribution],
-        copula: Distribution | None = None,
-    ) -> None:
-        super().__init__(distributions, copula=copula)
+    Settings: ClassVar[type[OTJointDistribution_Settings]] = (
+        OTJointDistribution_Settings
+    )
 
-    def _create_distribution(
-        self,
-        distribution_name: str,
-        parameters: StrKeyMapping,
-        copula: Distribution | None,
-        distributions: Sequence[OTDistribution],
-    ) -> None:
-        """
-        Args:
-            copula: The copula modelling the dependency structure.
-                If empty, use an independent copula.
-            distributions: The marginal distributions.
-        """  # noqa: D205 D212
-        if copula is None:
-            copula = IndependentCopula(len(distributions))
+    def __init__(self, settings: OTJointDistribution_Settings) -> None:  # noqa: D107
+        super().__init__(settings)
+        if len(settings.marginal_settings) > 1:
+            name = (
+                "IndependentCopula"
+                if settings.copula is None
+                else settings.copula.__class__.__name__
+            )
+            self._get_string_representation = (
+                f"{self.__class__.__name__}"
+                f"({pretty_repr(self.marginals, sort=False)}; "
+                f"{name})"
+            )
+
+    def _create_distribution(self, settings: OTJointDistribution_Settings) -> None:
+        if settings.parameters[0].copula is None:
+            copula = IndependentCopula(len(self.marginals))
+        else:
+            copula = settings.parameters[0].copula
         self.distribution = JointDistribution(
-            [distribution.distribution for distribution in distributions], copula
+            [marginal.distribution for marginal in self.marginals],
+            copula,
         )
-        self._set_bounds(distributions)
+        self._set_bounds(self.marginals)
 
     def compute_samples(  # noqa: D102
         self,

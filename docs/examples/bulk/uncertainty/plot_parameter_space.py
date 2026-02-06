@@ -47,7 +47,7 @@ parameter_space = ParameterSpace()
 parameter_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0)
 
 # %%
-# or uncertain variables from their distribution names and parameters
+# or uncertain variables from their distribution settings
 # (use [add_random_variable()][gemseo.algos.parameter_space.ParameterSpace.add_random_variable]):
 parameter_space.add_random_variable(
     "y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0)

@@ -36,6 +36,12 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
@@ -64,7 +70,7 @@ def parameter_space() -> ParameterSpace:
     """Return the parameter space on which to evaluate the discipline."""
     space = ParameterSpace()
     for name in ["x1", "x2", "x3"]:
-        space.add_random_variable(name, "OTNormalDistribution")
+        space.add_random_variable(name, OTNormalDistribution_Settings())
     return space
 
 
@@ -354,7 +360,7 @@ def ishigami() -> SobolAnalysis:
     space = ParameterSpace()
     for variable in ["x1", "x2", "x3"]:
         space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+            variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
 
     sobol_analysis = SobolAnalysis()

@@ -95,6 +95,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from numpy import array
 from numpy import column_stack
@@ -102,11 +103,18 @@ from numpy import column_stack
 from gemseo.typing import RealArray
 from gemseo.typing import StrKeyMapping
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-from gemseo.utils.string_tools import pretty_repr
+from gemseo.uncertainty.distributions.base_distribution_settings import (
+    BaseGenericDistributionSettings,
+)
+from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
+
+    from gemseo.uncertainty.distributions.base_joint_settings import (
+        BaseJointDistributionSettings,
+    )
 
 
 class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
@@ -120,39 +128,26 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
     used to describe the dependence between these $d$ random variables.
     """
 
-    __dimension: int
-    """The dimension of the uncertain space."""
+    Settings: ClassVar[type[BaseJointDistributionSettings]]
 
-    __marginals: Sequence[BaseDistribution]
-    """The marginal distributions."""
+    __marginals: list[BaseDistribution]
+    """The marginal probability distributions."""
 
-    __copula_name: str
-    """The name of the copula method."""
-
-    def __init__(
-        self,
-        distributions: Sequence[BaseDistribution],
-        copula: Any = None,
-    ) -> None:
+    def __init__(self, settings: BaseJointDistributionSettings) -> None:
         """
         Args:
-            distributions: The marginal distributions.
-            copula: A copula distribution
-                defining the dependency structure between random variables;
-                if `None`, consider an independent copula.
+            settings: The settings of the probability distribution.
         """  # noqa: D205,D212,D415
-        self.__dimension = len(distributions)
-        self.__marginals = distributions
-        # TODO: API: set parameters to (distributions, copula) instead of (copula,).
-        super().__init__("Joint", (copula,), distributions=distributions, copula=copula)
-        if self.__dimension == 1:
-            self._get_string_representation = repr(distributions[0])
-        else:
-            name = "IndependentCopula" if copula is None else copula.__class__.__name__
-            self._get_string_representation = (
-                f"{self.__class__.__name__}({pretty_repr(distributions, sort=False)}; "
-                f"{name})"
+        self.__marginals = [
+            DISTRIBUTION_FACTORY.create_from_settings(settings)
+            for settings in settings.marginal_settings
+        ]
+        super().__init__(
+            BaseGenericDistributionSettings(
+                interfaced_distribution="Joint", parameters=(settings,)
             )
+        )
+        self._get_string_representation = repr(self.__marginals[0])
 
     @property
     def marginals(self) -> Sequence[BaseDistribution]:
@@ -162,7 +157,7 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
     @property
     def dimension(self) -> int:
         """The dimension of the uncertain space."""
-        return self.__dimension
+        return len(self.__marginals)
 
     def _set_bounds(
         self,

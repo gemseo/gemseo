@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -28,7 +27,12 @@ from numpy import array
 from numpy import inf
 
 from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
-from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
+from gemseo.uncertainty.distributions.scipy.joint_settings import (
+    SPJointDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -37,17 +41,19 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(scope="module")
-def distributions() -> list[SPNormalDistribution]:
-    """Two normal distributions."""
-    return [SPNormalDistribution(), SPNormalDistribution()]
+def distribution_settings() -> list[SPNormalDistribution_Settings]:
+    """Two normal distribution settingss."""
+    return [SPNormalDistribution_Settings(), SPNormalDistribution_Settings()]
 
 
 @pytest.fixture(scope="module")
 def joint_distribution(
-    distributions: Sequence[SPDistribution],
+    distribution_settings: Sequence[SPDistribution],
 ) -> SPJointDistribution:
     """The joint probability distribution."""
-    return SPJointDistribution(distributions)
+    return SPJointDistribution(
+        SPJointDistribution_Settings(marginal_settings=distribution_settings)
+    )
 
 
 def test_constructor(joint_distribution) -> None:
@@ -67,17 +73,6 @@ def test_str(joint_distribution) -> None:
             ")"
         )
     )
-
-
-def test_copula(distributions) -> None:
-    """Check that using a copula which is not None raises an error."""
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(
-            "There is not copula distribution yet for SciPy-based distributions."
-        ),
-    ):
-        SPJointDistribution(distributions, copula="foo")
 
 
 def test_compute_samples(joint_distribution) -> None:

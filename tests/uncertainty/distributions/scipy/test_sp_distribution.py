@@ -31,15 +31,44 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
 from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
-from gemseo.uncertainty.distributions.scipy.beta import SPBetaDistribution
+from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distributions.scipy.beta_settings import (
+    SPBetaDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
-from gemseo.uncertainty.distributions.scipy.exponential import SPExponentialDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.exponential_settings import (
+    SPExponentialDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.joint import SPJointDistribution
 from gemseo.uncertainty.distributions.scipy.log_normal import SPLogNormalDistribution
-from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
-from gemseo.uncertainty.distributions.scipy.triangular import SPTriangularDistribution
-from gemseo.uncertainty.distributions.scipy.uniform import SPUniformDistribution
-from gemseo.uncertainty.distributions.scipy.weibull import SPWeibullDistribution
+from gemseo.uncertainty.distributions.scipy.log_normal_settings import (
+    SPLogNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.triangular_settings import (
+    SPTriangularDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.weibull_settings import (
+    SPWeibullDistribution_Settings,
+)
+
+
+@pytest.fixture(scope="module")
+def distribution() -> SPDistribution:
+    """A normal distribution with mean 0 and std 2."""
+    return SPDistribution(
+        SPDistribution_Settings(
+            interfaced_distribution="norm", parameters={"loc": 0.0, "scale": 2.0}
+        )
+    )
 
 
 def test_joint_distribution() -> None:
@@ -48,7 +77,11 @@ def test_joint_distribution() -> None:
 
 
 def test_constructor() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 1})
+    distribution = SPDistribution(
+        SPDistribution_Settings(
+            interfaced_distribution="norm", parameters={"loc": 0.0, "scale": 1}
+        )
+    )
     assert distribution.transformation == "x"
 
 
@@ -56,7 +89,11 @@ def test_bad_distribution() -> None:
     with pytest.raises(
         ImportError, match=re.escape("Dummy cannot be imported from scipy.stats.")
     ):
-        SPDistribution("Dummy", {"loc": 0.0, "scale": 1})
+        SPDistribution(
+            SPDistribution_Settings(
+                interfaced_distribution="Dummy", parameters={"loc": 0.0, "scale": 1}
+            )
+        )
 
 
 def test_bad_distribution_parameters() -> None:
@@ -67,65 +104,61 @@ def test_bad_distribution_parameters() -> None:
             "more details on https://docs.scipy.org/doc/scipy/reference/stats.html."
         ),
     ):
-        SPDistribution("norm", {"loc": 0.0, "max": 1})
+        SPDistribution(
+            SPDistribution_Settings(
+                interfaced_distribution="norm", parameters={"loc": 0.0, "max": 1}
+            )
+        )
 
 
-def test_str() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2.0})
+def test_str(distribution) -> None:
     assert str(distribution) == "norm(loc=0.0, scale=2.0)"
     distribution = SPDistribution(
-        "norm",
-        {"loc": 0.0, "scale": 2.0},
-        standard_parameters={"mean": 0, "var": 4},
+        SPDistribution_Settings(
+            interfaced_distribution="norm",
+            parameters={"loc": 0.0, "scale": 2.0},
+            standard_parameters={"mean": 0, "var": 4},
+        )
     )
     assert str(distribution) == "norm(mean=0, var=4)"
 
 
-def test_compute_samples() -> None:
+def test_compute_samples(distribution) -> None:
     random_state = RandomState(0)
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
     sample = distribution.compute_samples(3, random_state)
     assert sample.ndim == 1
     assert_almost_equal(sample, array([3.528105, 0.800314, 1.957476]), decimal=3)
 
 
-def test_get_cdf() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_get_cdf(distribution) -> None:
     assert distribution.compute_cdf(0.0) == 0.5
 
 
-def test_get_inverse_cdf() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_get_inverse_cdf(distribution) -> None:
     assert distribution.compute_inverse_cdf(0.5) == 0.0
 
 
-def test_cdf() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_cdf(distribution) -> None:
     assert distribution._cdf(0.0) == 0.5
 
 
-def test_pdf() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_pdf(distribution) -> None:
     assert distribution._pdf(0.0) == pytest.approx(0.19947114020071632, abs=1e-3)
 
 
-def test_mean() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_mean(distribution) -> None:
     assert distribution.mean == 0.0
 
 
-def test_std() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_std(distribution) -> None:
     assert distribution.standard_deviation == 2.0
 
 
-def test_support() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_support(distribution) -> None:
     assert_equal(distribution.support, array([-inf, inf]))
 
 
-def test_range() -> None:
-    distribution = SPDistribution("norm", {"loc": 0.0, "scale": 2})
+def test_range(distribution) -> None:
     assert_almost_equal(distribution.range, array([-14.068968, 14.068974]), decimal=3)
 
 
@@ -134,145 +167,148 @@ MU_L_1, SIGMA_L_1 = compute_mu_l_and_sigma_l(1.2, 1.3, 0.4)
 
 
 @pytest.mark.parametrize(
-    ("sp_dist_name", "cls", "sp_kwargs", "kwargs", "str_"),
+    ("sp_dist_name", "settings", "sp_kwargs", "str_"),
     [
         (
             "beta",
-            SPBetaDistribution,
+            SPBetaDistribution_Settings(),
             {"a": 2.0, "b": 2.0, "loc": 0.0, "scale": 1.0},
-            {},
             "beta(lower=0.0, upper=1.0, alpha=2.0, beta=2.0)",
         ),
         (
             "beta",
-            SPBetaDistribution,
+            SPBetaDistribution_Settings(alpha=0.1, beta=0.2, minimum=0.3, maximum=0.4),
             {"a": 0.1, "b": 0.2, "loc": 0.3, "scale": 0.1},
-            {"alpha": 0.1, "beta": 0.2, "minimum": 0.3, "maximum": 0.4},
             "beta(lower=0.3, upper=0.4, alpha=0.1, beta=0.2)",
         ),
         (
             "expon",
-            SPExponentialDistribution,
+            SPExponentialDistribution_Settings(),
             {"scale": 1.0, "loc": 0.0},
-            {},
             "expon(rate=1.0, loc=0.0)",
         ),
         (
             "expon",
-            SPExponentialDistribution,
+            SPExponentialDistribution_Settings(rate=0.1, loc=0.2),
             {"scale": 10.0, "loc": 0.2},
-            {"rate": 0.1, "loc": 0.2},
             "expon(rate=0.1, loc=0.2)",
         ),
         (
             "lognorm",
-            SPLogNormalDistribution,
+            SPLogNormalDistribution_Settings(),
             {"s": SIGMA_L_0, "scale": exp(MU_L_0), "loc": 0.0},
-            {},
             "lognorm(mu=1.0, sigma=1.0, loc=0.0)",
         ),
         (
             "lognorm",
-            SPLogNormalDistribution,
+            SPLogNormalDistribution_Settings(mu=1.5, sigma=2.5, set_log=True),
             {"s": 2.5, "scale": exp(1.5), "loc": 0.0},
-            {"mu": 1.5, "sigma": 2.5, "set_log": True},
             "lognorm(mu=1.5, sigma=2.5, loc=0.0)",
         ),
         (
             "lognorm",
-            SPLogNormalDistribution,
+            SPLogNormalDistribution_Settings(mu=1.2, sigma=1.3, location=0.4),
             {"s": SIGMA_L_1, "scale": exp(MU_L_1), "loc": 0.4},
-            {"mu": 1.2, "sigma": 1.3, "location": 0.4},
             "lognorm(mu=1.2, sigma=1.3, loc=0.4)",
         ),
         (
             "norm",
-            SPNormalDistribution,
+            SPNormalDistribution_Settings(),
             {"loc": 0.0, "scale": 1.0},
-            {},
             "norm(mu=0.0, sigma=1.0)",
         ),
         (
             "norm",
-            SPNormalDistribution,
+            SPNormalDistribution_Settings(mu=0.1, sigma=0.2),
             {"loc": 0.1, "scale": 0.2},
-            {"mu": 0.1, "sigma": 0.2},
             "norm(mu=0.1, sigma=0.2)",
         ),
         (
             "triang",
-            SPTriangularDistribution,
+            SPTriangularDistribution_Settings(),
             {"loc": 0.0, "scale": 1.0, "c": 0.5},
-            {},
             "triang(lower=0.0, mode=0.5, upper=1.0)",
         ),
         (
             "triang",
-            SPTriangularDistribution,
+            SPTriangularDistribution_Settings(minimum=0.1, mode=0.2, maximum=0.3),
             {"loc": 0.1, "scale": 0.2, "c": 0.5},
-            {"minimum": 0.1, "mode": 0.2, "maximum": 0.3},
             "triang(lower=0.1, mode=0.2, upper=0.3)",
         ),
         (
             "uniform",
-            SPUniformDistribution,
+            SPUniformDistribution_Settings(),
             {"loc": 0.0, "scale": 1.0},
-            {},
             "uniform(lower=0.0, upper=1.0)",
         ),
         (
             "uniform",
-            SPUniformDistribution,
+            SPUniformDistribution_Settings(minimum=0.1, maximum=0.2),
             {"loc": 0.1, "scale": 0.1},
-            {"minimum": 0.1, "maximum": 0.2},
             "uniform(lower=0.1, upper=0.2)",
         ),
         (
             "weibull_min",
-            SPWeibullDistribution,
+            SPWeibullDistribution_Settings(),
             {"loc": 0.0, "scale": 1.0, "c": 1.0},
-            {},
             "weibull_min(location=0.0, scale=1.0, shape=1.0)",
         ),
         (
             "weibull_min",
-            SPWeibullDistribution,
+            SPWeibullDistribution_Settings(location=0.1, scale=0.2, shape=0.3),
             {"loc": 0.1, "scale": 0.2, "c": 0.3},
-            {"location": 0.1, "scale": 0.2, "shape": 0.3},
             "weibull_min(location=0.1, scale=0.2, shape=0.3)",
         ),
         (
             "weibull_max",
-            SPWeibullDistribution,
+            SPWeibullDistribution_Settings(use_weibull_min=False),
             {"loc": 0.0, "scale": 1.0, "c": 1.0},
-            {"use_weibull_min": False},
             "weibull_max(location=0.0, scale=1.0, shape=1.0)",
         ),
         (
             "weibull_max",
-            SPWeibullDistribution,
+            SPWeibullDistribution_Settings(
+                use_weibull_min=False, location=0.1, scale=0.2, shape=0.3
+            ),
             {"loc": 0.1, "scale": 0.2, "c": 0.3},
-            {"use_weibull_min": False, "location": 0.1, "scale": 0.2, "shape": 0.3},
             "weibull_max(location=0.1, scale=0.2, shape=0.3)",
         ),
     ],
 )
-def test_specific_sp_distributions(sp_dist_name, cls, sp_kwargs, kwargs, str_) -> None:
+def test_specific_sp_distributions(sp_dist_name, settings, sp_kwargs, str_) -> None:
     """Check the specific SciPy-based distributions.
 
     Args:
         sp_dist_name: The name of the SciPy class.
-        cls: The class deriving from SPDistribution.
+        settings: The settings of the SP distribution.
         sp_kwargs: The keyword arguments to instantiate the SciPy class.
-        kwargs: The keyword arguments to instantiate ``cls``.
-        str_: The expected string representation of the ``cls`` instance.
+        str_: The expected string representation of the distribution.
     """
-    ot_distribution = cls(**kwargs)
-    distribution = ot_distribution.distribution
+    sp_distribution = DISTRIBUTION_FACTORY.create_from_settings(settings)
+    distribution = sp_distribution.distribution
     expected_distribution = getattr(scipy_stats, sp_dist_name)(**sp_kwargs)
     assert distribution.dist.name == expected_distribution.dist.name
     assert distribution.mean() == pytest.approx(expected_distribution.mean())
-    assert str(ot_distribution) == str_
+    assert str(sp_distribution) == str_
+
+
+@pytest.mark.parametrize(
+    ("class_name", "expected"),
+    [
+        ("SPBetaDistribution", "beta(lower=0.0, upper=1.0, alpha=2.0, beta=2.0)"),
+        ("SPDistribution", "uniform()"),
+        ("SPExponentialDistribution", "expon(rate=1.0, loc=0.0)"),
+        ("SPLogNormalDistribution", "lognorm(mu=1.0, sigma=1.0, loc=0.0)"),
+        ("SPNormalDistribution", "norm(mu=0.0, sigma=1.0)"),
+        ("SPTriangularDistribution", "triang(lower=0.0, mode=0.5, upper=1.0)"),
+        ("SPUniformDistribution", "uniform(lower=0.0, upper=1.0)"),
+        ("SPWeibullDistribution", "weibull_min(location=0.0, scale=1.0, shape=1.0)"),
+    ],
+)
+def test_specific_sp_distributions_default(class_name, expected):
+    """Check the SciPy-based distributions using default settings."""
+    distribution = DISTRIBUTION_FACTORY.create(class_name)
+    assert str(distribution) == expected
 
 
 def test_lognormal_distribution():

@@ -21,18 +21,9 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.uniform_settings import _MAXIMUM
-from gemseo.uncertainty.distributions.base_settings.uniform_settings import _MINIMUM
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _LOWER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _TRANSFORMATION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _UPPER_BOUND,
+    OTDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
@@ -44,39 +35,20 @@ class OTUniformDistribution(OTDistribution):
 
     settings_class = OTUniformDistribution_Settings
 
-    def __init__(
-        self,
-        minimum: float = _MINIMUM,
-        maximum: float = _MAXIMUM,
-        transformation: str = _TRANSFORMATION,
-        lower_bound: float | None = _LOWER_BOUND,
-        upper_bound: float | None = _UPPER_BOUND,
-        threshold: float = _THRESHOLD,
-        settings: OTUniformDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            minimum: The minimum of the uniform random variable.
-            maximum: The maximum of the uniform random variable.
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: OTUniformDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None:
-            settings = OTUniformDistribution_Settings(
-                minimum=minimum,
-                maximum=maximum,
-                transformation=transformation,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-                threshold=threshold,
-            )
+            settings = OTUniformDistribution_Settings()
         super().__init__(
-            interfaced_distribution="Uniform",
-            parameters=(settings.minimum, settings.maximum),
-            standard_parameters={
-                self._LOWER: settings.minimum,
-                self._UPPER: settings.maximum,
-            },
-            transformation=settings.transformation,
-            lower_bound=settings.lower_bound,
-            upper_bound=settings.upper_bound,
-            threshold=settings.threshold,
+            OTDistribution_Settings(
+                interfaced_distribution="Uniform",
+                parameters=(settings.minimum, settings.maximum),
+                standard_parameters={
+                    self._LOWER: settings.minimum,
+                    self._UPPER: settings.maximum,
+                },
+                transformation=settings.transformation,
+                lower_bound=settings.lower_bound,
+                upper_bound=settings.upper_bound,
+                threshold=settings.threshold,
+            )
         )

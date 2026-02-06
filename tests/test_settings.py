@@ -43,7 +43,7 @@ from gemseo.mda.base_mda_settings import BaseMDASettings
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.settings.base_settings import BaseSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
+    BaseGenericDistributionSettings,
 )
 
 
@@ -209,7 +209,7 @@ def test_mda_settings(module_and_cls):
 @pytest.mark.parametrize(
     "module_and_cls",
     get_setting_classes(
-        BaseDistributionSettings,
+        BaseGenericDistributionSettings,
         "gemseo.uncertainty.distributions",
         probability_distributions,
     ),
@@ -231,7 +231,14 @@ def test_default_validation():
         cls
         for cls in BaseSettings.__subclasses__()
         if cls.__name__
-        not in {"BaseGradientBasedAlgorithmSettings", "SettingsWithInvalidDefault"}
+        not in {
+            "BaseGradientBasedAlgorithmSettings",
+            "SettingsWithInvalidDefault",
+            "BaseDistributionSettings",
+            "BaseJointDistributionSettings",
+            "OTJointDistributionSettings",
+            "SPJointDistributionSettings",
+        }
     ],
 )
 def test_valid_defaults_for_all_settings(cls):

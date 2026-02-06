@@ -35,6 +35,9 @@ from numpy.typing import NDArray
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     FirstOrderIndicesType,
 )
@@ -100,7 +103,7 @@ def uncertain_space() -> ParameterSpace:
     parameter_space = ParameterSpace()
     for name, size in zip(["x1", "x23"], [1, 2], strict=False):
         parameter_space.add_random_variable(
-            name, "OTUniformDistribution", minimum=-pi, maximum=pi, size=size
+            name, OTUniformDistribution_Settings(minimum=-pi, maximum=pi), size=size
         )
     return parameter_space
 

@@ -19,12 +19,12 @@ from __future__ import annotations
 from gemseo.uncertainty.distributions.base_settings.beta_settings import (
     BaseBetaDistributionSettings,
 )
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistributionSettingsMixin,
+from gemseo.uncertainty.distributions.openturns.base_settings import (
+    BaseOTMarginalDistributionSettings,
 )
 
 
 class OTBetaDistribution_Settings(  # noqa: N801
-    BaseBetaDistributionSettings, _OTDistributionSettingsMixin
+    BaseBetaDistributionSettings, BaseOTMarginalDistributionSettings
 ):
     """The settings of an OpenTURNS-based Beta distribution."""

@@ -16,31 +16,21 @@
 
 from __future__ import annotations
 
-from typing import Final
-
 from pydantic import Field
 from pydantic import PositiveFloat
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
-
-_LOC: Final[float] = 0.0
-"""The default value of loc."""
-
-_RATE: Final[float] = 1.0
-"""The default value of rate."""
+from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseExponentialDistributionSettings(BaseDistributionSettings):  # noqa: N801
+class BaseExponentialDistributionSettings(BaseSettings):  # noqa: N801
     """The base settings of an exponential distribution."""
 
     rate: PositiveFloat = Field(
-        default=_RATE,
+        default=1.0,
         description="The rate of the exponential random variable.",
     )
 
     loc: float = Field(
-        default=_LOC,
+        default=0.0,
         description="The location of the exponential random variable.",
     )

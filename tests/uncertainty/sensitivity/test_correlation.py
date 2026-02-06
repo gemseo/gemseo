@@ -26,6 +26,9 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -38,7 +41,7 @@ def correlation() -> CorrelationAnalysis:
     )
     space = ParameterSpace()
     for name in ["x1", "x2"]:
-        space.add_random_variable(name, "OTNormalDistribution")
+        space.add_random_variable(name, OTNormalDistribution_Settings())
     analysis = CorrelationAnalysis()
     analysis.compute_samples([discipline], space, 100)
     return analysis

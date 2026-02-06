@@ -50,6 +50,9 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
@@ -216,7 +219,7 @@ def doe_database(request) -> Database:
     """The DOE-based database with either deterministic or random variables."""
     if request.param:
         space = ParameterSpace()
-        space.add_random_variable("var", "OTNormalDistribution")
+        space.add_random_variable("var", SPNormalDistribution_Settings())
     else:
         space = DesignSpace()
         space.add_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
@@ -391,7 +394,7 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
 def test_uunormalized_components_with_parameter_space(mc) -> None:
     """Check that an error is not raised when the design space is a parameter space."""
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", "OTNormalDistribution")
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())  # noqa: F821
 
     # The parameter space is unbounded.
     assert not parameter_space.normalize["x"]

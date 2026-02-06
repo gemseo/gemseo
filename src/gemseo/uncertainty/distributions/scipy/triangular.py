@@ -21,10 +21,10 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MAXIMUM
-from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MINIMUM
-from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MODE
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.triangular_settings import (
     SPTriangularDistribution_Settings,
 )
@@ -35,34 +35,24 @@ class SPTriangularDistribution(SPDistribution):
 
     settings_class = SPTriangularDistribution_Settings
 
-    def __init__(
-        self,
-        minimum: float = _MINIMUM,
-        mode: float = _MODE,
-        maximum: float = _MAXIMUM,
-        settings: SPTriangularDistribution_Settings | None = None,
+    def __init__(  # noqa: D107
+        self, settings: SPTriangularDistribution_Settings | None = None
     ) -> None:
-        """
-        Args:
-            minimum: The minimum of the triangular random variable.
-            mode: The mode of the triangular random variable.
-            maximum: The maximum of the triangular random variable.
-        """  # noqa: D205,D212,D415
         if settings is None:
-            settings = SPTriangularDistribution_Settings(
-                minimum=minimum, maximum=maximum, mode=mode
-            )
+            settings = SPTriangularDistribution_Settings()
         super().__init__(
-            interfaced_distribution="triang",
-            parameters={
-                "loc": settings.minimum,
-                "scale": settings.maximum - settings.minimum,
-                "c": (settings.mode - settings.minimum)
-                / float(settings.maximum - settings.minimum),
-            },
-            standard_parameters={
-                self._LOWER: settings.minimum,
-                self._MODE: settings.mode,
-                self._UPPER: settings.maximum,
-            },
+            SPDistribution_Settings(
+                interfaced_distribution="triang",
+                parameters={
+                    "loc": settings.minimum,
+                    "scale": settings.maximum - settings.minimum,
+                    "c": (settings.mode - settings.minimum)
+                    / float(settings.maximum - settings.minimum),
+                },
+                standard_parameters={
+                    self._LOWER: settings.minimum,
+                    self._MODE: settings.mode,
+                    self._UPPER: settings.maximum,
+                },
+            )
         )

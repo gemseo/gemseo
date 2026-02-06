@@ -73,6 +73,12 @@ from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
@@ -1087,7 +1093,7 @@ def test_get_data_by_names(filter_non_feasible, as_dict, expected) -> None:
 def test_gradient_with_random_variables() -> None:
     """Check that the Jacobian is correctly computed with random variable."""
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", "OTUniformDistribution")
+    parameter_space.add_random_variable("x", OTUniformDistribution_Settings())
 
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(
@@ -1324,7 +1330,7 @@ def test_observables_callback() -> None:
 def test_approximated_jacobian_wrt_uncertain_variables() -> None:
     """Check that the approximated Jacobian wrt uncertain variables is correct."""
     uspace = ParameterSpace()
-    uspace.add_random_variable("u", "OTNormalDistribution")
+    uspace.add_random_variable("u", OTNormalDistribution_Settings())
     problem = OptimizationProblem(uspace)
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.objective = MDOFunction(lambda u: u, name="func")

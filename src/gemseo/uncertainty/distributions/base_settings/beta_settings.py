@@ -17,52 +17,37 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Final
 
 from pydantic import Field
 from pydantic import PositiveFloat
 from pydantic import model_validator
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
+from gemseo.settings.base_settings import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-_ALPHA: Final[float] = 2.0
-"""The default value of alpha."""
 
-_BETA: Final[float] = 2.0
-"""The default value of beta."""
-
-_MAXIMUM: Final[float] = 1.0
-"""The default value of maximum."""
-
-_MINIMUM: Final[float] = 0.0
-"""The default value of minimum."""
-
-
-class BaseBetaDistributionSettings(BaseDistributionSettings):  # noqa: N801
+class BaseBetaDistributionSettings(BaseSettings):  # noqa: N801
     """The base settings of a Beta distribution."""
 
     alpha: PositiveFloat = Field(
-        default=_ALPHA,
+        default=2.0,
         description="The first shape parameter of the beta random variable.",
     )
 
     beta: PositiveFloat = Field(
-        default=_BETA,
+        default=2.0,
         description="The second shape parameter of the beta random variable.",
     )
 
     minimum: float = Field(
-        default=_MINIMUM,
+        default=0.0,
         description="The second shape parameter of the beta random variable.",
     )
 
     maximum: float = Field(
-        default=_MAXIMUM,
+        default=1.0,
         description="The maximum of the beta random variable.",
     )
 

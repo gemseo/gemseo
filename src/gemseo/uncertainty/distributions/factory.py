@@ -21,17 +21,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Any
+from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-from gemseo.utils.string_tools import pretty_str
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 
 class DistributionFactory(BaseFactory):
@@ -40,50 +33,6 @@ class DistributionFactory(BaseFactory):
     _CLASS = BaseDistribution
     _PACKAGE_NAMES = ("gemseo.uncertainty.distributions",)
 
-    def create_marginal_distribution(
-        self,
-        distribution_name: str,
-        **parameters: Any,
-    ) -> BaseDistribution:
-        """Create a marginal probability distribution for a given random variable.
 
-        Args:
-            distribution_name: The name of a class defining a distribution.
-            **parameters: The parameters of the distribution.
-
-        Returns:
-            The marginal probability distribution.
-        """
-        return super().create(distribution_name, **parameters)
-
-    create = create_marginal_distribution
-
-    def create_joint_distribution(
-        self,
-        distributions: Sequence[BaseDistribution],
-        copula: Any = None,
-    ) -> BaseJointDistribution:
-        """Create a joint probability distribution from marginal ones.
-
-        Args:
-            distributions: The marginal distributions.
-            copula: A copula distribution
-                defining the dependency structure between random variables;
-                if `None`, consider an independent copula.
-
-        Returns:
-            The joint probability distribution.
-        """
-        identifiers = {dist.__class__.__name__[0:2] for dist in distributions}
-        if len(identifiers) > 1:
-            msg = (
-                "A joint probability distribution cannot mix distributions "
-                f"with different identifiers; got {pretty_str(identifiers)}."
-            )
-            raise ValueError(msg)
-
-        return super().create(
-            f"{next(iter(identifiers))}JointDistribution",
-            distributions=distributions,
-            copula=copula,
-        )
+DISTRIBUTION_FACTORY: Final[DistributionFactory] = DistributionFactory()
+"""The factory for `BaseDistribution` objects."""

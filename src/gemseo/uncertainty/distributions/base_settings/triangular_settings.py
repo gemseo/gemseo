@@ -17,44 +17,31 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Final
 
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
+from gemseo.settings.base_settings import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-_MAXIMUM: Final[float] = 1.0
-"""The default value of maximum."""
-
-_MINIMUM: Final[float] = 0.0
-"""The default value of minimum."""
-
-_MODE: Final[float] = 0.5
-"""The default value of mode."""
-
-
-class BaseTriangularDistributionSettings(BaseDistributionSettings):  # noqa: N801
+class BaseTriangularDistributionSettings(BaseSettings):  # noqa: N801
     """The base settings of a triangular distribution."""
 
     minimum: float = Field(
-        default=_MINIMUM,
+        default=0.0,
         description="The minimum of the triangular random variable.",
     )
 
     maximum: float = Field(
-        default=_MAXIMUM,
+        default=1.0,
         description="The maximum of the triangular random variable.",
     )
 
     mode: float = Field(
-        default=_MODE,
+        default=0.5,
         description="The mode of the triangular random variable.",
     )
 

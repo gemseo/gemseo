@@ -19,7 +19,12 @@ from __future__ import annotations
 from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
     BaseWeibullDistributionSettings,
 )
+from gemseo.uncertainty.distributions.scipy.base_settings import (
+    BaseSPDistributionSettings,
+)
 
 
-class SPWeibullDistribution_Settings(BaseWeibullDistributionSettings):  # noqa: N801
+class SPWeibullDistribution_Settings(  # noqa: N801
+    BaseWeibullDistributionSettings, BaseSPDistributionSettings
+):
     """The settings of a SciPy-based uniform distribution."""

@@ -36,6 +36,9 @@ from gemseo.uncertainty.distributions.base_distribution_fitter import (
     BaseDistributionFitter,
 )
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
+from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+    OTDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from openturns import TestResult
@@ -104,7 +107,12 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
     ) -> OTDistribution:
         ot_factory = self._OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES[distribution]
         fitted_distribution = ot_factory().build(self._samples)
-        return OTDistribution(distribution, fitted_distribution.getParameter())
+        return OTDistribution(
+            OTDistribution_Settings(
+                interfaced_distribution=distribution,
+                parameters=fitted_distribution.getParameter(),
+            )
+        )
 
     def _compute_measure(
         self,

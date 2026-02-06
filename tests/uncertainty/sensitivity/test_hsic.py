@@ -38,6 +38,9 @@ from openturns import SquaredExponential
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
 
 
@@ -53,8 +56,8 @@ def hsic_analysis() -> HSICAnalysis:
     discipline = AnalyticDiscipline({"y1": "x1+2*x2", "y2": "x1-2*x2"})
 
     uncertain_space = ParameterSpace()
-    uncertain_space.add_random_variable("x1", "OTNormalDistribution")
-    uncertain_space.add_random_variable("x2", "OTNormalDistribution")
+    uncertain_space.add_random_variable("x1", OTNormalDistribution_Settings())
+    uncertain_space.add_random_variable("x2", OTNormalDistribution_Settings())
 
     analysis = HSICAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)

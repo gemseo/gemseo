@@ -46,6 +46,9 @@ from gemseo.machine_learning import get_regression_models
 from gemseo.machine_learning import get_regression_options
 from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -71,10 +74,10 @@ def dataset() -> Dataset:
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
     probability_space = ParameterSpace()
     probability_space.add_random_variable(
-        "x_1", "OTUniformDistribution", minimum=0, maximum=1
+        "x_1", OTUniformDistribution_Settings(minimum=0, maximum=1)
     )
     probability_space.add_random_variable(
-        "x_2", "OTUniformDistribution", minimum=0, maximum=1
+        "x_2", OTUniformDistribution_Settings(minimum=0, maximum=1)
     )
     scenario = DOEScenario(
         [discipline], "y_1", probability_space, formulation_name="DisciplinaryOpt"

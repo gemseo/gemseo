@@ -26,14 +26,7 @@ from gemseo.uncertainty.distributions.openturns.dirac_settings import (
 )
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _LOWER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _TRANSFORMATION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _UPPER_BOUND,
+    OTDistribution_Settings,
 )
 
 
@@ -42,35 +35,18 @@ class OTDiracDistribution(OTDistribution):
 
     settings_class = OTDiracDistribution_Settings
 
-    def __init__(
-        self,
-        variable_value: float = OTDiracDistribution_Settings.model_fields[
-            "variable_value"
-        ].default,
-        transformation: str = _TRANSFORMATION,
-        lower_bound: float | None = _LOWER_BOUND,
-        upper_bound: float | None = _UPPER_BOUND,
-        threshold: float = _THRESHOLD,
-        settings: OTDiracDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            variable_value: The value of the random variable.
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: OTDiracDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None:
-            settings = OTDiracDistribution_Settings(
-                variable_value=variable_value,
-                transformation=transformation,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-                threshold=threshold,
-            )
+            settings = OTDiracDistribution_Settings()
+
         super().__init__(
-            interfaced_distribution="Dirac",
-            parameters=(settings.variable_value,),
-            standard_parameters={self._LOC: settings.variable_value},
-            transformation=settings.transformation,
-            lower_bound=settings.lower_bound,
-            upper_bound=settings.upper_bound,
-            threshold=settings.threshold,
+            OTDistribution_Settings(
+                interfaced_distribution="Dirac",
+                parameters=(settings.variable_value,),
+                standard_parameters={self._LOC: settings.variable_value},
+                transformation=settings.transformation,
+                lower_bound=settings.lower_bound,
+                upper_bound=settings.upper_bound,
+                threshold=settings.threshold,
+            )
         )

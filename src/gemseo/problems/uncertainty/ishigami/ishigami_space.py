@@ -44,4 +44,4 @@ class IshigamiSpace(ParameterSpace):
             .settings_class(minimum=-pi, maximum=pi)
         )
         for index in range(3):
-            self.add_random_vector(f"x{index + 1}", (settings,))
+            self.add_random_vector(f"x{index + 1}", settings)

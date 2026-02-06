@@ -139,10 +139,10 @@ runtime-evaluated-base-classes = [
   "gemseo.machine_learning.regression.models.pce_settings.PCERegressor_Settings",
   "gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings",
   "gemseo.machine_learning.core.models.ml_model_settings.BaseMLModelSettings",
-  # TODO: API: remove
-  "gemseo.machine_learning.regression.models.base_fce_settings.BaseFCERegressor_Settings",
   "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistribution_Settings",
   "gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistribution_Settings",
+  "gemseo.uncertainty.distributions.openturns.joint_settings.OTJointDistribution_Settings",
+  "gemseo.uncertainty.distributions.scipy.joint_settings.SPJointDistribution_Settings",
   "gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings",
 ]
 

@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 import scipy.stats as scipy_stats
@@ -32,13 +31,6 @@ from gemseo.typing import StrKeyMapping
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
 from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
     ScalarDistributionMixin,
-)
-from gemseo.uncertainty.distributions.scipy.distribution_settings import (
-    _INTERFACED_DISTRIBUTION,
-)
-from gemseo.uncertainty.distributions.scipy.distribution_settings import _PARAMETERS
-from gemseo.uncertainty.distributions.scipy.distribution_settings import (
-    _STANDARD_PARAMETERS,
 )
 from gemseo.uncertainty.distributions.scipy.distribution_settings import (
     SPDistribution_Settings,
@@ -51,10 +43,6 @@ if TYPE_CHECKING:
     from numpy.random import RandomState
 
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_distribution import (
-        StandardParametersType,
-    )
-    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 
 class SPDistribution(
@@ -70,59 +58,12 @@ class SPDistribution(
 
     settings_class = SPDistribution_Settings
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]] = (
-        SPJointDistribution
-    )
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[SPJointDistribution]] = SPJointDistribution
 
     _WEBSITE: ClassVar[str] = "https://docs.scipy.org/doc/scipy/reference/stats.html"
 
-    def __init__(  # noqa: D107
-        self,
-        interfaced_distribution: str = _INTERFACED_DISTRIBUTION,
-        parameters: StrKeyMapping | tuple[Any, ...] = _PARAMETERS,
-        standard_parameters: StandardParametersType = _STANDARD_PARAMETERS,
-        settings: SPDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            standard_parameters: The parameters of the probability distribution
-                used for string representation only
-                (use `parameters` for computation).
-                If empty, use `parameters` instead.
-                For instance,
-                let us consider the interfaced SciPy distribution `"uniform"`.
-                Then,
-                the string representation of
-                `SPDistribution("uniform", parameters, 1, {"min": 1, "max": 3})`
-                with `parameters={"loc": 1, "scale": 2}`
-                is `"uniform(max=3, min=1)"`
-                while the string representation of
-                `SPDistribution("uniform", parameters)`
-                is `"uniform(loc=1, scale=2)"`.
-            settings: The settings of the distributions.
-                If set, the other arguments are ignored.
-                If `None`, the other arguments are used instead.
-        """  # noqa: D205 D212 D415
-        if settings is None:
-            settings = SPDistribution_Settings(
-                interfaced_distribution=interfaced_distribution,
-                parameters=parameters,
-                standard_parameters=standard_parameters,
-            )
-        super().__init__(
-            settings.interfaced_distribution,
-            settings.parameters,
-            settings.standard_parameters,
-        )
-
-    def _create_distribution(
-        self,
-        distribution_name: str,
-        parameters: StrKeyMapping,
-    ) -> None:
-        distribution = self._create_distribution_from_module(
-            scipy_stats, distribution_name, parameters
-        )
+    def _create_distribution(self, settings: SPDistribution_Settings) -> None:
+        distribution = self._create_distribution_from_module(scipy_stats, settings)
         self.math_lower_bound, self.math_upper_bound = distribution.interval(1.0)
         extrema_level = 1e-12
         self.num_lower_bound = distribution.ppf(extrema_level)

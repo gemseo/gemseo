@@ -16,50 +16,34 @@
 
 from __future__ import annotations
 
-from typing import Final
-
 from pydantic import Field
 from pydantic import PositiveFloat
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
-
-_MU: Final[float] = 1.0
-"""The default value of mu."""
-
-_SIGMA: Final[float] = 1.0
-"""The default value of sigma."""
-
-_LOCATION: Final[float] = 0.0
-"""The default value of location."""
-
-_SET_LOG: Final[bool] = False
-"""The default value of set_log."""
+from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseLogNormalDistributionSettings(BaseDistributionSettings):  # noqa: N801
+class BaseLogNormalDistributionSettings(BaseSettings):  # noqa: N801
     """The base settings of a log-normal distribution."""
 
     mu: float = Field(
-        default=_MU,
+        default=1.0,
         description="""Either the mean of the log-normal random variable
 or that of its logarithm when `set_log` is `True`.""",
     )
 
     sigma: PositiveFloat = Field(
-        default=_SIGMA,
+        default=1.0,
         description="""Either the standard deviation of the log-normal random variable
 or that of its logarithm when `set_log` is `True`.""",
     )
 
     location: float = Field(
-        default=_LOCATION,
+        default=0.0,
         description="The location of the log-normal random variable.",
     )
 
     set_log: bool = Field(
-        default=_SET_LOG,
+        default=False,
         description="""Whether `mu` and `sigma` apply
 to the logarithm of the log-normal random variable.
 Otherwise,

@@ -20,6 +20,9 @@ from openturns import WeibullMax
 from openturns import WeibullMin
 
 from gemseo.uncertainty.distributions.openturns.weibull import OTWeibullDistribution
+from gemseo.uncertainty.distributions.openturns.weibull_settings import (
+    OTWeibullDistribution_Settings,
+)
 
 
 def test_default_distribution() -> None:
@@ -33,10 +36,9 @@ def test_default_distribution() -> None:
 def test_custom() -> None:
     """Check a custom Weibull distribution."""
     distribution = OTWeibullDistribution(
-        location=2.0,
-        scale=3.0,
-        shape=4.0,
-        use_weibull_min=False,
+        OTWeibullDistribution_Settings(
+            location=2.0, scale=3.0, shape=4.0, use_weibull_min=False
+        )
     )
     distribution = distribution.distribution
     assert isinstance(distribution, WeibullMax)

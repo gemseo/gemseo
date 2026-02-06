@@ -24,11 +24,10 @@ from __future__ import annotations
 from numpy import exp
 
 from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
-from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _LOCATION
-from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _MU
-from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _SET_LOG
-from gemseo.uncertainty.distributions.base_settings.log_normal_settings import _SIGMA
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.log_normal_settings import (
     SPLogNormalDistribution_Settings,
 )
@@ -39,30 +38,11 @@ class SPLogNormalDistribution(SPDistribution):
 
     settings_class = SPLogNormalDistribution_Settings
 
-    def __init__(
-        self,
-        mu: float = _MU,
-        sigma: float = _SIGMA,
-        location: float = _LOCATION,
-        set_log: bool = _SET_LOG,
-        settings: SPLogNormalDistribution_Settings | None = None,
+    def __init__(  # noqa: D107
+        self, settings: SPLogNormalDistribution_Settings | None = None
     ) -> None:
-        """
-        Args:
-            mu: Either the mean of the log-normal random variable
-                or that of its logarithm when `set_log` is `True`.
-            sigma: Either the standard deviation of the log-normal random variable
-                or that of its logarithm when `set_log` is `True`.
-            location: The location of the log-normal random variable.
-            set_log: Whether `mu` and `sigma` apply
-                to the logarithm of the log-normal random variable.
-                Otherwise,
-                `mu` and `sigma` apply to the log-normal random variable directly.
-        """  # noqa: D205,D212,D415
         if settings is None:
-            settings = SPLogNormalDistribution_Settings(
-                mu=mu, sigma=sigma, location=location, set_log=set_log
-            )
+            settings = SPLogNormalDistribution_Settings()
 
         if settings.set_log:
             log_mu, log_sigma = settings.mu, settings.sigma
@@ -72,15 +52,17 @@ class SPLogNormalDistribution(SPDistribution):
             )
 
         super().__init__(
-            interfaced_distribution="lognorm",
-            parameters={
-                "s": log_sigma,
-                "loc": settings.location,
-                "scale": exp(log_mu),
-            },
-            standard_parameters={
-                self._MU: settings.mu,
-                self._SIGMA: settings.sigma,
-                self._LOC: settings.location,
-            },
+            SPDistribution_Settings(
+                interfaced_distribution="lognorm",
+                parameters={
+                    "s": log_sigma,
+                    "loc": settings.location,
+                    "scale": exp(log_mu),
+                },
+                standard_parameters={
+                    self._MU: settings.mu,
+                    self._SIGMA: settings.sigma,
+                    self._LOC: settings.location,
+                },
+            )
         )
