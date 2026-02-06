@@ -32,11 +32,11 @@ from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.disciplines.factory import DisciplineFactory
 from gemseo.formulations.factory import MDOFormulationFactory
+from gemseo.machine_learning.classification.models.factory import CLASSIFIER_FACTORY
+from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
+from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
+from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.mda.factory import MDAFactory
-from gemseo.mlearning.classification.algos.factory import ClassifierFactory
-from gemseo.mlearning.clustering.algos.factory import ClustererFactory
-from gemseo.mlearning.core.quality.factory import MLAlgoQualityFactory
-from gemseo.mlearning.regression.algos.factory import RegressorFactory
 from gemseo.post.factory import PostFactory
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
@@ -454,14 +454,14 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
         def f(algo):
             klass = self.get_class(algo)
-            return klass.ALGORITHM_INFOS[algo].Settings.__name__
+            return klass.ALGORITHM_INFOS[algo].settings_class.__name__
 
         self.get_pydantic_model_class_name = f
 
         def get_options_schema(algo):
             klass = self.get_class(algo)
             return self.get_options_schema_from_pydantic_model(
-                klass.ALGORITHM_INFOS[algo].Settings
+                klass.ALGORITHM_INFOS[algo].settings_class
             )
 
         self.get_options_schema = get_options_schema
@@ -484,7 +484,9 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The options schema.
             """
-            return self.get_class(algo).ALGORITHM_INFOS[algo].Settings.model_fields
+            return (
+                self.get_class(algo).ALGORITHM_INFOS[algo].settings_class.model_fields
+            )
 
         return get_options_schema
 
@@ -573,13 +575,13 @@ class BasePostAlgoOptionsDoc(AlgoOptionsDoc):
 
         def f(algo):
             klass = self.get_class(algo)
-            return klass.Settings.__name__
+            return klass.settings_class.__name__
 
         self.get_pydantic_model_class_name = f
 
         def get_options_schema(algo):
             klass = self.get_class(algo)
-            return self.get_options_schema_from_pydantic_model(klass.Settings)
+            return self.get_options_schema_from_pydantic_model(klass.settings_class)
 
         self.get_options_schema = get_options_schema
 
@@ -614,20 +616,20 @@ class InitOptionsDoc(AlgoOptionsDoc):
 algos_options_docs = [
     BasePostAlgoOptionsDoc(
         "clustering",
-        "Clustering algorithms",
-        ClustererFactory(),
-        pydantic_model_module_path="settings.mlearning",
+        "Clustering models",
+        CLUSTERER_FACTORY,
+        pydantic_model_module_path="settings.machine_learning",
     ),
     BasePostAlgoOptionsDoc(
         "classification",
-        "Classification algorithms",
-        ClassifierFactory(),
-        pydantic_model_module_path="settings.mlearning",
+        "Classification models",
+        CLASSIFIER_FACTORY,
+        pydantic_model_module_path="settings.machine_learning",
     ),
     InitOptionsDoc(
         "ml_quality",
         "Quality measures",
-        MLAlgoQualityFactory(),
+        MLModelQualityFactory(),
         use_pydantic_model=False,
     ),
     BasePostAlgoOptionsDoc(
@@ -694,9 +696,9 @@ for algos_options_doc in algos_options_docs:
 
 options_doc = BasePostAlgoOptionsDoc(
     "regression",
-    "Regression algorithms",
-    RegressorFactory(),
-    pydantic_model_module_path="settings.mlearning",
+    "Regression models",
+    REGRESSOR_FACTORY,
+    pydantic_model_module_path="settings.machine_learning",
 )
 options_doc.to_rst()
-options_doc.to_rst("surrogate_algos_template.tmpl", "surrogate_algos.md")
+options_doc.to_rst("surrogate_models_template.tmpl", "surrogate_models.md")

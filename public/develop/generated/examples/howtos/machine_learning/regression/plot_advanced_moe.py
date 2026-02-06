@@ -1,0 +1,162 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This work is licensed under a BSD 0-Clause License.
+#
+# Permission to use, copy, modify, and/or distribute this software
+# for any purpose with or without fee is hereby granted.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+# WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
+# THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT,
+# OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
+# FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+# NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+# WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Syver Doving Agdestein, Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""# Advanced mixture of experts."""
+
+from __future__ import annotations
+
+from gemseo import create_benchmark_dataset
+from gemseo.machine_learning import create_regression_model
+from gemseo.machine_learning.classification.models.knn_settings import (
+    KNNClassifier_Settings,
+)
+from gemseo.machine_learning.classification.models.random_forest_settings import (
+    RandomForestClassifier_Settings,
+)
+from gemseo.machine_learning.classification.quality.f1_measure import F1Measure
+from gemseo.machine_learning.clustering.models.gaussian_mixture_settings import (
+    GaussianMixture_Settings,
+)
+from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
+from gemseo.machine_learning.clustering.quality.silhouette_measure import (
+    SilhouetteMeasure,
+)
+from gemseo.machine_learning.regression.models.linreg_settings import (
+    LinearRegressor_Settings,
+)
+from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
+from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
+
+# %%
+# In this example,
+# we seek to estimate the Rosenbrock function
+# using the function [create_benchmark_dataset][gemseo.create_benchmark_dataset]
+# for generating the datasets.
+dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
+
+# %%
+# For that purpose,
+# we will use an [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] in an advanced way:
+# we will not set the clustering, classification and regression models
+# but select them according to their performance
+# from several candidates that we will provide.
+# Moreover,
+# for a given candidate,
+# we will propose several settings,
+# compare their performances
+# and select the best one.
+#
+# ## Initialization
+#
+# First,
+# we initialize an [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] with soft classification
+# by means of the high-level machine learning function [create_regression_model()][gemseo.machine_learning.create_regression_model].
+model = create_regression_model("MOERegressor", dataset, hard=False)
+
+# %%
+# ## Clustering
+#
+# Then,
+# we add two clustering models
+# with different numbers of clusters (called *components* for the Gaussian Mixture)
+# and set the [SilhouetteMeasure][gemseo.machine_learning.clustering.quality.silhouette_measure.SilhouetteMeasure] as clustering measure
+# to be evaluated from the training dataset.
+# During the learning stage,
+# the mixture of experts will select the clustering model
+# and the number of clusters
+# minimizing this measure.
+model.set_clustering_measure(SilhouetteMeasure)
+model.add_clusterer_candidate(KMeans_Settings(), n_clusters=[2, 3, 4])
+model.add_clusterer_candidate(GaussianMixture_Settings(), n_clusters=[3, 4, 5])
+
+# %%
+# ## Classification
+#
+# We also add classification models
+# with different settings
+# and set the [F1Measure][gemseo.machine_learning.classification.quality.f1_measure.F1Measure] as classification measure
+# to be evaluated from the training dataset.
+# During the learning stage,
+# the mixture of experts will select the classification model and the settings
+# minimizing this measure.
+model.set_classification_measure(F1Measure)
+model.add_classifier_candidate(KNNClassifier_Settings(), n_neighbors=[3, 4, 5])
+model.add_classifier_candidate(RandomForestClassifier_Settings(n_estimators=100))
+
+# %%
+# ## Regression
+#
+# We also add regression models
+# and set the [MSEMeasure][gemseo.machine_learning.regression.quality.mse_measure.MSEMeasure] as regression measure
+# to be evaluated from the training dataset.
+# During the learning stage, for each cluster,
+# the mixture of experts will select the regression model minimizing this measure.
+model.set_regression_measure(MSEMeasure)
+model.add_regressor_candidate(LinearRegressor_Settings())
+model.add_regressor_candidate(RBFRegressor_Settings())
+
+# %%
+# !!! note
+#
+#     We could also add candidates for some learning stages,
+#     e.g. clustering and regression,
+#     and set the machine learning models for the remaining ones,
+#     e.g. classification.
+#
+# ## Training
+#
+# Lastly,
+# we learn the data
+# and select the best machine learning model
+# for both clustering, classification and regression steps.
+model.learn()
+
+# %%
+# ## Result
+#
+# We can get information on this model,
+# on the sub-machine learning models selected among the candidates
+# and on their selected settings.
+# We can see that
+# a [MKeans][gemseo.machine_learning.clustering.models.kmeans.KMeans] with four clusters has been selected for the clustering stage,
+# as well as a [RandomForestClassifier][gemseo.machine_learning.classification.models.random_forest.RandomForestClassifier] for the classification stage
+# and a [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] for each cluster.
+model
+
+# %%
+# !!! note
+#
+#     By adding candidates,
+#     and depending on the complexity of the function to be approximated,
+#     one could obtain different regression models according to the clusters.
+#     For example,
+#     one could use a [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] with order 2
+#     on a sub-part of the input space
+#     and a [GaussianProcessRegressor][gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor]
+#     on another sub-part of the input space.
+#
+# Once built,
+# this mixture of experts can be used as any [BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor].
+#
+# !!! info "See also"
+#
+#     [Another example][mixture-of-experts]
+#     proposes a standard use of [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor].
