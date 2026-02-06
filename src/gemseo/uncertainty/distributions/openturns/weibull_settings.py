@@ -22,19 +22,19 @@ from pydantic import PositiveFloat
 from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
     BaseWeibullDistributionSettings,
 )
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistributionSettingsMixin,
+from gemseo.uncertainty.distributions.openturns.base_settings import (
+    BaseOTMarginalDistributionSettings,
 )
 
 
 class OTWeibullDistribution_Settings(  # noqa: N801
-    BaseWeibullDistributionSettings, _OTDistributionSettingsMixin
+    BaseWeibullDistributionSettings, BaseOTMarginalDistributionSettings
 ):
     """The settings of an OpenTURNS-based uniform distribution."""
 
     location: float = Field(
         default=0.0,
-        description=(r"The location parameter $\gamma$ of the Weibull distribution."),
+        description=r"The location parameter $\gamma$ of the Weibull distribution.",
     )
 
     scale: PositiveFloat = Field(

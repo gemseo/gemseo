@@ -17,36 +17,26 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Final
 
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
+from gemseo.settings.base_settings import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-_MAXIMUM: Final[float] = 1.0
-"""The default value of maximum."""
-
-_MINIMUM: Final[float] = 0.0
-"""The default value of minimum."""
-
-
-class BaseUniformDistributionSettings(BaseDistributionSettings):  # noqa: N801
+class BaseUniformDistributionSettings(BaseSettings):  # noqa: N801
     """The base settings of a uniform distribution."""
 
     minimum: float = Field(
-        default=_MINIMUM,
+        default=0.0,
         description="The minimum of the uniform random variable.",
     )
 
     maximum: float = Field(
-        default=_MAXIMUM,
+        default=1.0,
         description="The maximum of the uniform random variable.",
     )
 

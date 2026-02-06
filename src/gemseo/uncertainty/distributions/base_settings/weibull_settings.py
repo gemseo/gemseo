@@ -16,48 +16,32 @@
 
 from __future__ import annotations
 
-from typing import Final
-
 from pydantic import Field
 from pydantic import PositiveFloat
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
-
-_LOCATION: Final[float] = 0.0
-"""The default value of location."""
-
-_SCALE: Final[float] = 1.0
-"""The default value of scale."""
-
-_SHAPE: Final[float] = 1.0
-"""The default value of shape."""
-
-_USE_WEIBULL_MIN: Final[bool] = True
-"""The default value of use_weibull_min."""
+from gemseo.settings.base_settings import BaseSettings
 
 
-class BaseWeibullDistributionSettings(BaseDistributionSettings):  # noqa: N801
+class BaseWeibullDistributionSettings(BaseSettings):  # noqa: N801
     """The base settings of a uniform distribution."""
 
     location: float = Field(
-        default=_LOCATION,
-        description=(r"The location parameter $\gamma$ of the Weibull distribution."),
+        default=0.0,
+        description=r"The location parameter $\gamma$ of the Weibull distribution.",
     )
 
     scale: PositiveFloat = Field(
-        default=_SCALE,
+        default=1.0,
         description="The scale parameter of the Weibull distribution.",
     )
 
     shape: PositiveFloat = Field(
-        default=_SHAPE,
+        default=1.0,
         description="The shape parameter of the Weibull distribution.",
     )
 
     use_weibull_min: bool = Field(
-        default=_USE_WEIBULL_MIN,
+        default=True,
         description=r"""Whether to use
 the Weibull minimum extreme value distribution
 (the support of the random variable is $[\gamma,+\infty[$)

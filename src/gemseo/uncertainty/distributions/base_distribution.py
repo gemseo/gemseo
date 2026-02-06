@@ -87,7 +87,6 @@ from typing import TypeVar
 
 from numpy import array
 
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import pretty_str
@@ -99,9 +98,9 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distributions.base_distribution_settings import (
         BaseDistributionSettings,
     )
-
-StandardParametersType = Mapping[str, str | int | float]
-ParametersType = tuple[str, int, float] | StandardParametersType
+    from gemseo.uncertainty.distributions.base_distribution_settings import (
+        BaseGenericDistributionSettings,
+    )
 
 _DistributionT = TypeVar("_DistributionT")
 _ParametersT = TypeVar("_ParametersT")
@@ -172,83 +171,42 @@ class BaseDistribution(
     _WEBSITE: ClassVar[str]
     """The website of the library implementing the probability distributions."""
 
-    def __init__(
-        self,
-        interfaced_distribution: str,
-        parameters: _ParametersT,
-        standard_parameters: StandardParametersType = READ_ONLY_EMPTY_DICT,
-        **options: Any,
-    ) -> None:
+    def __init__(self, settings: BaseGenericDistributionSettings | None = None) -> None:
         """
         Args:
-            interfaced_distribution: The name of the probability distribution,
-                typically the name of a class wrapped from an external library,
-                such as `"Normal"` for OpenTURNS or `"norm"` for SciPy.
-            parameters: The parameters of the probability distribution.
-            standard_parameters: The parameters of the probability distribution
-                used for string representation only
-                (use `parameters` for computation).
-                If empty, use `parameters` instead.
-                For instance,
-                let us consider an interfaced distribution
-                named `"Dirac"`
-                with positional parameters
-                (this is the case of
-                [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]).
-                Then,
-                the string representation of
-                `BaseDistribution("x", "Dirac", (1,), 1, {"loc": 1})`
-                is `"Dirac(loc=1)"`
-                while the string representation of
-                `BaseDistribution("x", "Dirac", (1,))`
-                is `"Dirac(1)"`.
-                The same mechanism works for keyword parameters
-                (this is the case of
-                [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]).
-            **options: The options of the probability distribution.
+            settings: The settings of the probability distribution.
+                If `None`, use the default ones.
         """  # noqa: D205,D212,D415
+        if settings is None:
+            settings = self.settings_class()
+
         self.transformation = self.DEFAULT_VARIABLE_NAME
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
             default_name="distribution",
         )
+        parameters = settings.standard_parameters or settings.parameters
         self._get_string_representation = (
-            f"{interfaced_distribution}"
-            f"({pretty_str(standard_parameters or parameters, sort=False)})"
+            f"{settings.interfaced_distribution}({pretty_str(parameters, sort=False)})"
         )
-        self._create_distribution(interfaced_distribution, parameters, **options)
+        self._create_distribution(settings)
 
     @abstractmethod
-    def _create_distribution(
-        self,
-        distribution_name: str,
-        parameters: _ParametersT,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
+    def _create_distribution(self, settings: BaseGenericDistributionSettings) -> None:
         """Create the probability distribution.
 
         Args:
-            distribution_name: The name of the probability distribution
-                in the interfaced library.
-            parameters: The parameters of the probability distribution
-                in the interfaced library.
-            *args: The options of the probability distribution as positional arguments.
-            **kwargs: The options of the probability distribution as keyword arguments.
+            settings: settings of the probability distribution.
         """
 
     def _create_distribution_from_module(
-        self,
-        module: ModuleType,
-        distribution_name: str,
-        parameters: _ParametersT,
+        self, module: ModuleType, settings: BaseGenericDistributionSettings
     ) -> Any:
         """Create a distribution from a module.
 
         Args:
             module: The module.
-            distribution_name: The name of the distribution.
-            parameters: The parameters of the distributions.
+            settings: The settings of the distribution.
 
         Returns:
             The distribution.
@@ -256,6 +214,8 @@ class BaseDistribution(
         Raises:
             ValueError: When the distribution cannot be created from the module.
         """
+        distribution_name = settings.interfaced_distribution
+        parameters = settings.parameters
         try:
             create_distribution = getattr(module, distribution_name)
         except BaseException:  # noqa: BLE001

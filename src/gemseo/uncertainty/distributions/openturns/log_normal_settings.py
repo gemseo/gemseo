@@ -24,12 +24,12 @@ from __future__ import annotations
 from gemseo.uncertainty.distributions.base_settings.log_normal_settings import (
     BaseLogNormalDistributionSettings,
 )
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistributionSettingsMixin,
+from gemseo.uncertainty.distributions.openturns.base_settings import (
+    BaseOTMarginalDistributionSettings,
 )
 
 
 class OTLogNormalDistribution_Settings(  # noqa: N801
-    BaseLogNormalDistributionSettings, _OTDistributionSettingsMixin
+    BaseLogNormalDistributionSettings, BaseOTMarginalDistributionSettings
 ):
     """The settings of an OpenTURNS-based log-normal distribution."""

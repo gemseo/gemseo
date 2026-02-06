@@ -36,15 +36,17 @@ Warning:
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
+from typing import ClassVar
+
+from gemseo.uncertainty.distributions.scipy.joint_settings import (
+    SPJointDistribution_Settings,
+)
+from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Sequence
 
     from gemseo.typing import RealArray
-    from gemseo.typing import StrKeyMapping
-    from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 
 from numpy import array
 
@@ -54,24 +56,20 @@ from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 class SPJointDistribution(BaseJointDistribution):
     """The SciPy-based joint probability distribution."""
 
-    def __init__(  # noqa: D107
-        self,
-        distributions: Sequence[SPDistribution],
-        copula: None = None,
-    ) -> None:
-        """
-        Raises:
-            NotImplementedError: When the copula is not `None`.
-        """  # noqa: D205 D212 D415
-        if copula is not None:
-            msg = "There is not copula distribution yet for SciPy-based distributions."
-            raise NotImplementedError(msg)
+    Settings: ClassVar[type[SPJointDistribution_Settings]] = (
+        SPJointDistribution_Settings
+    )
 
-        super().__init__(distributions, copula=copula)
+    def __init__(self, settings: SPJointDistribution_Settings) -> None:  # noqa: D107
+        super().__init__(settings)
+        if len(settings.marginal_settings) > 1:
+            self._get_string_representation = (
+                f"{self.__class__.__name__}"
+                f"({pretty_repr(self.marginals, sort=False)}; "
+                f"IndependentCopula)"
+            )
 
-    def _create_distribution(
-        self, distribution_name: str, parameters: StrKeyMapping, **kwargs: Any
-    ) -> None:
+    def _create_distribution(self, settings: SPJointDistribution_Settings) -> None:
         self.distribution = self.marginals
         self._set_bounds(self.marginals)
 

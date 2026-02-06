@@ -33,6 +33,9 @@ from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty import create_statistics
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty import get_available_sensitivity_analyses
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
 from gemseo.uncertainty.statistics.ot_parametric_statistics import (
     OTParametricStatistics,
@@ -55,7 +58,7 @@ def analysis() -> MorrisAnalysis:
     space = ParameterSpace()
     for variable in ["x1", "x2", "a3"]:
         space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+            variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
 
     analysis = create_sensitivity_analysis("MorrisAnalysis")

@@ -16,22 +16,9 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.weibull_settings import _LOCATION
-from gemseo.uncertainty.distributions.base_settings.weibull_settings import _SCALE
-from gemseo.uncertainty.distributions.base_settings.weibull_settings import _SHAPE
-from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
-    _USE_WEIBULL_MIN,
-)
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _LOWER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _TRANSFORMATION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _UPPER_BOUND,
+    OTDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.weibull_settings import (
     OTWeibullDistribution_Settings,
@@ -43,52 +30,23 @@ class OTWeibullDistribution(OTDistribution):
 
     settings_class = OTWeibullDistribution_Settings
 
-    def __init__(
-        self,
-        location: float = _LOCATION,
-        scale: float = _SCALE,
-        shape: float = _SHAPE,
-        use_weibull_min: bool = _USE_WEIBULL_MIN,
-        transformation: str = _TRANSFORMATION,
-        lower_bound: float | None = _LOWER_BOUND,
-        upper_bound: float | None = _UPPER_BOUND,
-        threshold: float = _THRESHOLD,
-        settings: OTWeibullDistribution_Settings | None = None,
-    ) -> None:
-        r"""
-        Args:
-            location: The location parameter $\gamma$ of the Weibull distribution.
-            scale: The scale parameter of the Weibull distribution.
-            shape: The shape parameter of the Weibull distribution.
-            use_weibull_min: Whether to use
-                the Weibull minimum extreme value distribution
-                (the support of the random variable is $[\gamma,+\infty[$)
-                or the Weibull maximum extreme value distribution
-                (the support of the random variable is $]-\infty[,\gamma]$).
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: OTWeibullDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None:
-            settings = OTWeibullDistribution_Settings(
-                location=location,
-                scale=scale,
-                shape=shape,
-                use_weibull_min=use_weibull_min,
-                transformation=transformation,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-                threshold=threshold,
-            )
+            settings = OTWeibullDistribution_Settings()
         super().__init__(
-            interfaced_distribution="WeibullMin"
-            if settings.use_weibull_min
-            else "WeibullMax",
-            parameters=(settings.scale, settings.shape, settings.location),
-            standard_parameters={
-                self._LOCATION: settings.location,
-                self._SCALE: settings.scale,
-                self._SHAPE: settings.shape,
-            },
-            transformation=settings.transformation,
-            lower_bound=settings.lower_bound,
-            upper_bound=settings.upper_bound,
-            threshold=settings.threshold,
+            OTDistribution_Settings(
+                interfaced_distribution="WeibullMin"
+                if settings.use_weibull_min
+                else "WeibullMax",
+                parameters=(settings.scale, settings.shape, settings.location),
+                standard_parameters={
+                    self._LOCATION: settings.location,
+                    self._SCALE: settings.scale,
+                    self._SHAPE: settings.shape,
+                },
+                transformation=settings.transformation,
+                lower_bound=settings.lower_bound,
+                upper_bound=settings.upper_bound,
+                threshold=settings.threshold,
+            )
         )

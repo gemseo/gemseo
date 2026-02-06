@@ -21,19 +21,9 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MAXIMUM
-from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MINIMUM
-from gemseo.uncertainty.distributions.base_settings.triangular_settings import _MODE
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _LOWER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _TRANSFORMATION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _UPPER_BOUND,
+    OTDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.triangular_settings import (
     OTTriangularDistribution_Settings,
@@ -45,43 +35,23 @@ class OTTriangularDistribution(OTDistribution):
 
     settings_class = OTTriangularDistribution_Settings
 
-    def __init__(
-        self,
-        minimum: float = _MINIMUM,
-        mode: float = _MODE,
-        maximum: float = _MAXIMUM,
-        transformation: str = _TRANSFORMATION,
-        lower_bound: float | None = _LOWER_BOUND,
-        upper_bound: float | None = _UPPER_BOUND,
-        threshold: float = _THRESHOLD,
-        settings: OTTriangularDistribution_Settings | None = None,
+    def __init__(  # noqa: D107
+        self, settings: OTTriangularDistribution_Settings | None = None
     ) -> None:
-        """
-        Args:
-            minimum: The minimum of the triangular random variable.
-            mode: The mode of the triangular random variable.
-            maximum: The maximum of the random variable.
-        """  # noqa: D205,D212,D415
         if settings is None:
-            settings = OTTriangularDistribution_Settings(
-                minimum=minimum,
-                maximum=maximum,
-                mode=mode,
-                transformation=transformation,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-                threshold=threshold,
-            )
+            settings = OTTriangularDistribution_Settings()
         super().__init__(
-            interfaced_distribution="Triangular",
-            parameters=(settings.minimum, settings.mode, settings.maximum),
-            standard_parameters={
-                self._LOWER: settings.minimum,
-                self._MODE: settings.mode,
-                self._UPPER: settings.maximum,
-            },
-            transformation=settings.transformation,
-            lower_bound=settings.lower_bound,
-            upper_bound=settings.upper_bound,
-            threshold=settings.threshold,
+            OTDistribution_Settings(
+                interfaced_distribution="Triangular",
+                parameters=(settings.minimum, settings.mode, settings.maximum),
+                standard_parameters={
+                    self._LOWER: settings.minimum,
+                    self._MODE: settings.mode,
+                    self._UPPER: settings.maximum,
+                },
+                transformation=settings.transformation,
+                lower_bound=settings.lower_bound,
+                upper_bound=settings.upper_bound,
+                threshold=settings.threshold,
+            )
         )

@@ -111,6 +111,9 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 from gemseo.utils.constants import _LOGGING_DATE_FORMAT
 from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.constants import N_CPUS
@@ -695,7 +698,7 @@ def test_create_parameter_space() -> None:
     parameter_space.add_variable(
         "name", type_="float", lower_bound=-1, upper_bound=1, value=0
     )
-    parameter_space.add_random_variable("other_name", "OTNormalDistribution")
+    parameter_space.add_random_variable("other_name", OTNormalDistribution_Settings())
     parameter_space.check()
 
 

@@ -34,6 +34,9 @@ from gemseo import create_discipline
 from gemseo import create_parameter_space
 from gemseo import sample_disciplines
 from gemseo.machine_learning import create_regression_model
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 
 # %%
 # ## Problem
@@ -53,7 +56,7 @@ discipline = create_discipline(
 # %%
 # and seek to approximate it over the input space
 input_space = create_parameter_space()
-input_space.add_random_variable("x", "OTUniformDistribution")
+input_space.add_random_variable("x", OTUniformDistribution_Settings())
 
 # %%
 # To do this,

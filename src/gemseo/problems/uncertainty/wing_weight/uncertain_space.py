@@ -55,5 +55,5 @@ class WingWeightUncertainSpace(ParameterSpace):
         )
         for name, (minimum, maximum) in data.items():
             self.add_random_vector(
-                name, (settings_class(minimum=minimum, maximum=maximum),)
+                name, settings_class(minimum=minimum, maximum=maximum)
             )

@@ -21,14 +21,13 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.beta_settings import _ALPHA
-from gemseo.uncertainty.distributions.base_settings.beta_settings import _BETA
-from gemseo.uncertainty.distributions.base_settings.beta_settings import _MAXIMUM
-from gemseo.uncertainty.distributions.base_settings.beta_settings import _MINIMUM
 from gemseo.uncertainty.distributions.scipy.beta_settings import (
     SPBetaDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 
 
 class SPBetaDistribution(SPDistribution):
@@ -36,40 +35,23 @@ class SPBetaDistribution(SPDistribution):
 
     settings_class = SPBetaDistribution_Settings
 
-    def __init__(
-        self,
-        alpha: float = _ALPHA,
-        beta: float = _BETA,
-        minimum: float = _MINIMUM,
-        maximum: float = _MAXIMUM,
-        settings: SPBetaDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            alpha: The first shape parameter of the beta random variable.
-            beta: The second shape parameter of the beta random variable.
-            minimum: The minimum of the beta random variable.
-            maximum: The maximum of the beta random variable.
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: SPBetaDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None and settings is None:
-            settings = SPBetaDistribution_Settings(
-                alpha=alpha,
-                beta=beta,
-                minimum=minimum,
-                maximum=maximum,
-            )
+            settings = SPBetaDistribution_Settings()
         super().__init__(
-            interfaced_distribution="beta",
-            parameters={
-                "a": settings.alpha,
-                "b": settings.beta,
-                "loc": settings.minimum,
-                "scale": settings.maximum - settings.minimum,
-            },
-            standard_parameters={
-                self._LOWER: settings.minimum,
-                self._UPPER: settings.maximum,
-                self._ALPHA: settings.alpha,
-                self._BETA: settings.beta,
-            },
+            SPDistribution_Settings(
+                interfaced_distribution="beta",
+                parameters={
+                    "a": settings.alpha,
+                    "b": settings.beta,
+                    "loc": settings.minimum,
+                    "scale": settings.maximum - settings.minimum,
+                },
+                standard_parameters={
+                    self._LOWER: settings.minimum,
+                    self._UPPER: settings.maximum,
+                    self._ALPHA: settings.alpha,
+                    self._BETA: settings.beta,
+                },
+            )
         )

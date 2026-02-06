@@ -34,6 +34,9 @@ from gemseo.uncertainty.distributions.base_distribution_fitter import (
     BaseDistributionFitter,
 )
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from scipy.stats._fit import GoodnessOfFitResult
@@ -74,7 +77,11 @@ class SPDistributionFitter(BaseDistributionFitter[SPDistribution]):
     ) -> SPDistribution:
         scipy_distribution = getattr(scipy_stats, f"{distribution}")
         parameters = scipy_distribution.fit(self._samples)
-        return SPDistribution(distribution, parameters)
+        return SPDistribution(
+            SPDistribution_Settings(
+                interfaced_distribution=distribution, parameters=parameters
+            )
+        )
 
     def _compute_measure(
         self,

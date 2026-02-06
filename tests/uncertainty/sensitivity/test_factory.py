@@ -23,6 +23,9 @@ from numpy import pi
 
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 
 
@@ -40,7 +43,7 @@ def test_create() -> None:
     space = ParameterSpace()
     for variable in ["x1", "x2", "x3"]:
         space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-pi, maximum=pi
+            variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
     factory = SensitivityAnalysisFactory()
     analysis = factory.create("MorrisAnalysis")

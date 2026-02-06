@@ -21,9 +21,10 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.uniform_settings import _MAXIMUM
-from gemseo.uncertainty.distributions.base_settings.uniform_settings import _MINIMUM
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
@@ -34,27 +35,19 @@ class SPUniformDistribution(SPDistribution):
 
     settings_class = SPUniformDistribution_Settings
 
-    def __init__(
-        self,
-        minimum: float = _MINIMUM,
-        maximum: float = _MAXIMUM,
-        settings: SPUniformDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            minimum: The minimum of the uniform random variable.
-            maximum: The maximum of the uniform random variable.
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: SPUniformDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None:
-            settings = SPUniformDistribution_Settings(minimum=minimum, maximum=maximum)
+            settings = SPUniformDistribution_Settings()
         super().__init__(
-            interfaced_distribution="uniform",
-            parameters={
-                "loc": settings.minimum,
-                "scale": settings.maximum - settings.minimum,
-            },
-            standard_parameters={
-                self._LOWER: settings.minimum,
-                self._UPPER: settings.maximum,
-            },
+            SPDistribution_Settings(
+                interfaced_distribution="uniform",
+                parameters={
+                    "loc": settings.minimum,
+                    "scale": settings.maximum - settings.minimum,
+                },
+                standard_parameters={
+                    self._LOWER: settings.minimum,
+                    self._UPPER: settings.maximum,
+                },
+            )
         )

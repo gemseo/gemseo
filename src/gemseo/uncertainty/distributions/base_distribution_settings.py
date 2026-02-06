@@ -16,8 +16,37 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+from typing import ClassVar
+
+from pydantic import Field
+
 from gemseo.settings.base_settings import BaseSettings
+from gemseo.typing import StrKeyMapping
 
 
 class BaseDistributionSettings(BaseSettings):  # noqa: N801
     """The base class for the settings of a probability distribution."""
+
+    _LIBRARY_NAME: ClassVar[str]
+    """The name of the library implementing the probability distribution."""
+
+
+class BaseGenericDistributionSettings(BaseDistributionSettings):  # noqa: N801
+    """The base class for the settings of a generic probability distribution."""
+
+    interfaced_distribution: str = Field(
+        description="The name of the probability distribution."
+    )
+
+    parameters: StrKeyMapping | tuple[Any, ...] = Field(
+        default_factory=dict,
+        description="The parameters of the probability distribution.",
+    )
+
+    standard_parameters: Mapping[str, str | int | float] = Field(
+        default_factory=dict,
+        description="""The parameters of the probability distribution
+used for string representation only.""",
+    )

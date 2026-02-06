@@ -20,6 +20,9 @@ from scipy.stats import weibull_max
 from scipy.stats import weibull_min
 
 from gemseo.uncertainty.distributions.scipy.weibull import SPWeibullDistribution
+from gemseo.uncertainty.distributions.scipy.weibull_settings import (
+    SPWeibullDistribution_Settings,
+)
 
 
 def test_default_distribution() -> None:
@@ -33,7 +36,9 @@ def test_default_distribution() -> None:
 def test_custom() -> None:
     """Check a custom Weibull distribution."""
     distribution = SPWeibullDistribution(
-        location=2.0, scale=3.0, shape=4.0, use_weibull_min=False
+        SPWeibullDistribution_Settings(
+            location=2.0, scale=3.0, shape=4.0, use_weibull_min=False
+        )
     )
     distribution = distribution.distribution
     assert distribution.mean() == weibull_max.mean(4, loc=2, scale=3)

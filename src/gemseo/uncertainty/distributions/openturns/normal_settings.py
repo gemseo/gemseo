@@ -19,12 +19,12 @@ from __future__ import annotations
 from gemseo.uncertainty.distributions.base_settings.normal_settings import (
     BaseNormalDistributionSettings,
 )
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistributionSettingsMixin,
+from gemseo.uncertainty.distributions.openturns.base_settings import (
+    BaseOTMarginalDistributionSettings,
 )
 
 
 class OTNormalDistribution_Settings(  # noqa: N801
-    BaseNormalDistributionSettings, _OTDistributionSettingsMixin
+    BaseNormalDistributionSettings, BaseOTMarginalDistributionSettings
 ):
     """The settings of an OpenTURNS-based normal distribution."""

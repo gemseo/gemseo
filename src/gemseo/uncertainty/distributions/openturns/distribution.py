@@ -36,23 +36,6 @@ from openturns import TruncatedDistribution
 
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _INTERFACED_DISTRIBUTION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _LOWER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _PARAMETERS
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _STANDARD_PARAMETERS,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _TRANSFORMATION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _UPPER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
@@ -64,10 +47,6 @@ if TYPE_CHECKING:
     from openturns import Distribution
 
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_distribution import (
-        StandardParametersType,
-    )
-    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 
 class OTDistribution(
@@ -84,108 +63,22 @@ class OTDistribution(
 
     settings_class = OTDistribution_Settings
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]] = (
-        OTJointDistribution
-    )
+    JOINT_DISTRIBUTION_CLASS: ClassVar[type[OTJointDistribution]] = OTJointDistribution
 
     _WEBSITE: ClassVar[str] = (
         "http://openturns.github.io/openturns/latest/user_manual/"
         "probabilistic_modelling.html"
     )
 
-    def __init__(
-        self,
-        interfaced_distribution: str = _INTERFACED_DISTRIBUTION,
-        parameters: tuple[Any, ...] = _PARAMETERS,
-        standard_parameters: StandardParametersType = _STANDARD_PARAMETERS,
-        transformation: str = _TRANSFORMATION,
-        lower_bound: float | None = _LOWER_BOUND,
-        upper_bound: float | None = _UPPER_BOUND,
-        threshold: float = _THRESHOLD,
-        settings: OTDistribution_Settings | None = None,
-    ) -> None:
-        r"""
-        Args:
-            standard_parameters: The parameters of the probability distribution
-                used for string representation only
-                (use `parameters` for computation).
-                If empty, use `parameters` instead.
-                For instance,
-                let us consider the interfaced OpenTURNS distribution `"Dirac"`.
-                Then,
-                the string representation of
-                `OTDistribution("x", "Dirac", (1,), 1, {"loc": 1})`
-                is `"Dirac(loc=1)"`
-                while the string representation of
-                `OTDistribution("x", "Dirac", (1,))`
-                is `"Dirac(1)"`.
-            transformation: A transformation applied
-                to the random variable,
-                e.g. $\sin(x)$. If empty, no transformation.
-            lower_bound: A lower bound to truncate the probability distribution.
-                If `None`, no lower truncation.
-            upper_bound: An upper bound to truncate the probability distribution.
-                If `None`, no upper truncation.
-            threshold: A threshold in [0,1]
-                ([see OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/_generated/openturns.TruncatedDistribution.html)).
-            settings: The settings of the distributions.
-                If set, the other arguments are ignored.
-                If `None`, the other arguments are used instead.
-        """  # noqa: D205,D212,D415
-        if settings is None:
-            settings = OTDistribution_Settings(
-                interfaced_distribution=interfaced_distribution,
-                parameters=parameters,
-                standard_parameters=standard_parameters,
-                transformation=transformation,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-                threshold=threshold,
-            )
-        super().__init__(
-            settings.interfaced_distribution,
-            settings.parameters or (),
-            standard_parameters=settings.standard_parameters,
-            transformation=settings.transformation,
-            lower_bound=settings.lower_bound,
-            upper_bound=settings.upper_bound,
-            threshold=settings.threshold,
-        )
-
-    def _create_distribution(
-        self,
-        distribution_name: str,
-        parameters: tuple[Any, ...],
-        transformation: str,
-        lower_bound: float | None,
-        upper_bound: float | None,
-        threshold: float,
-    ) -> None:
-        r"""
-        Args:
-            transformation: A transformation applied
-                to the random variable,
-                e.g. $\sin(x)$. If `None`, no transformation.
-            lower_bound: A lower bound to truncate the probability distribution.
-                If `None`, no lower truncation.
-            upper_bound: An upper bound to truncate the probability distribution.
-                If `None`, no upper truncation.
-            threshold: A threshold in [0,1].
-        """  # noqa: D205, D212
-        distribution = self._create_distribution_from_module(
-            openturns, distribution_name, parameters
-        )
+    def _create_distribution(self, settings: OTDistribution_Settings) -> None:
+        distribution = self._create_distribution_from_module(openturns, settings)
+        self.__set_bounds(distribution)
+        if settings.transformation:
+            distribution = self.__transform_distribution(distribution, settings)
 
         self.__set_bounds(distribution)
-        if transformation:
-            distribution = self.__transform_distribution(distribution, transformation)
-
-        self.__set_bounds(distribution)
-        if lower_bound is not None or upper_bound is not None:
-            distribution = self.__truncate_distribution(
-                distribution, lower_bound, upper_bound, threshold
-            )
-
+        if settings.lower_bound is not None or settings.upper_bound is not None:
+            distribution = self.__truncate_distribution(distribution, settings)
         self.__set_bounds(distribution)
         self.distribution = distribution
 
@@ -217,7 +110,7 @@ class OTDistribution(
         return self.distribution.getStandardDeviation()[0]
 
     def __transform_distribution(
-        self, distribution: Distribution, transformation: str
+        self, distribution: Distribution, settings: OTDistribution_Settings
     ) -> CompositeDistribution:
         """Apply a transformation to a distribution.
 
@@ -225,13 +118,12 @@ class OTDistribution(
 
         Args:
             distribution: The original distribution.
-            transformation: A transformation applied to the random variable,
-                e.g. 'sin(x)'. If `None`, no transformation.
+            settings: The settings of the distribution.
 
         Returns:
             The transformed distribution.
         """
-        transformation = transformation.replace(" ", "")
+        transformation = settings.transformation.replace(" ", "")
         symbolic_function = SymbolicFunction(
             [self.DEFAULT_VARIABLE_NAME], [transformation]
         )
@@ -241,54 +133,50 @@ class OTDistribution(
         return CompositeDistribution(symbolic_function, distribution)
 
     def __truncate_distribution(
-        self,
-        distribution: Distribution,
-        lower_bound: float | None,
-        upper_bound: float | None,
-        threshold: float = 0.5,
+        self, distribution: Distribution, settings: OTDistribution_Settings
     ) -> TruncatedDistribution:
         """Truncate the distribution of a random variable.
 
         Args:
             distribution: The original distribution.
-            lower_bound: A lower bound to truncate the probability distributions.
-                If `None`, no lower truncation.
-            upper_bound: An upper bound to truncate the probability distributions.
-                If `None`, no upper truncation.
-            threshold: A threshold in [0,1].
+            settings: The settings of the distribution.
 
         Returns:
             The transformed distributions.
         """
         self.transformation = f"Trunc({self.transformation})"
-        if lower_bound is None:
-            if upper_bound > self.math_upper_bound:
-                msg = "u_b is greater than the current upper bound."
+        if settings.lower_bound is None:
+            if settings.upper_bound > self.math_upper_bound:
+                msg = "upper_bound is greater than the current upper bound."
                 raise ValueError(msg)
             args = (
                 distribution,
-                upper_bound,
+                settings.upper_bound,
                 TruncatedDistribution.UPPER,
-                threshold,
+                settings.threshold,
             )
-        elif upper_bound is None:
-            if lower_bound < self.math_lower_bound:
-                msg = "l_b is less than the current lower bound."
+        elif settings.upper_bound is None:
+            if settings.lower_bound < self.math_lower_bound:
+                msg = "lower_bound is less than the current lower bound."
                 raise ValueError(msg)
             args = (
                 distribution,
-                lower_bound,
+                settings.lower_bound,
                 TruncatedDistribution.LOWER,
-                threshold,
+                settings.threshold,
             )
         else:
-            if lower_bound < self.math_lower_bound:
-                msg = "l_b is less than the current lower bound."
+            if settings.lower_bound < self.math_lower_bound:
+                msg = "lower_bound is less than the current lower bound."
                 raise ValueError(msg)
-            if upper_bound > self.math_upper_bound:
-                msg = "u_b is greater than the current upper bound."
+            if settings.upper_bound > self.math_upper_bound:
+                msg = "upper_bound is greater than the current upper bound."
                 raise ValueError(msg)
-            args = (distribution, Interval(lower_bound, upper_bound), threshold)
+            args = (
+                distribution,
+                Interval(settings.lower_bound, settings.upper_bound),
+                settings.threshold,
+            )
 
         return TruncatedDistribution(*args)
 

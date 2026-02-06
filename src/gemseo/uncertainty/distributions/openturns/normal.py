@@ -21,18 +21,9 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.normal_settings import _MU
-from gemseo.uncertainty.distributions.base_settings.normal_settings import _SIGMA
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _LOWER_BOUND,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import _THRESHOLD
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _TRANSFORMATION,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _UPPER_BOUND,
+    OTDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -44,37 +35,20 @@ class OTNormalDistribution(OTDistribution):
 
     settings_class = OTNormalDistribution_Settings
 
-    def __init__(
-        self,
-        mu: float = _MU,
-        sigma: float = _SIGMA,
-        transformation: str = _TRANSFORMATION,
-        lower_bound: float | None = _LOWER_BOUND,
-        upper_bound: float | None = _UPPER_BOUND,
-        threshold: float = _THRESHOLD,
-        settings: OTNormalDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            mu: The mean of the normal random variable.
-            sigma: The standard deviation
-                of the normal random variable.
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: OTNormalDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None:
-            settings = OTNormalDistribution_Settings(
-                mu=mu,
-                sigma=sigma,
-                transformation=transformation,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-                threshold=threshold,
-            )
+            settings = OTNormalDistribution_Settings()
         super().__init__(
-            interfaced_distribution="Normal",
-            parameters=(settings.mu, settings.sigma),
-            standard_parameters={self._MU: settings.mu, self._SIGMA: settings.sigma},
-            transformation=settings.transformation,
-            lower_bound=settings.lower_bound,
-            upper_bound=settings.upper_bound,
-            threshold=settings.threshold,
+            OTDistribution_Settings(
+                interfaced_distribution="Normal",
+                parameters=(settings.mu, settings.sigma),
+                standard_parameters={
+                    self._MU: settings.mu,
+                    self._SIGMA: settings.sigma,
+                },
+                transformation=settings.transformation,
+                lower_bound=settings.lower_bound,
+                upper_bound=settings.upper_bound,
+                threshold=settings.threshold,
+            )
         )

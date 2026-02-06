@@ -21,9 +21,10 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.normal_settings import _MU
-from gemseo.uncertainty.distributions.base_settings.normal_settings import _SIGMA
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
+from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+    SPDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
@@ -34,21 +35,16 @@ class SPNormalDistribution(SPDistribution):
 
     settings_class = SPNormalDistribution_Settings
 
-    def __init__(
-        self,
-        mu: float = _MU,
-        sigma: float = _SIGMA,
-        settings: SPNormalDistribution_Settings | None = None,
-    ) -> None:
-        """
-        Args:
-            mu: The mean of the normal random variable.
-            sigma: The standard deviation of the normal random variable.
-        """  # noqa: D205,D212,D415
+    def __init__(self, settings: SPNormalDistribution_Settings | None = None) -> None:  # noqa: D107
         if settings is None:
-            settings = SPNormalDistribution_Settings(mu=mu, sigma=sigma)
+            settings = SPNormalDistribution_Settings()
         super().__init__(
-            interfaced_distribution="norm",
-            parameters={"loc": settings.mu, "scale": settings.sigma},
-            standard_parameters={self._MU: settings.mu, self._SIGMA: settings.sigma},
+            SPDistribution_Settings(
+                interfaced_distribution="norm",
+                parameters={"loc": settings.mu, "scale": settings.sigma},
+                standard_parameters={
+                    self._MU: settings.mu,
+                    self._SIGMA: settings.sigma,
+                },
+            )
         )

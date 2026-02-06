@@ -32,6 +32,12 @@ from numpy.testing import assert_almost_equal
 from gemseo import create_discipline
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -43,9 +49,9 @@ FUNCTION = {
     "distributions": {
         name: {
             "name": name,
-            "distribution": "OTUniformDistribution",
-            "minimum": 0,
-            "maximum": 1,
+            "distribution_settings": OTUniformDistribution_Settings(
+                minimum=0.0, maximum=1.0
+            ),
         }
         for name in ["x1", "x2", "x3"]
     },
@@ -188,8 +194,12 @@ def test_morris_with_nsamples() -> None:
     expressions = {"y": "x1+x2"}
     discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
     space = ParameterSpace()
-    space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
+    space.add_random_variable(
+        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
+    )
+    space.add_random_variable(
+        "x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
+    )
     morris = MorrisAnalysis()
     morris.compute_samples([discipline], space, n_samples=7)
     assert morris.n_replicates == 2
@@ -252,7 +262,7 @@ def test_morris_multiple_disciplines() -> None:
 
     for variable in ["x1", "x2", "x3"]:
         space.add_random_variable(
-            variable, "OTUniformDistribution", minimum=-10, maximum=10
+            variable, OTUniformDistribution_Settings(minimum=-10, maximum=10)
         )
 
     morris = MorrisAnalysis()
@@ -308,7 +318,7 @@ def test_output_names() -> None:
     """
     discipline = AnalyticDiscipline({"y": "x", "z": "x"})
     parameter_space = ParameterSpace()
-    parameter_space.add_random_variable(name="x", distribution="SPUniformDistribution")
+    parameter_space.add_random_variable("x", SPUniformDistribution_Settings())
     sensitivity_analysis = MorrisAnalysis()
     sensitivity_analysis.compute_samples(
         disciplines=[discipline],

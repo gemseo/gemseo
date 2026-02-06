@@ -32,7 +32,13 @@ from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
     OTDistributionFitter,
 )
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
+from gemseo.uncertainty.distributions.openturns.joint_settings import (
+    OTJointDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
+from gemseo.uncertainty.distributions.openturns.normal_settings import (
+    OTNormalDistribution_Settings,
+)
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -63,7 +69,11 @@ def test_data(fitter, data):
 
 def test_distribution_dimension_error(fitter) -> None:
     """Check the error raised when using a distribution of dimension higher than 1."""
-    ot_joint_distribution = OTJointDistribution([OTNormalDistribution()] * 2)
+    ot_joint_distribution = OTJointDistribution(
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()] * 2
+        )
+    )
     with pytest.raises(
         KeyError,
         match=re.escape(

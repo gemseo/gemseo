@@ -46,6 +46,15 @@ from gemseo.machine_learning.regression.models.pce import PCERegressor
 from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 
@@ -62,8 +71,8 @@ def discipline() -> AnalyticDiscipline:
 def probability_space() -> ParameterSpace:
     """The probability space associated with the linear discipline."""
     space = ParameterSpace()
-    space.add_random_variable("x1", "OTUniformDistribution")
-    space.add_random_variable("x2", "OTUniformDistribution")
+    space.add_random_variable("x1", OTUniformDistribution_Settings())
+    space.add_random_variable("x2", OTUniformDistribution_Settings())
     return space
 
 
@@ -93,9 +102,15 @@ def ishigami_discipline() -> AnalyticDiscipline:
 def ishigami_probability_space() -> ParameterSpace:
     """The probability space associated with the Ishigami discipline."""
     space = ParameterSpace()
-    space.add_random_variable("x1", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    space.add_random_variable("x2", "OTUniformDistribution", minimum=-pi, maximum=pi)
-    space.add_random_variable("x3", "OTUniformDistribution", minimum=-pi, maximum=pi)
+    space.add_random_variable(
+        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
+    )
+    space.add_random_variable(
+        "x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
+    )
+    space.add_random_variable(
+        "x3", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
+    )
     return space
 
 
@@ -220,7 +235,7 @@ def test_input_names_with_quadrature(discipline, probability_space) -> None:
 def test_missing_random_variables(dataset) -> None:
     """Check that a ValueError is raised when a random variable has no distribution."""
     probability_space = ParameterSpace()
-    probability_space.add_random_variable("x1", "SPNormalDistribution")
+    probability_space.add_random_variable("x1", SPNormalDistribution_Settings())
     input_space = dataset.misc["input_space"]
     dataset.misc["input_space"] = probability_space
     with pytest.raises(
@@ -250,8 +265,8 @@ def test_transformer(dataset, probability_space, key) -> None:
 def test_ot_distribution(dataset) -> None:
     """Check that PCERegressor handles only the OTDistribution instances."""
     probability_space = ParameterSpace()
-    probability_space.add_random_variable("x1", "SPUniformDistribution")
-    probability_space.add_random_variable("x2", "SPUniformDistribution")
+    probability_space.add_random_variable("x1", SPUniformDistribution_Settings())
+    probability_space.add_random_variable("x2", SPUniformDistribution_Settings())
     input_space = dataset.misc["input_space"]
     dataset.misc["input_space"] = probability_space
     with pytest.raises(
@@ -627,13 +642,13 @@ def test_multidimensional_variables() -> None:
     discipline = AutoPyDiscipline(f)
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable(
-        "x1", "OTUniformDistribution", minimum=-pi, maximum=pi
+        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
     parameter_space.add_random_variable(
-        "x2", "OTUniformDistribution", minimum=-pi, maximum=pi
+        "x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
     parameter_space.add_random_variable(
-        "x3", "OTUniformDistribution", minimum=-pi, maximum=pi
+        "x3", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
 
     scenario = DOEScenario(
@@ -660,10 +675,10 @@ def test_multidimensional_variables() -> None:
     discipline = AutoPyDiscipline(f, use_arrays=True)
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable(
-        "a", "OTUniformDistribution", 2, minimum=-pi, maximum=pi
+        "a", OTUniformDistribution_Settings(minimum=-pi, maximum=pi), size=2
     )
     parameter_space.add_random_variable(
-        "b", "OTUniformDistribution", minimum=-pi, maximum=pi
+        "b", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
 
     scenario = DOEScenario(

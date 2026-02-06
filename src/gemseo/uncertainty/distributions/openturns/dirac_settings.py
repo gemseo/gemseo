@@ -18,17 +18,12 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
-    _OTDistributionSettingsMixin,
+from gemseo.uncertainty.distributions.openturns.base_settings import (
+    BaseOTMarginalDistributionSettings,
 )
 
 
-class OTDiracDistribution_Settings(  # noqa: N801
-    BaseDistributionSettings, _OTDistributionSettingsMixin
-):
+class OTDiracDistribution_Settings(BaseOTMarginalDistributionSettings):  # noqa: N801
     """The settings of an OpenTURNS-based Dirac distribution."""
 
     variable_value: float = Field(

@@ -19,7 +19,12 @@ from __future__ import annotations
 from gemseo.uncertainty.distributions.base_settings.normal_settings import (
     BaseNormalDistributionSettings,
 )
+from gemseo.uncertainty.distributions.scipy.base_settings import (
+    BaseSPDistributionSettings,
+)
 
 
-class SPNormalDistribution_Settings(BaseNormalDistributionSettings):  # noqa: N801
+class SPNormalDistribution_Settings(  # noqa: N801
+    BaseNormalDistributionSettings, BaseSPDistributionSettings
+):
     """The settings of a SciPy-based normal distribution."""

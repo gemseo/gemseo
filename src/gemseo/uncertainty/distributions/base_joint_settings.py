@@ -12,19 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the SciPy-based exponential distributions."""
+"""Settings for joint probability distributions."""
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.exponential_settings import (
-    BaseExponentialDistributionSettings,
-)
-from gemseo.uncertainty.distributions.scipy.base_settings import (
-    BaseSPDistributionSettings,
+from collections.abc import Sequence
+
+from pydantic import Field
+
+from gemseo.settings.base_settings import BaseSettings
+from gemseo.uncertainty.distributions.base_distribution_settings import (
+    BaseDistributionSettings,
 )
 
 
-class SPExponentialDistribution_Settings(  # noqa: N801
-    BaseExponentialDistributionSettings, BaseSPDistributionSettings
-):
-    """The settings of a SciPy-based exponential distribution."""
+class BaseJointDistributionSettings(BaseDistributionSettings):  # noqa: N801
+    """The base class for the settings of a joint probability distribution."""
+
+    marginal_settings: Sequence[BaseSettings] = Field(
+        description="The settings of the marginal probability distributions."
+    )
