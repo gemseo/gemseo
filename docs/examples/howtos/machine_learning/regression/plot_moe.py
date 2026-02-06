@@ -40,6 +40,13 @@ from numpy import zeros
 
 from gemseo import create_benchmark_dataset
 from gemseo.machine_learning import create_regression_model
+from gemseo.machine_learning.classification.models.knn_settings import (
+    KNNClassifier_Settings,
+)
+from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
+from gemseo.machine_learning.regression.models.gpr_settings import (
+    GaussianProcessRegressor_Settings,
+)
 
 # %%
 # ## Dataset (Rosenbrock)
@@ -80,9 +87,9 @@ dataset
 # We construct the MoE model using the predefined parameters,
 # and fit the model to the dataset through the [learn()][gemseo.machine_learning.regression.models.moe.MOERegressor.learn] method.
 model = create_regression_model("MOERegressor", dataset)
-model.set_clusterer("KMeans", n_clusters=3)
-model.set_classifier("KNNClassifier", n_neighbors=5)
-model.set_regressor("GaussianProcessRegressor")
+model.set_clusterer(KMeans_Settings(n_clusters=3))
+model.set_classifier(KNNClassifier_Settings(n_neighbors=5))
+model.set_regressor(GaussianProcessRegressor_Settings())
 model.learn()
 
 # %%

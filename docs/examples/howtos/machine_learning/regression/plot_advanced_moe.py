@@ -25,10 +25,24 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.machine_learning import create_regression_model
+from gemseo.machine_learning.classification.models.knn_settings import (
+    KNNClassifier_Settings,
+)
+from gemseo.machine_learning.classification.models.random_forest_settings import (
+    RandomForestClassifier_Settings,
+)
 from gemseo.machine_learning.classification.quality.f1_measure import F1Measure
+from gemseo.machine_learning.clustering.models.gaussian_mixture_settings import (
+    GaussianMixture_Settings,
+)
+from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
 )
+from gemseo.machine_learning.regression.models.linreg_settings import (
+    LinearRegressor_Settings,
+)
+from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 
 # %%
@@ -70,8 +84,8 @@ model = create_regression_model("MOERegressor", dataset, hard=False)
 # and the number of clusters
 # minimizing this measure.
 model.set_clustering_measure(SilhouetteMeasure)
-model.add_clusterer_candidate("KMeans", n_clusters=[2, 3, 4])
-model.add_clusterer_candidate("GaussianMixture", n_clusters=[3, 4, 5])
+model.add_clusterer_candidate(KMeans_Settings(), n_clusters=[2, 3, 4])
+model.add_clusterer_candidate(GaussianMixture_Settings(), n_clusters=[3, 4, 5])
 
 # %%
 # ## Classification
@@ -84,8 +98,8 @@ model.add_clusterer_candidate("GaussianMixture", n_clusters=[3, 4, 5])
 # the mixture of experts will select the classification model and the settings
 # minimizing this measure.
 model.set_classification_measure(F1Measure)
-model.add_classifier_candidate("KNNClassifier", n_neighbors=[3, 4, 5])
-model.add_classifier_candidate("RandomForestClassifier", n_estimators=[100])
+model.add_classifier_candidate(KNNClassifier_Settings(), n_neighbors=[3, 4, 5])
+model.add_classifier_candidate(RandomForestClassifier_Settings(n_estimators=100))
 
 # %%
 # ## Regression
@@ -96,8 +110,8 @@ model.add_classifier_candidate("RandomForestClassifier", n_estimators=[100])
 # During the learning stage, for each cluster,
 # the mixture of experts will select the regression model minimizing this measure.
 model.set_regression_measure(MSEMeasure)
-model.add_regressor_candidate("LinearRegressor")
-model.add_regressor_candidate("RBFRegressor")
+model.add_regressor_candidate(LinearRegressor_Settings())
+model.add_regressor_candidate(RBFRegressor_Settings())
 
 # %%
 # !!! note
