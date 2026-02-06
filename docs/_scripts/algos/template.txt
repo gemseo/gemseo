@@ -3,9 +3,7 @@
 !!! warning
 
     Some capabilities may require the [installation][installation]
-    of GEMSEO with [all its features][dependencies]
-    and some others may depend on
-    [plugins](https://gemseo.gitlab.io/dev/gemseo-org/develop/plugins).
+    of GEMSEO with [all its features][dependencies].
 
 !!! warning
 
