@@ -1,5 +1,4 @@
 ---
-status: draft
 description: ""
 tags: ['user_guide']
 search:
@@ -17,6 +16,14 @@ search:
 
 # Caching and recording discipline data
 
+!!! info "How-to"
+
+    - [Access and clear a discipline cache][access-and-clear-a-discipline-cache]
+    - [Set a discipline cache][set-a-discipline-cache]
+    - [Manipulate data in a cache][manipulate-data-in-a-cache]
+    - [Merge different caches][merge-different-caches]
+    - [Exploit an HDF5 cache file][exploit-an-hdf5-cache-file]
+
 ## Introduction
 
 There are several reasons to store the evaluations (input, output and Jacobian values) of a discipline:
@@ -28,8 +35,6 @@ There are several reasons to store the evaluations (input, output and Jacobian v
 
 Some of these reasons are all the more important as the discipline triggers a simulation which can be costly. Caching disciplinary data helps to avoid wasting computing resources.
 
-Examples can be found [here][cache-examples].
-
 ## The basics
 
 In GEMSEO, a [Discipline][gemseo.core.discipline.discipline.Discipline] is composed of a [cache][gemseo.core.discipline.discipline.Discipline.cache] to store these evaluations expressed in terms of input, output and Jacobian data.
@@ -38,20 +43,16 @@ In GEMSEO, a [Discipline][gemseo.core.discipline.discipline.Discipline] is compo
 
 When the user passes an input value to the method [execute()][gemseo.core.discipline.discipline.Discipline.execute], the [Discipline][gemseo.core.discipline.discipline.Discipline] looks in its [cache][gemseo.core.discipline.discipline.Discipline.cache] if there is an output value associated with this input value. If so, it returns it to the user. Otherwise, it computes it, stores it in the cache and returns it to the user.
 
+!!! note
+    For performance reasons, the input value of type `Mapping[str, ndarray | int | float]` is flattened into a NumPy array. This array is then hashed using the XXH64 algorithm from the [xxHash library](https://cyan4973.github.io/xxHash/) and the resulting hash value is compared to those stored in the [cache][gemseo.core.discipline.discipline.Discipline.cache].
+
 ### Define a tolerance for caching
 
 The user can pass a tolerance below which two input arrays are considered equal: `numpy.linalg.norm(user_array-cached_array)/(1+norm(cached_array)) <= tolerance`. This tolerance could be useful to optimize CPU time. It could be something like `2 * numpy.finfo(float).eps`.
 
-### Export to another format
+### Different cache types
 
-The [cache][gemseo.core.discipline.discipline.Discipline.cache] can be converted to a [Dataset][gemseo.datasets.dataset.Dataset] for post-processing purposes using its method [to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset]. It can also be saved into an XML file to be read by [ggobi](http://ggobi.org/) using its method [to_ggobi()][gemseo.caches.base_full_cache.BaseFullCache.to_ggobi].
-
-!!! note
-    For the sake of performance, the input value of type `Mapping[str, ndarray | int | float]` is flatten to a NumPy array, hashed using the algorithm XXH64 of the [xxHash library](https://cyan4973.github.io/xxHash/) and the hashed value compare to the ones stored in the [cache][gemseo.core.discipline.discipline.Discipline.cache].
-
-### Set the cache policy of a discipline
-
-The data can be cached either:
+In GEMSEO, different cache types are available:
 
 - in memory:
     - the [SimpleCache][gemseo.caches.simple_cache.SimpleCache] (default policy) only stores in memory the data associated with the last call to [execute()][gemseo.core.discipline.discipline.Discipline.execute],
@@ -59,41 +60,33 @@ The data can be cached either:
 - on the disk:
     - the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] stores in a node of an HDF file the data associated with all the calls to [execute()][gemseo.core.discipline.discipline.Discipline.execute].
 
-The cache strategy of an [Discipline][gemseo.core.discipline.discipline.Discipline] can be changed with the method [set_cache()][gemseo.core.discipline.discipline.Discipline.set_cache] by passing as first argument the name of the cache class, e.g. `"MemoryFullCache"`.
+        HDF5 (Hierarchical Data Format version 5) is a file format designed to store
+        and organize large and complex datasets.
+        An HDF5 file has a hierarchical structure,
+        similar to a file system,
+        where data is stored in groups (like folders) and datasets (like files).
+
+        This structure allows multiple datasets to coexist in a single file, each accessible through a unique path. Metadata can also be attached to groups and datasets using attributes, making HDF5 well suited for scientific and engineering applications.
+
+!!! warning
+    - The [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] relies on some multiprocessing features.
+    When working on Windows, the execution of scripts containing instances of
+    [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] must be protected by an
+    `if __name__ == '__main__':` statement.
+
+    - The [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] relies on some multiprocessing features. When working on
+    Windows, the execution of scripts containing instances of [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache]
+    must be protected by an `if __name__ == '__main__':` statement.
+    Currently, the use of an HDF5Cache is not supported in parallel on Windows
+    platforms. This is due to the way subprocesses are forked in this architecture.
+    The method [set_optimization_history_backup()][gemseo.scenarios.base_scenario.BaseScenario.set_optimization_history_backup]
+    is recommended as an alternative.
 
 !!! note
     The types of cache can be extended by subclassing [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] or [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache].
     The [set_cache()][gemseo.core.discipline.discipline.Discipline.set_cache] method will find the new types automatically because it is based on a [CacheFactory][gemseo.caches.factory.CacheFactory].
 
 ## Advanced use
-
-### Get metadata
-
-You can easily get:
-
-- the number of entries: `n_entries = len(cache)`,
-- the names of the input variables: `input_names = cache.input_names`,
-- the names of the output variables: `output_names = cache.output_names`,
-- the size of the variables: `size = cache.names_to_sizes[variable_name]`.
-
-### Get the last entry
-
-Use `last_entry = cache.last_entry` to retrieve the last cached data.
-
-`last_entry` is a [CacheEntry][gemseo.caches.cache_entry.CacheEntry] with fields `"inputs`", `"outputs"` and `"jacobian"`, to be used as `output_value = cache_entry.outputs`.
-
-### Clear the cache
-
-Use `cache.clear()` to remove all the entries.
-
-### Handle the cache as a dictionary
-
-A cache can be handled as a dictionary:
-
-- store an output value: `cache[input_value] = (output_value, None)`
-- store a Jacobian value: `cache[input_value] = (None, jacobian_value)`
-- store both Jacobian and output values: `cache[input_value] = (output_value, jacobian_value)`
-- retrieve an entry: `cache_entry = cache[input_value]`.
 
 ### Cache data in an HDF file
 
