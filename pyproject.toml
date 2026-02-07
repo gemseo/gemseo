@@ -28,7 +28,7 @@ dependencies = [
     "matplotlib >=3.6.0,<=3.10.8",
     "minisom >=2.3.5,< 2.4",
     "networkx >=2.5,<=3.6.1",
-    "numpy >=1.23,<=2.4.1",
+    "numpy >=1.23,<=2.4.2",
     "packaging >=15,<=26.0",
     "pandas >=2.1.0,<=2.3.3",
     "prettytable >=2.3.0,<=3.17.0",
