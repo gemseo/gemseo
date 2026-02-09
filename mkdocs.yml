@@ -3,6 +3,14 @@ INHERIT: mkdocs-fast.yml
 strict: true
 
 plugins:
+  minify:
+    minify_html: true
+    minify_js: true
+    minify_css: true
+    htmlmin_opts:
+        remove_comments: true
+        remove_empty_space: true
+        remove_all_empty_space: true
   mkdocstrings:
     handlers:
       python:
