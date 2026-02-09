@@ -63,9 +63,14 @@ all = [
 
 [dependency-groups]
 dev = [
+    {include-group = "check"},
+    {include-group = "test"},
+]
+test = [
     "covdefaults",
     "pandera",
-    "pytest",
+    # Lower bound is necessary for testing the lowest bounds of dependencies.
+    "pytest >=8",
     "pytest-cov",
     "pytest-xdist",
 ]
@@ -90,7 +95,15 @@ doc = [
     # For supporting DataFrame in pydantic models in an example.
     "pandera",
 ]
-check-types = [
+check = [
+    # "just",
+    "prek",
+    "ruff",
+]
+dist = [
+    "check-wheel-contents",
+]
+typing = [
     "mypy[reports]",
     "pandas-stubs",
     "types-tqdm",
