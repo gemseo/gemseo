@@ -1479,7 +1479,7 @@ def configure(
 def wrap_discipline_in_job_scheduler(
     discipline: Discipline,
     scheduler_name: str,
-    workdir_path: Path,
+    workdir_path: str | Path,
     **options: Any,
 ) -> JobSchedulerDisciplineWrapper:
     """Wrap the discipline within another one to delegate its execution to a job
@@ -1506,7 +1506,7 @@ def wrap_discipline_in_job_scheduler(
     Args:
         discipline: The discipline to wrap in the job scheduler.
         scheduler_name: The name of the job scheduler (for instance LSF, SLURM, PBS).
-        workdir_path: The path to the workdir
+        workdir_path: The path to the workdir.
         **options: The submission options.
 
     Raises:

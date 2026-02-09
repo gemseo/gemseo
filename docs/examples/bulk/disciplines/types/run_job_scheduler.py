@@ -30,11 +30,15 @@ from gemseo import create_scenario
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.settings.doe import LHS_Settings
 
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 mda = create_mda("MDAGaussSeidel", disciplines)
 wrapped_mda = wrap_discipline_in_job_scheduler(
-    mda, scheduler_name="SLURM", workdir_path="workdir", cpus_per_task=24
+    mda,
+    scheduler_name="SLURM",
+    workdir_path="workdir",
+    cpus_per_task=24,
 )
 scenario = create_scenario(
     mda,
@@ -59,16 +63,21 @@ scenario.execute(algo_name="LHS", n_samples=100, n_processes=10)
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 wrapped_disciplines = [
     wrap_discipline_in_job_scheduler(
-        discipline, workdir_path="workdir", cpus_per_task=24, scheduler_name="SLURM"
+        discipline,
+        workdir_path="workdir",
+        cpus_per_task=24,
+        scheduler_name="SLURM",
     )
     for discipline in disciplines
 ]
 scenario = create_scenario(
     wrapped_disciplines,
-    SellarDesignSpace(),
     "obj",
+    SellarDesignSpace(),
     formulation_name="MDF",
     scenario_type="DOE",
 )
-scenario.formulation.mda.set_cache(Discipline.HDF5_CACHE, hdf_file_path="mda_cache.h5")
-scenario.execute(algo_name="lhs", n_samples=100, n_processes=10)
+scenario.formulation.mda.set_cache(
+    Discipline.CacheType.HDF5, hdf_file_path="mda_cache.h5"
+)
+scenario.execute(LHS_Settings(n_samples=100, n_processes=10))
