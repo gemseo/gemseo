@@ -16,7 +16,7 @@
     },
     "mda_chain_settings_for_start_at_equilibrium": {
       "type": "object",
-      "description": "The settings for the MDA when `start_at_equilibrium=True`.  See detailed settings in [MDAChain][gemseo.mda.mda_chain.MDAChain]."
+      "description": "The settings for the MDA when `start_at_equilibrium=True`.  See detailed settings in [MDAChain][gemseo.mda.chain.MDAChain]."
     },
     "n_processes": {
       "type": "integer",

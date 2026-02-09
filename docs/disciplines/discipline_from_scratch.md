@@ -182,7 +182,7 @@ class NewDiscipline(Discipline):
 ```
 
 !!! warning
-    An [Discipline][gemseo.core.discipline.discipline.Discipline] that will be placed inside an [MDF][gemseo.formulations.mdf.MDF], a [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation or a [BaseMDA][gemseo.mda.base_mda.BaseMDA] with strong couplings **must** define its default inputs. Otherwise, the execution will fail.
+    An [Discipline][gemseo.core.discipline.discipline.Discipline] that will be placed inside an [MDF][gemseo.formulations.mdf.MDF], a [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation or a [BaseMDA][gemseo.mda.base.BaseMDA] with strong couplings **must** define its default inputs. Otherwise, the execution will fail.
 
 ## Overloading the `Discipline._run()` method
 

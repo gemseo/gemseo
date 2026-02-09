@@ -62,7 +62,7 @@ Chain output with namespace, z = [2.]
 ```
 
 !!! warning
-    This is an experimental feature, that is currently validated for the main process classes: [MDOChain][gemseo.core.chains.chain.MDOChain], [BaseMDA][gemseo.mda.base_mda.BaseMDA] and its subclasses, [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain] etc. Scenarios can be created with disciplines handling namespaces. The main limitation is that not all wrappers and MDO test problems are compatible with namespaces, which requires the modifications described at the end of this page. Currently, the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] and [ConstraintAggregation][gemseo.disciplines.constraint_aggregation.ConstraintAggregation] support namespaces and can be used as examples.
+    This is an experimental feature, that is currently validated for the main process classes: [MDOChain][gemseo.core.chains.chain.MDOChain], [BaseMDA][gemseo.mda.base.BaseMDA] and its subclasses, [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain] etc. Scenarios can be created with disciplines handling namespaces. The main limitation is that not all wrappers and MDO test problems are compatible with namespaces, which requires the modifications described at the end of this page. Currently, the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] and [ConstraintAggregation][gemseo.disciplines.constraint_aggregation.ConstraintAggregation] support namespaces and can be used as examples.
 
 ## Coupling control in MDAs
 

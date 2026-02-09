@@ -20,7 +20,7 @@ search:
 This section deals with the construction and execution of a Multi Disciplinary Analysis, abbreviated MDA. MDAs are required when dealing with coupled disciplines, that is when inputs of disciplines are outputs of others. Such variables are referred to as the coupling variables.
 
 !!! note
-    In GEMSEO, the MDA objects all inherit from [BaseMDA][gemseo.mda.base_mda.BaseMDA].
+    In GEMSEO, the MDA objects all inherit from [BaseMDA][gemseo.mda.base.BaseMDA].
 
 For a given set of coupled disciplines, the MDA solves for the coupling variables. Mathematically, it reduces to the solution of a non-linear system of equations by block of the form $R(x, y^{\star}) = 0$ where $y^{\star}$ represents the solution for the coupling variables and $x$ the remaining variables. These latter variables *parametrize* the system of equations, i.e. for a fixed $x$, the MDA computes $y^{\star}$ such that $R(x, y^{\star}) = 0$.
 
@@ -68,15 +68,15 @@ mda_quasi_newton = create_mda(
 ```
 
 !!! warning
-    Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to a [BaseMDA][gemseo.mda.base_mda.BaseMDA] with strong couplings **must** define its [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data]. Otherwise, the execution will fail.
+    Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to a [BaseMDA][gemseo.mda.base.BaseMDA] with strong couplings **must** define its [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data]. Otherwise, the execution will fail.
 
 ## Composed MDA methods
 
-The two composed MDAs available in GEMSEO are the [MDASequential][gemseo.mda.sequential_mda.MDASequential] and the [MDAChain][gemseo.mda.mda_chain.MDAChain].
+The two composed MDAs available in GEMSEO are the [MDASequential][gemseo.mda.sequential.MDASequential] and the [MDAChain][gemseo.mda.chain.MDAChain].
 
 ### The sequential MDA
 
-The [MDASequential][gemseo.mda.sequential_mda.MDASequential] implements a generic mechanism to execute sequentially an arbitrary number of inner MDAs. An example is given in the following code:
+The [MDASequential][gemseo.mda.sequential.MDASequential] implements a generic mechanism to execute sequentially an arbitrary number of inner MDAs. An example is given in the following code:
 
 ``` python
 mda_1 = create_mda("MDAJacobi", disciplines, max_mda_iter=2)
@@ -91,7 +91,7 @@ In this example, the sequential MDA will perform 2 iterations of the Jacobi's me
 
 ### The MDA chain
 
-The [MDAChain][gemseo.mda.mda_chain.MDAChain] implements an advanced graph-based algorithm which allows, when possible, to split the solution of the non-linear system of equations into smaller and weakly coupled ones. The next figure illustrates this process on a 16 coupled disciplines toy problem.
+The [MDAChain][gemseo.mda.chain.MDAChain] implements an advanced graph-based algorithm which allows, when possible, to split the solution of the non-linear system of equations into smaller and weakly coupled ones. The next figure illustrates this process on a 16 coupled disciplines toy problem.
 
 ![3 resolution phases of a 16 disciplines coupling problem](../assets/images/mda/mda_auto_procedure.png)
 *The 3 resolution phases of a 16 disciplines coupling problem.*
@@ -158,7 +158,7 @@ print(
 ```
 
 !!! note
-    The tolerance is monitored on a relative decrease on the residual norm. Several scaling strategies for the residual are available in GEMSEO. More information [here][gemseo.mda.base_mda.BaseMDA.ResidualScaling]
+    The tolerance is monitored on a relative decrease on the residual norm. Several scaling strategies for the residual are available in GEMSEO. More information [here][gemseo.mda.base.BaseMDA.ResidualScaling]
 
 ### Acceleration/relaxation methods
 
@@ -188,7 +188,7 @@ print(
 
 ### Monitor the convergence
 
-The convergence history of the MDA solvers can be accessed via the [BaseMDA.residual_history][gemseo.mda.base_mda.BaseMDA.residual_history] attribute. More conveniently, there is a dedicated method as in the following example:
+The convergence history of the MDA solvers can be accessed via the [BaseMDA.residual_history][gemseo.mda.base.BaseMDA.residual_history] attribute. More conveniently, there is a dedicated method as in the following example:
 
 ``` python
 mda_gauss_seidel = create_mda("MDAGaussSeidel", disciplines)
@@ -208,7 +208,7 @@ The following MDA algorithms can be parallelized:
 - [MDAJacobi][gemseo.mda.jacobi.MDAJacobi],
 - [MDAQuasiNewton][gemseo.mda.quasi_newton.MDAQuasiNewton],
 - [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson],
-- [MDAChain][gemseo.mda.mda_chain.MDAChain].
+- [MDAChain][gemseo.mda.chain.MDAChain].
 
 When using parallelization, it is possible to set the number of processes/threads on which the execution will be splitted, and whether to use threads or processes. By default, GEMSEO uses threads and the number of threads is the number of CPUs available on the computer the code is run on. The following code shows an example of settings related to this feature:
 

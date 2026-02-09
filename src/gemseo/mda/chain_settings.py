@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 
 class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
-    """The settings for [MDAChain][gemseo.mda.mda_chain.MDAChain]."""
+    """The settings for [MDAChain][gemseo.mda.chain.MDAChain]."""
 
     chain_linearize: bool = Field(
         default=False,
@@ -66,7 +66,7 @@ This field is ignored when `inner_mda_settings` is a Pydantic model.""",
         description="""Whether to create a
 [MDOInitializationChain][gemseo.core.chains.initialization_chain.MDOInitializationChain]
 to compute the eventually missing
-[default_input_data][gemseo.mda.mda_chain.MDAChain.default_input_data]
+[default_input_data][gemseo.mda.chain.MDAChain.default_input_data]
 at the first execution.""",
     )
 

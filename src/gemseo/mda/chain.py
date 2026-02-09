@@ -170,11 +170,11 @@ class MDAChain(BaseMDA):
 
         This method creates a process that will be appended
         to the main inner [MDOChain][gemseo.core.chains.chain.MDOChain]
-        of the [MDAChain][gemseo.mda.mda_chain.MDAChain].
+        of the [MDAChain][gemseo.mda.chain.MDAChain].
         Depending on the number and type of disciplines,
         as well as the options provided by the user,
         the process may be a sole discipline,
-        a [BaseMDA][gemseo.mda.base_mda.BaseMDA],
+        a [BaseMDA][gemseo.mda.base.BaseMDA],
         an [MDOChain][gemseo.core.chains.chain.MDOChain],
         or an
         [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain].
@@ -206,8 +206,8 @@ class MDAChain(BaseMDA):
         This method computes the parallel disciplines,
         if any.
         If there is any coupled disciplines in a parallel task,
-        a [BaseMDA][gemseo.mda.base_mda.BaseMDA] is created,
-        based on the [BaseMDA][gemseo.mda.base_mda.BaseMDA] options provided.
+        a [BaseMDA][gemseo.mda.base.BaseMDA] is created,
+        based on the [BaseMDA][gemseo.mda.base.BaseMDA] options provided.
 
         Args:
             parallel_tasks: The parallel tasks.

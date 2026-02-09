@@ -62,7 +62,7 @@ Otherwise, IDF will consider only the strong coupling targets.""",
             default_factory=dict,
             description="""The settings for the MDA when `start_at_equilibrium=True`.
 
-See detailed settings in [MDAChain][gemseo.mda.mda_chain.MDAChain].""",
+See detailed settings in [MDAChain][gemseo.mda.chain.MDAChain].""",
         )
     )
 

@@ -44,7 +44,7 @@ However, the computation of analytic derivatives is not straightforward. It requ
 
 For weakly coupled problems, based on [MDOChain][gemseo.core.chains.chain.MDOChain], the generalized chain rule in reverse mode (from the outputs to the inputs) is used.
 
-For the coupled problems, when the process is based on a MDA [BaseMDA][gemseo.mda.base_mda.BaseMDA], a coupled adjoint approach is used, with two variants (direct or adjoint) depending on the number of design variables compared to the number of objectives and constraints.
+For the coupled problems, when the process is based on a MDA [BaseMDA][gemseo.mda.base.BaseMDA], a coupled adjoint approach is used, with two variants (direct or adjoint) depending on the number of design variables compared to the number of objectives and constraints.
 
 The following section describes the coupled adjoint method.
 

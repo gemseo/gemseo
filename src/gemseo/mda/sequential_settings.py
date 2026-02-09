@@ -24,7 +24,7 @@ from gemseo.mda.composed_settings import ComposedMDASettings
 
 
 class MDASequential_Settings(BaseMDASettings, ComposedMDASettings):  # noqa: N801
-    """The settings for [MDASequental][gemseo.mda.sequential_mda.MDASequential]."""
+    """The settings for [MDASequental][gemseo.mda.sequential.MDASequential]."""
 
     _settings_names_to_be_cascaded: ClassVar[Sequence[str]] = ["log_convergence"]
     """The settings that must be cascaded to the inner MDAs."""
