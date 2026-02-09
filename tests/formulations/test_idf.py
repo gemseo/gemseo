@@ -115,7 +115,7 @@ def test_build_func_from_disc() -> None:
                 "n_processes": 2,
                 "max_iter": 50,
             },
-            False,
+            True,
         ),
         (
             {
@@ -172,7 +172,8 @@ def test_idf_execution(
     )
 
     if options["max_iter"] == 50:
-        assert 3962.0 < obj_opt < 3965.0
+        # IDF Scenario objective function is normalized by 0.001
+        assert 3962.0 < obj_opt * 1000.0 < 3965.0
 
     assert is_feasible == expected_feasible
 
