@@ -29,7 +29,7 @@ from pydantic_core import PydanticUndefined
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base import BaseMDA
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping

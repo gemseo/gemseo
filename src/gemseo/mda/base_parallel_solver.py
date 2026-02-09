@@ -28,8 +28,8 @@ from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelE
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.mda.base_mda_solver import BaseMDASolver
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.mda.base_solver import BaseMDASolver
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class BaseParallelMDASolver(BaseMDASolver):
+class BaseMDAParallelSolver(BaseMDASolver):
     """Abstract class for MDA solvers that can be run in parallel."""
 
     settings_class: ClassVar[type[BaseParallelMDASettings]] = BaseParallelMDASettings

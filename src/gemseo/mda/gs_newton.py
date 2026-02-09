@@ -31,7 +31,7 @@ from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
-from gemseo.mda.sequential_mda import MDASequential
+from gemseo.mda.sequential import MDASequential
 from gemseo.utils.pydantic import create_model
 
 if TYPE_CHECKING:

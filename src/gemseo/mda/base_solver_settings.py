@@ -23,7 +23,7 @@ from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.mda.base_mda_settings import BaseMDASettings
+from gemseo.mda.base_settings import BaseMDASettings
 
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 

@@ -32,7 +32,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.mda.base_mda_settings import BaseMDASettings
+from gemseo.mda.base_settings import BaseMDASettings
 from gemseo.mda.factory import MDAFactory
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import DatabaseKeyType
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base import BaseMDA
     from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping
 

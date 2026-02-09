@@ -28,7 +28,7 @@ from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,  # noqa: TC001
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:

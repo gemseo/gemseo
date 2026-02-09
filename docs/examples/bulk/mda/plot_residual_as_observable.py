@@ -72,8 +72,8 @@ output_data = mda.execute()
 #     - The maximal number of iterations is reached.
 #       In that case, the design is not feasible.
 #
-# The normed residual can be seen by the [BaseMDA][gemseo.mda.base_mda.BaseMDA] attribute [normed_residual][gemseo.mda.base_mda.BaseMDA.normed_residual].
-mda.normed_residual
+# The norm of the normalized residuals can be seen by the [BaseMDA][gemseo.mda.base_mda.BaseMDA] attribute [normed_residual][gemseo.mda.base_mda.BaseMDA.normed_residual].
+mda.normalized_residual_norm
 
 # %%
 # The evolution of its value can be plotted with [plot_residual_history()][gemseo.mda.base_mda.BaseMDA.plot_residual_history],

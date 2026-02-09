@@ -28,10 +28,10 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base import BaseMDA
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
-from gemseo.mda.sequential_mda import MDASequential
+from gemseo.mda.sequential import MDASequential
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
@@ -60,10 +60,10 @@ def test_execution(mda_sequential) -> None:
     mda_sequential.execute()
 
     assert allclose_(array([0.8, 1.8]), get_y_opt(mda_sequential))
-    assert mda_sequential.normed_residual <= 1e-6
+    assert mda_sequential.normalized_residual_norm <= 1e-6
 
     mda_1, mda_2 = mda_sequential.mda_sequence
-    assert mda_sequential.normed_residual == mda_2.normed_residual
+    assert mda_sequential.normalized_residual_norm == mda_2._normalized_residual_norm
     assert mda_sequential._current_iter == mda_1._current_iter + mda_2._current_iter
 
 

@@ -23,8 +23,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
+from gemseo.mda.base import _BaseMDAProcessFlow
+from gemseo.mda.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
-    from gemseo.mda.base_mda import BaseProcessFlow
+    from gemseo.mda.base import BaseProcessFlow
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -62,7 +62,7 @@ class _ProcessFlow(_BaseMDAProcessFlow):
         return couplings_results
 
 
-class MDAJacobi(BaseParallelMDASolver):
+class MDAJacobi(BaseMDAParallelSolver):
     r"""Perform an MDA using the Jacobi algorithm.
 
     This algorithm is a fixed point iteration method to solve systems of non-linear

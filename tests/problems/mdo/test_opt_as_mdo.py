@@ -36,8 +36,8 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.mda.mda_chain_settings import MDAChain_Settings
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
 

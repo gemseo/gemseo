@@ -26,8 +26,8 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.sequential_mda_settings import MDASequential_Settings
+from gemseo.mda.base import BaseMDA
+from gemseo.mda.sequential_settings import MDASequential_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -84,10 +84,10 @@ class MDASequential(BaseMDA):
             self.io.data = mda.execute(self.io.data)
 
             self.residual_history += mda.residual_history
-            self.normed_residual = mda.normed_residual
+            self._normalized_residual_norm = mda._normalized_residual_norm
             self._current_iter += mda._current_iter
 
-            if mda.normed_residual < self.settings.tolerance:
+            if mda._normalized_residual_norm < self.settings.tolerance:
                 break
 
     # TODO: why is it this method not in the base class API?

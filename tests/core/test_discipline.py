@@ -55,7 +55,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base import BaseMDA
 from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.variables import X_1

@@ -23,7 +23,7 @@ import pytest
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.core.discipline import Discipline
-from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.chain import MDAChain
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )

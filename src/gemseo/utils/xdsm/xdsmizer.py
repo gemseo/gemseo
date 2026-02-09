@@ -55,7 +55,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base import BaseMDA
 from gemseo.scenarios.base_scenario import BaseScenario
 from gemseo.scenarios.doe_scenario import DOEScenario
 from gemseo.scenarios.mdo_scenario import MDOScenario
@@ -200,10 +200,11 @@ class XDSMizer:
             log_workflow_status: Whether to log the evolution of the workflow's status.
             save_pdf: Whether to save the XDSM as a PDF file.
         """
-        self._monitor = Monitoring(self.scenario)
+        workflow = self.scenario.get_process_flow().get_execution_flow()
+        self._monitor = Monitoring(workflow)
         self._monitor.add_observer(self)
         # have to reinitialize with monitored workflow
-        self.initialize(self._monitor.workflow)
+        self.initialize(workflow)
         self.directory_path = directory_path
         self.json_file_name = f"{file_name}.json"
         self.log_workflow_status = log_workflow_status

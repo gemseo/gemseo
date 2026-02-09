@@ -25,9 +25,11 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TC001
-from gemseo.mda.base_mda_settings import BaseMDASettings  # noqa: TC001
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings  # Noqa: TC001
-from gemseo.mda.composed_mda_settings import ComposedMDASettings
+from gemseo.mda.base_parallel_solver_settings import (
+    BaseParallelMDASettings,  # Noqa: TC001
+)
+from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
+from gemseo.mda.composed_settings import ComposedMDASettings
 from gemseo.mda.factory import MDAFactory
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 

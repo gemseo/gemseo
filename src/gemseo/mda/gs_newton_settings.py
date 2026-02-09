@@ -24,7 +24,7 @@ from pydantic import model_validator
 
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings  # noqa: TC001
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings  # noqa: TC001
-from gemseo.mda.sequential_mda_settings import MDASequential_Settings
+from gemseo.mda.sequential_settings import MDASequential_Settings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:

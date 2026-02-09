@@ -25,7 +25,7 @@ from pydantic import model_validator
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base import BaseMDA
 
 
 class ComposedMDASettings:

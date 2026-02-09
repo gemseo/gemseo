@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base import BaseMDA
     from gemseo.typing import RealArray
 
 

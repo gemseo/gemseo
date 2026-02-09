@@ -52,8 +52,7 @@ from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
 from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
-from gemseo.mda import base_parallel_mda_settings as base_parallel_mda_settings
-from gemseo.mda.base_parallel_mda_settings import (
+from gemseo.mda.base_parallel_solver_settings import (
     BaseParallelMDASettings as BaseParallelMDASettings,
 )
 from gemseo.problems.dataset import DatasetType
@@ -113,8 +112,8 @@ if TYPE_CHECKING:
     from gemseo.machine_learning.regression.models.base_regressor_settings import (
         BaseRegressorSettings,
     )
-    from gemseo.mda.base_mda import BaseMDA
-    from gemseo.mda.base_mda_settings import BaseMDASettings
+    from gemseo.mda.base import BaseMDA
+    from gemseo.mda.base_settings import BaseMDASettings
     from gemseo.post._graph_view import GraphView
     from gemseo.post.base_post import BasePost
     from gemseo.post.base_post_settings import BasePostSettings
@@ -1061,7 +1060,7 @@ def monitor_scenario(
     from gemseo.core.monitoring import Monitoring
 
     # Monitoring object is a singleton
-    monitor = Monitoring(scenario)
+    monitor = Monitoring(scenario.get_process_flow().get_execution_flow())
     monitor.add_observer(observer)
 
 

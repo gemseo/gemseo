@@ -36,7 +36,7 @@ from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approxim
 from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
 from gemseo.formulations.idf_chain import IDFChain
 from gemseo.formulations.idf_settings import IDF_Settings
-from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.chain import MDAChain
 from gemseo.utils.string_tools import pretty_repr
 
 if TYPE_CHECKING:

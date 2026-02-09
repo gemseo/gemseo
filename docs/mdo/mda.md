@@ -26,7 +26,7 @@ For a given set of coupled disciplines, the MDA solves for the coupling variable
 
 There are two main categories of MDA objects in GEMSEO:
 
-- The ones implementing a non-linear solver (inheriting from [BaseMDASolver][gemseo.mda.base_mda_solver.BaseMDASolver],
+- The ones implementing a non-linear solver (inheriting from [BaseMDASolver][gemseo.mda.base_solver.BaseMDASolver],
 - The composed MDA, that creates and/or uses inner MDA solvers (more information below).
 
 The following subsections present an overview of these two kinds of available MDAs.

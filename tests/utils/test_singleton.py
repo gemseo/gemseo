@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from os.path import dirname
 
 import pytest
@@ -60,8 +61,20 @@ def test_sing_file() -> None:
     assert a is b
     assert a != c
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "SingleInstancePerFileAttribute subclasses need at least one argument "
+            "in the constructor."
+        ),
+    ):
         SingleFile()
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Argument 0 is not a string but of type <class 'int'>."),
+    ):
+        SingleFile(123)
 
     class SingleFileFail(metaclass=SingleInstancePerFileAttribute):
         def __init__(self) -> None:

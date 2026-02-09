@@ -24,8 +24,8 @@ from pydantic import PositiveInt
 from pydantic import model_validator
 
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-from gemseo.mda.mda_chain import MDAChain
-from gemseo.mda.mda_chain_settings import MDAChain_Settings  # noqa: TC001
+from gemseo.mda.chain import MDAChain
+from gemseo.mda.chain_settings import MDAChain_Settings  # noqa: TC001
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:

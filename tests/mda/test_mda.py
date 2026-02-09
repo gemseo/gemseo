@@ -45,10 +45,10 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.base_mda_settings import BaseMDASettings
-from gemseo.mda.base_mda_solver import BaseMDASolver
-from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
+from gemseo.mda.base import BaseMDA
+from gemseo.mda.base_settings import BaseMDASettings
+from gemseo.mda.base_solver import BaseMDASolver
+from gemseo.mda.base_solver_settings import BaseMDASolverSettings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
@@ -260,9 +260,9 @@ def test_stopping_criteria(base_mda_solver, caplog) -> None:
 
     base_mda_solver.settings.tolerance = 1.0
 
-    base_mda_solver.normed_residual = 0.5
+    base_mda_solver._normalized_residual_norm = 0.5
     assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
-    base_mda_solver.normed_residual = 1.5
+    base_mda_solver._normalized_residual_norm = 1.5
     assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
 
     base_mda_solver.settings.max_mda_iter = 1

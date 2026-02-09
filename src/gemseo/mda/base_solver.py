@@ -34,7 +34,7 @@ from numpy.linalg import norm
 from gemseo.algos.sequence_transformer.composite.relaxation_acceleration import (
     RelaxationAcceleration,
 )
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base import BaseMDA
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
     from gemseo.core.discipline import Discipline
-    from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
+    from gemseo.mda.base_solver_settings import BaseMDASolverSettings
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import RealArray
 
@@ -223,7 +223,7 @@ class BaseMDASolver(BaseMDA):
             self.__update_iteration_metrics()
 
         self._execute_iteration_callbacks()
-        if self.normed_residual <= self.settings.tolerance:
+        if self.normalized_residual_norm <= self.settings.tolerance:
             return True
 
         if self._current_iter >= self.settings.max_mda_iter:
@@ -231,7 +231,7 @@ class BaseMDASolver(BaseMDA):
                 "%s has reached its maximum number of iterations, "
                 "but the normalized residual norm %s is still above the tolerance %s.",
                 self.name,
-                self.normed_residual,
+                self.normalized_residual_norm,
                 self.settings.tolerance,
             )
             return True
@@ -244,7 +244,7 @@ class BaseMDASolver(BaseMDA):
                 "%s has reached its maximum number of unsuccessful iterations, "
                 "but the normalized residual norm %s is still above the tolerance %s.",
                 self.name,
-                self.normed_residual,
+                self.normalized_residual_norm,
                 self.settings.tolerance,
             )
             return True
@@ -340,20 +340,22 @@ class BaseMDASolver(BaseMDA):
         ResidualScaling = self.ResidualScaling  # noqa: N806
 
         if scaling == ResidualScaling.NO_SCALING:
-            normed_residual = float(norm(residual))
+            normalized_residual_norm = float(norm(residual))
 
         elif scaling == ResidualScaling.INITIAL_RESIDUAL_NORM:
-            normed_residual = float(norm(residual))
+            normalized_residual_norm = float(norm(residual))
 
             if scaling_data is None:
-                scaling_data = normed_residual if normed_residual != 0 else 1.0
+                scaling_data = (
+                    normalized_residual_norm if normalized_residual_norm != 0 else 1.0
+                )
 
-            normed_residual /= scaling_data
+            normalized_residual_norm /= scaling_data
 
         elif scaling == ResidualScaling.N_COUPLING_VARIABLES:
             if scaling_data is None:
                 scaling_data = residual.size**0.5
-            normed_residual = norm(residual) / scaling_data
+            normalized_residual_norm = norm(residual) / scaling_data
 
         elif scaling == ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
             if scaling_data is None:
@@ -367,20 +369,20 @@ class BaseMDASolver(BaseMDA):
             for current_slice, initial_norm in scaling_data:
                 normalized_norms.append(norm(residual[current_slice]) / initial_norm)
 
-            normed_residual = max(normalized_norms)
+            normalized_residual_norm = max(normalized_norms)
 
         elif scaling == ResidualScaling.INITIAL_RESIDUAL_COMPONENT:
             if scaling_data is None:
                 scaling_data = residual + (residual == 0)
 
-            normed_residual = np_abs(residual / scaling_data).max()
+            normalized_residual_norm = np_abs(residual / scaling_data).max()
 
         elif scaling == ResidualScaling.SCALED_INITIAL_RESIDUAL_COMPONENT:
             if scaling_data is None:
                 scaling_data = residual + (residual == 0)
 
-            normed_residual = float(norm(residual / scaling_data))
-            normed_residual /= residual.size**0.5
+            normalized_residual_norm = float(norm(residual / scaling_data))
+            normalized_residual_norm /= residual.size**0.5
 
         else:
             # Use the StrEnum casting to raise an explicit error.
@@ -388,7 +390,7 @@ class BaseMDASolver(BaseMDA):
 
         self._scaling_data = scaling_data
 
-        return normed_residual
+        return normalized_residual_norm
 
     def _pre_solve(self) -> bool:  # noqa: D103
         self._sequence_transformer.clear()
@@ -466,25 +468,29 @@ class BaseMDASolver(BaseMDA):
                 self._starting_indices.clear()
                 self.residual_history.clear()
 
-        old_normalized_residual_norm = copy(self.normed_residual)
-        self.normed_residual = self._compute_normalized_residual_norm()
+        old_normalized_residual_norm = copy(self._normalized_residual_norm)
+        self._normalized_residual_norm = self._compute_normalized_residual_norm()
 
-        if self.normed_residual >= old_normalized_residual_norm:
+        if self._normalized_residual_norm >= old_normalized_residual_norm:
             self.__n_consecutive_unsuccessful_iterations += 1
         else:
             self.__n_consecutive_unsuccessful_iterations = 0
 
-        self.residual_history.append(self.normed_residual)
+        self.residual_history.append(self.normalized_residual_norm)
         self._current_iter += 1
 
         self.io.update_output_data({
-            self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual])
+            self.NORMALIZED_RESIDUAL_NORM: array([self.normalized_residual_norm])
         })
 
         if self.settings.log_convergence:
             msg = "{} running... Normalized residual norm = {} (iter. {})"
             LOGGER.info(
-                msg.format(self.name, f"{self.normed_residual:.2e}", self._current_iter)
+                msg.format(
+                    self.name,
+                    f"{self.normalized_residual_norm:.2e}",
+                    self._current_iter,
+                )
             )
 
     def add_iteration_callback(

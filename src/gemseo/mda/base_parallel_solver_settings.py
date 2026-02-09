@@ -19,7 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import NonNegativeInt
 
-from gemseo.mda.base_mda_solver_settings import BaseMDASolverSettings
+from gemseo.mda.base_solver_settings import BaseMDASolverSettings
 from gemseo.utils.constants import _ENABLE_PARALLEL_EXECUTION
 from gemseo.utils.constants import N_CPUS
 
@@ -43,7 +43,7 @@ Threads if `use_threading`, processes otherwise.
 
 The default value can be changed
 using
-[set_default_n_processes()][gemseo.mda.base_parallel_mda_settings.BaseParallelMDASettings.set_default_n_processes]
+[set_default_n_processes()][gemseo.mda.base_parallel_solver_settings.BaseParallelMDASettings.set_default_n_processes]
 or [configure()][gemseo.configure].
 """,
     )

@@ -19,7 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 from strenum import StrEnum
 
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
 
 
 class QuasiNewtonMethod(StrEnum):

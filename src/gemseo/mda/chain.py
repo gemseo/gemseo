@@ -38,10 +38,10 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.initialization_chain import MDOInitializationChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
-from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.base_mda import _BaseMDAProcessFlow
+from gemseo.mda.base import BaseMDA
+from gemseo.mda.base import _BaseMDAProcessFlow
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.factory import MDAFactory
-from gemseo.mda.mda_chain_settings import MDAChain_Settings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -51,9 +51,9 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.mda.base_mda import BaseProcessFlow
-    from gemseo.mda.base_mda_settings import BaseMDASettings
-    from gemseo.mda.base_mda_solver import BaseMDASolver
+    from gemseo.mda.base import BaseProcessFlow
+    from gemseo.mda.base_settings import BaseMDASettings
+    from gemseo.mda.base_solver import BaseMDASolver
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -358,22 +358,9 @@ class MDAChain(BaseMDA):
             self.mdo_chain.add_differentiated_outputs(output_names)
 
     @property
-    def normed_residual(self) -> float:
-        """The normed_residuals, computed from the sub-MDAs residuals."""
-        return sum(mda.normed_residual**2 for mda in self.inner_mdas) ** 0.5
-
-    @normed_residual.setter
-    def normed_residual(
-        self,
-        normed_residual: float,
-    ) -> None:
-        """Set the normed_residual.
-
-        Has no effect, since the normed residuals are defined by inner-MDAs residuals
-        (see associated property).
-
-        Here for compatibility with mother class.
-        """
+    def normalized_residual_norm(self) -> float:
+        """The norm of the normalized residuals computed from the sub-MDAs residuals."""
+        return sum(mda.normalized_residual_norm**2 for mda in self.inner_mdas) ** 0.5
 
     def plot_residual_history(  # noqa: D102
         self,

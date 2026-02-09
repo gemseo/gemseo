@@ -23,7 +23,7 @@ import os
 
 import numpy as np
 
-from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.chain import MDAChain
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
