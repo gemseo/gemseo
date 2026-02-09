@@ -70,7 +70,9 @@ def small_dataset(small_data: NDArray[np_int]) -> Dataset:
 @pytest.fixture
 def io_data() -> ndarray:
     """Input-output data."""
-    return concatenate([arange(50).reshape(10, 5), arange(20).reshape(10, 2)], axis=1)
+    return concatenate(
+        [arange(50).reshape(10, 5), arange(20).reshape(10, 2)], axis=1, dtype=float
+    )
 
 
 @pytest.fixture

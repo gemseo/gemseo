@@ -389,7 +389,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         """
         input_sample = sample[self.dataset.INPUT_GROUP]
         io_data = cv_d.execute({
-            input_name: input_sample[input_name] for input_name in self._input_names
+            input_name: input_sample[input_name].to_numpy()
+            for input_name in self._input_names
         })
         return Series(
             [io_data[output_name] for output_name in self._output_names],
