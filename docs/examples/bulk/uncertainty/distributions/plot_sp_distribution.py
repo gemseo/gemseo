@@ -61,11 +61,6 @@ distribution_0_1 = create_distribution("SPNormalDistribution")
 distribution_0_1
 
 # %%
-# For a normal with mean = 1 and standard deviation = 2:
-distribution_1_2 = create_distribution("SPNormalDistribution", mu=1.0, sigma=2.0)
-distribution_1_2
-
-# %%
 # Same from settings defined as a Pydantic model:
 distribution_1_2 = create_distribution(
     "SPNormalDistribution", settings=SPNormalDistribution_Settings(mu=1.0, sigma=2.0)
@@ -81,15 +76,6 @@ distribution_1_2
 # by setting `interfaced_distribution` to its SciPy name
 # and `parameters` as a dictionary of SciPy parameter names and values
 # ([see the documentation of SciPy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html)).
-distribution_1_2 = create_distribution(
-    "SPDistribution",
-    interfaced_distribution="norm",
-    parameters={"loc": 1.0, "scale": 2.0},
-)
-distribution_1_2
-
-# %%
-# Same from settings defined as a Pydantic model:
 distribution_1_2 = create_distribution(
     "SPDistribution",
     settings=SPDistribution_Settings(

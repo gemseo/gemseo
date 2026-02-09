@@ -62,11 +62,6 @@ distribution_0_1
 
 # %%
 # For a normal with mean = 1 and standard deviation = 2:
-distribution_1_2 = create_distribution("OTNormalDistribution", mu=1.0, sigma=2.0)
-distribution_1_2
-
-# %%
-# Same from settings defined as a Pydantic model:
 distribution_1_2 = create_distribution(
     "OTNormalDistribution", settings=OTNormalDistribution_Settings(mu=1.0, sigma=2.0)
 )
@@ -81,13 +76,6 @@ distribution_1_2
 # by setting `interfaced_distribution` to its OpenTURNS name
 # and `parameters` as a tuple of OpenTURNS parameter values
 # ([see the documentation of OpenTURNS](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.Normal.html#openturns.Normal)).
-distribution_1_2 = create_distribution(
-    "OTDistribution", interfaced_distribution="Normal", parameters=(1.0, 2.0)
-)
-distribution_1_2
-
-# %%
-# Same from settings defined as a Pydantic model:
 distribution_1_2 = create_distribution(
     "OTDistribution",
     settings=OTDistribution_Settings(
