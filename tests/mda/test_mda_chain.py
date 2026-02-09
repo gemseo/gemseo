@@ -37,10 +37,10 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.mda.chain import MDAChain
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
@@ -183,7 +183,7 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode) -> None:
         input_names=["x"], output_names=["obj"], linearization_mode=linearization_mode
     )
 
-    assert mda.normed_residual == mda.inner_mdas[0].normed_residual
+    assert mda.normalized_residual_norm == mda.inner_mdas[0].normalized_residual_norm
 
 
 def test_no_coupling_jac() -> None:
@@ -508,7 +508,7 @@ def test_chain_linearize_warning(classes, log, caplog) -> None:
     MDAChain([cls() for cls in classes])
     if log:
         assert caplog.record_tuples[0] == (
-            "gemseo.mda.mda_chain",
+            "gemseo.mda.chain",
             30,
             "No coupling in MDA, switching chain_linearize to True.",
         )

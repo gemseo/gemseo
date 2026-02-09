@@ -23,9 +23,9 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-from gemseo.mda.base_mda_settings import BaseMDASettings  # noqa: TC001
+from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
+from gemseo.mda.chain import MDAChain
 from gemseo.mda.factory import MDAFactory
-from gemseo.mda.mda_chain import MDAChain
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:

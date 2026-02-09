@@ -109,7 +109,7 @@ runtime-evaluated-base-classes = [
   "gemseo.algos.opt.nlopt.settings.base_gradient_free_nlopt_settings.BaseGradientFreeNLoptSettings",
   "gemseo.machine_learning.classification.models.base_classifier_settings.BaseClassifierSettings",
   "gemseo.algos.base_driver_settings.BaseDriverSettings",
-  "gemseo.mda.base_mda_solver_settings.BaseMDASolverSettings",
+  "gemseo.mda.base_solver_settings.BaseMDASolverSettings",
   "gemseo.machine_learning.core.models.unsupervised_settings.BaseMLUnsupervisedModelSettings",
   "gemseo.machine_learning.regression.models.base_regressor_settings.BaseRegressorSettings",
   "gemseo.post.base_post_settings.BasePostSettings",

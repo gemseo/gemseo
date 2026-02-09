@@ -34,7 +34,7 @@ from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2

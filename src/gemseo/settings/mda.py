@@ -16,13 +16,13 @@
 
 from __future__ import annotations
 
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.mda.mda_chain_settings import MDAChain_Settings
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
-from gemseo.mda.sequential_mda_settings import MDASequential_Settings
+from gemseo.mda.sequential_settings import MDASequential_Settings
 
 __all__ = [
     "MDAChain_Settings",

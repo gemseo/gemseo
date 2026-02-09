@@ -31,7 +31,7 @@ from typing import Literal
 from numpy import array
 from scipy.optimize import root
 
-from gemseo.mda.base_parallel_mda_solver import BaseParallelMDASolver
+from gemseo.mda.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class MDAQuasiNewton(BaseParallelMDASolver):
+class MDAQuasiNewton(BaseMDAParallelSolver):
     r"""Quasi-Newton solver for MDA.
 
     [Quasi-Newton methods](https://en.wikipedia.org/wiki/Quasi-Newton_method)
@@ -241,7 +241,7 @@ class MDAQuasiNewton(BaseParallelMDASolver):
 
         if self.settings.method in self._METHODS_SUPPORTING_CALLBACKS:
             self.io.update_output_data({
-                self.NORMALIZED_RESIDUAL_NORM: array([self.normed_residual]),
+                self.NORMALIZED_RESIDUAL_NORM: array([self.normalized_residual_norm]),
             })
 
         return False

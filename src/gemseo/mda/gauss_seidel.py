@@ -24,9 +24,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.mda.base_mda import BaseProcessFlow
-from gemseo.mda.base_mda import _BaseMDAProcessFlow
-from gemseo.mda.base_mda_solver import BaseMDASolver
+from gemseo.mda.base import BaseProcessFlow
+from gemseo.mda.base import _BaseMDAProcessFlow
+from gemseo.mda.base_solver import BaseMDASolver
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 

@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from gemseo.core.discipline.base_discipline import _CacheType
-    from gemseo.mda.base_mda_settings import BaseMDASettings
+    from gemseo.mda.base_settings import BaseMDASettings
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
@@ -131,13 +131,8 @@ class BaseMDA(ProcessDiscipline):
     reset_history_each_run: bool
     """Whether to reset the history of MDA residuals before each run."""
 
-    # TODO: API: remove
-    norm0: float | None
-    """The reference residual, if any."""
-
-    # TODO: API: change to normalized_residual_norm
-    normed_residual: float
-    """The normed residual."""
+    _normalized_residual_norm: float
+    """The norm of the normalized residuals."""
 
     matrix_type: JacobianAssembly.JacobianType
     """The type of the matrix."""
@@ -246,9 +241,8 @@ class BaseMDA(ProcessDiscipline):
 
         # Don't erase coupling values before calling _compute_jacobian
 
-        self.norm0 = None
         self._current_iter = 0
-        self.normed_residual = 1.0
+        self._normalized_residual_norm = 1.0
         self._input_couplings = []
         self._non_numeric_array_variables = []
         self.matrix_type = JacobianAssembly.JacobianType.MATRIX
@@ -259,6 +253,11 @@ class BaseMDA(ProcessDiscipline):
         self.io.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
         self._check_consistency()
         self._check_coupling_types()
+
+    @property
+    def normalized_residual_norm(self) -> float:
+        """The norm of the normalized residuals computed from the sub-MDAs residuals."""
+        return self._normalized_residual_norm
 
     @property
     def scaling(self) -> ResidualScaling:

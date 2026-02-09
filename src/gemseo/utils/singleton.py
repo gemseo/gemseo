@@ -26,13 +26,27 @@ from typing import Any
 from typing import ClassVar
 
 
+def _check_args(name: str, args: tuple[Any, ...]) -> None:
+    """Check whether there is at least one argument.
+
+    Args:
+        name: The multiton class name.
+        args: The arguments, if any.
+
+    Raises:
+        ValueError: If the constructor has no argument.
+    """
+    if not args:
+        msg = f"{name} subclasses need at least one argument in the constructor."
+        raise ValueError(msg)
+
+
 class SingleInstancePerAttributeId(type):
-    """A multiton that depends on the id of a passed object.
+    """A multiton that depends on the object's `id` passed.
 
-    Subclasses are only instantiated when the discipline instance passed as input of the
-    constructor is different from already created instances.
-
-    The test if the instances are equal is made with the id(obj1)==id(obj2) operator
+    A subclass is instantiated
+    only if the `id` of the object provided as the first constructor argument
+    is different from the `id` of every object previously provided as that argument.
     """
 
     instances: ClassVar[dict[tuple[int, int], Any]] = {}
@@ -41,28 +55,22 @@ class SingleInstancePerAttributeId(type):
     # argument but this is an eclipse bug.
     # function.DisciplineAdapterGenerator should have self as first parameter"
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa:D102
+        _check_args("SingleInstancePerAttributeId", args)
         # id = memory address of the object, which is unique
-        if not args:
-            msg = (
-                "SingleInstancePerAttribute subclasses "
-                "need at least one attribute in the constructor."
-            )
-            raise ValueError(msg)
-        inst_key = (id(cls), id(args[0]))
-        inst = cls.instances.get(inst_key)
-        if inst is None:
-            inst = type.__call__(cls, *args, **kwargs)
-            cls.instances[inst_key] = inst
-        return inst
+        instance_key = (id(cls), id(args[0]))
+        instance = cls.instances.get(instance_key)
+        if instance is None:
+            instance = type.__call__(cls, *args, **kwargs)
+            cls.instances[instance_key] = instance
+        return instance
 
 
 class SingleInstancePerFileAttribute(type):
-    """A multiton that depends on the file passed.
+    """A multiton that depends on the object's value passed.
 
-    Subclasses are only instantiated when the discipline instance passed as input of the
-    constructor is different from already created instances.
-
-    The test if the instances are equal is made with the obj1 == obj2 operator
+    A subclass is instantiated
+    only if the value of the object provided as the first constructor argument
+    does not equal the value from every object previously provided as that argument.
     """
 
     instances: ClassVar[dict[tuple[int, str], Any]] = {}
@@ -70,23 +78,17 @@ class SingleInstancePerFileAttribute(type):
     # Eclipse is not happy with "cls" as first
     # argument but this is an eclipse bug.
     def __call__(cls, *args: Any, **kwargs: Any) -> Any:  # noqa:D102
-        if not args:
-            msg = (
-                "SingleInstancePerAttribute subclasses need at"
-                " least one attribute in the constructor."
-            )
-            raise ValueError(msg)
-        fpath = args[0]
+        _check_args("SingleInstancePerFileAttribute", args)
 
-        if not isinstance(fpath, str):
-            raise TypeError(
-                "Argument 0 is not a string but of type :" + str(type(fpath))
-            )
+        file_path = args[0]
+        if not isinstance(file_path, str):
+            msg = f"Argument 0 is not a string but of type {type(file_path)}."
+            raise TypeError(msg)
 
-        fpath = realpath(fpath)
-        inst_key = (id(cls), fpath)
-        inst = cls.instances.get(inst_key)
-        if inst is None:
-            inst = type.__call__(cls, *args, **kwargs)
-            cls.instances[inst_key] = inst
-        return inst
+        file_path = realpath(file_path)
+        instance_key = (id(cls), file_path)
+        instance = cls.instances.get(instance_key)
+        if instance is None:
+            instance = type.__call__(cls, *args, **kwargs)
+            cls.instances[instance_key] = instance
+        return instance

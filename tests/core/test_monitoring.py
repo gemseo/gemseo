@@ -51,7 +51,8 @@ class TestMonitoring(unittest.TestCase):
     def setUp(self) -> None:
         configure(enable_discipline_status=True, enable_discipline_statistics=True)
         self.sc = FakeScenario(DummyDiscipline(), DummyDiscipline())
-        self.monitor = Monitoring(self.sc)
+        self.execution_sequence = self.sc.get_process_flow().get_execution_flow()
+        self.monitor = Monitoring(self.execution_sequence)
         self.monitor.add_observer(self)
         self._statuses = self.monitor.get_statuses()
         self._updated_uuid = None
@@ -76,9 +77,14 @@ class TestMonitoring(unittest.TestCase):
 
         observer2 = Observer2()
 
-        monitor2 = Monitoring(self.sc)
+        monitor2 = Monitoring(self.execution_sequence)
         monitor2.add_observer(observer2)
         assert id(monitor2) == id(self.monitor)
+        monitor2.add_observer(observer2)
+        assert monitor2._Monitoring__observers == [self, observer2]
+
+    def test_str(self) -> None:
+        assert str(self.monitor) == "[DummyDiscipline(DONE), DummyDiscipline(DONE)]"
 
     def test_status_update(self) -> None:
         self._assert_update_status(self.sc.disc1, ExecutionStatus.Status.RUNNING)

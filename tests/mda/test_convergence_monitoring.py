@@ -22,7 +22,7 @@ from numpy.linalg import norm
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
-from gemseo.mda.base_mda import BaseMDA
+from gemseo.mda.base import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (

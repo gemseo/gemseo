@@ -100,8 +100,8 @@ from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.machine_learning.regression.models.rbf import RBFRegressor
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.mda.base_mda import BaseMDA
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mda.base import BaseMDA
+from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1

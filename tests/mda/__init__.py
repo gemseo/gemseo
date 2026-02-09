@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from gemseo.core.discipline.base_discipline import CacheType
 
 if TYPE_CHECKING:
-    from gemseo.mda.base_mda_solver import BaseMDASolver
+    from gemseo.mda.base_solver import BaseMDASolver
 
 
 def check_iteration_callbacks_execution(mda_solver: BaseMDASolver) -> None:
@@ -36,7 +36,7 @@ def check_iteration_callbacks_execution(mda_solver: BaseMDASolver) -> None:
         Args:
             mda: The MDA.
         """
-        residuals.append(mda.normed_residual)
+        residuals.append(mda.normalized_residual_norm)
 
     mda_solver.add_iteration_callback(iteration_callback)
     mda_solver.execute()
@@ -52,7 +52,9 @@ def check_iteration_callbacks_clearing(mda_solver: BaseMDASolver) -> None:
     """
     mda_solver.set_cache(CacheType.NONE)
     residuals = []
-    mda_solver.add_iteration_callback(lambda mda: residuals.append(mda.normed_residual))
+    mda_solver.add_iteration_callback(
+        lambda mda: residuals.append(mda.normalized_residual_norm)
+    )
     mda_solver.execute()
     assert residuals
 

@@ -17,7 +17,7 @@ from __future__ import annotations
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
 )
-from gemseo.mda.base_mda_settings import BaseMDASettings
+from gemseo.mda.base_settings import BaseMDASettings
 
 
 def test_base_mda_settings():

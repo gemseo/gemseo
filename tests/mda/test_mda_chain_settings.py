@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.mda.mda_chain_settings import MDAChain_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
 
 
 def test_mda_chain_settings():

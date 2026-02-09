@@ -43,9 +43,9 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.mda.chain import MDAChain
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
-from gemseo.mda.mda_chain import MDAChain
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,

@@ -78,7 +78,7 @@ def test_mda_convergence(desc) -> None:
     )
     mda.execute()
 
-    assert mda.normed_residual <= tolerance
+    assert mda._normalized_residual_norm <= tolerance
 
 
 def test_lin_disc_jac() -> None:

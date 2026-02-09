@@ -19,8 +19,8 @@ from __future__ import annotations
 from collections.abc import Sequence  # Noqa: TC003
 from typing import ClassVar  # Noqa: TC003
 
-from gemseo.mda.base_mda_settings import BaseMDASettings
-from gemseo.mda.composed_mda_settings import ComposedMDASettings
+from gemseo.mda.base_settings import BaseMDASettings
+from gemseo.mda.composed_settings import ComposedMDASettings
 
 
 class MDASequential_Settings(BaseMDASettings, ComposedMDASettings):  # noqa: N801

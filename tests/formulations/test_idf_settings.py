@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.formulations.idf_settings import IDF_Settings
-from gemseo.mda.mda_chain_settings import MDAChain_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
 
 
 @pytest.mark.parametrize("as_mapping", [False, True])

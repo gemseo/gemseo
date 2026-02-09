@@ -30,7 +30,7 @@ from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
-from gemseo.mda.base_parallel_mda_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
 from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS

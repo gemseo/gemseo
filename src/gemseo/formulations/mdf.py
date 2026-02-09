@@ -30,7 +30,7 @@ from gemseo.mda.factory import MDAFactory
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.mda.base_mda import BaseMDA
+    from gemseo.mda.base import BaseMDA
     from gemseo.typing import StrKeyMapping
 
 
