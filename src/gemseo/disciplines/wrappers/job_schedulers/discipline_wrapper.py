@@ -95,7 +95,7 @@ class JobSchedulerDisciplineWrapper(BaseWrapperDiscipline):
     def __init__(
         self,
         discipline: Discipline,
-        workdir_path: Path,
+        workdir_path: str | Path,
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.srun",
         job_template_path: Path | str = "",

@@ -45,7 +45,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
         self,
         discipline: Discipline,
         scheduler_name: str,
-        workdir_path: Path,
+        workdir_path: str | Path,
         **options: dict[str, Any],
     ) -> JobSchedulerDisciplineWrapper:
         """Wrap the discipline within another one to delegate its execution to a job
@@ -74,7 +74,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
             discipline: The discipline to wrap in the job scheduler.
             scheduler_name: The name of the job scheduler
                 (for instance LSF, SLURM, PBS).
-            workdir_path: The path to the workdir
+            workdir_path: The path to the workdir.
             **options: The submission options.
 
         Raises:
