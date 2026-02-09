@@ -86,6 +86,7 @@ doc = [
     "mkdocs-section-index",
     "mkdocstrings[python]",
     "mkdocs-autorefs",
+    "mkdocs-minify-plugin",
     # For supporting DataFrame in pydantic models in an example.
     "pandera",
 ]
