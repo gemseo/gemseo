@@ -106,7 +106,7 @@ If empty, use the name of the class.""",
 
 The available normalization strategies for the residual
 are described in
-[BaseMDA.ResidualScaling][gemseo.mda.base_mda.BaseMDA.ResidualScaling].""",
+[BaseMDA.ResidualScaling][gemseo.mda.base.BaseMDA.ResidualScaling].""",
     )
 
     use_lu_fact: bool = Field(

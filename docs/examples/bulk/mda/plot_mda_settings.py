@@ -74,7 +74,7 @@ mda_jacobi = create_mda(
 # - The auto-complementation and documentation of the model shows all the settings available for the MDA of interest and their **default values**.
 #
 # The name of the Pydantic model associated with an MDA class is available via the class
-# attribute [settings_class][gemseo.mda.base_mda.BaseMDA.settings_class]. For instance:
+# attribute [settings_class][gemseo.mda.base.BaseMDA.settings_class]. For instance:
 
 
 # %%
@@ -82,7 +82,7 @@ mda_jacobi = create_mda(
 #
 # It is also possible to update the settings after the MDA object has been created. To
 # do so, one must access the settings model attached to each mda via
-# [settings][gemseo.mda.base_mda.BaseMDA.settings]. Then modifications are as simple as:
+# [settings][gemseo.mda.base.BaseMDA.settings]. Then modifications are as simple as:
 
 new_tolerance = 1e-12
 mda_jacobi.settings.tolerance = new_tolerance
@@ -99,7 +99,7 @@ with contextlib.suppress(ValidationError):
 # ### Settings for composed MDAs
 #
 # In GEMSEO, there are two MDAs that are said to be composed because they use or create inner MDAs
-# internally, namely [MDAChain][gemseo.mda.mda_chain.MDAChain] and [MDASequential][gemseo.mda.sequential_mda.MDASequential]. For such MDAs,
+# internally, namely [MDAChain][gemseo.mda.chain.MDAChain] and [MDASequential][gemseo.mda.sequential.MDASequential]. For such MDAs,
 # the settings are nested, since there are settings for these two classes, and settings
 # for the inner-MDAs. Nevertheless, there is a **cascading mechanism** that allows to
 # update the settings of the inner-MDAs easily. Let us for instance create an

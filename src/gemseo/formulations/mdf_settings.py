@@ -39,7 +39,7 @@ class MDF_Settings(BaseFormulationSettings):  # noqa: N801
         default=MDAChain.__name__,
         description="""The name of the class of the main MDA.
 
-Typically the [MDAChain][gemseo.mda.mda_chain.MDAChain],
+Typically the [MDAChain][gemseo.mda.chain.MDAChain],
 but one can force to use [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel]
 for instance.
 

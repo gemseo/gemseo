@@ -48,7 +48,7 @@ from gemseo import create_mda
 # ## Create and execute the MDA
 #
 # We do not need to specify the inputs, the default inputs
-# of the [BaseMDA][gemseo.mda.base_mda.BaseMDA] will be used and computed from the
+# of the [BaseMDA][gemseo.mda.base.BaseMDA] will be used and computed from the
 # default inputs of the disciplines.
 #
 # Here, we could have replaced [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel] by any other MDA.
@@ -72,15 +72,15 @@ output_data = mda.execute()
 #     - The maximal number of iterations is reached.
 #       In that case, the design is not feasible.
 #
-# The norm of the normalized residuals can be seen by the [BaseMDA][gemseo.mda.base_mda.BaseMDA] attribute [normed_residual][gemseo.mda.base_mda.BaseMDA.normed_residual].
+# The norm of the normalized residuals can be seen by the [BaseMDA][gemseo.mda.base.BaseMDA] attribute [normalized_residual_norm][gemseo.mda.base.BaseMDA.normalized_residual_norm].
 mda.normalized_residual_norm
 
 # %%
-# The evolution of its value can be plotted with [plot_residual_history()][gemseo.mda.base_mda.BaseMDA.plot_residual_history],
-# or accessed by [residual_history][gemseo.mda.base_mda.BaseMDA.residual_history].
+# The evolution of its value can be plotted with [plot_residual_history()][gemseo.mda.base.BaseMDA.plot_residual_history],
+# or accessed by [residual_history][gemseo.mda.base.BaseMDA.residual_history].
 #
 # When an MDA is called more than once (by a DOE driver for instance),
-# the [residual_history][gemseo.mda.base_mda.BaseMDA.residual_history]
+# the [residual_history][gemseo.mda.base.BaseMDA.residual_history]
 # stores the different values of the normed residual
 # in a single list.
 residual_history = mda.residual_history
@@ -90,7 +90,7 @@ residual_history
 # The normed MDA residual can be seen as an MDA output,
 # just like the couplings.
 # To get the normed MDA residual,
-# the key registered by [NORMALIZED_RESIDUAL_NORM][gemseo.mda.base_mda.BaseMDA.NORMALIZED_RESIDUAL_NORM] (`""MDA residuals norm"`) can be used.
+# the key registered by [NORMALIZED_RESIDUAL_NORM][gemseo.mda.base.BaseMDA.NORMALIZED_RESIDUAL_NORM] (`""MDA residuals norm"`) can be used.
 f"The normed residual key is: {mda.NORMALIZED_RESIDUAL_NORM}."
 
 # %%

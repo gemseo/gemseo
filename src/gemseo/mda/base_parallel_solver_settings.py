@@ -32,7 +32,7 @@ class BaseParallelMDASettings(BaseMDASolverSettings):
         description="""Whether to start by executing the disciplines before linearizing.
             This ensures that the discipline are executed and linearized with the same
             input data. It can be almost free if the corresponding output data have been
-            stored in the [BaseMDA.cache][gemseo.mda.base_mda.BaseMDA.cache].""",
+            stored in the [BaseMDA.cache][gemseo.mda.base.BaseMDA.cache].""",
     )
 
     n_processes: NonNegativeInt = Field(

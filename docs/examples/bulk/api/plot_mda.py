@@ -24,7 +24,7 @@
 In this example, we will discover the different high-level functions
 related to MDAs, which are the GEMSEO' objects dedicated to the
 feasibility of the multidisciplinary coupling. All classes
-implementing MDAs inherit from [BaseMDA][gemseo.mda.base_mda.BaseMDA] which is an abstract class.
+implementing MDAs inherit from [BaseMDA][gemseo.mda.base.BaseMDA] which is an abstract class.
 """
 
 from __future__ import annotations

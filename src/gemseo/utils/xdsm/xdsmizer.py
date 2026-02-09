@@ -106,7 +106,7 @@ class XDSMizer:
                 describing the sequence of execution of the different disciplines
                 ([Discipline][gemseo.core.discipline.discipline.Discipline],
                 [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario],
-                 [BaseMDA][gemseo.mda.base_mda.BaseMDA], etc.)
+                 [BaseMDA][gemseo.mda.base.BaseMDA], etc.)
         """  # noqa:D205 D212 D415
         if isinstance(discipline, BaseScenario):
             self._is_scenario = True

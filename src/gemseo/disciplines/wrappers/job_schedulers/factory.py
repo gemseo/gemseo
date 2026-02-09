@@ -58,7 +58,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
         Finally, the deserialized outputs are returned by the wrapper.
 
         All process classes [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
-        or [BaseMDA][gemseo.mda.base_mda.BaseMDA], inherit from
+        or [BaseMDA][gemseo.mda.base.BaseMDA], inherit from
         [Discipline][gemseo.core.discipline.discipline.Discipline]
         so can be sent to HPCs this way.
 

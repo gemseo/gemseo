@@ -67,7 +67,7 @@ class AutoPyDiscipline(Discipline):
     - must have a default value per argument
       if the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
       is used by an `MDA`
-      (deriving from [BaseMDA][gemseo.mda.base_mda.BaseMDA]),
+      (deriving from [BaseMDA][gemseo.mda.base.BaseMDA]),
       as in the case of [MDF][gemseo.formulations.mdf.MDF]
       and [BiLevel][gemseo.formulations.bilevel.BiLevel] formulations,
       in the presence of strong couplings.
