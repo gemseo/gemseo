@@ -103,6 +103,8 @@ def build_and_run_idf_scenario_with_constraints(
     for c_name in ["g_1", "g_2", "g_3"]:
         scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
 
+    scenario.formulation.optimization_problem.objective *= 0.001
+
     scenario.execute(
         algo_name=algo,
         max_iter=max_iter,
