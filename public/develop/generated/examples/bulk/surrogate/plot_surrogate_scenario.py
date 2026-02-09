@@ -58,7 +58,7 @@ a text file using the
 Then, the surrogate discipline can be used as any other discipline in a
 [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
 a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario],
-or a [BaseMDA][gemseo.mda.base_mda.BaseMDA].
+or a [BaseMDA][gemseo.mda.base.BaseMDA].
 """
 
 from __future__ import annotations

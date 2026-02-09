@@ -27,14 +27,14 @@ given that these MDA are independent and can be run in parallel.
 from __future__ import annotations
 
 from gemseo import create_discipline
-from gemseo.mda.mda_chain import MDAChain
+from gemseo.mda.chain import MDAChain
 
 # %%
 # ## Introduction
 #
 #
-# In an [MDAChain][gemseo.mda.mda_chain.MDAChain],
-# there may be an opportunity to parallelize the execution of [BaseMDA][gemseo.mda.base_mda.BaseMDA]
+# In an [MDAChain][gemseo.mda.chain.MDAChain],
+# there may be an opportunity to parallelize the execution of [BaseMDA][gemseo.mda.base.BaseMDA]
 # that can be executed independently.
 # As an example,
 # let us consider the following expressions,
@@ -55,7 +55,7 @@ disciplines_expressions = [
 # We can easily observe in these disciplines,
 # that the $x_1$ and $y_1$ variables are strongly coupled.
 # It follows that the second and third disciplines are strongly coupled and
-# constitute a [BaseMDA][gemseo.mda.base_mda.BaseMDA].
+# constitute a [BaseMDA][gemseo.mda.base.BaseMDA].
 #
 #
 # The same statement can be done for the disciplines that provide the output variables
@@ -67,11 +67,11 @@ disciplines_expressions = [
 #
 # Thus,
 # they can be run in parallel,
-# hence reducing the overall [MDAChain][gemseo.mda.mda_chain.MDAChain] execution provided that enough
+# hence reducing the overall [MDAChain][gemseo.mda.chain.MDAChain] execution provided that enough
 # resources are available on the computing node (in our case, at least two CPUs).
-# By default, the parallel execution of the independent [BaseMDA][gemseo.mda.base_mda.BaseMDA] are deactivated,
-# meaning that the execution of the two independent [BaseMDA][gemseo.mda.base_mda.BaseMDA] will remain sequential.
-# Yet, a parallel execution of the two [BaseMDA][gemseo.mda.base_mda.BaseMDA] can be  activated using the
+# By default, the parallel execution of the independent [BaseMDA][gemseo.mda.base.BaseMDA] are deactivated,
+# meaning that the execution of the two independent [BaseMDA][gemseo.mda.base.BaseMDA] will remain sequential.
+# Yet, a parallel execution of the two [BaseMDA][gemseo.mda.base.BaseMDA] can be  activated using the
 # `mdachain_parallelize_task` boolean option.
 #
 #
@@ -84,12 +84,12 @@ disciplines_expressions = [
 # multiprocessing can be employed.
 
 # %%
-# ## Example of [MDAChain][gemseo.mda.mda_chain.MDAChain] with parallelization
+# ## Example of [MDAChain][gemseo.mda.chain.MDAChain] with parallelization
 #
 #
 # We are here using the disciplines previously defined by their analytical expressions,
 # and we are going to explicitly ask for a parallelization of the execution of the
-# two independent [BaseMDA][gemseo.mda.base_mda.BaseMDA].
+# two independent [BaseMDA][gemseo.mda.base.BaseMDA].
 
 disciplines = [
     create_discipline("AnalyticDiscipline", expressions=expr)
