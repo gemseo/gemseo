@@ -132,7 +132,8 @@ class _TaskCallables(Generic[ArgT, ReturnT]):
 
 
 class CallableParallelExecution(
-    Generic[ArgT, ReturnT], metaclass=GoogleDocstringInheritanceMeta
+    Generic[ArgT, ReturnT],
+    metaclass=GoogleDocstringInheritanceMeta,
 ):
     """Perform a parallel execution of callables.
 

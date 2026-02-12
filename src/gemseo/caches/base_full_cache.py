@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from itertools import chain
-from multiprocessing import RLock
 from multiprocessing import Value
 from multiprocessing import parent_process
 from typing import TYPE_CHECKING
@@ -95,18 +94,11 @@ class BaseFullCache(BaseCache):
         name: str = "",
     ) -> None:
         super().__init__(tolerance, name)
-        self.__hashes_lock = RLock()
+        self.__hashes_lock = get_multi_processing_manager().RLock()
+        self._lock = get_multi_processing_manager().RLock()
         self._hashes_to_indices = get_multi_processing_manager().dict()
         self._max_index = cast("Synchronized[int]", Value("i", 0))
         self._last_accessed_index = cast("Synchronized[int]", Value("i", 0))
-        self._lock = self._get_lock()
-
-    @abstractmethod
-    def _get_lock(self) -> RLockType:
-        """Set a lock for multithreading.
-
-        Either from an external object or internally by using RLock().
-        """
 
     def __ensure_input_data_exists(
         self,
@@ -502,3 +494,16 @@ class BaseFullCache(BaseCache):
         new_cache.update(self)
         new_cache.update(other_cache)
         return new_cache
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["_max_index"] = self._max_index.value
+        state["_last_accessed_index"] = self._last_accessed_index.value
+        return state
+
+    def __setstate__(self, state):
+        max_index = state.pop("_max_index")
+        last_accessed_index = state.pop("_last_accessed_index")
+        self.__dict__.update(state)
+        self._max_index = Value("i", max_index)
+        self._last_accessed_index = Value("i", last_accessed_index)

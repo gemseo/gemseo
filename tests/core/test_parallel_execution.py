@@ -243,20 +243,15 @@ def test_async_call() -> None:
     par.execute([i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work)
 
 
-def test_not_worker(capfd) -> None:
+def test_not_worker(caplog) -> None:
     """Test that an exception is shown when a worker is not acceptable.
 
     The `TypeError` exception is caught by `worker`, but the execution continues.
     However, an error message has to be shown to the user.
-
-    Args:
-        capfd: Fixture capture outputs sent to `stdout` and
-            `stderr`.
     """
     parallel_execution = CallableParallelExecution(["toto"])
     parallel_execution.execute([[0.5]])
-    _, err = capfd.readouterr()
-    assert err
+    assert "'str' object is not callable" in caplog.text
 
 
 def f(x: float = 0.0) -> float:

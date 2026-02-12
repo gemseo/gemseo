@@ -24,7 +24,6 @@
 from __future__ import annotations
 
 import logging
-from itertools import repeat
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -47,6 +46,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
+
+    from typing_extensions import Self
 
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
@@ -149,7 +150,7 @@ class MDAChain(BaseMDA):
     def _create_discipline_chain(self) -> DisciplineChain:
         """Create an discipline chain from the execution sequence of the disciplines."""
         if not self.settings.sub_coupling_structures:
-            sub_coupling_structures = repeat(None)
+            sub_coupling_structures = _AlwaysNone()
         else:
             sub_coupling_structures = self.settings.sub_coupling_structures
 
@@ -380,3 +381,13 @@ class MDAChain(BaseMDA):
             mda.plot_residual_history(
                 show, save, n_iterations, logscale, path, fig_size
             )
+
+
+class _AlwaysNone:
+    """An iterator that always return None."""
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> None:
+        return None
