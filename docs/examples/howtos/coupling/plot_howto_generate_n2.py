@@ -19,7 +19,20 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# N2 chart."""
+"""# Generate the N2 chart
+
+## Problem
+
+You have multiple disciplines and you want to
+visualize their couplings as a [N2 chart][n2-chart-visualization].
+
+## Solution
+
+You need to create this chart by using the
+[generate_n2_plot()][gemseo.generate_n2_plot] function.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -27,34 +40,28 @@ from gemseo import generate_n2_plot
 from gemseo.utils.discipline import DummyDiscipline
 
 # %%
-# ## Create the disciplines
+# ### 1. Create the disciplines
 #
-# First,
-# we create dummy disciplines that do nothing:
+# You create coupled dummy disciplines:
 dummy_disciplines = [
     DummyDiscipline(name=name, input_names=input_names, output_names=output_names)
     for (name, input_names, output_names) in (
-        ("A", [f"a{i}" for i in range(500)], ["b"]),
-        ("B", ["c"], [f"a{i}" for i in range(500)] + ["n"]),
+        ("A", ["a"], ["b"]),
+        ("B", ["c"], ["a", "n"]),
         ("C", ["b", "d"], ["c", "e"]),
         ("D", ["f"], ["d", "g"]),
         ("E", ["e"], ["f", "h", "o"]),
         ("F", ["g", "j"], ["i"]),
         ("G", ["i", "h"], ["k", "l"]),
         ("H", ["k", "m"], ["j"]),
-        ("I", ["l"], ["m", "w"]),
-        ("J", ["n", "o"], ["p", "q"]),
-        ("K", ["y"], ["x"]),
-        ("L", ["w", "x"], ["y", "z"]),
-        ("M", ["p", "s"], ["r"]),
-        ("N", ["r"], ["t", "u"]),
-        ("O", ["q", "t"], ["s", "v"]),
-        ("P", ["u", "v", "z"], ["z"]),
+        ("I", ["l"], ["m", "z"]),
+        ("J", ["n", "o"], ["u", "v"]),
+        ("K", ["u", "v", "z"], ["z"]),
     )
 ]
 
 # %%
-# ## Generate the N2 chart
+# ### 2. Plot the N2 chart
 #
 # The N2 chart is a tabular way to visualize multidisciplinary coupling variables.
 # The disciplines are located on the diagonal of the chart
@@ -65,7 +72,10 @@ dummy_disciplines = [
 # In the classical representation,
 # a blue diagonal block represents a self-coupled discipline,
 # *i.e.* a discipline having some of its outputs as inputs.
-#
+
+generate_n2_plot(dummy_disciplines, save=False, show=True)
+
+# %%
 # Because of its tabular structure,
 # the N2 chart is hard to analyze when the number of disciplines increases.
 # This is the reason why in this example,
@@ -73,4 +83,12 @@ dummy_disciplines = [
 generate_n2_plot(dummy_disciplines, save=False, show_html=True)
 
 # %%
-# [Click here](../../../../_static/n2.html) to see the rendering.
+# you are invited to use an interactive representation in a web browser.
+# [Click here](../../../../_static/n2_small.html) to see the rendering.
+#
+# ## Summary
+#
+# You can plot the N2 chart
+# with the [generate_n2_plot()][gemseo.generate_n2_plot] function.
+# You can either get the static PNG version,
+# or the dynamic HTML one.

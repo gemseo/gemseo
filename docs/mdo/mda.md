@@ -17,7 +17,18 @@ search:
 
 # Multi Disciplinary Analyses
 
-This section deals with the construction and execution of a Multi Disciplinary Analysis, abbreviated MDA. MDAs are required when dealing with coupled disciplines, that is when inputs of disciplines are outputs of others. Such variables are referred to as the coupling variables.
+!!! info "Tutorial"
+    - [Tutorial - The Multi-Disciplinary Analysis][tutorial-the-multidisciplinary-design-analysis]
+
+!!! info "How-to"
+    - [Instantiate an MDAChain][manage-nested-coupling-systems]
+    - [MDA acceleration techniques][accelerate-mda-convergence]
+    - [Create sequential hybrid MDAs][create-sequential-hybrid-mdas]
+
+This section deals with the Multi Disciplinary Analysis, abbreviated MDA.
+MDAs are required when dealing with coupled disciplines,
+that is when inputs of disciplines are outputs of others.
+Such variables are referred to as the coupling variables.
 
 !!! note
     In GEMSEO, the MDA objects all inherit from [BaseMDA][gemseo.mda.base.BaseMDA].
@@ -31,9 +42,6 @@ There are two main categories of MDA objects in GEMSEO:
 
 The following subsections present an overview of these two kinds of available MDAs.
 
-!!! info "See Also"
-    The examples about MDA algorithms can be found [here][multidisciplinary-analysis-mda].
-
 ## Non-linear solver algorithms
 
 The available non-linear solvers available in GEMSEO can be split in two categories:
@@ -45,49 +53,17 @@ The available non-linear solvers available in GEMSEO can be split in two categor
 !!! note
     A fixed-point problem can be reformulated as a root finding problem and reciprocally, since $R(y) = 0 \iff R(y) + y = y \iff F(y) = y$ with $F(y) = R(y) + y$.
 
-To create an MDA, use the [create_mda()][gemseo.create_mda] high-level function, specifying the name of the MDA class and the (coupled) disciplines.
-
-``` python
-from gemseo import create_mda, create_discipline
-from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
-
-# Instantiate the coupled Sellar disciplines
-disciplines = create_discipline(["Sellar1", "Sellar2"])
-
-# Create an MDA based on fixed-point methods
-mda_jacobi = create_mda("MDAJacobi", disciplines)
-mda_gauss_seidel = create_mda("MDAGaussSeidel", disciplines)
-
-# Create an MDA based on root finding methods
-mda_newton = create_mda("MDANewtonRaphson", disciplines)
-mda_quasi_newton = create_mda(
-    "MDAQuasiNewton",
-    disciplines,
-    method=QuasiNewtonMethod.BROYDEN1,
-)
-```
-
-!!! warning
-    Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to a [BaseMDA][gemseo.mda.base.BaseMDA] with strong couplings **must** define its [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data]. Otherwise, the execution will fail.
-
 ## Composed MDA methods
 
 The two composed MDAs available in GEMSEO are the [MDASequential][gemseo.mda.sequential.MDASequential] and the [MDAChain][gemseo.mda.chain.MDAChain].
 
 ### The sequential MDA
 
-The [MDASequential][gemseo.mda.sequential.MDASequential] implements a generic mechanism to execute sequentially an arbitrary number of inner MDAs. An example is given in the following code:
-
-``` python
-mda_1 = create_mda("MDAJacobi", disciplines, max_mda_iter=2)
-mda_2 = create_mda("MDANewtonRaphson", disciplines)
-mda_sequential = create_mda("MDASequential", disciplines, mda_sequence=[mda1, mda2])
-```
-
-In this example, the sequential MDA will perform 2 iterations of the Jacobi's method, before switching to the Newton-Raphson's method. This approach is interesting since the Newton-Raphson's is more expensive, but converges quickly close to the solution. This kind of sequences typically takes advantage of the robustness of fixed-point methods while obtaining an accurate solution thanks to a Newton-Raphson's method.
+The [MDASequential][gemseo.mda.sequential.MDASequential] implements a generic mechanism to execute sequentially an arbitrary number of inner MDAs.
 
 !!! note
     A specific instance of sequential MDA, namely the [MDAGSNewton][gemseo.mda.gs_newton.MDAGSNewton] is readily available in GEMSEO. It starts with the Gauss-Seidel's method before switching to the Newton-Raphson's method.
+    This approach is interesting since the Newton-Raphson's is more expensive, but converges quickly close to the solution. This kind of sequences typically takes advantage of the robustness of fixed-point methods while obtaining an accurate solution thanks to a Newton-Raphson's method.
 
 ### The MDA chain
 
@@ -96,11 +72,7 @@ The [MDAChain][gemseo.mda.chain.MDAChain] implements an advanced graph-based alg
 ![3 resolution phases of a 16 disciplines coupling problem](../assets/images/mda/mda_auto_procedure.png)
 *The 3 resolution phases of a 16 disciplines coupling problem.*
 
-The MDA chain inspects the coupling graph and **automatically** detects strongly coupled disciplines. In the example above, the problem is split into 4 sub-systems, for which an inner MDA implementing a non-linear solver is used. As an example, the following code will create an MDA chain, that will solve the sub-systems using Jacobi's method. The solver for the sub-systems is specified via the `inner_mda_name` setting.
-
-``` python
-mda = create_mda("MDAChain", disciplines, inner_mda_name="MDAJacobi")
-```
+The MDA chain inspects the coupling graph and **automatically** detects strongly coupled disciplines. In the example above, the problem is split into 4 sub-systems, for which an inner MDA implementing a non-linear solver is used.
 
 ## Execution of MDAs
 
@@ -108,94 +80,37 @@ The MDA inherits from [Discipline][gemseo.core.discipline.discipline.Discipline]
 As mentioned in the previous section, the MDA solves the non-linear system of equations induced by coupled disciplines.
 Formally, it can be viewed as a function $\text{MDA}(x, y) = y^{\star}$ that takes $x$ and possibly initial values for the coupling variables $y$ and computes $y^{\star}$ that satisfies $R(x, y^{\star}) = 0$.
 
-Let us take again the [Sellar's problem][sellars-problem] as a toy example, where:
-
-- The design variables are labelled $x_{\text{local}}$ and $x_{\text{shared}}$.
-- The coupling variables are labelled $y_1$ and $y_2$.
-
-The following code executes the Jacobi's algorithm on the [Sellar1][gemseo.problems.mdo.sellar.sellar_1.Sellar1] and [Sellar2][gemseo.problems.mdo.sellar.sellar_2.Sellar2] disciplines for specific values of the design variables.
-
-``` python
-from numpy import array
-
-# Instantiate the coupled Sellar disciplines
-disciplines = create_discipline(["Sellar1", "Sellar2"])
-
-# Create an MDA based on the Jacobi's fixed-point methods
-mda_jacobi = create_mda("MDAJacobi", disciplines)
-
-# Execute the MDA for specific design variables
-mda_jacobi.execute({"x_local": array([0.5]), "x_shared": array([0.25, 0.25])})
-print(
-    "Jacobi's method reached termination criterion "
-    f"after {mda_jacobi._current_iter} iterations: "
-    f"normalized residual norm = {mda_jacobi.normed_residual}"
-)
-```
-
 ### Stopping criteria
 
-The MDA solvers convergence can be monitored by two criteria: - The maximum number of iterations, - The tolerance on the normalized residual norm.
+The MDA solvers convergence can be monitored by two criteria:
 
-These settings can be either specified at MDA creation or updated on the MDA object directly. Here is an example of the Jacobi's method where the tolerance and the maximum number of iterations are provided:
+- The maximum number of iterations,
+- The tolerance on the normalized residual norm.
 
-``` python
-from gemseo.settings.mda import MDAJacobi_Settings
+The residual of an MDA is a vector
+defined by $\mathrm{couplings}_k - \mathrm{couplings}_{k+1}$,
+where $k$ and $k+1$ are two successive iterations of the MDA algorithm
+and $\mathrm{couplings}$ is the coupling vector.
 
-# Create the settings model
-settings = MDAJacobi_Settings(tolerance=1e-6, max_mda_iter=10)
+The normed residual is the normalized value of $\lVert \mathrm{residuals} \rVert$.
+When the normed residual is smaller than a given tolerance value,
+the MDA has converged.
+It is a simple way to quantify the MDA convergence.
 
-# Create an MDA with specific stopping criteria settings
-mda_jacobi = create_mda("MDAJacobi", disciplines, settings_model=settings)
-
-# Execute the MDA with default input data
-mda_jacobi.execute()
-print(
-    "Jacobi's method reached termination criterion "
-    f"after {mda_jacobi._current_iter} iterations: "
-    f"normalized residual norm = {mda_jacobi.normed_residual}"
-)
-```
+!!! note
+    The tolerance is monitored on a relative decrease on the residual norm.
+    Several scaling strategies for the residual are available in GEMSEO.
+    More information [here][gemseo.mda.base.BaseMDA.ResidualScaling]
 
 !!! note
     The tolerance is monitored on a relative decrease on the residual norm. Several scaling strategies for the residual are available in GEMSEO. More information [here][gemseo.mda.base.BaseMDA.ResidualScaling]
 
 ### Acceleration/relaxation methods
 
-Acceleration and relaxation methods are available for all the MDAs in GEMSEO. The acceleration methods available can be found [here][gemseo.algos.sequence_transformer.acceleration]. For instance the following code applies Gauss-Seidel's method with the [Secant][gemseo.algos.sequence_transformer.acceleration.secant.Secant] acceleration method and an over-relaxation factor of 0.95.
+Acceleration and relaxation methods are available for all the MDAs in GEMSEO.
+The acceleration methods available can be found [here][gemseo.algos.sequence_transformer.acceleration].
 
-``` python
-from gemseo.settings.mda import MDAGaussSeidel_Settings
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-
-# Create the settings model
-settings = MDAGaussSeidel_Settings(
-    acceleration_method=AccelerationMethod.SECANT,
-    over_relaxation_factor=0.95,
-)
-
-# Create an MDA with a specific acceleration method and relaxation factor
-mda_gauss_seidel = create_mda("MDAGaussSeidel", disciplines, settings_model=settings)
-
-# Execute the MDA with default input data
-mda_gauss_seidel.execute()
-print(
-    "Gauss-Seidel's method reached termination criterion "
-    f"after {mda_gauss_seidel._current_iter} iterations: "
-    f"normalized residual norm = {mda_gauss_seidel.normed_residual}"
-)
-```
-
-### Monitor the convergence
-
-The convergence history of the MDA solvers can be accessed via the [BaseMDA.residual_history][gemseo.mda.base.BaseMDA.residual_history] attribute. More conveniently, there is a dedicated method as in the following example:
-
-``` python
-mda_gauss_seidel = create_mda("MDAGaussSeidel", disciplines)
-
-mda_gauss_seidel.execute()
-mda_gauss_seidel.plot_residual_history(show=True, save=False)
-```
+<!-- TODO: explain the impact of relaxation -->
 
 ## Advanced features
 
@@ -210,31 +125,40 @@ The following MDA algorithms can be parallelized:
 - [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson],
 - [MDAChain][gemseo.mda.chain.MDAChain].
 
-When using parallelization, it is possible to set the number of processes/threads on which the execution will be splitted, and whether to use threads or processes. By default, GEMSEO uses threads and the number of threads is the number of CPUs available on the computer the code is run on. The following code shows an example of settings related to this feature:
+When using parallelization, it is possible to set the number of processes/threads on which the execution will be splitted, and whether to use threads or processes. By default, GEMSEO uses threads and the number of threads is the number of CPUs available on the computer the code is run on.
 
-``` python
-# Create the settings model
-settings = MDAJacobi_Settings(use_threading=False, n_processes=4)
+#### MDAChain specificities
 
-# Create MDA with specific parallelization settings
-mda_jacobi = create_mda("MDAJacobi", disciplines, settings_model=settings)
-```
+In an [MDAChain][gemseo.mda.chain.MDAChain],
+there may be an opportunity to parallelize
+the execution of [BaseMDA][gemseo.mda.base.BaseMDA]
+that can be executed independently.
+
+![Coupling graph with 2 MDAs in parallel](./figs/MDA_in_parallel.png)
+
+In the figure above, 2 MDAs can be run in parallel,
+hence reducing the overall [MDAChain][gemseo.mda.chain.MDAChain] execution
+provided that enough resources are available on the computing node
+(in our case, at least two CPUs).
+By default,
+the parallel execution of the independent
+[BaseMDA][gemseo.mda.base.BaseMDA] are deactivated,
+meaning that the execution of the two independent [BaseMDA][gemseo.mda.base.BaseMDA]
+will remain sequential.
+Yet,
+a parallel execution of the two [BaseMDA][gemseo.mda.base.BaseMDA] can be  activated
+using the `mdachain_parallelize_task` boolean option.
+
+If activated,
+the user has also the possibility to provide parallelization options,
+such as using either threads or processes to perform the parallelization,
+or the number of processes or threads to use.
+By default, as more lightweight, threading is used but on some specific case,
+where for instance race conditions may occur,
+multiprocessing can be employed.
 
 ### Re-use coupling structures
 
 MDAs are created from a set of coupled disciplines. To determine the coupling variables, a [CouplingStructure][gemseo.core.coupling_structure.CouplingStructure] object is created which uses graph algorithms to analyse the coupling strcture of the provided disciplines. This process is made once at creation of the MDA, and **only depends on the set of disciplines**. The graph analysis can be expensive if there is a large number of disciplines and/or plenty of inputs/outputs variables.
 
 Since the coupling structure only depends on the coupled disciplines, it can be computed independently, stored, and then provided to the MDA when needed.
-
-``` python
-from gemseo.core.coupling_structure import CouplingStructure
-
-# Create the coupling structure on the disciplines
-coupling_structure = CouplingStructure(disciplines)
-
-# Create the settings model
-settings = MDAGaussSeidel_Settings(coupling_structure=coupling_structure)
-
-# Create an MDA using the already available coupling structure
-mda_gauss_seidel = create_mda("MDAGaussSeidel", disciplines, settings_model=settings)
-```
